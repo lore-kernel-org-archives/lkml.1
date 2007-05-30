@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbXE3KJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbXE3KMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753052AbXE3KJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 06:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbXE3KJs
+	id S1753142AbXE3KMZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 06:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXE3KMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 06:09:48 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2300 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751527AbXE3KJr (ORCPT
+	Wed, 30 May 2007 06:12:15 -0400
+Received: from eos.fwall.u-szeged.hu ([160.114.120.248]:58998 "EHLO
+	eos.fwall.u-szeged.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527AbXE3KMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 06:09:47 -0400
-Date: Wed, 30 May 2007 11:09:35 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] zs: Move to the serial subsystem
-Message-ID: <20070530100935.GC19552@flint.arm.linux.org.uk>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	"Maciej W. Rozycki" <macro@linux-mips.org>,
-	linux-mips@linux-mips.org, linux-serial@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-References: <Pine.LNX.4.64N.0705291258390.14456@blysk.ds.pg.gda.pl> <20070530011224.bf36d2df.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070530011224.bf36d2df.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 30 May 2007 06:12:13 -0400
+X-Greylist: delayed 2533 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 06:12:13 EDT
+Date: Wed, 30 May 2007 11:30:00 +0200 (CEST)
+From: Geller Sandor <wildy@petra.hos.u-szeged.hu>
+To: linux-kernel@vger.kernel.org
+Subject: HPT374 IDE problem with 2.6.21.* kernels
+Message-ID: <Pine.LNX.4.62.0705301112170.1260@petra.hos.u-szeged.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-SZTE-local: YES
+X-SZTE-HU-local: YES
+X-SZTE-AVcheck: YES
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 01:12:24AM -0700, Andrew Morton wrote:
-> > +			if (status & (Rx_SYS | Rx_BRK))
-> > +				icount->brk++;
-> > +			else if (status & FRM_ERR)
-> > +				icount->frame++;
-> > +			else if (status & PAR_ERR)
-> > +				icount->parity++;
-> 
-> FRM_ERR and PAR_ERR are mutually exclusive, and cannot be set if either
-> Rx_SYS or Rx_BRK are set?
+Hi,
 
-That's actually fairly normal.  A break condition is by definition
-a framing error, and possibly a parity error as well.  Also, a break
-condition is not an error per-se.
+I saw a similar report yesterday with '2.6.21.1 - 97% wait time on IDE 
+operations' subject.
 
-Also, if you do add in the associated framing or parity errors, you're
-likely to get different results from different hardware - some hardware
-mask off the framing and parity errors when detecting a break condition.
-Others don't.
+After upgrading from 2.6.20.7 kernel to 2.6.21.1 my system started to 
+reset infrequenly the IDE bus. In the syslog DMA timeout, resetting IDE 
+bus messages appeared. I've changed the two disks attached to the HPT374 
+controller, and always the first disk had problems. I've replaced cables, 
+plugged the disks into other IDE ports, but it was only a matter of time 
+to experience an IDE reset. When I upgraded to 2.6.21.3 the resets became 
+much more frequent, this time even DMA was disabled too on the first disk. 
+I turned DMA back Manually with hdparm, and a few seconds of intense IO 
+activity resulted in another IDE reset.
 
-> > +/*
-> > + * Finally, routines used to initialize the serial port.
-> > + */
-> > +static int zs_startup(struct uart_port *uport)
-> > +{
-> > +	struct zs_port *zport = to_zport(uport);
-> > +	struct zs_scc *scc = zport->scc;
-> > +	unsigned long flags;
-> > +	int ret;
-> > +
-> > +	if (!scc->irq_guard) {
-> > +		ret = request_irq(zport->port.irq, zs_interrupt,
-> > +				  IRQF_SHARED, "scc", scc);
-> > +		if (ret) {
-> > +			printk(KERN_ERR "zs: can't get irq %d\n",
-> > +			       zport->port.irq);
-> > +			return ret;
-> > +		}
-> > +	}
-> > +	scc->irq_guard++;
-> 
-> The ->irq_guard handling looks a little racy?
-> 
-> Perhaps higher-level locks prevent this.  If so, a comment explaining this
-> would be reassuring.
+Reverting back to 2.6.20.12 the problem seems to be gone. BTW I'm using 
+the PATA driver for the HTP374, not the libata one.
 
-Does look racy if "scc" is shared between several ports.  The locking
-here is only per-port, so this is racy.
+Is this a known problem/ is there a way I can help locating the cause of 
+the problem?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Regards,
+
+   Geller Sandor <wildy@petra.hos.u-szeged.hu>
