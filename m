@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbXE3FF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbXE3FUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751937AbXE3FF1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 01:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbXE3FFN
+	id S1751971AbXE3FUI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 01:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbXE3FT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 01:05:13 -0400
-Received: from xenotime.net ([66.160.160.81]:57030 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1749667AbXE3FFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 01:05:11 -0400
-Date: Tue, 29 May 2007 22:12:02 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [patch] tweak make htmldocs (nochunks and better index).
-Message-Id: <20070529221202.8aef10bf.rdunlap@xenotime.net>
-In-Reply-To: <200705291528.34092.rob@landley.net>
-References: <200705291528.34092.rob@landley.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 May 2007 01:19:57 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:61491 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbXE3FT4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 01:19:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Plu1DNq2VxL536Ew7VHDvyHhpl0rn5Uevl3Eww5BeI6j+YpVCTjTLkUUgpYJ6L+3iRuHm2Zdq81iGvlCuTnDHXFi/zDgMDcZ58DUrH/1Ae0EfOz24l69KQ/4pTYaNRGIlUogpR5bVzR/wX0TNfTDOIDP1jXpUmWRw8rxp41441o=
+Message-ID: <4cefeab80705292219x31956353r308b0ed0a052071@mail.gmail.com>
+Date: Wed, 30 May 2007 10:49:45 +0530
+From: "Nitin Gupta" <nitingupta910@gmail.com>
+To: "Daniel Hazelton" <dhazelton@enter.net>
+Subject: Re: [RFC] LZO de/compression support - take 6
+Cc: "Bret Towe" <magnade@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-mm-cc@laptop.org, linuxcompressed-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Richard Purdie" <richard@openedhand.com>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>
+In-Reply-To: <200705291932.04255.dhazelton@enter.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
+	 <dda83e780705281553s67ace88at60f6ab28b198a832@mail.gmail.com>
+	 <4cefeab80705282258p570c649aja5a60b82f63c2440@mail.gmail.com>
+	 <200705291932.04255.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007 15:28:33 -0400 Rob Landley wrote:
+On 5/30/07, Daniel Hazelton <dhazelton@enter.net> wrote:
+> I just noticed a bug in my testbed/benchmarking code. It's fixed, but I
+> decided to compare version 6 of the code against the *unsafe* decompressor
+> again. The results of the three runs I've put it through after changing it to
+> compare against the unsafe decompressor were startling. `Tiny's` compressor
+> is still faster - I've seen it be rated up to 3% faster. The decompressor,
+> OTOH, when compared to the unsafe version (which is the comparison that
+> started me on this binge of hacking), is more than 7% worse. About 11% slower
+> on the original test against a C source file, and about 6% slower for random
+> data.
 
-> Signed-off-by: Rob Landley <rob@landley.net>
-> 
-> A) The "xmtml-nochunks" version of "make htmldocs" is easier to print.
+Unsafe vs safe is within 10%. Its okay.
 
-and makes it darn near impossible to print one page or function
-if that's all that someone is interested in.
+> However, looking at the numbers involved, I can't see a reason to keep
+> the unsafe version around - the percentages look worse than they are - from 1
+> to 3 microseconds.
 
-I'd prefer to leave the html output in separate files and use
-pdf or ps output for printing entire files.  But that's just my take on it.
+Not just numbers. Most of applications cannot afford to use unsafe
+versions anyway (like fs people).
+
+(well, the compressed-cache people might want those extra
+> usecs - but the difference will never be noticeable anywhere outside the
+> kernel)
+>
+> DRH
+>
+
+compressed cache people require every single percent of that
+performance. For now, ccaching is not ready for mainline (many things
+need to be done). So, till then I will keep off the unsafe version. If
+ever compressed caching is on its way to mainline _then_ I will try
+and add back the unsafe version. But I see no other project that
+really cares about unsafe version so it's okay to keep it off.
 
 
-> B) Update the generated index.html to use the html <title> as a
->    description for each file it links to.
-> 
-> --
-> 
-> --- git/Documentation/DocBook/Makefile	2007-05-23 16:36:56.000000000 -0400
-> +++ work/Documentation/DocBook/Makefile	2007-05-26 23:11:36.000000000 -0400
-> @@ -141,9 +141,12 @@
->  		   cat $(HTML) >> $(main_idx)
->  
->  quiet_cmd_db2html = HTML   $@
-> -      cmd_db2html = xmlto xhtml $(XMLTOFLAGS) -o $(patsubst %.html,%,$@) $< && \
-> -		echo '<a HREF="$(patsubst %.html,%,$(notdir $@))/index.html"> \
-> -        $(patsubst %.html,%,$(notdir $@))</a><p>' > $@
-> +      cmd_db2html = xmlto xhtml-nochunks $(XMLTOFLAGS) -o $(patsubst %.html,%,$@) $< && \
-> +		NAME='$(patsubst %.html,%,$(notdir $@))'; \
-> +		echo -n "<p><a HREF=\"$$NAME/$$NAME.html\">$$NAME</a>" > $@ ; \
-> +		sed -nre 's@.*<title>(.*)</title>.*@\1@p' \
-> +			"Documentation/DocBook/$$NAME/$$NAME.html" >> $@ ; \
-> +		echo '<\p>' >> $@
->  %.html:	%.xml
->  	@(which xmlto > /dev/null 2>&1) || \
-
-(repeating due to email bounced/rejected when from @oracle.com:)
-
-What is <\p> supposed to do?
-
-Here's what I see in index.html (beginning lines of it):
-
-Linux Kernel HTML Documentation
-Kernel Version: 2.6.22-rc3
-
-deviceiobookBus-Independent Device Accesses <\p>
-
-filesystemsLinux Filesystems API <\p>
-
-gadgetUSB Gadget API for Linux <\p>
-
-genericirqLinux generic IRQ handling <\p>
-
-kernel-apiThe Linux Kernel API <\p>
-
-kernel-hackingUnreliable Guide To Hacking The Linux Kernel <\p>
-
-kernel-lockingUnreliable Guide To Locking <\p>
-
----
-so it looks like it could use a space after the short name/before
-the long name/title, and fix the <\p>.
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+- Nitin
