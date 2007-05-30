@@ -1,74 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbXE3PSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbXE3PTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbXE3PSq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXE3PSi
+	id S1755839AbXE3PTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbXE3PTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:18:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:19588 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752767AbXE3PSi (ORCPT
+	Wed, 30 May 2007 11:19:04 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:36634 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753613AbXE3PTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:18:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JpBrr7cN5O0C5UlZc5IRvBr5dypEeIcm4rwUIdb4GCFgad+YtSa9HC7IjoK0bDqoPdG3LbK7oBHt9tdYqWx2n2vwjGWjHWap0goKKVAxRMO9Ou8j00AXdXldRa3wtYV3A6zB5pPVMESZWxlUPz7Mk4TMGw0+D8hG89lvM+X5kmw=
-Message-ID: <d9b9d95f0705300818h2eaa8130mf8a7a37966d29cc5@mail.gmail.com>
-Date: Wed, 30 May 2007 16:18:36 +0100
-From: "Renato Golin" <rengolin@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: joydev.c and saitek cyborg evo force
-Cc: linux-kernel@vger.kernel.org, "Dmitry Torokhov" <dtor@insightbb.com>
-In-Reply-To: <Pine.LNX.4.64.0705301654560.3961@jikos.suse.cz>
+	Wed, 30 May 2007 11:19:01 -0400
+Date: Wed, 30 May 2007 08:16:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+In-Reply-To: <20070530084252.GA15708@elte.hu>
+Message-ID: <alpine.LFD.0.98.0705300806400.26602@woody.linux-foundation.org>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
+ <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com>
+ <20070530084252.GA15708@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
-	 <200705210016.20794.dtor@insightbb.com>
-	 <Pine.LNX.4.64.0705211444500.22906@jikos.suse.cz>
-	 <d9b9d95f0705291657o47ef42d3jea2a1dae3e31bbdb@mail.gmail.com>
-	 <Pine.LNX.4.64.0705300207160.3961@jikos.suse.cz>
-	 <d9b9d95f0705300214u7eb257fg783aefd73077d33@mail.gmail.com>
-	 <Pine.LNX.4.64.0705301654560.3961@jikos.suse.cz>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30/05/07, Jiri Kosina <jkosina@suse.cz> wrote:
-> do any data appear in the kernel log when you generate events with the
-> device (i.e. move the joystick, press the buttons, etc)? That should be
-> reported if DEBUG_DATA is defined properly on the older kernels.
 
-Not at all... only my own debug messages from joydev (like:
-recalibrating for value 2048) when a new limit is reached. I've even
-changed "printk(KERN_DEBUG ...)" to a plain printk() as I do on joydev
-to avoid fall into the wrong log level but didn't work as well.
 
-I've changed USB DEBUG in menuconfig, saved the new conf.
+On Wed, 30 May 2007, Ingo Molnar wrote:
+>
+> * Ulrich Drepper <drepper@redhat.com> wrote:
+> > 
+> > I'm not going to judge your tests but saying there are no significant 
+> > advantages is too one-sided.  There is one huge advantage: the 
+> > interface.  A memory-based interface is simply the best form.  File 
+> > descriptors are a resource the runtime cannot transparently consume.
+> 
+> yeah - this is a fundamental design question for Linus i guess :-)
 
-The files I've changed manually (undef -> define) were:
- -> drivers/hid/
-hid-core.c:#undef DEBUG
-hid-core.c:#undef DEBUG_DATA
-hid-input.c:#undef DEBUG
+Well, quite frankly, to me, the most important part of syslets is that if 
+they are done right, they introduce _no_ new interfaces at all that people 
+actually use.
 
--> drivers/usb/input/
-hid-core.c:#undef DEBUG
-hid-core.c:#undef DEBUG_DATA
-hid-ff.c:#undef DEBUG
-hid-tmff.c:#undef DEBUG
+Over the years, we've done lots of nice "extended functionality" stuff. 
+Nobody ever uses them. The only thing that gets used is the standard stuff 
+that everybody else does too.
 
-than
-$ make drivers/hid/hid.ko drivers/usb/input/usbhid.ko
-$ rmmod usbhid hid ; modprobe usbhid hid
+So when it comes to syslets, the most important interface will be the 
+existing aio_read() etc interfaces _without_ any in-memory stuff at all, 
+and everything done by the kernel to just make it look exactly like it 
+used to look. And the biggest advantage is that it simplifies the internal 
+kernel code, and makes us use the same code for aio and non-aio (and I 
+think we have a good possibility of improving performance too, if only 
+because we will get much more natural and fine-grained scheduling points!)
 
-the output from the last mail was on both /var/log/messages and
-syslog, although syslog had other messages from the network card
-(using ndiswrapper).
+Any extended "direct syslets" use is technically _interesting_, but 
+ultimately almost totally pointless. Which was why I was pushing really 
+really hard for a simple interface and not being too clever or exposing 
+internal designs too much. An in-memory thing tends to be the absolute 
+_worst_ interface when it comes to abstraction layers and future changes.
 
-cheers,
---renato
+> glibc (and other infrastructure libraries) have a fundamental problem: 
+> they cannot (and do not) presently use persistent file descriptors to 
+> make use of kernel functionality, due to ABI side-effects.
 
-Reclaim your digital rights, eliminate DRM, learn more at
-http://www.defectivebydesign.org/what_is_drm
+glibc has a more fundamental problem: the "fun" stuff is generally not 
+worth it. 
+
+For example, any AIO thing that requires glibc to be rewritten is almost 
+totally uninteresting. It should work with _existing_ binaries, and 
+_existing_ ABI's to be useful - since 99% of all AIO users are binary- 
+only and won't recompile for some experimental library.
+
+The whole epoll/kevent flame-wars have ignored a huge issue: almost nobody 
+uses either. People still use poll and select, to such an _overwhelming_ 
+degree that it almost doesn't even matter if you were to make the 
+alternatives orders of magnitude faster - it wouldn't even be visible. 
+
+> we should perhaps enable glibc to have its separate fd namespace (or 
+> 'hidden' file descriptors at the upper end of the fd space) so that it 
+> can transparently listen to netlink events (or do epoll), without 
+> impacting the application fd namespace - instead of ducking to a memory 
+> based API as a workaround.
+
+Yeah, I don't think it would be at all wrong to have "private file 
+descriptors". I'd prefer that over memory-based (for all the abstraction 
+issues, and because a lot of things really *are* about file descriptors!). 
+
+		Linus
