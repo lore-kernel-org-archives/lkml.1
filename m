@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbXE3RC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbXE3RDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758015AbXE3RC7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbXE3RBy
+	id S1757433AbXE3RDW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbXE3RDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:01:54 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:7384 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756987AbXE3RBw (ORCPT
+	Wed, 30 May 2007 13:03:05 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:61092 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758044AbXE3RDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:01:52 -0400
-From: divy@chelsio.com
-Subject: [PATCH 5/5] cxgb3 - MAC watchdog update
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Wed, 30 May 2007 10:01:50 -0700
-Message-ID: <20070530170149.22861.76812.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 13:03:04 -0400
+Date: Wed, 30 May 2007 09:55:11 -0700
+From: Zach Brown <zach.brown@oracle.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+Message-ID: <20070530165511.GB5488@mami.zabbo.net>
+References: <20070529212718.GH7875@mami.zabbo.net> <20070530074031.GV15559@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070530074031.GV15559@kernel.dk>
+User-Agent: Mutt/1.4.2.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+> Yeah, it'll confuse CFQ a lot actually. The threads either need to share
+> an io context (clean approach, however will introduce locking for things
+> that were previously lockless), or CFQ needs to get better support for
+> cooperating processes.
 
-Fix variables initialization and usage in the MAC watchdog.
+Do let me know if I can be of any help in this.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+> For the fio testing, we can make some improvements there. Right now you
+> don't get any concurrency of the io requests if you set eg iodepth=32,
+> as the 32 requests will be submitted as a linked chain of atoms. For io
+> saturation, that's not really what you want.
 
- drivers/net/cxgb3/xgmac.c |   31 +++++++++++++++++++++----------
- 1 files changed, 21 insertions(+), 10 deletions(-)
+Just to be clear: I'm currently focusing on supporting sys_io_*() so I'm
+using fio's libaio engine.  I'm not testing the syslet syscall interface
+yet.
 
-diff --git a/drivers/net/cxgb3/xgmac.c b/drivers/net/cxgb3/xgmac.c
-index 16cadba..b261be1 100644
---- a/drivers/net/cxgb3/xgmac.c
-+++ b/drivers/net/cxgb3/xgmac.c
-@@ -501,6 +501,10 @@ int t3b2_mac_watchdog_task(struct cmac *
- 	unsigned int rx_xcnt;
- 	int status;
- 
-+	status = 0;
-+	tx_xcnt = 1;		/* By default tx_xcnt is making progress */
-+	tx_tcnt = mac->tx_tcnt;	/* If tx_mcnt is progressing ignore tx_tcnt */
-+	rx_xcnt = 1;		/* By default rx_xcnt is making progress */
- 	if (tx_mcnt == mac->tx_mcnt) {
- 		tx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
- 						A_XGM_TX_SPI4_SOP_EOP_CNT +
-@@ -511,37 +515,44 @@ int t3b2_mac_watchdog_task(struct cmac *
- 			tx_tcnt = (G_TXDROPCNTCH0RCVD(t3_read_reg(adap,
- 						      A_TP_PIO_DATA)));
- 		} else {
--			mac->toggle_cnt = 0;
--			return 0;
-+			goto rxcheck;
- 		}
- 	} else {
- 		mac->toggle_cnt = 0;
--		return 0;
-+		goto rxcheck;
- 	}
- 
- 	if (((tx_tcnt != mac->tx_tcnt) &&
- 	     (tx_xcnt == 0) && (mac->tx_xcnt == 0)) ||
- 	    ((mac->tx_mcnt == tx_mcnt) &&
- 	     (tx_xcnt != 0) && (mac->tx_xcnt != 0))) {
--		if (mac->toggle_cnt > 4)
-+		if (mac->toggle_cnt > 4) {
- 			status = 2;
--		else 
-+			goto out;
-+		} else {
- 			status = 1;
-+			goto out;
-+		}
- 	} else {
- 		mac->toggle_cnt = 0;
--		return 0;
-+		goto rxcheck;
- 	}
- 
-+rxcheck:
- 	if (rx_mcnt != mac->rx_mcnt)
- 		rx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
- 						A_XGM_RX_SPI4_SOP_EOP_CNT +
- 						mac->offset)));
--	else 
--		return 0;
-+	else
-+		goto out;
- 
--	if (mac->rx_mcnt != s->rx_frames && rx_xcnt == 0 && mac->rx_xcnt == 0) 
-+	if (mac->rx_mcnt != s->rx_frames && rx_xcnt == 0 &&
-+	    mac->rx_xcnt == 0) {
- 		status = 2;
--	
-+		goto out;
-+	}
-+
-+out:
- 	mac->tx_tcnt = tx_tcnt;
- 	mac->tx_xcnt = tx_xcnt;
- 	mac->tx_mcnt = s->tx_frames;
+- z
