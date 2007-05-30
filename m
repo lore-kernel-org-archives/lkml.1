@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbXE3NH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbXE3NIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816AbXE3NH2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbXE3NHS
+	id S1754051AbXE3NIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbXE3NIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:07:18 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:38832 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbXE3NHQ (ORCPT
+	Wed, 30 May 2007 09:08:42 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:35594 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751188AbXE3NIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:07:16 -0400
-X-IronPort-AV: i="4.14,593,1170651600"; 
-   d="scan'208"; a="40530842:sNHT24273766398"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 00/20] Blackfin update for 2.6.22-rc3
-Date: Wed, 30 May 2007 09:09:13 -0400
-User-Agent: KMail/1.9.5
-Cc: "Bryan Wu" <bryan.wu@analog.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <11803414753217-git-send-email-bryan.wu@analog.com> <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
+	Wed, 30 May 2007 09:08:41 -0400
+Date: Wed, 30 May 2007 13:40:29 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Message-ID: <20070530124027.GA27942@srcf.ucam.org>
+References: <alpine.LFD.0.98.0705241905490.26602@woody.linux-foundation.org> <1180059605.3997.100.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705241931240.26602@woody.linux-foundation.org> <1180062040.3997.112.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705242021560.26602@woody.linux-foundation.org> <1180067587.3997.136.camel@nigel.suspend2.net> <465C366C.2070900@rtr.ca> <1180473765.20718.47.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705291428410.26602@woody.linux-foundation.org> <20070530114920.GB26326@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705300909.13419.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 30 May 2007 13:06:34.0295 (UTC) FILETIME=[593AAC70:01C7A2BB]
+In-Reply-To: <20070530114920.GB26326@elf.ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 29 May 2007 16:59, Linus Torvalds pondered:
-> 
-> On Mon, 28 May 2007, Bryan Wu wrote:
-> > 
-> >  - Blackfin arch update including BF54x initial supporting
-> >  - Blackfin driver update: serial/spi/rtc
-> >  - Provide new Blackfin watchdog driver
-> >  - binfmt_flat.c for Blackfin arch modification
-> 
-> I realize that this all just touches blackfin-specific stuff, but after 
-> -rc3 I really prefer not to bother with these things..
-> 
-> Also, for stuff that is really just an architecture that I can't even 
-> test,
+On Wed, May 30, 2007 at 01:49:21PM +0200, Pavel Machek wrote:
 
-In one of my (how did Andrew word it...) circumlocutious threads about 
-Blackfin a while ago, I offered hardware to anyone who wanted to try things 
-out. Greg KH was the only person who read through the entire thing, and asked 
-(and got one). Offer still good for qualified developers.
+(Trimmed the Cc:s quite heavily - I think this has gone somewhere beyond 
+the original point)
 
--Robin
+> Notice that we want to be able to suspend while hibernating -- for
+> suspend to both behaviour. So drivers may _not_ rely on system being
+> runnable.
+
+So keep the driver layers read-only and unfreeze the processes after 
+doing the atomic copy.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
