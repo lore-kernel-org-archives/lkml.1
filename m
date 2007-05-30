@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbXE3PVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbXE3PWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbXE3PVX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbXE3PVR
+	id S1756237AbXE3PWO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXE3PV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:21:17 -0400
-Received: from outbound-mail-76.bluehost.com ([69.89.22.25]:58234 "HELO
-	outbound-mail-76.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752134AbXE3PVQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:21:16 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH -mm] 0/2: PCI MMCONFIG-related updates
-Date: Wed, 30 May 2007 08:21:11 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <465CF712.2010604@shaw.ca>
-In-Reply-To: <465CF712.2010604@shaw.ca>
+	Wed, 30 May 2007 11:21:59 -0400
+Received: from moci.net4u.de ([217.7.64.195]:55599 "EHLO moci.net4u.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753503AbXE3PV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 11:21:58 -0400
+X-Greylist: delayed 1862 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 11:21:58 EDT
+From: Ernst Herzberg <list-lkml@net4u.de>
+Reply-To: earny@net4u.de
+Organization: Net4U
+To: linux-kernel@vger.kernel.org
+Subject: Re: Case: 7454422: Re: Kernel 2.6.21.3 does not work with 8GB of RAM on Intel 965WH motherboards.
+Date: Wed, 30 May 2007 16:50:48 +0200
+User-Agent: KMail/1.9.5
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, Robert Hancock <hancockr@shaw.ca>,
+       crmotherboard@mailbox.cps.intel.com
+References: <fa.4kEpre7NAj1mG6fooUMp/WVc8tg@ifi.uio.no> <465D89E1.7030301@shaw.ca> <Pine.LNX.4.64.0705301029500.13945@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0705301029500.13945@p34.internal.lan>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705300821.11555.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+Message-Id: <200705301650.50899.list-lkml@net4u.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, May 29, 2007 9:01:22 Robert Hancock wrote:
-> These two patches implement some changes in behavior related to PCI
-> MMCONFIG configuration space access. One changes the way in which we
-> validate the MCFG table provided by the BIOS by checking it against
-> ACPI motherboard resources instead of the E820 table. The BIOS is not
-> required to reserve this area in the E820 table, so checking that
-> results in MMCONFIG being unnecessarily disabled on some machines.
->
-> Some Intel chipsets where MMCONFIG was being disabled previously
-> (but won't be with the first patch) had problems, not due to the
-> MCFG table being broken, but because the access was hosed by the way
-> in which we do PCI BAR sizing. The second patch fixes this problem.
->
-> This is requested for inclusion in the -mm tree for testing.
+On Wednesday 30 May 2007 16:33, Justin Piszcz wrote:
 
-Robert, should we also pull in the 915 and 965 chipset specific register 
-poking code?  It might be a good sanity check against ACPI (i.e. if ACPI and 
-the actual register window disagree, we can assume the BIOS is broken and 
-MCFG is not safe to use).  If so, I'll update and repost them against your 
-patchset.
+> Am I the first person to try using 8 gigabytes of RAM on the 965
+> chipset?
+>
 
-Thanks,
-Jesse
+No. See http://lkml.org/lkml/2007/3/29/222
+
+Same problem on  ASUS P5B-VM with 4GB memory, if "memory remap feature" in
+BIOS is activated. Without this option only 2.8GB of memory is avaliable.
+
+lspci:
+00:00.0 Host bridge: Intel Corporation 82P965/G965 Memory Controller Hub (rev 02)
+00:01.0 PCI bridge: Intel Corporation 82P965/G965 PCI Express Root Port (rev 02)
+00:1a.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Contoller #4 (rev 02)
+00:1a.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #5 (rev 02)
+00:1a.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #2 (rev 02)
+00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio Controller (rev 02)
+00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 1 (rev 02)
+00:1c.4 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 5 (rev 02)
+00:1c.5 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 6 (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #1 (rev 02)
+00:1d.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #2 (rev 02)
+00:1d.2 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #3 (rev 02)
+00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #1 (rev 02)
+00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev f2)
+00:1f.0 ISA bridge: Intel Corporation 82801HB/HR (ICH8/R) LPC Interface Controller (rev 02)
+00:1f.2 IDE interface: Intel Corporation 82801H (ICH8 Family) 4 port SATA IDE Controller (rev 02)
+00:1f.3 SMBus: Intel Corporation 82801H (ICH8 Family) SMBus Controller (rev 02)
+00:1f.5 IDE interface: Intel Corporation 82801H (ICH8 Family) 2 port SATA IDE Controller (rev 02)
+01:00.0 VGA compatible controller: ATI Technologies Inc RV515 PRO [Radeon X1300/X1550 Series]
+01:00.1 Display controller: ATI Technologies Inc RV515 PRO [Radeon X1300/X1550 Series] (Secondary)
+02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
+03:00.0 SATA controller: JMicron Technologies, Inc. JMicron 20360/20363 AHCI Controller (rev 02)
+03:00.1 IDE interface: JMicron Technologies, Inc. JMicron 20360/20363 AHCI Controller (rev 02)
+05:01.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A IEEE-1394a-2000 Controller (PHY/Link)
+05:03.0 Ethernet controller: Marvell Technology Group Ltd. 88w8335 [Libertas] 802.11b/g Wireless (rev 03)
+05:04.0 Multimedia controller: Philips Semiconductors SAA7134/SAA7135HL Video Broadcast Decoder (rev 01)
+
+<earny>
