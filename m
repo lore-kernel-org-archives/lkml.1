@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbXE3Kok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbXE3Kqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753268AbXE3Kok (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 06:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbXE3Kod
+	id S1753163AbXE3Kqh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 06:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXE3Kq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 06:44:33 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:44120 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751567AbXE3Kod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 06:44:33 -0400
-Message-ID: <465D5677.2080307@openvz.org>
-Date: Wed, 30 May 2007 14:48:23 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Wed, 30 May 2007 06:46:26 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:47988
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbXE3KqZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 06:46:25 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "Gary Zambrano" <zambrano@broadcom.com>
+Subject: Re: b44: regression in 2.6.22 (resend)
+Date: Wed, 30 May 2007 12:45:16 +0200
+User-Agent: KMail/1.9.6
+Cc: "Jeff Garzik" <jgarzik@pobox.com>,
+       "Maximilian Engelhardt" <maxi@daemonizer.de>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
+       netdev@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>
+References: <20070525172431.60affaca@freepuppy> <465CABA3.10003@pobox.com> <1180474611.17711.26.camel@dhcp-10-12-136-115.broadcom.com>
+In-Reply-To: <1180474611.17711.26.camel@dhcp-10-12-136-115.broadcom.com>
 MIME-Version: 1.0
-To: menage@google.com
-CC: akpm@linux-foundation.org, dev@sw.ru, serue@us.ibm.com, vatsa@in.ibm.com,
-       ebiederm@xmission.com, haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com,
-       balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-Subject: Re: [PATCH 00/10] Containers(V10): Generic Process Containers
-References: <20070529130104.461765000@menage.corp.google.com>
-In-Reply-To: <20070529130104.461765000@menage.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200705301245.16983.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul.
+On Tuesday 29 May 2007 23:36:51 Gary Zambrano wrote:
+> On Tue, 2007-05-29 at 18:39 -0400, Jeff Garzik wrote:
+> 
+> > We check for 0xffffffff because that is often how a fault is indicated, 
+> > when the memory location is read during or immediately after hotplug (or 
+> > if the PCI bus is truly faulty).  So for most hardware, you see
+> > 
+> > tmp = read(irq status)
+> > if (!tmp)
+> > 	return irq-none		/* no irq events raised */
+> > if (tmp == 0xffffffff)
+> > 	return irq-none		/* hot unplug or h/w fault */
+> > 
+> > and the method that determines no interrupt handling is needed.
+> > 
+> 
+> I guess you are right, but then shouldn't the driver be checking for
+> faults in other parts of the code too? What if a fault/hotplug occurs
+> immediately after an interrupt, but before a tx?
+> Thanks,
 
-I have faced a warning during testing your patches.
-The testcase is simple:
-   # ssh to the node
-   mount -t container none /cnt/rss/ -o rss
-   mkdir /cnt/rss/0
-   /bin/echo $$ > /cnt/rss/0/tasks
-   # exit with ^d and ssh again
-   rmdir /cnt/rss/0
-   dmesg
+Well, in general it's not desired (or even possible) to check every
+single MMIO access. General practice is to check on entering the IRQ handler
+and on values from registers or DMA which could crash the driver.
+For example on DMA we get some cookie back from the device in the TX
+status report that says which packet this was associated to.
+That value is used to look up a table.
+In bcm43xx I initialize that to 0 in the driver, which is not a valid value.
+Later I check for that. So if the device is unplugged before DMA was
+on that value was complete it will recognize it and it won't crash.
 
-BUG: at mm/slab.c:777 __find_general_cachep()
- [<c04656c8>] __kmalloc+0x3f/0xa5
- [<c0440e3a>] container_tasks_open+0x56/0x11f
- [<c0440bcc>] container_file_open+0x0/0x36
- [<c0440bfb>] container_file_open+0x2f/0x36
- [<c0467a12>] __dentry_open+0xc1/0x178
- [<c0467b43>] nameidata_to_filp+0x24/0x33
- [<c0467b84>] do_filp_open+0x32/0x39
- [<c04678eb>] get_unused_fd+0x50/0xb6
- [<c0467bcd>] do_sys_open+0x42/0xbe
- [<c0467c82>] sys_open+0x1c/0x1e
- [<c0404c12>] sysenter_past_esp+0x5f/0x85
- [<c05b0000>] __xfrm_policy_check+0x11a/0x4f6
+In general we can only do our very best to prevent bad sideeffects from
+a pull-in-full-operation. We can't do much here anyway. Best we can do
+is to _try_ to prevent a crash. It might not always be 100% possible
+to do so, though.
 
-The bug seems to be here:
-static int container_tasks_open(struct inode *unused, struct file *file)
-{
-        ...
-        npids = container_task_count(cont);
-        pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
-        if (!pidarray)
-                goto err1;
-        ...
-}
-The npids happened to be 0 and kmalloc warns that size is zero.
-
-Thanks,
-Pavel.
-
+-- 
+Greetings Michael.
