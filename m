@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbXE3PGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXE3PG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754177AbXE3PGP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXE3PGA
+	id S1755528AbXE3PG2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXE3PGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:06:00 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:34812 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbXE3PF7 (ORCPT
+	Wed, 30 May 2007 11:06:03 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:60987 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752767AbXE3PGC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:05:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=n3zlM7bWvSnwYugLpTFAaH8q5BkAn344C9eSBHk8ZkwEllL9CenEQAe91LoIjO/BPevpRpWcpbRRM+ksH1BdkncndjBm9XMg0b5HUh3N3FAQYRyECy710wkxD9OnqF6cl221ru2xQlusipQiaJ10u+njNaqXoZh/1kgDcCSMkAU=
-Message-ID: <a781481a0705300758t5f16235al1f420f09472af780@mail.gmail.com>
-Date: Wed, 30 May 2007 20:28:54 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Meelis Roos" <mroos@linux.ee>
-Subject: Re: ppc modprost warnings in 2.6.22-rc1
-Cc: "Sam Ravnborg" <sam@ravnborg.org>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.SOC.4.64.0705301652250.23769@math>
+	Wed, 30 May 2007 11:06:02 -0400
+Date: Wed, 30 May 2007 08:05:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Robert Hancock <hancockr@shaw.ca>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH -mm] 1/2: MMCONFIG: validate against ACPI motherboard
+ resources
+In-Reply-To: <465D8BA1.1080800@shaw.ca>
+Message-ID: <alpine.LFD.0.98.0705300804140.26602@woody.linux-foundation.org>
+References: <465CF794.1070406@shaw.ca> <alpine.LFD.0.98.0705292125511.26602@woody.linux-foundation.org>
+ <465D8BA1.1080800@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.SOC.4.64.0705141717110.23895@math>
-	 <20070515204540.GC22966@uranus.ravnborg.org>
-	 <Pine.SOC.4.64.0705301652250.23769@math>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Meelis,
 
-On 5/30/07, Meelis Roos <mroos@linux.ee> wrote:
-> > > WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x18) and 'Mesquite_pci_IRQ_map'
-> > .....
-> >
-> > mot_info is only used by functions marked __init.
-> > So why not mark it __init so it get discarded and we get rid of all those warnings?
->
-> How do I mark a initialized struct __init? Adding __init or const __init in
-> front of the declaration results in
->
->   CC      arch/ppc/platforms/prep_pci.o
-> arch/ppc/platforms/prep_pci.c:806: error: mot_info causes a section type conflict
 
-Data that is not accessed after initcalls are done (and hence can be
-safely freed after kernel boot) must be marked __initdata.
+On Wed, 30 May 2007, Robert Hancock wrote:
+> 
+> I'll try and fix up the formatting and repost this patch.
 
-Satyam
+Thanks.
+
+>							 I suspect some
+> of the issues are from the added code clashing with the way the existing
+> code was formatted.
+
+Well, I have to admit that I might not have reacted so much if it hadn't 
+been for the Thunderbird thing, which made it look _really_ strange at 
+first, so then I had to go outside my mail client to look closer. And once 
+I looked closer, I just went "aiieee, it wasn't all the email client" ;)
+
+		Linus
