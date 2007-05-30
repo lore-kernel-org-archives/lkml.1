@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752244AbXE3LDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbXE3LHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752244AbXE3LDr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 07:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbXE3LDj
+	id S1752606AbXE3LHv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 07:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbXE3LHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 07:03:39 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:54129 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbXE3LDi convert rfc822-to-8bit (ORCPT
+	Wed, 30 May 2007 07:07:44 -0400
+Received: from mail-smtp3.ode.cdnet.dk ([85.218.129.6]:53800 "EHLO
+	mail-smtp3.ode.cdnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbXE3LHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 07:03:38 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [Cbe-oss-dev] [RFC] Cell: shutdown method for spu_sysdev_class
-Date: Wed, 30 May 2007 13:03:09 +0200
-User-Agent: KMail/1.9.6
-Cc: cbe-oss-dev@ozlabs.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-References: <463D1A2F.10708@am.sony.com> <200705292023.49968.arnd@arndb.de> <20070530095821.GA24373@lst.de>
-In-Reply-To: <20070530095821.GA24373@lst.de>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200705301303.09616.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/ZrigjEi92t7zAB1QTbCXxnRp1rlH/xLJaJHO
- V4yjviZbr3O7D8u85juMbW7ab6Aovo/5jezLfXCCU2aB6X30WJ
- MBbvFwFqPTnXK3IfKQcwA==
+	Wed, 30 May 2007 07:07:44 -0400
+X-Greylist: delayed 482 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 07:07:43 EDT
+X-Spam-Flag: NO
+X-Spam-Score: -2.998
+Subject: LSI MegaRAID problems
+From: Jules Colding <colding@omesc.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 12:59:37 +0200
+Message-Id: <1180522777.6308.14.camel@omc-2.omesc.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 May 2007, Christoph Hellwig wrote:
-> 
-> > Is it documented or implied somewhere that ->shutdown must not free
-> > the device? If not, the first option is probably the safer choice.
-> 
-> It's not documented anywhere, but implicitly assumed.  I don't know
-> of any shutdown implementation that frees the device.
+Hi,
 
-Right, I found the explanation now myself:
+I have a "LSI Logic MegaRAID SCSI 320-4x" adapter with an external raid5
+array of 5 Seagate ST336754LW and XFS as fs on it. The device in
+question is /dev/sdb and the box is a dual Opteron 252.
 
-The ->shutdown method is called for system devices that are still
-part of a linked linked list. Freeing the object would destroy that
-list.
+I've recently started to see this in the log almost whenever I touch the
+filesystem:
 
-Geoff, please merge the patch below in your tree.
+May 30 12:22:56 omc-2 [ 1120.991356] megaraid: aborting-109150 cmd=28 <c=4 t=1 l=0>
+May 30 12:22:56 omc-2 [ 1120.991366] megaraid abort: 109150:68[255:129], fw owner
+May 30 12:22:56 omc-2 [ 1120.991371] megaraid: aborting-109151 cmd=28 <c=4 t=1 l=0>
+May 30 12:22:56 omc-2 [ 1120.991374] megaraid abort: 109151:64[255:129], fw owner
+May 30 12:22:56 omc-2 [ 1120.991379] megaraid: 2 outstanding commands. Max wait 300 sec
+May 30 12:22:56 omc-2 [ 1120.991382] megaraid mbox: Wait for 2 commands to complete:300
+May 30 12:23:01 omc-2 [ 1126.006002] megaraid mbox: Wait for 2 commands to complete:295
+May 30 12:23:06 omc-2 [ 1131.020774] megaraid mbox: Wait for 2 commands to complete:290
+May 30 12:23:11 omc-2 [ 1136.035548] megaraid mbox: Wait for 2 commands to complete:285
+May 30 12:23:16 omc-2 [ 1141.050325] megaraid mbox: Wait for 2 commands to complete:280
+May 30 12:23:21 omc-2 [ 1146.065098] megaraid mbox: Wait for 2 commands to complete:275
+May 30 12:23:26 omc-2 [ 1151.083870] megaraid mbox: Wait for 0 commands to complete:270
+May 30 12:23:26 omc-2 [ 1151.083874] megaraid mbox: reset sequence completed sucessfully
+May 30 12:23:26 omc-2 [ 1151.083979] sd 0:4:1:0: SCSI error: return code = 0x00040001
+May 30 12:23:26 omc-2 [ 1151.083983] end_request: I/O error, dev sdb, sector 95601663
+May 30 12:23:26 omc-2 [ 1151.084124] sd 0:4:1:0: SCSI error: return code = 0x00040001
+May 30 12:23:26 omc-2 [ 1151.084128] end_request: I/O error, dev sdb, sector 95601535
+May 30 12:23:26 omc-2 [ 1151.084332] sd 0:4:1:0: SCSI error: return code = 0x00040001
+May 30 12:23:26 omc-2 [ 1151.084334] end_request: I/O error, dev sdb, sector 95601535
+May 30 12:23:27 omc-2 [ 1152.725763] sd 0:4:1:0: SCSI error: return code = 0x00040001
+May 30 12:23:27 omc-2 [ 1152.725768] end_request: I/O error, dev sdb, sector 71411967
+May 30 12:23:27 omc-2 [ 1152.725816] sd 0:4:1:0: SCSI error: return code = 0x00040001
+May 30 12:23:27 omc-2 [ 1152.725818] end_request: I/O error, dev sdb, sector 71411967
+May 30 12:23:31 omc-2 [ 1156.578149] sd 0:4:1:0: SCSI error: return code = 0x00040001
+May 30 12:23:31 omc-2 [ 1156.578156] end_request: I/O error, dev sdb, sector 143351464
+May 30 12:23:31 omc-2 [ 1156.578173] I/O error in filesystem ("sdb1") meta-data dev sdb1 block 0x88b5e69       ("xlog_iodone") error 5 buf count 10752
+May 30 12:23:31 omc-2 [ 1156.578178] xfs_force_shutdown(sdb1,0x2) called from line 960 of file fs/xfs/xfs_log.c.  Return address = 0xffffffff80398b56
+May 30 12:23:31 omc-2 [ 1156.578204] Filesystem "sdb1": Log I/O Error Detected.  Shutting down filesystem: sdb1
+May 30 12:23:31 omc-2 [ 1156.578207] Please umount the filesystem, and rectify the problem(s)
+May 30 12:23:31 omc-2 [ 1156.578251] sd 0:4:1:0: SCSI error: return code = 0x00040001
+May 30 12:23:31 omc-2 [ 1156.578253] end_request: I/O error, dev sdb, sector 63
+May 30 12:24:13 omc-2 [ 1198.747915] xfs_force_shutdown(sdb1,0x1) called from line 424 of file fs/xfs/xfs_rw.c.  Return address = 0xffffffff803afc2a
 
-	Arnd <><
----
 
-Subject: cell: don't free spu objects in sysdev shutdown
+One of the drives in the array has been put offline after having seen
+media errors. I'm waiting for a replacement but the recurring errors
+worry me...
 
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-System devices are accessed after they are shut down, so
-we must not free the data structures.
+Any help/advises would be greatly appreciated.
 
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Index: linux-2.6/arch/powerpc/platforms/cell/spu_base.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spu_base.c
-@@ -517,7 +517,6 @@ static int spu_shutdown(struct sys_devic
+Thanks a lot in advance,
+  jules
+
+
+PS: I'm running a distribution kernel, but having seen zero responses on
+the gentoo list I dared to write here. The kernel is gentoo-sources
+2.6.20-r8.
  
- 	spu_free_irqs(spu);
- 	spu_destroy_spu(spu);
--	kfree(spu);
- 	return 0;
- }
- 
+
