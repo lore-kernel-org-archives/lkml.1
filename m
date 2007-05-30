@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbXE3RQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbXE3RXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbXE3RQw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbXE3RQp
+	id S1756164AbXE3RXy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXE3RXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:16:45 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:37781 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753257AbXE3RQo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:16:44 -0400
-Subject: Re: [PATCH 3/5] lockstat: core infrastructure
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, Jason Baron <jbaron@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <1180544796.32594.184.camel@imap.mvista.com>
-References: <20070529125248.877196281@chello.nl>
-	 <20070529130107.112347096@chello.nl>
-	 <1180470525.32594.71.camel@imap.mvista.com>
-	 <20070530132431.GA23947@elte.hu>
-	 <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com>
-	 <20070530134907.GA27085@elte.hu>
-	 <1180544796.32594.184.camel@imap.mvista.com>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 19:16:20 +0200
-Message-Id: <1180545380.2958.1.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 13:23:46 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:55469 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751646AbXE3RXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 13:23:46 -0400
+Date: Wed, 30 May 2007 20:23:44 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>
+Subject: Re: [PATCH] [ppc] fix mot_info section
+In-Reply-To: <20070530170814.GD15335@uranus.ravnborg.org>
+Message-ID: <Pine.SOC.4.64.0705302022060.23431@math>
+References: <Pine.SOC.4.64.0705141717110.23895@math> <20070515204540.GC22966@uranus.ravnborg.org>
+ <Pine.SOC.4.64.0705301652250.23769@math> <a781481a0705300758t5f16235al1f420f09472af780@mail.gmail.com>
+ <Pine.SOC.4.64.0705301805390.23769@math> <20070530170814.GD15335@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-30 at 10:06 -0700, Daniel Walker wrote:
-> On Wed, 2007-05-30 at 15:49 +0200, Ingo Molnar wrote:
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > [...] We can argue that sched_clock is "good enough".  If someone 
-> > > wants better accounting of locks on some other arch, they can simply 
-> > > change sched_clock to be more precise.
-> > 
-> > exactly. Imprecise sched_clock() if there's a better fast clock source 
-> > available is a bug in the architecture code. If the only available 
-> > clocksource is 1 msec resolution then there's no solution and nothing to 
-> > talk about - lock statistics will be 1msec granular just as much as 
-> > scheduling.
-> 
-> 
-> I don't agree .. sched_clock() is obsoleted by timekeepings clocksource
-> structure.. sched_clock() was a quick way to get lowlevel time stamps
-> just for the scheduler. The timekeeping clocksource structure is a more
-> complete solution.
-> 
-> >From the architecture perspective there are two low level clock hooks to
-> implement one is sched_clock() , and at least one clocksource structure.
-> Both do essentially the same thing. With timekeepings clocksource
-> structure actually being easier to implement cause the math is built in.
+Thanks for the suggestions, here is updated patch:
 
-I think you are mistaken here; the two are similar but not identical.
+The following patch makes mot_info __initdata since it is used only in
+__init functions. prep_pci.c change has been tested in real life on
+Motorola Powerstack II (compiles without modpost warnings and boots
+fine), pplus.c has not been tested but seems similar.
 
-I see sched_clock() as fast first, accurate second. Whereas the
-clocksource thing is accurate first, fast second.
+Signed-off-by: Meelis Roos <mroos@linux.ee>
 
-There is room for both of them.
+diff --git a/arch/ppc/platforms/pplus.c b/arch/ppc/platforms/pplus.c
+index 8a1788c..c569962 100644
+--- a/arch/ppc/platforms/pplus.c
++++ b/arch/ppc/platforms/pplus.c
+@@ -256,7 +256,7 @@ struct brd_info {
+ 	const char *name;
+ 	int (*map_irq) (struct pci_dev *, unsigned char, unsigned char);
+ };
+-struct brd_info mot_info[] = {
++struct brd_info mot_info[] __initdata = {
+ 	{0x300, 0x00, 0x00, "MVME 2400", Genesis2_map_irq},
+ 	{0x1E0, 0xE0, 0x00, "Mesquite cPCI (MCP750)", mesquite_map_irq},
+ 	{0x1E0, 0xE1, 0x00, "Sitka cPCI (MCPN750)", sitka_map_irq},
+diff --git a/arch/ppc/platforms/prep_pci.c b/arch/ppc/platforms/prep_pci.c
+index 1df3150..d8c4e28 100644
+--- a/arch/ppc/platforms/prep_pci.c
++++ b/arch/ppc/platforms/prep_pci.c
+@@ -803,7 +803,7 @@ struct mot_info {
+ 	void            (*map_non0_bus)(struct pci_dev *);      /* For boards with more than bus 0 devices. */
+ 	struct powerplus_irq_list *pci_irq_list; /* List of PCI MPIC inputs */
+ 	unsigned char   secondary_bridge_devfn; /* devfn of secondary bus transparent bridge */
+-} mot_info[] = {
++} mot_info[] __initdata = {
+ 	{0x300, 0x00, 0x00, "MVME 2400",			Genesis2_pci_IRQ_map,	Raven_pci_IRQ_routes, Powerplus_Map_Non0, &Powerplus_pci_IRQ_list, 0xFF},
+ 	{0x010, 0x00, 0x00, "Genesis",				Genesis_pci_IRQ_map,	Genesis_pci_IRQ_routes, Powerplus_Map_Non0, &Powerplus_pci_IRQ_list, 0x00},
+ 	{0x020, 0x00, 0x00, "Powerstack (Series E)",		Comet_pci_IRQ_map,	Comet_pci_IRQ_routes, NULL, NULL, 0x00},
 
+-- 
+Meelis Roos (mroos@linux.ee)
