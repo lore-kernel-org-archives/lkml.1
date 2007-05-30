@@ -1,111 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbXE3Pf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbXE3PiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbXE3Pf7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbXE3Pfu
+	id S1754997AbXE3PiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbXE3PiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:35:50 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33181 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbXE3Pft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:35:49 -0400
-Date: Wed, 30 May 2007 17:36:05 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tej Parkash <tejparkash.d@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux-kernel-digest Digest, Vol 32, Issue 795
-Message-ID: <20070530153605.GC15335@uranus.ravnborg.org>
-References: <mailman.13746.1180510421.20629.linux-kernel-digest@lists.us.dell.com> <2bd9ebfa0705300735l51dcf4ceubf7f83ab44703010@mail.gmail.com> <2bd9ebfa0705300737t4f11ee71mca114b37a969db01@mail.gmail.com> <20070530151209.GA15335@uranus.ravnborg.org> <2bd9ebfa0705300822s453fe5ccva18bf244e1551098@mail.gmail.com>
+	Wed, 30 May 2007 11:38:05 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2996 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751681AbXE3PiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 11:38:03 -0400
+Date: Wed, 30 May 2007 15:37:40 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend notifiers
+Message-ID: <20070530153740.GA4772@ucw.cz>
+References: <Pine.LNX.4.44L0.0705281155270.22682-100000@netrider.rowland.org> <200705300024.32455.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2bd9ebfa0705300822s453fe5ccva18bf244e1551098@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200705300024.32455.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 08:52:29PM +0530, Tej Parkash wrote:
-> On 5/30/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> >On Wed, May 30, 2007 at 08:07:53PM +0530, Tej Parkash wrote:
-> >> On 5/30/07, Tej Parkash <tejparkash.d@gmail.com> wrote:
-> >> >> > >
-> >> >> > > while building module i was getting following warning and it
-> >> >terminate
-> >> >> > > module building stage
-> >> >> > The below are only warnings and your build should succeed.
-> >> >> >
-> >> >> > It is obviously i386 - is it a clean allmodconfig or any changes?
-> >> >> > Is it latest -linus or some older version of the codebase?
-> >> >> Did an allmodconfig build of i386 - I see (almost) all warnings here.
-> >> >> So I will take a look based on this.
-> >>
-> >> yaa i got the warning but as i said building stage is also getting
-> >> terminated, without any error.
-> >>
-> >> >The MODPOST stage took a while but it proceeded with no hick-ups.
-> >> > MDOPSOT deals with ~2000 modules in my case and that consumes a bit
-> >> > of memory. Maybe you are hitting the limit with respect to available 
-> >RAM
-> >> > / SWAP?
-> >> >
-> >> >        Sam
-> >> >
-> >> >
-> >> I don't think so that RAM or SWAP space is a constraint, is it related
-> >> to kernel build option or some change in arch. config files
-> >> I am not aware of the required patches for the same.
-> >Can you please post relevant parts of a build with make V=2
-> >That is the last couple of commands before the build suddenly stops.
-> >Also to error-code reported by make must be included.
-> >
-> >Ohh, and exact command-line + config you use.
-> >
-> >        Sam
-> >
-> 
-> make -C /lib/modules/2.6.21.3/build/ SUBDIR=/home/tej/Offload modules
-> make[1]: Entering directory `/home/tej/linux_src/linux-2.6.21.3'
->  CHK     include/linux/version.h
->  CHK     include/linux/utsrelease.h
->  Building modules, stage 2.
->  MODPOST 1889 modules
-> WARNING: vmlinux - Section mismatch: reference to
-> .init.text:start_kernel from .text between 'is386' (at offset
-> 0xc0101171) and 'check_x87'
-> WARNING: vmlinux - Section mismatch: reference to .init.text: from
-> .text between 'rest_init' (at offset 0xc0101458) and 'try_name'
-> WARNING: vmlinux - Section mismatch: reference to
-> .init.text:__alloc_bootmem from .text between 'init_gdt' (at offset
-> 0xc010adfb) and 'cpu_init'
-> WARNING: vmlinux - Section mismatch: reference to
-> .init.text:__alloc_bootmem from .text between 'init_gdt' (at offset
-> 0xc010ae11) and 'cpu_init'
-> WARNING: vmlinux - Section mismatch: reference to
-> .init.text:sysenter_setup from .text between 'identify_cpu' (at offset
-> 0xc010b46b) and 'display_cacheinfo'
-> WARNING: vmlinux - Section mismatch: reference to
-> .init.text:mtrr_bp_init from .text between 'identify_cpu' (at offset
-> 0xc010b475) and 'display_cacheinfo'
-> WARNING: vmlinux - Section mismatch: reference to
-> .init.text:trap_init_f00f_bug from .text between 'init_intel' (at
-> offset 0xc010d576) and 'cpuid4_cache_lookup'
-> WARNING: vmlinux - Section mismatch: reference to .init.text: from
-> .text between 'iret_exc' (at offset 0xc02f2c2e) and '_etext'
-> WARNING: vmlinux - Section mismatch: reference to
-> .init.data:initkmem_list3 from .text between 'set_up_list3s' (at
-> offset 0xc0173aff) and 's_start'
-> WARNING: vmlinux - Section mismatch: reference to
-> .init.text:eisa_root_register from .text between
-> 'virtual_eisa_root_init' (at offset 0xc026fecf) and
-> 'cpufreq_unregister_driver'
-> WARNING: vmlinux - Section mismatch: reference to .init.text: from
-> .text between 'iret_exc' (at offset 0xc02f32c8) and '_etext'
-> make[1]: Leaving directory `/home/tej/linux_src/linux-2.6.21.3'
+Hi!
 
-[It should have been make V=1 - bot is does not matter].
-The build succeeds. This is expected when building modules - there
-are no "I'm done" messages when doing "make modules".
+> +Suspend notifiers
+> +	(C) 2007 Rafael J. Wysocki <rjw@sisk.pl>, GPL
+> +
+> +There are some operations that device drivers may want to carry out in their
+> +.suspend() routines, but shouldn't, because they can cause the hibernation or
+> +suspend to fail. For example, a driver may want to allocate a substantial amount
+> +of memory (like 50 MB) in .suspend(), but that shouldn't be done after the
+> +swsusp's memory shrinker has run.
+> +
+> +Also, there may be some operations, that subsystems want to carry out before a
+> +hibernation/suspend or after a restore/resume, requiring the system to be fully
+> +functional, so the drivers' .suspend() and .resume() routines are not suitable
+> +for this purpose.  For example, device drivers may want to upload firmware to
+> +their devices after a restore from a hibernation image, but they cannot do it by
+> +calling request_firmware() from their .resume() routines (user land processes
+> +are frozen at this point).  The solution may be to load the firmware into
+> +memory before processes are frozen and upload it from there in the .resume()
+> +routine.  Of course, a hibernation notifier may be used for this purpose.
+> +
+> +The subsystems that have such needs can register suspend notifiers that will be
+> +called upon the following events by the suspend core:
+> +
+> +PM_PRE_FREEZE		The system is going to hibernate or suspend, tasks will
+> +			be frozen immediately
 
-So only thing left is a few more or less harmless warnings that you can ignore for ypur usage.
+Hmm, looks like bad idea if we are going to remove freezer from
+suspend...?
 
-	Sam
+> +PM_POST_THAW		Tasks have just been thawed after a resume or restore
+> +			from a hibernation image
+> +
+> +PM_HIBERNATION_PREPARE	The system is preparing for hibernation.  Tasks have
+> +			been frozen, memory is going to be freed and devices
+> +			are going to be suspended.
+
+Is not PRE_FREEZE enough? We can allocate memory for drivers there,
+too...
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
