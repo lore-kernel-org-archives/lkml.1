@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbXE3G2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbXE3Gik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751994AbXE3G2i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 02:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbXE3G2b
+	id S1751918AbXE3Gik (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 02:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXE3Gic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 02:28:31 -0400
-Received: from omta05ps.mx.bigpond.com ([144.140.83.195]:39182 "EHLO
-	omta05ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751275AbXE3G2a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 02:28:30 -0400
-Message-ID: <465D1987.7030600@bigpond.net.au>
-Date: Wed, 30 May 2007 16:28:23 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Con Kolivas <kernel@kolivas.org>, Christoph Lameter <clameter@sgi.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v12
-References: <46523081.6050007@bigpond.net.au> <465275EF.8060905@bigpond.net.au> <4652DC03.60801@bigpond.net.au> <4655423E.6000202@bigpond.net.au> <20070524164538.GA13301@linux-os.sc.intel.com> <46561E67.3030207@bigpond.net.au> <20070529204557.GB3693@linux-os.sc.intel.com> <465CBD35.2000109@bigpond.net.au> <20070530005052.GE3693@linux-os.sc.intel.com> <465CDEEA.9060507@bigpond.net.au> <20070530044201.GF3693@linux-os.sc.intel.com>
-In-Reply-To: <20070530044201.GF3693@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta07ps.mx.bigpond.com from [60.231.45.148] using ID pwil3058@bigpond.net.au at Wed, 30 May 2007 06:28:27 +0000
+	Wed, 30 May 2007 02:38:32 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:48686 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751346AbXE3Gib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 02:38:31 -0400
+Date: Wed, 30 May 2007 08:39:31 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tej Parkash <tejparkash.d@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: warning while building module.
+Message-ID: <20070530063931.GA12203@uranus.ravnborg.org>
+References: <2bd9ebfa0705282145t34ed211bs48c7b31fcd9420a5@mail.gmail.com> <20070529185725.GC5846@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070529185725.GC5846@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Siddha, Suresh B wrote:
-> On Tue, May 29, 2007 at 07:18:18PM -0700, Peter Williams wrote:
->> Siddha, Suresh B wrote:
->>> I can try 32-bit kernel to check.
->> Don't bother.  I just checked 2.6.22-rc3 and the problem is not present
->> which means something between rc2 and rc3 has fixed the problem.  I hate
->> it when problems (appear to) fix themselves as it usually means they're
->> just hiding.
->>
->> I didn't see any patches between rc2 and rc3 that were likely to have
->> fixed this (but doesn't mean there wasn't one).  I'm wondering whether I
->> should do a git bisect to see if I can find where it got fixed?
->>
->> Could you see if you can reproduce it on 2.6.22-rc2?
+On Tue, May 29, 2007 at 08:57:25PM +0200, Sam Ravnborg wrote:
+> On Tue, May 29, 2007 at 10:15:58AM +0530, Tej Parkash wrote:
+> > hi all
+> > 
+> > while building module i was getting following warning and it terminate
+> > module building stage
+> The below are only warnings and your build should succeed.
 > 
-> No. Just tried 2.6.22-rc2 64-bit version at runlevel 3 on my remote
-> system at office. 15 attempts didn't show the issue.
-> 
-> Sure that nothing changed in your test setup?
-> 
+> It is obviously i386 - is it a clean allmodconfig or any changes?
+> Is it latest -linus or some older version of the codebase?
+Did an allmodconfig build of i386 - I see (almost) all warnings here.
+So I will take a look based on this.
 
-I just rechecked with an old kernel and the problem was still there.
+The MODPOST stage took a while but it proceeded with no hick-ups.
+MDOPSOT deals with ~2000 modules in my case and that consumes a bit
+of memory. Maybe you are hitting the limit with respect to available RAM / SWAP?
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+	Sam
