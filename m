@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759166AbXE3UgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbXE3UjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759166AbXE3UgX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755202AbXE3UgO
+	id S1758634AbXE3UjA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbXE3Uiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:36:14 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:47234 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755151AbXE3UgM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:36:12 -0400
-Date: Wed, 30 May 2007 13:31:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Mark Lord <lkml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-In-Reply-To: <465DD97D.9010807@cosmosbay.com>
-Message-ID: <alpine.LFD.0.98.0705301327090.26602@woody.linux-foundation.org>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
- <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org>
- <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org>
- <20070530160913.GA14261@elte.hu> <465DCAE4.1010206@rtr.ca>
- <alpine.LFD.0.98.0705301212520.26602@woody.linux-foundation.org>
- <465DD97D.9010807@cosmosbay.com>
+	Wed, 30 May 2007 16:38:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44508 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755164AbXE3Uiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 16:38:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend notifiers
+Date: Wed, 30 May 2007 22:44:24 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oliver Neukum <oliver@neukum.org>
+References: <Pine.LNX.4.44L0.0705281155270.22682-100000@netrider.rowland.org> <200705300024.32455.rjw@sisk.pl> <20070530153740.GA4772@ucw.cz>
+In-Reply-To: <20070530153740.GA4772@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705302244.25927.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-
-On Wed, 30 May 2007, Eric Dumazet wrote:
+On Wednesday, 30 May 2007 17:37, Pavel Machek wrote:
+> Hi!
 > 
-> So yes, reimplement sendfile() should help to find last splice() bugs, and as
-> a bonus it could add non blocking disk io, (O_NONBLOCK on input file ->
-> socket)
+> > +Suspend notifiers
+> > +	(C) 2007 Rafael J. Wysocki <rjw@sisk.pl>, GPL
+> > +
+> > +There are some operations that device drivers may want to carry out in their
+> > +.suspend() routines, but shouldn't, because they can cause the hibernation or
+> > +suspend to fail. For example, a driver may want to allocate a substantial amount
+> > +of memory (like 50 MB) in .suspend(), but that shouldn't be done after the
+> > +swsusp's memory shrinker has run.
+> > +
+> > +Also, there may be some operations, that subsystems want to carry out before a
+> > +hibernation/suspend or after a restore/resume, requiring the system to be fully
+> > +functional, so the drivers' .suspend() and .resume() routines are not suitable
+> > +for this purpose.  For example, device drivers may want to upload firmware to
+> > +their devices after a restore from a hibernation image, but they cannot do it by
+> > +calling request_firmware() from their .resume() routines (user land processes
+> > +are frozen at this point).  The solution may be to load the firmware into
+> > +memory before processes are frozen and upload it from there in the .resume()
+> > +routine.  Of course, a hibernation notifier may be used for this purpose.
+> > +
+> > +The subsystems that have such needs can register suspend notifiers that will be
+> > +called upon the following events by the suspend core:
+> > +
+> > +PM_PRE_FREEZE		The system is going to hibernate or suspend, tasks will
+> > +			be frozen immediately
+> 
+> Hmm, looks like bad idea if we are going to remove freezer from
+> suspend...?
 
-Well, to get those kinds of advantages, you'd have to use splice directly, 
-since sendfile() hasn't supported nonblocking disk IO, and the interface 
-doesn't really allow for it.
+We need PM_PRE_FREEZE anyway and it's a different question whether or not
+it'll be used for suspend (STR) too.
 
-In fact, since nonblocking accesses require also some *polling* method, 
-and we don't have that for files, I suspect the best option for those 
-things is to simply mix AIO and splice(). AIO tends to be the right thing 
-for disk waits (read: short, often cached), and if we can improve AIO 
-performance for the cached accesses (which is exactly what the threadlets 
-should hopefully allow us to do), I would seriously suggest going that 
-route.
+The timing is not the best one, but so far the freezer is in the suspend code
+path and I need to take this into account.
+ 
+> > +PM_POST_THAW		Tasks have just been thawed after a resume or restore
+> > +			from a hibernation image
+> > +
+> > +PM_HIBERNATION_PREPARE	The system is preparing for hibernation.  Tasks have
+> > +			been frozen, memory is going to be freed and devices
+> > +			are going to be suspended.
+> 
+> Is not PRE_FREEZE enough? We can allocate memory for drivers there,
+> too...
 
-But the pure "use splice to _implement_ sendfile()" thing is worth doing 
-for all the other reasons, even if nonblocking file access is not likely 
-one of them.
+Well, there is a reason for not doing this.  Namely, if the memory if freed on
+PM_POST_HIBERNATION after the image has been created, we can use it for saving
+the image (and speed up the saving).
 
-		Linus
+Besides, if the freezer is dropped from the suspend code, the notifiers will be
+useful to it anyway IMO, and PRE_FREEZE won't make sense in that case.
+
+I think the rule should be: If you need to do something _before_ tasks are
+frozen, do it in PM_PRE_FREEZE, but if you can do that after the tasks have
+been frozen, do it on PM_HIBERNATION_PREPARE (or PM_SUSPEND_PREPARE in the
+suspend case).
+
+Greetings,
+Rafael
