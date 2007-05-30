@@ -1,49 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759669AbXE3VjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXE3Vjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759669AbXE3VjP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbXE3Vi7
+	id S1759905AbXE3Vjc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759506AbXE3VjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:38:59 -0400
-Received: from gw.goop.org ([64.81.55.164]:39839 "EHLO mail.goop.org"
+	Wed, 30 May 2007 17:39:08 -0400
+Received: from mga01.intel.com ([192.55.52.88]:58499 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756860AbXE3Vi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:38:58 -0400
-Message-ID: <465DEEEE.8040702@goop.org>
-Date: Wed, 30 May 2007 14:38:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org> <465DE992.6070803@redhat.com>
-In-Reply-To: <465DE992.6070803@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1759394AbXE3VjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 17:39:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,595,1170662400"; 
+   d="scan'208";a="251399594"
+Date: Wed, 30 May 2007 14:35:41 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, kaber@trash.net,
+       akpm@linux-foundation.org, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
+Message-ID: <20070530213541.GA13953@linux-os.sc.intel.com>
+References: <20070530105936.6c988da5.akpm@linux-foundation.org> <20070530112056.0aeb9498@freepuppy> <465DC598.5060407@trash.net> <20070530.125551.41636333.davem@davemloft.net> <20070530133039.7feb2064@freepuppy>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070530133039.7feb2064@freepuppy>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> I don't like special cases.  For me things better come in quantities 0,
-> 1, and unlimited (well, reasonable high limit).  Otherwise, who gets to
-> use that special namespace?  The C library is not the only body of code
-> which would want to use descriptors.
+On Wed, May 30, 2007 at 01:30:39PM -0700, Stephen Hemminger wrote:
+> On Wed, 30 May 2007 12:55:51 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Patrick McHardy <kaber@trash.net>
+> > Date: Wed, 30 May 2007 20:42:32 +0200
+> > 
+> > > Stephen Hemminger wrote:
+> > > >>>Index: linux-2.6.22-rc-mm/net/sched/sch_generic.c
+> > > >>>===================================================================
+> > > >>>--- linux-2.6.22-rc-mm.orig/net/sched/sch_generic.c	2007-05-24 11:16:03.000000000 -0700
+> > > >>>+++ linux-2.6.22-rc-mm/net/sched/sch_generic.c	2007-05-25 15:10:02.000000000 -0700
+> > > >>>@@ -224,7 +224,8 @@
+> > > >>> 	if (dev->tx_timeout) {
+> > > >>> 		if (dev->watchdog_timeo <= 0)
+> > > >>> 			dev->watchdog_timeo = 5*HZ;
+> > > >>>-		if (!mod_timer(&dev->watchdog_timer, jiffies + dev->watchdog_timeo))
+> > > >>>+		if (!mod_timer(&dev->watchdog_timer,
+> > > >>>+			       round_jiffies(jiffies + dev->watchdog_timeo)))
+> > > >>> 			dev_hold(dev);
+> > > >>> 	}
+> > > >>> }
+> > > >>
+> > > >>Please cc netdev on net patches.
+> > > >>
+> > > >>Again, I worry that if people set the watchdog timeout to, say, 0.1 seconds
+> > > >>then they will get one second, which is grossly different.
+> > > >>
+> > > >>And if they were to set it to 1.5 seconds, they'd get 2.0 which is pretty
+> > > >>significant, too.
+> > > > 
+> > > > 
+> > > > Alternatively, we could change to a timer that is pushed forward after each
+> > > > TX, maybe using hrtimer and hrtimer_forward().  That way the timer would
+> > > > never run in normal case.
+> > > 
+> > > 
+> > > It seems wasteful to add per-packet overhead for tx timeouts, which
+> > > should be an exception. Do drivers really care about the exact
+> > > timeout value? Compared to a packet transmission time its incredibly
+> > > long anyways ..
+> > 
+> > I agree, this change is absolutely rediculious and is just a blind
+> > cookie-cutter change made without consideration of what the code is
+> > doing and what it's requirements are.
+> > 
+> 
+> what about the obvious compromise:
+> 
+> --- a/net/sched/sch_generic.c	2007-05-30 11:42:18.000000000 -0700
+> +++ b/net/sched/sch_generic.c	2007-05-30 13:29:34.000000000 -0700
+> @@ -203,7 +203,11 @@ static void dev_watchdog(unsigned long a
+>  				       dev->name);
+>  				dev->tx_timeout(dev);
+>  			}
+> -			if (!mod_timer(&dev->watchdog_timer, round_jiffies(jiffies + dev->watchdog_timeo)))
+> +
+> +			if (!mod_timer(&dev->watchdog_timer,
+> +				       dev->watchdog_timeo > 2 * HZ
+> +				       ? round_jiffies(jiffies + dev->watchdog_timeo)
+> +				       : jiffies + dev->watchdog_timeo))
+>  				dev_hold(dev);
+>  		}
+>  	}
+> 
+> 
 
-Valgrind could certainly make use of it.  It currently reserves a set of
-fds "high enough", and tries hard to hide them from apps, but
-/proc/self/fd makes it intractable in general (there was only so much
-simulation I was willing to do in Valgrind).
+If this does not work:
+Another option is to use 'deferrable timer' here which will be called at
+same as before time when CPU is busy and on idle CPU it will be delayed until
+CPU comes out of idle due to any other events.
 
-    J
+Thanks,
+Venki
