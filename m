@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXE3Ltn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbXE3Lyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbXE3Ltn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 07:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbXE3Ltf
+	id S1753245AbXE3Lyl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 07:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXE3Lye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 07:49:35 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42956 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751795AbXE3Lte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 07:49:34 -0400
-Date: Wed, 30 May 2007 13:49:21 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Mark Lord <lkml@rtr.ca>,
-       Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-Message-ID: <20070530114920.GB26326@elf.ucw.cz>
-References: <1180058123.3997.91.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705241905490.26602@woody.linux-foundation.org> <1180059605.3997.100.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705241931240.26602@woody.linux-foundation.org> <1180062040.3997.112.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705242021560.26602@woody.linux-foundation.org> <1180067587.3997.136.camel@nigel.suspend2.net> <465C366C.2070900@rtr.ca> <1180473765.20718.47.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705291428410.26602@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705291428410.26602@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Wed, 30 May 2007 07:54:34 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:20913 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751473AbXE3Lyd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 07:54:33 -0400
+Date: Wed, 30 May 2007 13:54:32 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: gregkh@suse.de, dmitry.torokhov@gmail.com, oneukum@suse.de,
+       rpurdie@rpsys.net, stern@rowland.harvard.edu, maneesh@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] sysfs: implement sysfs flags and SYSFS_FLAG_REMOVED
+Message-ID: <20070530135432.19422e01@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <11803701863982-git-send-email-htejun@gmail.com>
+References: <11803701861778-git-send-email-htejun@gmail.com>
+	<11803701863982-git-send-email-htejun@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 29 May 2007 01:36:26 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-> > > How about blocking brk() and mmap(MAP_ANONYMOUS) in addition to
-> > > the filesystem VFS callers?   Or is that starting to get messy again?
-> > 
-> > Yeah. Getting messy again :)
+> Rename sysfs_dirent->s_type to s_flags, pack type into lower eight
+> bits and use the rest for flags.  sysfs_type() can used to access the
+> type.  This patch also implements SYSFS_FLAG_REMOVED which is used to
+> improve sanity check in sysfs_deactivate().  The flag will also be
+> used to make directory entries reclamiable.
 > 
-> Indeed. And also misses the point - the point being that we don't actually 
-> need to freeze anything at all most of the time. There's nothing wrong 
-> with making memory allocations etc.
-> 
-> And yes, suspend is different from hibernate. I can see how hibernate 
-> people are worried about people writing to things after doing the 
-> snapshot, but those concerns don't exist with suspend. With suspend, the 
-> biggest concern is accessing a device after it has been suspended, but on 
-> the other hand, also the fact that we end up having driver writers used 
-> to the system being "runnable", so they do things that really do require a 
-> full-fledged system (and sometimes that means just some delayed action 
-> using a kernel thread, other times it seems to rely on more complex 
-> behaviour like firmware loading :^p )
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+>  fs/sysfs/dir.c        |   37 +++++++++++++++++++++++--------------
+>  fs/sysfs/inode.c      |    5 +++--
+>  fs/sysfs/mount.c      |    2 +-
+>  fs/sysfs/sysfs.h      |    7 ++++++-
+>  include/linux/sysfs.h |    4 ++++
+>  5 files changed, 37 insertions(+), 18 deletions(-)
 
-Notice that we want to be able to suspend while hibernating -- for
-suspend to both behaviour. So drivers may _not_ rely on system being
-runnable.
-
-(Suspend to both is: write image to disk, then suspend to RAM. If you
-do not run out of battery, resume is from RAM and fast, if you do, you
-still can do resume from disk, not loosing your data).
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This seems sane, but I'd split this into two patches: One introducing
+sysfs_type(), and one adding SYSFS_FLAG_REMOVED.
