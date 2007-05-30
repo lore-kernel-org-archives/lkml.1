@@ -1,77 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752032AbXE3FnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751578AbXE3Fsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752032AbXE3FnS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 01:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbXE3FnH
+	id S1751578AbXE3Fsh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 01:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbXE3Fsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 01:43:07 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:45263 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbXE3FnG (ORCPT
+	Wed, 30 May 2007 01:48:30 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:39649 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766AbXE3Fs3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 01:43:06 -0400
-Message-ID: <465D0ED5.3070305@novell.com>
-Date: Wed, 30 May 2007 01:42:45 -0400
-From: Crispin Cowan <crispin@novell.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	Wed, 30 May 2007 01:48:29 -0400
+Message-ID: <465D1020.3030605@cosmosbay.com>
+Date: Wed, 30 May 2007 07:48:16 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Cliffe <cliffe@iinet.net.au>, casey@schaufler-ca.com,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       linux-security-module <linux-security-module@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM
- hook
-References: <653438.15244.qm@web36612.mail.mud.yahoo.com> <465AE46B.4090109@iinet.net.au> <465B57D7.2040101@novell.com> <20070529144518.GD5840@ucw.cz>
-In-Reply-To: <20070529144518.GD5840@ucw.cz>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 1/2] m68k: runtime patching infrastructure
+References: <20070528191630.377693320@mail.of.borg>	<20070528191715.352919509@mail.of.borg> <20070529173818.fd94ae81.akpm@linux-foundation.org>
+In-Reply-To: <20070529173818.fd94ae81.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 30 May 2007 07:48:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->>     * Hard links: AppArmor explicitly mediates permission to make a hard
->>     
-> Unfortunately, aparmor is by design limited to subset of distro
-> (network daemons).
-That is not true. AppArmor is designed to confine any application you do
-not want to trust completely. This includes network daemons (Apache,
-Sendmail, BIND, etc.) network clients (Firefox, Thunderbird,
-GAIM/Pidgin, etc.) and any other application that mediates trust: where
-data on one side of the application is higher privilege than potential
-attackers on the other side of the application.
+Andrew Morton a écrit :
+> On Mon, 28 May 2007 21:16:31 +0200
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> 
+>> --- a/include/asm-m68k/module.h
+>> +++ b/include/asm-m68k/module.h
+>> @@ -1,7 +1,38 @@
+>>  #ifndef _ASM_M68K_MODULE_H
+>>  #define _ASM_M68K_MODULE_H
+>> -struct mod_arch_specific { };
+>> +
+>> +struct mod_arch_specific {
+>> +	struct m68k_fixup_info *fixup_start, *fixup_end;
+>> +};
+> 
+> Here we use struct m68k_fixup_info.
+> 
+>> +#define MODULE_ARCH_INIT {				\
+>> +	.fixup_start		= __start_fixup,	\
+>> +	.fixup_end		= __stop_fixup,		\
+>> +}
+>> +
+>>  #define Elf_Shdr Elf32_Shdr
+>>  #define Elf_Sym Elf32_Sym
+>>  #define Elf_Ehdr Elf32_Ehdr
+>> +
+>> +
+>> +enum m68k_fixup_type {
+>> +	m68k_fixup_memoffset,
+>> +};
+>> +
+>> +struct m68k_fixup_info {
+>> +	enum m68k_fixup_type type;
+>> +	void *addr;
+>> +};
+> 
+> and later we define it.
+> 
+> How come it doesn't spit warnings?
+> 
+> I think it could be tightened up even if it happens not to warn?
 
->  Unfortunately, some other programs (passwd, vi)
-> routinely make hardlinks. So AA mediating hardlink is not enough, as
-> vi will happily hardlink /etc/shadow into /etc/.vi-shadow-1234.
->   
-I have no idea what you are talking about. I routinely profile vim on
-stage in AppArmor presentations, and it presents no such problems.
 
-Caveat: the circumstances under which you would actually want to profile
-vi are rather limited, most users would not want to do that.
+struct a {
+	struct not_yet_defined *start, *end;
+};
 
-In another post Pavel Machek wrote:
-> Hmm, I guess I'd love "it is useless on multiuser boxes" to become
-> standard part of AA advertising.
-That is usually around slide 7 of the standard AppArmor presentation,
-right next to the remarks about how mulituser boxes are nearly extinct
-dinosaurs. AppArmor gets some of its simplicity and ease of use by not
-considering that vanishing use case. Even so, AppArmor does have uses on
-multiuser boxes, just not the uses Pavel wishes for. Fine, use a
-different tool for a different task, AppArmor has plenty of use cases.
+struct not_yet_defined {
+	void *foo;
+};
 
-The limitation Pavel is referring to is that AppArmor does not secure
-processes that are not profiled by AppArmor. We know, this is
-intentional, and contributes to AppArmor's ease of use, and does not
-generate a hole if you consider every process exposed to (say) network
-attack and confine it.
+Is a valid and gives no warnings.
 
-Crispin
-
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
-Director of Software Engineering   http://novell.com
-		   Security: It's not linear
-
+Still I didnt tried to compile a m68k kernel, so I guess I shouldnt speak here :)
