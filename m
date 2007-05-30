@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbXE3Ize@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbXE3Izv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753502AbXE3Ize (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 04:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXE3IzR
+	id S1753679AbXE3Izv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 04:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbXE3Ize
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 04:55:17 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:31616 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751425AbXE3IzP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 04:55:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=GYiCEHQH1H6zxvawzvmFnZy/E1WQUks0gLoy58FKTnf/x/ABhYSNeDwPd+7xHHCCBqWHIk1lRce1yZ/SysQ/e6k0XMzd3cCouJiybaCm5wBYDtx60ejMRV/Wnnbj860fg/sRFv6FV68GGOh7fMuhxkKhDNI1OGbImpxZ11vq9kA=
-Message-ID: <5201e28f0705300155ue7ce985m3f318ff7ff1a1396@mail.gmail.com>
-Date: Wed, 30 May 2007 10:55:13 +0200
-From: "Stefan Bader" <Stefan.Bader@de.ibm.com>
-To: "David Chinner" <dgc@sgi.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-Cc: david@lang.hm, "Phillip Susi" <psusi@cfl.rr.com>,
-       "Neil Brown" <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       linux-raid@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
-       "Andreas Dilger" <adilger@clusterfs.com>,
-       "Tejun Heo" <htejun@gmail.com>
-In-Reply-To: <20070530061723.GY85884050@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 04:55:34 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:40540 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752444AbXE3Izc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 04:55:32 -0400
+Date: Wed, 30 May 2007 12:51:59 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+Message-ID: <20070530085159.GC21528@2ka.mipt.ru>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-References: <18006.38689.818186.221707@notabene.brown>
-	 <18010.12472.209452.148229@notabene.brown>
-	 <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com>
-	 <20070529234832.GT85884050@sgi.com>
-	 <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm>
-	 <20070530061723.GY85884050@sgi.com>
-X-Google-Sender-Auth: 940b2ce0dd5d7d96
+In-Reply-To: <20070530084252.GA15708@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 30 May 2007 12:52:18 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The order that these are expected by the filesystem to hit stable
-> storage are:
->
-> 1. block 4 and 10 on stable storage in any order
-> 2. barrier block X on stable storage
-> 3. block 5 and 20 on stable storage in any order
->
-> The point I'm trying to make is that in XFS,  block 5 and 20 cannot
-> be allowed to hit the disk before the barrier block because they
-> have strict order dependency on block X being stable before them,
-> just like block X has strict order dependency that block 4 and 10
-> must be stable before we start the barrier block write.
->
+On Wed, May 30, 2007 at 10:42:52AM +0200, Ingo Molnar (mingo@elte.hu) wrote:
+> it is a serious flexibility issue that should not be ignored. The 
+> unified fd space is a blessing on one hand because it's simple and 
+> powerful, but it's also a curse because nested use of the fd space for 
+> libraries is currently not possible. But it should be detached from any
+> fundamental question of kevent vs. epoll. (By improving library use of
+> file descriptors we'll improve the utility of all syscalls - by ducking
+> to a memory based API we only solve that particular event based usage.)
 
-That would be the exactly how I understand Documentation/block/barrier.txt:
+There is another issue with file descriptors - userspace must dig into
+kernel each time it wants to get a new set of events, while with memory
+based approach it has them without doing so. After it has returned from
+kernel and know that there are some evetns, kernel can add more of them
+into the ring (if there is a place) and userspace will process them
+withouth additional syscalls.
+Although syscall overhead is very small, it does exist and should not be 
+ignored in the design.
 
-"In other words, I/O barrier requests have the following two properties.
-1. Request ordering
-...
-2. Forced flushing to physical medium"
+> 
+> 	Ingo
 
-"So, I/O barriers need to guarantee that requests actually get written
-to non-volatile medium in order."
-
-Stefan
+-- 
+	Evgeniy Polyakov
