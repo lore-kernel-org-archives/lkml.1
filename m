@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbXE3Vxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759743AbXE3Vyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761254AbXE3Vxb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758517AbXE3VxS
+	id S1759743AbXE3Vyr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758088AbXE3Vyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:53:18 -0400
-Received: from raven.upol.cz ([158.194.120.4]:54436 "EHLO raven.upol.cz"
+	Wed, 30 May 2007 17:54:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:54449 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756972AbXE3VxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:53:17 -0400
-X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 17:53:15 EDT
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "Milind Arun Choudhary" <milindchoudhary@gmail.com>,
-       <kernel-janitors@lists.osdl.org>, <linux-ia64@vger.kernel.org>,
-       <discuss@x86-64.org>, <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <ak@suse.de>
-Subject: Re: [KJ][PATCH 02/03]ROUND_UP|DOWN macro cleanup in arch/ia64,x86_64
-In-Reply-To: <617E1C2C70743745A92448908E030B2A015B4E12@scsmsx411.amr.corp.intel.com>
-References: <20070413043140.GA9431@arun.site> <617E1C2C70743745A92448908E030B2A015B4E12@scsmsx411.amr.corp.intel.com>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: jed + slrn (x86_64-pc-linux-glibc-debian)
-Date: Wed, 30 May 2007 23:57:49 +0200
-Message-Id: <E1HtWAv-00028d-9l@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	id S1757694AbXE3Vyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 17:54:37 -0400
+Message-ID: <465DF299.6030208@goop.org>
+Date: Wed, 30 May 2007 14:54:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org> <465DEE59.9070901@goop.org> <alpine.LFD.0.98.0705301442000.26602@woody.linux-foundation.org> <alpine.LFD.0.98.0705301446070.26602@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705301446070.26602@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* From: "Luck, Tony"
-* Date: Fri, 13 Apr 2007 09:45:49 -0700
-
->> So as ALIGN macro does the same work as ROUNDUP,
+Linus Torvalds wrote:
+> Side note: it might not even be a "close-on-exec by default" thing: it 
+> might well be a *always* close-on-exec.
 >
-> Although it is mathematically the same operation, the
-> semantic associations of the name are important too.
-[]
-> Maybe this is because I started out in mathematics before
-> discovering that computers were so much fun, or maybe it
-> is a British-English bias ... I can't tell, but it makes
-> sense to me to use ROUNDUP in some places, and ALIGN in
-> others.
+> That COE is pretty horrid to do, we need to scan a bitmap of those things 
+> on each exec. So it migth be totally sensible to just declare that the 
+> non-linear fd's would simply always be "local", and never bleed across an 
+> execve).
 
-I agree. I came from neither one (still coming); first look and vague
-semantics of ALIGN macro, English confusion, a bit of laziness, led me to
-stupid messages about aligning, Linus being so kind to reply, a couple of
-months ago. Anyway i did that after some patching and re-patching that
-macro by gurus :).
+Hm, I wouldn't limit the mechanism prematurely.  Using Valgrind as an
+example of an alternate user of this mechanism, it would be useful to
+use a pipe to transmit out-of-band information from an exec-er to an
+exec-ee process.  At the moment there's a lot mucking around with
+execve() to transmit enough information from the parent valgrind to its
+successor.
 
-> If ROUNDUP isn't available everywhere, then it should be. To
-> avoid code duplication perhaps we should add:
->
->     #define ROUNDUP(size, len) ALIGN((size), (len))
->
-> and delete the previous ROUNDUP definition?
-
-And i would vote for "align" via "round".
-____
+    J
