@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbXE3Amk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbXE3Aox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752195AbXE3Amk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 20:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbXE3Ama
+	id S1752648AbXE3Aox (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 20:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXE3Aoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 20:42:30 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58114 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbXE3Am3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 20:42:29 -0400
-Message-ID: <465CC870.7050407@garzik.org>
-Date: Tue, 29 May 2007 20:42:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: divy@chelsio.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Subject: Re: [PATCH 2/7] cxgb3 - fix netpoll hanlder
-References: <20070526225952.12115.30971.stgit@localhost.localdomain> <465B591B.1010507@garzik.org> <465CBE4B.9070009@goop.org>
-In-Reply-To: <465CBE4B.9070009@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 29 May 2007 20:44:46 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:47443 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750947AbXE3Aop (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 20:44:45 -0400
+Date: Tue, 29 May 2007 17:44:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 2/2] m68k: Discontinuous memory support
+Message-Id: <20070529174435.80a13c24.akpm@linux-foundation.org>
+In-Reply-To: <20070528191715.597623909@mail.of.borg>
+References: <20070528191630.377693320@mail.of.borg>
+	<20070528191715.597623909@mail.of.borg>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Jeff Garzik wrote:
->>> +        t3_intr_handler(adapter, qs->rspq.polling) (0,
->>> +                    (adapter->flags & USING_MSIX) ?
->>> +                    (void *)qs : (void *)adapter);
->> Remove needless casts to void*
-> The two branches of ?: need to have the same type; without the casts
-> they'd be "struct sge_qset" and "struct adapter".  Seems a bit cruddy to
-> have two types passed to one function depending on the MSI state, but
-> maybe that's OK.
+On Mon, 28 May 2007 21:16:32 +0200
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-Look at the function argument...
+> +	for_each_online_pgdat(pgdat) {
+> +		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+> +			struct page *page = pgdat->node_mem_map + i;
+> +			total++;
+> +			if (PageReserved(page))
+> +				reserved++;
+> +			else if (PageSwapCache(page))
+> +				cached++;
+> +			else if (!page_count(page))
+> +				free++;
 
-	Jeff
+This isn't really true.  Callers of the page allocator don't _have_ to use
+page_count(): they can internally perform their own refcounting.  One such
+caller is slab, so this "free" count can end up being grossly wrong.
 
+> +			else
+> +				shared += page_count(page) - 1;
+> +		}
 
 
