@@ -1,135 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbXE3EHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbXE3EIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbXE3EHf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 00:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbXE3EH2
+	id S1752308AbXE3EIJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 00:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbXE3EH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 00:07:28 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:42919 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbXE3EH1 (ORCPT
+	Wed, 30 May 2007 00:07:56 -0400
+Received: from omta04ps.mx.bigpond.com ([144.140.83.156]:17305 "EHLO
+	omta04ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751480AbXE3EHz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 00:07:27 -0400
-Date: Tue, 29 May 2007 22:05:24 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: [PATCH -mm] 2/2: PCI: disable decode of IO/memory during BAR sizing
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Message-id: <465CF804.9070907@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 30 May 2007 00:07:55 -0400
+Message-ID: <465CF893.10906@bigpond.net.au>
+Date: Wed, 30 May 2007 14:07:47 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: William Lee Irwin III <wli@holomorphy.com>
+CC: vatsa@in.ibm.com, Kirill Korotaev <dev@sw.ru>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, tingy@cs.umass.edu,
+       ckrm-tech@lists.sourceforge.net, Balbir Singh <balbir@in.ibm.com>,
+       efault@gmx.de, kernel@kolivas.org, linux-kernel@vger.kernel.org,
+       tong.n.li@intel.com, containers@lists.osdl.org,
+       Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
+References: <20070525082951.GA25280@elte.hu> <4656DF0C.9090306@sw.ru> <20070525153450.GA4679@in.ibm.com> <46570C70.4050209@sw.ru> <20070525180850.GA26884@in.ibm.com> <46577CA6.8000807@bigpond.net.au> <20070526154112.GA31925@holomorphy.com> <4658DF0F.5020208@bigpond.net.au> <20070529104805.GC31925@holomorphy.com> <465CC0B8.8050507@bigpond.net.au> <20070530024815.GA6909@holomorphy.com>
+In-Reply-To: <20070530024815.GA6909@holomorphy.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta04ps.mx.bigpond.com from [60.231.45.148] using ID pwil3058@bigpond.net.au at Wed, 30 May 2007 04:07:52 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change PCI BAR sizing to disable the decode of memory or IO, as appropriate,
-while we are writing the all-ones value to the BAR to determine the size.
-If this is not done, the device may spuriously decode accesses to memory
-areas it should not. On some Intel PCI Express chipsets, this breaks
-MMCONFIG configuration space access, since the memory the graphics card ends up
-decoding during this period overlaps the MMCONFIG area, and thus it steals
-the accesses to the area to do any other configuration space access, including
-changing the BAR back to its previous value.
+William Lee Irwin III wrote:
+> On Wed, May 30, 2007 at 10:09:28AM +1000, Peter Williams wrote:
+>> So what you're saying is that you think dynamic priority (or its 
+>> equivalent) should be used for load balancing instead of static priority?
+> 
+> It doesn't do much in other schemes, but when fairness is directly
+> measured by the dynamic priority, it is a priori more meaningful.
+> This is not to say the net effect of using it is so different.
 
-However, don't do this disabling on host bridge devices, as it is reported that
-some of them do silly things like disable CPU to RAM access if this is done.
+I suspect that while it's probably theoretically better it wouldn't make 
+much difference on a real system (probably not enough to justify any 
+extra complexity if there were any).  The exception might be on systems 
+where there were lots of CPU intensive tasks that used relatively large 
+chunks of CPU each time they were runnable which would give the load 
+balancer a more stable load to try and balance.  It might be worth the 
+extra effort to get it exactly right on those systems.  On most normal 
+systems this isn't the case and the load balancer is always playing 
+catch up to a constantly changing scenario.
 
-Based on an original patch by Jesse Barnes.
+Peter
+-- 
+Peter Williams                                   pwil3058@bigpond.net.au
 
-Signed-off-by: Robert Hancock <hancockr@shaw.ca>
-
---- linux-2.6.22-rc2-mm1/drivers/pci/probe.c	2007-05-23 21:21:05.000000000 -0600
-+++ linux-2.6.22-rc2-mm1edit/drivers/pci/probe.c	2007-05-29 21:31:47.000000000 -0600
-@@ -180,6 +180,58 @@ static inline int is_64bit_memory(u32 ma
- 	return 0;
- }
- 
-+#define BAR_IS_MEMORY(bar) (((bar) & PCI_BASE_ADDRESS_SPACE) ==	\
-+			    PCI_BASE_ADDRESS_SPACE_MEMORY)
-+
-+/**
-+ * pci_bar_size - get raw PCI BAR size
-+ * @dev: PCI device
-+ * @reg: BAR to probe
-+ *
-+ * Use basic PCI probing:
-+ *   - save original BAR value
-+ *   - disable MEM or IO decode in PCI_COMMAND reg if appropriate
-+ *   - write all 1s to the BAR
-+ *   - read back value
-+ *   - reenble MEM or IO decode as necessary
-+ *   - write original value back
-+ *
-+ * Returns raw BAR size to caller.
-+ */
-+static u32 pci_bar_size(struct pci_dev *dev, unsigned int reg)
-+{
-+	u32 orig_reg, sz;
-+	u16 orig_cmd;
-+
-+	pci_read_config_dword(dev, reg, &orig_reg);
-+	pci_read_config_word(dev, PCI_COMMAND, &orig_cmd);
-+
-+	/*
-+	 * Disable memory or IO decode on the device while writing the test
-+	 * value to the BAR. This prevents possible spurious decoding
-+	 * of random addresses by the device. Don't do this for host bridges,
-+	 * however, since some of them do silly things like disable CPU to RAM
-+	 * access if this is done.
-+	 */
-+	if ((dev->class >> 8) != PCI_CLASS_BRIDGE_HOST) {
-+		if (BAR_IS_MEMORY(orig_reg))
-+			pci_write_config_word(dev, PCI_COMMAND,
-+					      orig_cmd & ~PCI_COMMAND_MEMORY);
-+		else
-+			pci_write_config_word(dev, PCI_COMMAND, 
-+					      orig_cmd & ~PCI_COMMAND_IO);
-+	}
-+	
-+	pci_write_config_dword(dev, reg, 0xffffffff);
-+	pci_read_config_dword(dev, reg, &sz);
-+	pci_write_config_dword(dev, reg, orig_reg);
-+
-+	if ((dev->class >> 8) != PCI_CLASS_BRIDGE_HOST)
-+		pci_write_config_word(dev, PCI_COMMAND, orig_cmd);
-+
-+	return sz;
-+}
-+
- static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
- {
- 	unsigned int pos, reg, next;
-@@ -196,16 +248,13 @@ static void pci_read_bases(struct pci_de
- 		res->name = pci_name(dev);
- 		reg = PCI_BASE_ADDRESS_0 + (pos << 2);
- 		pci_read_config_dword(dev, reg, &l);
--		pci_write_config_dword(dev, reg, ~0);
--		pci_read_config_dword(dev, reg, &sz);
--		pci_write_config_dword(dev, reg, l);
-+		sz = pci_bar_size(dev, reg);
- 		if (!sz || sz == 0xffffffff)
- 			continue;
- 		if (l == 0xffffffff)
- 			l = 0;
- 		raw_sz = sz;
--		if ((l & PCI_BASE_ADDRESS_SPACE) ==
--				PCI_BASE_ADDRESS_SPACE_MEMORY) {
-+		if (BAR_IS_MEMORY(l)) {
- 			sz = pci_size(l, sz, (u32)PCI_BASE_ADDRESS_MEM_MASK);
- 			/*
- 			 * For 64bit prefetchable memory sz could be 0, if the
-@@ -229,9 +278,7 @@ static void pci_read_bases(struct pci_de
- 			u32 szhi, lhi;
- 
- 			pci_read_config_dword(dev, reg+4, &lhi);
--			pci_write_config_dword(dev, reg+4, ~0);
--			pci_read_config_dword(dev, reg+4, &szhi);
--			pci_write_config_dword(dev, reg+4, lhi);
-+			szhi = pci_bar_size(dev, reg+4);
- 			sz64 = ((u64)szhi << 32) | raw_sz;
- 			l64 = ((u64)lhi << 32) | l;
- 			sz64 = pci_size64(l64, sz64, PCI_BASE_ADDRESS_MEM_MASK);
-
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
