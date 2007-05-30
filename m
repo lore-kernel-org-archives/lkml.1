@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbXE3Nmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbXE3NnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbXE3Nmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXE3Nmr
+	id S1753326AbXE3NnZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbXE3NnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:42:47 -0400
-Received: from smtp.nokia.com ([131.228.20.171]:25528 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752281AbXE3Nmq (ORCPT
+	Wed, 30 May 2007 09:43:17 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:31726 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752485AbXE3NnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:42:46 -0400
-Message-ID: <465D7EFB.8090609@yandex.ru>
-Date: Wed, 30 May 2007 16:41:15 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 30 May 2007 09:43:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=aF8ecuwNVEBpK8CiM+te/twC+t4pM2LHJJlZYWHF6LhXxakHpSXB16UzJqexq9peY6tmpfT3l2zs7GU7tyrIP3WHVZoLXLReRvn+y9g2ETU2apAbmWpMsEbWuIRpXuQJNxVDAclstfuo6lakh24FpxTx2zaD3sbZDf8vTXDPblo=
+Message-ID: <465D7F2C.4040203@gmail.com>
+Date: Wed, 30 May 2007 22:42:04 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Daniel Hazelton <dhazelton@enter.net>,
-       Michael-Luke Jones <mlj28@cam.ac.uk>,
-       lkml <linux-kernel@vger.kernel.org>, dwmw2@infradead.org,
-       madler@alumni.caltech.edu, jloup@gzip.org
-Subject: Re: JFFS2 using 'private' zlib header (was [RFC] LZO de/compression
- support - take 6)
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>	 <a781481a0705290427n3bad472aqf4e0b8276780b405@mail.gmail.com>	 <231C137C-D0BF-44F7-B2D5-AE610284D00A@cam.ac.uk>	 <200705290943.11176.dhazelton@enter.net> <a781481a0705290815y32758055te52cb8657f34acc@mail.gmail.com>
-In-Reply-To: <a781481a0705290815y32758055te52cb8657f34acc@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 30 May 2007 13:41:15.0715 (UTC) FILETIME=[31DA2930:01C7A2C0]
-X-Nokia-AV: Clean
+To: Willy Tarreau <w@1wt.eu>
+CC: davids@webmaster.com, linux-kernel@vger.kernel.org
+Subject: Re: epoll,threading
+References: <MDEHLPKNGKAHNMBLJOLKGEJIEBAC.davids@webmaster.com> <465C809C.60507@gmail.com> <20070530072528.GP943@1wt.eu> <465D4DF1.5040500@gmail.com> <20070530131221.GC19105@1wt.eu>
+In-Reply-To: <20070530131221.GC19105@1wt.eu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> Hmmm, either jffs2 thinks the zlib interfaces exposed through
-> include/linux/zlib.h are insufficient, or it isn't using zlib properly
-> (or at least the way it was supposed to be used :-)
+Hello,
+
+Willy Tarreau wrote:
+>> The thing is that the synchronization overhead is something you'll have
+>> to pay anyway to support multiple processors.
 > 
+> But you don't need to sync *everything*. It is doable to have 1 thread
+> per processor, each with their own data, and sync the minimum information
+> (eg: statistics).
 
-I do not remember many details, but yes, JFFS2 uses zlib trickily.
+Agreed it's doable but the list of things to synchronize tends to grow
+and it's really hurts when it does.  Also, the list becomes much less
+different between async and threaded model with multi processor support.
 
-Traditionally, zlib is used like this: you have an input buffer, and you have
-a large enough out put buffer, you compress whole input buffer to the output
-buffer.
+[--snip--]
+>>  You need to restrict per-thread
+>> stack size and use epoll for idle threads, if you wanna scale.  Workers
+>> + async monitoring of idle clients scale pretty well.
+> 
+> I agree with a small pool of workers. But they must be dedicated to CPU
+> only, and perform no I/O. Then you can have 1 thread/CPU.
 
-JFFS2 needs: it has _big_ input buffer, and _small_ output buffer, and it wants
-zlib to compress as much as possible from the input buffer, and make the output
-buffer full or nearly full of compressed data.
+Well, if you go that far, it's basically async model with multiprocessor
+support.  Not my favorite one.  :-)
 
-This is why JFFS2 uses different hacks, but I do not remember details anymore.
-Otherwise it could just use cryptoapi instead. In fact, I tried this 2
-years ago, but gave up: http://lkml.org/lkml/2005/3/25/104
+>>> However, I agree that few uses really require to spend time writing
+>>> and debugging async programs.
+>> Yeap, also there are several things which just are too painful in async
+>> server - e.g. adding coordination with another server (virus scan,
+>> sharing cached data), implementing pluggable extension framwork for
+>> third parties (and what happens if they should be able to stack!), and
+>> maintaining the damn thing while trying to add a few features.  :-)
+>>
+>> IMHO, complex pure async server doesn't really make sense anymore.
+> 
+> That's clearly not my opinion, but I don't want to enter a flamewar on
+> the subject, it's not interesting. As long as people like us will push
+> the system to limits using either model, at least there will be
+> references for comparisons :-)
+
+Yeap, it's getting off-topic.  Let's see what future brings.  :-)
+
+Thanks.
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+tejun
