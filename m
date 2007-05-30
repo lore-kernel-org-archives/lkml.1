@@ -1,79 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbXE3Xmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbXE3Xng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052AbXE3Xmv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 19:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbXE3Xmo
+	id S1758880AbXE3Xng (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 19:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbXE3Xn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 19:42:44 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:15473 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbXE3Xmn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 19:42:43 -0400
-X-IronPort-AV: i="4.14,595,1170662400"; 
-   d="scan'208"; a="156646560:sNHT51918057"
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: "Satyam Sharma" <satyam.sharma@gmail.com>,
-       "Matthias Kaehlcke" <matthias.kaehlcke@gmail.com>, axboe@kernel.dk,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] drivers/block/ub.c: use list_for_each_entry()
-X-Message-Flag: Warning: May contain useful information
-References: <20070530084752.GE14284@traven>
-	<20070530123840.e54d73c2.zaitcev@redhat.com>
-	<a781481a0705301414t4a0c1b2epe5e14b62ec8dc872@mail.gmail.com>
-	<20070530160850.0c536d55.zaitcev@redhat.com>
-	<adasl9dq4zq.fsf@cisco.com>
-	<20070530163236.8bd5640c.zaitcev@redhat.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 30 May 2007 16:42:41 -0700
-In-Reply-To: <20070530163236.8bd5640c.zaitcev@redhat.com> (Pete Zaitcev's message of "Wed, 30 May 2007 16:32:36 -0700")
-Message-ID: <adaodk1q3ny.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Wed, 30 May 2007 19:43:28 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52770 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752172AbXE3Xn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 19:43:27 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1+RSqASYASR4rKif6RQ2samoxM99ul5DFBTJYZzXi
+	Zw9gZSzH6PDewj
+Date: Thu, 31 May 2007 01:43:31 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Folkert van Heusden <folkert@vanheusden.com>
+Cc: power@bughost.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Subject: Re: [2.6.21.1] running powertop 1.5 for 10 seconds causes a kernel panic
+Message-ID: <20070530234331.GA10666@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Folkert van Heusden <folkert@vanheusden.com>, power@bughost.org,
+	linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+References: <20070530203434.GB9806@vanheusden.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 30 May 2007 23:42:42.0078 (UTC) FILETIME=[37002BE0:01C7A314]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070530203434.GB9806@vanheusden.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > > The negative is the sheer number of helper functions in list.h. Personally,
- > > > I find it difficult to retain a working knowledge of them. Iterators are
- > > > particularly nasty that way. I'm thinking about dropping all of these
- > > > list_for_each_with_murky_argument_requirements_and_odd_side_effects()
- > > > and use plain for(;;), as a courtesy to someone who has to read the
- > > > code years down the road.
- > > 
- > > I think I disagree with this reasoning.  If I'm reading your code and
- > > I see, say, list_for_each_entry_safe(), I can be pretty confident that
- > > your loop works correctly.  If you write your own for loop, then I
- > > have to check that you actually got the linked list walking right.
- > 
- > You have to check that I used list_for_each_entry_safe correctly too,
- > which is harder. Are you aware that we had (and probably still have)
- > dozens of cases where the use of list_for_each_entry_safe was buggy?
- > Most of them involved IHV programmers being lured into false sense
- > of security by the _safe suffix and getting their locking wrong.
- > 
- > You could not find a better way to blow up your own argument
- > than to mention list_for_each_entry_safe(), which is anything but.
- > Matthias' use of list_for_each_entry() actually IS safe, which is
- > why I am not NAKing it. Andrew has accepted it already. I just
- > think we aren't winning squat here.
+On 2007.05.30 22:34:34 +0200, Folkert van Heusden wrote:
+> P4 with HT and 2GB of ram
+> desktop (altough acting as a sever with 300 processes fighting for cpu
+> time)
+> 
+> [350598.081548] audit(1180545318.054:16): dev=eth1 prom=0 old_prom=256 auid=4294967295
+> [361753.921304] BUG: unable to handle kernel paging request at virtual address b9d0458f
+> [361753.921404]  printing eip:
+> [361753.921446] c10388d8
+> [361753.921487] *pde = 00000000
+> [361753.921530] Oops: 0000 [#1]
+> [361753.921571] SMP
+> [361753.921682] Modules linked in: tuner tvaudio bttv video_buf ir_common i2c_algo_bit btcx_risc tveeprom nfs pwc wcfxo pl2303 zaptel usbserial plusb usbnet w83627hf hwmon_vid snd_pcm_oss eeprom snd_mixer_oss i2c_isa i2c_core snd_intel8x0 snd_ac97_codec sd_mod snd_pcm scsi_mod snd_timer snd ide_cd soundcore cdrom snd_page_alloc ac97_bus parport_pc parport microcode firmware_class nfsd exportfs lockd sunrpc netconsole ipt_owner ip6table_filter ip6_tables ipv6 ipt_recent xt_limit xt_state act_police sch_ingress cls_u32 sch_sfq sch_cbq ipt_REJECT ipt_MASQUERADE ipt_TOS xt_tcpudp iptable_mangle iptable_filter rtl8150 e1000 3c59x mii iptable_nat ip_tables nf_nat nf_conntrack_ipv4 nf_conntrack nfnetlink x_tables capability commoncap ppp_deflate zlib_deflate zlib_inflate ppp_async crc_ccitt ppp_generic slip slhc genrtc rd
+> [361753.924725] CPU:    0
+> [361753.924726] EIP:    0060:[<c10388d8>]    Not tainted VLI
+> [361753.924728] EFLAGS: 00010046   (2.6.21.1test2 #4)
+> [361753.924860] EIP is at match_entries+0xb/0x38
+> [361753.924904] eax: c25f1a80   ebx: 00000000   ecx: b9d0458b   edx: ddc87ec8
+> [361753.924950] esi: ddc87ec8   edi: c25f19a0   ebp: ddc87ea0   esp: ddc87e9c
+> [361753.924996] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> [361753.925043] Process einstein_S5R2_4 (pid: 21004, ti=ddc87000 task=f75780b0 task.ti=ddc87000)
+> [361753.925092] Stack: b9d0458b ddc87ec0 c1038941 c12109d1 c12ffe90 c25f1ab0 00000096 c25f1b04
+> [361753.925451]        c25f19a0 ddc87f50 c1038a1c c1494d70 c25f1a80 c103841c c1038620 00000000
+> [361753.925804]        00000000 45d6f5f0 00000001 f75785f8 c13daf40 00000001 f75785f8 c13f8c70
+> [361753.926152] Call Trace:
+> [361753.926230]  [<c1004d53>] show_trace_log_lvl+0x1a/0x30
+> [361753.926312]  [<c1004e0a>] show_stack_log_lvl+0x8d/0xaa
+> [361753.926394]  [<c1005044>] show_registers+0x1cd/0x2cb
+> [361753.926475]  [<c10052a1>] die+0x11b/0x227
+> [361753.926554]  [<c1212ad7>] do_page_fault+0x319/0x57a
+> [361753.926636]  [<c12110b4>] error_code+0x7c/0x84
+> [361753.926716]  [<c1038941>] tstat_lookup+0x3c/0xc9
+> [361753.926794]  [<c1038a1c>] timer_stats_update_stats+0x4e/0x6f
+> [361753.926874]  [<c1033d5d>] hrtimer_interrupt+0x184/0x1e3
+> [361753.926955]  [<c100e9e2>] local_apic_timer_interrupt+0x55/0x5b
+> [361753.927036]  [<c100ea12>] smp_apic_timer_interrupt+0x2a/0x39
+> [361753.927118]  [<c1004a3f>] apic_timer_interrupt+0x33/0x38
+> [361753.927197]  =======================
+> [361753.927239] Code: 3d ff 03 00 00 89 e5 77 13 89 c2 83 c0 01 c1 e2 07 a3 98 2c 37 c1 81 c2 00 2d 37 c1 89 d0 5d c3 55 89 c1 8b 42 04 89 e5 53 31 db <39> 41 04 74 05 89 d8 5b 5d c3 8b 42 08 39 41 08 75 f3 8b 42 0c
+> [361753.929496] EIP: [<c10388d8>] match_entries+0xb/0x38 SS:ESP 0068:ddc87e9c
+> [361753.929619] Kernel panic - not syncing: Fatal exception in interrupt
+> [361753.929669] BUG: at arch/i386/kernel/smp.c:546 smp_call_function()
+> [361753.929715]  [<c1004d53>] show_trace_log_lvl+0x1a/0x30
+> [361753.929795]  [<c1004d7b>] show_trace+0x12/0x14
+> [361753.929873]  [<c1004e75>] dump_stack+0x16/0x18
+> [361753.930148]  [<c100df63>] smp_call_function+0x10f/0x114
+> [361753.930229]  [<c100dfb9>] smp_send_stop+0x1e/0x31
+> [361753.930309]  [<c101ca83>] panic+0x50/0xf5
+> [361753.930389]  [<c100539e>] die+0x218/0x227
+> [361753.930472]  [<c1212ad7>] do_page_fault+0x319/0x57a
+> [361753.930558]  [<c12110b4>] error_code+0x7c/0x84
+> [361753.930642]  [<c1038941>] tstat_lookup+0x3c/0xc9
+> [361753.930724]  [<c1038a1c>] timer_stats_update_stats+0x4e/0x6f
+> [361753.930807]  [<c1033d5d>] hrtimer_interrupt+0x184/0x1e3
+> [361753.930890]  [<c100e9e2>] local_apic_timer_interrupt+0x55/0x5b
+> [361753.930973]  [<c100ea12>] smp_apic_timer_interrupt+0x2a/0x39
+> [361753.931055]  [<c1004a3f>] apic_timer_interrupt+0x33/0x38
+> [361753.931139]  =======================
 
-Well, actually, I chose list_for_each_entry_safe() quite conscious of
-the locking issues.  If I see list_XXX_safe() then I know that I need
-to be suspicious when reviewing code -- the same way seeing "atomic_t"
-makes me think "is there any reason to use atomic_t??"
+Is that easily reproducable? Could you try the patch from
+http://lkml.org/lkml/2007/5/30/156 to see if that helps?
 
-If I just see
-
-	for (pos = list_entry((head)->next, typeof(*pos), member),
-		n = list_entry(pos->member.next, typeof(*pos), member);
-	     &pos->member != (head);
-	     pos = n, n = list_entry(n->member.next, typeof(*n), member))
-
-then what am I to think?
-
- - R.
+Thanks,
+Björn
