@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbXE3XKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbXE3XKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbXE3XKP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 19:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbXE3XJw
+	id S1758456AbXE3XKi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 19:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbXE3XKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 19:09:52 -0400
+	Wed, 30 May 2007 19:10:00 -0400
 Received: from an-out-0708.google.com ([209.85.132.242]:48628 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753852AbXE3XJv (ORCPT
+	with ESMTP id S1757551AbXE3XJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 19:09:51 -0400
+	Wed, 30 May 2007 19:09:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=aPvUKpRBJuXNdQ/OjKG/NDu7oxRG8X2aU001GicsUST/ZoakfpE2/xCRdgyfzLM5GFWqkac6IaAknudRTtktJrBBOHuWKcUBnyhpAeBAn+4RRHCrwfXey2Qmn9H+saad0HUapF9l5osepC3TwuMSjd1Dm1y/GA+KhMgUVkGPZHE=
-Message-ID: <ec36785a0705301609t62676c76q3a2b726bf51d50db@mail.gmail.com>
-Date: Wed, 30 May 2007 20:09:44 -0300
-From: "Reinaldo Carvalho" <reinaldow@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: megaraid.c, all kernel versions, problem with multi-luns
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qbaqnpfR4y8V9Qq5k7hLzoM4ODzqRcWPDRsX5BwjxHRntUJfySjUyvYOh/3r58fqIGU33GckwGRuhI/SW/0lgVsAohtui3YhSC1UHoiaeCg0A6PrOL5fzFHrH/XvN98UqfzoTjPnllnfxAix22WQ+DpbvWD1pVlODLh//xZxWYg=
+Message-ID: <21d7e9970705301609w88a9f80t20f83806003f699e@mail.gmail.com>
+Date: Thu, 31 May 2007 09:09:58 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: GFP_DMA32 and PAE x86 machines
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Linus Torvalds" <torvalds@osdl.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200705310024.25937.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <21d7e9970705301410m16ded9esdf7a49371c60a155@mail.gmail.com>
+	 <465DECD7.8030104@zytor.com>
+	 <21d7e9970705301507o2a89e824xdc6a980e8dbedaaf@mail.gmail.com>
+	 <200705310024.25937.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 5/31/07, Andi Kleen <ak@suse.de> wrote:
+> On Thursday 31 May 2007 00:07:45 Dave Airlie wrote:
+> > Depending on split all lowmem is below 1GB which isn't exactly
+> > optimal, I'd llike all 4GB for DMA.
+>
+> Well it would be for a quite specialized limited use case:
+> - Memory the kernel doesn't need to map (after all kmap is evil)
+> - You need more than 500MB or so.
+> - 32bit kernel and user cannot run 64bit kernel
+> - Machine has >3GB of RAM
+>
+> Is there clear evidence that is a common issue? If it is just a "would
+> be nice to have in theory" the cost of doing a GFP_DMA32 for i386 would be
+> probably not worth doing it. If it's a common issue it might be
+> considered, although the "here's a nickle. buy yourself a 64bit CPU"
+> strategy would also sound attractive.
+>
+> Please give a very very strong rationale why you want it. Did you actually
+> run into such a situation yourself yet?
 
-I have a Dell PowerEdge Expandable RAID controller, with a hardware
-Raid-5 at Channel 01 running perfectly, and a nCipher Crypter at
-Channel 02.
+Funnily enough I have just today with an app I have which uses 1.2GB
+of textures :-)
 
-This controller doesn't correctly detect devices (e.g. nCipher
-Crypter) with multiples LUNs. Only one LUN is detected.
+we are currently using GFP_DMA32 in the TTM allocator code, however
+what I really want on x86 non-PAE is GFP_HIGHMEM (as DMA32 does
+nothing) however on x86-PAE I don't want that I want a real GFP_DMA32,
+and on x86-64 I want the current GFP_DMA32,
 
-At another controller (e.g. Adaptec 79xx) two LUNs were detect. I
-compiled 2.6.8, 2.6.18 and 2.6.21.3 to test megaraid driver and all
-failed detecting two LUNs.
+Therein lies my problems, the API sucks, but I suppose the DRM TTM is
+a special use case (AGP is the same) and I'll accept the fact that can
+just make it my own problem, my current solution would be to screw PAE
+machines giving them 1GB only and let non-PAE access all 4GB.
 
-I think that this is a firmware problem, but i'd like have some opinions.
-
-I read some docs
-(http://www.suse.de/~garloff/linux/scsi-scan/scsi-scanning.html,
-http://www.ictp.trieste.it/~radionet/nuc1996/ref/howto-html/scsi-howto-2.html)
-and this problem doesn't seem to be simple.
-
-Best regards,
-
-More information with Dell PowerEdge Expandable RAID controller (LSI
-Logic MegaRaid):
-
-Attached devices:
-Host: scsi0 Channel: 00 Id: 06 Lun: 00
-  Vendor: PE/PV    Model: 1x5 SCSI BP      Rev: 1.0
-  Type:   Processor                        ANSI  SCSI revision: 02
-Host: scsi0 Channel: 01 Id: 00 Lun: 00
-  Vendor: nCipher  Model: Fastness Crypto  Rev: 2*00
-  Type:   Processor                        ANSI  SCSI revision: 02
-Host: scsi0 Channel: 02 Id: 00 Lun: 00
-  Vendor: MegaRAID Model: LD 0 RAID5  279G Rev: 522A
-  Type:   Direct-Access                    ANSI  SCSI revision: 02
-
-
-14:0e.0 RAID bus controller: Dell PowerEdge Expandable RAID controller
-4 (rev 06)
-        Subsystem: Dell PowerEdge Expandable RAID Controller 4e/Di
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
-ParErr- Stepping+ SERR+ FastB2B-
-        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium
->TAbort- <TAbort- <MAbort- >SERR- <PERR-
-        Latency: 64 (32000ns min), Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 22
-        Region 0: Memory at d7ff0000 (32-bit, prefetchable) [size=64K]
-        Region 2: Memory at defc0000 (32-bit, non-prefetchable) [size=256K]
-        Expansion ROM at df000000 [disabled] [size=128K]
-        Capabilities: <access denied>
-
-14:0e.0 0104: 1028:0013 (rev 06)
-
-
-Information with Adaptec 79xx or others SCSI controllers:
-
-Host: scsi0 Channel: 01 Id: 00 Lun: 00
-  Vendor: nCipher  Model: Fastness Crypto  Rev: 2*00
-  Type:   Processor                        ANSI  SCSI revision: 02
-Host: scsi0 Channel: 01 Id: 00 Lun: 01
-  Vendor: nCipher  Model: Fastness Crypto  Rev: 2*00
-  Type:   Processor                        ANSI  SCSI revision: 02
-
-
--- 
-Reinaldo Carvalho
+Dave.
