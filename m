@@ -1,444 +1,594 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbXE3OIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbXE3OIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbXE3OIU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 10:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbXE3OH3
+	id S1755589AbXE3OIi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 10:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbXE3OHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 10:07:29 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:47902 "EHLO smtp.polymtl.ca"
+	Wed, 30 May 2007 10:07:37 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:47970 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753778AbXE3OHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 10:07:22 -0400
-Message-Id: <20070530140712.629796796@polymtl.ca>
+	id S1756080AbXE3OHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 10:07:35 -0400
+Message-Id: <20070530140713.679605018@polymtl.ca>
 References: <20070530140359.006540666@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 May 2007 10:04:00 -0400
+Date: Wed, 30 May 2007 10:04:03 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       <linux-arch@vger.kernel.org>
-Subject: [patch 1/6] Use EXTRARW_DATA in architectures
-Content-Disposition: inline; filename=use-extra_rwdata-in-architectures.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 30 May 2007 14:07:13 +0000
+       Adrian Bunk <bunk@stusta.de>
+Subject: [patch 4/6] Linux Kernel Markers - Add kconfig menus for the marker code
+Content-Disposition: inline; filename=linux-kernel-markers-kconfig-menus.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 30 May 2007 14:07:14 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-EXTRARW_DATA adds a place to declare rw data that will not be mixed with the
-.data content; therefore limiting data cache pollution when data is put in
-the EXTRARW_DATA sections.
+With the increasing complexity of today's user-space application and the wide
+deployment of SMP systems, the users need an increasing understanding of the
+behavior and performance of a system across multiple processes/different
+execution contexts/multiple CPUs.  In applications such as large clusters
+(Google, IBM), video acquisition (Autodesk), embedded real-time systems (Wind
+River, Monta Vista, Sony) or sysadmin/programmer-type tasks (SystemTAP from
+Redhat), a tool that permits tracing of kernel-user space interaction becomes
+necessary.
 
+Usage of such tools have been made to successfully pinpoint problems such as:
+latency issues in a user-space video acquisition application, slowdown
+problems in large clusters due to a switch to a different filesystems with a
+different cache size, abnormal Linux scheduler latency (just to name a few
+that I have personally investigated).
+
+The currently existing solutions does not give a system-wide overview of what
+- and when - things are happening on the system.  Ptracing a program works
+with few processes, but quickly becomes useless when it comes to keeping track
+of many processes.
+
+Bugs occuring because of bad interaction of such complex systems can be very
+hard to find due to the fact that they occur rarely (sometimes once a week on
+hundreds of machines).  One can therefore only hope at having the best
+conditions to statistically reproduce the bug while extracting information
+from the system.  Some bugs have been successfully found at Google using their
+ktrace tracer only because they could enable it on production machines and
+therefore recreate the same context where the bug happened.
+
+Therefore, it makes sense to offer an instrumentation set of the most relevant
+events occurring in the Linux that can have the smallest performance cost
+possible when not active while not requiring a reboot of a production system
+to activate.  This is essentially what the markers are providing.
+
+Since we cannot limit the growth of the Linux kernel, nor can we pre-determine
+each and every "interesting" instrumentation within each subsystem and driver,
+it is sensible to let this task to the persons who knows the best their code. 
+Adding instrumentation should therefore be as easy as adding and maintaining a
+"printk" in the kernel code from the developer's point of view.
+
+Towards a complete tracing mechanism in the Linux kernel, the markers are only
+one step forward.  The following step is to connect probes to those markers
+that will record the tracing information in buffers exported to user-space,
+organized in timestamped "events".  Probe callbacks are responsible for
+serializing the information passed as parameter to the markers (described by
+the format string) into the events.  A control mechanism to activate/stop the
+tracing is required, as well as a daemon that maps the buffers to write them
+to disk or send them through the network.
+
+Keeping track of the events also requires a centralized infrastructure : the
+idea is to assign a unique ID to each event so they can be later recognized in
+the trace.  Keeping in mind that recording the complete instrumentation site
+name string for each event would be more that inefficient, assigning a numeric
+unique identifier makes sense.
+
+Finally, support for gathering events coming from user-space, with a minimal
+performance impact, is very useful to see the interaction between the system's
+execution contexts.
+
+The last steps are currently implemented in Linux Trace Toolkit Next
+Generation (LTTng).
+
+The SystemTAP project could clearly benefit from such an infrastructure for
+tracing.  In addition, they would be providing support for dynamic addition of
+kernel probes through breakpoints/jumps when possible, with the associated
+restrictions (accessing local variables, reentrancy, speed).
+
+
+
+
+This marker infrastructure is a hook-callback mechanism.  It is meant to have
+an impact as low as possible on the system performances when no callback
+(probe) is connected so markers (hooks) can be compiled into a production
+kernel without noticeable slowdown.
+
+Why use the markers instead of kprobes?
+
+The rationale behind this mechanism the following :
+
+1 - It makes sense to have instrumentation (for tracing, profiling)
+    within the kernel source tree so that it can follow its evolution.
+    Other options, such as kprobes, imply maintaining an external set of
+    instrumentation that must be adapted to each kernel version.
+    Although it may make sense for distributions, it is not well suited
+    for kernel developers, since they rarely work on a major
+    distribution image.
+2 - kprobes, although being a very good attempt at providing a dynamic
+    hooking mechanism that has no impact when disabled, suffers from
+    important limitations :
+  a - It cannot access local variables of a function at a particular
+      point within its body that will be consistent thorough the kernel
+      versions without involving a lot of recurrent hair-pulling.
+  b - Kprobes is slow, since it involves going though a trap each time
+      a probe site is executed. Even though the djprobes project made a
+      good effort to make things faster, it cannot currently instrument
+      fully-preemptible kernels and does not solve (1), (2a) and (2c).
+  c - On the reentrancy side, going though a trap (thus playing with
+      interrupt enable/disable) and taking spinlocks are not suited to
+      some code paths, i.e. :
+      kernel/lockdep.c, printk (within the lockdep_on()/lockdep_off()).
+      It must be understood that some code paths interesting for
+      instrumentation often present a particular reentrancy challenge.
+
+Some more details :
+
+The probe callback connection to its markers is done dynamically.  A predicted
+branch (see the conditional call infrastructure) is used to skip the hook stack
+setup and function call when the marker is "disabled" (no probe is connected).
+Further optimizations can be implemented for each architecture to make this
+branch faster.
+
+Instrumentation of a subsystem becomes therefore a straightforward task.  One
+has to add instrumentation within the key locations of the kernel code in the
+following form :
+
+trace_mark(subsystem_event, "%d %p", myint, myptr);
+
+
+Jim Keniston <jkenisto@us.ibm.com> adds:
+
+kprobes remains a vital foundation for SystemTap.  But markers are attactive
+as an alternate source of trace/debug info.  Here's why:
+
+1. Markers will live in the kernel and presumably be kept up to date by
+   the maintainers of the enclosing code.  We have a growing set of tapsets
+   (probe libraries), each of which "knows" the source code for a certain area
+   of the kernel.  Whenever the underlying kernel code changes (e.g., a
+   function or one of its args disappears or is renamed), there's a chance
+   that the tapset will become invalid until we bring it back in sync with the
+   kernel.  As you can imagine, maintaining tapsets separate from the kernel
+   source is a maintenance headache.  Markers could mitigate this.
+
+2. Because the kernel code is highly optimized, the kernel's dwarf info
+   doesn't always accurately reflect which variables have which values on
+   which lines (sometimes even upon entry to a function).  A marker is a way
+   to ensure that values of interest are available to SystemTap at marked
+   points.
+
+3. Sometimes the overhead of a kprobe probepoint is too much (either in
+   terms of time or locking) for the particular hotspot we want to probe.
+
+
+In OLS2006 proceedings, vol. 1
+http://www.linuxsymposium.org/2006/linuxsymposium_procv1.pdf
+
+Frank C. Eigler, from SystemTAP, presents its "static probing markers"
+(pp. 261-268) in his paper "Problem Solving With Systemtap".
+
+He explains the advantages :
+
+"In exchange for this effort, systemtap marker-based probes are faster and
+ more precise than kprobes.  The better precision comes from not having to
+ covet the compiler's favours.  Such fickle favours include retaining
+ clean boundaries in the instruction stream between interesting statements,
+ and precisely describing positions of variables in the stack frame.  Since
+ markers don't rely on debugging information, neither favour is required,
+ and the compiler can channel its charms into unabated optimization.  The
+ speed advantage comes from using direct call instructions rather than int 3
+ breakpoints to dispatch to the systemtap handlers.  We will see below just
+ how big a difference this makes."
+
+He does a comparison of his "simple" marker solution with kprobes (his simple
+solution looks like my generic markers, but with a major race condition).  I
+also posted numbers about the markers performance impact a few months ago in
+the initial thread.  I can dig into my emails to find them for you if you
+consider it important for the Changelog.
+
+He concludes with :
+
+"To the extent that is true, we propose that these groups consider using a
+ shared pool of static markers as the basic kernel-side instrumentation
+ mechanism.  If they prove to have as low dormant cost and as high active
+ performance as initial experience suggests, perhaps this could motivate the
+ various tracing efforts and kernel subsystem developers to finally join
+ forces.  Let's designate standard trace/probe points once and for all. 
+ Tracing backends can attach to these markers the same way systemtap would. 
+ There would be no need for them to maintain kernel patches any more. 
+ Let's think about it."
+
+
+This patch:
+
+Add Kconfig menus for the marker code.
+
+[bunk@stusta.de: Never ever select MODULES]
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: <linux-arch@vger.kernel.org>
+CC: Adrian Bunk <bunk@stusta.de>
 ---
 
- arch/alpha/kernel/vmlinux.lds.S            |    1 +
- arch/arm/kernel/vmlinux.lds.S              |    1 +
- arch/arm26/kernel/vmlinux-arm26-xip.lds.in |    1 +
- arch/arm26/kernel/vmlinux-arm26.lds.in     |    1 +
- arch/avr32/kernel/vmlinux.lds.c            |    1 +
- arch/cris/arch-v10/vmlinux.lds.S           |    1 +
- arch/cris/arch-v32/vmlinux.lds.S           |    1 +
- arch/frv/kernel/vmlinux.lds.S              |    1 +
- arch/h8300/kernel/vmlinux.lds.S            |    3 ++-
- arch/i386/kernel/vmlinux.lds.S             |    1 +
- arch/ia64/kernel/vmlinux.lds.S             |    1 +
- arch/m32r/kernel/vmlinux.lds.S             |    1 +
- arch/m68k/kernel/vmlinux-std.lds           |    1 +
- arch/m68k/kernel/vmlinux-sun3.lds          |    1 +
- arch/m68knommu/kernel/vmlinux.lds.S        |    1 +
- arch/mips/kernel/vmlinux.lds.S             |    3 +--
- arch/parisc/kernel/vmlinux.lds.S           |    1 +
- arch/powerpc/kernel/vmlinux.lds.S          |    2 ++
- arch/ppc/kernel/vmlinux.lds.S              |    1 +
- arch/s390/kernel/vmlinux.lds.S             |    1 +
- arch/sh/kernel/vmlinux.lds.S               |    2 +-
- arch/sh64/kernel/vmlinux.lds.S             |    1 +
- arch/sparc/kernel/vmlinux.lds.S            |    1 +
- arch/sparc64/kernel/vmlinux.lds.S          |    1 +
- arch/um/kernel/dyn.lds.S                   |    1 +
- arch/um/kernel/uml.lds.S                   |    1 +
- arch/v850/kernel/vmlinux.lds.S             |    1 +
- arch/x86_64/kernel/vmlinux.lds.S           |    1 +
- arch/xtensa/kernel/vmlinux.lds.S           |    1 +
- include/asm-generic/vmlinux.lds.h          |    5 +++++
- 30 files changed, 36 insertions(+), 4 deletions(-)
+ arch/alpha/Kconfig       |    2 ++
+ arch/arm/Kconfig         |    2 ++
+ arch/arm26/Kconfig       |    2 ++
+ arch/avr32/Kconfig.debug |    7 +++++++
+ arch/cris/Kconfig        |    2 ++
+ arch/frv/Kconfig         |    2 ++
+ arch/h8300/Kconfig       |    2 ++
+ arch/i386/Kconfig        |    2 ++
+ arch/ia64/Kconfig        |    2 ++
+ arch/m32r/Kconfig        |    2 ++
+ arch/m68k/Kconfig        |    2 ++
+ arch/m68knommu/Kconfig   |    2 ++
+ arch/mips/Kconfig        |    2 ++
+ arch/parisc/Kconfig      |    2 ++
+ arch/powerpc/Kconfig     |    2 ++
+ arch/ppc/Kconfig         |    2 ++
+ arch/s390/Kconfig        |    2 ++
+ arch/sh/Kconfig          |    2 ++
+ arch/sh64/Kconfig        |    2 ++
+ arch/sparc/Kconfig       |    2 ++
+ arch/sparc64/Kconfig     |    2 ++
+ arch/um/Kconfig          |    2 ++
+ arch/v850/Kconfig        |    2 ++
+ arch/x86_64/Kconfig      |    2 ++
+ arch/xtensa/Kconfig      |    2 ++
+ kernel/Kconfig.marker    |    8 ++++++++
+ 26 files changed, 63 insertions(+)
 
-Index: linux-2.6-lttng/arch/alpha/kernel/vmlinux.lds.S
+Index: linux-2.6-lttng/arch/alpha/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/arch/alpha/kernel/vmlinux.lds.S	2007-05-30 08:42:26.000000000 -0400
-+++ linux-2.6-lttng/arch/alpha/kernel/vmlinux.lds.S	2007-05-30 08:51:20.000000000 -0400
-@@ -90,6 +90,7 @@
-   _data = .;
-   .data : {					/* Data */
- 	DATA_DATA
-+	EXTRARW_DATA
- 	CONSTRUCTORS
-   }
+--- linux-2.6-lttng.orig/arch/alpha/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/alpha/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -657,6 +657,8 @@
  
-Index: linux-2.6-lttng/arch/arm/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/arm/kernel/vmlinux.lds.S	2007-05-30 08:42:27.000000000 -0400
-+++ linux-2.6-lttng/arch/arm/kernel/vmlinux.lds.S	2007-05-30 08:51:52.000000000 -0400
-@@ -159,6 +159,7 @@
- 		 * and the usual data section
- 		 */
- 		DATA_DATA
-+		EXTRARW_DATA
- 		CONSTRUCTORS
+ source "kernel/Kconfig.condcall"
  
- 		_edata = .;
-Index: linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26-xip.lds.in
-===================================================================
---- linux-2.6-lttng.orig/arch/arm26/kernel/vmlinux-arm26-xip.lds.in	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26-xip.lds.in	2007-05-30 08:52:12.000000000 -0400
-@@ -112,6 +112,7 @@
- 		 * and the usual data section
- 		 */
- 		DATA_DATA
-+		EXTRARW_DATA
- 		CONSTRUCTORS
- 
- 		*(.init.data)
-Index: linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26.lds.in
-===================================================================
---- linux-2.6-lttng.orig/arch/arm26/kernel/vmlinux-arm26.lds.in	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26.lds.in	2007-05-30 08:52:28.000000000 -0400
-@@ -107,6 +107,7 @@
- 		 * and the usual data section
- 		 */
- 		DATA_DATA
-+		EXTRARW_DATA
- 		CONSTRUCTORS
- 
- 		_edata = .;
-Index: linux-2.6-lttng/arch/avr32/kernel/vmlinux.lds.c
-===================================================================
---- linux-2.6-lttng.orig/arch/avr32/kernel/vmlinux.lds.c	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/avr32/kernel/vmlinux.lds.c	2007-05-30 08:52:45.000000000 -0400
-@@ -113,6 +113,7 @@
- 		/* And the rest... */
- 		*(.data.rel*)
- 		DATA_DATA
-+		EXTRARW_DATA
- 		CONSTRUCTORS
- 
- 		_edata = .;
-Index: linux-2.6-lttng/arch/cris/arch-v10/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/cris/arch-v10/vmlinux.lds.S	2007-05-30 08:27:48.000000000 -0400
-+++ linux-2.6-lttng/arch/cris/arch-v10/vmlinux.lds.S	2007-05-30 08:53:15.000000000 -0400
-@@ -45,6 +45,7 @@
- 	__Sdata = . ;
- 	.data : {                     /* Data */
- 		*(.data)
-+		EXTRARW_DATA
- 	}
- 	__edata = . ;                 /* End of data section */
- 	_edata = . ;
-Index: linux-2.6-lttng/arch/cris/arch-v32/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/cris/arch-v32/vmlinux.lds.S	2007-05-30 08:42:01.000000000 -0400
-+++ linux-2.6-lttng/arch/cris/arch-v32/vmlinux.lds.S	2007-05-30 08:53:28.000000000 -0400
-@@ -50,6 +50,7 @@
- 	__Sdata = . ;
- 	.data : {                     /* Data */
- 		*(.data)
-+		EXTRARW_DATA
- 	}
- 	__edata = . ;		/* End of data section. */
- 	_edata = . ;
-Index: linux-2.6-lttng/arch/frv/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/frv/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/frv/kernel/vmlinux.lds.S	2007-05-30 08:53:58.000000000 -0400
-@@ -139,6 +139,7 @@
- 	DATA_DATA
- 	*(.data.*)
- 	*(.exit.data)
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/h8300/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/h8300/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/h8300/kernel/vmlinux.lds.S	2007-05-30 09:01:29.000000000 -0400
-@@ -105,7 +105,8 @@
- 	. = ALIGN(0x4) ;
- 		DATA_DATA
- 	. = ALIGN(0x4) ;
--		*(.data.*)	
-+		*(.data.*)
-+		EXTRARW_DATA
- 
- 	. = ALIGN(0x4) ;
- 	___init_begin = .;
-Index: linux-2.6-lttng/arch/i386/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/vmlinux.lds.S	2007-05-30 08:42:44.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/vmlinux.lds.S	2007-05-30 08:54:39.000000000 -0400
-@@ -77,6 +77,7 @@
-   . = ALIGN(4096);
-   .data : AT(ADDR(.data) - LOAD_OFFSET) {	/* Data */
- 	DATA_DATA
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	} :data
- 
-Index: linux-2.6-lttng/arch/ia64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/ia64/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/ia64/kernel/vmlinux.lds.S	2007-05-30 08:54:52.000000000 -0400
-@@ -216,6 +216,7 @@
-   .data : AT(ADDR(.data) - LOAD_OFFSET)
- 	{
- 		DATA_DATA
-+		EXTRARW_DATA
- 		*(.data1)
- 		*(.gnu.linkonce.d*)
- 		CONSTRUCTORS
-Index: linux-2.6-lttng/arch/m32r/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/m32r/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/m32r/kernel/vmlinux.lds.S	2007-05-30 08:55:06.000000000 -0400
-@@ -51,6 +51,7 @@
- 	*(.spu)
- 	*(.spi)
- 	DATA_DATA
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/m68k/kernel/vmlinux-std.lds
-===================================================================
---- linux-2.6-lttng.orig/arch/m68k/kernel/vmlinux-std.lds	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/m68k/kernel/vmlinux-std.lds	2007-05-30 08:55:16.000000000 -0400
-@@ -29,6 +29,7 @@
- 
-   .data : {			/* Data */
- 	DATA_DATA
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/m68k/kernel/vmlinux-sun3.lds
-===================================================================
---- linux-2.6-lttng.orig/arch/m68k/kernel/vmlinux-sun3.lds	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/m68k/kernel/vmlinux-sun3.lds	2007-05-30 08:55:28.000000000 -0400
-@@ -24,6 +24,7 @@
- 
-   .data : {			/* Data */
- 	DATA_DATA
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	. = ALIGN(16);		/* Exception table */
- 	__start___ex_table = .;
-Index: linux-2.6-lttng/arch/m68knommu/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/m68knommu/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/m68knommu/kernel/vmlinux.lds.S	2007-05-30 08:55:40.000000000 -0400
-@@ -134,6 +134,7 @@
- 		. = ALIGN(4);
- 		_sdata = . ;
- 		DATA_DATA
-+		EXTRARW_DATA
- 		. = ALIGN(8192) ;
- 		*(.data.init_task)
- 		_edata = . ;
-Index: linux-2.6-lttng/arch/mips/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/mips/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/mips/kernel/vmlinux.lds.S	2007-05-30 08:55:59.000000000 -0400
-@@ -61,9 +61,8 @@
-      */
-     . = ALIGN(_PAGE_SIZE);
-     *(.data.init_task)
--
-     DATA_DATA
--
-+    EXTRARW_DATA
-     CONSTRUCTORS
-   }
-   _gp = . + 0x8000;
-Index: linux-2.6-lttng/arch/parisc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/parisc/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/parisc/kernel/vmlinux.lds.S	2007-05-30 08:56:12.000000000 -0400
-@@ -92,6 +92,7 @@
-   . = ALIGN(L1_CACHE_BYTES);
-   .data : {			/* Data */
- 	DATA_DATA
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/vmlinux.lds.S	2007-05-30 08:42:29.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S	2007-05-30 08:56:54.000000000 -0400
-@@ -170,11 +170,13 @@
- 		DATA_DATA
- 		*(.sdata)
- 		*(.got.plt) *(.got)
-+		EXTRARW_DATA
- 	}
- #else
- 	.data : {
- 		*(.data .data.rel* .toc1)
- 		*(.branch_lt)
-+		EXTRARW_DATA
- 	}
- 
- 	.opd : {
-Index: linux-2.6-lttng/arch/ppc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/ppc/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/ppc/kernel/vmlinux.lds.S	2007-05-30 08:56:47.000000000 -0400
-@@ -73,6 +73,7 @@
-     *(.sdata2)
-     *(.got.plt) *(.got)
-     *(.dynamic)
-+    EXTRARW_DATA
-     CONSTRUCTORS
-   }
- 
-Index: linux-2.6-lttng/arch/s390/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/s390/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/s390/kernel/vmlinux.lds.S	2007-05-30 08:57:08.000000000 -0400
-@@ -49,6 +49,7 @@
- 
-   .data : {			/* Data */
- 	DATA_DATA
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/sh/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sh/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/sh/kernel/vmlinux.lds.S	2007-05-30 08:57:26.000000000 -0400
-@@ -49,7 +49,7 @@
-  	 *(.initrd)
-  	 . = ALIGN(PAGE_SIZE);
-  	 __rd_end = .;
--
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/sh64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sh64/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/sh64/kernel/vmlinux.lds.S	2007-05-30 08:57:39.000000000 -0400
-@@ -79,6 +79,7 @@
- 
-   .data : C_PHYS(.data) {			/* Data */
- 	DATA_DATA
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/sparc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc/kernel/vmlinux.lds.S	2007-05-30 08:57:51.000000000 -0400
-@@ -23,6 +23,7 @@
-   .data    :
-   {
-     DATA_DATA
-+    EXTRARW_DATA
-     CONSTRUCTORS
-   }
-   .data1   : { *(.data1) }
-Index: linux-2.6-lttng/arch/sparc64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc64/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc64/kernel/vmlinux.lds.S	2007-05-30 08:58:01.000000000 -0400
-@@ -28,6 +28,7 @@
-   .data    :
-   {
-     DATA_DATA
-+    EXTRARW_DATA
-     CONSTRUCTORS
-   }
-   .data1   : { *(.data1) }
-Index: linux-2.6-lttng/arch/um/kernel/dyn.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/um/kernel/dyn.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/um/kernel/dyn.lds.S	2007-05-30 08:58:15.000000000 -0400
-@@ -101,6 +101,7 @@
-     *(.data.init_irqstack)
-     DATA_DATA
-     *(.data.* .gnu.linkonce.d.*)
-+    EXTRARW_DATA
-     SORT(CONSTRUCTORS)
-   }
-   .data1          : { *(.data1) }
-Index: linux-2.6-lttng/arch/um/kernel/uml.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/um/kernel/uml.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/um/kernel/uml.lds.S	2007-05-30 08:58:27.000000000 -0400
-@@ -63,6 +63,7 @@
-     *(.data.init_irqstack)
-     DATA_DATA
-     *(.gnu.linkonce.d*)
-+    EXTRARW_DATA
-     CONSTRUCTORS
-   }
-   .data1   : { *(.data1) }
-Index: linux-2.6-lttng/arch/v850/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/v850/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/v850/kernel/vmlinux.lds.S	2007-05-30 08:58:45.000000000 -0400
-@@ -116,6 +116,7 @@
- 		DATA_DATA						      \
- 			*(.exit.data)	/* 2.5 convention */		      \
- 			*(.data.exit)	/* 2.4 convention */		      \
-+		EXTRARW_DATA						      \
- 		. = ALIGN (16) ;					      \
- 		*(.data.cacheline_aligned)				      \
- 		. = ALIGN (0x2000) ;					      \
-Index: linux-2.6-lttng/arch/x86_64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/kernel/vmlinux.lds.S	2007-05-30 08:42:43.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/kernel/vmlinux.lds.S	2007-05-30 08:58:55.000000000 -0400
-@@ -56,6 +56,7 @@
- 				/* Data */
-   .data : AT(ADDR(.data) - LOAD_OFFSET) {
- 	DATA_DATA
-+	EXTRARW_DATA
- 	CONSTRUCTORS
- 	} :data
- 
-Index: linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/xtensa/kernel/vmlinux.lds.S	2007-05-30 08:42:28.000000000 -0400
-+++ linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S	2007-05-30 08:59:09.000000000 -0400
-@@ -146,6 +146,7 @@
-   .data :
-   {
-     DATA_DATA
-+    EXTRARW_DATA
-     CONSTRUCTORS
-     . = ALIGN(XCHAL_ICACHE_LINESIZE);
-     *(.data.cacheline_aligned)
-Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-05-30 08:43:11.000000000 -0400
-+++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-05-30 09:04:19.000000000 -0400
-@@ -150,6 +150,11 @@
- 									\
- 	. = ALIGN(4096);
- 
-+/* EXTRARW_DATA adds a place to declare rw data that will not be mixed with the
-+ * .data content; therefore limiting data cache pollution when data is put in
-+ * the EXTRARW_DATA sections. */
-+#define EXTRARW_DATA
++source "kernel/Kconfig.marker"
 +
- #define SECURITY_INIT							\
- 	.security_initcall.init : AT(ADDR(.security_initcall.init) - LOAD_OFFSET) { \
- 		VMLINUX_SYMBOL(__security_initcall_start) = .;		\
+ endmenu
+ 
+ source "arch/alpha/Kconfig.debug"
+Index: linux-2.6-lttng/arch/arm/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/arm/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/arm/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -1046,6 +1046,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/arm/Kconfig.debug"
+Index: linux-2.6-lttng/arch/arm26/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/arm26/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/arm26/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -245,6 +245,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/arm26/Kconfig.debug"
+Index: linux-2.6-lttng/arch/cris/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/cris/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/cris/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -202,6 +202,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/cris/Kconfig.debug"
+Index: linux-2.6-lttng/arch/frv/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/frv/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/frv/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -379,6 +379,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/frv/Kconfig.debug"
+Index: linux-2.6-lttng/arch/h8300/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/h8300/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/h8300/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -224,6 +224,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/h8300/Kconfig.debug"
+Index: linux-2.6-lttng/arch/i386/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/Kconfig	2007-05-30 08:44:45.000000000 -0400
++++ linux-2.6-lttng/arch/i386/Kconfig	2007-05-30 09:35:47.000000000 -0400
+@@ -1235,6 +1235,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endif # INSTRUMENTATION
+ 
+ source "arch/i386/Kconfig.debug"
+Index: linux-2.6-lttng/arch/ia64/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/ia64/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/ia64/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -593,6 +593,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/ia64/Kconfig.debug"
+Index: linux-2.6-lttng/arch/m32r/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/m32r/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/m32r/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -409,6 +409,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/m32r/Kconfig.debug"
+Index: linux-2.6-lttng/arch/m68k/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/m68k/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/m68k/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -674,6 +674,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/m68k/Kconfig.debug"
+Index: linux-2.6-lttng/arch/m68knommu/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/m68knommu/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/m68knommu/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -672,6 +672,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/m68knommu/Kconfig.debug"
+Index: linux-2.6-lttng/arch/mips/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/mips/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/mips/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -1961,6 +1961,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/mips/Kconfig.debug"
+Index: linux-2.6-lttng/arch/parisc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/parisc/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/parisc/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -273,6 +273,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/parisc/Kconfig.debug"
+Index: linux-2.6-lttng/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/powerpc/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/powerpc/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -906,6 +906,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/powerpc/Kconfig.debug"
+Index: linux-2.6-lttng/arch/ppc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/ppc/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/ppc/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -1457,6 +1457,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/ppc/Kconfig.debug"
+Index: linux-2.6-lttng/arch/s390/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/s390/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/s390/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -551,6 +551,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/s390/Kconfig.debug"
+Index: linux-2.6-lttng/arch/sh/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/sh/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/sh/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -725,6 +725,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/sh/Kconfig.debug"
+Index: linux-2.6-lttng/arch/sh64/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/sh64/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/sh64/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -288,6 +288,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/sh64/Kconfig.debug"
+Index: linux-2.6-lttng/arch/sparc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/sparc/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/sparc/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -308,6 +308,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/sparc/Kconfig.debug"
+Index: linux-2.6-lttng/arch/sparc64/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/sparc64/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/sparc64/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -441,6 +441,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/sparc64/Kconfig.debug"
+Index: linux-2.6-lttng/arch/um/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/um/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/um/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -340,6 +340,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/um/Kconfig.debug"
+Index: linux-2.6-lttng/arch/v850/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/v850/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/v850/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -335,6 +335,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/v850/Kconfig.debug"
+Index: linux-2.6-lttng/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86_64/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/x86_64/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -797,6 +797,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/x86_64/Kconfig.debug"
+Index: linux-2.6-lttng/arch/xtensa/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/xtensa/Kconfig	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/xtensa/Kconfig	2007-05-30 09:35:19.000000000 -0400
+@@ -255,6 +255,8 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
+ endmenu
+ 
+ source "arch/xtensa/Kconfig.debug"
+Index: linux-2.6-lttng/kernel/Kconfig.marker
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/kernel/Kconfig.marker	2007-05-30 09:09:35.000000000 -0400
+@@ -0,0 +1,8 @@
++# Code markers configuration
++
++config MARKERS
++	bool "Activate markers"
++	depends on MODULES && COND_CALL
++	help
++	  Place an empty function call at each marker site. Can be
++	  dynamically changed for a probe function.
+Index: linux-2.6-lttng/arch/avr32/Kconfig.debug
+===================================================================
+--- linux-2.6-lttng.orig/arch/avr32/Kconfig.debug	2007-05-30 08:43:43.000000000 -0400
++++ linux-2.6-lttng/arch/avr32/Kconfig.debug	2007-05-30 09:35:19.000000000 -0400
+@@ -9,6 +9,9 @@
+ menu "Instrumentation Support"
+ 	depends on EXPERIMENTAL
+ 
++menu "Instrumentation Support"
++	depends on EXPERIMENTAL
++
+ config KPROBES
+ 	bool "Kprobes"
+ 	depends on DEBUG_KERNEL
+@@ -21,6 +24,10 @@
+ 
+ source "kernel/Kconfig.condcall"
+ 
++source "kernel/Kconfig.marker"
++
++endmenu
++
+ endmenu
+ 
+ endmenu
 
 -- 
 Mathieu Desnoyers
