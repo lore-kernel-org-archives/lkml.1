@@ -1,187 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbXE3Xx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbXE3X4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbXE3Xx4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 19:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXE3Xxs
+	id S1755911AbXE3X4l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 19:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbXE3X4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 19:53:48 -0400
-Received: from mga01.intel.com ([192.55.52.88]:33202 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020AbXE3Xxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 19:53:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,595,1170662400"; 
-   d="scan'208";a="251446820"
-Date: Wed, 30 May 2007 16:50:23 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Add a flag to indicate deferrable timers in /proc/timer_stats
-Message-ID: <20070530235023.GF16793@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Wed, 30 May 2007 19:56:33 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:48633 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752062AbXE3X4c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 19:56:32 -0400
+Message-ID: <465E0F03.6000103@oracle.com>
+Date: Wed, 30 May 2007 16:55:47 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: "Luck, Tony" <tony.luck@intel.com>, David Chinner <dgc@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: BUG: sleeping function called from invalid context at kernel/fork.c:385
+References: <617E1C2C70743745A92448908E030B2A01929C15@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705301630360.3568@schroedinger.engr.sgi.com> <20070530163413.87ecfe18.randy.dunlap@oracle.com> <Pine.LNX.4.64.0705301652100.3731@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0705301652100.3731@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Lameter wrote:
+> On Wed, 30 May 2007, Randy Dunlap wrote:
+> 
+>>> Right. I have no idea where to look. The function has no name? Or is the 
+>>> segment .exit.text referenced by namne in .init.text?
+>> Maybe 'objdump drivers/built-in.o and then grep that output (file)
+>> for /exit.text/ ...
 
-Add a flag in /proc/timer_stats to indicate deferrable timers. This will let
-developers/users to differentiate between types of tiemrs in /proc/timer_stats.
+OK.  I would write the file to disk and view it with an editor.
+Then at each occurrence of /exit.text/, see if it's inside an __init function...
 
-Deferrable timer and normal timer will appear in /proc/timer_stats as below.
-  10D,     1 swapper          queue_delayed_work_on (delayed_work_timer_fn)
-   10,     1 swapper          queue_delayed_work_on (delayed_work_timer_fn)
 
-Also version of timer_stats changes from v0.1 to v0.2
+> clameter@schroedinger:~/software/slub$ objdump -t drivers/built-in.o |grep "exit.text"
+> 0000000000000000 l    d  .exit.text     0000000000000000 .exit.text
+> 0000000000000000 l    d  *ABS*  0000000000000000 .rela.exit.text
+> 0000000000000000 l    d  .IA_64.unwind_info.exit.text   0000000000000000 .IA_64.unwind_info.exit.text
+> 0000000000000000 l    d  .IA_64.unwind.exit.text        0000000000000000 .IA_64.unwind.exit.text
+> 0000000000000000 l    d  *ABS*  0000000000000000 .rela.IA_64.unwind.exit.text
+> 0000000000000000 l     F .exit.text     0000000000000050 pcie_portdrv_exit
+> 0000000000000060 l     F .exit.text     0000000000000040 aer_service_exit
+> 00000000000000a0 l     F .exit.text     0000000000000040 pci_hotplug_exit
+> 00000000000000e0 l     F .exit.text     00000000000000b0 pcied_cleanup
+> 00000000000001a0 l     F .exit.text     0000000000000160 mspec_exit
+> 0000000000000300 l     F .exit.text     0000000000000010 efi_rtc_exit
+> 0000000000000320 l     F .exit.text     0000000000000010 agp_exit
+> 0000000000000340 l     F .exit.text     00000000000000a0 sn_sal_module_exit
+> 00000000000003e0 l     F .exit.text     0000000000000040 firmware_class_exit
+> 0000000000000420 l     F .exit.text     0000000000000110 rd_cleanup
+> 0000000000000540 l     F .exit.text     00000000000001d0 loop_exit
+> 0000000000000720 l     F .exit.text     0000000000000040 tg3_cleanup
+> 0000000000000760 l     F .exit.text     0000000000000040 idedisk_exit
+> 00000000000007a0 l     F .exit.text     0000000000000040 ide_cdrom_exit
+> 00000000000007e0 l     F .exit.text     00000000000000a0 exit_scsi
+> 0000000000000880 l     F .exit.text     0000000000000080 spi_transport_exit
+> 0000000000000900 l     F .exit.text     00000000000000a0 fc_transport_exit
+> 00000000000009a0 l     F .exit.text     00000000000000e0 sas_transport_exit
+> 0000000000000a80 l     F .exit.text     0000000000000040 sas_class_exit
+> 0000000000000ac0 l     F .exit.text     0000000000000040 qla1280_exit
+> 0000000000000b00 l     F .exit.text     0000000000000140 qla2x00_module_exit
+> 0000000000000c40 l     F .exit.text     00000000000000a0 exit_sd
+> 0000000000000ce0 l     F .exit.text     0000000000000060 ata_exit
+> 0000000000000d40 l     F .exit.text     0000000000000040 vsc_sata_exit
+> 0000000000000d80 l     F .exit.text     00000000000000d0 fusion_exit
+> 0000000000000e60 l     F .exit.text     00000000000000e0 mptspi_exit
+> 0000000000000f40 l     F .exit.text     00000000000000d0 mptfc_exit
+> 0000000000001020 l     F .exit.text     00000000000000f0 mptsas_exit
+> 0000000000001120 l     F .exit.text     0000000000000060 cdrom_exit
+> 0000000000001180 l     F .exit.text     0000000000000080 input_exit
+> 0000000000001200 l     F .exit.text     0000000000000070 mousedev_exit
+> 0000000000001280 l     F .exit.text     0000000000000040 multipath_exit
+> 00000000000012c0 l     F .exit.text     0000000000000240 md_exit
+> 0000000000001500 l     F .exit.text     0000000000000090 dm_exit
+> 00000000000015a0 l     F .exit.text     0000000000000170 efivars_exit
+> 0000000000001720 l     F .exit.text     0000000000000010 hid_exit
+> 
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-Index: linux-2.6.22-rc-mm/include/linux/hrtimer.h
-===================================================================
---- linux-2.6.22-rc-mm.orig/include/linux/hrtimer.h	2007-05-24 17:04:10.000000000 -0700
-+++ linux-2.6.22-rc-mm/include/linux/hrtimer.h	2007-05-30 15:02:49.000000000 -0700
-@@ -329,12 +329,13 @@
- #ifdef CONFIG_TIMER_STATS
- 
- extern void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
--				     void *timerf, char * comm);
-+				     void *timerf, char * comm,
-+				     unsigned int timer_flag);
- 
- static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
- {
- 	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
--				 timer->function, timer->start_comm);
-+				 timer->function, timer->start_comm, 0);
- }
- 
- extern void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer,
-Index: linux-2.6.22-rc-mm/kernel/timer.c
-===================================================================
---- linux-2.6.22-rc-mm.orig/kernel/timer.c	2007-05-24 17:04:10.000000000 -0700
-+++ linux-2.6.22-rc-mm/kernel/timer.c	2007-05-30 15:19:15.000000000 -0700
-@@ -305,6 +305,20 @@
- 	memcpy(timer->start_comm, current->comm, TASK_COMM_LEN);
- 	timer->start_pid = current->pid;
- }
-+
-+static void timer_stats_account_timer(struct timer_list *timer)
-+{
-+	unsigned int flag = 0;
-+
-+	if (unlikely(tbase_get_deferrable(timer->base)))
-+		flag |= TIMER_STATS_FLAG_DEFERRABLE;
-+
-+	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
-+				 timer->function, timer->start_comm, flag);
-+}
-+
-+#else
-+static void timer_stats_account_timer(struct timer_list *timer) {}
- #endif
- 
- /**
-Index: linux-2.6.22-rc-mm/kernel/time/timer_stats.c
-===================================================================
---- linux-2.6.22-rc-mm.orig/kernel/time/timer_stats.c	2007-05-24 17:04:10.000000000 -0700
-+++ linux-2.6.22-rc-mm/kernel/time/timer_stats.c	2007-05-30 15:36:55.000000000 -0700
-@@ -68,6 +68,7 @@
- 	 * Number of timeout events:
- 	 */
- 	unsigned long		count;
-+	unsigned int		timer_flag;
- 
- 	/*
- 	 * We save the command-line string to preserve
-@@ -227,7 +228,8 @@
-  * incremented. Otherwise the timer is registered in a free slot.
-  */
- void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
--			      void *timerf, char * comm)
-+			      void *timerf, char * comm,
-+			      unsigned int timer_flag)
- {
- 	/*
- 	 * It doesnt matter which lock we take:
-@@ -240,6 +242,7 @@
- 	input.start_func = startf;
- 	input.expire_func = timerf;
- 	input.pid = pid;
-+	input.timer_flag = timer_flag;
- 
- 	spin_lock_irqsave(lock, flags);
- 	if (!active)
-@@ -286,7 +289,7 @@
- 	period = ktime_to_timespec(time);
- 	ms = period.tv_nsec / 1000000;
- 
--	seq_puts(m, "Timer Stats Version: v0.1\n");
-+	seq_puts(m, "Timer Stats Version: v0.2\n");
- 	seq_printf(m, "Sample period: %ld.%03ld s\n", period.tv_sec, ms);
- 	if (atomic_read(&overflow_count))
- 		seq_printf(m, "Overflow: %d entries\n",
-@@ -294,8 +297,13 @@
- 
- 	for (i = 0; i < nr_entries; i++) {
- 		entry = entries + i;
--		seq_printf(m, "%4lu, %5d %-16s ",
-+ 		if (entry->timer_flag & TIMER_STATS_FLAG_DEFERRABLE) {
-+			seq_printf(m, "%4luD, %5d %-16s ",
- 				entry->count, entry->pid, entry->comm);
-+		} else {
-+			seq_printf(m, " %4lu, %5d %-16s ",
-+				entry->count, entry->pid, entry->comm);
-+		}
- 
- 		print_name_offset(m, (unsigned long)entry->start_func);
- 		seq_puts(m, " (");
-Index: linux-2.6.22-rc-mm/include/linux/timer.h
-===================================================================
---- linux-2.6.22-rc-mm.orig/include/linux/timer.h	2007-05-24 17:04:10.000000000 -0700
-+++ linux-2.6.22-rc-mm/include/linux/timer.h	2007-05-30 15:19:23.000000000 -0700
-@@ -85,16 +85,13 @@
-  */
- #ifdef CONFIG_TIMER_STATS
- 
-+#define TIMER_STATS_FLAG_DEFERRABLE	0x1
-+
- extern void init_timer_stats(void);
- 
- extern void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
--				     void *timerf, char * comm);
--
--static inline void timer_stats_account_timer(struct timer_list *timer)
--{
--	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
--				 timer->function, timer->start_comm);
--}
-+				     void *timerf, char * comm,
-+				     unsigned int timer_flag);
- 
- extern void __timer_stats_timer_set_start_info(struct timer_list *timer,
- 					       void *addr);
-@@ -113,10 +110,6 @@
- {
- }
- 
--static inline void timer_stats_account_timer(struct timer_list *timer)
--{
--}
--
- static inline void timer_stats_timer_set_start_info(struct timer_list *timer)
- {
- }
-Index: linux-2.6.22-rc-mm/Documentation/hrtimer/timer_stats.txt
-===================================================================
---- linux-2.6.22-rc-mm.orig/Documentation/hrtimer/timer_stats.txt	2007-04-25 20:08:32.000000000 -0700
-+++ linux-2.6.22-rc-mm/Documentation/hrtimer/timer_stats.txt	2007-05-30 15:36:36.000000000 -0700
-@@ -66,3 +66,7 @@
- 
-     Thomas, Ingo
- 
-+Added flag to indicate 'deferrable timer' in /proc/timer_stats. A deferrable
-+timer will appear as follows
-+  10D,     1 swapper          queue_delayed_work_on (delayed_work_timer_fn)
-+
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
