@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbXE3Nxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbXE3Nzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbXE3Nxh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbXE3Nx2
+	id S1754897AbXE3Nzl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXE3Nze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:53:28 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33841 "EHLO mail.dvmed.net"
+	Wed, 30 May 2007 09:55:34 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:55714 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751974AbXE3Nx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:53:27 -0400
-Message-ID: <465D81D3.7040609@garzik.org>
-Date: Wed, 30 May 2007 09:53:23 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1752003AbXE3Nzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 09:55:33 -0400
+Date: Wed, 30 May 2007 16:55:30 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: ppc modprost warnings in 2.6.22-rc1
+In-Reply-To: <20070515204540.GC22966@uranus.ravnborg.org>
+Message-ID: <Pine.SOC.4.64.0705301652250.23769@math>
+References: <Pine.SOC.4.64.0705141717110.23895@math> <20070515204540.GC22966@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] defxx: Fix the handling of ioremap() failures
-References: <Pine.LNX.4.64N.0705291508300.14456@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0705291508300.14456@blysk.ds.pg.gda.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
->  If ioremap_nocache() is unfortunate enough to fail, the error code is not 
-> set correctly leading to a false success from dfx_register().  This change 
-> fixes the problem.
+> > WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x18) and 'Mesquite_pci_IRQ_map'
+> .....
 > 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> mot_info is only used by functions marked __init.
+> So why not mark it __init so it get discarded and we get rid of all those warnings?
 
-applied
+How do I mark a initialized struct __init? Adding __init or const __init in
+front of the declaration results in
 
+  CC      arch/ppc/platforms/prep_pci.o
+arch/ppc/platforms/prep_pci.c:806: error: mot_info causes a section type conflict
 
+-- 
+Meelis Roos (mroos@linux.ee)
