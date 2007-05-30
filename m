@@ -1,74 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbXE3AFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbXE3AFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752894AbXE3AFF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 20:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbXE3AEz
+	id S1753300AbXE3AFg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 20:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbXE3AF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 20:04:55 -0400
-Received: from mxfep03.bredband.com ([195.54.107.76]:39732 "EHLO
-	mxfep03.bredband.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbXE3AEy (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 20:04:54 -0400
-Subject: Re: [BUG] Something goes wrong with timer statistics.
-From: Ian Kumlien <iank@bredband.net>
-To: David Miller <davem@davemloft.net>
-Cc: michal.k.k.piotrowski@gmail.com, Linux-kernel@vger.kernel.org
-In-Reply-To: <20070529.160338.51845499.davem@davemloft.net>
-References: <6bffcb0e0705291541q7e6d6faen5cd6345074c4c92a@mail.gmail.com>
-	 <20070529.154406.104042418.davem@davemloft.net>
-	 <1180479122.19814.8.camel@pi.pomac.com>
-	 <20070529.160338.51845499.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 02:04:31 +0200
-Message-Id: <1180483481.30698.3.camel@pi.pomac.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 May 2007 20:05:28 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:47877 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbXE3AF1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 20:05:27 -0400
+Date: Wed, 30 May 2007 03:05:28 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-usb-devel@lists.sourceforge.net,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] Dealing with flaky USB storage devices and rootfs
+Message-ID: <20070530000528.GA1680@localdomain>
+References: <20070529205927.GA24808@localdomain> <Pine.LNX.4.44L0.0705291734390.2974-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0705291734390.2974-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On tis, 2007-05-29 at 16:03 -0700, David Miller wrote:
-> From: Ian Kumlien <iank@bredband.net>
-> Date: Wed, 30 May 2007 00:51:52 +0200
+On Tue, May 29, 2007 at 05:50:49PM -0400, Alan Stern wrote:
+> On Tue, 29 May 2007, Dan Aloni wrote:
 > 
-> > On tis, 2007-05-29 at 15:44 -0700, David Miller wrote:
-> > > From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-> > > Date: Wed, 30 May 2007 00:41:46 +0200
-> > > 
-> > > > On 30/05/07, David Miller <davem@davemloft.net> wrote:
-> > > > > From: Ian Kumlien <iank@bredband.net>
-> > > > > Date: Tue, 29 May 2007 23:38:48 +0200
-> > > > >
-> > > > > > As the daystar sets, i try to play some with my new would be
-> > > > > > firewall/server, but since this will be running for quite some time i
-> > > > > > have been experimenting with powertop to find out what i can do to limit
-> > > > > > it's power usage.
-> > > > > >
-> > > > > > But, if i run powertop for too long or a few times to many... this
-> > > > > > happens:
-> > > > > > http://pomac.netswarm.net/pics/kernel_panic.jpg
-> > > > > >
-> > > > > > If i don't run powertop, it is rock solid... Compiling for hours,
-> > > > > > running memtest for hours etc etc...
-> > > > >
-> > > > > I see this same exact problem on sparc64.
-> > > > 
-> > > > Have you tried this patch?
-> > > > http://lkml.org/lkml/2007/5/29/392
-> > > 
-> > > Of course, I worked with Thomas on the fix :-)
+> > Hello,
 > > 
-> > I dunno if this applies to me, i run a 32 bit userspace...
+> > We have a system where the rootfs is a partition on a USB device,
+> > and I've noticed upon a few rare cases where the USB controller 
+> > loses the connection to the USB device after some uptime (days,
+> > weeks...), and the USB device reappears a very short time later.
 > 
-> That patch fixes a problem on 64-bit kernels, regardless of
-> userspace, when NOHZ is enabled.
+> That failure mode is pretty uncommon.  More often what happens is the
+> connection remains intact but communication/protocol/firmware/???  
+> errors cause the device to stop working.  It never disappears but it
+> can't be used again without unplugging or power-cycling.
 
-Sorry, i run all 32 bit, i was on the phone while typing that, so a wee
-bit distracted. Anyways, i run a nohz 32 bit kernel.
+Yes this is also what I assume happening. i.e. more likely a USB 
+flash disk firmware bug than a controller bug (there are lots of 
+crappy USB flash drives out there).
+ 
+> > So, I gave some thoughts about this, I and came up with two 
+> > main solutions:
+> > 
+> > 1) Improve the USB storage error handling - bind the already 
+> > existing SCSI host to the USB port that has the device, e.g., 
+> > if host2 got created for usb 5-3 then keep it that way for the 
+> > sake of EH. /dev/sda1 should come to life when the USB device 
+> > recovers, unless a few seconds have passed or some attributes 
+> > (such as manufactor id or serial) have changed.
+> 
+> The difficulty here is that this "error" is indistinguishable from
+> normal activity -- someone simply unplugs the device and then later on
+> another connection is made.  It might be the same device as before or
+> it might be a different one.  In other words, it isn't really an error.  
+> You would solve this by relying on "a few seconds" timeout.
+[...]
+> 
+> It also goes against the USB specification.  And it is potentially 
+> unsafe, in that it is possible for users to change media or make other 
+> alterations that the kernel cannot detect.  The same would be true of 
+> your proposal, assuming that somebody was quick enough to unplug one 
+> device and plug in another (or swap memory cards) in the span of a few 
+> seconds.
 
-I dunno how good a intel T7200 is when it comes to 64 bit
-kernel/userspace.. (Haven't really read up on it)
+The specific use case I refer to is with a flash drive embedded 
+inside a locked and closed chassis of a dedicated server. So, 
+anyone repluging it must know what they are doing anyway.
 
 -- 
-Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
