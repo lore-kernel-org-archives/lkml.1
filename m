@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751969AbXE3JMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbXE3JOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751969AbXE3JMv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 05:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbXE3JMk
+	id S1752460AbXE3JOk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 05:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbXE3JOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 05:12:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:53201 "EHLO
+	Wed, 30 May 2007 05:14:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:54982 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbXE3JMj (ORCPT
+	with ESMTP id S1751104AbXE3JOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 05:12:39 -0400
+	Wed, 30 May 2007 05:14:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=kxbdpQrWvIZV15Dfl7Zbmvgvpyo7AH/JQDZnubFKPpGYMFRuJ9uvaHYLHs4uYwNqSBkk99RXNIYGvGXfj+VbO7AkKb47wyUsNkvdj6gq1jDc9LTTVdSgQsH9/xxuVzMstQ/NacQd+zIsu778ushyRHayYdzY/rIlQ3HRJBukQes=
-Message-ID: <5201e28f0705300212g3be16464u5ee1a4c80db27a11@mail.gmail.com>
-Date: Wed, 30 May 2007 11:12:37 +0200
-From: "Stefan Bader" <Stefan.Bader@de.ibm.com>
-To: "Stefan Bader" <sbader3@googlemail.com>,
-       "device-mapper development" <dm-devel@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
-       "David Chinner" <dgc@sgi.com>, "Phillip Susi" <psusi@cfl.rr.com>,
-       "Stefan Bader" <Stefan.Bader@de.ibm.com>,
-       "Andreas Dilger" <adilger@clusterfs.com>,
-       "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-In-Reply-To: <20070529220500.GA6513@agk.fab.redhat.com>
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DeRLChPTtNfl6mBEXqBB9sJIwTws22TldvwNPBNl4mLjYz9tt5yE2K2TDTCeOpIVxbW2xdS+AvXe+f5maeU87NeOV+M3EjAqxzWK+zwdKj4/ysS7AhhZIuj6dSsM9qGvHEBMx1l6Rb4Rp92JqVKmHMbxpj/OvBsPHpZr5l1Uj0g=
+Message-ID: <d9b9d95f0705300214u7eb257fg783aefd73077d33@mail.gmail.com>
+Date: Wed, 30 May 2007 10:14:31 +0100
+From: "Renato Golin" <rengolin@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: joydev.c and saitek cyborg evo force
+Cc: linux-kernel@vger.kernel.org, "Dmitry Torokhov" <dtor@insightbb.com>
+In-Reply-To: <Pine.LNX.4.64.0705300207160.3961@jikos.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <18006.38689.818186.221707@notabene.brown>
-	 <18010.12472.209452.148229@notabene.brown>
-	 <20070528094358.GM25091@agk.fab.redhat.com>
-	 <5201e28f0705290225v14fdac44hb0382a4137a84d01@mail.gmail.com>
-	 <20070529220500.GA6513@agk.fab.redhat.com>
-X-Google-Sender-Auth: efa481d57474127b
+References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
+	 <200705210016.20794.dtor@insightbb.com>
+	 <Pine.LNX.4.64.0705211444500.22906@jikos.suse.cz>
+	 <d9b9d95f0705291657o47ef42d3jea2a1dae3e31bbdb@mail.gmail.com>
+	 <Pine.LNX.4.64.0705300207160.3961@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > in-flight I/O to go to zero?
+On 30/05/07, Jiri Kosina <jkosina@suse.cz> wrote:
+> well I have changed the overall HID code design in 2.6.21 a little bit.
+> Anyway, just hardcoding '#define DEBUG' and '#define DEBUG_DATA' (that's
+> also important) in 2.6.20-and-older kernels should have similar result as
+> CONFIG_HID_DEBUG in post-2.6.21.
 >
-> Something like that is needed for some dm targets to support barriers.
-> (We needn't always wait for *all* in-flight I/O.)
-> When faced with -EOPNOTSUP, do all callers fall back to a sync in
-> the places a barrier would have been used, or are there any more
-> sophisticated strategies attempting to optimise code without barriers?
->
-If I didn't misunderstand the idea is that no caller will face an
--EOPNOTSUPP in future. IOW every layer or driver somehow makes sure
-the right thing happens.
+> In your particular case, the DEBUG_DATA might really be more interesting.
 
->
-> An efficient I/O barrier implementation would not normally involve
-> flushing AFAIK: dm surely wouldn't "cause" a higher layer to assume
-> stronger semantics than are provided.
->
-Seems there are at least two assumptions about what the semantics
-exactly _are_. Based on Documentation/block/barriers.txt I understand
-a barrier implies ordering and flushing.
-But regardless of that, assume the (admittedly constructed) following case:
+Yup, did both on all drivers/hid/*.c and drivers/usb/input/hid*.c
+recompiled and reloaded all modules (hid.ko, usbhid.ko and joydev.ko)
 
-You got a linear target that consists of two disks. One drive (a)
-supports barriers and the other one (b) doesn't. Device-mapper just
-maps the requests to the appropriate disk. Now the following sequence
-happens:
+But it's pathetic the fact that ubuntu's kernel have an option
+USB_DEBUG and on Makefile is says "if USB_DEBUG; aditional_opt=
+-DDEBUG" but inside the files all DEBUG flags are hardcoded undefined.
 
-1. block x gets mapped to drive b
-2. block y (with barrier) gets mapped to drive a
+Also, to turn on KERN_DEBUG messages I saw on kernel hacking webpages:
 
-Since drive a supports barrier request we don't get -EOPNOTSUPP but
-the request with block y might get written before block x since the
-disk are independent. I guess the chances of this are quite low since
-at some point a barrier request will also hit drive b but for the time
-being it might be better to indicate -EOPNOTSUPP right from
-device-mapper.
+$ echo 15 15 15 15 > /proc/sys/kernel/printk
+$ echo 8 > /proc/sys/kernel/printk
 
-Stefan
+I did it and monitored mesasges and syslog and both shows the same
+data... I guess that dump after mouse detection is DEBUG_DATA in
+place.
+
+cheers,
+--renato
+
+Reclaim your digital rights, eliminate DRM, learn more at
+http://www.defectivebydesign.org/what_is_drm
