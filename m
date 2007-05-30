@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbXE3Lkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbXE3LlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753458AbXE3Lkv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 07:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbXE3Lkm
+	id S1753807AbXE3LlK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 07:41:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXE3Lky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 07:40:42 -0400
-Received: from avexch2.qlogic.com ([198.70.193.116]:6507 "EHLO
-	avexch2.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbXE3Lkl convert rfc822-to-8bit (ORCPT
+	Wed, 30 May 2007 07:40:54 -0400
+Received: from redstar.dorchain.net ([212.88.133.153]:36672 "EHLO
+	Redstar.dorchain.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753483AbXE3Lkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 07:40:41 -0400
-X-Greylist: delayed 847 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 07:40:41 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 30 May 2007 07:40:52 -0400
+X-DKIM: Sendmail DKIM Filter v0.6.1 Redstar.dorchain.net l4UBeDRN016857
+Date: Wed, 30 May 2007 13:40:13 +0200
+From: Joerg Dorchain <joerg@dorchain.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Joerg Dorchain <joerg@dorchain.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 1/2] m68k: runtime patching infrastructure
+Message-ID: <20070530114013.GE4617@Redstar.dorchain.net>
+References: <20070528191630.377693320@mail.of.borg> <20070528191715.352919509@mail.of.borg> <20070529173818.fd94ae81.akpm@linux-foundation.org> <465D1020.3030605@cosmosbay.com> <Pine.LNX.4.64.0705300903030.31930@anakin> <20070530082035.GA8200@Redstar.dorchain.net> <Pine.LNX.4.64.0705301318560.6389@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH RFC] qla2xxx: fix timeout in qla2x00_down_timeout
-Date: Wed, 30 May 2007 04:25:32 -0700
-Message-ID: <A6970E9A290F3F4682E1EAD0EA14F32B0108CA30@AVEXCH2.qlogic.org>
-In-Reply-To: <20070530081643.GA29004@nostromo.devel.redhat.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH RFC] qla2xxx: fix timeout in qla2x00_down_timeout
-Thread-Index: Aceikwdjp0xlft9cTwq5OdWJaH/zAQAGQ+Cw
-References: <20070530081643.GA29004@nostromo.devel.redhat.com>
-From: "Seokmann Ju" <seokmann.ju@qlogic.com>
-To: "Bill Nottingham" <notting@redhat.com>, <linux-scsi@vger.kernel.org>
-Cc: "Linux Driver" <Linux-Driver@qlogic.com>, <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fXStkuK2IQBfcDe+"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705301318560.6389@anakin>
+X-message-flag: Formating hard disk. please wait...   10%...  20%...
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for finding. 
-Acked-by: Seokmann Ju <seokmann.ju@qlogic.com>
 
-> -----Original Message-----
-> From: Bill Nottingham [mailto:notting@redhat.com] 
-> Sent: Wednesday, May 30, 2007 1:17 AM
-> To: linux-scsi@vger.kernel.org
-> Cc: Linux Driver; linux-kernel@vger.kernel.org
-> Subject: [PATCH RFC] qla2xxx: fix timeout in qla2x00_down_timeout
-> 
-> iterations is unsigned, so it is impossible to get out of the 
-> loop and return -ETIMEDOUT.
-> 
-> Signed-off-by: Bill Nottingham <notting@redhat.com>
-> 
-> ---
-> 
-> If the intention *is* to never fall out of the end of the 
-> loop, ignore this, and just replace it with do {} while (1);.
-> 
-> --- drivers/scsi/qla2xxx/qla_os.c.foo	2007-05-30 
-> 04:07:52.000000000 -0400
-> +++ drivers/scsi/qla2xxx/qla_os.c	2007-05-30 
-> 04:08:31.000000000 -0400
-> @@ -2587,15 +2587,15 @@ qla2x00_down_timeout(struct semaphore *s
->  	unsigned int iterations = jiffies_to_msecs(timeout)/100;
->  
->  	do {
->  		if (!down_trylock(sema))
->  			return 0;
->  		if (msleep_interruptible(step))
->  			break;
-> -	} while (--iterations >= 0);
-> +	} while (--iterations > 0);
->  
->  	return -ETIMEDOUT;
->  }
->  
->  /* Firmware interface routines. */
->  
->  #define FW_BLOBS	5
-> 
+--fXStkuK2IQBfcDe+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, May 30, 2007 at 01:19:45PM +0200, Geert Uytterhoeven wrote:
+>=20
+> > Actually, this is the only way to define circular referencing
+> > structures.
+>=20
+> No, you have forward declarations for that. These are missing here.
+
+I am no gcc expert, but might this be considred an implicit declaration?
+IIRC the compiler warns if later the type does noch match. Does it keep
+quiet when it matches?
+
+Bye,
+
+Joerg
+
+
+--fXStkuK2IQBfcDe+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGXWKdjY4+4PdzvOARAsU5AJ0b3Y+uY22Y9djlJtvO8hbkDjnIRQCcCvz8
+LT1fj7EE9+cCbWXSwKEFZAk=
+=8sWV
+-----END PGP SIGNATURE-----
+
+--fXStkuK2IQBfcDe+--
