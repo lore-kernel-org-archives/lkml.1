@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbXE3LT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbXE3LWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752790AbXE3LT4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 07:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXE3LTs
+	id S1753192AbXE3LWd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 07:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXE3LW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 07:19:48 -0400
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:58256 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbXE3LTr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 07:19:47 -0400
-Date: Wed, 30 May 2007 13:19:45 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Joerg Dorchain <joerg@dorchain.net>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [patch 1/2] m68k: runtime patching infrastructure
-In-Reply-To: <20070530082035.GA8200@Redstar.dorchain.net>
-Message-ID: <Pine.LNX.4.64.0705301318560.6389@anakin>
-References: <20070528191630.377693320@mail.of.borg> <20070528191715.352919509@mail.of.borg>
- <20070529173818.fd94ae81.akpm@linux-foundation.org> <465D1020.3030605@cosmosbay.com>
- <Pine.LNX.4.64.0705300903030.31930@anakin> <20070530082035.GA8200@Redstar.dorchain.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 May 2007 07:22:27 -0400
+Received: from mail.screens.ru ([213.234.233.54]:48969 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751458AbXE3LW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 07:22:26 -0400
+Date: Wed, 30 May 2007 15:22:34 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Sending signals to a kernel thread, broken in 2.6.22
+Message-ID: <20070530112234.GA846@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007, Joerg Dorchain wrote:
-> On Wed, May 30, 2007 at 09:06:08AM +0200, Geert Uytterhoeven wrote:
-> [...]
-> > > > 
-> > > > I think it could be tightened up even if it happens not to warn?
-> > > 
-> > > 
-> > > struct a {
-> > > 	struct not_yet_defined *start, *end;
-> > > };
-> > > 
-> > > struct not_yet_defined {
-> > > 	void *foo;
-> > > };
-> > > 
-> > > Is a valid and gives no warnings.
-> > 
-> > I was puzzled by this as well, as there were no compiler warnings...
-> 
-> Pointers are (at least on m68k) of known size, so the compiler knows how
-> much space the struct occupies.
-> 
-> Type checking is by definition futile with void * pointer, but for all
-> other cases the compiler has all types and sizes it needs at this point.
-> 
-> The actual dereferencing of the symbol table is done by the linker,
-> which also knows all locations and sizes it needs.
+Alan Stern wrote:
+>
+> The g_file_storage driver uses a kernel thread and communicates with
+> that thread in part by means of signals.  It also relies on the thread
+> receiving signals from userspace as an indication that the thread
+> should terminate.
+>
+> This was all working in 2.6.21, but as of 2.6.22-rc3 the signal
+> delivery mechanism (entirely within the kernel!) is no longer
+> functional.
+>
+> What's the story?  Do I need to do something new and different to get
+> signals working again?  Should I avoid using signals entirely?
 
-True.
+I guess you mean drivers/usb/gadget/file_storage.c
 
-> Actually, this is the only way to define circular referencing
-> structures.
+	fsg_main_thread:
+		
+		siginitsetinv(&fsg->thread_signal_mask, SIGTERM | ...);
+		sigprocmask(SIG_SETMASK, &fsg->thread_signal_mask, NULL);
 
-No, you have forward declarations for that. These are missing here.
+Yes?
 
-Gr{oetje,eeting}s,
+Please look at
 
-						Geert
+	change kernel threads to ignore signals instead of blocking them
+	commit: 10ab825bdef8df510f99c703a5a2d9b13a4e31a5
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I think you can convert the code above to use allow_signal().
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
+Please note that it is not good to just unblock the signal, SIG_DFL means
+that __group_complete_signal() starts doing SIGNAL_GROUP_EXIT things. In
+particular, SIGTERM implies sigaddset(SIGKILL).
+
+Oleg.
+
