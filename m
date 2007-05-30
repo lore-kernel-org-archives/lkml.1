@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbXE3BEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbXE3BFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbXE3BEt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 21:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXE3BEl
+	id S1753481AbXE3BFE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 21:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbXE3BEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 21:04:41 -0400
-Received: from mail30.syd.optusnet.com.au ([211.29.133.193]:46378 "EHLO
-	mail30.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751096AbXE3BEk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 21:04:40 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: "Antonino Ingargiola" <tritemio@gmail.com>
-Subject: Re:swap prefetch improvements
-Date: Thu, 31 May 2007 12:03:02 +1000
-User-Agent: KMail/1.9.5
-Cc: "ck list" <ck@vds.kolivas.org>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-References: <200705270800.06612.kernel@kolivas.org> <5486cca80705291253vb793caqd632f3adbb2479ad@mail.gmail.com> <5486cca80705291259s63edf2bcv7035f700aa23e8b1@mail.gmail.com>
-In-Reply-To: <5486cca80705291259s63edf2bcv7035f700aa23e8b1@mail.gmail.com>
+	Tue, 29 May 2007 21:04:48 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:54373 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752441AbXE3BEr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 21:04:47 -0400
+Date: Tue, 29 May 2007 18:04:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bernd Schmidt <bernds_cb1@t-online.de>
+cc: Bryan Wu <bryan.wu@analog.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/20] Blackfin update for 2.6.22-rc3
+In-Reply-To: <465CB7CF.2060509@t-online.de>
+Message-ID: <alpine.LFD.0.98.0705291759230.26602@woody.linux-foundation.org>
+References: <11803414753217-git-send-email-bryan.wu@analog.com>
+ <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
+ <465CB7CF.2060509@t-online.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200705311203.02582.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 May 2007 05:59, Antonino Ingargiola wrote:
-> 2007/5/29, Antonino Ingargiola <tritemio@gmail.com>:
-> [cut]
->
-> > Swap Prefetch OFF
-> > # ./sp_tester
-> > Ram 776388000  Swap 514040000
-> > Total ram to be malloced: 1033408000 bytes
-> > Starting first malloc of 516704000 bytes
-> > Starting 1st read of first malloc
-> > Touching this much ram takes 1642 milliseconds
-> > Starting second malloc of 516704000 bytes
-> > Completed second malloc and free
-> > Sleeping for 60 seconds
-> > Important part - starting reread of first malloc
-> > Completed read of first malloc
-> > Timed portion 9089 milliseconds
-> >
-> >
-> > Swap Prefetch OFF
-> > # ./sp_tester
-> > Ram 776388000  Swap 514040000
-> > Total ram to be malloced: 1033408000 bytes
-> > Starting first malloc of 516704000 bytes
-> > Starting 1st read of first malloc
-> > Touching this much ram takes 1635 milliseconds
-> > Starting second malloc of 516704000 bytes
-> > Completed second malloc and free
-> > Sleeping for 60 seconds
-> > Important part - starting reread of first malloc
-> > Completed read of first malloc
-> > Timed portion 1783 milliseconds
->
-> The second case is clearly with swap prefetch *ON*, sorry.
 
-Thanks very much for testing! The patch has been taken up by Andrew for the 
-next -mm.
 
-どうも
--- 
--ck
+On Wed, 30 May 2007, Bernd Schmidt wrote:
+> 
+> The binfmt_flat patch also touches other nommu architectures.  Do you
+> want these kinds of patches (which aren't just Blackfin-specific)
+> separately as they come up?
+
+Let's take it case by case. I really have no problem with architecture- 
+specific git trees occasionally touching generic code, but I usually want 
+an explanation for _why_ it ends up touching some file that somebody else 
+might care about (not so much because I necessarily care deeply, but so 
+that I can keep up with changes, so that if somebody then complains, I 
+know what they are complaining about!)
+
+For example, what's good to do is to just give me a diffstat of the whole 
+thing, and then for generic code, perhaps show the whole diff along with 
+the explanation.
+
+And if the diff is big, yes, then we probably need to handle it 
+separately, but usually the things tend to be a few lines of "add support 
+for this architecture to this piece of code that hasn't been abstracted 
+out enough yet".
+
+To make a long story short: no real hard rules. It can be a good idea to 
+start out extra careful, and once both sides get more used to each other, 
+we can loosen the rules.
+
+		Linus
