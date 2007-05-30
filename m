@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756998AbXE3TTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbXE3TTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756998AbXE3TTA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbXE3TSx
+	id S1757817AbXE3TTY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbXE3TTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:18:53 -0400
-Received: from mail.screens.ru ([213.234.233.54]:60088 "EHLO mail.screens.ru"
+	Wed, 30 May 2007 15:19:01 -0400
+Received: from mga02.intel.com ([134.134.136.20]:10641 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892AbXE3TSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:18:52 -0400
-Date: Wed, 30 May 2007 23:18:49 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty: fix leakage of -ERESTARTSYS to userland
-Message-ID: <20070530191849.GB85@tv-sign.ru>
-References: <20070529184435.GA174@tv-sign.ru> <20070530110513.b2ae50ad.akpm@linux-foundation.org>
+	id S1756847AbXE3TS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 15:18:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,594,1170662400"; 
+   d="scan'208";a="248996051"
+Date: Wed, 30 May 2007 12:15:33 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
+Message-ID: <20070530191533.GB3216@linux-os.sc.intel.com>
+References: <20070529180112.GC5411@linux-os.sc.intel.com> <20070530105936.6c988da5.akpm@linux-foundation.org> <20070530112056.0aeb9498@freepuppy> <465DC598.5060407@trash.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070530110513.b2ae50ad.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <465DC598.5060407@trash.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/30, Andrew Morton wrote:
-> On Tue, 29 May 2007 22:44:35 +0400
-> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On Wed, May 30, 2007 at 08:42:32PM +0200, Patrick McHardy wrote:
+> Stephen Hemminger wrote:
+> >>>Index: linux-2.6.22-rc-mm/net/sched/sch_generic.c
+> >>>===================================================================
+> >>>--- linux-2.6.22-rc-mm.orig/net/sched/sch_generic.c	2007-05-24 11:16:03.000000000 -0700
+> >>>+++ linux-2.6.22-rc-mm/net/sched/sch_generic.c	2007-05-25 15:10:02.000000000 -0700
+> >>>@@ -224,7 +224,8 @@
+> >>> 	if (dev->tx_timeout) {
+> >>> 		if (dev->watchdog_timeo <= 0)
+> >>> 			dev->watchdog_timeo = 5*HZ;
+> >>>-		if (!mod_timer(&dev->watchdog_timer, jiffies + dev->watchdog_timeo))
+> >>>+		if (!mod_timer(&dev->watchdog_timer,
+> >>>+			       round_jiffies(jiffies + dev->watchdog_timeo)))
+> >>> 			dev_hold(dev);
+> >>> 	}
+> >>> }
+> >>
+> >>Please cc netdev on net patches.
+> >>
+> >>Again, I worry that if people set the watchdog timeout to, say, 0.1 seconds
+> >>then they will get one second, which is grossly different.
+> >>
+> >>And if they were to set it to 1.5 seconds, they'd get 2.0 which is pretty
+> >>significant, too.
+> > 
+> > 
+> > Alternatively, we could change to a timer that is pushed forward after each
+> > TX, maybe using hrtimer and hrtimer_forward().  That way the timer would
+> > never run in normal case.
 > 
-> > --- t/drivers/char/n_tty.c~	2007-04-05 12:18:26.000000000 +0400
-> > +++ t/drivers/char/n_tty.c	2007-05-28 10:57:58.000000000 +0400
-> > @@ -1191,6 +1191,7 @@ static int job_control(struct tty_struct
-> >  			    is_current_pgrp_orphaned())
-> >  				return -EIO;
-> >  			kill_pgrp(task_pgrp(current), SIGTTIN, 1);
-> > +			set_thread_flag(TIF_SIGPENDING);
-> >  			return -ERESTARTSYS;
-> >  		}
-> >  	}
 > 
-> Are there other callers of kill_pgrp() which have the same problem?
+> It seems wasteful to add per-packet overhead for tx timeouts, which
+> should be an exception. Do drivers really care about the exact
+> timeout value? Compared to a packet transmission time its incredibly
+> long anyways ..
 
-Hopefully no.
+I agree. Doing a mod_timer or hrtimer_forward to push forward may add to the
+complexity depending on how often TX happens.
 
-> Perhaps we should have a kill_pgrp_self() which takes care of doing
-> this, rather than open-coding it.  Something with a comment which
-> explains what's going on ;)
+Are the drivers really worried about exact timeouts here? Can we use rounding
+for the timers that are more than a second, at least?
 
-This set_thread_flag(TIF_SIGPENDING) is "connected" to "return -ERESTARTSYS",
-not to kill_pgrp(), imho the new helper is not so suitable.
-
-Perhaps it makes sense to add the comment into include/linux/errno.h, to
-explain that -ERESTART... codes are only valid when signal_pending() == true.
-
-Oleg.
-
+Thanks,
+Venki
