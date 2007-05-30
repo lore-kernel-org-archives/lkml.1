@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbXE3CPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752383AbXE3CSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752455AbXE3CPX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 22:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbXE3CPL
+	id S1752383AbXE3CSg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 22:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbXE3CS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 22:15:11 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56000 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750924AbXE3CPK (ORCPT
+	Tue, 29 May 2007 22:18:27 -0400
+Received: from omta04ps.mx.bigpond.com ([144.140.83.156]:51117 "EHLO
+	omta04ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbXE3CS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 22:15:10 -0400
-Date: Tue, 29 May 2007 19:15:09 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "\"\\\"Tetsuo Handa\\\"\"" <penguin-kernel@i-love.sakura.ne.jp>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.22-rc2] BUG message during boot.
-In-Reply-To: <200705240059.l4O0x9Dr004898@www262.sakura.ne.jp>
-Message-ID: <Pine.LNX.4.64.0705291900480.29202@schroedinger.engr.sgi.com>
-References: <200705240059.l4O0x9Dr004898@www262.sakura.ne.jp>
+	Tue, 29 May 2007 22:18:26 -0400
+Message-ID: <465CDEEA.9060507@bigpond.net.au>
+Date: Wed, 30 May 2007 12:18:18 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Con Kolivas <kernel@kolivas.org>, Christoph Lameter <clameter@sgi.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] CFS scheduler, -v12
+References: <464DA61A.4040406@bigpond.net.au> <b647ffbd0705210825y25331066x8b2a4d50cdb7c266@mail.gmail.com> <46523081.6050007@bigpond.net.au> <465275EF.8060905@bigpond.net.au> <4652DC03.60801@bigpond.net.au> <4655423E.6000202@bigpond.net.au> <20070524164538.GA13301@linux-os.sc.intel.com> <46561E67.3030207@bigpond.net.au> <20070529204557.GB3693@linux-os.sc.intel.com> <465CBD35.2000109@bigpond.net.au> <20070530005052.GE3693@linux-os.sc.intel.com>
+In-Reply-To: <20070530005052.GE3693@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta08ps.mx.bigpond.com from [60.231.45.148] using ID pwil3058@bigpond.net.au at Wed, 30 May 2007 02:18:23 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007, "\"Tetsuo Handa\"" wrote:
+Siddha, Suresh B wrote:
+> On Tue, May 29, 2007 at 04:54:29PM -0700, Peter Williams wrote:
+>>> I tried with various refresh rates of top too.. Do you see the issue
+>>> at runlevel 3 too?
+>> I haven't tried that.
+>>
+>> Do your spinners ever relinquish the CPU voluntarily?
+> 
+> Nope. Simple and plain while(1); 's
+> 
+> I can try 32-bit kernel to check.
 
-> It seems it is harmless because the system can continue running,
-> but may be something bad?
+Don't bother.  I just checked 2.6.22-rc3 and the problem is not present 
+which means something between rc2 and rc3 has fixed the problem.  I hate 
+it when problems (appear to) fix themselves as it usually means they're 
+just hiding.
 
-Yes it may be harmless... Some thing is asking the slab allocator for 
-an object of 0 bytes. 
+I didn't see any patches between rc2 and rc3 that were likely to have 
+fixed this (but doesn't mean there wasn't one).  I'm wondering whether I 
+should do a git bisect to see if I can find where it got fixed?
 
-> Compat vDSO mapped to ffffe000.
-> BUG: at mm/slab.c:777 __find_general_cachep()
->  [<c015442d>] __kmalloc+0x4d/0xc8
->  [<c03e2395>] init_table+0x19/0x4a
->  [<c010addb>] mtrr_bp_init+0x176/0x18e
->  [<c03e048c>] check_bugs+0x5/0x3b
->  [<c03d89f0>] start_kernel+0x1e2/0x1eb
->  [<c03d83ec>] unknown_bootoption+0x0/0x181
->  =======================
-> Checking 'hlt' instruction... OK.
+Could you see if you can reproduce it on 2.6.22-rc2?
 
-The fix is in linux-2.6.22-rc2-mm1
+Thanks
+Peter
+-- 
+Peter Williams                                   pwil3058@bigpond.net.au
 
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
