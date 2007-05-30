@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbXE3PmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbXE3PnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756248AbXE3PmE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbXE3Plx
+	id S1756503AbXE3PnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbXE3PnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:41:53 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:19647 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752543AbXE3Plw (ORCPT
+	Wed, 30 May 2007 11:43:11 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:39562 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbXE3PnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:41:52 -0400
-Date: Wed, 30 May 2007 08:43:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Romano Giannetti <romanol@upcomillas.es>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-Message-Id: <20070530084347.e647a03e.randy.dunlap@oracle.com>
-In-Reply-To: <1180520817.16962.8.camel@localhost>
-References: <1180008394.15600.26.camel@localhost>
-	<alpine.LFD.0.98.0705270924310.26602@woody.linux-foundation.org>
-	<20070527164300.GA20355@srcf.ucam.org>
-	<200705272032.15971.rjw@sisk.pl>
-	<20070527184402.GA21161@srcf.ucam.org>
-	<1180427492.21686.9.camel@localhost>
-	<alpine.LFD.0.98.0705290752190.26602@woody.linux-foundation.org>
-	<1180520817.16962.8.camel@localhost>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 May 2007 11:43:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Io4sIGmW7jPJvsYf31N0m36EPLZgSqL5/yHrfJrNKw+X9WfWUmFIbh/wtFXBhLEx3bmaYLIf3TPNDRtIvk/OpsdAN6A45pyEz/VbbvIBCkv3ZK4/IbwUPCqFpPO7vM63h1ayHItL688pI0Pt6siVQ+2gboK6WDAiKrW4K994+xU=
+Message-ID: <a781481a0705300841k2a02335eg66985129eaed28f4@mail.gmail.com>
+Date: Wed, 30 May 2007 21:11:29 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: dealing with gcc 'comparison is always false' warnings (was: [PATCH] drivers/infiniband: fix comparsion between unsigned and negative)
+Cc: openib-general@openib.org, linux-kernel@vger.kernel.org
+In-Reply-To: <adazm3mqqh3.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <20070530080518.GA29195@nostromo.devel.redhat.com>
+	 <adazm3mqqh3.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 12:26:57 +0200 Romano Giannetti wrote:
+On 5/30/07, Roland Dreier <rdreier@cisco.com> wrote:
+> thanks... I'm wondering if there's a consensus among kernel hackers
+> about changes like:
+>
+>  > -    if (hdr.cmd < 0 || hdr.cmd >= ARRAY_SIZE(ucma_cmd_table))
+>  > +    if (hdr.cmd >= ARRAY_SIZE(ucma_cmd_table))
+>  >              return -EINVAL;
+>
+> I understand that new gcc sees that hdr.cmd is unsigned and hence
+> can't be < 0, and generates a warning for that, and having a build
+> cluttered with warnings hides bugs and so on.  However the code here
+> looks quite sensible to me -- otherwise we end up with missing range
+> checking if hdr.cmd ever changes to a signed type.  This seems like a
+> good way to introduce bugs: delete valid range checking code to shut
+> up a silly gcc warning, and then change the type of a variable.
 
-> 
-> On Tue, 2007-05-29 at 07:55 -0700, Linus Torvalds wrote:
-> > 
-> > On Tue, 29 May 2007, Romano Giannetti wrote:
-> > >
-> > > - The good (?) news. I have made 7 suspend/resume cycle (to ram, I
-> > > haven't tested hibernation) with a 2.6.21.2 with that patch, applied
-> > > manually. The system did suspend and resume nicely even compiling a
-> > > kernel and opening openoffice. Normally (le me stress _normally_) no
-> > > delay was apparent on resume. I do not know how dangerous is this... :-)
-> > > 
-> > > - The bad (?) news. One time out of 7 I had the 60 seconds delay.
-> > 
-> > Interesting. If you can re-create it, please do the sysrq-T thing again, 
-> > to see what's up. (Also, you might do "sysrq-p", which gives the current 
-> > process data, which sysrq-T does not).
-> 
-> 
-> I've got it, but I had a problem: I filled the dmesg buffer. I will try
-> to find where to enlarge it. I have posted the partial result to: 
+You're *absolutely* correct about the issue that these "fixes" that remove
+such conditions end up remove range-checking making the code more
+flakey / less readable.
 
-use 'dmesg -s 100000' if it's just dmesg(8) that needs help.
-If it's the kernel buffer filling up, you can rebuild the kernel
-after changing CONFIG_LOG_BUF_SHIFT, but it's easier just to boot
-using this:
-	log_buf_len=n	Sets the size of the printk ring buffer, in bytes.
-			Format: { n | nk | nM }
-			n must be a power of two.  The default size
-			is set in the kernel config file.
+However, gcc is _just as correct_. It is only crying about seeing a condition
+that the programmer could have written with some purpose in mind but which
+is being completely compiled away by it when generating the code because
+of it being a tautology / contradiction ...
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+> Can't we just make gcc shut up about the comparison and generate no
+> code for it because it knows it can't be true?
+
+No, shutting gcc up wouldn't be the right thing, IMHO. These warnings are
+a good reminder to the programmer to go and see if there is a real bug
+somewhere and if something really needs to be done with the code (could
+be simply to change the type of a variable to signed that was mistakenly
+declared unsigned, f.e.).
+
+But yes, the kind of "fixes" you pointed out that _remove_ these conditions
+are definitely *not* what we would want to do.
+
+Satyam
