@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbXE3Vh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbXE3ViY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759034AbXE3Vh3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758304AbXE3Vgc
+	id S1759587AbXE3ViY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbXE3ViF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:36:32 -0400
-Received: from gw.goop.org ([64.81.55.164]:50338 "EHLO mail.goop.org"
+	Wed, 30 May 2007 17:38:05 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:59686 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758207AbXE3Vgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:36:31 -0400
-Message-ID: <465DEE59.9070901@goop.org>
-Date: Wed, 30 May 2007 14:36:25 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1757009AbXE3ViE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 17:38:04 -0400
+Date: Wed, 30 May 2007 23:37:55 +0200 (CEST)
+From: Jan Kratochvil <honza@jikos.cz>
+To: Richard Purdie <rpurdie@rpsys.net>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Support for controlling leds on xbox 360 pad.
+In-Reply-To: <1180542740.5835.135.camel@localhost.localdomain>
+Message-ID: <alpine.LRH.0.98.0705302334580.22353@twin.jikos.cz>
+References: <alpine.LRH.0.98.0705292250430.22353@twin.jikos.cz> 
+ <alpine.LRH.0.98.0705292312150.22353@twin.jikos.cz> 
+ <1180474885.5822.94.camel@localhost.localdomain> 
+ <d120d5000705300756t24d4a58ey1f4130bef22f8309@mail.gmail.com>
+ <1180542740.5835.135.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Which *could* be something as simple as saying "bit 30 in the file 
-> descriptor specifies a separate fd space" along with some flags to make 
-> open and friends return those separate fd's. That makes them useless for 
-> "select()" (which assumes a flat address space, of course), but would be 
-> useful for just about anything else.
->   
+Hi,
 
-Some programs - legitimately, I think - scan /proc/self/fd to close
-everything.  The question is whether the glibc-private fds should appear
-there.  And something like a "close-on-fork" flag might be useful,
-though I guess glibc can keep track of its own fds closely enough to not
-need something like that.
+On Wed, 30 May 2007, Richard Purdie wrote:
+> On Wed, 2007-05-30 at 10:56 -0400, Dmitry Torokhov wrote:
+>> Do you think it makes sense to split the driver (and Kconfig options)
+>> between input and leds directories as Jan had done? I know that I
+>> prefer to keep anything input related in input directory because it
+>> makes my life as maintainer easier and I bet you prefer the same but
+>> it does not always work well for multifunction devices or devices
+>> using several subsystems...
+>
+> In ideal world having the code in drivers/leds would be preferred but if
+> you want to add the LED code directly to the input driver in this case I
+> have no objection and it probably makes sense. The LED code is already
+> spread about a bit anyway...
 
-    J
+I wasn't happy about having this splited in two subsystems either. So I'll 
+rewrite it to use led functionality directly from drivers/input/joystick/xpad.c.
+
+Thanks for comments
+Jan
