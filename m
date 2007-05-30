@@ -1,62 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbXE3USv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbXE3UVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758010AbXE3USv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbXE3USo
+	id S1758078AbXE3UVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbXE3UVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:18:44 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:53086 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753869AbXE3USn (ORCPT
+	Wed, 30 May 2007 16:21:13 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3625 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753869AbXE3UVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:18:43 -0400
-Date: Wed, 30 May 2007 13:18:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai.Lu@Sun.COM
-Cc: Andi Kleen <ak@suse.de>, Russell King <rmk@arm.linux.org.uk>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+	Wed, 30 May 2007 16:21:13 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 30 May 2007 13:21:11 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Gerd Hoffmann <kraxel@suse.de>,
-       David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 4/5] serial: convert early_uart to earlycon for 8250
-Message-Id: <20070530131819.641e1548.akpm@linux-foundation.org>
-In-Reply-To: <465DD753.5040208@sun.com>
-References: <200705291844.00308.yinghai.lu@sun.com>
-	<20070530115717.77e05153.akpm@linux-foundation.org>
-	<465DD753.5040208@sun.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+In-Reply-To: <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705301315310.6272@alien.or.mcafeemobile.com>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
+ <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com>
+ <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com>
+ <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 12:58:11 -0700
-Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+On Wed, 30 May 2007, Linus Torvalds wrote:
 
-> >> +int update_console_cmdline(char *name, int idx, char *name_new, int idx_new, char *options)
-> >> +{
-> >> +	struct console_cmdline *c;
-> >> +	int i;
-> >> +
-> >> +	for (i = 0; i < MAX_CMDLINECONSOLES && console_cmdline[i].name[0]; i++)
-> >> +		if (strcmp(console_cmdline[i].name, name) == 0 &&
-> >> +			  console_cmdline[i].index == idx) {
-> >> +				c = &console_cmdline[i];
-> >> +				memcpy(c->name, name_new, sizeof(c->name));
-> >> +				c->name[sizeof(c->name) - 1] = 0;
-> >> +				c->options = options;
-> >> +				c->index = idx_new;
-> >> +				return i;
-> >> +		}
-> >> +	/* not found */
-> >> +	return -1;
-> >> +}
+> On Wed, 30 May 2007, Davide Libenzi wrote:
 > > 
-> > Shouldn't this be __init?
-> > 
-> > serial8250_find_port_for_earlycon() had its __init removed.  Why?
-> with __init, the compiler will cry about .init.text and .text missection.
+> > Here I think we are forgetting that glibc is userspace and there's no 
+> > separation between the application code and glibc code. An application 
+> > linking to glibc can break glibc in thousand ways, indipendently from fds 
+> > or not fds. Like complaining that glibc is broken because printf() 
+> > suddendly does not work anymore ;)
+> 
+> No, Davide, the problem is that some applications depend on getting 
+> _specific_ file descriptors.
+> 
+> For example, if you do
+> 
+> 	close(0);
+> 	.. something else ..
+> 	if (open("myfile", O_RDONLY) < 0)
+> 		exit(1);
+> 
+> you can (and should) depend on the open returning zero.
+> 
+> So library routines *must not* open file descriptors in the normal space.
+> 
+> (The same is true of real applications doing the equivalent of
+> 
+> 	for (i = 0; i < NR_OPEN; i++)
+> 		close(i);
+> 
+> to clean up all file descriptors before doing something new. And yes, I 
+> think it was bash that used to *literally* do something like that a long 
+> time ago.
 
-But was this the correct fix for that?  afaict the only caller of
-this function is __init anyway.
+Right. I misunderstood Uli and Ingo. I thought it was like trying to 
+protect glibc from intentional application mis-behaviour.
+
+
+
+> Another example of the same thing: people open file descriptors and know 
+> that they'll be "dense" in the result, and then use "select()" on them.
+> 
+> So it's true that file descriptors can't be used randomly by the standard 
+> libraries - they'd need to have some kind of separate "private space".
+> 
+> Which *could* be something as simple as saying "bit 30 in the file 
+> descriptor specifies a separate fd space" along with some flags to make 
+> open and friends return those separate fd's. That makes them useless for 
+> "select()" (which assumes a flat address space, of course), but would be 
+> useful for just about anything else.
+
+I think it can be solved in a few ways. Yours or Ingo's (or something 
+else) can work, to solve the above "legacy" fd space expectations.
+
+
+
+- Davide
+
+
