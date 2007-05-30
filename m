@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbXE3TL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbXE3TLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754208AbXE3TL3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbXE3TLW
+	id S1756206AbXE3TLt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbXE3TLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:11:22 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:7890 "EHLO kernel.dk"
+	Wed, 30 May 2007 15:11:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46153 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752120AbXE3TLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:11:21 -0400
-Date: Wed, 30 May 2007 21:10:24 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530191024.GX15559@kernel.dk>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org> <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org> <20070530160913.GA14261@elte.hu> <465DCAE4.1010206@rtr.ca>
-Mime-Version: 1.0
+	id S1752120AbXE3TLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 15:11:39 -0400
+Date: Wed, 30 May 2007 15:09:37 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Roland Dreier <rdreier@cisco.com>, openib-general@openib.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: dealing with gcc 'comparison is always false' warnings (was:
+	[PATCH] drivers/infiniband: fix comparsion between unsigned and
+	negative)
+Message-ID: <20070530190937.GA5444@nostromo.devel.redhat.com>
+Mail-Followup-To: Satyam Sharma <satyam.sharma@gmail.com>,
+	Roland Dreier <rdreier@cisco.com>, openib-general@openib.org,
+	linux-kernel@vger.kernel.org
+References: <20070530080518.GA29195@nostromo.devel.redhat.com> <adazm3mqqh3.fsf@cisco.com> <a781481a0705300841k2a02335eg66985129eaed28f4@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <465DCAE4.1010206@rtr.ca>
+In-Reply-To: <a781481a0705300841k2a02335eg66985129eaed28f4@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30 2007, Mark Lord wrote:
-> Ingo Molnar wrote:
-> >
-> > - sendfile(). This API mainly failed on #2. It partly failed on #1 too.
-> >   (couldnt be used in certain types of scenarios so was unintuitive.)
-> >   splice() fixes this almost completely.
-> >
-> > - KAIO. It fails on #2 and #3.
-> 
-> I wonder how useful it would be to reimplement sendfile()
-> using splice(), either in glibc or inside the kernel itself?
-> 
-> sendfile() does get used a fair bit, but I really doubt that anyone
-> outside of a handful of people on this list actually use splice().
+Satyam Sharma (satyam.sharma@gmail.com) said: 
+> But yes, the kind of "fixes" you pointed out that _remove_ these conditions
+> are definitely *not* what we would want to do.
 
-It's indeed the plan, I even have git branch for it. Just never took the
-time to actually finish it.
+I can see that - but I think it should be at least be brought up for each
+warning, to determine either:
 
-http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=splice-sendfile
+1) if it should be ignored
+2) if a signed type is actually intended
+3) if the code should be elided
 
--- 
-Jens Axboe
+While not necessarily in the IB instances, there are cases where there
+are entire blocks of code (with debugging output, error returns, etc)
+that can never get run, and it may make sense to remove those.
 
+Bill
