@@ -1,68 +1,318 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbXE3SGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758377AbXE3SJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbXE3SGJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 14:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757230AbXE3SFy
+	id S1758377AbXE3SJf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 14:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbXE3SJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 14:05:54 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:36950 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755005AbXE3SFx (ORCPT
+	Wed, 30 May 2007 14:09:28 -0400
+Received: from smtp113.sbc.mail.re2.yahoo.com ([68.142.229.92]:27397 "HELO
+	smtp113.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753951AbXE3SJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 14:05:53 -0400
-Date: Wed, 30 May 2007 11:05:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty: fix leakage of -ERESTARTSYS to userland
-Message-Id: <20070530110513.b2ae50ad.akpm@linux-foundation.org>
-In-Reply-To: <20070529184435.GA174@tv-sign.ru>
-References: <20070529184435.GA174@tv-sign.ru>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 14:09:27 -0400
+X-YMail-OSG: 4cwdhSIVM1lENaVY_nkKImUWBBGvO51ZbD9sJ.0OiSgoGpWdwMpxRxzISy1D5texkK_lgmqvBAeMZ.2CMH9026ZuyVAk4mm5v9VStzTmXt.sEoRl3Ns-
+Date: Wed, 30 May 2007 13:09:23 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] Replacing the /proc/<pid|self>/exe symlink code
+Message-ID: <20070530180923.GA22345@vino.hallyn.com>
+References: <1180486369.11715.69.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1180486369.11715.69.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007 22:44:35 +0400
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+Quoting Matt Helsley (matthltc@us.ibm.com):
+> This patch avoids holding the mmap semaphore while walking VMAs in response to
+> programs which read or follow the /proc/<pid|self>/exe symlink. This also allows us
+> to merge mmu and nommu proc_exe_link() functions. The costs are holding a separate
+> reference to the executable file stored in the task struct and increased code in
+> fork, exec, and exit paths.
+> 
+> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> ---
+> 
+> Compiled and passed simple tests for regressions when patched against a 2.6.20
+> and 2.6.22-rc2-mm1 kernel.
+> 
+>  fs/exec.c             |    5 +++--
+>  fs/proc/base.c        |   20 ++++++++++++++++++++
+>  fs/proc/internal.h    |    1 -
+>  fs/proc/task_mmu.c    |   34 ----------------------------------
+>  fs/proc/task_nommu.c  |   34 ----------------------------------
+>  include/linux/sched.h |    1 +
+>  kernel/exit.c         |    2 ++
+>  kernel/fork.c         |   10 +++++++++-
+>  8 files changed, 35 insertions(+), 72 deletions(-)
+> 
+> Index: linux-2.6.22-rc2-mm1/include/linux/sched.h
+> ===================================================================
+> --- linux-2.6.22-rc2-mm1.orig/include/linux/sched.h
+> +++ linux-2.6.22-rc2-mm1/include/linux/sched.h
+> @@ -988,10 +988,11 @@ struct task_struct {
+>  	int oomkilladj; /* OOM kill score adjustment (bit shift). */
+>  	char comm[TASK_COMM_LEN]; /* executable name excluding path
+>  				     - access with [gs]et_task_comm (which lock
+>  				       it with task_lock())
+>  				     - initialized normally by flush_old_exec */
+> +	struct file *exe_file;
+>  /* file system info */
+>  	int link_count, total_link_count;
+>  #ifdef CONFIG_SYSVIPC
+>  /* ipc stuff */
+>  	struct sysv_sem sysvsem;
+> Index: linux-2.6.22-rc2-mm1/fs/exec.c
+> ===================================================================
+> --- linux-2.6.22-rc2-mm1.orig/fs/exec.c
+> +++ linux-2.6.22-rc2-mm1/fs/exec.c
+> @@ -1106,12 +1106,13 @@ int search_binary_handler(struct linux_b
+>  			read_unlock(&binfmt_lock);
+>  			retval = fn(bprm, regs);
+>  			if (retval >= 0) {
+>  				put_binfmt(fmt);
+>  				allow_write_access(bprm->file);
+> -				if (bprm->file)
+> -					fput(bprm->file);
+> +				if (current->exe_file)
+> +					fput(current->exe_file);
+> +				current->exe_file = bprm->file;
+>  				bprm->file = NULL;
+>  				current->did_exec = 1;
+>  				proc_exec_connector(current);
+>  				return retval;
+>  			}
+> Index: linux-2.6.22-rc2-mm1/fs/proc/base.c
+> ===================================================================
+> --- linux-2.6.22-rc2-mm1.orig/fs/proc/base.c
+> +++ linux-2.6.22-rc2-mm1/fs/proc/base.c
+> @@ -951,10 +951,30 @@ const struct file_operations proc_pid_sc
+>  	.write		= sched_write,
+>  	.llseek		= seq_lseek,
+>  	.release	= seq_release,
+>  };
+>  
+> +static int proc_exe_link(struct inode *inode, struct dentry **dentry,
+> +    			 struct vfsmount **mnt)
+> +{
+> +	int error;
+> +	struct task_struct *task;
+> +
+> +	task = get_proc_task(inode);
+> +	if (!task)
+> +		return -ENOENT;
+> +	error = -ENOSYS;
+> +	if (!task->exe_file)
+> +		goto out;
+> +	*mnt = mntget(task->exe_file->f_path.mnt);
+> +	*dentry = dget(task->exe_file->f_path.dentry);
+> +	error = 0;
+> +out:
+> +	put_task_struct(task);
+> +	return error;
+> +}
+> +
+>  static void *proc_pid_follow_link(struct dentry *dentry, struct nameidata *nd)
+>  {
+>  	struct inode *inode = dentry->d_inode;
+>  	int error = -EACCES;
+>  
+> Index: linux-2.6.22-rc2-mm1/kernel/exit.c
+> ===================================================================
+> --- linux-2.6.22-rc2-mm1.orig/kernel/exit.c
+> +++ linux-2.6.22-rc2-mm1/kernel/exit.c
+> @@ -924,10 +924,12 @@ fastcall void do_exit(long code)
+>  	if (unlikely(tsk->audit_context))
+>  		audit_free(tsk);
+>  
+>  	taskstats_exit(tsk, group_dead);
+>  
+> +	if (tsk->exe_file)
+> +		fput(tsk->exe_file);
 
-> Spotted by Satoru Takeuchi.
-> 
-> kill_pgrp(task_pgrp(current)) sends the signal to the current's thread group,
-> but can choose any sub-thread as a target for signal_wake_up(). This means
-> that job_control() and tty_check_change() may return -ERESTARTSYS without
-> signal_pending().
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> 
-> --- t/drivers/char/n_tty.c~	2007-04-05 12:18:26.000000000 +0400
-> +++ t/drivers/char/n_tty.c	2007-05-28 10:57:58.000000000 +0400
-> @@ -1191,6 +1191,7 @@ static int job_control(struct tty_struct
->  			    is_current_pgrp_orphaned())
->  				return -EIO;
->  			kill_pgrp(task_pgrp(current), SIGTTIN, 1);
-> +			set_thread_flag(TIF_SIGPENDING);
->  			return -ERESTARTSYS;
->  		}
+Hi,
+
+just taking a cursory look so I may be missing something, but doesn't
+this leave the possibility that right here, with tsk->exe_file being
+put, another task would try to look at tsk's /proc/tsk->pid/exe?
+
+thanks,
+-serge
+
+
+>  	exit_mm(tsk);
+>  
+>  	if (group_dead)
+>  		acct_process();
+>  	exit_sem(tsk);
+> Index: linux-2.6.22-rc2-mm1/kernel/fork.c
+> ===================================================================
+> --- linux-2.6.22-rc2-mm1.orig/kernel/fork.c
+> +++ linux-2.6.22-rc2-mm1/kernel/fork.c
+> @@ -1163,10 +1163,13 @@ static struct task_struct *copy_process(
+>  
+>  	/* ok, now we should be set up.. */
+>  	p->exit_signal = (clone_flags & CLONE_THREAD) ? -1 : (clone_flags & CSIGNAL);
+>  	p->pdeath_signal = 0;
+>  	p->exit_state = 0;
+> +	p->exe_file = current->exe_file;
+> +	if (p->exe_file)
+> +		get_file(p->exe_file);
+>  
+>  	/*
+>  	 * Ok, make it visible to the rest of the system.
+>  	 * We dont wake it up yet.
+>  	 */
+> @@ -1218,11 +1221,11 @@ static struct task_struct *copy_process(
+>   	recalc_sigpending();
+>  	if (signal_pending(current)) {
+>  		spin_unlock(&current->sighand->siglock);
+>  		write_unlock_irq(&tasklist_lock);
+>  		retval = -ERESTARTNOINTR;
+> -		goto bad_fork_cleanup_namespaces;
+> +		goto bad_fork_cleanup_exe_file;
 >  	}
-> --- t/drivers/char/tty_io.c~	2007-04-05 12:18:26.000000000 +0400
-> +++ t/drivers/char/tty_io.c	2007-05-29 22:15:52.000000000 +0400
-> @@ -1121,7 +1121,8 @@ int tty_check_change(struct tty_struct *
->  		return 0;
->  	if (is_current_pgrp_orphaned())
->  		return -EIO;
-> -	(void) kill_pgrp(task_pgrp(current), SIGTTOU, 1);
-> +	kill_pgrp(task_pgrp(current), SIGTTOU, 1);
-> +	set_thread_flag(TIF_SIGPENDING);
->  	return -ERESTARTSYS;
+>  
+>  	if (clone_flags & CLONE_THREAD) {
+>  		p->group_leader = current->group_leader;
+>  		list_add_tail_rcu(&p->thread_group, &p->group_leader->thread_group);
+> @@ -1274,10 +1277,15 @@ static struct task_struct *copy_process(
+>  		put_user(p->pid, parent_tidptr);
+>  
+>  	proc_fork_connector(p);
+>  	return p;
+>  
+> +bad_fork_cleanup_exe_file:
+> +	if (p->exe_file) {
+> +		fput(p->exe_file);
+> +		p->exe_file = NULL;
+> +	}
+>  bad_fork_cleanup_namespaces:
+>  	exit_task_namespaces(p);
+>  bad_fork_cleanup_keys:
+>  	exit_keys(p);
+>  bad_fork_cleanup_mm:
+> Index: linux-2.6.22-rc2-mm1/fs/proc/task_mmu.c
+> ===================================================================
+> --- linux-2.6.22-rc2-mm1.orig/fs/proc/task_mmu.c
+> +++ linux-2.6.22-rc2-mm1/fs/proc/task_mmu.c
+> @@ -71,44 +71,10 @@ int task_statm(struct mm_struct *mm, int
+>  	*data = mm->total_vm - mm->shared_vm;
+>  	*resident = *shared + get_mm_counter(mm, anon_rss);
+>  	return mm->total_vm;
 >  }
 >  
-
-Are there other callers of kill_pgrp() which have the same problem?
-
-Perhaps we should have a kill_pgrp_self() which takes care of doing
-this, rather than open-coding it.  Something with a comment which
-explains what's going on ;)
+> -int proc_exe_link(struct inode *inode, struct dentry **dentry, struct vfsmount **mnt)
+> -{
+> -	struct vm_area_struct * vma;
+> -	int result = -ENOENT;
+> -	struct task_struct *task = get_proc_task(inode);
+> -	struct mm_struct * mm = NULL;
+> -
+> -	if (task) {
+> -		mm = get_task_mm(task);
+> -		put_task_struct(task);
+> -	}
+> -	if (!mm)
+> -		goto out;
+> -	down_read(&mm->mmap_sem);
+> -
+> -	vma = mm->mmap;
+> -	while (vma) {
+> -		if ((vma->vm_flags & VM_EXECUTABLE) && vma->vm_file)
+> -			break;
+> -		vma = vma->vm_next;
+> -	}
+> -
+> -	if (vma) {
+> -		*mnt = mntget(vma->vm_file->f_path.mnt);
+> -		*dentry = dget(vma->vm_file->f_path.dentry);
+> -		result = 0;
+> -	}
+> -
+> -	up_read(&mm->mmap_sem);
+> -	mmput(mm);
+> -out:
+> -	return result;
+> -}
+> -
+>  static void pad_len_spaces(struct seq_file *m, int len)
+>  {
+>  	len = 25 + sizeof(void*) * 6 - len;
+>  	if (len < 1)
+>  		len = 1;
+> Index: linux-2.6.22-rc2-mm1/fs/proc/task_nommu.c
+> ===================================================================
+> --- linux-2.6.22-rc2-mm1.orig/fs/proc/task_nommu.c
+> +++ linux-2.6.22-rc2-mm1/fs/proc/task_nommu.c
+> @@ -102,44 +102,10 @@ int task_statm(struct mm_struct *mm, int
+>  	up_read(&mm->mmap_sem);
+>  	*resident = size;
+>  	return size;
+>  }
+>  
+> -int proc_exe_link(struct inode *inode, struct dentry **dentry, struct vfsmount **mnt)
+> -{
+> -	struct vm_list_struct *vml;
+> -	struct vm_area_struct *vma;
+> -	struct task_struct *task = get_proc_task(inode);
+> -	struct mm_struct *mm = get_task_mm(task);
+> -	int result = -ENOENT;
+> -
+> -	if (!mm)
+> -		goto out;
+> -	down_read(&mm->mmap_sem);
+> -
+> -	vml = mm->context.vmlist;
+> -	vma = NULL;
+> -	while (vml) {
+> -		if ((vml->vma->vm_flags & VM_EXECUTABLE) && vml->vma->vm_file) {
+> -			vma = vml->vma;
+> -			break;
+> -		}
+> -		vml = vml->next;
+> -	}
+> -
+> -	if (vma) {
+> -		*mnt = mntget(vma->vm_file->f_path.mnt);
+> -		*dentry = dget(vma->vm_file->f_path.dentry);
+> -		result = 0;
+> -	}
+> -
+> -	up_read(&mm->mmap_sem);
+> -	mmput(mm);
+> -out:
+> -	return result;
+> -}
+> -
+>  /*
+>   * display mapping lines for a particular process's /proc/pid/maps
+>   */
+>  static int show_map(struct seq_file *m, void *_vml)
+>  {
+> Index: linux-2.6.22-rc2-mm1/fs/proc/internal.h
+> ===================================================================
+> --- linux-2.6.22-rc2-mm1.orig/fs/proc/internal.h
+> +++ linux-2.6.22-rc2-mm1/fs/proc/internal.h
+> @@ -38,11 +38,10 @@ extern int nommu_vma_show(struct seq_fil
+>  #endif
+>  
+>  extern int maps_protect;
+>  
+>  extern void create_seq_entry(char *name, mode_t mode, const struct file_operations *f);
+> -extern int proc_exe_link(struct inode *, struct dentry **, struct vfsmount **);
+>  extern int proc_tid_stat(struct task_struct *,  char *);
+>  extern int proc_tgid_stat(struct task_struct *, char *);
+>  extern int proc_pid_status(struct task_struct *, char *);
+>  extern int proc_pid_statm(struct task_struct *, char *);
+>  extern loff_t mem_lseek(struct file * file, loff_t offset, int orig);
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
