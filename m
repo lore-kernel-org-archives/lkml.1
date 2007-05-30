@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752417AbXE3J7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbXE3KCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752417AbXE3J7J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 05:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXE3J65
+	id S1752563AbXE3KCc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 06:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbXE3KCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 05:58:57 -0400
-Received: from verein.lst.de ([213.95.11.210]:54726 "EHLO mail.lst.de"
+	Wed, 30 May 2007 06:02:24 -0400
+Received: from verein.lst.de ([213.95.11.210]:54777 "EHLO mail.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbXE3J65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 05:58:57 -0400
-Date: Wed, 30 May 2007 11:58:22 +0200
+	id S1751396AbXE3KCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 06:02:23 -0400
+Date: Wed, 30 May 2007 12:01:45 +0200
 From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: cbe-oss-dev@ozlabs.org, gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [Cbe-oss-dev] [RFC] Cell: shutdown method for spu_sysdev_class
-Message-ID: <20070530095821.GA24373@lst.de>
-References: <463D1A2F.10708@am.sony.com> <200705292023.49968.arnd@arndb.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Christoph Hellwig <hch@lst.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+Message-ID: <20070530100145.GA24586@lst.de>
+References: <20070525083607.784351000@sonycom.com> <20070525083632.677742000@sonycom.com> <20070529104948.GC29351@lst.de> <Pine.LNX.4.62.0705291818560.7698@pademelon.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705292023.49968.arnd@arndb.de>
+In-Reply-To: <Pine.LNX.4.62.0705291818560.7698@pademelon.sonytel.be>
 User-Agent: Mutt/1.3.28i
 X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 08:23:49PM +0200, Arnd Bergmann wrote:
-> On Sunday 06 May 2007, Geoff Levand wrote:
-> > --- ps3-linux-dev.orig/arch/powerpc/platforms/cell/spu_base.c
-> > +++ ps3-linux-dev/arch/powerpc/platforms/cell/spu_base.c
-> > @@ -463,8 +463,21 @@ void spu_free(struct spu *spu)
-> >  }
-> >  EXPORT_SYMBOL_GPL(spu_free);
-> >
-> > +static int spu_shutdown(struct sys_device *sysdev)
-> > +{
-> > +       struct spu *spu = container_of(sysdev, struct spu, sysdev);
-> > +
-> > +       // what else here???
-> > +
-> > +       spu_free_irqs(spu);
-> > +       spu_destroy_spu(spu);
-> > +       kfree(spu);
-> > +       return 0;
-> > +}
-> > +
-> >  struct sysdev_class spu_sysdev_class = {
-> > -       set_kset_name("spu")
-> > +       set_kset_name("spu"),
-> > +       .shutdown = spu_shutdown,
-> >  };
-> >
-> >  int spu_add_sysdev_attr(struct sysdev_attribute *attr)
+On Tue, May 29, 2007 at 06:21:36PM +0200, Geert Uytterhoeven wrote:
+> On Tue, 29 May 2007, Christoph Hellwig wrote:
+> > > +/*
+> > > + * copy data from device into scatter/gather buffer
+> > > + */
+> > > +static int fill_from_dev_buffer(struct scsi_cmnd *cmd, const void *buf,
+> > > +				int buflen)
+> > > +{
+> > > +	int k, req_len, act_len, len, active;
+> > > +	void *kaddr;
+> > > +	struct scatterlist *sgpnt;
+> > > +
+> > > +	if (!cmd->request_bufflen)
+> > > +		return 0;
+> > > +
+> > > +	if (!cmd->request_buffer)
+> > > +		return DID_ERROR << 16;
+> > > +
+> > > +	if (cmd->sc_data_direction != DMA_BIDIRECTIONAL &&
+> > > +	    cmd->sc_data_direction != DMA_FROM_DEVICE)
+> > > +		return DID_ERROR << 16;
+> > > +
+> > > +	if (!cmd->use_sg) {
+> > > +		req_len = cmd->request_bufflen;
+> > > +		act_len = min(req_len, buflen);
+> > > +		memcpy(cmd->request_buffer, buf, act_len);
+> > > +		cmd->resid = req_len - act_len;
+> > > +		return 0;
+> > > +	}
+> > 
+> > This is never true anymore.
 > 
-> After some debugging, I found that this patch creates an oops when slab
-> debugging is enabled, the reason for that being that sysdev_shutdown()
-> iterates over all system devices using list_for_each_entry(), not
-> list_for_each_entry_safe().
-> 
-> There are two ways of fixing this:
-> 
-> - use list_for_each_entry_safe() to go over all devices so they
->   can be freed in their ->shutdown method.
-> - not free the device, because we know the system is going down
->   anyway.
-> 
-> Is it documented or implied somewhere that ->shutdown must not free
-> the device? If not, the first option is probably the safer choice.
+> Just to be sure: all four if-cases or only the last one?
 
-It's not documented anywhere, but implicitly assumed.  I don't know
-of any shutdown implementation that frees the device.
+That's just in reference to the last one.  The checks above could
+be condensed a little more aswell, but I'll comment on further in
+the second round of review, in the hope that the command submission
+path is a lot more streamline by then already.
+
