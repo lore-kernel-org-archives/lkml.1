@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbXE3RiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbXE3RjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbXE3RiZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbXE3RiR
+	id S1758073AbXE3RjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbXE3RjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:38:17 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:46913 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753980AbXE3RiQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:38:16 -0400
-Date: Wed, 30 May 2007 10:37:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Jones <davej@redhat.com>
-cc: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH -mm] 1/2: MMCONFIG: validate against ACPI motherboard
- resources
-In-Reply-To: <20070530172331.GB2794@redhat.com>
-Message-ID: <alpine.LFD.0.98.0705301034320.26602@woody.linux-foundation.org>
-References: <465CF794.1070406@shaw.ca> <alpine.LFD.0.98.0705292125511.26602@woody.linux-foundation.org>
- <465D8BA1.1080800@shaw.ca> <alpine.LFD.0.98.0705300804140.26602@woody.linux-foundation.org>
- <20070530172331.GB2794@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 30 May 2007 13:39:09 -0400
+Received: from pat.uio.no ([129.240.10.15]:41871 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754064AbXE3RjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 13:39:08 -0400
+Subject: Re: [PATCH 2/4] AFS: Add a function to excise a rejected write
+	from the pagecache
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <10564.1180521323@redhat.com>
+References: <1180050860.8872.42.camel@heimdal.trondhjem.org>
+	 <1180046115.8872.27.camel@heimdal.trondhjem.org>
+	 <20070524133821.3ee9c9f3.akpm@linux-foundation.org>
+	 <20070523191518.24135.81257.stgit@warthog.cambridge.redhat.com>
+	 <20070523191524.24135.2609.stgit@warthog.cambridge.redhat.com>
+	 <27608.1180042522@redhat.com> <29320.1180048725@redhat.com>
+	 <10564.1180521323@redhat.com>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 13:39:00 -0400
+Message-Id: <1180546740.6770.15.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.115)
+X-UiO-Scanned: 0C33D4DD21572F1728E8EB7D6634B92A4F0B6C9D
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 636 total 2051363 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-05-30 at 11:35 +0100, David Howells wrote:
+> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> 
+> > All I do is to protect new calls to read() and write() with a call to
+> > check if the page cache needs invalidating.
+> 
+> What about mmap()?  What if someone gets a mapping on a section of file that
+> subsequently has a write rejected on it?  If you invalidate only on
+> read()/write(), what do you do about such a mapping?
 
+Same philosophy: The people who already have the file mapped will
+already be working with corrupted data, so there is little point in
+bending over backwards to "fix" the problem. Instead we flush out the
+page cache using invalidate_inode_pages2() whenever someone tries to
+mmap() a new section of the file.
 
-On Wed, 30 May 2007, Dave Jones wrote:
->
-> I'm convinced there's some contest to see who can make the worst
-> graphical mail client for Linux. I'm not sure what the prize is,
-> or who's winning, but the entries so far are horrific.
+Trond
 
-LOL.
-
-Although in this case it was actually not a Linux MUA:
-
-	User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-
-but I didn't want to embarrass Robert publicly before you brought up the 
-issue of operating systems ;)
-
-Your procmail filter looks somewhat broken, btw. It will trigger on things 
-that aren't headers, and it will potentially _not_ trigger on headers (ie 
-if they are line continuations). But I guess it works well enough in 
-practice.
-
-			Linus
