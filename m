@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbXE3Giw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751447AbXE3Gn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752529AbXE3Giw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 02:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbXE3Gid
+	id S1751447AbXE3Gn1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 02:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbXE3GnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 02:38:33 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:10071 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751299AbXE3Gib (ORCPT
+	Wed, 30 May 2007 02:43:21 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:52974 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbXE3GnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 02:38:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=jhejqxK9SKMp2YtetcN1iHBSCJlEDKZlpoJlVQwAe1EUdCYi24VI3M48RlL/OL4HES1Q8fny12aEIYtLNRzk2GDQX2Rd2oydzvL4mc2uOy7jXqLeXl2j/nRn0ahI0bX42KUwIbfCwaTXIbXKQB8fCFZK+7t1AB1kG8mUrWt2bW4=
-Message-ID: <465C809C.60507@gmail.com>
-Date: Wed, 30 May 2007 04:35:56 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 30 May 2007 02:43:20 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 30 May 2007 08:41:56 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] FILESYSTEMS: Delete unused "int dummy[5]" from
+ inodes_stat_t.
+To: linux-kernel@vger.kernel.org
+cc: Josh Boyer <jwboyer@gmail.com>, "Robert P. J. Day" <rpjday@mindspring.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20070529123326.a8a1bd64.randy.dunlap@oracle.com>
+Message-ID: <tkrat.2eccbb76ef1aee06@s5r6.in-berlin.de>
+References: <Pine.LNX.4.64.0705291307001.32601@localhost.localdomain>
+ <20070529110041.49bf57f1.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705291406040.4617@localhost.localdomain>
+ <20070529111902.27055fd0.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0705291416470.4736@localhost.localdomain>
+ <465C71EA.5040706@oracle.com>
+ <625fc13d0705291144u1aef3b6dx4b00873f3d05b652@mail.gmail.com>
+ <20070529123326.a8a1bd64.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: davids@webmaster.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: epoll,threading
-References: <MDEHLPKNGKAHNMBLJOLKGEJIEBAC.davids@webmaster.com>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEJIEBAC.davids@webmaster.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Schwartz wrote:
->> I want to know in detail about , what the events (epoll or /dev/poll or
->> select ) achieve in contrast to  thread per client.
->>
->> i can have a thread per client and use send and recv system call directly
->> right? Why do i go for these event mechanisms?
->>
->> Please help me to understand this.
-> 
-> Aside from the obvious, consider a server that needs to do a little bit of
-> work on each of 1,000 clients on a single CPU system. With a
-> thread-per-client approach, 1,000 context switches will be needed. With an
-> epoll thread pool approach, none are needed and five or six are typical.
-> 
-> Both get you the major advantages of threading. You can take full advantage
-> of multiple CPUs. You can write code that blocks occasionally without
-> bringing the whole server down. A page fault doesn't stall your whole
-> server.
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: fs: clarify "dummy" member in struct inodes_stat_t
 
-It all depends on the workload but thread switching overhead can be
-negligible - after all all it does is entering kernel, schedule, swap
-processor context and return.  Maybe using separate stack has minor
-impact on cache hit ratio.  You need benchmark numbers to claim one way
-or the other.
+Found by Robert P. J. Day:  The role of inodes_stat_t.dummy wasn't clear
+and one might be tempted to remove it.  Give it a better name and add a
+comment.
 
-In my experience with web caches, epoll or similar for idle clients and
-thread per active client scaled and performed pretty well - it needed
-more memory but the performance wasn't worse than asynchronous design
-and doing complex server in async model is a lot of pain.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+Only quickly compile-tested.
+
+Index: linux/include/linux/fs.h
+===================================================================
+--- linux.orig/include/linux/fs.h
++++ linux/include/linux/fs.h
+@@ -44,7 +44,7 @@ extern int get_max_files(void);
+ struct inodes_stat_t {
+ 	int nr_inodes;
+ 	int nr_unused;
+-	int dummy[5];
++	int reserved[5];	/* for sysctl and procfs ABI compatibility */
+ };
+ extern struct inodes_stat_t inodes_stat;
+ 
 
 -- 
-tejun
+Stefan Richter
+-=====-=-=== -=-= ====-
+http://arcgraph.de/sr/
 
