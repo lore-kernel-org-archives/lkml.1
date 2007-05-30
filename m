@@ -1,131 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbXE3N31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbXE3N3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265AbXE3N31 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXE3N3U
+	id S1755088AbXE3N3z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXE3N3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:29:20 -0400
-Received: from mail.windriver.com ([147.11.1.11]:45610 "EHLO mail.wrs.com"
+	Wed, 30 May 2007 09:29:47 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53716 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751876AbXE3N3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:29:20 -0400
-Message-ID: <465D7BE9.70702@windriver.com>
-Date: Wed, 30 May 2007 08:28:09 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org,
-       Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       stable@kernel.org
-Subject: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole module
-References: <20070526154011.GB3735@vanheusden.com> <20070529005628.f7f3abc6.akpm@linux-foundation.org>
-In-Reply-To: <20070529005628.f7f3abc6.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------040406020001040707050801"
-X-OriginalArrivalTime: 30 May 2007 13:28:10.0915 (UTC) FILETIME=[5E132F30:01C7A2BE]
+	id S1754067AbXE3N3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 09:29:46 -0400
+Date: Wed, 30 May 2007 15:30:42 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Bryan Wu <bryan.wu@analog.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/20] Blackfin update for 2.6.22-rc3
+Message-ID: <20070530133042.GA14693@uranus.ravnborg.org>
+References: <11803414753217-git-send-email-bryan.wu@analog.com> <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org> <200705300909.13419.rgetz@blackfin.uclinux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705300909.13419.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040406020001040707050801
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, May 30, 2007 at 09:09:13AM -0400, Robin Getz wrote:
+> On Tue 29 May 2007 16:59, Linus Torvalds pondered:
+> > 
+> > On Mon, 28 May 2007, Bryan Wu wrote:
+> > > 
+> > >  - Blackfin arch update including BF54x initial supporting
+> > >  - Blackfin driver update: serial/spi/rtc
+> > >  - Provide new Blackfin watchdog driver
+> > >  - binfmt_flat.c for Blackfin arch modification
+> > 
+> > I realize that this all just touches blackfin-specific stuff, but after 
+> > -rc3 I really prefer not to bother with these things..
+> > 
+> > Also, for stuff that is really just an architecture that I can't even 
+> > test,
+> 
+> In one of my (how did Andrew word it...) circumlocutious threads about 
+> Blackfin a while ago, I offered hardware to anyone who wanted to try things 
+> out.
+Any possibility for you to provide cross-toolchain for x86?
+I have no plans running on actual HW but adding a bit more compile coverage would be great.
 
-
-Attached is a patch to fix the soft lockup problem when removing the 
-netconsole module.
-
-It looks different than the original patch I posted because the context 
-had to change to maintain 80 column code.  For reference the original 
-e-mail + patch was "[BUG] 2.6.21 hang in 
-cancel_rearming_delayed_workqueue()" sent on 5/25/07.
-
-Jason.
-
-
-
---------------040406020001040707050801
-Content-Type: text/plain;
- name="netpoll_cleanup_fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="netpoll_cleanup_fix.patch"
-
->From 102a018d601e954f658d272d4daeef139ae40e0e Mon Sep 17 00:00:00 2001
-From: Jason Wessel <jason.wessel@windriver.com>
-Date: Wed, 30 May 2007 08:03:52 -0500
-Subject: [PATCH] The netpoll_cleanup handler can hang the kernel if there is no work in
-the work queue because a call to cancel_rearming_delayed_work() with
-no work goes into an infinite loop.
-
-The typical case where this is a problem is on removing a kernel
-module such as the netconsole driver or kgdboe.
-
-To maintain 80 column code, the function had to have one level of braces
-dropped.
-
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- net/core/netpoll.c |   36 +++++++++++++++++++-----------------
- 1 files changed, 19 insertions(+), 17 deletions(-)
-
-diff --git a/net/core/netpoll.c b/net/core/netpoll.c
-index 4581ece..28fa50e 100644
---- a/net/core/netpoll.c
-+++ b/net/core/netpoll.c
-@@ -766,30 +766,32 @@ void netpoll_cleanup(struct netpoll *np)
- 	struct netpoll_info *npinfo;
- 	unsigned long flags;
- 
--	if (np->dev) {
--		npinfo = np->dev->npinfo;
--		if (npinfo) {
--			if (npinfo->rx_np == np) {
--				spin_lock_irqsave(&npinfo->rx_lock, flags);
--				npinfo->rx_np = NULL;
--				npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
--				spin_unlock_irqrestore(&npinfo->rx_lock, flags);
--			}
-+	if (!np->dev)
-+		return;
-+
-+	npinfo = np->dev->npinfo;
-+	if (npinfo) {
-+		if (npinfo->rx_np == np) {
-+			spin_lock_irqsave(&npinfo->rx_lock, flags);
-+			npinfo->rx_np = NULL;
-+			npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
-+			spin_unlock_irqrestore(&npinfo->rx_lock, flags);
-+		}
- 
--			np->dev->npinfo = NULL;
--			if (atomic_dec_and_test(&npinfo->refcnt)) {
--				skb_queue_purge(&npinfo->arp_tx);
--				skb_queue_purge(&npinfo->txq);
-+		np->dev->npinfo = NULL;
-+		if (atomic_dec_and_test(&npinfo->refcnt)) {
-+			skb_queue_purge(&npinfo->arp_tx);
-+			skb_queue_purge(&npinfo->txq);
-+			if (delayed_work_pending(&npinfo->tx_work)) {
- 				cancel_rearming_delayed_work(&npinfo->tx_work);
- 				flush_scheduled_work();
--
--				kfree(npinfo);
- 			}
--		}
- 
--		dev_put(np->dev);
-+			kfree(npinfo);
-+		}
- 	}
- 
-+	dev_put(np->dev);
- 	np->dev = NULL;
- }
- 
--- 
-1.5.0.6
-
-
---------------040406020001040707050801--
+	Sam
