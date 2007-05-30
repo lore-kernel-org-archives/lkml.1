@@ -1,332 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbXE3T6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758807AbXE3T7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758791AbXE3T6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbXE3T6F
+	id S1758807AbXE3T7a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbXE3T7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:58:05 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:36505 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755291AbXE3T6D (ORCPT
+	Wed, 30 May 2007 15:59:22 -0400
+Received: from nwk-ea-fw-1.sun.com ([192.18.42.249]:44928 "EHLO
+	nwk-ea-fw-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755805AbXE3T7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:58:03 -0400
-Date: Wed, 30 May 2007 20:57:38 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, clameter@sgi.com
-Subject: Re: [PATCH 2/7] KAMEZAWA Hiroyuki - migration by kernel
-In-Reply-To: <20070530114243.e3c3c75e.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0705302021040.7044@blonde.wat.veritas.com>
-References: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
- <20070529173649.1570.85922.sendpatchset@skynet.skynet.ie>
- <20070530114243.e3c3c75e.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAY2xhbWV0ZXJAc2dpLmNvbQBsaW51eC1tbUBrdmFjay5vcmcAa2FtZXphd2EuaGlyb3l1QGpwLmZ1aml0c3UuY29tAG1lbEBjc24udWwuaWUA
-X-Brightmail-Tracker: AAAAAA==
+	Wed, 30 May 2007 15:59:21 -0400
+Date: Wed, 30 May 2007 12:58:11 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH 4/5] serial: convert early_uart to earlycon for 8250
+In-reply-to: <20070530115717.77e05153.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>, Russell King <rmk@arm.linux.org.uk>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gerd Hoffmann <kraxel@suse.de>,
+       David Gibson <david@gibson.dropbear.id.au>
+Reply-to: Yinghai.Lu@Sun.COM
+Message-id: <465DD753.5040208@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+References: <200705291844.00308.yinghai.lu@sun.com>
+ <20070530115717.77e05153.akpm@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007, KAMEZAWA Hiroyuki wrote:
-> This is my latest version.
-> (not tested because caller of this function is being rewritten now..)
+Andrew Morton wrote:
+> On Tue, 29 May 2007 18:43:59 -0700
+> Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 > 
-> I'll move this patch to the top of my series and prepare to post this patch as
-> a single patch.
+>> [PATCH 4/5] serial: convert early_uart to earlycon for 8250
+>>
+>> Beacuse SERIAL_PORT_DFNS is removed from include/asm-i386/serial.h and
+>> include/asm-x86_64/serial.h. the serial8250_ports need to be probed late
+>> in serial initializing stage. the console_init=>serial8250_console_init=>
+>> register_console=>serial8250_console_setup will return -ENDEV, and console
+>> ttyS0 can not be enabled at that time.
+>> need to wait till uart_add_one_port in drivers/serial/serial_core.c to call
+>> register_console to get console ttyS0. that is too late.
+>>
+>> Make early_uart to use early_param, so uart console can be used earlier.
+>> Make it to be bootconsole with CON_BOOT flag, so can use console handover
+>> feature. and it will switch to corresponding normal serial console
+>> automatically.
+>>
+>> new command line will be:
+>> 	console=uart8250,io,0x3f8,9600n8
+>> 	console=uart8250,mmio,0xff5e0000,115200n8
+>> or
+>> 	earlycon=uart8250,io,0x3f8,9600n8
+>> 	earlycon=uart8250,mmio,0xff5e0000,115200n8
+>>
+>> it will print in very early stage:
+>> 	Early serial console at I/O port 0x3f8 (options '9600n8')
+>> 	console [uart0] enabled
+>> later for console it will print:
+>> 	console handover: boot [uart0] -> real [ttyS0]
+>>
+>>
+>>  Documentation/kernel-parameters.txt |   11 +++
+>>  arch/ia64/kernel/setup.c            |    4 -
+>>  drivers/serial/8250.c               |   28 ++-------
+>>  drivers/serial/8250_early.c         |  104 ++++++++++++++----------------------
+>>  drivers/serial/Kconfig              |   10 +++
+>>  include/asm-i386/fixmap.h           |    2 
+>>  include/asm-i386/io.h               |   13 ++++
+>>  include/asm-ia64/io.h               |    4 +
+>>  include/asm-x86_64/fixmap.h         |    4 +
+>>  include/asm-x86_64/io.h             |   13 ++++
+>>  include/linux/console.h             |    2 
+>>  include/linux/serial.h              |    6 --
+>>  include/linux/serial_8250.h         |    3 +
+>>  init/main.c                         |    5 +
+>>  kernel/printk.c                     |   22 +++++++
+>>  15 files changed, 133 insertions(+), 98 deletions(-)
 > 
-> ==
-> page migration by kernel v2.
+> This is a lot of tricky stuff in areas which I'm not very familar with. 
+> Need help, am not getting it.
 > 
-> Changelog V1 -> V2
->  *removed atomic ops.
->  *removes changes in anon_vma_free() and add check before calling it.
->  *reflected feedback of review.
->  *remove CONFIG_MIGRATION_BY_KERNEL
+>> @@ -143,12 +140,7 @@ static int __init parse_options(struct early_uart_device *device, char *options)
+>>  	if (!strncmp(options, "mmio,", 5)) {
+>>  		port->iotype = UPIO_MEM;
+>>  		port->mapbase = simple_strtoul(options + 5, &options, 0);
+>> -		port->membase = ioremap(port->mapbase, mapsize);
+>> -		if (!port->membase) {
+>> -			printk(KERN_ERR "%s: Couldn't ioremap 0x%lx\n",
+>> -				__FUNCTION__, port->mapbase);
+>> -			return -ENOMEM;
+>> -		}
+>> +		port->membase = fix_ioremap(FIX_EARLYCON_MEM_BASE, port->mapbase);
 > 
-> In usual, migrate_pages(page,,) is called with holoding mm->sem by systemcall.
-> (mm here is a mm_struct which maps the migration target page.)
-> This semaphore helps avoiding some race conditions.
+> A number of useful-looking warnigns such as the above got removed.  How come?
+earycon, when you can not get fix_ioremap work, you can not get anything from boot.
 > 
-> But, if we want to migrate a page by some kernel codes, we have to avoid
-> some races. This patch adds check code for following race condition.
+>>  		mmio = 1;
+>>  	} else if (!strncmp(options, "io,", 3)) {
+>>  		port->iotype = UPIO_PORT;
+>> @@ -175,9 +167,16 @@ static int __init parse_options(struct early_uart_device *device, char *options)
+>>  	return 0;
+>>  }
+>>  
+>> -static int __init early_uart_setup(struct console *console, char *options)
+>> +static struct console early_serial8250_console __initdata = {
+>> +	.name	= "uart",
+>> +	.write	= early_serial8250_write,
+>> +	.flags	= CON_PRINTBUFFER,
 > 
-> 1. A page which is not mapped can be target of migration. Then, we have
->    to check page_mapped() before calling try_to_unmap().
+> Should this have CON_BOOT set as well?
 > 
-> 2. We can't trust page->mapping if page_mapcount() can goes down to 0.
->    But when we map newpage back to original ptes, we have to access
->    anon_vma from a page, which page_mapcount() is 0.
->    This patch adds a special refcnt to anon_vma, which is synced by
->    anon_vma->lock and delays freeing anon_vma.
+> See
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/fixes-and-cleanups-for-earlyprintk-aka-boot-console.patch,
+> which is now in mainline.
 > 
-> Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-I've taken a look at last.  It looks like a good fix to a real problem,
-but may I suggest a simpler version?  The anon_vma isn't usually held
-by a refcount, but by having a vma on its linked list: why not just
-put a dummy vma into that linked list?  No need to add a refcount.
+I put that into setup_early_serial8250_console.
 
-The NUMA shmem_alloc_page already uses a dummy vma on its stack,
-so you can reasonably declare a vm_area_struct on unmap_and_move's
-stack.  No need for a special anon_vma_release, anon_vma_unlink
-should do fine.  I've not reworked your whole patch, but show
-what I think the mm/rmap.c part would be at the bottom.
+-int __init early_serial_console_init(char *cmdline)
++static int __init setup_early_serial8250_console(char *cmdline)
+  {
+         char *options;
+         int err;
 
-A few comments on your version below...
+-       options = strstr(cmdline, "console=uart,");
++       options = strstr(cmdline, "uart8250,");
+         if (!options)
+-               return -ENODEV;
++               return 0;
 
-> 
-> 
-> ---
->  include/linux/migrate.h |    5 ++++-
->  include/linux/rmap.h    |   11 +++++++++++
->  mm/migrate.c            |   35 +++++++++++++++++++++++++++++------
->  mm/rmap.c               |   36 +++++++++++++++++++++++++++++++++++-
->  4 files changed, 79 insertions(+), 8 deletions(-)
-> 
-> Index: linux-2.6.22-rc2-mm1/mm/migrate.c
-> ===================================================================
-> --- linux-2.6.22-rc2-mm1.orig/mm/migrate.c
-> +++ linux-2.6.22-rc2-mm1/mm/migrate.c
-> @@ -607,11 +607,12 @@ static int move_to_new_page(struct page 
->   * to the newly allocated page in newpage.
->   */
->  static int unmap_and_move(new_page_t get_new_page, unsigned long private,
-> -			struct page *page, int force)
-> +			struct page *page, int force, int nocontext)
->  {
-
-An "int context" would be a lot better than the negative "int nocontext";
-even better would be "int holds_mmap_sem".  Or even skip the additional
-argument completely, use the anon_vma_hold method always without relying
-on whether or not mmap_sem is held.  I don't know how significant it is
-to avoid extra locking here: on the one hand we like to avoid unnecessary
-locking; on the other hand there's probably a thousand commoner places in
-the kernel where we could pass down an arg to say, actually you won't
-need to lock in such and such a case.
-
->  	int rc = 0;
->  	int *result = NULL;
->  	struct page *newpage = get_new_page(page, private, &result);
-> +	struct anon_vma *anon_vma = NULL;
->  
->  	if (!newpage)
->  		return -ENOMEM;
-> @@ -632,17 +633,23 @@ static int unmap_and_move(new_page_t get
->  			goto unlock;
->  		wait_on_page_writeback(page);
->  	}
-> -
-> +	/* hold this anon_vma until page migration ends */
-> +	if (nocontext && PageAnon(page) && page_mapped(page))
-> +		anon_vma = anon_vma_hold(page);
->  	/*
->  	 * Establish migration ptes or remove ptes
->  	 */
-> -	try_to_unmap(page, 1);
-> +	if (page_mapped(page))
-> +		try_to_unmap(page, 1);
-> +
-
-All these preliminary tests: yes, I suppose they avoid unnecessary
-locking, so I guess they're good; but it should work without them.
-
->  	if (!page_mapped(page))
->  		rc = move_to_new_page(newpage, page);
->  
->  	if (rc)
->  		remove_migration_ptes(page, page);
->  
-> +	anon_vma_release(anon_vma);
-> +
->  unlock:
->  	unlock_page(page);
->  
-> @@ -686,8 +693,8 @@ move_newpage:
->   *
->   * Return: Number of pages not migrated or error code.
->   */
-> -int migrate_pages(struct list_head *from,
-> -		new_page_t get_new_page, unsigned long private)
-> +int __migrate_pages(struct list_head *from,
-> +		new_page_t get_new_page, unsigned long private, int nocontext)
->  {
-
-Remarks on nocontext as above: mmm, I think keep the patch small
-and don't add that extra argument at all.
-
->  	int retry = 1;
->  	int nr_failed = 0;
-> @@ -707,7 +714,7 @@ int migrate_pages(struct list_head *from
->  			cond_resched();
->  
->  			rc = unmap_and_move(get_new_page, private,
-> -						page, pass > 2);
-> +						page, pass > 2, nocontext);
->  
->  			switch(rc) {
->  			case -ENOMEM:
-> @@ -737,6 +744,22 @@ out:
->  	return nr_failed + retry;
->  }
->  
-> +int migrate_pages(struct list_head *from,
-> +	new_page_t get_new_page, unsigned long private)
-> +{
-> +	return __migrate_pages(from, get_new_page, private, 0);
-> +}
-> +
-> +/*
-> + * When page migration is issued by the kernel itself without page mapper's
-> + * mm->sem, we have to be more careful to do page migration.
-> + */
-> +int migrate_pages_nocontext(struct list_head *from,
-> +	new_page_t get_new_page, unsigned long private)
-> +{
-> +	return __migrate_pages(from, get_new_page, private, 1);
-> +}
-> +
->  #ifdef CONFIG_NUMA
->  /*
->   * Move a list of individual pages
-> Index: linux-2.6.22-rc2-mm1/include/linux/rmap.h
-> ===================================================================
-> --- linux-2.6.22-rc2-mm1.orig/include/linux/rmap.h
-> +++ linux-2.6.22-rc2-mm1/include/linux/rmap.h
-> @@ -26,6 +26,9 @@
->  struct anon_vma {
->  	spinlock_t lock;	/* Serialize access to vma list */
->  	struct list_head head;	/* List of private "related" vmas */
-> +#ifdef CONFIG_MIGRATION
-> +	int	ref;	/* special refcnt for migration */
-> +#endif
->  };
->  
->  #ifdef CONFIG_MMU
-> @@ -42,6 +45,14 @@ static inline void anon_vma_free(struct 
->  	kmem_cache_free(anon_vma_cachep, anon_vma);
->  }
->  
-> +#ifdef  CONFIG_MIGRATION
-> +extern struct anon_vma *anon_vma_hold(struct page *page);
-> +extern void anon_vma_release(struct anon_vma *anon_vma);
-> +#else
-> +#define anon_vma_hold(page)     do{}while(0)
-> +#define anon_vma_release(anon)  do{}while(0)
-
-Rather than change those to "do {} while (0)", to which others
-will ask for static inlines, just delete them, can't you -
-they're simply not needed in the !CONFIG_MIGRATION case, right?
-
-> +#endif
-> +
->  static inline void anon_vma_lock(struct vm_area_struct *vma)
->  {
->  	struct anon_vma *anon_vma = vma->anon_vma;
-> Index: linux-2.6.22-rc2-mm1/mm/rmap.c
-> ===================================================================
-> --- linux-2.6.22-rc2-mm1.orig/mm/rmap.c
-> +++ linux-2.6.22-rc2-mm1/mm/rmap.c
-> @@ -90,6 +90,9 @@ int anon_vma_prepare(struct vm_area_stru
->  			anon_vma = anon_vma_alloc();
->  			if (unlikely(!anon_vma))
->  				return -ENOMEM;
-> +#ifdef CONFIG_MIGRATION
-> +			anon_vma->ref = 0;
-> +#endif
->  			allocated = anon_vma;
->  			locked = NULL;
->  		}
-> @@ -150,9 +153,13 @@ void anon_vma_unlink(struct vm_area_stru
->  	spin_lock(&anon_vma->lock);
->  	validate_anon_vma(vma);
->  	list_del(&vma->anon_vma_node);
-> -
->  	/* We must garbage collect the anon_vma if it's empty */
->  	empty = list_empty(&anon_vma->head);
-> +#ifdef CONFIG_MIGRATION
-> +	/* this means migrate_pages() has reference to this */
-> +	if (anon_vma->ref)
-> +		empty = 0;
-> +#endif
->  	spin_unlock(&anon_vma->lock);
->  
->  	if (empty)
-> @@ -203,6 +210,33 @@ static void page_unlock_anon_vma(struct 
->  	spin_unlock(&anon_vma->lock);
->  	rcu_read_unlock();
->  }
-> +#ifdef CONFIG_MIGRATION
-> +struct anon_vma *anon_vma_hold(struct page *page) {
-> +	struct anon_vma *anon_vma = NULL;
-> +	anon_vma = page_lock_anon_vma(page);
-> +	if (!anon_vma)
-> +		return NULL;
-> +	if (!list_empty(&anon_vma->head))
-> +		anon_vma->ref++;
-> +	spin_unlock(&anon_vma->lock);
-> +	return anon_vma;
-> +}
-> +
-> +void anon_vma_release(struct anon_vma *anon_vma)
-> +{
-> +	int empty;
-> +	if (!anon_vma) /* noting to do */
-> +		return;
-> +	spin_lock(&anon_vma->lock);
-> +	empty = list_empty(&anon_vma->head);
-> +	anon_vma->ref--;
-> +	if (!anon_vma->ref)
-> +		empty = 0;
-> +	spin_unlock(&anon_vma->lock);
-> +	if (empty)
-> +		anon_vma_free(anon_vma);
-> +}
-> +#endif
->  
->  /*
->   * At what user virtual address is page expected in vma?
-> Index: linux-2.6.22-rc2-mm1/include/linux/migrate.h
-> ===================================================================
-> --- linux-2.6.22-rc2-mm1.orig/include/linux/migrate.h
-> +++ linux-2.6.22-rc2-mm1/include/linux/migrate.h
-> @@ -30,7 +30,10 @@ extern int putback_lru_pages(struct list
->  extern int migrate_page(struct address_space *,
->  			struct page *, struct page *);
->  extern int migrate_pages(struct list_head *l, new_page_t x, unsigned long);
-> -
-> +#ifdef CONFIG_MIGRATION_BY_KERNEL
-> +extern int migrate_pages_nocontext(struct list_head *l, new_page_t x,
-> +					unsigned long);
-> +#endif
->  extern int fail_migrate_page(struct address_space *,
->  			struct page *, struct page *);
->  
-
---- 2.6.22-rc3/mm/rmap.c	2007-05-19 07:36:34.000000000 +0100
-+++ linux/mm/rmap.c	2007-05-30 20:11:21.000000000 +0100
-@@ -204,6 +204,23 @@ static void page_unlock_anon_vma(struct 
- 	rcu_read_unlock();
- }
- 
-+#ifdef CONFIG_MIGRATION
-+/*
-+ * Insert a dummy vm_struct_struct into the page's anon_vma list of vmas,
-+ * to hold it from being freed during page migration (lacking mmap_sem).
-+ */
-+void anon_vma_hold(struct page *page, struct vm_area_struct *holder)
-+{
-+	holder->anon_vma = page_lock_anon_vma(page);
-+	if (holder->anon_vma) {
-+		/* Make any call to vma_address() fail */
-+		holder->vm_start = holder->vm_end = 0;
-+		list_add_tail(&holder->anon_vma_node, &holder->anon_vma->head);
-+		page_unlock_anon_vma(holder->anon_vma);
-+	}
-+}
-+#endif
+         options = strchr(cmdline, ',') + 1;
+-       if ((err = early_uart_setup(NULL, options)) < 0)
++       if ((err = early_serial8250_setup(options)) < 0)
+                 return err;
+-       return early_uart_console_init();
 +
- /*
-  * At what user virtual address is page expected in vma?
-  */
++       early_serial8250_console.flags |= CON_BOOT;
++       register_console(&early_serial8250_console);
++
++       return 0;
+  }
+
+we may use
+ >> +	.flags	= CON_PRINTBUFFER | CAN_BOOT;
+
+instead that line.
+
+
+>> +	.index	= -1,
+>> +};
+>> +
+>> +static int __init early_serial8250_setup(char *options)
+>>  {
+>> -	struct early_uart_device *device = &early_device;
+>> +	struct early_serial8250_device *device = &early_device;
+>>  	int err;
+>>  
+>>  	if (device->port.membase || device->port.iobase)
+>> @@ -190,61 +189,40 @@ static int __init early_uart_setup(struct console *console, char *options)
+>>  	return 0;
+>>  }
+>>  
+>> -static struct console early_uart_console __initdata = {
+>> -	.name	= "uart",
+>> -	.write	= early_uart_write,
+>> -	.setup	= early_uart_setup,
+>> -	.flags	= CON_PRINTBUFFER,
+>> -	.index	= -1,
+>> -};
+> 
+> hm, that didn't have CON_BOOT.
+> 
+>> +static inline void __iomem * fix_ioremap (unsigned idx, unsigned long phys)
+> 
+> I don't suppose it'd help much if I were to complain about the coding style
+> (no space after the * or after the function name, please).
+> 
+>> +{
+>> +	void __iomem * vaddr;
+>> +	set_fixmap_nocache(idx, phys & PAGE_MASK);
+>> +	vaddr = (void __iomem *)__fix_to_virt(idx);
+>> +	vaddr += phys & ~PAGE_MASK;
+>> +
+>> +	return vaddr;
+>> +}
+> 
+> Probably this was a bit too large for inlining.
+
+current only one calling, later will use that for usb debug cable.
+
+> 
+>>  /* Use early IO mappings for DMI because it's initialized early */
+>>  #define dmi_ioremap bt_ioremap
+>>  #define dmi_iounmap bt_iounmap
+>> diff --git a/include/asm-ia64/io.h b/include/asm-ia64/io.h
+>> index eb17a86..e29eaf8 100644
+>> --- a/include/asm-ia64/io.h
+>> +++ b/include/asm-ia64/io.h
+>> @@ -423,6 +423,10 @@ extern void __iomem * ioremap(unsigned long offset, unsigned long size);
+>>  extern void __iomem * ioremap_nocache (unsigned long offset, unsigned long size);
+>>  extern void iounmap (volatile void __iomem *addr);
+>>  
+>> +/* for console=uart8250,mmio,0xffe5000,9600n8 */
+>> +#define FIX_EARLYCON_MEM_BASE 1
+>> +#define fix_ioremap(idx, phys) ioremap(phys, 64)
+>> +
+>>  /* Use normal IO mappings for DMI */
+>>  #define dmi_ioremap ioremap
+>>  #define dmi_iounmap(x,l) iounmap(x)
+> 
+> So we touch ia64 as well?
+> 
+>>  
+>> +int update_console_cmdline(char *name, int idx, char *name_new, int idx_new, char *options)
+>> +{
+>> +	struct console_cmdline *c;
+>> +	int i;
+>> +
+>> +	for (i = 0; i < MAX_CMDLINECONSOLES && console_cmdline[i].name[0]; i++)
+>> +		if (strcmp(console_cmdline[i].name, name) == 0 &&
+>> +			  console_cmdline[i].index == idx) {
+>> +				c = &console_cmdline[i];
+>> +				memcpy(c->name, name_new, sizeof(c->name));
+>> +				c->name[sizeof(c->name) - 1] = 0;
+>> +				c->options = options;
+>> +				c->index = idx_new;
+>> +				return i;
+>> +		}
+>> +	/* not found */
+>> +	return -1;
+>> +}
+> 
+> Shouldn't this be __init?
+> 
+> serial8250_find_port_for_earlycon() had its __init removed.  Why?
+with __init, the compiler will cry about .init.text and .text missection.
+
+YH
