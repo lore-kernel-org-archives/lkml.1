@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbXE3NIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbXE3NMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754051AbXE3NIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbXE3NIm
+	id S1754162AbXE3NMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbXE3NMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:08:42 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:35594 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbXE3NIl (ORCPT
+	Wed, 30 May 2007 09:12:09 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:13091 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752160AbXE3NMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:08:41 -0400
-Date: Wed, 30 May 2007 13:40:29 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Message-ID: <20070530124027.GA27942@srcf.ucam.org>
-References: <alpine.LFD.0.98.0705241905490.26602@woody.linux-foundation.org> <1180059605.3997.100.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705241931240.26602@woody.linux-foundation.org> <1180062040.3997.112.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705242021560.26602@woody.linux-foundation.org> <1180067587.3997.136.camel@nigel.suspend2.net> <465C366C.2070900@rtr.ca> <1180473765.20718.47.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705291428410.26602@woody.linux-foundation.org> <20070530114920.GB26326@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070530114920.GB26326@elf.ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Wed, 30 May 2007 09:12:08 -0400
+Message-Id: <20070530124903.882133089@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Wed, 30 May 2007 14:49:03 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 0/6] lock contention tracking -v4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 01:49:21PM +0200, Pavel Machek wrote:
 
-(Trimmed the Cc:s quite heavily - I think this has gone somewhere beyond 
-the original point)
+Use the lockdep infrastructure to track lock contention and other lock
+statistics.
 
-> Notice that we want to be able to suspend while hibernating -- for
-> suspend to both behaviour. So drivers may _not_ rely on system being
-> runnable.
+It tracks lock contention events, and the first four unique call-sites that
+encountered contention.
 
-So keep the driver layers read-only and unfreeze the processes after 
-doing the atomic copy.
+It also measures lock wait-time and hold-time in nanoseconds. The minimum and
+maximum times are tracked, as well as a total (which together with the number
+of event can give the avg).
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+All statistics are done per lock class, per write (exclusive state) and per read
+(shared state). 
+
+The statistics are collected per-cpu, so that the collection overhead is
+minimized via having no global cachemisses.
+
+This new lock statistics feature is independent of the lock dependency checking
+traditionally done by lockdep; it just shares the lock tracking code. It is
+also possible to enable both and runtime disabled either component - thereby
+avoiding the O(n^2) lock chain walks for instance.
+
+--
+
+Changes since -v3
+ - reshuffled code to reduce #ifdef mess
+ - changed some long long to [us]64
+ - split the 'lockstat core' vs 'human readabilty tweaks' differently
+
