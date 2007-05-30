@@ -1,841 +1,500 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbXE3OdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbXE3Oda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbXE3OdJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 10:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbXE3ObH
+	id S1757488AbXE3Oda (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 10:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbXE3ObZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 10:31:07 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55453 "EHLO smtp.polymtl.ca"
+	Wed, 30 May 2007 10:31:25 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55596 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755562AbXE3ObA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 10:31:00 -0400
-Message-Id: <20070530140714.366300717@polymtl.ca>
-References: <20070530140359.006540666@polymtl.ca>
+	id S1753385AbXE3ObV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 10:31:21 -0400
+Message-Id: <20070530140228.008060643@polymtl.ca>
+References: <20070530140025.917261793@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 May 2007 10:04:05 -0400
+Date: Wed, 30 May 2007 10:00:29 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 6/6] Port of blktrace to the Linux Kernel Markers.
-Content-Disposition: inline; filename=linux-kernel-markers-port-blktrace-to-markers.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 30 May 2007 14:30:54 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>
+Subject: [patch 4/9] Conditional Calls - Add kconfig menus
+Content-Disposition: inline; filename=conditional-calls-kconfig-menus.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 30 May 2007 14:30:51 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is a proof of concept patch, for demonstration purpose, of moving
-blktrace to the markers.
+Conditional calls provide a way to compile in kernels features that can be
+enabled dynamically, with a very small footprint when disabled.
 
-A few remarks : this patch has the positive effect of removing some code
-from the block io tracing hot paths, minimizing the i-cache impact in a
-system where the io tracing is compiled in but inactive.
+This patch:
 
-It also moves the blk tracing code from a header (and therefore from the
-body of the instrumented functions) to a separate C file.
-
-There, as soon as one device has to be traced, every devices have to
-fall into the tracing function call. This is slower than the previous
-inline function which tested the condition quickly. If it becomes a
-show stopper, it could be fixed by having the possibility to test a
-supplementary condition, dependant of the marker context, at the marker
-site, just after the enable/disable test.
-
-It does not make the code smaller, since I left all the specialized
-tracing functions for requests, bio, generic, remap, which would go away
-once a generic infrastructure is in place to serialize the information
-passed to the marker. This is mostly why I consider it a proof a
-concept.
+Add Kconfig menus for the marker code.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Adrian Bunk <bunk@stusta.de>
+CC: Andi Kleen <andi@firstfloor.org>
 ---
 
- block/Kconfig                |    1 
- block/blktrace.c             |  281 ++++++++++++++++++++++++++++++++++++++++++-
- block/elevator.c             |    6 
- block/ll_rw_blk.c            |   27 ++--
- drivers/block/cciss.c        |    4 
- drivers/md/dm.c              |   14 +-
- fs/bio.c                     |    4 
- include/linux/blktrace_api.h |  146 +---------------------
- mm/bounce.c                  |    4 
- mm/highmem.c                 |    2 
- 10 files changed, 322 insertions(+), 167 deletions(-)
+ arch/alpha/Kconfig       |    6 ++++++
+ arch/arm/Kconfig         |    6 ++++++
+ arch/arm26/Kconfig       |    6 ++++++
+ arch/avr32/Kconfig.debug |    7 +++++++
+ arch/cris/Kconfig        |    6 ++++++
+ arch/frv/Kconfig         |    6 ++++++
+ arch/h8300/Kconfig       |    6 ++++++
+ arch/i386/Kconfig        |    2 ++
+ arch/ia64/Kconfig        |    3 +++
+ arch/m32r/Kconfig        |    6 ++++++
+ arch/m68k/Kconfig        |    6 ++++++
+ arch/m68knommu/Kconfig   |    6 ++++++
+ arch/mips/Kconfig        |    6 ++++++
+ arch/parisc/Kconfig      |    6 ++++++
+ arch/powerpc/Kconfig     |    3 +++
+ arch/ppc/Kconfig         |    6 ++++++
+ arch/s390/Kconfig        |    2 ++
+ arch/sh/Kconfig          |    6 ++++++
+ arch/sh64/Kconfig        |    6 ++++++
+ arch/sparc/Kconfig       |    2 ++
+ arch/sparc64/Kconfig     |    3 +++
+ arch/um/Kconfig          |    6 ++++++
+ arch/v850/Kconfig        |    6 ++++++
+ arch/x86_64/Kconfig      |    3 +++
+ arch/xtensa/Kconfig      |    6 ++++++
+ kernel/Kconfig.condcall  |   20 ++++++++++++++++++++
+ 26 files changed, 147 insertions(+)
 
-Index: linux-2.6-lttng/block/elevator.c
+Index: linux-2.6-lttng/arch/alpha/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/block/elevator.c	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/block/elevator.c	2007-05-17 02:14:05.000000000 -0400
-@@ -32,7 +32,7 @@
- #include <linux/init.h>
- #include <linux/compiler.h>
- #include <linux/delay.h>
--#include <linux/blktrace_api.h>
-+#include <linux/marker.h>
- #include <linux/hash.h>
+--- linux-2.6-lttng.orig/arch/alpha/Kconfig	2007-05-30 08:42:52.000000000 -0400
++++ linux-2.6-lttng/arch/alpha/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -653,6 +653,12 @@
  
- #include <asm/uaccess.h>
-@@ -551,7 +551,7 @@
- 	unsigned ordseq;
- 	int unplug_it = 1;
+ source "arch/alpha/oprofile/Kconfig"
  
--	blk_add_trace_rq(q, rq, BLK_TA_INSERT);
-+	trace_mark(blk_request_insert, "%p %p", q, rq);
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/alpha/Kconfig.debug"
  
- 	rq->q = q;
- 
-@@ -730,7 +730,7 @@
- 			 * not be passed by new incoming requests
- 			 */
- 			rq->cmd_flags |= REQ_STARTED;
--			blk_add_trace_rq(q, rq, BLK_TA_ISSUE);
-+			trace_mark(blk_request_issue, "%p %p", q, rq);
- 		}
- 
- 		if (!q->boundary_rq || q->boundary_rq == rq) {
-Index: linux-2.6-lttng/block/ll_rw_blk.c
+ # DUMMY_CONSOLE may be defined in drivers/video/console/Kconfig
+Index: linux-2.6-lttng/arch/arm/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/block/ll_rw_blk.c	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/block/ll_rw_blk.c	2007-05-17 02:14:05.000000000 -0400
-@@ -28,6 +28,7 @@
- #include <linux/task_io_accounting_ops.h>
- #include <linux/interrupt.h>
- #include <linux/cpu.h>
-+#include <linux/marker.h>
- #include <linux/blktrace_api.h>
- #include <linux/fault-inject.h>
+--- linux-2.6-lttng.orig/arch/arm/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/arm/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -1042,6 +1042,12 @@
  
-@@ -1551,7 +1552,7 @@
+ source "arch/arm/oprofile/Kconfig"
  
- 	if (!test_and_set_bit(QUEUE_FLAG_PLUGGED, &q->queue_flags)) {
- 		mod_timer(&q->unplug_timer, jiffies + q->unplug_delay);
--		blk_add_trace_generic(q, NULL, 0, BLK_TA_PLUG);
-+		trace_mark(blk_plug_device, "%p %p %d", q, NULL, 0);
- 	}
- }
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/arm/Kconfig.debug"
  
-@@ -1617,7 +1618,7 @@
- 	 * devices don't necessarily have an ->unplug_fn defined
- 	 */
- 	if (q->unplug_fn) {
--		blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
-+		trace_mark(blk_pdu_unplug_io, "%p %p %d", q, NULL,
- 					q->rq.count[READ] + q->rq.count[WRITE]);
- 
- 		q->unplug_fn(q);
-@@ -1628,7 +1629,7 @@
- {
- 	request_queue_t *q = container_of(work, request_queue_t, unplug_work);
- 
--	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
-+	trace_mark(blk_pdu_unplug_io, "%p %p %d", q, NULL,
- 				q->rq.count[READ] + q->rq.count[WRITE]);
- 
- 	q->unplug_fn(q);
-@@ -1638,7 +1639,7 @@
- {
- 	request_queue_t *q = (request_queue_t *)data;
- 
--	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_TIMER, NULL,
-+	trace_mark(blk_pdu_unplug_timer, "%p %p %d", q, NULL,
- 				q->rq.count[READ] + q->rq.count[WRITE]);
- 
- 	kblockd_schedule_work(&q->unplug_work);
-@@ -2150,7 +2151,7 @@
- 	
- 	rq_init(q, rq);
- 
--	blk_add_trace_generic(q, bio, rw, BLK_TA_GETRQ);
-+	trace_mark(blk_get_request, "%p %p %d", q, bio, rw);
- out:
- 	return rq;
- }
-@@ -2180,7 +2181,7 @@
- 		if (!rq) {
- 			struct io_context *ioc;
- 
--			blk_add_trace_generic(q, bio, rw, BLK_TA_SLEEPRQ);
-+			trace_mark(blk_sleep_request, "%p %p %d", q, bio, rw);
- 
- 			__generic_unplug_device(q);
- 			spin_unlock_irq(q->queue_lock);
-@@ -2254,7 +2255,7 @@
-  */
- void blk_requeue_request(request_queue_t *q, struct request *rq)
- {
--	blk_add_trace_rq(q, rq, BLK_TA_REQUEUE);
-+	trace_mark(blk_requeue, "%p %p", q, rq);
- 
- 	if (blk_rq_tagged(rq))
- 		blk_queue_end_tag(q, rq);
-@@ -2940,7 +2941,7 @@
- 			if (!ll_back_merge_fn(q, req, bio))
- 				break;
- 
--			blk_add_trace_bio(q, bio, BLK_TA_BACKMERGE);
-+			trace_mark(blk_bio_backmerge, "%p %p", q, bio);
- 
- 			req->biotail->bi_next = bio;
- 			req->biotail = bio;
-@@ -2957,7 +2958,7 @@
- 			if (!ll_front_merge_fn(q, req, bio))
- 				break;
- 
--			blk_add_trace_bio(q, bio, BLK_TA_FRONTMERGE);
-+			trace_mark(blk_bio_frontmerge, "%p %p", q, bio);
- 
- 			bio->bi_next = req->bio;
- 			req->bio = bio;
-@@ -3187,10 +3188,10 @@
- 		blk_partition_remap(bio);
- 
- 		if (old_sector != -1)
--			blk_add_trace_remap(q, bio, old_dev, bio->bi_sector, 
--					    old_sector);
-+			trace_mark(blk_remap, "%p %p %u %llu %llu", q, bio, old_dev,
-+					(u64)bio->bi_sector, (u64)old_sector);
- 
--		blk_add_trace_bio(q, bio, BLK_TA_QUEUE);
-+		trace_mark(blk_bio_queue, "%p %p", q, bio);
- 
- 		old_sector = bio->bi_sector;
- 		old_dev = bio->bi_bdev->bd_dev;
-@@ -3383,7 +3384,7 @@
- 	int total_bytes, bio_nbytes, error, next_idx = 0;
- 	struct bio *bio;
- 
--	blk_add_trace_rq(req->q, req, BLK_TA_COMPLETE);
-+	trace_mark(blk_request_complete, "%p %p", req->q, req);
- 
- 	/*
- 	 * extend uptodate bool to allow < 0 value to be direct io error
-Index: linux-2.6-lttng/block/Kconfig
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/arm26/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/block/Kconfig	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/block/Kconfig	2007-05-17 02:14:05.000000000 -0400
-@@ -32,6 +32,7 @@
- 	depends on SYSFS
- 	select RELAY
- 	select DEBUG_FS
-+	select MARKERS
- 	help
- 	  Say Y here, if you want to be able to trace the block layer actions
- 	  on a given queue. Tracing allows you to see any traffic happening
-Index: linux-2.6-lttng/block/blktrace.c
+--- linux-2.6-lttng.orig/arch/arm26/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/arm26/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -241,6 +241,12 @@
+ 
+ source "drivers/usb/Kconfig"
+ 
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/arm26/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/cris/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/block/blktrace.c	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/block/blktrace.c	2007-05-17 02:14:05.000000000 -0400
-@@ -23,11 +23,19 @@
- #include <linux/mutex.h>
- #include <linux/debugfs.h>
- #include <linux/time.h>
-+#include <linux/marker.h>
- #include <asm/uaccess.h>
+--- linux-2.6-lttng.orig/arch/cris/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/cris/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -198,6 +198,12 @@
  
- static DEFINE_PER_CPU(unsigned long long, blk_trace_cpu_offset) = { 0, };
- static unsigned int blktrace_seq __read_mostly = 1;
+ source "drivers/usb/Kconfig"
  
-+/* Global reference count of probes */
-+static DEFINE_MUTEX(blk_probe_mutex);
-+static int blk_probes_ref;
++menu "Instrumentation Support"
 +
-+int blk_probe_arm(void);
-+void blk_probe_disarm(void);
++source "kernel/Kconfig.condcall"
 +
- /*
-  * Send out a notify message.
-  */
-@@ -179,7 +187,7 @@
- EXPORT_SYMBOL_GPL(__blk_add_trace);
++endmenu
++
+ source "arch/cris/Kconfig.debug"
  
- static struct dentry *blk_tree_root;
--static struct mutex blk_tree_mutex;
-+static DEFINE_MUTEX(blk_tree_mutex);
- static unsigned int root_users;
- 
- static inline void blk_remove_root(void)
-@@ -229,6 +237,10 @@
- 	blk_remove_tree(bt->dir);
- 	free_percpu(bt->sequence);
- 	kfree(bt);
-+	mutex_lock(&blk_probe_mutex);
-+	if (--blk_probes_ref == 0)
-+		blk_probe_disarm();
-+	mutex_unlock(&blk_probe_mutex);
- }
- 
- static int blk_trace_remove(request_queue_t *q)
-@@ -386,6 +398,11 @@
- 		goto err;
- 	}
- 
-+	mutex_lock(&blk_probe_mutex);
-+	if (!blk_probes_ref++)
-+		blk_probe_arm();
-+	mutex_unlock(&blk_probe_mutex);
-+
- 	return 0;
- err:
- 	if (dir)
-@@ -549,9 +566,269 @@
- #endif
- }
- 
-+/**
-+ * blk_add_trace_rq - Add a trace for a request oriented action
-+ * Expected variable arguments :
-+ * @q:		queue the io is for
-+ * @rq:		the source request
-+ *
-+ * Description:
-+ *     Records an action against a request. Will log the bio offset + size.
-+ *
-+ **/
-+static void blk_add_trace_rq(const struct __mark_marker *mdata,
-+	const char *fmt, ...)
-+{
-+	va_list args;
-+	u32 what;
-+	struct blk_trace *bt;
-+	int rw;
-+	struct blk_probe_data *pinfo = mdata->pdata;
-+	struct request_queue *q;
-+	struct request *rq;
-+
-+	va_start(args, fmt);
-+	q = va_arg(args, struct request_queue *);
-+	rq = va_arg(args, struct request *);
-+	va_end(args);
-+
-+	what = pinfo->flags;
-+	bt = q->blk_trace;
-+	rw = rq->cmd_flags & 0x03;
-+
-+	if (likely(!bt))
-+		return;
-+
-+	if (blk_pc_request(rq)) {
-+		what |= BLK_TC_ACT(BLK_TC_PC);
-+		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors, sizeof(rq->cmd), rq->cmd);
-+	} else  {
-+		what |= BLK_TC_ACT(BLK_TC_FS);
-+		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9, rw, what, rq->errors, 0, NULL);
-+	}
-+}
-+
-+/**
-+ * blk_add_trace_bio - Add a trace for a bio oriented action
-+ * Expected variable arguments :
-+ * @q:		queue the io is for
-+ * @bio:	the source bio
-+ *
-+ * Description:
-+ *     Records an action against a bio. Will log the bio offset + size.
-+ *
-+ **/
-+static void blk_add_trace_bio(const struct __mark_marker *mdata,
-+	const char *fmt, ...)
-+{
-+	va_list args;
-+	u32 what;
-+	struct blk_trace *bt;
-+	struct blk_probe_data *pinfo = mdata->pdata;
-+	struct request_queue *q;
-+	struct bio *bio;
-+
-+	va_start(args, fmt);
-+	q = va_arg(args, struct request_queue *);
-+	bio = va_arg(args, struct bio *);
-+	va_end(args);
-+
-+	what = pinfo->flags;
-+	bt = q->blk_trace;
-+
-+	if (likely(!bt))
-+		return;
-+
-+	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), 0, NULL);
-+}
-+
-+/**
-+ * blk_add_trace_generic - Add a trace for a generic action
-+ * Expected variable arguments :
-+ * @q:		queue the io is for
-+ * @bio:	the source bio
-+ * @rw:		the data direction
-+ *
-+ * Description:
-+ *     Records a simple trace
-+ *
-+ **/
-+static void blk_add_trace_generic(const struct __mark_marker *mdata,
-+	const char *fmt, ...)
-+{
-+	va_list args;
-+	struct blk_trace *bt;
-+	u32 what;
-+	struct blk_probe_data *pinfo = mdata->pdata;
-+	struct request_queue *q;
-+	struct bio *bio;
-+	int rw;
-+
-+	va_start(args, fmt);
-+	q = va_arg(args, struct request_queue *);
-+	bio = va_arg(args, struct bio *);
-+	rw = va_arg(args, int);
-+	va_end(args);
-+
-+	what = pinfo->flags;
-+	bt = q->blk_trace;
-+
-+	if (likely(!bt))
-+		return;
-+
-+	if (bio)
-+		blk_add_trace_bio(mdata, "%p %p", q, bio);
-+	else
-+		__blk_add_trace(bt, 0, 0, rw, what, 0, 0, NULL);
-+}
-+
-+/**
-+ * blk_add_trace_pdu_int - Add a trace for a bio with an integer payload
-+ * Expected variable arguments :
-+ * @q:		queue the io is for
-+ * @bio:	the source bio
-+ * @pdu:	the integer payload
-+ *
-+ * Description:
-+ *     Adds a trace with some integer payload. This might be an unplug
-+ *     option given as the action, with the depth at unplug time given
-+ *     as the payload
-+ *
-+ **/
-+static void blk_add_trace_pdu_int(const struct __mark_marker *mdata,
-+	const char *fmt, ...)
-+{
-+	va_list args;
-+	struct blk_trace *bt;
-+	u32 what;
-+	struct blk_probe_data *pinfo = mdata->pdata;
-+	struct request_queue *q;
-+	struct bio *bio;
-+	unsigned int pdu;
-+	__be64 rpdu;
-+
-+	va_start(args, fmt);
-+	q = va_arg(args, struct request_queue *);
-+	bio = va_arg(args, struct bio *);
-+	pdu = va_arg(args, unsigned int);
-+	va_end(args);
-+
-+	what = pinfo->flags;
-+	bt = q->blk_trace;
-+	rpdu = cpu_to_be64(pdu);
-+
-+	if (likely(!bt))
-+		return;
-+
-+	if (bio)
-+		__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), sizeof(rpdu), &rpdu);
-+	else
-+		__blk_add_trace(bt, 0, 0, 0, what, 0, sizeof(rpdu), &rpdu);
-+}
-+
-+/**
-+ * blk_add_trace_remap - Add a trace for a remap operation
-+ * Expected variable arguments :
-+ * @q:		queue the io is for
-+ * @bio:	the source bio
-+ * @dev:	target device
-+ * @from:	source sector
-+ * @to:		target sector
-+ *
-+ * Description:
-+ *     Device mapper or raid target sometimes need to split a bio because
-+ *     it spans a stripe (or similar). Add a trace for that action.
-+ *
-+ **/
-+static void blk_add_trace_remap(const struct __mark_marker *mdata,
-+	const char *fmt, ...)
-+{
-+	va_list args;
-+	struct blk_trace *bt;
-+	struct blk_io_trace_remap r;
-+	u32 what;
-+	struct blk_probe_data *pinfo = mdata->pdata;
-+	struct request_queue *q;
-+	struct bio *bio;
-+	u64 dev, from, to;
-+
-+	va_start(args, fmt);
-+	q = va_arg(args, struct request_queue *);
-+	bio = va_arg(args, struct bio *);
-+	dev = va_arg(args, u64);
-+	from = va_arg(args, u64);
-+	to = va_arg(args, u64);
-+	va_end(args);
-+
-+	what = pinfo->flags;
-+	bt = q->blk_trace;
-+
-+	if (likely(!bt))
-+		return;
-+
-+	r.device = cpu_to_be32(dev);
-+	r.sector = cpu_to_be64(to);
-+
-+	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
-+}
-+
-+#define FACILITY_NAME "blk"
-+
-+static struct blk_probe_data probe_array[] =
-+{
-+	{ "blk_bio_queue", "%p %p", BLK_TA_QUEUE, blk_add_trace_bio },
-+	{ "blk_bio_backmerge", "%p %p", BLK_TA_BACKMERGE, blk_add_trace_bio },
-+	{ "blk_bio_frontmerge", "%p %p", BLK_TA_FRONTMERGE, blk_add_trace_bio },
-+	{ "blk_get_request", "%p %p %d", BLK_TA_GETRQ, blk_add_trace_generic },
-+	{ "blk_sleep_request", "%p %p %d", BLK_TA_SLEEPRQ,
-+		blk_add_trace_generic },
-+	{ "blk_requeue", "%p %p", BLK_TA_REQUEUE, blk_add_trace_rq },
-+	{ "blk_request_issue", "%p %p", BLK_TA_ISSUE, blk_add_trace_rq },
-+	{ "blk_request_complete", "%p %p", BLK_TA_COMPLETE, blk_add_trace_rq },
-+	{ "blk_plug_device", "%p %p %d", BLK_TA_PLUG, blk_add_trace_generic },
-+	{ "blk_pdu_unplug_io", "%p %p %d", BLK_TA_UNPLUG_IO,
-+		blk_add_trace_pdu_int },
-+	{ "blk_pdu_unplug_timer", "%p %p %d", BLK_TA_UNPLUG_TIMER,
-+		blk_add_trace_pdu_int },
-+	{ "blk_request_insert", "%p %p", BLK_TA_INSERT,
-+		blk_add_trace_rq },
-+	{ "blk_pdu_split", "%p %p %d", BLK_TA_SPLIT,
-+		blk_add_trace_pdu_int },
-+	{ "blk_bio_bounce", "%p %p", BLK_TA_BOUNCE, blk_add_trace_bio },
-+	{ "blk_remap", "%p %p %u %llu %llu", BLK_TA_REMAP,
-+		blk_add_trace_remap },
-+};
-+
-+
-+int blk_probe_arm(void)
-+{
-+	int result;
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
-+		result = marker_arm_probe(probe_array[i].name,
-+				probe_array[i].format,
-+				probe_array[i].callback, &probe_array[i]);
-+		if (result)
-+			printk(KERN_INFO
-+				"blktrace unable to register probe %s\n",
-+				probe_array[i].name);
-+	}
-+	return 0;
-+}
-+
-+void blk_probe_disarm(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
-+		marker_disarm_probe(probe_array[i].name);
-+	}
-+}
-+
-+
- static __init int blk_trace_init(void)
- {
--	mutex_init(&blk_tree_mutex);
- 	on_each_cpu(blk_trace_check_cpu_time, NULL, 1, 1);
- 	blk_trace_set_ht_offsets();
- 
-Index: linux-2.6-lttng/include/linux/blktrace_api.h
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/frv/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/blktrace_api.h	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/include/linux/blktrace_api.h	2007-05-17 02:14:05.000000000 -0400
-@@ -3,6 +3,7 @@
+--- linux-2.6-lttng.orig/arch/frv/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/frv/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -375,6 +375,12 @@
  
- #include <linux/blkdev.h>
- #include <linux/relay.h>
-+#include <linux/marker.h>
+ source "fs/Kconfig"
  
- /*
-  * Trace categories
-@@ -142,149 +143,24 @@
- 	u32 pid;
- };
- 
-+/* Probe data used for probe-marker connection */
-+struct blk_probe_data {
-+	const char *name;
-+	const char *format;
-+	u32 flags;
-+	marker_probe_func *callback;
-+};
++menu "Instrumentation Support"
 +
- #if defined(CONFIG_BLK_DEV_IO_TRACE)
- extern int blk_trace_ioctl(struct block_device *, unsigned, char __user *);
- extern void blk_trace_shutdown(request_queue_t *);
- extern void __blk_add_trace(struct blk_trace *, sector_t, int, int, u32, int, int, void *);
--
--/**
-- * blk_add_trace_rq - Add a trace for a request oriented action
-- * @q:		queue the io is for
-- * @rq:		the source request
-- * @what:	the action
-- *
-- * Description:
-- *     Records an action against a request. Will log the bio offset + size.
-- *
-- **/
--static inline void blk_add_trace_rq(struct request_queue *q, struct request *rq,
--				    u32 what)
--{
--	struct blk_trace *bt = q->blk_trace;
--	int rw = rq->cmd_flags & 0x03;
--
--	if (likely(!bt))
--		return;
--
--	if (blk_pc_request(rq)) {
--		what |= BLK_TC_ACT(BLK_TC_PC);
--		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors, sizeof(rq->cmd), rq->cmd);
--	} else  {
--		what |= BLK_TC_ACT(BLK_TC_FS);
--		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9, rw, what, rq->errors, 0, NULL);
--	}
--}
--
--/**
-- * blk_add_trace_bio - Add a trace for a bio oriented action
-- * @q:		queue the io is for
-- * @bio:	the source bio
-- * @what:	the action
-- *
-- * Description:
-- *     Records an action against a bio. Will log the bio offset + size.
-- *
-- **/
--static inline void blk_add_trace_bio(struct request_queue *q, struct bio *bio,
--				     u32 what)
--{
--	struct blk_trace *bt = q->blk_trace;
--
--	if (likely(!bt))
--		return;
--
--	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), 0, NULL);
--}
--
--/**
-- * blk_add_trace_generic - Add a trace for a generic action
-- * @q:		queue the io is for
-- * @bio:	the source bio
-- * @rw:		the data direction
-- * @what:	the action
-- *
-- * Description:
-- *     Records a simple trace
-- *
-- **/
--static inline void blk_add_trace_generic(struct request_queue *q,
--					 struct bio *bio, int rw, u32 what)
--{
--	struct blk_trace *bt = q->blk_trace;
--
--	if (likely(!bt))
--		return;
--
--	if (bio)
--		blk_add_trace_bio(q, bio, what);
--	else
--		__blk_add_trace(bt, 0, 0, rw, what, 0, 0, NULL);
--}
--
--/**
-- * blk_add_trace_pdu_int - Add a trace for a bio with an integer payload
-- * @q:		queue the io is for
-- * @what:	the action
-- * @bio:	the source bio
-- * @pdu:	the integer payload
-- *
-- * Description:
-- *     Adds a trace with some integer payload. This might be an unplug
-- *     option given as the action, with the depth at unplug time given
-- *     as the payload
-- *
-- **/
--static inline void blk_add_trace_pdu_int(struct request_queue *q, u32 what,
--					 struct bio *bio, unsigned int pdu)
--{
--	struct blk_trace *bt = q->blk_trace;
--	__be64 rpdu = cpu_to_be64(pdu);
--
--	if (likely(!bt))
--		return;
--
--	if (bio)
--		__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), sizeof(rpdu), &rpdu);
--	else
--		__blk_add_trace(bt, 0, 0, 0, what, 0, sizeof(rpdu), &rpdu);
--}
--
--/**
-- * blk_add_trace_remap - Add a trace for a remap operation
-- * @q:		queue the io is for
-- * @bio:	the source bio
-- * @dev:	target device
-- * @from:	source sector
-- * @to:		target sector
-- *
-- * Description:
-- *     Device mapper or raid target sometimes need to split a bio because
-- *     it spans a stripe (or similar). Add a trace for that action.
-- *
-- **/
--static inline void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
--				       dev_t dev, sector_t from, sector_t to)
--{
--	struct blk_trace *bt = q->blk_trace;
--	struct blk_io_trace_remap r;
--
--	if (likely(!bt))
--		return;
--
--	r.device = cpu_to_be32(dev);
--	r.sector = cpu_to_be64(to);
--
--	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
--}
-+extern int blk_probe_connect(void);
-+extern void blk_probe_disconnect(void);
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/frv/Kconfig.debug"
  
- #else /* !CONFIG_BLK_DEV_IO_TRACE */
- #define blk_trace_ioctl(bdev, cmd, arg)		(-ENOTTY)
- #define blk_trace_shutdown(q)			do { } while (0)
--#define blk_add_trace_rq(q, rq, what)		do { } while (0)
--#define blk_add_trace_bio(q, rq, what)		do { } while (0)
--#define blk_add_trace_generic(q, rq, rw, what)	do { } while (0)
--#define blk_add_trace_pdu_int(q, what, bio, pdu)	do { } while (0)
--#define blk_add_trace_remap(q, bio, dev, f, t)	do {} while (0)
- #endif /* CONFIG_BLK_DEV_IO_TRACE */
- 
- #endif
-Index: linux-2.6-lttng/mm/bounce.c
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/h8300/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/mm/bounce.c	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/mm/bounce.c	2007-05-17 02:14:05.000000000 -0400
-@@ -13,7 +13,7 @@
- #include <linux/init.h>
- #include <linux/hash.h>
- #include <linux/highmem.h>
--#include <linux/blktrace_api.h>
-+#include <linux/marker.h>
- #include <asm/tlbflush.h>
+--- linux-2.6-lttng.orig/arch/h8300/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/h8300/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -220,6 +220,12 @@
  
- #define POOL_SIZE	64
-@@ -237,7 +237,7 @@
- 	if (!bio)
- 		return;
+ source "fs/Kconfig"
  
--	blk_add_trace_bio(q, *bio_orig, BLK_TA_BOUNCE);
-+	trace_mark(blk_bio_bounce, "%p %p", q, *bio_orig);
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/h8300/Kconfig.debug"
  
- 	/*
- 	 * at least one page was bounced, fill in possible non-highmem
-Index: linux-2.6-lttng/mm/highmem.c
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/i386/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/mm/highmem.c	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/mm/highmem.c	2007-05-17 02:14:05.000000000 -0400
-@@ -26,7 +26,7 @@
- #include <linux/init.h>
- #include <linux/hash.h>
- #include <linux/highmem.h>
--#include <linux/blktrace_api.h>
-+#include <linux/marker.h>
- #include <asm/tlbflush.h>
+--- linux-2.6-lttng.orig/arch/i386/Kconfig	2007-05-30 08:42:53.000000000 -0400
++++ linux-2.6-lttng/arch/i386/Kconfig	2007-05-30 08:44:45.000000000 -0400
+@@ -1233,6 +1233,8 @@
+ 	  for kernel debugging, non-intrusive instrumentation and testing.
+ 	  If in doubt, say "N".
  
- /*
-Index: linux-2.6-lttng/fs/bio.c
++source "kernel/Kconfig.condcall"
++
+ endif # INSTRUMENTATION
+ 
+ source "arch/i386/Kconfig.debug"
+Index: linux-2.6-lttng/arch/ia64/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/fs/bio.c	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/fs/bio.c	2007-05-17 02:14:05.000000000 -0400
-@@ -25,7 +25,7 @@
- #include <linux/module.h>
- #include <linux/mempool.h>
- #include <linux/workqueue.h>
--#include <linux/blktrace_api.h>
-+#include <linux/marker.h>
- #include <scsi/sg.h>		/* for struct sg_iovec */
+--- linux-2.6-lttng.orig/arch/ia64/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/ia64/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -590,6 +590,9 @@
+ 	  a probepoint and specifies the callback.  Kprobes is useful
+ 	  for kernel debugging, non-intrusive instrumentation and testing.
+ 	  If in doubt, say "N".
++
++source "kernel/Kconfig.condcall"
++
+ endmenu
  
- #define BIO_POOL_SIZE 2
-@@ -1081,7 +1081,7 @@
- 	if (!bp)
- 		return bp;
- 
--	blk_add_trace_pdu_int(bdev_get_queue(bi->bi_bdev), BLK_TA_SPLIT, bi,
-+	trace_mark(blk_pdu_split, "%p %p %d", bdev_get_queue(bi->bi_bdev), bi,
- 				bi->bi_sector + first_sectors);
- 
- 	BUG_ON(bi->bi_vcnt != 1);
-Index: linux-2.6-lttng/drivers/block/cciss.c
+ source "arch/ia64/Kconfig.debug"
+Index: linux-2.6-lttng/arch/m32r/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/drivers/block/cciss.c	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/drivers/block/cciss.c	2007-05-17 02:14:05.000000000 -0400
-@@ -37,7 +37,7 @@
- #include <linux/hdreg.h>
- #include <linux/spinlock.h>
- #include <linux/compat.h>
--#include <linux/blktrace_api.h>
-+#include <linux/marker.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
+--- linux-2.6-lttng.orig/arch/m32r/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/m32r/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -405,6 +405,12 @@
  
-@@ -2502,7 +2502,7 @@
- 	}
- 	cmd->rq->data_len = 0;
- 	cmd->rq->completion_data = cmd;
--	blk_add_trace_rq(cmd->rq->q, cmd->rq, BLK_TA_COMPLETE);
-+	trace_mark(blk_request_complete, "%p %p", cmd->rq->q, cmd->rq);
- 	blk_complete_request(cmd->rq);
- }
+ source "arch/m32r/oprofile/Kconfig"
  
-Index: linux-2.6-lttng/drivers/md/dm.c
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/m32r/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/m68k/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/drivers/md/dm.c	2007-05-17 02:13:19.000000000 -0400
-+++ linux-2.6-lttng/drivers/md/dm.c	2007-05-17 02:14:05.000000000 -0400
-@@ -19,7 +19,7 @@
- #include <linux/slab.h>
- #include <linux/idr.h>
- #include <linux/hdreg.h>
--#include <linux/blktrace_api.h>
-+#include <linux/marker.h>
- #include <linux/smp_lock.h>
+--- linux-2.6-lttng.orig/arch/m68k/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/m68k/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -670,6 +670,12 @@
  
- #define DM_MSG_PREFIX "core"
-@@ -485,8 +485,8 @@
- 			wake_up(&io->md->wait);
+ source "fs/Kconfig"
  
- 		if (io->error != DM_ENDIO_REQUEUE) {
--			blk_add_trace_bio(io->md->queue, io->bio,
--					  BLK_TA_COMPLETE);
-+			trace_mark(blk_request_complete, "%p %p",
-+				io->md->queue, io->bio);
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/m68k/Kconfig.debug"
  
- 			bio_endio(io->bio, io->bio->bi_size, io->error);
- 		}
-@@ -582,10 +582,10 @@
- 	r = ti->type->map(ti, clone, &tio->info);
- 	if (r == DM_MAPIO_REMAPPED) {
- 		/* the bio has been remapped so dispatch it */
--
--		blk_add_trace_remap(bdev_get_queue(clone->bi_bdev), clone,
--				    tio->io->bio->bi_bdev->bd_dev, sector,
--				    clone->bi_sector);
-+		trace_mark(blk_remap, "%p %p %u %llu %llu",
-+			bdev_get_queue(clone->bi_bdev), clone,
-+			(u64)tio->io->bio->bi_bdev->bd_dev, (u64)sector,
-+			(u64)clone->bi_sector);
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/m68knommu/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/m68knommu/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/m68knommu/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -668,6 +668,12 @@
  
- 		generic_make_request(clone);
- 	} else if (r < 0 || r == DM_MAPIO_REQUEUE) {
+ source "fs/Kconfig"
+ 
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/m68knommu/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/mips/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/mips/Kconfig	2007-05-30 08:42:36.000000000 -0400
++++ linux-2.6-lttng/arch/mips/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -1957,6 +1957,12 @@
+ 
+ source "arch/mips/oprofile/Kconfig"
+ 
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/mips/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/parisc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/parisc/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/parisc/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -269,6 +269,12 @@
+ 
+ source "arch/parisc/oprofile/Kconfig"
+ 
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/parisc/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/powerpc/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/powerpc/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -903,6 +903,9 @@
+ 	  a probepoint and specifies the callback.  Kprobes is useful
+ 	  for kernel debugging, non-intrusive instrumentation and testing.
+ 	  If in doubt, say "N".
++
++source "kernel/Kconfig.condcall"
++
+ endmenu
+ 
+ source "arch/powerpc/Kconfig.debug"
+Index: linux-2.6-lttng/arch/ppc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/ppc/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/ppc/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -1451,8 +1451,14 @@
+ 
+ source "lib/Kconfig"
+ 
++menu "Instrumentation Support"
++
+ source "arch/powerpc/oprofile/Kconfig"
+ 
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/ppc/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/s390/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/s390/Kconfig	2007-05-30 08:43:05.000000000 -0400
++++ linux-2.6-lttng/arch/s390/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -549,6 +549,8 @@
+ 
+ source "lib/Kconfig.statistic"
+ 
++source "kernel/Kconfig.condcall"
++
+ endmenu
+ 
+ source "arch/s390/Kconfig.debug"
+Index: linux-2.6-lttng/arch/sh/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/sh/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/sh/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -721,6 +721,12 @@
+ 
+ source "arch/sh/oprofile/Kconfig"
+ 
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/sh/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/sh64/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/sh64/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/sh64/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -284,6 +284,12 @@
+ 
+ source "arch/sh64/oprofile/Kconfig"
+ 
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/sh64/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/sparc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/sparc/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/sparc/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -306,6 +306,8 @@
+ 
+ source "arch/sparc/oprofile/Kconfig"
+ 
++source "kernel/Kconfig.condcall"
++
+ endmenu
+ 
+ source "arch/sparc/Kconfig.debug"
+Index: linux-2.6-lttng/arch/sparc64/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/sparc64/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/sparc64/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -438,6 +438,9 @@
+ 	  a probepoint and specifies the callback.  Kprobes is useful
+ 	  for kernel debugging, non-intrusive instrumentation and testing.
+ 	  If in doubt, say "N".
++
++source "kernel/Kconfig.condcall"
++
+ endmenu
+ 
+ source "arch/sparc64/Kconfig.debug"
+Index: linux-2.6-lttng/arch/um/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/um/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/um/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -336,4 +336,10 @@
+ 	bool
+ 	default n
+ 
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/um/Kconfig.debug"
+Index: linux-2.6-lttng/arch/v850/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/v850/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/v850/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -331,6 +331,12 @@
+ 
+ source "drivers/usb/Kconfig"
+ 
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/v850/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86_64/Kconfig	2007-05-30 08:42:48.000000000 -0400
++++ linux-2.6-lttng/arch/x86_64/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -794,6 +794,9 @@
+ 	  a probepoint and specifies the callback.  Kprobes is useful
+ 	  for kernel debugging, non-intrusive instrumentation and testing.
+ 	  If in doubt, say "N".
++
++source "kernel/Kconfig.condcall"
++
+ endmenu
+ 
+ source "arch/x86_64/Kconfig.debug"
+Index: linux-2.6-lttng/arch/xtensa/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/xtensa/Kconfig	2007-05-30 08:42:35.000000000 -0400
++++ linux-2.6-lttng/arch/xtensa/Kconfig	2007-05-30 08:43:43.000000000 -0400
+@@ -251,6 +251,12 @@
+ 	  provide one yourself.
+ endmenu
+ 
++menu "Instrumentation Support"
++
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ source "arch/xtensa/Kconfig.debug"
+ 
+ source "security/Kconfig"
+Index: linux-2.6-lttng/kernel/Kconfig.condcall
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/kernel/Kconfig.condcall	2007-05-30 08:43:43.000000000 -0400
+@@ -0,0 +1,20 @@
++# Code markers configuration
++
++config COND_CALL
++	bool "Activate conditional calls"
++	depends on MODULES
++	help
++	  Provides a way to dynamically enable kernel features while having a
++	  very small footprint when disabled.
++
++config COND_CALL_DISABLE_OPTIMIZATION
++	bool "Disable conditional calls optimization"
++	depends on COND_CALL && EMBEDDED
++	default n
++	help
++	  Disable code replacement jump optimisations. Especially useful if your
++	  code is in a read-only rom/flash.
++
++config COND_CALL_ENABLE_OPTIMIZATION
++	def_bool y
++	depends on COND_CALL && !COND_CALL_DISABLE_OPTIMIZATION
+Index: linux-2.6-lttng/arch/avr32/Kconfig.debug
+===================================================================
+--- linux-2.6-lttng.orig/arch/avr32/Kconfig.debug	2007-05-30 08:28:44.000000000 -0400
++++ linux-2.6-lttng/arch/avr32/Kconfig.debug	2007-05-30 08:43:43.000000000 -0400
+@@ -6,6 +6,9 @@
+ 
+ source "lib/Kconfig.debug"
+ 
++menu "Instrumentation Support"
++	depends on EXPERIMENTAL
++
+ config KPROBES
+ 	bool "Kprobes"
+ 	depends on DEBUG_KERNEL
+@@ -16,4 +19,8 @@
+           for kernel debugging, non-intrusive instrumentation and testing.
+           If in doubt, say "N".
+ 
++source "kernel/Kconfig.condcall"
++
++endmenu
++
+ endmenu
 
 -- 
 Mathieu Desnoyers
