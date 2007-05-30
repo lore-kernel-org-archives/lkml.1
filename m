@@ -1,49 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbXE3NZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbXE3N31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbXE3NZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbXE3NZK
+	id S1754265AbXE3N31 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXE3N3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:25:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44013 "EHLO mx3.mail.elte.hu"
+	Wed, 30 May 2007 09:29:20 -0400
+Received: from mail.windriver.com ([147.11.1.11]:45610 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754665AbXE3NZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:25:07 -0400
-Date: Wed, 30 May 2007 15:24:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, Jason Baron <jbaron@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 3/5] lockstat: core infrastructure
-Message-ID: <20070530132431.GA23947@elte.hu>
-References: <20070529125248.877196281@chello.nl> <20070529130107.112347096@chello.nl> <1180470525.32594.71.camel@imap.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1180470525.32594.71.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751876AbXE3N3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 09:29:20 -0400
+Message-ID: <465D7BE9.70702@windriver.com>
+Date: Wed, 30 May 2007 08:28:09 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org,
+       Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
+       stable@kernel.org
+Subject: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole module
+References: <20070526154011.GB3735@vanheusden.com> <20070529005628.f7f3abc6.akpm@linux-foundation.org>
+In-Reply-To: <20070529005628.f7f3abc6.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------040406020001040707050801"
+X-OriginalArrivalTime: 30 May 2007 13:28:10.0915 (UTC) FILETIME=[5E132F30:01C7A2BE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------040406020001040707050801
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-* Daniel Walker <dwalker@mvista.com> wrote:
 
-> [...] Most architecture implement a jiffies sched_clock() w/ 1 
-> millisecond or worse resolution.. [...]
+Attached is a patch to fix the soft lockup problem when removing the 
+netconsole module.
 
-weird that you count importance by 'number of architectures', while 98% 
-of the installed server base is x86 or x86_64, where sched_clock() is 
-pretty precise ;-)
+It looks different than the original patch I posted because the context 
+had to change to maintain 80 column code.  For reference the original 
+e-mail + patch was "[BUG] 2.6.21 hang in 
+cancel_rearming_delayed_workqueue()" sent on 5/25/07.
 
-	Ingo
+Jason.
+
+
+
+--------------040406020001040707050801
+Content-Type: text/plain;
+ name="netpoll_cleanup_fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="netpoll_cleanup_fix.patch"
+
+>From 102a018d601e954f658d272d4daeef139ae40e0e Mon Sep 17 00:00:00 2001
+From: Jason Wessel <jason.wessel@windriver.com>
+Date: Wed, 30 May 2007 08:03:52 -0500
+Subject: [PATCH] The netpoll_cleanup handler can hang the kernel if there is no work in
+the work queue because a call to cancel_rearming_delayed_work() with
+no work goes into an infinite loop.
+
+The typical case where this is a problem is on removing a kernel
+module such as the netconsole driver or kgdboe.
+
+To maintain 80 column code, the function had to have one level of braces
+dropped.
+
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+---
+ net/core/netpoll.c |   36 +++++++++++++++++++-----------------
+ 1 files changed, 19 insertions(+), 17 deletions(-)
+
+diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+index 4581ece..28fa50e 100644
+--- a/net/core/netpoll.c
++++ b/net/core/netpoll.c
+@@ -766,30 +766,32 @@ void netpoll_cleanup(struct netpoll *np)
+ 	struct netpoll_info *npinfo;
+ 	unsigned long flags;
+ 
+-	if (np->dev) {
+-		npinfo = np->dev->npinfo;
+-		if (npinfo) {
+-			if (npinfo->rx_np == np) {
+-				spin_lock_irqsave(&npinfo->rx_lock, flags);
+-				npinfo->rx_np = NULL;
+-				npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
+-				spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+-			}
++	if (!np->dev)
++		return;
++
++	npinfo = np->dev->npinfo;
++	if (npinfo) {
++		if (npinfo->rx_np == np) {
++			spin_lock_irqsave(&npinfo->rx_lock, flags);
++			npinfo->rx_np = NULL;
++			npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
++			spin_unlock_irqrestore(&npinfo->rx_lock, flags);
++		}
+ 
+-			np->dev->npinfo = NULL;
+-			if (atomic_dec_and_test(&npinfo->refcnt)) {
+-				skb_queue_purge(&npinfo->arp_tx);
+-				skb_queue_purge(&npinfo->txq);
++		np->dev->npinfo = NULL;
++		if (atomic_dec_and_test(&npinfo->refcnt)) {
++			skb_queue_purge(&npinfo->arp_tx);
++			skb_queue_purge(&npinfo->txq);
++			if (delayed_work_pending(&npinfo->tx_work)) {
+ 				cancel_rearming_delayed_work(&npinfo->tx_work);
+ 				flush_scheduled_work();
+-
+-				kfree(npinfo);
+ 			}
+-		}
+ 
+-		dev_put(np->dev);
++			kfree(npinfo);
++		}
+ 	}
+ 
++	dev_put(np->dev);
+ 	np->dev = NULL;
+ }
+ 
+-- 
+1.5.0.6
+
+
+--------------040406020001040707050801--
