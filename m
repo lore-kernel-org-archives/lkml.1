@@ -1,91 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbXE3Tnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbXE3TpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758721AbXE3Tnc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbXE3TnR
+	id S1758371AbXE3TpA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXE3Tox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:43:17 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:56185 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755761AbXE3TnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:43:15 -0400
-Date: Wed, 30 May 2007 21:39:26 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: kkeil@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       hjlipp@web.de, tilman@imap.cc, gigaset307x-common@lists.sourceforge.net
-Subject: [PATCH 03/06] Use menuconfig objects 4 - ISDN part 3/6
- (CONFIG_ISDN_DRV_GIGASET)
-In-Reply-To: <200705301906.l4UJ62hC002388@shell0.pdx.osdl.net>
-Message-ID: <Pine.LNX.4.61.0705302138340.11140@yvahk01.tjqt.qr>
-References: <200705301906.l4UJ62hC002388@shell0.pdx.osdl.net>
+	Wed, 30 May 2007 15:44:53 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:30531 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbXE3Tov (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 15:44:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=azxIiNHnztC2P7xKWri7F6i8rteNKu1YkW9s8bJ5R3uWTmTBBHsDlyj1/YqivSygnlKB4aCdUH9zE3DTQ1OA+xmRtzVEPVMYFCNU05M9JXSVldX7A1uKstWRXOqzvl9SBSTskwZccpVO5UV6HvUJksqQcYoeK+4uG2golynk7IQ=
+Message-ID: <465DD40B.10409@gmail.com>
+Date: Wed, 30 May 2007 21:44:11 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com, Markus Rechberger <mrechberger@gmail.com>
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+References: <2172422218943432279@wsc.cz> <1180364420.21547.160.camel@localhost>
+In-Reply-To: <1180364420.21547.160.camel@localhost>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mauro Carvalho Chehab napsal(a):
+> Hi Jiri,
 
-Transform Kconfig objects from "menu, config" into "menuconfig" so
-that the user can disable the whole feature without having to enter
-the menu first.
+Hi.
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+> I have some comments for your driver.
 
----
- drivers/isdn/gigaset/Kconfig |   15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+Well, that was exactly what the code needed, yet another eyes.
 
-Index: linux-2.6.22-rc3-git1/drivers/isdn/gigaset/Kconfig
-===================================================================
---- linux-2.6.22-rc3-git1.orig/drivers/isdn/gigaset/Kconfig
-+++ linux-2.6.22-rc3-git1/drivers/isdn/gigaset/Kconfig
-@@ -1,6 +1,4 @@
--menu "Siemens Gigaset"
--
--config ISDN_DRV_GIGASET
-+menuconfig ISDN_DRV_GIGASET
- 	tristate "Siemens Gigaset support (isdn)"
- 	select CRC_CCITT
- 	select BITREVERSE
-@@ -13,11 +11,11 @@ config ISDN_DRV_GIGASET
- 	  one of the connection specific parts that follow.
- 	  This will build a module called "gigaset".
- 
--if ISDN_DRV_GIGASET!=n
-+if ISDN_DRV_GIGASET
- 
- config GIGASET_BASE
- 	tristate "Gigaset base station support"
--	depends on ISDN_DRV_GIGASET && USB
-+	depends on USB
- 	help
- 	  Say M here if you want to use the USB interface of the Gigaset
- 	  base for connection to your system.
-@@ -25,7 +23,7 @@ config GIGASET_BASE
- 
- config GIGASET_M105
- 	tristate "Gigaset M105 support"
--	depends on ISDN_DRV_GIGASET && USB
-+	depends on USB
- 	help
- 	  Say M here if you want to connect to the Gigaset base via DECT
- 	  using a Gigaset M105 (Sinus 45 Data 2) USB DECT device.
-@@ -33,7 +31,6 @@ config GIGASET_M105
- 
- config GIGASET_M101
- 	tristate "Gigaset M101 support"
--	depends on ISDN_DRV_GIGASET
- 	help
- 	  Say M here if you want to connect to the Gigaset base via DECT
- 	  using a Gigaset M101 (Sinus 45 Data 1) RS232 DECT device.
-@@ -53,6 +50,4 @@ config GIGASET_UNDOCREQ
- 	  features like configuration mode of M105, say yes. If you
- 	  care about your device, say no.
- 
--endif
--
--endmenu
-+endif # ISDN_DRV_GIGASET
+>> + * Copyright (C) Nicolas VIVIEN
+> 
+> It would be interesting to have Nicolas SOB as well, if possible.
+
+I don't think he ever knows about this version of the driver. I got his GPL
+driver, cleaned up -- coding style, v4l1 and v4l2 ioctl conversion to v4l2
+functions, some bug fixes and so on... If you still want him to sign this
+of, I'll try my best to catch him but can't guarantee any results.
+
+>> +
+>> +#ifndef CONFIG_STK11XX_DEBUG_STREAM
+>> +#define CONFIG_STK11XX_DEBUG_STREAM	0
+>> +#endif
+>> +
+>> +#if CONFIG_STK11XX_DEBUG_STREAM
+> 
+> I would instead use:
+> #ifdef CONFIG_STK11XX_DEBUG_STREAM
+
+Hmm, no, I would rather get rid of CONFIG_ thing, it may make things
+unclear, beacuse there is (will be) no option in Kconfig for this, because
+this is the most verbose option for the driver mainly used for algorithms
+debugging. Standard DEBUG (pr_debug, dev_dbg) is intended to be a real debug
+print here.
+
+It will be always defined due to few lines above it.
+
+>> +/*
+>> + * Bayer conversion
+>> + */
+> 
+> We don't do format conversions in kernel. Instead, you should return a
+> proper Bayer Fourcc format (like V4L2_PIX_FMT_SBGGR8).
+> 
+>> +static void stk11xx_resize_image(u8 *out, const u8 *in,
+>> +		unsigned int width, unsigned int height, unsigned int factor)
+> 
+> Also, kernel shouldn't be doing image resize.
+> 
+>> +static int stk11xx_decompress(struct stk11xx *dev)
+>> +{
+> 
+> We don't do format conversions in kernel. Instead, you should return a
+> proper Bayer Fourcc format (like V4L2_PIX_FMT_SBGGR8).
+
+
+Ok, there is a debate about this, I will do the changes after some decision
+will be made.
+
+>> +static int stk1125_load_microcode(struct stk11xx *dev)
+>> +{
+>> +	unsigned int i;
+>> +	const u8 *values_204, *values_205;
+>> +	int retok, value;
+>> +
+>> +	/* From 80x60 to 640x480 */
+>> +	const u8 values_1_204[] = {
+>> +		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
+>> +		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
+>> +		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
+>> +		0x96, 0x3d, 0x69, 0x3a, 0x8e, 0x3c, 0x8f, 0x8b, 0x8c, 0x94,
+>> +		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
+>> +		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
+>> +	};
+>> +	const u8 values_1_205[] = {
+>> +		0x45, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
+>> +		0x50, 0x93, 0x00, 0x81, 0x20, 0x45, 0x00, 0x00, 0x00, 0x24,
+>> +		0xc4, 0xb6, 0x00, 0x3c, 0x36, 0x00, 0x07, 0xe2, 0xbf, 0x00,
+>> +		0x04, 0x19, 0x40, 0x0d, 0x00, 0x73, 0xdf, 0x06, 0x20, 0x88,
+>> +		0x88, 0xc1, 0x3f, 0x42, 0x80, 0x04, 0xb8, 0x92, 0x0a, 0x00,
+>> +		0x00, 0x00, 0x00, 0x68, 0x5c, 0xc3, 0x2e, 0x00, 0x00
+>> +	};
+>> +
+>> +	/* From 800x600 to 1280x1024 */
+>> +	const u8 values_2_204[] = {
+>> +		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
+>> +		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
+>> +		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
+>> +		0x96, 0x3d, 0x69, 0x3a, 0x8e, 0x3c, 0x8f, 0x8b, 0x8c, 0x94,
+>> +		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
+>> +		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
+>> +	};
+>> +	const u8 values_2_205[] = {
+>> +		0x05, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
+>> +		0x50, 0x93, 0x00, 0x81, 0x20, 0x05, 0x00, 0x00, 0x00, 0x1b,
+>> +		0xbb, 0xa4, 0x01, 0x81, 0x12, 0x00, 0x07, 0xe2, 0xbf, 0x00,
+>> +		0x04, 0x19, 0x40, 0x0d, 0x00, 0x73, 0xdf, 0x06, 0x20, 0x88,
+>> +		0x88, 0xc1, 0x3f, 0x42, 0x80, 0x04, 0xb8, 0x92, 0x0a, 0x00,
+>> +		0x00, 0x00, 0x00, 0x68, 0x5c, 0xc3, 0x2e, 0x00, 0x00
+>> +	};
+> 
+> Please use instead the load_firmware routines. It is not a good idea to
+> have firmware inside the kernel. Also, this might rise some legal issues
+> due to licensing models.
+
+Markus wrote:
+<cite>
+Jiri, are you allowed to include that microcode, did you get any
+information about this from the manufacturer which could allow the
+inclusion?
+The sequences are rather small not putting it into extra firmware
+files would make life much easier for some users, on the other side if
+it raises legal issues Mauro's right with loading it from a file
+</cite>
+
+This seems to be a reverse engineered driver, I think, all those values are
+intercepted, so there are no licensing issues.
+
+>> +
+>> +/* 
+>> + * The configuration of device is composed of 11 steps.
+>> + * This function is called by the initialization process.
+>> + *
+>> + * We don't know the meaning of these steps! We only replay the USB log.
+>> + *
+>> + * The steps 0 to 9 are called during the initialization.
+>> + * Then, the driver choose the last step :
+>> + *   10 : for a resolution from 80x60 to 640x480 
+>> + *   11 : for a resolution from 800x600 to 1280x1024
+>> + */
+>> +static int stk1125_configure_device(struct stk11xx *dev, int step)
+>> +{
+>> +	int value;
+>> +
+>> +	/*      0,    1,    2,    3,    4,    5,    6,    7,    8,    9, 
+>> +		    10,   11 */
+>> +
+>> +	const u8 values_001B[] = {
+>> +		0x0E, 0x03, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E,
+>> +		    0x0E, 0x0E
+>> +	};
+>> +	const u8 values_001C[] = {
+>> +		0x06, 0x02, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46,
+>> +		    0x46, 0x0E
+>> +	};
+>> +	const u8 values_0202[] = {
+>> +		0x1E, 0x0A, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E,
+>> +		    0x1E, 0x1E
+>> +	};
+>> +	const u8 values_0110[] = {
+>> +		0x07, 0x00, 0x00, 0x00, 0x00, 0x3E, 0x3E, 0x00, 0x00, 0x00,
+>> +		    0x00, 0x00
+>> +	};
+>> +	const u8 values_0112[] = {
+>> +		0x07, 0x00, 0x00, 0x00, 0x00, 0x09, 0x09, 0x00, 0x00, 0x00,
+>> +		    0x00, 0x00
+>> +	};
+>> +	const u8 values_0114[] = {
+>> +		0x87, 0x80, 0x80, 0x80, 0x80, 0xBE, 0xBE, 0x80, 0x80, 0x80,
+>> +		    0x80, 0x00
+>> +	};
+>> +	const u8 values_0115[] = {
+>> +		0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+>> +		    0x02, 0x05
+>> +	};
+>> +	const u8 values_0116[] = {
+>> +		0xE7, 0xE0, 0xE0, 0xE0, 0xE0, 0xE9, 0xE9, 0xE0, 0xE0, 0xE0,
+>> +		    0xE0, 0x00
+>> +	};
+>> +	const u8 values_0117[] = {
+>> +		0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+>> +		    0x01, 0x04
+>> +	};
+>> +	const u8 values_0100[] = {
+>> +		0x20, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21,
+>> +		    0x21, 0x21
+>> +	};
+>> +
+>> +	dev_dbg(&dev->udev->dev, "stk1125_configure_device: %d\n", step);
+>> +
+>> +	stk11xx_write_registry(dev, 0x0000, 0x0024);
+>> +	stk11xx_write_registry(dev, 0x0002, 0x0068);
+>> +	stk11xx_write_registry(dev, 0x0003, 0x0080);
+>> +	stk11xx_write_registry(dev, 0x0005, 0x0000);
+> 	...
+> 
+> Instead of using all those write, you should consider creating a table
+> of values and use something like:
+> 	stk11xx_write_regs(dev, table1);
+
+There is a problem with this approach. There are reads every 3-5 writes and
+this can grow into many small tables.
+
+>> +/*
+>> + * STK-1135 API
+>> + */
+>> +
+>> +static int stk1135_load_microcode(struct stk11xx *dev)
+>> +{
+>> +	unsigned int i;
+>> +	int retok, value;
+> 
+>> +
+>> +	const u8 values_204[] = {
+>> +		0x17, 0x19, 0xb4, 0xa6, 0x12, 0x13, 0x1e, 0x21, 0x24, 0x32,
+>> +		0x36, 0x39, 0x4d, 0x53, 0x5d, 0x5f, 0x60, 0x61, 0x62, 0x63,
+>> +		0x64, 0x65, 0x66, 0x82, 0x83, 0x85, 0x86, 0x89, 0x97, 0x98,
+>> +		0xad, 0xae, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbf, 0x48, 0xd8,
+>> +		0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f,
+>> +		0x80, 0x81, 0xd8, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c,
+>> +		0x7d, 0x7e, 0x7f, 0x80, 0x81, 0xd8, 0x76, 0x77, 0x78, 0x79,
+>> +		0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f, 0x80, 0x81, 0x5c, 0xc0,
+>> +		0x59, 0x5a, 0x5b, 0xd4, 0x8e, 0x8f, 0x90, 0x91, 0x92, 0x93,
+>> +		0x94, 0x95, 0x96, 0xb3, 0x73, 0x06, 0x07, 0x0b, 0x15, 0x20,
+>> +		0x4e, 0x4f, 0x49, 0x4a, 0x4b, 0x4c, 0x46, 0x06, 0x07, 0xb9,
+>> +		0xba, 0xbb, 0xbc, 0x61, 0x62, 0x65, 0x66
+>> +	};
+>> +	const u8 values_205[] = {
+>> +		0x41, 0x41, 0x03, 0x06, 0x06, 0x08, 0x06, 0x00, 0x02, 0x69,
+>> +		0x35, 0x60, 0xfe, 0x1c, 0x04, 0x08, 0x08, 0x08, 0x08, 0x00,
+>> +		0x00, 0x10, 0x14, 0x01, 0x80, 0x0c, 0xb6, 0x00, 0x25, 0x25,
+>> +		0x3f, 0x24, 0x10, 0x07, 0xcc, 0x1f, 0x30, 0x02, 0x9c, 0x80,
+>> +		0x00, 0x0d, 0x18, 0x22, 0x2c, 0x3e, 0x4f, 0x6f, 0x8e, 0xac,
+>> +		0xc8, 0xe5, 0xa0, 0x00, 0x0d, 0x18, 0x22, 0x2c, 0x3e, 0x4f,
+>> +		0x6f, 0x8e, 0xac, 0xc8, 0xe5, 0xc0, 0x00, 0x0d, 0x18, 0x22,
+>> +		0x2c, 0x3e, 0x4f, 0x6f, 0x8e, 0xac, 0xc8, 0xe5, 0x70, 0x18,
+>> +		0x09, 0x07, 0x07, 0x3c, 0x3d, 0x95, 0x88, 0x89, 0x47, 0x9c,
+>> +		0x81, 0x9c, 0x3d, 0x76, 0x76, 0x01, 0xf3, 0x05, 0x00, 0x44,
+>> +		0x06, 0x0a, 0x96, 0x00, 0x7d, 0x00, 0x20, 0x01, 0xf3, 0x04,
+>> +		0xe4, 0x09, 0xc8, 0x08, 0x08, 0x10, 0x14
+>> +	};
+> 
+> Same as commented before about microcode.
+> 
+> You may also consider writing a separate c file for stk1135. Having a
+> large .c file is not very nice. The better is to split the code into a
+> few parts.
+
+I don't like many files for one driver and finding little pieces of code
+in each file separately -- 1125 + 1235 will be small pieces. Not considering
+the static functions and warning about unused code. But it's up to you, it's
+your subtree, make a decision.
+
+>> +static void *stk11xx_rvmalloc(unsigned long size)
+> 
+> Another rvmalloc implementation? You should consider using the one
+> already at kernel.
+
+What's the name, I can't find it?
+
+The rest of comments has been applied, thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
 
