@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761611AbXE3Vwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbXE3Vxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761611AbXE3Vwl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761163AbXE3Vv7
+	id S1761254AbXE3Vxb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758517AbXE3VxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:51:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52506 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761410AbXE3Vv5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:51:57 -0400
-Date: Wed, 30 May 2007 14:51:57 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3 -mm] slub: use lib/hexdump
-In-Reply-To: <465DF135.80202@oracle.com>
-Message-ID: <Pine.LNX.4.64.0705301451140.3709@schroedinger.engr.sgi.com>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
- <46540DB2.5000605@googlemail.com> <Pine.LNX.4.64.0705231016330.20031@schroedinger.engr.sgi.com>
- <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
- <20070523153730.e0e9e91d.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
- <20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
- <20070524073131.GA17501@elte.hu> <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
- <20070524142908.f39f42ea.akpm@linux-foundation.org>
- <20070524145517.1f32cd94.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com>
- <20070530143451.f4a844bc.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0705301443020.3358@schroedinger.engr.sgi.com>
- <465DF135.80202@oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 May 2007 17:53:18 -0400
+Received: from raven.upol.cz ([158.194.120.4]:54436 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756972AbXE3VxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 17:53:17 -0400
+X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 17:53:15 EDT
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: "Milind Arun Choudhary" <milindchoudhary@gmail.com>,
+       <kernel-janitors@lists.osdl.org>, <linux-ia64@vger.kernel.org>,
+       <discuss@x86-64.org>, <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>, <ak@suse.de>
+Subject: Re: [KJ][PATCH 02/03]ROUND_UP|DOWN macro cleanup in arch/ia64,x86_64
+In-Reply-To: <617E1C2C70743745A92448908E030B2A015B4E12@scsmsx411.amr.corp.intel.com>
+References: <20070413043140.GA9431@arun.site> <617E1C2C70743745A92448908E030B2A015B4E12@scsmsx411.amr.corp.intel.com>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: jed + slrn (x86_64-pc-linux-glibc-debian)
+Date: Wed, 30 May 2007 23:57:49 +0200
+Message-Id: <E1HtWAv-00028d-9l@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007, Randy Dunlap wrote:
+* From: "Luck, Tony"
+* Date: Fri, 13 Apr 2007 09:45:49 -0700
 
-> > I'd like to keep print_section around as it also does some other things.
-> > Repeating the output formatting at the various call locations will make
-> > it difficult to change if you add another whizbang feature.
-> 
-> I have no problems with keeping print_section() except that it's not used
-> in the current tree after this patch.  :)
-> 
-> > I have a patch here that I could sent out today if hexdump would work the
-> > right way.
-> 
-> Please define "the right way."
+>> So as ALIGN macro does the same work as ROUNDUP,
+>
+> Although it is mathematically the same operation, the
+> semantic associations of the name are important too.
+[]
+> Maybe this is because I started out in mathematics before
+> discovering that computers were so much fun, or maybe it
+> is a British-English bias ... I can't tell, but it makes
+> sense to me to use ROUNDUP in some places, and ALIGN in
+> others.
 
-Align the ascii output so that it does not look that ugly.
+I agree. I came from neither one (still coming); first look and vague
+semantics of ALIGN macro, English confusion, a bit of laziness, led me to
+stupid messages about aligning, Linus being so kind to reply, a couple of
+months ago. Anyway i did that after some patching and re-patching that
+macro by gurus :).
 
+> If ROUNDUP isn't available everywhere, then it should be. To
+> avoid code duplication perhaps we should add:
+>
+>     #define ROUNDUP(size, len) ALIGN((size), (len))
+>
+> and delete the previous ROUNDUP definition?
+
+And i would vote for "align" via "round".
+____
