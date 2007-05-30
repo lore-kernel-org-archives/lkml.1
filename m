@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbXE3OwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbXE3O4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbXE3OwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 10:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXE3OwL
+	id S1754127AbXE3O4k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 10:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbXE3O4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 10:52:11 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37660 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751894AbXE3OwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 10:52:10 -0400
-Date: Wed, 30 May 2007 16:56:17 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Renato Golin <rengolin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@insightbb.com>
-Subject: Re: joydev.c and saitek cyborg evo force
-In-Reply-To: <d9b9d95f0705300214u7eb257fg783aefd73077d33@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705301654560.3961@jikos.suse.cz>
-References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com> 
- <200705210016.20794.dtor@insightbb.com>  <Pine.LNX.4.64.0705211444500.22906@jikos.suse.cz>
-  <d9b9d95f0705291657o47ef42d3jea2a1dae3e31bbdb@mail.gmail.com> 
- <Pine.LNX.4.64.0705300207160.3961@jikos.suse.cz>
- <d9b9d95f0705300214u7eb257fg783aefd73077d33@mail.gmail.com>
+	Wed, 30 May 2007 10:56:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:58862 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbXE3O4a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 10:56:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KXP5seGXes6Wbc38FsbBJmWKzdsjB3XZvN4ckEVO24xMLaYTJPabOs8zs1zf0g28XYm/NGpp1mS3BxBqtW8ld0BQQg2sN3Fn7NQE81W3jUENj912Z3LwhicLfxwPOL29TOUcL+jf0hpRNs8vMNntSN9PvWJNWj5cxi8ol3Z6S0o=
+Message-ID: <d120d5000705300756t24d4a58ey1f4130bef22f8309@mail.gmail.com>
+Date: Wed, 30 May 2007 10:56:28 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Richard Purdie" <rpurdie@rpsys.net>
+Subject: Re: [PATCH] Support for controlling leds on xbox 360 pad.
+Cc: "Jan Kratochvil" <honza@jikos.cz>, linux-kernel@vger.kernel.org
+In-Reply-To: <1180474885.5822.94.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LRH.0.98.0705292250430.22353@twin.jikos.cz>
+	 <alpine.LRH.0.98.0705292312150.22353@twin.jikos.cz>
+	 <1180474885.5822.94.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007, Renato Golin wrote:
+On 5/29/07, Richard Purdie <rpurdie@rpsys.net> wrote:
+> On Tue, 2007-05-29 at 23:29 +0200, Jan Kratochvil wrote:
+> >
+> > I have the impression that the led subsystem doesn't actually count with
+> > possibility to have more then one device of one type, right? In my case there
+> > can by lots of pads, so I made it on my own, using counter. Is it ok?
+>
+> It leaves it up to the driver concerned. In your case it makes sense so
+> counting is fine. Don't put the colon in though, just have it as xpad0
+> etc. as the name. Anything after the first colon is defined as an
+> optional colour (see Documentation/leds-class.txt).
+>
 
-> But it's pathetic the fact that ubuntu's kernel have an option USB_DEBUG 
-> I did it and monitored mesasges and syslog and both shows the same 
-> data... I guess that dump after mouse detection is DEBUG_DATA in place.
+Richard,
 
-Hi Renato,
-
-do any data appear in the kernel log when you generate events with the 
-device (i.e. move the joystick, press the buttons, etc)? That should be 
-reported if DEBUG_DATA is defined properly on the older kernels.
-
-Thanks,
-
+Do you think it makes sense to split the driver (and Kconfig options)
+between input and leds directories as Jan had done? I know that I
+prefer to keep anything input related in input directory because it
+makes my life as maintainer easier and I bet you prefer the same but
+it does not always work well for multifunction devices or devices
+using several subsystems...
 -- 
-Jiri Kosina
+Dmitry
