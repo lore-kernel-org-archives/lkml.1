@@ -1,87 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbXE3Ady@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752295AbXE3Aig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752461AbXE3Ady (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 20:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbXE3Adr
+	id S1752295AbXE3Aig (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 20:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbXE3Ai2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 20:33:47 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:37094 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbXE3Adq (ORCPT
+	Tue, 29 May 2007 20:38:28 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:41381 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750904AbXE3Ai1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 20:33:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gWTSymhxLiTB4nrQo5NMPvzqCT6zNHs2Ny8X3o0N9shLzhwEXDL/SSzUI2SOoZHgdkQuGW2za6H62CaAj1aLZSPc5SDsCVFcCQbjl9W3Q6bWHyjw9ooTFkwwUKwOJ3kCNN1pjWyHxd+6yVrKBKvn6pE7kAyLKdZl/gtyK7igZis=
-Message-ID: <787b0d920705291733t7a2ca052tbad7e11bbe0b1eff@mail.gmail.com>
-Date: Tue, 29 May 2007 20:33:44 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [RFC, PATCH 1/3] introduce SYS_CLONE_MASK
-Cc: linux-kernel@vger.kernel.org, jengelh@linux01.gwdg.de, holt@sgi.com,
-       oleg@tv-sign.ru, roland@redhat.com
-In-Reply-To: <m1646c8c33.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 May 2007 20:38:27 -0400
+Date: Tue, 29 May 2007 17:38:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 1/2] m68k: runtime patching infrastructure
+Message-Id: <20070529173818.fd94ae81.akpm@linux-foundation.org>
+In-Reply-To: <20070528191715.352919509@mail.of.borg>
+References: <20070528191630.377693320@mail.of.borg>
+	<20070528191715.352919509@mail.of.borg>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <787b0d920705282023v22316e6bk709dc8d3aa3213d7@mail.gmail.com>
-	 <m1646c8c33.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/29/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> "Albert Cahalan" <acahalan@gmail.com> writes:
-> > Jan Engelhardt writes:
+On Mon, 28 May 2007 21:16:31 +0200
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
->>> -    if(self_pid==1 && ADOPTED(processes[i]) && forest_type!='u')
->>> +    if(ADOPTED(processes[i]) && forest_type!='u')
->>
->> That's not compatible because init's children are now in the
->> logical place. Since the days of procps-1.x.x or earlier,
->> such processes have been listed at top level.
->>
->> BTW, what does "ps -ejH" do for you, with and without the patch?
->
-> ps -ejH displays everything.
+> --- a/include/asm-m68k/module.h
+> +++ b/include/asm-m68k/module.h
+> @@ -1,7 +1,38 @@
+>  #ifndef _ASM_M68K_MODULE_H
+>  #define _ASM_M68K_MODULE_H
+> -struct mod_arch_specific { };
+> +
+> +struct mod_arch_specific {
+> +	struct m68k_fixup_info *fixup_start, *fixup_end;
+> +};
 
-That's not what I mean. (the "-e" causes that of course)
-I'm asking about the parent-child relationships shown.
-The "-H" option is a bit different from the "f" option.
+Here we use struct m68k_fixup_info.
 
->> I'd be a lot happier about breaking compatibility in this area
->> if I could get a functional adoption flag. That is, I really
->> would like to show a process as child of init if it naturally
->> was created as a child of init. It's less informative to have
->> fake children showing up the same as real ones. The original
->> parent PID would do. (BTW, the original parent name and/or
->> grandparent PID would be great to have) As a bonus, the kernel
->> could reap these processes more quickly than init can... and
->> then maybe we can stop caring if init is alive.
->
-> Having the kernel not reparent user processes to init is an interesting
-> idea, especially when those processes have not existed.  I'm not
-> certain that is POSIX complaint and otherwise backwards compatible.
+> +#define MODULE_ARCH_INIT {				\
+> +	.fixup_start		= __start_fixup,	\
+> +	.fixup_end		= __stop_fixup,		\
+> +}
+> +
+>  #define Elf_Shdr Elf32_Shdr
+>  #define Elf_Sym Elf32_Sym
+>  #define Elf_Ehdr Elf32_Ehdr
+> +
+> +
+> +enum m68k_fixup_type {
+> +	m68k_fixup_memoffset,
+> +};
+> +
+> +struct m68k_fixup_info {
+> +	enum m68k_fixup_type type;
+> +	void *addr;
+> +};
 
-I'm not suggesting that this be visible via POSIX APIs.
+and later we define it.
 
-It's almost certainly a given that getppid() must return 1, and
-probably /proc needs to show this as well. Without question,
-any process created by init must be reaped by init.
+How come it doesn't spit warnings?
 
-Processes NOT created by init could be silently reaped by
-the kernel. They need to see their own PPID as 1, but there
-need not be any parent-child relationship in the kernel data
-structures. The kernel can fake the whole thing, which is nice
-because then the kernel isn't depending on userspace to
-correctly perform the pointless action of playing with zombies.
-(might setting the death signal to 0 be useful here?)
+I think it could be tightened up even if it happens not to warn?
 
-For "ps fax" and such, I'd like to distinguish between init's
-real and adopted children. Right now the adopted children
-look like they were created by init, which is not true. I only
-need a simple boolean flag, set upon reparenting, to tell me.
-Such a flag may also be useful for optimizing away the whole
-wait/waitpid/wait4/waitid/wait3 nonsense when an adopted
-child dies.
+> +#define m68k_fixup(type, addr)			\
+> +	"	.section \".m68k_fixup\",\"aw\"\n"	\
+> +	"	.long " #type "," #addr "\n"	\
+> +	"	.previous\n"
+> +
+> +extern struct m68k_fixup_info __start_fixup[], __stop_fixup[];
+> +
+> +struct module;
+> +extern void module_fixup(struct module *mod, struct m68k_fixup_info *start,
+> +			 struct m68k_fixup_info *end);
