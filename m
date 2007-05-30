@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbXE3ApJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbXE3AqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298AbXE3ApJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 20:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXE3Aov
+	id S1752886AbXE3AqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 20:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXE3AqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 20:44:51 -0400
-Received: from gromalin.logidee.com ([213.91.4.12]:3553 "EHLO
-	gromalin.logidee.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751592AbXE3Aou (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 20:44:50 -0400
-X-Greylist: delayed 1701 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 20:44:50 EDT
-Date: Wed, 30 May 2007 02:13:50 +0200
-From: Stephane Casset <sept@logidee.com>
-To: Ian Kumlien <iank@bredband.net>
-Cc: Linux-kernel@vger.kernel.org
-Subject: Re: [BUG] Something goes wrong with timer statistics.
-Message-ID: <20070530001350.GD9086@gromalin.logidee.com>
-References: <1180474738.22497.25.camel@pi.pomac.com>
+	Tue, 29 May 2007 20:46:09 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:33979 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751185AbXE3AqH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 20:46:07 -0400
+Date: Tue, 29 May 2007 17:45:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 2/2] m68k: Discontinuous memory support
+Message-Id: <20070529174556.20c551a0.akpm@linux-foundation.org>
+In-Reply-To: <20070528191715.597623909@mail.of.borg>
+References: <20070528191630.377693320@mail.of.borg>
+	<20070528191715.597623909@mail.of.borg>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1180474738.22497.25.camel@pi.pomac.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Tue, May 29, 2007 at 11:38:48PM +0200, Ian Kumlien écrivait :
-> Hi, 
-> 
-> As the daystar sets, i try to play some with my new would be
-> firewall/server, but since this will be running for quite some time i
-> have been experimenting with powertop to find out what i can do to limit
-> it's power usage.
-> 
-> But, if i run powertop for too long or a few times to many... this
-> happens:
-> http://pomac.netswarm.net/pics/kernel_panic.jpg
-> 
-> If i don't run powertop, it is rock solid... Compiling for hours,
-> running memtest for hours etc etc... 
+On Mon, 28 May 2007 21:16:32 +0200
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-Same here, P4 HT, if I run powertop for 5-10 minutes the system crash :(
-It happens with 2.6.22-rc{2,3} at least :( I didn't try before.
+> -#define __page_address(page)	(PAGE_OFFSET + (((page) - mem_map) << PAGE_SHIFT))
+> -#define page_to_phys(page)	virt_to_phys((void *)__page_address(page))
+> +#ifdef CONFIG_SINGLE_MEMORY_CHUNK
+> +#define page_to_phys(page) \
+> +	__pa(PAGE_OFFSET + (((page) - pg_data_map[0].node_mem_map) << PAGE_SHIFT))
+> +#else
+> +#define page_to_phys(page) ({						\
+> +	struct pglist_data *pgdat;					\
+> +	pgdat = pg_data_table[page_to_nid(page)];			\
+> +	page_to_pfn(page) << PAGE_SHIFT;				\
+> +})
+> +#endif
 
-I don't have a oops since the last crash was in X, but next time I will
-try to catch it. If there is any patch around to fix this I am willing
-to test.
-
-Regards
--- 
-Stéphane Casset            LOGIDÉE sàrl       Se faire plaisir d'apprendre
-1a, rue Pasteur        Tel : +33 388 23 69 77           casset@logidee.com
-F-67540 OSTWALD        Fax : +33 388 23 69 77           http://logidee.com
+macros which evaluate their args more than once are dangerous.
