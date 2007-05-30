@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbXE3RH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbXE3RJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757803AbXE3RH1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbXE3RHP
+	id S1757398AbXE3RJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbXE3RJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:07:15 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37320 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753923AbXE3RHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:07:14 -0400
-Date: Wed, 30 May 2007 19:08:14 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Meelis Roos <mroos@linux.ee>
-Cc: unlisted-recipients:"; no To-header on input" <""@mail.ravnborg.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Illegal-Object: Syntax error in Cc: address found on vger.kernel.org:
-	Cc:	unlisted-recipients:;no To-header on input <""@mail.ravnborg.org>
-					     ^-missing end of address
-Illegal-Object: Syntax error in Cc: address found on vger.kernel.org:
-	Cc:	unlisted-recipients:;no To-header on input <""@mail.ravnborg.org>
-					     ^-missing end of address
-Subject: Re: [PATCH] [ppc] fix mot_info section
-Message-ID: <20070530170814.GD15335@uranus.ravnborg.org>
-References: <Pine.SOC.4.64.0705141717110.23895@math> <20070515204540.GC22966@uranus.ravnborg.org> <Pine.SOC.4.64.0705301652250.23769@math> <a781481a0705300758t5f16235al1f420f09472af780@mail.gmail.com> <Pine.SOC.4.64.0705301805390.23769@math>
+	Wed, 30 May 2007 13:09:20 -0400
+Received: from homer.mvista.com ([63.81.120.158]:9877 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646AbXE3RJT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 13:09:19 -0400
+Subject: Re: [PATCH 3/5] lockstat: core infrastructure
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, Jason Baron <jbaron@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20070530134907.GA27085@elte.hu>
+References: <20070529125248.877196281@chello.nl>
+	 <20070529130107.112347096@chello.nl>
+	 <1180470525.32594.71.camel@imap.mvista.com>
+	 <20070530132431.GA23947@elte.hu>
+	 <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com>
+	 <20070530134907.GA27085@elte.hu>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 10:06:35 -0700
+Message-Id: <1180544796.32594.184.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.SOC.4.64.0705301805390.23769@math>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 07:14:49PM +0300, Meelis Roos wrote:
-> The following patch makes mot_info __initdata since it is used only in 
-> __init functions. prep_pci.c change has been tested in real life on 
-> Motorola Powerstack II (compiles without modpost warnings and boots 
-> fine), pplus.c has not been tested but seems similar.
+On Wed, 2007-05-30 at 15:49 +0200, Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> Signed-off-by: Meelis Roos <mroos@linux.ee>
+> > [...] We can argue that sched_clock is "good enough".  If someone 
+> > wants better accounting of locks on some other arch, they can simply 
+> > change sched_clock to be more precise.
 > 
-> diff --git a/arch/ppc/platforms/pplus.c b/arch/ppc/platforms/pplus.c
-> index 8a1788c..9744108 100644
-> --- a/arch/ppc/platforms/pplus.c
-> +++ b/arch/ppc/platforms/pplus.c
-> @@ -256,7 +256,7 @@ struct brd_info {
->  	const char *name;
->  	int (*map_irq) (struct pci_dev *, unsigned char, unsigned char);
->  };
-> -struct brd_info mot_info[] = {
-> +__initdata struct brd_info mot_info[] = {
->  	{0x300, 0x00, 0x00, "MVME 2400", Genesis2_map_irq},
->  	{0x1E0, 0xE0, 0x00, "Mesquite cPCI (MCP750)", mesquite_map_irq},
->  	{0x1E0, 0xE1, 0x00, "Sitka cPCI (MCPN750)", sitka_map_irq},
-> diff --git a/arch/ppc/platforms/prep_pci.c b/arch/ppc/platforms/prep_pci.c
-> index 1df3150..bdec1f1 100644
-> --- a/arch/ppc/platforms/prep_pci.c
-> +++ b/arch/ppc/platforms/prep_pci.c
-> @@ -792,7 +792,7 @@ raven_init(void)
->  	return 1;
->  }
->  
-> -struct mot_info {
-> +__initdata struct mot_info {
->  	int		cpu_type;	/* 0x100 mask assumes for Raven and Hawk boards that the level/edge are set */
->  					/* 0x200 if this board has a Hawk chip. */
->  	int		base_type;
+> exactly. Imprecise sched_clock() if there's a better fast clock source 
+> available is a bug in the architecture code. If the only available 
+> clocksource is 1 msec resolution then there's no solution and nothing to 
+> talk about - lock statistics will be 1msec granular just as much as 
+> scheduling.
 
-The way you place __initdata is bogus.
-Please read following from init.h again:
 
- * For initialized data:
- * You should insert __initdata between the variable name and equal
- * sign followed by value, e.g.:
- *
- * static int init_variable __initdata = 0;
- * static char linux_logo[] __initdata = { 0x32, 0x36, ... };
+I don't agree .. sched_clock() is obsoleted by timekeepings clocksource
+structure.. sched_clock() was a quick way to get lowlevel time stamps
+just for the scheduler. The timekeeping clocksource structure is a more
+complete solution.
 
-If gcc happes to accept your placement does not make it correct.
-It is still bogus and unreadable.
+>From the architecture perspective there are two low level clock hooks to
+implement one is sched_clock() , and at least one clocksource structure.
+Both do essentially the same thing. With timekeepings clocksource
+structure actually being easier to implement cause the math is built in.
 
-	Sam
+It's clear to me that architectures will implement clocksource
+structures .. However, they will not implement sched_clock() because
+there is no benefit associated with it. As you have said the scheduler
+works fine with a jiffies resolution clock, even a large number of x86
+machines use a jiffies sched_clock() ..
+
+So I don't think it's a bug if sched_clock() is lowres, and it shouldn't
+be a bug in the future..
+
+Daniel
+
