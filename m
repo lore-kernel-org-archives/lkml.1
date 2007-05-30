@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbXE3RsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbXE3Ryr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756409AbXE3RsO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbXE3Rr7
+	id S1755990AbXE3Ryr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXE3Ryj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:47:59 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:40070 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752891AbXE3Rr7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:47:59 -0400
-Date: Wed, 30 May 2007 10:47:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael-Luke Jones <mike.luke.jones@gmail.com>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org
-Subject: Re: [-mm] Move zlib compression library to common directory [TAKE
- TWO]
-Message-Id: <20070530104747.41b4995f.akpm@linux-foundation.org>
-In-Reply-To: <465C5549.4050101@gmail.com>
-References: <465C3973.3090303@gmail.com>
-	<465C5549.4050101@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Wed, 30 May 2007 13:54:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50555 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752746AbXE3Ryi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 13:54:38 -0400
+Date: Wed, 30 May 2007 13:54:06 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH -mm] 1/2: MMCONFIG: validate against ACPI motherboard resources
+Message-ID: <20070530175406.GE5302@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Robert Hancock <hancockr@shaw.ca>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <465CF794.1070406@shaw.ca> <alpine.LFD.0.98.0705292125511.26602@woody.linux-foundation.org> <465D8BA1.1080800@shaw.ca> <alpine.LFD.0.98.0705300804140.26602@woody.linux-foundation.org> <20070530172331.GB2794@redhat.com> <alpine.LFD.0.98.0705301034320.26602@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705301034320.26602@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007 17:31:05 +0100
-Michael-Luke Jones <mike.luke.jones@gmail.com> wrote:
+On Wed, May 30, 2007 at 10:37:49AM -0700, Linus Torvalds wrote:
 
-> This patch moves the zlib compression and decompression code
-> to a common directory. The zutil.h header, which is not meant
-> to be public, is moved from include/linux/ to lib/zlib/.
-> 
-> In addition, the PRESET_DICT definition from zutil.h, used by
-> fs/jffs2/compr_zlib.c is moved to the 'true' public zlib
-> header include/linux/zlib.h.
-> 
-> Conditional compile of only inflate or deflate code is
-> preserved by this patch. With a bit of luck, this version
-> won't be whitespace-damaged. Grumble.
+ > Although in this case it was actually not a Linux MUA:
+ > 
+ > 	User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+ > 
+ > but I didn't want to embarrass Robert publicly before you brought up the 
+ > issue of operating systems ;)
 
-umm, OK, if you say so.  I'm not sure I understand the point behind
-all this, but I'm sure there is one ;)
+Oh well, there's no accounting for taste ;-)
 
-> diff --git a/lib/zlib_deflate/deflate.c b/lib/zlib/deflate.c
-> similarity index 100%
-> rename from lib/zlib_deflate/deflate.c
-> rename to lib/zlib/deflate.c
-> index c3e4a2b..1137780 100644
-> diff --git a/lib/zlib_deflate/deflate_syms.c b/lib/zlib/deflate_syms.c
-> similarity index 100%
-> rename from lib/zlib_deflate/deflate_syms.c
-> rename to lib/zlib/deflate_syms.c
-> diff --git a/lib/zlib_deflate/deftree.c b/lib/zlib/deftree.c
-> similarity index 100%
-> rename from lib/zlib_deflate/deftree.c
-> rename to lib/zlib/deftree.c
-> index ddf3482..d5ce87d 100644
-> diff --git a/lib/zlib_deflate/defutil.h b/lib/zlib/defutil.h
-> similarity index 100%
-> rename from lib/zlib_deflate/defutil.h
-> rename to lib/zlib/defutil.h
-> diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib/inffast.c
-> similarity index 100%
-> rename from lib/zlib_inflate/inffast.c
-> rename to lib/zlib/inffast.c
-> diff --git a/lib/zlib_inflate/inftrees.h b/lib/zlib/inftrees.h
-> similarity index 100%
-> rename from lib/zlib_inflate/inftrees.h
-> rename to lib/zlib/inftrees.h
-> diff --git a/lib/zlib_inflate/infutil.h b/lib/zlib/infutil.h
-> similarity index 100%
-> rename from lib/zlib_inflate/infutil.h
-> rename to lib/zlib/infutil.h
-> diff --git a/include/linux/zutil.h b/lib/zlib/zutil.h
-> similarity index 98%
-> rename from include/linux/zutil.h
-> rename to lib/zlib/zutil.h
-> index 6adfa9a..0467c8c 100644
+ > Your procmail filter looks somewhat broken, btw. It will trigger on things 
+ > that aren't headers, and it will potentially _not_ trigger on headers (ie 
+ > if they are line continuations). But I guess it works well enough in 
+ > practice.
 
-Lots of git goodies there - I didn't actually receive the patch: the parts
-which move files around were communicated via git metadata, not diffs.
-Presumably there's a way to tell git to not do that.
+Yeah, now that I look again, it actually missed on Robert's message because
+it isn't case-insensitive.  It's far from perfect.
 
-But probably it's best that this change be merged via git anyway.  David,
-are you interested in handling it?
+	Dave
 
+-- 
+http://www.codemonkey.org.uk
