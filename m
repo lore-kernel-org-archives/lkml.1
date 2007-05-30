@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbXE3WGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbXE3WGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759428AbXE3WGe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbXE3WGZ
+	id S1758073AbXE3WGt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbXE3WGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:06:25 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2762 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755815AbXE3WGY (ORCPT
+	Wed, 30 May 2007 18:06:33 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:54617 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759298AbXE3WGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:06:24 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 30 May 2007 15:06:22 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ulrich Drepper <drepper@redhat.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-In-Reply-To: <465DF0F5.6050000@redhat.com>
-Message-ID: <Pine.LNX.4.64.0705301503210.6272@alien.or.mcafeemobile.com>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
- <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com>
- <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com>
- <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
- <465DE992.6070803@redhat.com> <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org>
- <465DF0F5.6050000@redhat.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 30 May 2007 18:06:31 -0400
+Date: Wed, 30 May 2007 15:07:39 -0700
+From: Greg KH <greg@kroah.com>
+To: Jay Cliburn <jacliburn@bellsouth.net>
+Cc: Jose Alberto Reguero <jareguero@telefonica.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Problem with atl1 and msi in kernel 2.6.22-rc3
+Message-ID: <20070530220739.GA26408@kroah.com>
+References: <200705300200.25412.jareguero@telefonica.net> <20070530064711.570162f1@osprey.hogchain.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070530064711.570162f1@osprey.hogchain.net>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007, Ulrich Drepper wrote:
+On Wed, May 30, 2007 at 06:47:11AM -0500, Jay Cliburn wrote:
+> On Wed, 30 May 2007 02:00:25 +0200
+> Jose Alberto Reguero <jareguero@telefonica.net> wrote:
+> 
+> > I have problems with a M2V motherboard and atl1 driver with msi and
+> > kernel 2.6.22-rc3. With kernel 2.6.21 I had no problems.
+> > I must add in drivers/pci/quirks.c (line 1723):
+> > 
+> >  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, 
+> > quirk_disable_msi);
+> > +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, 0xe238,
+> > quirk_disable_msi);
+> > 
+> > to disable msi in the atl1.
+> 
+> See http://bugzilla.kernel.org/show_bug.cgi?id=8472.
+> 
+> A more general solution is to disable MSI for the VIA VT3351 (used by
+> the Asus M2V).  I attempted to do this in the -stable tree with
+> http://lkml.org/lkml/2007/5/26/167, but it was shot down because the
+> patch isn't upstream yet.
+> 
+> Unfortunately, I can't submit it upstream because the enabling
+> patch hasn't yet been applied upstream by the PCI maintainer. My
+> request for info on the status of the patch went unanswered.
+> http://lkml.org/lkml/2007/5/19/74
 
-> You also have to be aware that open() is just one piece of the puzzle.
-> What about socket()?  I've cursed this interface many times before and
-> now it's biting you: there is parameter to pass a flag.  What about
-> transferring file descriptors via Unix domain sockets?  How can I decide
-> the transferred descriptor should be in the private namespace?
+Sorry, I'm catching up on PCI stuff right now (am traveling in Tokyo
+right now, gotta love jet lag...)
 
-Well, we can't just replicate/change every system call that creates a file 
-descriptor. So I'm for something like:
+thanks for your patience.
 
-int sys_fdup(int fd, int flags);
-
-So you basically create your fds with their native/existing system calls, 
-and then you dup/move them into the prefered fd space.
-
-
-
-- Davide
-
-
+greg k-h
