@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758500AbXE3Tdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbXE3Ti1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758500AbXE3Tdr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758108AbXE3Td2
+	id S1755394AbXE3Ti1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXE3TiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:33:28 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:64499 "EHLO aun.it.uu.se"
+	Wed, 30 May 2007 15:38:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53915 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758053AbXE3Td1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:33:27 -0400
-Date: Wed, 30 May 2007 21:33:18 +0200 (MEST)
-Message-Id: <200705301933.l4UJXIE0023913@alkaid.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: davem@davemloft.net, mikpe@it.uu.se
-Subject: Re: [BUG sparc64] 2.6.22-rc broke X on Ultra5
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+	id S1751733AbXE3TiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 15:38:20 -0400
+Date: Wed, 30 May 2007 12:38:40 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Cc: axboe@kernel.dk, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       zaitcev@redhat.com
+Subject: Re: [PATCH] drivers/block/ub.c: use list_for_each_entry()
+Message-Id: <20070530123840.e54d73c2.zaitcev@redhat.com>
+In-Reply-To: <20070530084752.GE14284@traven>
+References: <20070530084752.GE14284@traven>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 02:05:34 -0700 (PDT), David Miller <davem@davemloft.net> wrote:
-> From: Mikael Pettersson <mikpe@it.uu.se>
-> Date: Tue, 22 May 2007 10:40:53 +0200
-> 
-> > 2.6.21 works fine on my Ultra5, but with 2.6.22-rc the X
-> > server (from Aurora 2) fails to mmap() the PCI frame buffer
-> > (atyfb).
-> > 
-> > I noticed a lot of PCI-related changes both in `dmesg' and
-> > /var/log/Xorg.0.log between 2.6.21 and 2.6.22-rc, so my
-> > guess is that PCI resources get broken somewhere.
-> > 
-> > I'll try a bisect between 2.6.21 and 2.6.22-rc1 next, but
-> > I'm also willing to test patches in case anyone thinks they
-> > know what the fix is.
-> 
-> Start your bisect with the change right before this one:
-> 
-> commit a2fb23af1c31ad6e0c281e56d385f803229d57fa
-> Author: David S. Miller <davem@sunset.davemloft.net>
-> Date:   Wed Feb 28 23:35:04 2007 -0800
-> 
->     [SPARC64]: Probe PCI bus using OF device tree.
->     
->     Almost entirely taken from the 64-bit PowerPC PCI code.
->     
->     This allowed to eliminate a ton of cruft from the sparc64
->     PCI layer.
->     
->     Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> Unfortunately, if the tree works right before this change,
-> you can't just add this one because a subsequent fix is
-> needed before ultra5/ultra10 will work again, but it's
-> this one:
-> 
-> commit 01f94c4a6ced476ce69b895426fc29bfc48c69bd
-> Author: David S. Miller <davem@ultra5.davemloft.net>
-> Date:   Sun Mar 4 12:53:19 2007 -0800
-> 
->     [SPARC64]: Fix sabre pci controllers with new probing scheme.
+On Wed, 30 May 2007 10:47:52 +0200, Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
 
-You were spot on. 2.6.21 + patches up to but not including
-the first one above works. Adding that one gave me a kernel
-that wouldn't boot (hung after "uncompressing kernel").
-Adding the second one above gave me a kernel that booted, but
-where X failed to mmap() the frame buffer as I described.
+> @@ -1608,8 +1605,7 @@ static void ub_reset_task(struct work_struct *work)
+>  	spin_lock_irqsave(sc->lock, flags);
+>  	sc->reset = 0;
+>  	tasklet_schedule(&sc->tasklet);
+> -	list_for_each(p, &sc->luns) {
+> -		lun = list_entry(p, struct ub_lun, link);
+> +	list_for_each_entry(lun, &sc->luns, link) {
+>  		blk_start_queue(lun->disk->queue);
+>  	}
+>  	wake_up(&sc->reset_wait);
 
-/Mikael
+This patch straddles the border of acceptable. The pointless obfuscation
+is balanced against the removal of explicit type in list_entry() and thus
+a possible mismatched struct. I'm not acking nor naking this.
+
+-- Pete
