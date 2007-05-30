@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbXE3TdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbXE3Tde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757494AbXE3TdV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbXE3TdJ
+	id S1758229AbXE3Tde (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757669AbXE3TdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:33:09 -0400
-Received: from stinky.trash.net ([213.144.137.162]:46618 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751777AbXE3TdG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:33:06 -0400
-Message-ID: <465DD142.6040409@trash.net>
-Date: Wed, 30 May 2007 21:32:18 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-CC: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
-References: <20070529180112.GC5411@linux-os.sc.intel.com> <20070530105936.6c988da5.akpm@linux-foundation.org> <20070530112056.0aeb9498@freepuppy> <465DC598.5060407@trash.net> <20070530191533.GB3216@linux-os.sc.intel.com>
-In-Reply-To: <20070530191533.GB3216@linux-os.sc.intel.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 15:33:23 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:3420 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757575AbXE3TdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 15:33:22 -0400
+Date: Wed, 30 May 2007 21:32:27 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Lord <lkml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+Message-ID: <20070530193226.GB32105@kernel.dk>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org> <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org> <20070530160913.GA14261@elte.hu> <465DCAE4.1010206@rtr.ca> <alpine.LFD.0.98.0705301212520.26602@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705301212520.26602@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Venki Pallipadi wrote:
-> On Wed, May 30, 2007 at 08:42:32PM +0200, Patrick McHardy wrote:
-> 
->>
->>It seems wasteful to add per-packet overhead for tx timeouts, which
->>should be an exception. Do drivers really care about the exact
->>timeout value? Compared to a packet transmission time its incredibly
->>long anyways ..
+On Wed, May 30 2007, Linus Torvalds wrote:
 > 
 > 
-> I agree. Doing a mod_timer or hrtimer_forward to push forward may add to the
-> complexity depending on how often TX happens.
+> On Wed, 30 May 2007, Mark Lord wrote:
+> >
+> > I wonder how useful it would be to reimplement sendfile()
+> > using splice(), either in glibc or inside the kernel itself?
 > 
-> Are the drivers really worried about exact timeouts here?
+> I'd like that, if only because right now we have two separate paths that 
+> kind of do the same thing, and splice really is the only one that is 
+> generic.
+> 
+> I thought Jens even had some experimental patches for it. It might be 
+> worth to "just do it" - there's some internal overhead, but on the other 
+> hand, it's also likely the best way to make sure any issues get sorted 
+> out.
 
+I do, this is a one year old patch that does that:
 
-Just guessing, but I don't think they are, after all timers can be late.
+http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=f8f550e027fd07ad8d87110178803dc63b544d89
 
-> Can we use rounding for the timers that are more than a second, at least?
+I'll update it, test, and submit for 2.6.23.
 
+-- 
+Jens Axboe
 
-Also sounds reasonable.
