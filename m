@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752417AbXE3FeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752032AbXE3FnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752417AbXE3FeR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 01:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXE3FeK
+	id S1752032AbXE3FnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 01:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbXE3FnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 01:34:10 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50186 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751354AbXE3FeJ (ORCPT
+	Wed, 30 May 2007 01:43:07 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:45263 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbXE3FnG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 01:34:09 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 30 May 2007 07:33:47 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 2.6.21.3] ieee1394: eth1394: bring back a parent device
-To: stable@kernel.org
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.ba04f8fb4ccaa257@s5r6.in-berlin.de>
+	Wed, 30 May 2007 01:43:06 -0400
+Message-ID: <465D0ED5.3070305@novell.com>
+Date: Wed, 30 May 2007 01:42:45 -0400
+From: Crispin Cowan <crispin@novell.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Pavel Machek <pavel@ucw.cz>
+CC: Cliffe <cliffe@iinet.net.au>, casey@schaufler-ca.com,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       linux-security-module <linux-security-module@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM
+ hook
+References: <653438.15244.qm@web36612.mail.mud.yahoo.com> <465AE46B.4090109@iinet.net.au> <465B57D7.2040101@novell.com> <20070529144518.GD5840@ucw.cz>
+In-Reply-To: <20070529144518.GD5840@ucw.cz>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Date: Mon, 21 May 2007 01:05:41 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: ieee1394: eth1394: bring back a parent device
+Pavel Machek wrote:
+>>     * Hard links: AppArmor explicitly mediates permission to make a hard
+>>     
+> Unfortunately, aparmor is by design limited to subset of distro
+> (network daemons).
+That is not true. AppArmor is designed to confine any application you do
+not want to trust completely. This includes network daemons (Apache,
+Sendmail, BIND, etc.) network clients (Firefox, Thunderbird,
+GAIM/Pidgin, etc.) and any other application that mediates trust: where
+data on one side of the application is higher privilege than potential
+attackers on the other side of the application.
 
-This adds a real parent device to eth1394's ethX device like in Linux
-2.6.20 and older.  However, due to unfinished conversion of the ieee1394
-away from class_device, we now refer to the FireWire controller's PCI
-device as the parent, not to the ieee1394 driver's fw-host device.
+>  Unfortunately, some other programs (passwd, vi)
+> routinely make hardlinks. So AA mediating hardlink is not enough, as
+> vi will happily hardlink /etc/shadow into /etc/.vi-shadow-1234.
+>   
+I have no idea what you are talking about. I routinely profile vim on
+stage in AppArmor presentations, and it presents no such problems.
 
-Having a real parent device instead of a virtual one allows udev scripts
-to distinguish eth1394 interfaces from networking bridges, bondings and
-the likes.
+Caveat: the circumstances under which you would actually want to profile
+vi are rather limited, most users would not want to do that.
 
-Fixes a regression since 2.6.21:
-https://bugs.gentoo.org/show_bug.cgi?id=177199
+In another post Pavel Machek wrote:
+> Hmm, I guess I'd love "it is useless on multiuser boxes" to become
+> standard part of AA advertising.
+That is usually around slide 7 of the standard AppArmor presentation,
+right next to the remarks about how mulituser boxes are nearly extinct
+dinosaurs. AppArmor gets some of its simplicity and ease of use by not
+considering that vanishing use case. Even so, AppArmor does have uses on
+multiuser boxes, just not the uses Pavel wishes for. Fine, use a
+different tool for a different task, AppArmor has plenty of use cases.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
-Same as commit ef50a6c59dc66f22eba67704e291d709f21e0456.
+The limitation Pavel is referring to is that AppArmor does not secure
+processes that are not profiled by AppArmor. We know, this is
+intentional, and contributes to AppArmor's ease of use, and does not
+generate a hole if you consider every process exposed to (say) network
+attack and confine it.
 
- drivers/ieee1394/eth1394.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.21.3/drivers/ieee1394/eth1394.c
-===================================================================
---- linux-2.6.21.3.orig/drivers/ieee1394/eth1394.c
-+++ linux-2.6.21.3/drivers/ieee1394/eth1394.c
-@@ -584,10 +584,9 @@ static void ether1394_add_host (struct h
-         }
- 
- 	SET_MODULE_OWNER(dev);
--#if 0
--	/* FIXME - Is this the correct parent device anyway? */
--	SET_NETDEV_DEV(dev, &host->device);
--#endif
-+
-+	/* This used to be &host->device in Linux 2.6.20 and before. */
-+	SET_NETDEV_DEV(dev, host->device.parent);
- 
- 	priv = netdev_priv(dev);
- 
+Crispin
 
 -- 
-Stefan Richter
--=====-=-=== -=-= ====-
-http://arcgraph.de/sr/
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
+Director of Software Engineering   http://novell.com
+		   Security: It's not linear
 
