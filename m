@@ -1,105 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbXE3HvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752480AbXE3H6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752116AbXE3HvF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 03:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXE3Hu4
+	id S1752480AbXE3H6R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 03:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbXE3H57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 03:50:56 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1195 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbXE3Huz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 03:50:55 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Tejun Heo" <htejun@gmail.com>, <w@1wt.edu>
-Subject: RE: epoll,threading
-Date: Wed, 30 May 2007 00:50:51 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKAEPJECAC.davids@webmaster.com>
+	Wed, 30 May 2007 03:57:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37971 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750803AbXE3H56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 03:57:58 -0400
+Date: Wed, 30 May 2007 03:56:13 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] net: fix comparisons of unsigned < 0
+Message-ID: <20070530075613.GA29081@nostromo.devel.redhat.com>
+Mail-Followup-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20070530072528.GP943@1wt.eu>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 30 May 2007 01:51:17 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 30 May 2007 01:51:18 -0700
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Recent gcc versions emit warnings when unsigned variables are compared < 0 or >= 0.
 
-I mostly agree with your comments, so I'm only responding to the points I
-disagree with.
+Signed-off-by: Bill Nottingham <notting@redhat.com>
 
-> So in fact, converting a threaded program to a pure async model should
-> not improve it much because of the initial architectural design. But a
-> program written from scratch to be purely async should perform better
-> simply because it has less operations to perform. And there's no magics
-> here : less cycles spend synchronizing and locking = more cycles available
-> for the real job.
+---
 
-On the contrary, converting threaded programs to pure async is a disaster.
-For one thing, you can never, ever block under any circumstances on pain of
-total disaster. This means every single line of code is performance
-critical. For all but the most trivial applications, this alone is a deal
-killer.
+ 8021q/vlan.c                               |    3 +--
+ dccp/probe.c                               |    2 +-
+ ipv6/netfilter/nf_conntrack_l3proto_ipv6.c |    3 +--
+ ipv6/netfilter/nf_conntrack_proto_icmpv6.c |    3 +--
+ sched/act_pedit.c                          |    3 +--
+ sctp/debug.c                               |    8 --------
+ sctp/sm_statetable.c                       |    2 +-
+ wanrouter/wanmain.c                        |    2 +-
+ 8 files changed, 7 insertions(+), 19 deletions(-)
 
-The other problem is that no matter how careful you are, there is still
-going to be some unexpected blocking. For example, suppose one connection
-triggers some kind of error condition and the code to handle this error has
-never faulted in. Now your entire application stalls until the error
-handling code can fault in, which can be awhile if the disk is slow/busy.
-
-> It's true that an async model is a lot of pain. But it's always where I
-> got the best performance. For instance, with epoll(), I can achieve
-> 20000 HTTP reqs/s with 40000 concurrent sessions. The best performance
-> I have observed from threaded competitors was an order of magnitude below
-> on either value (sometimes both).
-
-I can't see how adding a second thread to your program could possibly make
-it all that much worse. And when you do block unexpectedly, there's that
-second thread to keep on working. And, of course, you can take advantage of
-another CPU.
-
-If adding a few more threads to your design makes it much worse, there's
-something wrong with it. Perhaps you are conflating "threaded competitors"
-with "thread-per-client competitors".
-
-I also must be misunderstanding something you're saying, or you are very
-confused. At one point you say that threaded programs are an order of
-magnitude below pure async. At another point you say converting a threaded
-program to pure async should not improve it much. I don't see how both of
-these can be true unless you mean something different by "threaded" and
-"async" in the two statements.
-
-Thread-per-client works reasonably well up to some number of clients. On
-most UNIXes, that number is around 300. On Windows, it's around 800. I
-personally would only recommend it for applications that plan to handle 100
-clients or fewer, or one platforms where you know the threading library
-works well this way.
-
-Pure async is just too painful. If you only have a single thread, the
-program becomes unmaintainable because you must never ever block anywhere.
-And you still can't avoid blocking sometimes, and this can cause a backup
-from which you can never recover. (If you always wondered why your servers
-were bursty, this is why.)
-
-The best approach, in my experience, is to use multiple threads so that you
-can take advantage of multiple CPUs, not be screwed if you block
-unexpectedly, and even block intentionally in code that's not performance
-critical. On Linux, 'epoll' is the most efficient socket discovery
-technique, so you should use it in any design that's not thread-per-client.
-
-DS
-
-
+diff -ru linux-2.6.21-old/net/8021q/vlan.c linux-2.6.21/net/8021q/vlan.c
+--- linux-2.6.21-old/net/8021q/vlan.c	2007-05-30 02:53:04.000000000 -0400
++++ linux-2.6.21/net/8021q/vlan.c	2007-05-30 02:35:47.000000000 -0400
+@@ -740,8 +740,7 @@
+ 	case SET_VLAN_NAME_TYPE_CMD:
+ 		if (!capable(CAP_NET_ADMIN))
+ 			return -EPERM;
+-		if ((args.u.name_type >= 0) &&
+-		    (args.u.name_type < VLAN_NAME_TYPE_HIGHEST)) {
++		if (args.u.name_type < VLAN_NAME_TYPE_HIGHEST) {
+ 			vlan_name_type = args.u.name_type;
+ 			err = 0;
+ 		} else {
+diff -ru linux-2.6.21-old/net/dccp/probe.c linux-2.6.21/net/dccp/probe.c
+--- linux-2.6.21-old/net/dccp/probe.c	2007-05-30 02:53:04.000000000 -0400
++++ linux-2.6.21/net/dccp/probe.c	2007-05-30 02:36:09.000000000 -0400
+@@ -128,7 +128,7 @@
+ 	int error = 0, cnt = 0;
+ 	unsigned char *tbuf;
+ 
+-	if (!buf || len < 0)
++	if (!buf)
+ 		return -EINVAL;
+ 
+ 	if (len == 0)
+diff -ru linux-2.6.21-old/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c linux-2.6.21/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c
+--- linux-2.6.21-old/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c	2007-05-30 02:53:04.000000000 -0400
++++ linux-2.6.21/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c	2007-05-30 02:36:44.000000000 -0400
+@@ -177,8 +177,7 @@
+ 
+ 	protoff = nf_ct_ipv6_skip_exthdr(*pskb, extoff, &pnum,
+ 					 (*pskb)->len - extoff);
+-	if (protoff < 0 || protoff > (*pskb)->len ||
+-	    pnum == NEXTHDR_FRAGMENT) {
++	if (protoff > (*pskb)->len || pnum == NEXTHDR_FRAGMENT) {
+ 		DEBUGP("proto header not found\n");
+ 		return NF_ACCEPT;
+ 	}
+diff -ru linux-2.6.21-old/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c linux-2.6.21/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
+--- linux-2.6.21-old/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c	2007-05-30 02:53:04.000000000 -0400
++++ linux-2.6.21/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c	2007-05-30 02:37:04.000000000 -0400
+@@ -168,8 +168,7 @@
+ 					   skb->len - inip6off
+ 						    - sizeof(struct ipv6hdr));
+ 
+-	if ((inprotoff < 0) || (inprotoff > skb->len) ||
+-	    (inprotonum == NEXTHDR_FRAGMENT)) {
++	if ((inprotoff > skb->len) || (inprotonum == NEXTHDR_FRAGMENT)) {
+ 		DEBUGP("icmpv6_error: Can't get protocol header in ICMPv6 payload.\n");
+ 		return -NF_ACCEPT;
+ 	}
+diff -ru linux-2.6.21-old/net/sched/act_pedit.c linux-2.6.21/net/sched/act_pedit.c
+--- linux-2.6.21-old/net/sched/act_pedit.c	2007-05-30 02:53:04.000000000 -0400
++++ linux-2.6.21/net/sched/act_pedit.c	2007-05-30 02:38:19.000000000 -0400
+@@ -164,8 +164,7 @@
+ 				printk("offset must be on 32 bit boundaries\n");
+ 				goto bad;
+ 			}
+-			if (skb->len < 0 ||
+-			    (offset > 0 && offset > skb->len)) {
++			if (offset > 0 && offset > skb->len) {
+ 				printk("offset %d cant exceed pkt length %d\n",
+ 				       offset, skb->len);
+ 				goto bad;
+diff -ru linux-2.6.21-old/net/sctp/debug.c linux-2.6.21/net/sctp/debug.c
+--- linux-2.6.21-old/net/sctp/debug.c	2007-05-30 02:53:04.000000000 -0400
++++ linux-2.6.21/net/sctp/debug.c	2007-05-30 02:39:29.000000000 -0400
+@@ -77,8 +77,6 @@
+ /* Lookup "chunk type" debug name. */
+ const char *sctp_cname(const sctp_subtype_t cid)
+ {
+-	if (cid.chunk < 0)
+-		return "illegal chunk id";
+ 	if (cid.chunk <= SCTP_CID_BASE_MAX)
+ 		return sctp_cid_tbl[cid.chunk];
+ 
+@@ -146,8 +144,6 @@
+ /* Lookup primitive debug name. */
+ const char *sctp_pname(const sctp_subtype_t id)
+ {
+-	if (id.primitive < 0)
+-		return "illegal primitive";
+ 	if (id.primitive <= SCTP_EVENT_PRIMITIVE_MAX)
+ 		return sctp_primitive_tbl[id.primitive];
+ 	return "unknown_primitive";
+@@ -161,8 +157,6 @@
+ /* Lookup "other" debug name. */
+ const char *sctp_oname(const sctp_subtype_t id)
+ {
+-	if (id.other < 0)
+-		return "illegal 'other' event";
+ 	if (id.other <= SCTP_EVENT_OTHER_MAX)
+ 		return sctp_other_tbl[id.other];
+ 	return "unknown 'other' event";
+@@ -184,8 +178,6 @@
+ /* Lookup timer debug name. */
+ const char *sctp_tname(const sctp_subtype_t id)
+ {
+-	if (id.timeout < 0)
+-		return "illegal 'timer' event";
+ 	if (id.timeout <= SCTP_EVENT_TIMEOUT_MAX)
+ 		return sctp_timer_tbl[id.timeout];
+ 	return "unknown_timer";
+diff -ru linux-2.6.21-old/net/sctp/sm_statetable.c linux-2.6.21/net/sctp/sm_statetable.c
+--- linux-2.6.21-old/net/sctp/sm_statetable.c	2007-05-30 02:53:04.000000000 -0400
++++ linux-2.6.21/net/sctp/sm_statetable.c	2007-05-30 02:38:51.000000000 -0400
+@@ -960,7 +960,7 @@
+ 	if (state > SCTP_STATE_MAX)
+ 		return &bug;
+ 
+-	if (cid >= 0 && cid <= SCTP_CID_BASE_MAX)
++	if (cid <= SCTP_CID_BASE_MAX)
+ 		return &chunk_event_table[cid][state];
+ 
+ 	if (sctp_prsctp_enable) {
+diff -ru linux-2.6.21-old/net/wanrouter/wanmain.c linux-2.6.21/net/wanrouter/wanmain.c
+--- linux-2.6.21-old/net/wanrouter/wanmain.c	2007-05-30 02:53:04.000000000 -0400
++++ linux-2.6.21/net/wanrouter/wanmain.c	2007-05-30 02:40:23.000000000 -0400
+@@ -454,7 +454,7 @@
+ 	}
+ 
+ 	if (conf->data_size && conf->data) {
+-		if (conf->data_size > 128000 || conf->data_size < 0) {
++		if (conf->data_size > 128000) {
+ 			printk(KERN_INFO
+ 			    "%s: ERROR, Invalid firmware data size %i !\n",
+ 					wandev->name, conf->data_size);
