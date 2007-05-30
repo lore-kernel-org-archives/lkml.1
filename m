@@ -1,107 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750950AbXE3Epd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbXE3Epv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750950AbXE3Epd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 00:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbXE3EpT
+	id S1752516AbXE3Epv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 00:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXE3EpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 00:45:19 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:59542 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750746AbXE3EpS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 00:45:18 -0400
-Date: Tue, 29 May 2007 21:45:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Robert Hancock <hancockr@shaw.ca>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH -mm] 1/2: MMCONFIG: validate against ACPI motherboard
- resources
-In-Reply-To: <465CF794.1070406@shaw.ca>
-Message-ID: <alpine.LFD.0.98.0705292125511.26602@woody.linux-foundation.org>
-References: <465CF794.1070406@shaw.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 30 May 2007 00:45:25 -0400
+Received: from mga03.intel.com ([143.182.124.21]:26865 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751969AbXE3EpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 00:45:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,590,1170662400"; 
+   d="scan'208";a="233435704"
+Date: Tue, 29 May 2007 21:42:01 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Con Kolivas <kernel@kolivas.org>, Christoph Lameter <clameter@sgi.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] CFS scheduler, -v12
+Message-ID: <20070530044201.GF3693@linux-os.sc.intel.com>
+References: <46523081.6050007@bigpond.net.au> <465275EF.8060905@bigpond.net.au> <4652DC03.60801@bigpond.net.au> <4655423E.6000202@bigpond.net.au> <20070524164538.GA13301@linux-os.sc.intel.com> <46561E67.3030207@bigpond.net.au> <20070529204557.GB3693@linux-os.sc.intel.com> <465CBD35.2000109@bigpond.net.au> <20070530005052.GE3693@linux-os.sc.intel.com> <465CDEEA.9060507@bigpond.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465CDEEA.9060507@bigpond.net.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 29, 2007 at 07:18:18PM -0700, Peter Williams wrote:
+> Siddha, Suresh B wrote:
+> > I can try 32-bit kernel to check.
+> 
+> Don't bother.  I just checked 2.6.22-rc3 and the problem is not present
+> which means something between rc2 and rc3 has fixed the problem.  I hate
+> it when problems (appear to) fix themselves as it usually means they're
+> just hiding.
+> 
+> I didn't see any patches between rc2 and rc3 that were likely to have
+> fixed this (but doesn't mean there wasn't one).  I'm wondering whether I
+> should do a git bisect to see if I can find where it got fixed?
+> 
+> Could you see if you can reproduce it on 2.6.22-rc2?
 
+No. Just tried 2.6.22-rc2 64-bit version at runlevel 3 on my remote
+system at office. 15 attempts didn't show the issue.
 
-On Tue, 29 May 2007, Robert Hancock wrote:
->
-> This path adds validation of the MMCONFIG table against the ACPI reserved
-> motherboard resources.
+Sure that nothing changed in your test setup?
 
-Please fix the formatting of your code.
+More experiments tomorrow morning..
 
-"for" and "if" are not functions, and they have a space before the 
-parenthesis.
-
-And pretty much every single conditional in this patch is spread out over 
-two or more lines and has at least three different indentations. There's 
-something wrong here. Code can't look this bad and still be fine. Some of 
-this looks like random whitespace noise:
-
-+               if(is_acpi_reserved(cfg->address,
-+                                   cfg->address + size - 1))
-+                       printk(KERN_NOTICE "PCI: MCFG area at %Lx reserved "
-+                               "in ACPI motherboard resources\n",
-+                               cfg->address);
-+               else {
-
-That's just horrid. Please try to make the code _look_ nicer.
-
-For example, just making "is_acpi_reserved()" take a start/len thing 
-instead, would allow you to at least do
-
-	if (is_acpi_reserved(cfg->address, size)) {
-		printk(KERN_NOTICE "PCI: MCFG area at %Lx reserved "
-			"in ACPI motherboard resources\n",
-			cfg->address);
-	} else {
-		...
-
-(and has the braces rigth too - don't pair an unbraced "if ()" with a 
-braced "else" statement), and that together with making the body of the 
-for-loop a separate function would possibly make that code read a lot 
-better.
-
-Same goes for this thing:
-
-+                       if((pci_probe & PCI_PROBE_CONF1) &&
-+                          e820_all_mapped(cfg->address,
-+                                          cfg->address + size - 1,
-+                                          E820_RESERVED))
-+                               printk(KERN_NOTICE "PCI: MCFG area at %Lx reserved in E820\n",
-+                                       cfg->address);
-+                       else
-+                               goto reject;
-
-there really is *not* a highly coveted prize for having the most different 
-indentation in the fewest possible lines of code!
-
-Yeah, I realize that maybe this is nit-picking, but trying to read this 
-patch really does make you go blind. It violates so many coding standards 
-that it's almost impossible to read the code itself. It's made worse by 
-the fact that you then also used Thunderbird to send the patch, and had it 
-set for
-
-	Content-type: text/plain; charset=ISO-8859-1; format=flowed
-
-where that "format=flowed" means that basically no mail-client will be 
-able to read it sanely (because a lot of them will re-flow the text), and 
-you have to save it to a file before you can even comment on it.
-
-Gaah. See
-
-	http://mbligh.org/linuxdocs/Email/Clients/Thunderbird
-
-where the most important sentence is "Thunderbird is written by aged whore 
-monkeys stoned on crack". But it also talks about how to disable that 
-idiotic format=flowed for patches, and how to make sure it's not wrapping.
-
-But as mentioned, your patch itself had some whitespace issues even aside 
-from the regular Thunderbird breakage.
-
-		Linus
+thanks,
+suresh
