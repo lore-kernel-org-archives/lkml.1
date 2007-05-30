@@ -1,143 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761830AbXE3WYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbXE3WY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761830AbXE3WYA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759863AbXE3WXG
+	id S1761910AbXE3WY0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759144AbXE3WYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:23:06 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:50062 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759281AbXE3WXD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:23:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=HVddcszmiYpNgcLHc0+KjhwNKS6cr0qOXHwI2cURTo4J0x4KFno9ZXqVa/zqQguCPxgDgPxJONHDY5j9A+xiYtAXpEPsf9Q9TzYys8uAFsMxiua3PtFrhSWd7+PwS94Oa6S+PMBXFKuajsCCxHj/BnzVmIR9mn5CLIHec0ieEhk=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Junio C Hamano <junkio@cox.net>
-Subject: Re: [PATCH 3/3] Make ide dma blacklist handling a bit saner.
-Date: Thu, 31 May 2007 00:36:05 +0200
-User-Agent: KMail/1.9.6
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Dave Jones <davej@redhat.com>
-References: <20070521145042.GA6957@redhat.com> <200705282141.42507.bzolnier@gmail.com> <7vfy5ga6v2.fsf@assigned-by-dhcp.cox.net>
-In-Reply-To: <7vfy5ga6v2.fsf@assigned-by-dhcp.cox.net>
+	Wed, 30 May 2007 18:24:15 -0400
+Received: from holomorphy.com ([66.93.40.71]:55037 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759250AbXE3WYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 18:24:14 -0400
+Date: Wed, 30 May 2007 15:24:44 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+Message-ID: <20070530222444.GD31925@holomorphy.com>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org> <465DE992.6070803@redhat.com> <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705310036.06009.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 30, 2007 at 02:27:52PM -0700, Linus Torvalds wrote:
+> Well, don't think of it as a special case at all: think of bit 30 as a 
+> "the user asked for a non-linear fd".
+> In fact, to make it effective, I'd suggest literally scrambling the low 
+> bits (using, for example, some silly per-boot xor value to to actually 
+> generate the "true" index - the equivalent of a really stupid randomizer). 
+> That way you'd have the legacy "linear" space, and a separate "non-linear 
+> space" where people simply *cannot* make assumptions about contiguous fd 
+> allocations. There's no special case there - it's just an extension which 
+> explicitly allows us to say "if you do that, your fd's won't be allocated 
+> the traditional way any more, but you *can* mix the traditional and the 
+> non-linear allocation".
 
-Hi,
+One could always stuff a seed or per-cpu seeds in the files_struct and
+use a PRNG. The only trick would be cacheline bounces and/or space
+consumption of seeds. Another possibility would be bitreversed
+contiguity or otherwise a bit permutation of some contiguous range,
+modulo (of course) the high bit used to tag the randomized range.
 
-On Tuesday 29 May 2007, Junio C Hamano wrote:
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> writes:
-> 
-> > The change itself looks good but IMO it is worth doing it before patch #2/3
-> > (it would also make it possible for me to merge this patch immediately).
-> 
-> Yes, I should have considered that the earlier #2/3 needs
-> coordination between you and Jeff.
-> 
-> > When it comes to patch #2 - Alan's comment may be a bit harsh but he seems
-> > to be right - there should be a common library-like file (ata-blacklist.c
-> > or ata-quirks.c or whatever name you like) containing ata_device_blacklist[].
-> >
-> > This would require slight modification of ide_in_drive_list() to teach
-> > it about ATA_HORKAGE_DMA ... Please also note that <linux/ata.h> is used by both
-> > IDE and libata so it should be a good place to put struct ata_blacklist_entry
-> > and ATA_HORKAGE_* macros.
-> 
-> Thanks for the hint.  Alan is correct to point out that I
-> cheated. ;-)  If I understand correctly, the change would
-> involve:
-> 
->  - create a new file that has ata_device_blacklist[] whose type
->    is "struct ata_blacklist_entry" (i.e. matches libata-core),
->    by separating the table out of ata/libata-core.c.
-> 
->    Q1. should that file go to drivers/ata/ or drivers/ide/?
+With "truly" random/sparse fd numbers it may be meaningful to use a
+different data structure from a bitmap to track them in-kernel, though
+xor and other easily-computed mappings to/from contiguous ranges won't
+need such in earnest.
 
-No strong preference here but I think that it should be drivers/ata/ since it
-is updated more frequently (NCQ etc).  Either way there needs to be a BIG FAT
-comment at the top of the file explaining that the file is used by both IDE
-and SCSI/libata subsystems.
 
-For the new file (i.e. ata-quirks) to be a shared library it needs to be
-similar to libraries from lib/ (ie. lib/crc16c).  After some thought I'm
-convinced that it is an optimal solution.  It allows the real code sharing
-and at the same time it is the simplest when it comes to the build rules.
-
-Of course I can be missing something really obvious which would prevent
-this scheme from working...  :)
-
->  - make that file depended on when either libata and/or IDE is
->    selected.
-> 
->    Q2. Kconfig dependency rule is needed for this, perhaps.  How
->    should that look like?
-
-Lets assume that the new config entry will be CONFIG_ATA_QUIRKS
-and that it shouldn't be visible during kernel configuration.
-
-* drivers/ata/Kconfig:
-
-menuconfig ATA should select ATA_QUIRKS
-
-...
-
-config ATA_QUIRKS
-	tristate
-	depends on ATA || BLK_DEV_IDE
-
-* drivers/ide/Kconfig:
-
-config BLK_DEV_IDEDMA should select ATA_QUIRKS
-
-Or something similar... now to the Makefile modifications...
-
-* drivers/ata/Makefile:
-
-Add rule for obj-$(CONFIG_ATA_QUIRKS) at the top of the file.
-
-* drivers/Makefile:
-
-Replace obj-$(CONFIG_ATA) with obj-y (so ata-quirks library
-gets compiled even if it is selected only by IDE subsystem).
-
-Since ata-quirks is a stand-alone module the kernel build
-system should take care of the rest.
-
->  - some out-of-tree drivers might be using ide_in_drive_list()
->    and relying on it to take "struct drive_list_entry"; create a
->    new function, ide_in_device_list(), that takes "struct
->    ata_blacklist_entry" as its parameter.
-> 
->    Q3. Is the 'out-of-tree drivers' a real issue, and if so, is
->    the above a reasonable avenue to take?
-
-Not a real issue, I'm not aware of any out of tree IDE drivers.
-
->  - convert in-tree callers to use ide_in_device_list() instead,
->    feeding it ata_device_blacklist[], and remove drive_blacklist[]
->    from drivers/ide/ide-dma.c.
-> 
->    Q4. What would you like to do for drive_whitelist[]?
-
-Add ATA_HORKAGE_DMA_OK and add drive_whitelist[] entries back to
-ata_device_blacklist[]?  Unless somebody has a better idea...
-
-> > Care to respin both patches?
-> 
-> Before the questions are answered I cannot respin the earlier
-> #2/3, but I can certainly respin #3/3.
-
-Thanks, all three patches were applied.
-
-Bart
+-- wli
