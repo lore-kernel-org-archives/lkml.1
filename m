@@ -1,61 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbXE3WGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbXE3WHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758073AbXE3WGt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbXE3WGd
+	id S1760951AbXE3WHF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760444AbXE3WGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:06:33 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:54617 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759298AbXE3WGb (ORCPT
+	Wed, 30 May 2007 18:06:46 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:19071 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760389AbXE3WGo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:06:31 -0400
-Date: Wed, 30 May 2007 15:07:39 -0700
-From: Greg KH <greg@kroah.com>
-To: Jay Cliburn <jacliburn@bellsouth.net>
-Cc: Jose Alberto Reguero <jareguero@telefonica.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Problem with atl1 and msi in kernel 2.6.22-rc3
-Message-ID: <20070530220739.GA26408@kroah.com>
-References: <200705300200.25412.jareguero@telefonica.net> <20070530064711.570162f1@osprey.hogchain.net>
+	Wed, 30 May 2007 18:06:44 -0400
+Message-ID: <465DF566.7000000@oracle.com>
+Date: Wed, 30 May 2007 15:06:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070530064711.570162f1@osprey.hogchain.net>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3 -mm] slub: use lib/hexdump
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org> <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com> <20070523153730.e0e9e91d.akpm@linux-foundation.org> <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com> <20070523182145.7d7f1f7e.randy.dunlap@oracle.com> <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com> <20070524073131.GA17501@elte.hu> <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com> <20070524142908.f39f42ea.akpm@linux-foundation.org> <20070524145517.1f32cd94.randy.dunlap@oracle.com> <Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com> <20070530143451.f4a844bc.randy.dunlap@oracle.com> <Pine.LNX.4.64.0705301443020.3358@schroedinger.engr.sgi.com> <465DF135.80202@oracle.com> <Pine.LNX.4.64.0705301451140.3709@schroedinger.engr.sgi.c!  om> <465DF2A2.2070801@oracle.com> <Pine.LNX.4.64.0705301501470.7502@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0705301501470.7502@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 06:47:11AM -0500, Jay Cliburn wrote:
-> On Wed, 30 May 2007 02:00:25 +0200
-> Jose Alberto Reguero <jareguero@telefonica.net> wrote:
+Christoph Lameter wrote:
+> I'd prefer something like this:
 > 
-> > I have problems with a M2V motherboard and atl1 driver with msi and
-> > kernel 2.6.22-rc3. With kernel 2.6.21 I had no problems.
-> > I must add in drivers/pci/quirks.c (line 1723):
-> > 
-> >  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, 
-> > quirk_disable_msi);
-> > +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, 0xe238,
-> > quirk_disable_msi);
-> > 
-> > to disable msi in the atl1.
-> 
-> See http://bugzilla.kernel.org/show_bug.cgi?id=8472.
-> 
-> A more general solution is to disable MSI for the VIA VT3351 (used by
-> the Asus M2V).  I attempted to do this in the -stable tree with
-> http://lkml.org/lkml/2007/5/26/167, but it was shot down because the
-> patch isn't upstream yet.
-> 
-> Unfortunately, I can't submit it upstream because the enabling
-> patch hasn't yet been applied upstream by the PCI maintainer. My
-> request for info on the status of the patch went unanswered.
-> http://lkml.org/lkml/2007/5/19/74
+> Use hexdump in slub.
 
-Sorry, I'm catching up on PCI stuff right now (am traveling in Tokyo
-right now, gotta love jet lag...)
+Sure, that's fine.
 
-thanks for your patience.
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> Index: slub/mm/slub.c
+> ===================================================================
+> --- slub.orig/mm/slub.c	2007-05-30 14:56:14.000000000 -0700
+> +++ slub/mm/slub.c	2007-05-30 15:01:33.000000000 -0700
+> @@ -339,34 +339,10 @@ static char *slub_debug_slabs;
+>   */
+>  static void print_section(char *text, u8 *addr, unsigned int length)
+>  {
+> -	int i, offset;
+> -	int newline = 1;
+> -	char ascii[17];
+> -
+> -	ascii[16] = 0;
+> -
+> -	for (i = 0; i < length; i++) {
+> -		if (newline) {
+> -			printk(KERN_ERR "%8s 0x%p: ", text, addr + i);
+> -			newline = 0;
+> -		}
+> -		printk(" %02x", addr[i]);
+> -		offset = i % 16;
+> -		ascii[offset] = isgraph(addr[i]) ? addr[i] : '.';
+> -		if (offset == 15) {
+> -			printk(" %s\n",ascii);
+> -			newline = 1;
+> -		}
+> -	}
+> -	if (!newline) {
+> -		i %= 16;
+> -		while (i < 16) {
+> -			printk("   ");
+> -			ascii[i] = ' ';
+> -			i++;
+> -		}
+> -		printk(" %s\n", ascii);
+> -	}
+> +	char buf[10];
+> +
+> +	sprintf(buf, "%8s:", text);
+> +	print_hex_dump(KERN_ERR, buf, DUMP_PREFIX_ADDRESS, 16, 1, addr, length, 1);
+>  }
+>  
+>  static struct track *get_track(struct kmem_cache *s, void *object,
+> 
 
-greg k-h
+
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
