@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751794AbXE3DPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751903AbXE3DbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751794AbXE3DPc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 23:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbXE3DPY
+	id S1751903AbXE3DbA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 23:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbXE3Daw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 23:15:24 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:50350 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750750AbXE3DPX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 23:15:23 -0400
-Date: Tue, 29 May 2007 20:14:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Bill Huey <billh@gnuppy.monkey.org>, Jason Baron <jbaron@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/5] lockdep: sanitise CONFIG_PROVE_LOCKING
-Message-Id: <20070529201450.52c3d50b.akpm@linux-foundation.org>
-In-Reply-To: <20070529141617.GB12812@elte.hu>
-References: <20070529125248.877196281@chello.nl>
-	<20070529130106.864404378@chello.nl>
-	<20070529132158.GA2192@infradead.org>
-	<20070529141617.GB12812@elte.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 29 May 2007 23:30:52 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54971 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751339AbXE3Dau (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 23:30:50 -0400
+Date: Wed, 30 May 2007 13:30:41 +1000
+From: David Chinner <dgc@sgi.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: BUG: sleeping function called from invalid context at kernel/fork.c:385
+Message-ID: <20070530033041.GH86004887@sgi.com>
+References: <20070522234314.54081817.akpm@linux-foundation.org> <617E1C2C70743745A92448908E030B2A01882BFD@scsmsx411.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <617E1C2C70743745A92448908E030B2A01882BFD@scsmsx411.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007 16:16:17 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-
+On Wed, May 23, 2007 at 10:44:16AM -0700, Luck, Tony wrote:
+> > > Saw this when running strace -f on a script on 2.6.21 on ia64:
+> > > 
+> > > BUG: sleeping function called from invalid context at kernel/fork.c:385
+> > > in_atomic():1, irqs_disabled():0
+>     ... snip ...
+> > > I could reproduce it via 'strace -f sleep 1'
+> > > 
+> >
+> > I'd say this is specific to ia64.   Someone would have spotted it on
+> > x86 by now.
 > 
-> * Christoph Hellwig <hch@infradead.org> wrote:
-> 
-> > On Tue, May 29, 2007 at 02:52:50PM +0200, Peter Zijlstra wrote:
-> > > Ensure that all of the lock dependency tracking code is under
-> > > CONFIG_PROVE_LOCKING. This allows us to use the held lock tracking code
-> > > for other purposes.
-> > 
-> > There's an awfull lot of ifdefs introduced in this patch, I wonder 
-> > whether it might be better to split up lockdep.c at those boundaries.
-> 
-> it adds 6 new #ifdefs. There's 35 #ifdefs in page_alloc.c, 44 in 
-> sysctl.c and 64 in sched.c. I'd not call it 'an awful lot', although 
-> certainly it could be reduced. Splitting lockdep.c up would uglify it 
-> well beyond the impact of the 6 #ifdefs, given the amount of glue 
-> needed.
-> 
+> I tried the "strace -f sleep 1" on 2.6.22-rc2, and I didn't see this "BUG"
+> there.  Can you try your other test cases on the latest kernel.  If it has
+> already been fixed we can see about identifying the patch for possible backport
+> to 2.6.21.stable
 
-I'm not sure that we need to split lockdep.c, but it's a bit disappointing
-that the patch didn't (couldn't?) move CONFIG_PROVE_LOCKING-only code and
-data close together so that it can all fall within a single (or at least
-fewer) ifdefs.
+Sorry for taking so long to get back to this - I still see this in
+2.6.22-rc2.
 
-(Who came up with the (mis)name CONFIG_PROVE_LOCKING, btw?  Should have
-been CONFIG_MIGHT_DISPROVE_LOCKING).
+Cheers,
 
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
