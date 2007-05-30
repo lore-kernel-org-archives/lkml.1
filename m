@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbXE3XUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758651AbXE3XVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759195AbXE3XUI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 19:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbXE3XT4
+	id S1758651AbXE3XVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 19:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXE3XVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 19:19:56 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:61349 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752884AbXE3XTz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 19:19:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EHn/sILrSkbXVBTpcNjdNJX3jCzZ7GWTDwID9ESE5AuTWIii2rYrUiHHs7rk2NBCQKmwwawT/mhT9Zfmm7OvxpFnUO05qjugjOzfOOlBQ82gf5o3LlAzoTuG2PhwBlOK2wkaOgPi0GsOzG00KZDEaC+Z678ouhvgtoi7KVd/r90=
-Message-ID: <ec36785a0705301619x470f4ecel5f1c191afa429c78@mail.gmail.com>
-Date: Wed, 30 May 2007 20:19:43 -0300
-From: "Reinaldo Carvalho" <reinaldow@gmail.com>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: megaraid.c, all kernel versions, problem with multi-luns
-In-Reply-To: <9a8748490705301615y73a11fcfn5fc7a88bf6eef2b1@mail.gmail.com>
+	Wed, 30 May 2007 19:21:03 -0400
+Received: from holomorphy.com ([66.93.40.71]:39261 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751980AbXE3XVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 19:21:01 -0400
+Date: Wed, 30 May 2007 16:21:01 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Andi Kleen <ak@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: GFP_DMA32 and PAE x86 machines
+Message-ID: <20070530232101.GG6909@holomorphy.com>
+References: <21d7e9970705301410m16ded9esdf7a49371c60a155@mail.gmail.com> <465DECD7.8030104@zytor.com> <21d7e9970705301507o2a89e824xdc6a980e8dbedaaf@mail.gmail.com> <200705310024.25937.ak@suse.de> <21d7e9970705301609w88a9f80t20f83806003f699e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ec36785a0705301609t62676c76q3a2b726bf51d50db@mail.gmail.com>
-	 <9a8748490705301615y73a11fcfn5fc7a88bf6eef2b1@mail.gmail.com>
+In-Reply-To: <21d7e9970705301609w88a9f80t20f83806003f699e@mail.gmail.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes CONFIG_SCSI_MULTI_LUN as build-in.
+On 5/31/07, Andi Kleen <ak@suse.de> wrote:
+>> Please give a very very strong rationale why you want it. Did you actually
+>> run into such a situation yourself yet?
 
--- 
-Reinaldo Carvalho
+On Thu, May 31, 2007 at 09:09:58AM +1000, Dave Airlie wrote:
+> Funnily enough I have just today with an app I have which uses 1.2GB
+> of textures :-)
+> we are currently using GFP_DMA32 in the TTM allocator code, however
+> what I really want on x86 non-PAE is GFP_HIGHMEM (as DMA32 does
+> nothing) however on x86-PAE I don't want that I want a real GFP_DMA32,
+> and on x86-64 I want the current GFP_DMA32,
+> Therein lies my problems, the API sucks, but I suppose the DRM TTM is
+> a special use case (AGP is the same) and I'll accept the fact that can
+> just make it my own problem, my current solution would be to screw PAE
+> machines giving them 1GB only and let non-PAE access all 4GB.
+
+It's easy enough to spin kernels that allow 4GB-constrained highmem
+allocations. The real question is whether it'll be merged.
 
 
-2007/5/30, Jesper Juhl <jesper.juhl@gmail.com>:
-> On 31/05/07, Reinaldo Carvalho <reinaldow@gmail.com> wrote:
-> > Hi,
-> >
-> > I have a Dell PowerEdge Expandable RAID controller, with a hardware
-> > Raid-5 at Channel 01 running perfectly, and a nCipher Crypter at
-> > Channel 02.
-> >
-> > This controller doesn't correctly detect devices (e.g. nCipher
-> > Crypter) with multiples LUNs. Only one LUN is detected.
-> >
-> > At another controller (e.g. Adaptec 79xx) two LUNs were detect. I
-> > compiled 2.6.8, 2.6.18 and 2.6.21.3 to test megaraid driver and all
-> > failed detecting two LUNs.
-> >
->
-> Did you build your kernel with CONFIG_SCSI_MULTI_LUN enabled?  This
-> option will force the SCSI driver to probe for multiple LUN's.
-> Without this option only one LUN may be detected, and since that's the
-> common case (devices only having one LUN) people often forget about
-> this option :)
->
-> --
-> Jesper Juhl <jesper.juhl@gmail.com>
-> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-> Plain text mails only, please      http://www.expita.com/nomime.html
->
+-- wli
