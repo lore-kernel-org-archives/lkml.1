@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761501AbXE3Vvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761531AbXE3Vw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761501AbXE3Vvz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760532AbXE3VvK
+	id S1761531AbXE3Vw0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761402AbXE3Vvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:51:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36277 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760756AbXE3VvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:51:08 -0400
-Date: Wed, 30 May 2007 17:50:28 -0400
-From: Dave Jones <davej@redhat.com>
-To: Ben Collins <bcollins@ubuntu.com>
-Cc: linux-kernel@vger.kernel.org, Phil Dibowitz <phil@ipom.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [PATCH 6/6] UNUSUAL_DEV: Sync up some reported devices from Ubuntu
-Message-ID: <20070530215028.GD2794@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Ben Collins <bcollins@ubuntu.com>, linux-kernel@vger.kernel.org,
-	Phil Dibowitz <phil@ipom.com>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	linux-usb-devel@lists.sourceforge.net
-References: <98cd38b5.git.bcollins@ubuntu.com> <317339ef5cb48f652b8eb33c3a1a44d8a2b31493.1179964369.git.bcollins@ubuntu.com>
+	Wed, 30 May 2007 17:51:38 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:47874 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761393AbXE3Vvg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 17:51:36 -0400
+Date: Wed, 30 May 2007 14:51:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: + fix-soft-lockup-when-removing-netconsole-module.patch added
+ to -mm tree
+Message-Id: <20070530145123.fe5cb196.akpm@linux-foundation.org>
+In-Reply-To: <20070530210137.GA225@tv-sign.ru>
+References: <20070530210137.GA225@tv-sign.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <317339ef5cb48f652b8eb33c3a1a44d8a2b31493.1179964369.git.bcollins@ubuntu.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 06:39:24PM -0400, Ben Collins wrote:
- > Various unusual dev entries accumulated from Ubuntu bug reports.
- > 
- > CC: Phil Dibowitz <phil@ipom.com>
- > CC: Alan Stern <stern@rowland.harvard.edu>
- > CC: linux-usb-devel@lists.sourceforge.net
- > Signed-off-by: Ben Collins <bcollins@ubuntu.com>
- > ---
- >  drivers/usb/storage/unusual_devs.h |   21 +++++++++++++++++++--
- >  
- > +/* Reported by Edward Chapman <[EMAIL PROTECTED]>
+On Thu, 31 May 2007 01:01:37 +0400
+Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-The "<[EMAIL PROTECTED]>" seems a bit pointless.
+> Jason Wessel wrote:
+> >
+> > The netpoll_cleanup handler can hang the kernel if there is no work in the
+> > work queue because a call to cancel_rearming_delayed_work() with no work
+> > goes into an infinite loop.
+> 
+> This should not be true any longer, cancel_rearming_delayed_work() should work
+> correctly in any case.
+> 
+> Could you please clarify?
 
-	Dave
+We need a 2.6.21.x fix.
 
--- 
-http://www.codemonkey.org.uk
+> > @@ -771,30 +771,32 @@ void netpoll_cleanup(struct netpoll *np)
+> >
+> > [...snip...]
+> >
+> > +		if (atomic_dec_and_test(&npinfo->refcnt)) {
+> > +			skb_queue_purge(&npinfo->arp_tx);
+> > +			skb_queue_purge(&npinfo->txq);
+> > +			if (delayed_work_pending(&npinfo->tx_work)) {
+> >  				cancel_rearming_delayed_work(&npinfo->tx_work);
+> >  				flush_scheduled_work();
+> 
+> But this "if (delayed_work_pending())" is racy anyway?
+> 
+
+I guess so, a bit.
