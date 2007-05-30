@@ -1,47 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbXE3AG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbXE3AIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753232AbXE3AG6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 20:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbXE3AGv
+	id S1753364AbXE3AIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 20:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbXE3AIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 20:06:51 -0400
-Received: from styx.suse.cz ([82.119.242.94]:57417 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750904AbXE3AGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 20:06:50 -0400
-Date: Wed, 30 May 2007 02:10:53 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Renato Golin <rengolin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@insightbb.com>
-Subject: Re: joydev.c and saitek cyborg evo force
-In-Reply-To: <d9b9d95f0705291657o47ef42d3jea2a1dae3e31bbdb@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705300207160.3961@jikos.suse.cz>
-References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com> 
- <200705210016.20794.dtor@insightbb.com>  <Pine.LNX.4.64.0705211444500.22906@jikos.suse.cz>
- <d9b9d95f0705291657o47ef42d3jea2a1dae3e31bbdb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 May 2007 20:08:11 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:38173 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750955AbXE3AIK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 20:08:10 -0400
+Date: Tue, 29 May 2007 17:08:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 8/8] Char: vt_ioctl, use wait_event_interruptible
+Message-Id: <20070529170806.c4791255.akpm@linux-foundation.org>
+In-Reply-To: <3026996181117418@wsc.cz>
+References: <12191294601255228079@wsc.cz>
+	<3026996181117418@wsc.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007, Renato Golin wrote:
+On Mon, 28 May 2007 15:31:12 +0200 (CEST)
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-> The HID sources are quite different from 2.6.21 and 2.6.20 but I don't 
-> know how much was because Canonical guys and how much it really changed. 
-> :( I will eventually put a Gentoo on my old laptop and try it for real, 
-> sorry I couldn't be of much help now...
+> vt_ioctl, use wait_event_interruptible
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> 
+> ---
+> commit fbe1931e02f11b2fef771ff1698f1598b3567520
+> tree fcfcd72a5619f6e26598ac2ee3132aed4b070987
+> parent c025c4b3eca99f50b05bc24c445b861e91226539
+> author Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 22:58:17 +0200
+> committer Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 22:58:17 +0200
+> 
+>  drivers/char/vt_ioctl.c |   22 ++++------------------
+>  1 files changed, 4 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
+> index c6f6f42..2056367 100644
+> --- a/drivers/char/vt_ioctl.c
+> +++ b/drivers/char/vt_ioctl.c
+> @@ -1035,12 +1035,8 @@ static DECLARE_WAIT_QUEUE_HEAD(vt_activate_queue);
+>  int vt_waitactive(int vt)
+>  {
+>  	int retval;
+> -	DECLARE_WAITQUEUE(wait, current);
+> -
+> -	add_wait_queue(&vt_activate_queue, &wait);
+> -	for (;;) {
+> -		retval = 0;
+>  
+> +	return wait_event_interruptible(vt_activate_queue, ({
+>  		/*
+>  		 * Synchronize with redraw_screen(). By acquiring the console
+>  		 * semaphore we make sure that the console switch is completed
+> @@ -1049,20 +1045,10 @@ int vt_waitactive(int vt)
+>  		 * updated, but the console switch hasn't been completed.
+>  		 */
+>  		acquire_console_sem();
+> -		set_current_state(TASK_INTERRUPTIBLE);
+> -		if (vt == fg_console) {
+> -			release_console_sem();
+> -			break;
+> -		}
+> +		retval = vt == fg_console;
+>  		release_console_sem();
+> -		retval = -EINTR;
+> -		if (signal_pending(current))
+> -			break;
+> -		schedule();
+> -	}
+> -	remove_wait_queue(&vt_activate_queue, &wait);
+> -	__set_current_state(TASK_RUNNING);
+> -	return retval;
+> +		retval;
+> +	}));
+>  }
+>  
 
-Hi Renato,
+So we end up with
 
-well I have changed the overall HID code design in 2.6.21 a little bit. 
-Anyway, just hardcoding '#define DEBUG' and '#define DEBUG_DATA' (that's 
-also important) in 2.6.20-and-older kernels should have similar result as 
-CONFIG_HID_DEBUG in post-2.6.21.
+int vt_waitactive(int vt)
+{
+	int retval;
 
-In your particular case, the DEBUG_DATA might really be more interesting.
+	return wait_event_interruptible(vt_activate_queue, ({
+		/*
+		 * Synchronize with redraw_screen(). By acquiring the console
+		 * semaphore we make sure that the console switch is completed
+		 * before we return. If we didn't wait for the semaphore, we
+		 * could return at a point where fg_console has already been
+		 * updated, but the console switch hasn't been completed.
+		 */
+		acquire_console_sem();
+		retval = vt == fg_console;
+		release_console_sem();
+		retval;
+	}));
+}
 
-Thanks,
+Again, I do think this needs a helper function.  Or something.  The handling
+of `retval' in there is pretty perverse.  We're modifying a local variable
+within the macro and then returning it by value?  Perhaps a bit cleaner
+would be to move `retval' inside the macro body.
 
--- 
-Jiri Kosina
-SUSE Labs
+But a helper function would be better.  Again, remember that the macro
+evaluates that expression twice - you may find that the helper function
+even generates less code.
+
