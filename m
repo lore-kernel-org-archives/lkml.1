@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752910AbXE3BMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbXE3Bf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752910AbXE3BMp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 21:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbXE3BMi
+	id S1751805AbXE3Bf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 21:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbXE3BfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 21:12:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55855 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751096AbXE3BMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 21:12:37 -0400
-Date: Tue, 29 May 2007 21:11:08 -0400
-From: Dave Jones <davej@redhat.com>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Zach Brown <zach.brown@oracle.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530011108.GA2794@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Ulrich Drepper <drepper@redhat.com>,
-	Zach Brown <zach.brown@oracle.com>, Jeff Garzik <jeff@garzik.org>,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@zip.com.au>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	"David S. Miller" <davem@davemloft.net>,
-	Suparna Bhattacharya <suparna@in.ibm.com>,
-	Davide Libenzi <davidel@xmailserver.org>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Thomas Gleixner <tglx@linutronix.de>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070529230931.GL7875@mami.zabbo.net> <465CB524.4020006@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <465CB524.4020006@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 29 May 2007 21:35:18 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:56548 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbXE3BfR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 21:35:17 -0400
+Date: Wed, 30 May 2007 02:35:14 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
+cc: linux-kernel@vger.kernel.org
+Subject: [git pull] drm fixes for 2.6.22-rc3
+Message-ID: <Pine.LNX.4.64.0705300234060.19669@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-1807755747-1180488914=:19669"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 04:20:04PM -0700, Ulrich Drepper wrote:
- > -----BEGIN PGP SIGNED MESSAGE-----
- > Hash: SHA1
- > 
- > Zach Brown wrote:
- > > That todo item
- > > about producing documentation and distro kernels is specifically to bait
- > > Uli into trying to implement posix aio on top of syslets in glibc.
- > 
- > Get DaveJ to pick up the code for Fedora kernels and I'll get to it.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-With F7 out the door, I'm looking at getting devel/ back in shape again,
-so I can get something done there soon-ish.  With the usual caveat that if
-this isn't upstream by the time we do a release, we'll have to drop it
-due to the added syscall. (Maybe we can just get that reserved upstream now?)
+--29444707-1807755747-1180488914=:19669
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-	Dave
 
--- 
-http://www.codemonkey.org.uk
+Hi Linus,
+
+Please pull the 'drm-patches' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+
+It contains a fix for a kmalloc 0, along with new pci ids for the radeon rs480
+and a spinlock initialiser.
+
+I have stuff that actually fixes up the drm_drawable.c to use an idr but I'll hold until the next merge window.
+
+Dave.
+
+  drivers/char/drm/drm_drawable.c |   41 ++++++++++++++++++++++++--------------
+  drivers/char/drm/drm_pciids.h   |    7 ++++++
+  drivers/char/drm/i915_irq.c     |    2 +-
+  3 files changed, 34 insertions(+), 16 deletions(-)
+
+commit c4814f9001a8dd28e39311a919beac34f778f76d
+Author: Michel Dänzer <michel@tungstengraphics.com>
+Date:   Sat May 26 04:37:08 2007 +1000
+
+     drm: make sure the drawable code doesn't call malloc(0).
+
+     Signed-off-by: Michel Dänzer <michel@tungstengraphics.com>
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+commit 777c7738a598c6e8d4b850181a509757fb79cf36
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Sat May 26 04:19:03 2007 +1000
+
+     drm/radeon: add more IGP chipset pci ids
+
+     Add more IGP chipset PCI IDs
+
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+commit a6399bdd492a3289d39e4b79cbe69ad44a054ee3
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Sat May 26 05:56:14 2007 +1000
+
+     drm: Spinlock initializer cleanup
+
+     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
+--29444707-1807755747-1180488914=:19669--
