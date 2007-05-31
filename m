@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbXEaSnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761589AbXEaSna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761051AbXEaSnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbXEaSnJ
+	id S1761589AbXEaSna (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760378AbXEaSnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:43:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45834 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754220AbXEaSnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 14:43:08 -0400
-Message-ID: <465F170B.3070603@redhat.com>
-Date: Thu, 31 May 2007 11:42:19 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
-References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com> <Pine.LNX.4.64.0705311123370.30485@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0705311123370.30485@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 31 May 2007 14:43:17 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43901 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759355AbXEaSnR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 14:43:17 -0400
+Date: Thu, 31 May 2007 20:43:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Stephane Eranian <eranian@hpl.hp.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/22] 2.6.22-rc3 perfmon2 : common core functions
+Message-ID: <20070531184313.GA7217@one.firstfloor.org>
+References: <200705291348.l4TDmRvL019775@frankl.hpl.hp.com> <p73ira9ca0d.fsf@bingen.suse.de> <20070531171616.GC23939@frankl.hpl.hp.com> <20070531172828.GC2538@one.firstfloor.org> <20070531182945.GA9747@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070531182945.GA9747@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+> I think the perform backend for oprofile is the right way to go.
+> I'd even go further and say we should merge the perfom backend with
+> oprofile as the only user first, because a) the current perfom user
+> interface is a complete mess 
 
-Davide Libenzi wrote:
-> Isn't this better be a global process flag? Default should be, for legacy
-> reasons,
+Can you suggest concrete criticism/improvements/alternative proposals to 
+Stephane then? 
 
-No.  Policies are always wrong since it means code that cannot change
-the policy (e.g, all runtime libraries) have no access to the
-functionality.  I cannot set the policy to default to close-on-exit in
-glibc all the while the application assumes this is not the case.
+> and can't be merged as-is and b) that
+> ensures the oprofile backend works perfectly and we can kill some
+> existing code in exchange.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Hmm, but at least for oprofile like functionality oprofile code seems
+much simpler. And it's not really bad code. I assume the user interface
+would change too.  I think it's better to let them coexist for some time.
 
-iD8DBQFGXxcK2ijCOnn/RHQRAmM9AKC5BEIEBsgwhWx09aAMA0CwsesMWQCfScGr
-vCF+Ih1lDP5rliY8D2Om5vU=
-=ZShC
------END PGP SIGNATURE-----
+-Andi
