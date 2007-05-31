@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbXEaGv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbXEaGxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758192AbXEaGv6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 02:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbXEaGvv
+	id S1758951AbXEaGxU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 02:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbXEaGxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 02:51:51 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60544 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753667AbXEaGvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 02:51:50 -0400
-From: Neil Brown <neilb@suse.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Thu, 31 May 2007 16:51:26 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 May 2007 02:53:13 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:43035 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754159AbXEaGxM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 02:53:12 -0400
+Date: Thu, 31 May 2007 08:53:07 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: "Heiko Carstens" <heiko.carstens@de.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "Kyle McMartin" <kyle@parisc-linux.org>, <linux-kernel@vger.kernel.org>,
+       <James.Bottomley@steeleye.com>, "Tejun Heo" <htejun@gmail.com>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "Martin Schwidefsky" <schwidefsky@de.ibm.com>, <geert@linux-m68k.org>,
+       <zippel@linux-m68k.org>, <spyro@f2s.com>, <uclinux-v850@lsi.nec.co.jp>,
+       <ysato@users.sourceforge.jp>
+Subject: Re: [patch] Introduce CONFIG_HAS_DMA.
+Message-ID: <20070531085307.15a9bbc8@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E5201EC6BE2@azsmsx413.amr.corp.intel.com>
+References: <20070530111003.1d813d74@gondolin.boeblingen.de.ibm.com>
+	<0C7297FA1D2D244A9C7F6959C0BF1E5201EC6BE2@azsmsx413.amr.corp.intel.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18014.28782.874934.912337@notabene.brown>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Peter Linich <plinich@cse.unsw.edu.au>, Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH/RFC] Is it OK for 'read' to return nuls for a file   that
- never had nuls in it?
-In-Reply-To: message from Nick Piggin on Tuesday May 29
-References: <18011.51290.257450.26100@notabene.brown>
-	<465BCAA9.3070707@yahoo.com.au>
-	<18011.53140.20314.43413@notabene.brown>
-	<465BD63B.5020603@yahoo.com.au>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday May 29, nickpiggin@yahoo.com.au wrote:
+On Wed, 30 May 2007 14:40:02 -0700,
+"Williams, Dan J" <dan.j.williams@intel.com> wrote:
+
+> With the patch non-dma-architectures that try to build code with true
+> dependencies on the DMA api will fail to link i.e.:
 > 
-> But then I think a problem remains after your patch that if the page is
-> partially truncated after you test that it is uptodate and resample i_size,
-> then the page tail can be zero filled and then you'll again get back a
-> nul tail from read(2), don't we? We could probably fix this beautifully by
-> doing a lock_page over do_generic_mapping_read... ha ha, that would be
-> popular.
+> CONFIG_DMA_ENGINE=y CONFIG_HAS_DMA=n ASYNC_MEMCPY=y
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> async_tx/built-in.o: In function `async_memcpy':
+> xor.c:(.text+0x770): undefined reference to `dma_map_page'
+> xor.c:(.text+0x798): undefined reference to `dma_map_page'
+> xor.c:(.text+0x968): undefined reference to `dma_map_page'
 > 
-> For now I think your patch probably eliminates some classes of the bug
-> completely and remainder are a small race-window rather than a straight-line
-> bug, so it is probably the best way to go for now. I'd say
-> Acked-by: Nick Piggin <npiggin@suse.de>. Ram Pai I believe also worked on
-> similar issues with me, so I'll cc him.
+> Now changing CONFIG_DMA_ENGINE to depend on HAS_DMA (which is more
+> correct than saying !S390). 
 
-Yes, the race with truncate_partial_page had occurred to me too.  It
-can zero-out part of a page at any time with-respect-to
-do_generic_mapping_read.  Apart from locking the page (which is
-unlikely to go down well) the only solution I can think of is to check
-the size again afterwards and fix things up if we over-shot the new
-end-of-file.  We would at-least need to fix up 'ret' and
-desc->written, and maybe desc->count and desc->arg.buf as well -
-sounds messy.  Best to just leave it for now?
+Makes sense.
 
-As an aside, what do you suppose should happen in the face of a race
-between readv and extension of the file.
-To be more specific, suppose we do a readv passing an iovec holding 2
-1K buffers.  Suppose further that at this point in time we are 512
-bytes from the end of the file.
-If do_readv_writev takes the do_sync_readv_writev branch and calls
-generic_file_aio_read, it will simply call do_generic_read_file for
-each of the two buffers.
-The first gets 512 bytes.  Then someone extends the file before the
-second call which - for example - gets another 512 bytes.
-So readv returns 1024, but the bytes aren't all in the first buffer.
-They are half in the first buffer and half in the second.
+> Results in:
+> CONFIG_DMA_ENGINE=n CONFIG_HAS_DMA=n ASYNC_MEMCPY=y
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+>   KSYM    .tmp_kallsyms1.S
+>   AS      .tmp_kallsyms1.o
+>   LD      .tmp_vmlinux2
+>   KSYM    .tmp_kallsyms2.S
+>   AS      .tmp_kallsyms2.o
+>   LD      vmlinux
+> 
+> This also allows include/asm-s390/dma-mapping.h to be dropped.
 
-So do we need this patch?  (It is my fourth attempt at getting the
-logic right, but it now looks similar to the logic in
-do_loop_readv_writev, so that is encouraging).
-
-NeilBrown
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./mm/filemap.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff .prev/mm/filemap.c ./mm/filemap.c
---- .prev/mm/filemap.c	2007-05-29 16:45:26.000000000 +1000
-+++ ./mm/filemap.c	2007-05-31 16:49:45.000000000 +1000
-@@ -1227,6 +1227,8 @@ generic_file_aio_read(struct kiocb *iocb
- 				retval = retval ?: desc.error;
- 				break;
- 			}
-+			if (desc.count > 0)
-+				break;
- 		}
- 	}
- out:
+Cool. Thanks for looking into that.
