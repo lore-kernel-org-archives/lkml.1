@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760245AbXEaJuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760604AbXEaJx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760245AbXEaJuu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 05:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXEaJun
+	id S1760604AbXEaJx7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 05:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXEaJxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 05:50:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53675 "EHLO mx3.mail.elte.hu"
+	Thu, 31 May 2007 05:53:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45702 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756420AbXEaJum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 05:50:42 -0400
-Date: Thu, 31 May 2007 11:50:19 +0200
+	id S1757271AbXEaJxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 05:53:51 -0400
+Date: Thu, 31 May 2007 11:53:37 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       jeff@garzik.org, zach.brown@oracle.com, arjan@infradead.org,
-       hch@infradead.org, drepper@redhat.com, akpm@zip.com.au,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070531095018.GA6307@elte.hu>
-References: <787b0d920705310115n13b4dd3bk59e1072dea147724@mail.gmail.com>
+To: Li Yu <raise.sail@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v14
+Message-ID: <20070531095337.GA8104@elte.hu>
+References: <20070523120616.GA23407@elte.hu> <4658F1D6.3070706@gmail.com> <20070529061544.GA28523@elte.hu> <20070529080738.GA28657@elte.hu> <465E992C.4020601@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <787b0d920705310115n13b4dd3bk59e1072dea147724@mail.gmail.com>
+In-Reply-To: <465E992C.4020601@gmail.com>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -36,37 +33,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Albert Cahalan <acahalan@gmail.com> wrote:
+* Li Yu <raise.sail@gmail.com> wrote:
 
-> Ingo Molnar writes:
+> static void distribute_fair_add(struct rq *rq, s64 delta)
+> {
+>    struct task_struct *curr = rq->curr;
+>    s64 delta_fair = 0;
 > 
-> >looking over the list of our new generic APIs (see further below) i
-> >think there are three important things that are needed for an API to
-> >become widely used:
-> >
-> > 1) it should solve a real problem (ha ;-), it should be intuitive to
-> >    humans and it should fit into existing things naturally.
-> >
-> > 2) it should be ubiquitous. (if it's about IO it should cover block IO,
-> >    network IO, timers, signals and everything) Even if it might look
-> >    silly in some of the cases, having complete, utter, no compromises,
-> >    100% coverage for everything massively helps the uptake of an API,
-> >    because it allows the user-space coder to pick just one paradigm
-> >    that is closest to his application and stick to it and only to it.
-> >
-> > 3) it should be end-to-end supported by glibc.
+>    if (!(sysctl_sched_load_smoothing & 32))
+>        return;
 > 
-> 4) At least slightly portable.
+>    if (rq->nr_running) {
+>        delta_fair = div64_s(delta, rq->nr_running);
+>        /*
+>         * The currently running task's next wait_runtime value does
+>         * not depend on the fair_clock, so fix it up explicitly:
+>         */
+>        add_wait_runtime(rq, curr, -delta_fair);
+>        rq->fair_clock -= delta_fair;
+>    }
+> }
 > 
-> Anything supported by any similar OS is already ahead, even if it 
-> isn't the perfect API of our dreams. [...]
+> See this line:
+> 
+>        delta_fair = div64_s(delta, rq->nr_running);
+> 
+> Ingo, should we be replace "rq->nr_running" with "rq->raw_load_weight" 
+> here?
 
-it might have been so a few years ago but it's changing slowly but 
-surely - BSD is becoming more and more irrelevant. What matters mostly 
-to app writers these days: "is it in most Linux distros" - and the key 
-to that is upstream kernel support and glibc support. The days of BSD 
-(and UNIX) are pretty much numbered. (I'm not against standardizing APIs 
-in POSIX of course - the BSDs tend to follow the Linux APIs in that area 
-with a few years lag.)
+that would break the code. The handling of sleep periods is basically 
+heuristics and using nr_running here appears to be 'good enough' in 
+practice.
 
 	Ingo
