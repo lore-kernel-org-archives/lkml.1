@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbXEaMt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761630AbXEaMvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761313AbXEaMt4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 08:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbXEaMtt
+	id S1761630AbXEaMvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 08:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759918AbXEaMvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 08:49:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:12069 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751182AbXEaMts (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 08:49:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=bE+z8wvHGYBHSoeB1IEilcn5l3b0k6Z4B1DVC/2aMFlPfIDy+GtZ2SITH0HYrDoZ8YDV2ZlzARJofWR81RNmWdD2P2oycsGeCtlK1hxaNlM5gSKVe+fa+Dsr1rtgfZegf+hSrdkAP76D0TqxPzHBnfW2DALJWDiRdsuwpoIiuzo=
-Message-ID: <465EC464.7050302@gmail.com>
-Date: Thu, 31 May 2007 08:49:40 -0400
-From: Parag Warudkar <parag.warudkar@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+	Thu, 31 May 2007 08:51:08 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56946 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752328AbXEaMvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 08:51:05 -0400
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/9] Conditional Calls - Architecture Independent Code
+References: <20070530140025.917261793@polymtl.ca>
+	<20070530140227.070136408@polymtl.ca>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 31 May 2007 15:47:44 +0200
+In-Reply-To: <20070530140227.070136408@polymtl.ca>
+Message-ID: <p73wsypcdfj.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: jpiszcz@lucidpixels.com, linux-kernel@vger.kernel.org
-Subject: Re: Case: 7454422: Re: Kernel 2.6.21.3 does not work with 8GB of
- RAM on Intel 965WH motherboards. (FULL DMESG)
-References: <82e4877d0705301757v580a4ca5yebe2a565f0b97552@mail.gmail.com> <465E513E.60903@shaw.ca>
-In-Reply-To: <465E513E.60903@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> I think that mem=8832M would work as well, to make the kernel use only 
-> the memory that is marked cacheable. (It looks like this parameter 
-> takes the highest memory address we want the kernel to use, not the 
-> highest memory amount.)
->
-Yep, and that would be much easier too.
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
 
-I am curious though as this seems to be somewhat common a problem, could 
-we make the kernel analyze which memory is not cacheable (it already 
-knows this via MTRR) and not use that portion for anything? Plus may be 
-warn the user to contact their BIOS vendor to correct the problem?
+> +struct __cond_call_struct {
 
-I think that would be possible - even if the kernel knows late that the 
-memory was uncached we could migrate those pages in that region to 
-someplace else?
+Calling structs *_struct is severly deprecated and will cause some people
+to make fun of your code.
 
-Parag
+
+> +	const char *name;
+> +	void *enable;
+> +	int flags;
+> +} __attribute__((packed));
+
+The packed doesn't seem to be needed. There will be padding at 
+the end anyways because the next one needs to be aligned.
+
+> +
+> +
+> +/* Cond call flags : selects the mechanism used to enable the conditional calls
+> + * and prescribe what can be executed within their function. This is primarily
+> + * used at reentrancy-unfriendly sites. */
+> +#define CF_OPTIMIZED		(1 << 0) /* Use optimized cond_call */
+> +#define CF_LOCKDEP		(1 << 1) /* Can call lockdep */
+> +#define CF_PRINTK		(1 << 2) /* Probe can call vprintk */
+> +#define CF_STATIC_ENABLE	(1 << 3) /* Enable cond_call statically */
+
+Why is that all needed?  Condcall shouldn't really need to know anything
+about all this. They're just a fancy conditional anyways -- and you don't
+tell if() that it may need to printk.
+
+Please consider eliminating.
+
+
+
+> +#define _CF_NR			4
+
+
+> +
+> +#ifdef CONFIG_COND_CALL
+> +
+> +/* Generic cond_call flavor always available.
+> + * Note : the empty asm volatile with read constraint is used here instead of a
+> + * "used" attribute to fix a gcc 4.1.x bug. */
+
+What gcc 4.1 bug? 
+
+> +#define cond_call_generic(flags, name, func) \
+> +	({ \
+> +		static const char __cstrtab_name_##name[] \
+> +		__attribute__((section("__cond_call_strings"))) = #name; \
+> +		static char __cond_call_enable_##name = \
+> +			(flags) & CF_STATIC_ENABLE; \
+> +		static const struct __cond_call_struct __cond_call_##name \
+> +			__attribute__((section("__cond_call"))) = \
+> +			{ __cstrtab_name_##name, \
+> +			&__cond_call_enable_##name, \
+> +			(flags) & ~CF_OPTIMIZED } ; \
+> +		asm volatile ( "" : : "i" (&__cond_call_##name)); \
+> +		(unlikely(__cond_call_enable_##name)) ? \
+> +			(func) : \
+> +			(__typeof__(func))0; \
+> +	})
+
+-Andi
