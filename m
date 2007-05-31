@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761680AbXEaTzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761516AbXEaT4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761680AbXEaTzn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 15:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761330AbXEaTze
+	id S1761516AbXEaT4o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 15:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758794AbXEaT4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 15:55:34 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:38951 "EHLO mailer.gwdg.de"
+	Thu, 31 May 2007 15:56:34 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:49946 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759578AbXEaTzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 15:55:33 -0400
-Date: Thu, 31 May 2007 21:53:58 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Tilman Schmidt <tilman@imap.cc>
-cc: Andrew Morton <akpm@linux-foundation.org>, kkeil@suse.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 02/06] Use menuconfig objects 4 - ISDN part 2/6
- (CONFIG_ISDN_I4L)
-In-Reply-To: <465EF4F4.1090507@imap.cc>
-Message-ID: <Pine.LNX.4.61.0705312152580.11140@yvahk01.tjqt.qr>
-References: <200705301906.l4UJ62hC002388@shell0.pdx.osdl.net>
- <Pine.LNX.4.61.0705302137560.11140@yvahk01.tjqt.qr> <465EF4F4.1090507@imap.cc>
+	id S1758886AbXEaT4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 15:56:33 -0400
+Date: Thu, 31 May 2007 14:56:31 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: menage@google.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
+       devel@openvz.org
+Subject: Re: [PATCH 05/10] Containers(V10): Add container_clone() interface
+Message-ID: <20070531195631.GA16220@sergelap.austin.ibm.com>
+References: <20070529130104.461765000@menage.corp.google.com> <20070529132142.795847000@menage.corp.google.com> <20070530001610.e2984b1d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070530001610.e2984b1d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Tue, 29 May 2007 06:01:09 -0700 menage@google.com wrote:
+> 
+> > This patch adds support for container_clone(), a speculative interface
+> > to creating new containers intended to be used for systems such as
+> > namespace unsharing.
+> > 
+> > ...
+> >
+> > +
+> > +static atomic_t namecnt;
+> > +static void get_unused_name(char *buf)
+> > +{
+> > +	sprintf(buf, "node%d", atomic_inc_return(&namecnt));
+> > +}
+> 
+> A stupid thing, but a sufficiently determined attacker could cause this to
+> wrap.
 
-On May 31 2007 18:16, Tilman Schmidt wrote:
->Am 30.05.2007 21:38 schrieb Jan Engelhardt:
->> --- linux-2.6.22-rc3-git1.orig/drivers/isdn/Kconfig
->> +++ linux-2.6.22-rc3-git1/drivers/isdn/Kconfig
->> @@ -21,9 +21,7 @@ menuconfig ISDN
->>  
->>  if ISDN
->>  
->> -menu "Old ISDN4Linux"
->> -
->> -config ISDN_I4L
->> +menuconfig ISDN_I4L
->>  	tristate "Old ISDN4Linux (obsolete)"
->>  	---help---
->>  	  This driver allows you to use an ISDN-card for networking
->> @@ -44,8 +42,6 @@ if ISDN_I4L
->>  source "drivers/isdn/i4l/Kconfig"
->>  endif
->>  
->> -endmenu
->> -
->>  comment "CAPI subsystem"
->>  
->
->This results in a rather strange and inconsistent presentation in
->"make xconfig", with ISDN4Linux appearing as a subtree in the left
->pane but CAPI only visible in the right pane after selecting ISDN.
+Yeah, this was very consciously done as a "just make it work for now"
+naming system.  If we want to stick with this naming, then I suppose we
+could do a global bitmap.
 
-That's a gconfig/xconfig b^H missing feature.
+But imo this naming is not very convenient - it would be nicer if we
 
->IMHO it looks much saner like this:
+	a) allowed users to specify a name (not sure how that would work
+		logistically)
+	b) made the namecnt variable for automatically named containers
+		be per-directory.  I'd much rather see
 
-But then you'd still have to descend into ISDN4Linux to deactivate it.
+		/containers/node1/node1
+		/containers/node2
+	than
+		/containers/node1/node3
+		/containers/node2
 
-> config ISDN_I4L
-> 	tristate "Old ISDN4Linux (deprecated)"
-> 	---help---
->@@ -44,12 +42,8 @@ if ISDN_I4L
+	(assuming /node2 was created between /node1 and /node1/node1 or
+	/node1/node3)
 
-
-
-	Jan
--- 
+thanks,
+-serge
