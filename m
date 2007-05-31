@@ -1,61 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbXEaEk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760343AbXEaEkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758243AbXEaEk1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 00:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbXEaEkS
+	id S1760343AbXEaEkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 00:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760128AbXEaEk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 00:40:18 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:54135 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757537AbXEaEkQ (ORCPT
+	Thu, 31 May 2007 00:40:29 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:4963 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760110AbXEaEk2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 00:40:16 -0400
-Date: Wed, 30 May 2007 21:39:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andi Kleen" <ak@suse.de>, "Russell King" <rmk@arm.linux.org.uk>,
-       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/5] serial: convert early_uart to earlycon for 8250
-Message-Id: <20070530213934.0a55d86f.akpm@linux-foundation.org>
-In-Reply-To: <86802c440705302134l637df0fbm9a3b99eff19201@mail.gmail.com>
-References: <200705291844.00308.yinghai.lu@sun.com>
-	<20070530201335.94f73eb9.akpm@linux-foundation.org>
-	<86802c440705302134l637df0fbm9a3b99eff19201@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 31 May 2007 00:40:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bEMdG+IZvJiaSl9oqBFsK4VT7qfTA97D3gRDj36lFv0JTR46PGd/RbnK8e5qMUUTdEhp9KMPSPMkYfeqnp4TFzYcvt7I6OfyQbvogxYuSUgZirRjhoGb6B22dCs2TueKqdx/hup/EuM1ViMJc17eDc9anOsh2sjhZVDW1T9m46I=
+Message-ID: <86802c440705302140i36abac48va40618b79fb52521@mail.gmail.com>
+Date: Wed, 30 May 2007 21:40:27 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: section mismatches
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070530180217.bebfa4b0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070530180217.bebfa4b0.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 21:34:35 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+please check patch in following too.
 
-> they will need
-> diff --git a/include/asm-x86_64/io.h b/include/asm-x86_64/io.h
-> index de2cd9a..e2d66de 100644
-> --- a/include/asm-x86_64/io.h
-> +++ b/include/asm-x86_64/io.h
-> @@ -145,6 +145,19 @@ extern void early_iounmap(void *addr, unsigned long size);
->  extern void __iomem * ioremap_nocache (unsigned long offset, unsigned
-> long size);
->  extern void iounmap(volatile void __iomem *addr);
-> 
-> +#include <asm/pgtable.h>
-> +#include <asm/fixmap.h>
-> +
-> +static inline void __iomem * fix_ioremap (unsigned idx, unsigned long phys)
-> +{
-> +       void __iomem * vaddr;
-> +       set_fixmap_nocache(idx, phys & PAGE_MASK);
-> +       vaddr = (void __iomem *)__fix_to_virt(idx);
-> +       vaddr += phys & ~PAGE_MASK;
-> +
-> +       return vaddr;
-> +}
-> +
+http://lkml.org/lkml/2007/5/25/76
 
-I hope not - I just removed that inlined function.  It's too large and the
-inclusion of pgtable.h in io.h causes all sorts of problems.
-
-This function should go into arch/.../mm/ioremap.c
+YH
