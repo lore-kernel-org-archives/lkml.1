@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762043AbXEaT7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbXEaUAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762043AbXEaT7w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 15:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761857AbXEaT7o
+	id S1761974AbXEaUAr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760072AbXEaUAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 15:59:44 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:41189 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761561AbXEaT7m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 15:59:42 -0400
-Date: Thu, 31 May 2007 12:59:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
-In-Reply-To: <Pine.LNX.4.64.0705311205520.30485@alien.or.mcafeemobile.com>
-Message-ID: <alpine.LFD.0.98.0705311256230.26602@woody.linux-foundation.org>
-References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
- <Pine.LNX.4.64.0705311123370.30485@alien.or.mcafeemobile.com>
- <465F170B.3070603@redhat.com> <Pine.LNX.4.64.0705311144290.30485@alien.or.mcafeemobile.com>
- <20070531190235.GY4033@devserv.devel.redhat.com>
- <Pine.LNX.4.64.0705311205520.30485@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 31 May 2007 16:00:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41468 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759192AbXEaUAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:00:39 -0400
+Date: Thu, 31 May 2007 15:59:17 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add a trivial patch style checker II
+Message-ID: <20070531195917.GC31153@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andi Kleen <andi@firstfloor.org>, Andy Whitcroft <apw@shadowen.org>,
+	Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+	Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+References: <9a1288909c10f2935af82ec5cea0c46b@pinky> <p738xb8fjv2.fsf@bingen.suse.de> <465BECCC.5030001@shadowen.org> <20070531120753.GA2538@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070531120753.GA2538@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 31, 2007 at 02:07:53PM +0200, Andi Kleen wrote:
+ > > Yeah, that is a very sensible idea.
+ > > 
+ > > > Possible further checks that might make sense:
+ > > > - panic() anywhere in drivers/* 
+ > > > - externs in .c files without asmlinkage
+ > > > - general checking that everything in a fully visible {} block is the right 
+ > > > indentation
+ > > > 
+ > 
+ > Here are some more warnings I would like to see:
+ > 
+ > - Warning for any spinlock/mutex definition that doesn't have a comment
+ > nearby (all locks ought to be documented) 
 
+Also barriers. (Probably even moreso).
 
-On Thu, 31 May 2007, Davide Libenzi wrote:
-> 
-> What I meant, was that the vast majority of MT+exec apps wants all their 
-> fds (but an handfull, maybe) to be O_CLOEXEC. So a global, 
-> non-inheritable, per-process flag seemed the most straightforward 
-> solution.
+	Dave
 
-I'm with Uli on this one. "Stateful" stuff is bad. It's essentially 
-impossible to handle with libraries - either the library would have to 
-explciitly always turn the state the way _it_ needs it, or the library 
-will do the wrogn thing.
-
-For example, what about libraries that are used to set up stdin/stdout for 
-the forker?
-
-This is not unlike floating point rounding. Having stateful rounding (like 
-the i387) is *stupid*. You want per-operation rounding (where *one* of the 
-choices may be "use default"). Exactly because libraries etc will need to 
-control their _own_ internal choices.
-
-		Linus
+-- 
+http://www.codemonkey.org.uk
