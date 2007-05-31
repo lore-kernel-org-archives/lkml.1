@@ -1,167 +1,417 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbXEaXJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbXEaXJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbXEaXJA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 19:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbXEaXIv
+	id S1760172AbXEaXJs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 19:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbXEaXJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 19:08:51 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43663 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758962AbXEaXIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 19:08:50 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX183Cusdqt43qlckf8ZzYkRQTQwVjK+g5vFWm7wmR9
-	9VkdXnD990jvoX
-Date: Fri, 1 Jun 2007 01:09:03 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Ian Kumlien <iank@bredband.net>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] Something goes wrong with timer statistics.
-Message-ID: <20070531230903.GA19353@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Ian Kumlien <iank@bredband.net>, Eric Dumazet <dada1@cosmosbay.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-	Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-	linux-kernel@vger.kernel.org
-References: <6bffcb0e0705291524y2752d646p94b0bf6ca87af68f@mail.gmail.com> <1180478288.20546.39.camel@chaos> <20070530113825.GA5203@atjola.homenet> <20070530144449.36811a4d.dada1@cosmosbay.com> <20070530131458.GA5432@atjola.homenet> <20070531102047.GG19272@pomac.netswarm.net> <20070531142522.GA16690@atjola.homenet> <20070531171007.5780e5e6.dada1@cosmosbay.com> <20070531152709.GA18775@atjola.homenet> <1180652361.30698.11.camel@pi.pomac.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1180652361.30698.11.camel@pi.pomac.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+	Thu, 31 May 2007 19:09:38 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:14614 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753323AbXEaXJg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 19:09:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer;
+        b=RLMeveS0pEO3dcx/n4aOErhSEklElEYCERgzcnOTbUzHcbRB5R7/GjwPXKxQdzR1pjCade7xfK3cxZpHynfZxk3NHtCyrlDumJ2HybRvcQu7CeZbkNK4liyx10y3crhfFt4KlbTi/OyLsjR71w+xAlPKrGvPlwEfPvN3ubVJlMo=
+Subject: Re: Add INPUT support to toshiba_acpi
+From: Richard Hughes <hughsient@gmail.com>
+To: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
+Cc: Bastien Nocera <hadess@hadess.net>, John Belmonte <john@neggie.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+In-Reply-To: <20070531164639.GA13742@rhlx01.hs-esslingen.de>
+References: <1180614979.2693.26.camel@localhost.localdomain>
+	 <1180615994.3030.166.camel@cookie.hadess.net>
+	 <1180619002.2693.35.camel@localhost.localdomain>
+	 <1180626416.3469.7.camel@localhost.localdomain>
+	 <20070531164639.GA13742@rhlx01.hs-esslingen.de>
+Content-Type: multipart/mixed; boundary="=-Jkj4oVQhIgPTEeHC2aZh"
+Date: Fri, 01 Jun 2007 00:09:32 +0100
+Message-Id: <1180652972.25067.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.01 00:59:11 +0200, Ian Kumlien wrote:
-> On tor, 2007-05-31 at 17:27 +0200, Björn Steinbrink wrote:
-> > On 2007.05.31 17:10:07 +0200, Eric Dumazet wrote:
-> > > Well... :) , there is still a memory barrier missing it seems.
-> > > 
-> > > Another cpu might see a bad value if 'active=1' is set before tstat_hash_table is really cleared.
-> > 
-> > Hm, that even makes the assumption in my first try valid ;-)
-> > Just for the record, this time I thought that the barrier from the
-> > spinlock in timer_stats_update_stats (right before the check for active)
-> > would be enough, but that's obviously running on the wrong cpu if we
-> > race... *sigh*
-> > 
-> 
-> Fix the comment below and you can add:
-> Signed-off-by: Ian Kumlien <pomac@vapor.com>
-> 
-> It's currently been running for the longest period ever, ie, 11 minutes
-> =)
 
-Finally! :-)
+--=-Jkj4oVQhIgPTEeHC2aZh
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> I'm gonna leave it running during the night and send a status update
-> when the evil daystar reaches it's peak CET. (i haven't been able to
-> stop since linus mentioned it... damn it... =))
-> 
-> > @@ -360,6 +364,7 @@ static ssize_t tstats_write(struct file *file, const char __user *buf,
-> >  		if (!active) {
-> >  			reset_entries();
-> >  			time_start = ktime_get();
-> > +			smb_mb();
-> 
-> smb? you mean smp =)
+On Thu, 2007-05-31 at 18:46 +0200, Andreas Mohr wrote:
+> HCI_EMPTY is *by far* the most frequent state to occur I think
+> (users won't press keys all the time), thus it's probably better(?)
+> for branch prediction to have this placed first, right?
+> Not that it matters too much instruction-wise, but still...
 
-No idea how I managed to break that after test compiling it... :-/
-Thanks for catching it :-)
+Sure.
 
-So unless I messed up something again, here's the final patch.
+> Apart from that I'm very happy to see progress on this front
+> (speaking as a "proud" owner of an old Toshiba notebook requiring
+> this stuff).
 
-Thanks,
-Björn
+Good - this stuff should just work :-)
+
+> And I'd definitely move the multiple identical "Re-enabled hotkeys" parts
+> into one single non-inlined(!) function for the same reason.
+> Not to mention that it's BUTT UGLY to have the *same* fat
+> multi-line comment duplicated bazillion times.
+
+Agree. New patch (untested) attached.
+
+Thanks for review,
+
+Richard.
 
 
-Fix two races in the timer stats lookup code. One by ensuring that the
-initialization of a new entry is finished upon insertion of that entry.
-The other by cleaning up the hash table when the entries array is
-cleared, so that we don't have any "pre-inserted" entries.
+--=-Jkj4oVQhIgPTEeHC2aZh
+Content-Disposition: attachment; filename=toshiba_acpi_add_buttons_05.patch
+Content-Type: text/x-patch; name=toshiba_acpi_add_buttons_05.patch; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
-Thanks to Eric Dumazet for reminding me of the memory barriers.
-
-Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
-Signed-off-by: Ian Kumlien <pomac@vapor.com>
----
-diff --git a/kernel/time/timer_stats.c b/kernel/time/timer_stats.c
-index 868f1bc..fa3d380 100644
---- a/kernel/time/timer_stats.c
-+++ b/kernel/time/timer_stats.c
-@@ -117,21 +117,6 @@ static struct entry entries[MAX_ENTRIES];
- 
- static atomic_t overflow_count;
- 
--static void reset_entries(void)
--{
--	nr_entries = 0;
--	memset(entries, 0, sizeof(entries));
--	atomic_set(&overflow_count, 0);
--}
--
--static struct entry *alloc_entry(void)
--{
--	if (nr_entries >= MAX_ENTRIES)
--		return NULL;
--
--	return entries + nr_entries++;
--}
--
- /*
-  * The entries are in a hash-table, for fast lookup:
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 139f41f..38835b6 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -222,6 +222,7 @@ config ACPI_TOSHIBA
+ 	tristate "Toshiba Laptop Extras"
+ 	depends on X86
+ 	select BACKLIGHT_CLASS_DEVICE
++	select INPUT_POLLDEV
+ 	---help---
+ 	  This driver adds support for access to certain system settings
+ 	  on "legacy free" Toshiba laptops.  These laptops can be recognized by
+diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
+index 3906d47..f802609 100644
+--- a/drivers/acpi/toshiba_acpi.c
++++ b/drivers/acpi/toshiba_acpi.c
+@@ -27,13 +27,13 @@
+  *		engineering the Windows drivers
+  *	Yasushi Nagato - changes for linux kernel 2.4 -> 2.5
+  *	Rob Miller - TV out and hotkeys help
+- *
++ *	Richard Hughes - emit INPUT events for hotkeys
+  *
+  *  TODO
+  *
   */
-@@ -149,6 +134,22 @@ static struct entry *alloc_entry(void)
  
- static struct entry *tstat_hash_table[TSTAT_HASH_SIZE] __read_mostly;
+-#define TOSHIBA_ACPI_VERSION	"0.18"
++#define TOSHIBA_ACPI_VERSION	"0.19"
+ #define PROC_INTERFACE_VERSION	1
  
-+static void reset_entries(void)
-+{
-+	nr_entries = 0;
-+	memset(entries, 0, sizeof(entries));
-+	memset(tstat_hash_table, 0, sizeof(tstat_hash_table));
-+	atomic_set(&overflow_count, 0);
-+}
+ #include <linux/kernel.h>
+@@ -42,6 +42,7 @@
+ #include <linux/types.h>
+ #include <linux/proc_fs.h>
+ #include <linux/backlight.h>
++#include <linux/input-polldev.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -99,6 +100,16 @@ MODULE_LICENSE("GPL");
+ #define HCI_VIDEO_OUT_CRT		0x2
+ #define HCI_VIDEO_OUT_TV		0x4
+ 
++/* key definitions */
++#define HCI_HKEY_MUTE			0x0101
++#define HCI_HKEY_LOCK			0x013b
++#define HCI_HKEY_SEARCH			0x013c
++#define HCI_HKEY_SUSPEND		0x013d
++#define HCI_HKEY_HIBERNATE		0x013e
++#define HCI_HKEY_BRIGHTNESSDOWN		0x0140
++#define HCI_HKEY_BRIGHTNESSUP		0x0141
++#define HCI_HKEY_WLAN			0x0142
 +
-+static struct entry *alloc_entry(void)
-+{
-+	if (nr_entries >= MAX_ENTRIES)
-+		return NULL;
+ /* utility
+  */
+ 
+@@ -213,9 +224,15 @@ static acpi_status hci_read1(u32 reg, u32 * out1, u32 * result)
+ 
+ static struct proc_dir_entry *toshiba_proc_dir /*= 0*/ ;
+ static struct backlight_device *toshiba_backlight_device;
++static struct input_polled_dev *toshiba_poll_dev;
+ static int force_fan;
+ static int last_key_event;
+ static int key_event_valid;
++static int hotkeys_over_input = 1;
++static int hotkeys_check_per_sec = 2;
 +
-+	return entries + nr_entries++;
-+}
-+
- static int match_entries(struct entry *entry1, struct entry *entry2)
++module_param(hotkeys_over_input, uint, 0400);
++module_param(hotkeys_check_per_sec, uint, 0400);
+ 
+ typedef struct _ProcItem {
+ 	const char *name;
+@@ -438,34 +455,60 @@ static unsigned long write_fan(const char *buffer, unsigned long count)
+ 	return count;
+ }
+ 
+-static char *read_keys(char *p)
++/* returns zero if hci event is invalid */
++static u32 get_hci_system_event_value(void)
  {
- 	return entry1->timer       == entry2->timer	  &&
-@@ -202,12 +203,15 @@ static struct entry *tstat_lookup(struct entry *entry, char *comm)
- 	if (curr) {
- 		*curr = *entry;
- 		curr->count = 0;
-+		curr->next = NULL;
- 		memcpy(curr->comm, comm, TASK_COMM_LEN);
+ 	u32 hci_result;
+ 	u32 value;
++	u32 retval = 0;
 +
-+		smp_mb(); /* Ensure that curr is initialized before insert */
++	/* read a system event from the queue */
++	hci_read1(HCI_SYSTEM_EVENT, &value, &hci_result);
 +
- 		if (prev)
- 			prev->next = curr;
- 		else
- 			*head = curr;
--		curr->next = NULL;
- 	}
-  out_unlock:
- 	spin_unlock(&table_lock);
-@@ -360,6 +364,7 @@ static ssize_t tstats_write(struct file *file, const char __user *buf,
- 		if (!active) {
- 			reset_entries();
- 			time_start = ktime_get();
-+			smp_mb();
- 			active = 1;
++	switch (hci_result) {
++	case HCI_EMPTY:
++		/* better luck next time */
++		break;
++	case HCI_SUCCESS:
++		/* value is the data in the queue */
++		retval = value;
++		break;
++	case HCI_NOT_SUPPORTED:
++		/* This is a workaround for an unresolved issue on
++		 * some machines where system events sporadically
++		 * become disabled. */
++		hci_write1(HCI_SYSTEM_EVENT, 1, &hci_result);
++		printk(MY_NOTICE "Re-enabled hotkeys\n");
++		break;
++	default:
++		/* there was an unknown error */
++		printk(MY_ERR "Error reading hotkey status\n");
++	}
++	return retval;
++}
+ 
+-	if (!key_event_valid) {
+-		hci_read1(HCI_SYSTEM_EVENT, &value, &hci_result);
+-		if (hci_result == HCI_SUCCESS) {
+-			key_event_valid = 1;
+-			last_key_event = value;
+-		} else if (hci_result == HCI_EMPTY) {
+-			/* better luck next time */
+-		} else if (hci_result == HCI_NOT_SUPPORTED) {
+-			/* This is a workaround for an unresolved issue on
+-			 * some machines where system events sporadically
+-			 * become disabled. */
+-			hci_write1(HCI_SYSTEM_EVENT, 1, &hci_result);
+-			printk(MY_NOTICE "Re-enabled hotkeys\n");
+-		} else {
+-			printk(MY_ERR "Error reading hotkey status\n");
+-			goto end;
++/* deprecate this interface... */
++static char *read_keys(char *p)
++{
++	u32 value;
++
++	if (hotkeys_over_input) {
++		key_event_valid = 0;
++		last_key_event = 0;
++	} else {
++		if (!key_event_valid) {
++			value = get_hci_system_event_value();
++			if (value != 0) {
++				key_event_valid = 1;
++				last_key_event = value;
++			}
  		}
- 		break;
+ 	}
+ 
+ 	p += sprintf(p, "hotkey_ready:            %d\n", key_event_valid);
+ 	p += sprintf(p, "hotkey:                  0x%04x\n", last_key_event);
++	p += sprintf(p, "hotkeys_via_input:       %d\n", hotkeys_over_input);
+ 
+-      end:
+ 	return p;
+ }
+ 
+@@ -534,15 +577,103 @@ static acpi_status __exit remove_device(void)
+ }
+ 
+ static struct backlight_ops toshiba_backlight_data = {
+-        .get_brightness = get_lcd,
+-        .update_status  = set_lcd_status,
++	.get_brightness = get_lcd,
++	.update_status  = set_lcd_status,
+ };
+ 
++static void toshiba_deliver_button_event(struct input_dev *input, u32 value)
++{
++	int keycode = KEY_UNKNOWN;
++	int key_down = 1;
++
++	if (!input)
++		return;
++
++	/* translate MSB to key up */
++	if (value & 0x80) {
++		value &= ~0x80;
++		key_down = 0;
++	}
++
++	/* ignore FN on its own */
++	if (value == 0x0100)
++		return;
++
++	/* translate keys to keycodes */
++	switch (value) {
++	case HCI_HKEY_MUTE:
++		keycode = KEY_MUTE;
++		break;
++	case HCI_HKEY_LOCK:
++		keycode = KEY_CLEAR;
++		break;
++	case HCI_HKEY_SEARCH:
++		keycode = KEY_SEARCH;
++		break;
++	case HCI_HKEY_SUSPEND:
++		keycode = KEY_SLEEP;
++		break;
++	case HCI_HKEY_HIBERNATE:
++		keycode = KEY_SUSPEND;
++		break;
++	case HCI_HKEY_BRIGHTNESSDOWN:
++		keycode = KEY_BRIGHTNESSDOWN;
++		break;
++	case HCI_HKEY_BRIGHTNESSUP:
++		keycode = KEY_BRIGHTNESSUP;
++		break;
++	case HCI_HKEY_WLAN:
++		keycode = KEY_WLAN;
++		break;
++	default:
++		keycode = KEY_UNKNOWN;
++	}
++
++	if (keycode != KEY_UNKNOWN) {
++		printk(MY_INFO "mapped hkey %i to keycode %i [%i]\n", value, keycode, key_down);
++		input_report_key(input, keycode, key_down);
++		input_sync(input);
++	}
++}
++
++/* the HCI buffer might have keys pressed some time ago */
++static void toshiba_keys_clear(void)
++{
++	int hci_queue = 0;
++	do {
++		/* we don't want to get stuck here */
++		if (hci_queue++ > 16)
++			break;
++	} while (get_hci_system_event_value());
++}
++
++static void handle_buttons(struct input_polled_dev *dev)
++{
++	u32 value;
++	int hci_queue = 0;
++	struct input_dev *input = dev->input;
++
++	do {
++		/* we don't want to get stuck here */
++		if (hci_queue++ > 16)
++			break;
++		/* try to get a button event */
++		value = get_hci_system_event_value();
++		if (value)
++			toshiba_deliver_button_event(input, value);
++	} while (value);
++}
++
+ static void __exit toshiba_acpi_exit(void)
+ {
+ 	if (toshiba_backlight_device)
+ 		backlight_device_unregister(toshiba_backlight_device);
+ 
++	if (toshiba_poll_dev) {
++		input_unregister_polled_device(toshiba_poll_dev);
++		input_free_polled_device(toshiba_poll_dev);
++	}
++
+ 	remove_device();
+ 
+ 	if (toshiba_proc_dir)
+@@ -551,6 +682,49 @@ static void __exit toshiba_acpi_exit(void)
+ 	return;
+ }
+ 
++static int __init toshiba_input_polldev_init(void)
++{
++	int error;
++	struct input_dev *input;
++
++	/* use INPUT for key events */
++	toshiba_poll_dev = input_allocate_polled_device();;
++	if (!toshiba_poll_dev) {
++		error = -ENOMEM;
++		goto err_no_mem;
++	}
++	toshiba_poll_dev->poll = handle_buttons;
++	toshiba_poll_dev->poll_interval = HZ / hotkeys_check_per_sec;
++	input = toshiba_poll_dev->input;
++
++	/* create one 'keyboard' virtual input device for all the acpi events */
++	input->name = "Toshiba Extra Buttons";
++	input->phys = "toshiba/input0";
++	input->id.bustype = BUS_HOST;
++	input->id.product = 0x0001;
++	input->evbit[0] = BIT(EV_KEY);
++	set_bit(KEY_MUTE, input->keybit);
++	set_bit(KEY_BREAK, input->keybit); /* probably should be KEY_LOCK */
++	set_bit(KEY_SEARCH, input->keybit);
++	set_bit(KEY_SUSPEND, input->keybit);
++	set_bit(KEY_SLEEP, input->keybit);
++	set_bit(KEY_BRIGHTNESSDOWN, input->keybit);
++	set_bit(KEY_BRIGHTNESSUP, input->keybit);
++	set_bit(KEY_WLAN, input->keybit);
++
++	toshiba_keys_clear();
++
++	error = input_register_polled_device(toshiba_poll_dev);
++	if (error)
++		goto err_free_input;
++	return 0;
++
++err_free_input:
++	input_free_polled_device(toshiba_poll_dev);
++err_no_mem:
++	return error;
++}
++
+ static int __init toshiba_acpi_init(void)
+ {
+ 	acpi_status status = AE_OK;
+@@ -590,12 +764,28 @@ static int __init toshiba_acpi_init(void)
+ 	toshiba_backlight_device = backlight_device_register("toshiba",NULL,
+ 						NULL,
+ 						&toshiba_backlight_data);
+-        if (IS_ERR(toshiba_backlight_device)) {
++	if (IS_ERR(toshiba_backlight_device)) {
+ 		printk(KERN_ERR "Could not register toshiba backlight device\n");
+ 		toshiba_backlight_device = NULL;
+ 		toshiba_acpi_exit();
+ 	}
+-        toshiba_backlight_device->props.max_brightness = HCI_LCD_BRIGHTNESS_LEVELS - 1;
++	toshiba_backlight_device->props.max_brightness = HCI_LCD_BRIGHTNESS_LEVELS - 1;
++
++	/* we have to poll the device as we do not get events */
++	if (hotkeys_over_input && hotkeys_check_per_sec > 0) {
++
++		/* sanitise to something sane */
++		if (hotkeys_check_per_sec > 10)
++			hotkeys_check_per_sec = 10;
++		printk(KERN_INFO "ktoshkeyd checks per second : %d\n", hotkeys_check_per_sec);
++
++		toshiba_input_polldev_init ();
++		/* just abort */
++		if (!toshiba_poll_dev) {
++			printk(KERN_ERR "could not allocate input device\n");
++			toshiba_acpi_exit();
++		}
++	}
+ 
+ 	return (ACPI_SUCCESS(status)) ? 0 : -ENODEV;
+ }
+diff --git a/drivers/char/ChangeLog b/drivers/char/ChangeLog
+diff --git a/drivers/net/LICENSE.SRC b/drivers/net/LICENSE.SRC
+
+--=-Jkj4oVQhIgPTEeHC2aZh--
+
