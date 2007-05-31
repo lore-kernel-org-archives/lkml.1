@@ -1,81 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbXEaO02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbXEaO1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbXEaO02 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 10:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbXEaO0T
+	id S1756722AbXEaO1i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 10:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbXEaO1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 10:26:19 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:59843 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752487AbXEaO0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 10:26:18 -0400
-Date: Thu, 31 May 2007 07:26:07 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 19/22] 2.6.22-rc3 perfmon2 : modified x86_64 files
-Message-ID: <20070531142607.GI22798@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <200705291348.l4TDmYaf019853@frankl.hpl.hp.com> <p73ejkxc9un.fsf@bingen.suse.de> <20070531141600.GH22798@frankl.hpl.hp.com> <20070531142038.GB2538@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531142038.GB2538@one.firstfloor.org>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+	Thu, 31 May 2007 10:27:30 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:21280 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110AbXEaO13 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 10:27:29 -0400
+Date: Thu, 31 May 2007 08:27:27 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Case: 7454422: Re: Kernel 2.6.21.3 does not work with 8GB of RAM
+ on Intel 965WH motherboards. (FULL DMESG)
+In-reply-to: <Pine.LNX.4.64.0705310906590.6709@p34.internal.lan>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org,
+       crmotherboard@intel.com
+Message-id: <465EDB4F.6020800@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <82e4877d0705301757v580a4ca5yebe2a565f0b97552@mail.gmail.com>
+ <465E513E.60903@shaw.ca> <465EC464.7050302@gmail.com>
+ <Pine.LNX.4.64.0705310906590.6709@p34.internal.lan>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
-
-On Thu, May 31, 2007 at 04:20:38PM +0200, Andi Kleen wrote:
+Justin Piszcz wrote:
+> On Thu, 31 May 2007, Parag Warudkar wrote:
 > 
-> > > Just use a cpu notifier instead. No need to add everybody's per cpu init code here.
-> > 
-> > The code must run on the CPU that is being initialized.
+>> Robert Hancock wrote:
+>>> I think that mem=8832M would work as well, to make the kernel use 
+>>> only the memory that is marked cacheable. (It looks like this 
+>>> parameter takes the highest memory address we want the kernel to use, 
+>>> not the highest memory amount.)
+>>>
+>> Yep, and that would be much easier too.
+>>
+>> I am curious though as this seems to be somewhat common a problem, 
+>> could we make the kernel analyze which memory is not cacheable (it 
+>> already knows this via MTRR) and not use that portion for anything? 
+>> Plus may be warn the user to contact their BIOS vendor to correct the 
+>> problem?
+>>
+>> I think that would be possible - even if the kernel knows late that 
+>> the memory was uncached we could migrate those pages in that region to 
+>> someplace else?
+>>
+>> Parag
+>>
 > 
-> smp_call_function_single() 
+> That is an excellent question and I wonder the same thing.  I also had 
+> this problem when I only used 4GB of ram and upgraded the (another 
+> motherboard, I have two) past version 1666P and I had no idea what was 
+> going on other than the BIOS did not work correctly.
 > 
-Isn't that more complicated than just adding a hook in cpu_disable()?
+> In this case however it worked with 4GB with bios version 1612P but not 
+> with 8GB.  Is this the case of a buggy BIOS for the 965 chipset or do 
+> Intel boards have a lot of issues?
 
-> > > 
-> > > No compat syscalls? 
-> > > 
-> > compat syscalls for what? I need to ensure backward compatiblity on IA-64 only.
-> 
-> For 32bit / i386 code.
-
-I's there in ia32entry.S. Was it missing from the E-mail?
-
-In anycase, here it is:
-
-diff --exclude=.git -urp linux-2.6.22.base/arch/x86_64/ia32/ia32entry.S linux-2.6.22/arch/x86_64/ia32/ia32entry.S
---- linux-2.6.22.base/arch/x86_64/ia32/ia32entry.S      2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/x86_64/ia32/ia32entry.S   2007-05-29 03:24:14.000000000 -0700
-@@ -719,4 +719,16 @@ ia32_sys_call_table:
-        .quad compat_sys_signalfd
-        .quad compat_sys_timerfd
-        .quad sys_eventfd
-+       .quad sys_pfm_create_context
-+       .quad sys_pfm_write_pmcs
-+       .quad sys_pfm_write_pmds
-+       .quad sys_pfm_read_pmds
-+       .quad sys_pfm_load_context
-+       .quad sys_pfm_start
-+       .quad sys_pfm_stop
-+       .quad sys_pfm_restart
-+       .quad sys_pfm_create_evtsets
-+       .quad sys_pfm_getinfo_evtsets
-+       .quad sys_pfm_delete_evtsets
-+       .quad sys_pfm_unload_context
- ia32_syscall_end:
-
-
+We could conceivably generate a warning if the MTRRs don't map all of 
+the physical memory as write-back. Actually, conceivably we could 
+actually go and fix up the MTRRs if we found them to be wrong according 
+to the E820 memory map. That would be more complicated, however.
 
 -- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
--Stephane
