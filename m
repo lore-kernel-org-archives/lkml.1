@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760833AbXEaXfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXEaXlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760833AbXEaXfo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 19:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbXEaXfb
+	id S1759905AbXEaXlg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 19:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbXEaXl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 19:35:31 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60786 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760266AbXEaXf3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 19:35:29 -0400
-Date: Fri, 1 Jun 2007 09:34:49 +1000
-From: David Chinner <dgc@sgi.com>
-To: Phillip Susi <psusi@cfl.rr.com>
-Cc: David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       david@lang.hm, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-Message-ID: <20070531233449.GT86004887@sgi.com>
-References: <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <465F1479.70100@cfl.rr.com>
-Mime-Version: 1.0
+	Thu, 31 May 2007 19:41:29 -0400
+Received: from holomorphy.com ([66.93.40.71]:40053 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752241AbXEaXl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 19:41:28 -0400
+Date: Thu, 31 May 2007 16:41:54 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 9/9] Scheduler profiling - Use conditional calls
+Message-ID: <20070531234154.GL6909@holomorphy.com>
+References: <20070530140025.917261793@polymtl.ca> <20070530140229.811672406@polymtl.ca> <20070530205927.GE6909@holomorphy.com> <20070531211258.GB904@Krystal>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <465F1479.70100@cfl.rr.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070531211258.GB904@Krystal>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 02:31:21PM -0400, Phillip Susi wrote:
-> David Chinner wrote:
-> >That sounds like a good idea - we can leave the existing
-> >WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
-> >behaviour that only guarantees ordering. The filesystem can then
-> >choose which to use where appropriate....
-> 
-> So what if you want a synchronous write, but DON'T care about the order? 
+On Wed, May 30, 2007 at 10:00:34AM -0400, Mathieu Desnoyers wrote:
+>>> +	if (prof_on)
+>>> +		BUG_ON(cond_call_arm("profile_on"));
 
-submit_bio(WRITE_SYNC, bio);
+* William Lee Irwin III (wli@holomorphy.com) wrote:
+>> What's the point of this BUG_ON()? The condition is a priori impossible.
 
-Already there, already used by XFS, JFS and direct I/O.
+On Thu, May 31, 2007 at 05:12:58PM -0400, Mathieu Desnoyers wrote:
+> Not impossible: hash_add_cond_call() can return -ENOMEM if kmalloc lacks
+> memory.
 
-Cheers,
+Shouldn't it just propagate the errors like anything else instead of
+going BUG(), then? One can easily live without profiling if the profile
+buffers should fail to be allocated e.g. due to memory fragmentation.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+These things all have to handle errors for hotplugging anyway AIUI.
+
+
+-- wli
