@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXEaTu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbXEaTwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759935AbXEaTu7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 15:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbXEaTuv
+	id S1760674AbXEaTwX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 15:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbXEaTwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 15:50:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38645 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756095AbXEaTuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 15:50:51 -0400
-Message-ID: <465F270B.5090604@redhat.com>
-Date: Thu, 31 May 2007 12:50:35 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Jakub Jelinek <jakub@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
-References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com> <Pine.LNX.4.64.0705311123370.30485@alien.or.mcafeemobile.com> <465F170B.3070603@redhat.com> <Pine.LNX.4.64.0705311144290.30485@alien.or.mcafeemobile.com> <20070531190235.GY4033@devserv.devel.redhat.com> <Pine.LNX.4.64.0705311205520.30485@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0705311205520.30485@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 31 May 2007 15:52:15 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:41055 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758421AbXEaTwP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 15:52:15 -0400
+Date: Thu, 31 May 2007 12:51:33 -0700
+From: Zach Brown <zach.brown@oracle.com>
+To: clameter@sgi.com
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org
+Subject: Re: [RFC 2/4] CONFIG_STABLE: Switch off kmalloc(0) tests in slab allocators
+Message-ID: <20070531195133.GK5488@mami.zabbo.net>
+References: <20070531002047.702473071@sgi.com> <20070531003012.532539202@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070531003012.532539202@sgi.com>
+User-Agent: Mutt/1.4.2.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+> +#ifndef CONFIG_STABLE
+>  	/*
+>  	 * We should return 0 if size == 0 (which would result in the
+>  	 * kmalloc caller to get NULL) but we use the smallest object
+> @@ -81,6 +82,7 @@ static inline int kmalloc_index(size_t s
+>  	 * we can discover locations where we do 0 sized allocations.
+>  	 */
+>  	WARN_ON_ONCE(size == 0);
+> +#endif
 
-Davide Libenzi wrote:
-> What I meant, was that the vast majority of MT+exec 
-> apps wants all their fds (but an handfull, maybe)
+> +#ifndef CONFIG_STABLE
+>  	WARN_ON_ONCE(size == 0);
+> +#endif
 
-You never listen when you are told something.  Such a statement cannot
-be made.  The application doesn't know what the runtime libraries need
-(not just libc, libstdc++, libxml, whatever) and vice versa.  Policies
-are always wrong for somebody and changing the standardized behavior is
-not acceptable.
+I wonder if there wouldn't be value in making a WARN_*() variant that
+contained the ifdef internally so we could lose these tedious
+surrounding ifdefs in call sites.  WARN_DEVELOPER_WHEN(), or something.
+I don't care what it's called.  
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGXycL2ijCOnn/RHQRAvPfAJ9r77oMkReyf4OG2rVPaFNb5TIYfgCgwp8e
-mvswKBbe1UlrzlG3oOWYswM=
-=viNa
------END PGP SIGNATURE-----
+- z 
