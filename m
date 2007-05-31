@@ -1,71 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760755AbXEaSI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbXEaSJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760755AbXEaSI2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbXEaSIV
+	id S1760918AbXEaSJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbXEaSJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:08:21 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:12356 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757086AbXEaSIU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 14:08:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=pKm4to0bdKt32ZYaeDyDHudBBBbscEPof3L+Dd8ddgBFCGybhqpi9Z83gI5Fop0XuvUfRiX8fp5t1yRKtvfzdQYD2NF0Jq+UHOj2O11XQTcyoiYajkLyKpL2THIrE29pHEYCSJiQa0VBkN8rrOhv9iQy36bMsQIk2kzZ0hXcF2s=
-Message-ID: <465F0F02.7070308@googlemail.com>
-Date: Thu, 31 May 2007 20:08:02 +0200
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@googlemail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Subject: Re: 2.6.22-rc3-mm1
-References: <20070530235823.793f00d9.akpm@linux-foundation.org> <465F0B83.2050100@googlemail.com>
-In-Reply-To: <465F0B83.2050100@googlemail.com>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Thu, 31 May 2007 14:09:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33235 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757979AbXEaSJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 14:09:22 -0400
+Date: Thu, 31 May 2007 14:09:15 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Introduce O_CLOEXEC (take >2)
+Cc: akpm@linux-foundation.org, mingo@elte.hu, torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski napisał(a):
-> Andrew Morton napisał(a):
->> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc3/2.6.22-rc3-mm1/
->>
-> 
-> CPU hotplug test triggered this
-> 
-> [ 4972.038008] CPU 1 is now offline
-> [ 4972.041411] lockdep: not fixing up alternatives.
-> [ 4972.051553] 
-> [ 4972.051555] =================================
-> [ 4972.057562] [ INFO: inconsistent lock state ]
-> [ 4972.062056] 2.6.22-rc3-mm1 #10
-> [ 4972.065184] ---------------------------------
-[..]
-> [ 4972.372562]  =======================
-> [ 4975.412963] lockdep: not fixing up alternatives.
-> 
-> Suspects:
-> add-suspend-related-notifications-for-cpu-hotplug-statistics.patch
+I've brought this topic up before but didn't provide a patch.  Well, here
+we go again, this time with a patch.  I even throw in a test program.
 
-not guilty
+The problem is as follows: in multi-threaded code (or more correctly: all
+code using clone() with CLONE_FILES) we have a race when exec'ing.
 
-> cpu-hotplug-fix-ksoftirqd-termination-on-cpu-hotplug-with-naughty-realtime-process.patch
+   thread #1                       thread #2
 
-not guilty
+   fd=open()
 
-> cpu-hotplug-fix-ksoftirqd-termination-on-cpu-hotplug-with-naughty-realtime-process-fix.patch
+                                   fork + exec
 
-not guilty
+  fcntl(fd,F_SETFD,FD_CLOEXEC)
 
-Regards,
-Michal
+In some applications this can happen frequently.  Take a web browser.  One
+thread opens a file and another thread starts, say, an external PDF viewer.
+The result can even be a security issue if that open file descriptor refers
+to a sensitive file and the external program can somehow be tricked into
+using that descriptor.
 
--- 
-"Najbardziej brakowało mi twojego milczenia."
--- Andrzej Sapkowski "Coś więcej"
+Just adding O_CLOEXEC support to open() doesn't solve the whole set of
+problems.  There are other ways to create file descriptors (socket,
+epoll_create, Unix domain socket transfer, etc).  These can and should
+be addressed separately though.  open() is such an easy case that it makes
+not much sense putting the fix off.
+
+The test program:
+
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#ifndef O_CLOEXEC
+# define O_CLOEXEC 02000000
+#endif
+
+int
+main (int argc, char *argv[])
+{
+  int fd;
+  if (argc > 1)
+    {
+      fd = atol (argv[1]);
+      printf ("child: fd = %d\n", fd);
+      if (fcntl (fd, F_GETFD) == 0 || errno != EBADF)
+        {
+          puts ("file descriptor valid in child");
+          return 1;
+        }
+      return 0;
+    }
+
+  fd = open ("/proc/self/exe", O_RDONLY | O_CLOEXEC);
+  printf ("in parent: new fd = %d\n", fd);
+  char buf[20];
+  snprintf (buf, sizeof (buf), "%d", fd);
+  execl ("/proc/self/exe", argv[0], buf, NULL);
+  puts ("execl failed");
+  return 1;
+}
+
+
+
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/fs/open.c b/fs/open.c
+index 0d515d1..e6991c1 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -855,7 +855,7 @@ EXPORT_SYMBOL(dentry_open);
+ /*
+  * Find an empty file descriptor entry, and mark it busy.
+  */
+-int get_unused_fd(void)
++static int get_unused_fd_flags(int flags)
+ {
+ 	struct files_struct * files = current->files;
+ 	int fd, error;
+@@ -891,7 +891,10 @@ repeat:
+ 	}
+ 
+ 	FD_SET(fd, fdt->open_fds);
+-	FD_CLR(fd, fdt->close_on_exec);
++	if (flags & O_CLOEXEC)
++		FD_SET(fd, fdt->close_on_exec);
++	else
++		FD_CLR(fd, fdt->close_on_exec);
+ 	files->next_fd = fd + 1;
+ #if 1
+ 	/* Sanity check */
+@@ -907,6 +910,11 @@ out:
+ 	return error;
+ }
+ 
++int get_unused_fd(void)
++{
++	return get_unused_fd_flags(0);
++}
++
+ EXPORT_SYMBOL(get_unused_fd);
+ 
+ static void __put_unused_fd(struct files_struct *files, unsigned int fd)
+@@ -959,7 +967,7 @@ long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
+ 	int fd = PTR_ERR(tmp);
+ 
+ 	if (!IS_ERR(tmp)) {
+-		fd = get_unused_fd();
++		fd = get_unused_fd_flags(flags);
+ 		if (fd >= 0) {
+ 			struct file *f = do_filp_open(dfd, tmp, flags, mode);
+ 			if (IS_ERR(f)) {
+diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
+index c154b9d..b847741 100644
+--- a/include/asm-generic/fcntl.h
++++ b/include/asm-generic/fcntl.h
+@@ -48,6 +48,9 @@
+ #ifndef O_NOATIME
+ #define O_NOATIME	01000000
+ #endif
++#ifndef O_CLOEXEC
++#define O_CLOEXEC	02000000	/* set close_on_exec */
++#endif
+ #ifndef O_NDELAY
+ #define O_NDELAY	O_NONBLOCK
+ #endif
