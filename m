@@ -1,52 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbXEaAa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbXEaAak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbXEaAa1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 20:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbXEaAaP
+	id S1758250AbXEaAak (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 20:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbXEaAaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 20:30:15 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59667 "EHLO
+	Wed, 30 May 2007 20:30:16 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60132 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752320AbXEaAaN (ORCPT
+	with ESMTP id S1752824AbXEaAaO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 20:30:13 -0400
-Message-Id: <20070531003012.302019683@sgi.com>
-References: <20070531002047.702473071@sgi.com>
+	Wed, 30 May 2007 20:30:14 -0400
+Message-Id: <20070531002047.702473071@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 May 2007 17:20:48 -0700
+Date: Wed, 30 May 2007 17:20:47 -0700
 From: clameter@sgi.com
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [RFC 1/4] CONFIG_STABLE: Define it
-Content-Disposition: inline; filename=stable_init
+Subject: [RFC 0/4] CONFIG_STABLE to switch off development checks
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce CONFIG_STABLE to control checks only useful for development.
+A while back we talked about having the capability of switching off checks
+like the one for kmalloc(0) for stable kernel releases. This is a first stab
+at such functionality. It adds #ifdef CONFIG_STABLE for now. Maybe we can
+come up with some better way to handle it later. There should alsol be some
+way to set CONFIG_STABLE from the Makefile.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+CONFIG_STABLE switches off
 
----
- init/Kconfig |    7 +++++++
- 1 file changed, 7 insertions(+)
-
-Index: slub/init/Kconfig
-===================================================================
---- slub.orig/init/Kconfig	2007-05-30 16:35:05.000000000 -0700
-+++ slub/init/Kconfig	2007-05-30 16:35:45.000000000 -0700
-@@ -65,6 +65,13 @@ endmenu
- 
- menu "General setup"
- 
-+config STABLE
-+	bool "Stable kernel"
-+	help
-+	  If the kernel is configured to be a stable kernel then various
-+	  checks that are only of interest to kernel development will be
-+	  omitted.
-+
- config LOCALVERSION
- 	string "Local version - append to kernel release"
- 	help
+- kmalloc(0) check in both slab allocators
+- SLUB banner
+- Makes SLUB tolerate object corruption like SLAB (not sure if we really want
+  to go down this route. See patch)
 
 -- 
