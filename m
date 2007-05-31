@@ -1,118 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbXEaCat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbXEaCep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758719AbXEaCat (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 22:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbXEaCam
+	id S1758456AbXEaCep (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 22:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbXEaCei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 22:30:42 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35170 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755541AbXEaCal (ORCPT
+	Wed, 30 May 2007 22:34:38 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:51406 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750746AbXEaCeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 22:30:41 -0400
-Date: Thu, 31 May 2007 12:30:31 +1000
-From: David Chinner <dgc@sgi.com>
-To: Michal Marek <mmarek@suse.cz>
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] Fix XFS_IOC_FSGEOMETRY_V1 in compat mode
-Message-ID: <20070531023031.GH85884050@sgi.com>
-References: <20070530125954.706423971@suse.cz> <20070530143043.216024061@suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070530143043.216024061@suse.cz>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 30 May 2007 22:34:37 -0400
+Date: Wed, 30 May 2007 19:33:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, Tero Roponen <teanropo@jyu.fi>,
+       Antonino Daplas <adaplas@gmail.com>
+Subject: Re: [3/4] 2.6.22-rc3: known regressions
+In-Reply-To: <465C222A.8060003@googlemail.com>
+Message-ID: <alpine.LFD.0.98.0705301922560.26602@woody.linux-foundation.org>
+References: <465C188F.9000900@googlemail.com>
+ <465C222A.8060003@googlemail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-ID: <alpine.LFD.0.98.0705301923271.26602@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 02:59:55PM +0200, Michal Marek wrote:
-> i386 struct xfs_fsop_geom_v1 has no padding after the last member, so
-> the size is different.
 
-That's a pain - it's kind of clunky having to redefine the entire
-structure just pack it differently. Oh well, not much that
-we can do about it...
 
+On Tue, 29 May 2007, Michal Piotrowski wrote:
 > 
-> Signed-off-by: Michal Marek <mmarek@suse.cz>
-> ---
->  fs/xfs/linux-2.6/xfs_ioctl32.c |   40 +++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 39 insertions(+), 1 deletion(-)
+> Subject    : hrtimer overflow bug on 64-bit systems
+> References : http://lkml.org/lkml/2007/5/24/391
+> Submitter  : David Miller <davem@davemloft.net>
+> Status     : problem is being debugged
+
+Should be fixed by commit eaad084bb.
+
+> TTY
 > 
-> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl32.c
-> +++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c
-> @@ -75,6 +75,40 @@ xfs_ioctl32_flock(
->  	return (unsigned long)p;
->  }
->  
-> +typedef struct xfs_fsop_geom_v132 {
+> Subject    : tty-related oops in latest kernel(s)
+> References : http://lkml.org/lkml/2007/5/27/104
+> Submitter  : Tero Roponen <teanropo@jyu.fi>
+> Status     : problem is being debugged
 
-xfs_fsop_geom_v1_32
+People seem to have debugged this to neofb palette handling, but I haven't 
+seen a patch. Antonino?
 
-> +	__u32		blocksize;	/* filesystem (data) block size */
-> +	__u32		rtextsize;	/* realtime extent size		*/
-> +	__u32		agblocks;	/* fsblocks in an AG		*/
-> +	__u32		agcount;	/* number of allocation groups	*/
-> +	__u32		logblocks;	/* fsblocks in the log		*/
-> +	__u32		sectsize;	/* (data) sector size, bytes	*/
-> +	__u32		inodesize;	/* inode size in bytes		*/
-> +	__u32		imaxpct;	/* max allowed inode space(%)	*/
-> +	__u64		datablocks;	/* fsblocks in data subvolume	*/
-> +	__u64		rtblocks;	/* fsblocks in realtime subvol	*/
-> +	__u64		rtextents;	/* rt extents in realtime subvol*/
-> +	__u64		logstart;	/* starting fsblock of the log	*/
-> +	unsigned char	uuid[16];	/* unique id of the filesystem	*/
-> +	__u32		sunit;		/* stripe unit, fsblocks	*/
-> +	__u32		swidth;		/* stripe width, fsblocks	*/
-> +	__s32		version;	/* structure version		*/
-> +	__u32		flags;		/* superblock version flags	*/
-> +	__u32		logsectsize;	/* log sector size, bytes	*/
-> +	__u32		rtsectsize;	/* realtime sector size, bytes	*/
-> +	__u32		dirblocksize;	/* directory block size, bytes	*/
-> +} __attribute__((packed)) xfs_fsop_geom_v132_t;
-
-xfs_fsop_geom_v1_32_t
-
-> +#define XFS_IOC_FSGEOMETRY_V1_32     _IOR ('X', 100, struct xfs_fsop_geom_v132)
-> +
-> +STATIC unsigned long xfs_ioctl32_geom_v1(unsigned long arg)
-> +{
-> +	xfs_fsop_geom_v132_t __user *p32 = (void __user *)arg;
-> +	xfs_fsop_geom_v1_t __user *p = compat_alloc_user_space(sizeof(*p));
-> +
-> +	if (copy_in_user(p, p32, sizeof(*p32)))
-> +		return -EFAULT;
-> +	return (unsigned long)p;
-> +}
-> +
->  #else
->  
->  typedef struct xfs_fsop_bulkreq32 {
-> @@ -118,7 +152,6 @@ xfs_compat_ioctl(
->  
->  	switch (cmd) {
->  	case XFS_IOC_DIOINFO:
-> -	case XFS_IOC_FSGEOMETRY_V1:
->  	case XFS_IOC_FSGEOMETRY:
->  	case XFS_IOC_GETVERSION:
->  	case XFS_IOC_GETXFLAGS:
-> @@ -166,6 +199,10 @@ xfs_compat_ioctl(
->  		arg = xfs_ioctl32_flock(arg);
->  		cmd = _NATIVE_IOC(cmd, struct xfs_flock64);
->  		break;
-
-	/* xfs_fsop_geom_v1 changes size */
-> +	case XFS_IOC_FSGEOMETRY_V1_32:
-> +		arg = xfs_ioctl32_geom_v1(arg);
-> +		cmd = XFS_IOC_FSGEOMETRY_V1;
-> +		break;
-
-cmd = _NATIVE_IOC(cmd, struct xfs_fsop_geom_v1);
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+		Linus
