@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbXEaDg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbXEaDrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759490AbXEaDg0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 23:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbXEaDgT
+	id S1759329AbXEaDrt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 23:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbXEaDrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 23:36:19 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:32827 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756053AbXEaDgS (ORCPT
+	Wed, 30 May 2007 23:47:39 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:25606 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755601AbXEaDri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 23:36:18 -0400
-X-IronPort-AV: i="4.14,596,1170651600"; 
-   d="scan'208"; a="40602566:sNHT29368491677"
-Subject: Re: [PATCH] [RAMFS NOMMU]: a bug in ramfs_nommu_resize function,
-	passing old size to vmtruncate
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: bryan.wu@analog.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>
-In-Reply-To: <1180582315.10836.2.camel@roc-laptop>
-References: <1180582315.10836.2.camel@roc-laptop>
-Content-Type: text/plain
+	Wed, 30 May 2007 23:47:38 -0400
+Message-ID: <465E4551.8050504@chelsio.com>
+Date: Wed, 30 May 2007 20:47:29 -0700
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: divy@chelsio.com
+CC: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 4/5] cxgb3 - Stop mac RX when changing MTU
+References: <20070530170144.22843.74669.stgit@localhost.localdomain>
+In-Reply-To: <20070530170144.22843.74669.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Thu, 31 May 2007 11:35:28 +0800
-Message-Id: <1180582528.10836.6.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 31 May 2007 03:47:10.0897 (UTC) FILETIME=[5E4C5210:01C7A336]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-31 at 11:31 +0800, Bryan Wu wrote:
-> It should be pass "newsize" to vmtruncate function to modify the
-> inode->i_size,
-> while the old size is passed to vmtruncate.
-> 
-> This bug was catched by LTP truncate test case on Blackfin platform.
-> After it was fixed, the LTP truncate test case passed.
-> 
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> Cc: David Howells <dhowells@redhat.com>
-> ---
->  fs/ramfs/file-nommu.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
-> index 3b481d5..9345a46 100644
-> --- a/fs/ramfs/file-nommu.c
-> +++ b/fs/ramfs/file-nommu.c
-> @@ -179,7 +179,7 @@ static int ramfs_nommu_resize(struct inode *inode, loff_t newsize, loff_t size)
->                         return ret;
->         }
->  
-> -       ret = vmtruncate(inode, size);
-> +       ret = vmtruncate(inode, newsize);
->  
->         return ret;
->  }
+divy@chelsio.com wrote:
+> From: Divy Le Ray <divy@chelsio.com>
+>
+> Rx traffic needs to be halted when the MTU is changed
+> to avoid a potential chip hang.
+> Reset/restore MAC filters around a MTU change.
+> Also fix the pause frames high materwark setting.
+>
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+>   
 
-David: 
+This patch has a flaw. The register used to stop broadcast/multicast 
+traffic is wrong.
+Please ignore this instance. I'm resending it.
 
-Sorry for sending this email several times , my git-send-email got some
-problem.
-
-Thanks
--Bryan Wu
+Divy
