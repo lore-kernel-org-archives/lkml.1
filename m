@@ -1,106 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbXEaNiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbXEaNkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752826AbXEaNiJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 09:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXEaNhy
+	id S1753262AbXEaNkQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 09:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXEaNkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 09:37:54 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6381 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbXEaNhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 09:37:53 -0400
-Date: Thu, 31 May 2007 15:36:50 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: David Chinner <dgc@sgi.com>, david@lang.hm,
-       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,  and dm/md.
-Message-ID: <20070531133649.GY32105@kernel.dk>
-References: <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <20070531070656.GK32105@kernel.dk> <465ECDDB.9030304@tmr.com>
-Mime-Version: 1.0
+	Thu, 31 May 2007 09:40:06 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:45389 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751833AbXEaNkE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 09:40:04 -0400
+Date: Thu, 31 May 2007 09:40:03 -0400
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Cc: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org
+Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
+Message-ID: <20070531134003.GQ10006@csclub.uwaterloo.ca>
+References: <20070528143101.GB10008@csclub.uwaterloo.ca> <200705310051.l4V0pvk2018678@turbo.physics.adelaide.edu.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <465ECDDB.9030304@tmr.com>
+In-Reply-To: <200705310051.l4V0pvk2018678@turbo.physics.adelaide.edu.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31 2007, Bill Davidsen wrote:
-> Jens Axboe wrote:
-> >On Thu, May 31 2007, David Chinner wrote:
-> >  
-> >>On Thu, May 31, 2007 at 08:26:45AM +0200, Jens Axboe wrote:
-> >>    
-> >>>On Thu, May 31 2007, David Chinner wrote:
-> >>>      
-> >>>>IOWs, there are two parts to the problem:
-> >>>>
-> >>>>	1 - guaranteeing I/O ordering
-> >>>>	2 - guaranteeing blocks are on persistent storage.
-> >>>>
-> >>>>Right now, a single barrier I/O is used to provide both of these
-> >>>>guarantees. In most cases, all we really need to provide is 1); the
-> >>>>need for 2) is a much rarer condition but still needs to be
-> >>>>provided.
-> >>>>
-> >>>>        
-> >>>>>if I am understanding it correctly, the big win for barriers is that 
-> >>>>>you do NOT have to stop and wait until the data is on persistant media 
-> >>>>>before you can continue.
-> >>>>>          
-> >>>>Yes, if we define a barrier to only guarantee 1), then yes this
-> >>>>would be a big win (esp. for XFS). But that requires all filesystems
-> >>>>to handle sync writes differently, and sync_blockdev() needs to
-> >>>>call blkdev_issue_flush() as well....
-> >>>>
-> >>>>So, what do we do here? Do we define a barrier I/O to only provide
-> >>>>ordering, or do we define it to also provide persistent storage
-> >>>>writeback? Whatever we decide, it needs to be documented....
-> >>>>        
-> >>>The block layer already has a notion of the two types of barriers, with
-> >>>a very small amount of tweaking we could expose that. There's absolutely
-> >>>zero reason we can't easily support both types of barriers.
-> >>>      
-> >>That sounds like a good idea - we can leave the existing
-> >>WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
-> >>behaviour that only guarantees ordering. The filesystem can then
-> >>choose which to use where appropriate....
-> >>    
-> >
-> >Precisely. The current definition of barriers are what Chris and I came
-> >up with many years ago, when solving the problem for reiserfs
-> >originally. It is by no means the only feasible approach.
-> >
-> >I'll add a WRITE_ORDERED command to the #barrier branch, it already
-> >contains the empty-bio barrier support I posted yesterday (well a
-> >slightly modified and cleaned up version).
-> >
-> >  
-> Wait. Do filesystems expect (depend on) anything but ordering now? Does 
-> md? Having users of barriers as they currently behave suddenly getting 
-> SYNC behavior where they expect ORDERED is likely to have a negative 
-> effect on performance. Or do I misread what is actually guaranteed by 
-> WRITE_BARRIER now, and a flush is currently happening in all cases?
+On Thu, May 31, 2007 at 10:21:57AM +0930, Jonathan Woithe wrote:
+> I don't think so but I could be wrong.  When "Configure SATA as" was set to
+> "IDE" the HDD was being detected as a SATA drive and showed up as /dev/sda. 
+> The only visible difference the change to "AHCI" made was that instead of
+> the drive being handled by the ata_piix it now utilises the ahci driver
+> (which is a much better driver).  The other interesting thing is that the
+> probe for the Marvell PATA device occured before the initialisation of the
+> ata_piix driver (or ahci for that matter), so as far as I can tell ata_piix
+> had no chance to grab any ports before the marvell driver initialised.
 
-See the above stuff you quote, it's answered there. It's not a change,
-this is how the Linux barrier write has always worked since I first
-implemented it. What David and I are talking about is adding a more
-relaxed version as well, that just implies ordering.
+Linux can still detect the chip and drive it natively even if the bios
+is emulating IDE/PATA on the chip.  And libata will make both PATA and
+SATA show up as /dev/sda now if you use libata for both.  On the other
+hand if the bios has configured the intel chip to use the standard ide
+registers, then it can't have configured the marvell to do so I would
+guess, which could make it difficult to talk to.
 
-> And will this also be available to user space f/s, since I just proposed 
-> a project which uses one? :-(
-
-I see several uses for that, so I'd hope so.
-
-> I think the goal is good, more choice is almost always better choice, I 
-> just want to be sure there won't be big disk performance regressions.
-
-We can't get more heavy weight than the current barrier, it's about as
-conservative as you can get.
-
--- 
-Jens Axboe
-
+--
+Len Sorensen
