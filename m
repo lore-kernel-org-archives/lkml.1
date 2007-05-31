@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbXEaBQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbXEaBax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757782AbXEaBQT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 21:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbXEaBQL
+	id S1756858AbXEaBax (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 21:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbXEaBaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 21:16:11 -0400
-Received: from spark.anonyhost.net ([88.255.80.78]:48400 "EHLO
-	spark.anonyhost.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbXEaBQK convert rfc822-to-8bit (ORCPT
+	Wed, 30 May 2007 21:30:46 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:57518 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753942AbXEaBap (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 21:16:10 -0400
-X-Greylist: delayed 32586 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 21:16:10 EDT
-Message-ID: <e197c5b31fc4f8697b3313ce1989a059@gmail.com>
-From: "=?iso-8859-9?B?SGFzYXIgRGFu/f5tYW79?=" <hesapgunu@gmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: =?iso-8859-9?B?3WwgdmUg3WznZWxlcmRlIFRlbXNpbGNpbGlrbGVyIHZlcml5b3J1eg==?=
-Date: Wed, 30 May 2007 19:12:55 +0300
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-9"
-Content-Transfer-Encoding: 8BIT
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - spark.anonyhost.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - gmail.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Wed, 30 May 2007 21:30:45 -0400
+Subject: Re: [BUG] futex_unlock_pi() hurts my brain and may cause
+	application deadlock
+From: Steven Rostedt <rostedt@goodmis.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Sripathi Kodi <sripathik@in.ibm.com>
+In-Reply-To: <1180572567.6126.44.camel@localhost.localdomain>
+References: <1180572567.6126.44.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 21:29:53 -0400
+Message-Id: <1180574993.21781.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Son 5 yýl içinde siz veya bir yakýnýnýz trafik kazasý maðduru ise bizimle irtibata geçin. 
+On Wed, 2007-05-30 at 17:49 -0700, john stultz wrote:
 
-Türkiye'nin tüm illerinde temsilcilikler veriyoruz.  Baþvurunuzu www.sigorta.in web sitemizden yapabilirsiniz. 
+> ...
+> retry_locked:
+> 	/*
+> 	 * To avoid races, try to do the TID -> 0 atomic transition
+> 	 * again. If it succeeds then we can return without waking
+> 	 * anyone else up:
+> 	 */
+> 	if (!(uval & FUTEX_OWNER_DIED)) {
+> 		pagefault_disable();
+> 		uval = futex_atomic_cmpxchg_inatomic(uaddr, current->pid, 0);
+> 		pagefault_enable();
+> 	}
 
-Ýyi Günler
+My question is to all the futex gurus out there.
 
-Göktaþ Trafik Kazalarý Danýþmanlýk Hizmetleri
-www.sigorta.in
+This code is in futex_unlock_pi.  Can the owner of the mutex really die?
+Isn't the owner the one doing the unlock?
 
-Uluðbey Mah. Furgandede Cad. Larende Han No:50/402
-KONYA
-Tel:(332) 353 3320
+-- Steve
+
 
