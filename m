@@ -1,86 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbXEaPf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbXEaPfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbXEaPf3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 11:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbXEaPd7
+	id S1759661AbXEaPfp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 11:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXEaPeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 11:33:59 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:23527 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757567AbXEaPdw (ORCPT
+	Thu, 31 May 2007 11:34:01 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:40650 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757572AbXEaPdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 11:33:52 -0400
-Message-Id: <20070531153437.419319599@de.ibm.com>
+	Thu, 31 May 2007 11:33:53 -0400
+Message-Id: <20070531153437.855226654@de.ibm.com>
 References: <20070531142024.011160634@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 31 May 2007 16:20:28 +0200
+Date: Thu, 31 May 2007 16:20:30 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Christoph Hellwig <hch@lst.de>,
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 4/7] raw3270: use mutex instead of semaphore
-Content-Disposition: inline; filename=004-3270-mutex.diff
+Subject: [patch 6/7] cio: Use device_schedule_callback() for removing disconnected devices.
+Content-Disposition: inline; filename=006-cio-disc.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Hellwig <hch@lst.de>
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+We can't deregister disconnected and orphaned devices directly from
+the online attribute's store method, but must take a detour.
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/char/raw3270.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/s390/cio/device.c |   49 +++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 38 insertions(+), 11 deletions(-)
 
-Index: quilt-2.6/drivers/s390/char/raw3270.c
+Index: quilt-2.6/drivers/s390/cio/device.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/char/raw3270.c
-+++ quilt-2.6/drivers/s390/char/raw3270.c
-@@ -487,7 +487,7 @@ struct raw3270_ua {	/* Query Reply struc
- } __attribute__ ((packed));
- 
- static struct diag210 raw3270_init_diag210;
--static DECLARE_MUTEX(raw3270_init_sem);
-+static DEFINE_MUTEX(raw3270_init_mutex);
- 
- static int
- raw3270_init_irq(struct raw3270_view *view, struct raw3270_request *rq,
-@@ -713,7 +713,7 @@ raw3270_size_device(struct raw3270 *rp)
- {
- 	int rc;
- 
--	down(&raw3270_init_sem);
-+	mutex_lock(&raw3270_init_mutex);
- 	rp->view = &raw3270_init_view;
- 	raw3270_init_view.dev = rp;
- 	if (MACHINE_IS_VM)
-@@ -722,7 +722,7 @@ raw3270_size_device(struct raw3270 *rp)
- 		rc = __raw3270_size_device(rp);
- 	raw3270_init_view.dev = NULL;
- 	rp->view = NULL;
--	up(&raw3270_init_sem);
-+	mutex_unlock(&raw3270_init_mutex);
- 	if (rc == 0) {	/* Found something. */
- 		/* Try to find a model. */
- 		rp->model = 0;
-@@ -749,7 +749,7 @@ raw3270_reset_device(struct raw3270 *rp)
- {
- 	int rc;
- 
--	down(&raw3270_init_sem);
-+	mutex_lock(&raw3270_init_mutex);
- 	memset(&rp->init_request, 0, sizeof(rp->init_request));
- 	memset(&rp->init_data, 0, sizeof(rp->init_data));
- 	/* Store reset data stream to init_data/init_request */
-@@ -764,7 +764,7 @@ raw3270_reset_device(struct raw3270 *rp)
- 	rc = raw3270_start_init(rp, &raw3270_init_view, &rp->init_request);
- 	raw3270_init_view.dev = NULL;
- 	rp->view = NULL;
--	up(&raw3270_init_sem);
-+	mutex_unlock(&raw3270_init_mutex);
- 	return rc;
+--- quilt-2.6.orig/drivers/s390/cio/device.c
++++ quilt-2.6/drivers/s390/cio/device.c
+@@ -296,30 +296,57 @@ static void ccw_device_unregister(struct
+ 		device_del(&cdev->dev);
  }
  
++static void ccw_device_remove_orphan_cb(struct device *dev)
++{
++	struct ccw_device *cdev = to_ccwdev(dev);
++
++	ccw_device_unregister(cdev);
++	put_device(&cdev->dev);
++}
++
++static void ccw_device_remove_sch_cb(struct device *dev)
++{
++	struct subchannel *sch;
++
++	sch = to_subchannel(dev);
++	css_sch_device_unregister(sch);
++	/* Reset intparm to zeroes. */
++	sch->schib.pmcw.intparm = 0;
++	cio_modify(sch);
++	put_device(&sch->dev);
++}
++
+ static void
+ ccw_device_remove_disconnected(struct ccw_device *cdev)
+ {
+-	struct subchannel *sch;
+ 	unsigned long flags;
++	int rc;
++
+ 	/*
+ 	 * Forced offline in disconnected state means
+ 	 * 'throw away device'.
+ 	 */
+ 	if (ccw_device_is_orphan(cdev)) {
+-		/* Deregister ccw device. */
++		/*
++		 * Deregister ccw device.
++		 * Unfortunately, we cannot do this directly from the
++		 * attribute method.
++		 */
+ 		spin_lock_irqsave(cdev->ccwlock, flags);
+ 		cdev->private->state = DEV_STATE_NOT_OPER;
+ 		spin_unlock_irqrestore(cdev->ccwlock, flags);
+-		ccw_device_unregister(cdev);
+-		put_device(&cdev->dev);
+-		return ;
++		rc = device_schedule_callback(&cdev->dev,
++					      ccw_device_remove_orphan_cb);
++		if (rc)
++			dev_info(&cdev->dev, "Couldn't unregister orphan\n");
++		return;
+ 	}
+-	sch = to_subchannel(cdev->dev.parent);
+-	css_sch_device_unregister(sch);
+-	/* Reset intparm to zeroes. */
+-	sch->schib.pmcw.intparm = 0;
+-	cio_modify(sch);
+-	put_device(&sch->dev);
++	/* Deregister subchannel, which will kill the ccw device. */
++	rc = device_schedule_callback(cdev->dev.parent,
++				      ccw_device_remove_sch_cb);
++	if (rc)
++		dev_info(&cdev->dev,
++			 "Couldn't unregister disconnected device\n");
+ }
+ 
+ int
 
 -- 
 blue skies,
