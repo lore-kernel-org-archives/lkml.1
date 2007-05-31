@@ -1,84 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761640AbXEaSoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761887AbXEaSod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761640AbXEaSoU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbXEaSoK
+	id S1761887AbXEaSod (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbXEaSoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:44:10 -0400
-Received: from lucidpixels.com ([75.144.35.66]:36275 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757384AbXEaSoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 14:44:12 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.133]:36716 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1757253AbXEaSoJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 31 May 2007 14:44:09 -0400
-Date: Thu, 31 May 2007 14:44:07 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Robert Hancock <hancockr@shaw.ca>
-cc: Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org,
-       crmotherboard@intel.com
-Subject: Re: Case: 7454422: Re: Kernel 2.6.21.3 does not work with 8GB of
- RAM on Intel 965WH motherboards. (FULL DMESG)
-In-Reply-To: <465EDB4F.6020800@shaw.ca>
-Message-ID: <Pine.LNX.4.64.0705311443040.19108@p34.internal.lan>
-References: <82e4877d0705301757v580a4ca5yebe2a565f0b97552@mail.gmail.com>
- <465E513E.60903@shaw.ca> <465EC464.7050302@gmail.com>
- <Pine.LNX.4.64.0705310906590.6709@p34.internal.lan> <465EDB4F.6020800@shaw.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Date: Thu, 31 May 2007 11:43:31 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: change early_ioremap to static
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Message-id: <200705311143.32171.yinghai.lu@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH] x86_64: change early_ioremap to static
 
+only dmi_scan_machine==>dmi_present==>dmi_table==>dmi_ioremap uses
+early_ioremap outside of mm/init.c
+dmi_scan_machine is called after init_memory_mappings, and could use
+ioremap instead.
 
-On Thu, 31 May 2007, Robert Hancock wrote:
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-> Justin Piszcz wrote:
->> On Thu, 31 May 2007, Parag Warudkar wrote:
->> 
->>> Robert Hancock wrote:
->>>> I think that mem=8832M would work as well, to make the kernel use only 
->>>> the memory that is marked cacheable. (It looks like this parameter takes 
->>>> the highest memory address we want the kernel to use, not the highest 
->>>> memory amount.)
->>>> 
->>> Yep, and that would be much easier too.
->>> 
->>> I am curious though as this seems to be somewhat common a problem, could 
->>> we make the kernel analyze which memory is not cacheable (it already knows 
->>> this via MTRR) and not use that portion for anything? Plus may be warn the 
->>> user to contact their BIOS vendor to correct the problem?
->>> 
->>> I think that would be possible - even if the kernel knows late that the 
->>> memory was uncached we could migrate those pages in that region to 
->>> someplace else?
->>> 
->>> Parag
->>> 
->> 
->> That is an excellent question and I wonder the same thing.  I also had this 
->> problem when I only used 4GB of ram and upgraded the (another motherboard, 
->> I have two) past version 1666P and I had no idea what was going on other 
->> than the BIOS did not work correctly.
->> 
->> In this case however it worked with 4GB with bios version 1612P but not 
->> with 8GB.  Is this the case of a buggy BIOS for the 965 chipset or do Intel 
->> boards have a lot of issues?
->
-> We could conceivably generate a warning if the MTRRs don't map all of the 
-> physical memory as write-back. Actually, conceivably we could actually go and 
-> fix up the MTRRs if we found them to be wrong according to the E820 memory 
-> map. That would be more complicated, however.
->
-> -- 
-> Robert Hancock      Saskatoon, SK, Canada
-> To email, remove "nospam" from hancockr@nospamshaw.ca
-> Home Page: http://www.roberthancock.com/
->
-
-Intel is working on a work-around/fix for this problem, they said I need 
-to wait another day or so until it is completed.  I will let everyone know 
-what the outcome is, hopefully it is a good fix :)  I totally agree 
-however, a lot of 'weird' problems that some people may attribute to Linux 
-are actually BIOS problems, I think warnings in the kernel would be a good 
-idea, then they would not have to blame the kernel for BIOS issues :)
-
-Justin.
+diff --git a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
+index 1336da8..8e3d14c 100644
+--- a/arch/x86_64/mm/init.c
++++ b/arch/x86_64/mm/init.c
+@@ -174,37 +174,7 @@ __set_fixmap (enum fixed_addresses idx, unsigned long phys, pgprot_t prot)
+ 
+ unsigned long __meminitdata table_start, table_end;
+ 
+-static __meminit void *alloc_low_page(unsigned long *phys)
+-{ 
+-	unsigned long pfn = table_end++;
+-	void *adr;
+-
+-	if (after_bootmem) {
+-		adr = (void *)get_zeroed_page(GFP_ATOMIC);
+-		*phys = __pa(adr);
+-		return adr;
+-	}
+-
+-	if (pfn >= end_pfn) 
+-		panic("alloc_low_page: ran out of memory"); 
+-
+-	adr = early_ioremap(pfn * PAGE_SIZE, PAGE_SIZE);
+-	memset(adr, 0, PAGE_SIZE);
+-	*phys  = pfn * PAGE_SIZE;
+-	return adr;
+-}
+-
+-static __meminit void unmap_low_page(void *adr)
+-{ 
+-
+-	if (after_bootmem)
+-		return;
+-
+-	early_iounmap(adr, PAGE_SIZE);
+-} 
+-
+-/* Must run before zap_low_mappings */
+-__meminit void *early_ioremap(unsigned long addr, unsigned long size)
++static __meminit void *early_ioremap(unsigned long addr, unsigned long size)
+ {
+ 	unsigned long vaddr;
+ 	pmd_t *pmd, *last_pmd;
+@@ -233,7 +203,7 @@ __meminit void *early_ioremap(unsigned long addr, unsigned long size)
+ }
+ 
+ /* To avoid virtual aliases later */
+-__meminit void early_iounmap(void *addr, unsigned long size)
++static __meminit void early_iounmap(void *addr, unsigned long size)
+ {
+ 	unsigned long vaddr;
+ 	pmd_t *pmd;
+@@ -247,6 +217,35 @@ __meminit void early_iounmap(void *addr, unsigned long size)
+ 	__flush_tlb();
+ }
+ 
++static __meminit void *alloc_low_page(unsigned long *phys)
++{
++	unsigned long pfn = table_end++;
++	void *adr;
++
++	if (after_bootmem) {
++		adr = (void *)get_zeroed_page(GFP_ATOMIC);
++		*phys = __pa(adr);
++		return adr;
++	}
++
++	if (pfn >= end_pfn)
++		panic("alloc_low_page: ran out of memory");
++
++	adr = early_ioremap(pfn * PAGE_SIZE, PAGE_SIZE);
++	memset(adr, 0, PAGE_SIZE);
++	*phys  = pfn * PAGE_SIZE;
++	return adr;
++}
++
++static __meminit void unmap_low_page(void *adr)
++{
++
++	if (after_bootmem)
++		return;
++
++	early_iounmap(adr, PAGE_SIZE);
++}
++
+ static void __meminit
+ phys_pmd_init(pmd_t *pmd_page, unsigned long address, unsigned long end)
+ {
+diff --git a/include/asm-x86_64/dmi.h b/include/asm-x86_64/dmi.h
+index 93b2b15..fc7b576 100644
+--- a/include/asm-x86_64/dmi.h
++++ b/include/asm-x86_64/dmi.h
+@@ -3,15 +3,12 @@
+ 
+ #include <asm/io.h>
+ 
+-extern void *dmi_ioremap(unsigned long addr, unsigned long size);
+-extern void dmi_iounmap(void *addr, unsigned long size);
+-
+ #define DMI_MAX_DATA 2048
+ 
+ extern int dmi_alloc_index;
+ extern char dmi_alloc_data[DMI_MAX_DATA];
+ 
+-/* This is so early that there is no good way to allocate dynamic memory. 
++/* This is so early that there is no good way to allocate dynamic memory.
+    Allocate data in an BSS array. */
+ static inline void *dmi_alloc(unsigned len)
+ {
+@@ -21,7 +18,7 @@ static inline void *dmi_alloc(unsigned len)
+ 	return dmi_alloc_data + idx;
+ }
+ 
+-#define dmi_ioremap early_ioremap
+-#define dmi_iounmap early_iounmap
++#define dmi_ioremap ioremap
++#define dmi_iounmap(x,l) iounmap(x)
+ 
+ #endif
+diff --git a/include/asm-x86_64/io.h b/include/asm-x86_64/io.h
+index de2cd9a..0898bdc 100644
+--- a/include/asm-x86_64/io.h
++++ b/include/asm-x86_64/io.h
+@@ -134,9 +134,6 @@ static inline void __iomem * ioremap (unsigned long offset, unsigned long size)
+ 	return __ioremap(offset, size, 0);
+ }
+ 
+-extern void *early_ioremap(unsigned long addr, unsigned long size);
+-extern void early_iounmap(void *addr, unsigned long size);
+-
+ /*
+  * This one maps high address device memory and turns off caching for that area.
+  * it's useful if some control registers are in such an area and write combining
