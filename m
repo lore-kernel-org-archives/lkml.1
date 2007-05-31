@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbXEaMBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760986AbXEaMFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760953AbXEaMBT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 08:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759649AbXEaMBN
+	id S1760986AbXEaMFf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 08:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759590AbXEaMF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 08:01:13 -0400
-Received: from ns2.suse.de ([195.135.220.15]:53883 "EHLO mx2.suse.de"
+	Thu, 31 May 2007 08:05:28 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42651 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759590AbXEaMBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 08:01:12 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86_64 irq: check remote IRR bit before migrating level triggered irq (v2)
-Date: Thu, 31 May 2007 14:01:02 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, nanhai.zou@intel.com,
-       asit.k.mallick@intel.com, keith.packard@intel.com,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-References: <20070517230324.GB8089@linux-os.sc.intel.com> <m1d50h5irm.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1d50h5irm.fsf@ebiederm.dsl.xmission.com>
+	id S1759409AbXEaMF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 08:05:28 -0400
+Message-ID: <465EB9FF.7090208@garzik.org>
+Date: Thu, 31 May 2007 08:05:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Paul Mundt <lethal@linux-sh.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] sh updates for 2.6.22-rc4
+References: <20070531110037.GA4167@linux-sh.org>
+In-Reply-To: <20070531110037.GA4167@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705311401.02221.ak@suse.de>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 May 2007 13:34:21 Eric W. Biederman wrote:
+Paul Mundt wrote:
+> Please pull from:
 > 
-> On x86_64 kernel, level triggered irq migration gets initiated in the context
-> of that interrupt(after executing the irq handler) and following steps are
-> followed to do the irq migration.
+> 	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
+> 
+> Which contains:
 
-What's the confidence level in the patch? Is it a .22 candidate?
+Out of curiosity, who maintains sh64?
 
--Andi
+It has a couple irq handlers that have not been updated since the Oct 
+2006 update that changed every irq handler in the kernel:
+
+arch/sh64/kernel/dma.c:static irqreturn_t dma_mte(int irq, void *dev_id, 
+struct pt_regs *regs)
+arch/sh64/kernel/dma.c:static irqreturn_t dma_err(int irq, void *dev_id, 
+struct pt_regs *regs)
+
+Regards,
+
+	Jeff
+
+
