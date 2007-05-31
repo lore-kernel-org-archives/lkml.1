@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbXEaSfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbXEaSfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759498AbXEaSfX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbXEaSfL
+	id S1761569AbXEaSfh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbXEaSfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:35:11 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:33909 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752777AbXEaSfJ (ORCPT
+	Thu, 31 May 2007 14:35:16 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2500 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756845AbXEaSfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 14:35:09 -0400
-Date: Thu, 31 May 2007 11:34:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ken Chen" <kenchen@google.com>
-Cc: walt <wa1ter@myrealbox.com>, linux-kernel@vger.kernel.org
-Subject: Re: + loop-preallocate-eight-loop-devices.patch added to -mm tree
-Message-Id: <20070531113456.baec62c3.akpm@linux-foundation.org>
-In-Reply-To: <b040c32a0705311123i518ab280j88cb4675ea97b315@mail.gmail.com>
-References: <200705212200.l4LM0tYK021050@shell0.pdx.osdl.net>
-	<20070522001851.GE4095@ftp.linux.org.uk>
-	<b040c32a0705211830h127dfd8dk8930de6655d37d90@mail.gmail.com>
-	<20070522014822.GF4095@ftp.linux.org.uk>
-	<b040c32a0705211914w3843bd46o542476be97e0b6cf@mail.gmail.com>
-	<b040c32a0705211940xe7cdf1cnb2c882edacc17a27@mail.gmail.com>
-	<f3mro0$u8p$1@sea.gmane.org>
-	<b040c32a0705310951t7d9acdf5n34815bc5fc156e26@mail.gmail.com>
-	<20070531111052.534573b8.akpm@linux-foundation.org>
-	<b040c32a0705311123i518ab280j88cb4675ea97b315@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 31 May 2007 14:35:15 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 31 May 2007 11:35:07 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ulrich Drepper <drepper@redhat.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
+In-Reply-To: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
+Message-ID: <Pine.LNX.4.64.0705311123370.30485@alien.or.mcafeemobile.com>
+References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 May 2007 11:23:32 -0700
-"Ken Chen" <kenchen@google.com> wrote:
+On Thu, 31 May 2007, Ulrich Drepper wrote:
 
-> On 5/31/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > I have a note here that it needs additional work.  This discussion:
-> >
-> > http://lkml.org/lkml/2007/5/21/602
-> >
-> > seemed to peter out and go nowhere?
+> I've brought this topic up before but didn't provide a patch.  Well, here
+> we go again, this time with a patch.  I even throw in a test program.
 > 
-> The first rev went in -mm needs work and the above url is the result
-> of feedback from Al Viro.  He also acked the patch in the follow on
-> thread:
-> http://lkml.org/lkml/2007/5/22/5
+> The problem is as follows: in multi-threaded code (or more correctly: all
+> code using clone() with CLONE_FILES) we have a race when exec'ing.
 > 
-> Not sure how widely it was tested on that last patch, I see a few
-> reports that the patch works out OK.
+>    thread #1                       thread #2
+> 
+>    fd=open()
+> 
+>                                    fork + exec
+> 
+>   fcntl(fd,F_SETFD,FD_CLOEXEC)
+> 
+> In some applications this can happen frequently.  Take a web browser.  One
+> thread opens a file and another thread starts, say, an external PDF viewer.
+> The result can even be a security issue if that open file descriptor refers
+> to a sensitive file and the external program can somehow be tricked into
+> using that descriptor.
+> 
+> Just adding O_CLOEXEC support to open() doesn't solve the whole set of
+> problems.  There are other ways to create file descriptors (socket,
+> epoll_create, Unix domain socket transfer, etc).  These can and should
+> be addressed separately though.  open() is such an easy case that it makes
+> not much sense putting the fix off.
 
-Could you please send a fresh, shiny, new, changelogged patch against mainline?
+Isn't this better be a global process flag? Default should be, for legacy
+reasons, !FD_CLOEXEC. But then you can call a sys_task_set_fflags(FD_CLOEXEC)
+and all newly created files get that behavior by default. Then, in case 
+you want some of them to cross the exec boundary, you explicitly
+fcntl(fd, F_SETFD, !FD_CLOEXEC).
+Most the MT+exec apps I write, would like FD_CLOEXEC for everything anyway.
 
-Thanks.
+
+
+- Davide
+
+
