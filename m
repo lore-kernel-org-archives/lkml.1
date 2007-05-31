@@ -1,37 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbXEaBJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbXEaBMD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759424AbXEaBJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 21:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750746AbXEaBJE
+	id S1754108AbXEaBMD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 21:12:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbXEaBLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 21:09:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56726 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751289AbXEaBJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 21:09:02 -0400
-MIME-Version: 1.0
+	Wed, 30 May 2007 21:11:50 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:33166 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751289AbXEaBLt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 21:11:49 -0400
+Date: Thu, 31 May 2007 11:11:27 +1000
+From: David Chinner <dgc@sgi.com>
+To: device-mapper development <dm-devel@redhat.com>,
+       David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, linux-fsdevel@vger.kernel.org,
+       Andreas Dilger <adilger@clusterfs.com>
+Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+Message-ID: <20070531011127.GO86004887@sgi.com>
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <18010.17713.76863.245176@notabene.brown> <20070528042926.GC85884050@sgi.com> <18014.6860.989819.665778@notabene.brown> <20070531010739.GR25091@agk.fab.redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty: fix leakage of -ERESTARTSYS to userland
-In-Reply-To: Satoru Takeuchi's message of  Thursday, 31 May 2007 09:48:16 +0900 <87wsypakdr.wl%takeuchi_satoru@jp.fujitsu.com>
-X-Zippy-Says: I wonder if I should put myself in ESCROW!!
-Message-Id: <20070531010855.DE2AC1F8512@magilla.localdomain>
-Date: Wed, 30 May 2007 18:08:55 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20070531010739.GR25091@agk.fab.redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aside from typos, I think it should be more clearly and strongly worded.
+On Thu, May 31, 2007 at 02:07:39AM +0100, Alasdair G Kergon wrote:
+> On Thu, May 31, 2007 at 10:46:04AM +1000, Neil Brown wrote:
+> > If a filesystem cares, it could 'ask' as suggested above.
+> > What would be a good interface for asking?
+> 
+> XFS already tests:
+>   bd_disk->queue->ordered == QUEUE_ORDERED_NONE
 
-"These should never be seen by user programs.  To return one of these
-codes, signal_pending() MUST be set.  Note that ptrace can observe these at
-syscall exit tracing, but they will never be left for the debugged user
-process to see."
+The side effects of removing that check is what started
+this whole discussion.
 
+Cheers,
 
-Thanks,
-Roland
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
