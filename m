@@ -1,60 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbXEaR7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760530AbXEaSA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760572AbXEaR7F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 13:59:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbXEaR6z
+	id S1760530AbXEaSA5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbXEaSAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 13:58:55 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:41752 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755119AbXEaR6y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 13:58:54 -0400
-Date: Thu, 31 May 2007 10:58:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelianov <xemul@openvz.org>
-Cc: Balbir Singh <balbir@in.ibm.com>, Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 8/8] Per-container pages reclamation
-Message-Id: <20070531105842.0728f577.akpm@linux-foundation.org>
-In-Reply-To: <465EA4FF.1000904@openvz.org>
-References: <465D9739.8070209@openvz.org>
-	<465D9B62.5050507@openvz.org>
-	<20070530144737.56456aaf.akpm@linux-foundation.org>
-	<465EA4FF.1000904@openvz.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 31 May 2007 14:00:50 -0400
+Received: from mx2.compro.net ([216.54.166.4]:39111 "EHLO mx2.compro.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757617AbXEaSAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 14:00:50 -0400
+X-IronPort-AV: E=Sophos;i="4.14,599,1170651600"; 
+   d="scan'208";a="401586"
+Message-ID: <465F0D5C.6020909@compro.net>
+Date: Thu, 31 May 2007 14:01:00 -0400
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: floppy.c soft lockup
+References: <465C6359.1020106@compro.net> <20070530224650.04b33117.akpm@linux-foundation.org> <465EDB97.5070908@compro.net> <20070531170604.GA79@tv-sign.ru>
+In-Reply-To: <20070531170604.GA79@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 May 2007 14:35:43 +0400
-Pavel Emelianov <xemul@openvz.org> wrote:
-
-> > Would I be correct in guessing that pages which are on the
-> > per-rss-container lists are also eligible for reclaim off the traditional
-> > page LRUs?  If so, how does that work?  When a page gets freed off the
+Oleg Nesterov wrote:
+> On 05/31, Mark Hounschell wrote:
+>> Andrew Morton wrote:
+>>> On Tue, 29 May 2007 13:31:05 -0400 Mark Hounschell <markh@compro.net> wrote:
+>>>
+>>>> Changes in floppy.c from 2.6.17 and 2.6.18 have broken an application I have. I have tracked 
+>>>> it down to a single line of code. When the following patch is applied to the version in 2.6.18
+>>>> my application works.
+>>>>
+>>>> --- linux-2.6.18/drivers/block/floppy.c 2006-09-19 23:42:06.000000000 -0400
+>>>> +++ linux-2.6.18-crt/drivers/block/floppy.c     2007-05-29 09:12:20.000000000 -0400
+>>>> @@ -893,7 +893,6 @@
+>>>>                 set_current_state(TASK_RUNNING);
+>>>>                 remove_wait_queue(&fdc_wait, &wait);
+>>>>
+>>>> -               flush_scheduled_work();
+>>>>         }
+>>>>         command_status = FD_COMMAND_NONE;
+>>>>
+>>> Interesting.  I'd expect that the calling process is spinning, with realtime
+>>> policy and is expecting some other process to do something (ie: run a workqueue).
+>>>
+>>> If you keep the process and irq affinities, and disable the realtime policy
+>>> does that also prevent the problem?
+>>>
+>> Yes it does.
+>>
+>>> It would be interesting it you could capture a few task traces while it is stuck:
+>>> echo 1 > /proc/sys/kernel/sysrq then do ALT-SYSRQ-P a bunch of times and ALT-SYSRQ-T,
+>>> see if you can work out where the CPU is stuck.
+>>>
+>> I've attached the syslog output as a result of doing the above. I can't really make any kind of
+>> determination from it myself as I don't really knowing what I'm looking at.
 > 
-> Yes. All the pages are accessible from booth - global and per-container
-> LRU lists and reclamation can be performed from booth.
+> Could you show the full output? There are no events/* or process doing ioctl()
+> in sysrq.txt you attached.
 > 
-> > per-zone LRUs does it also get removed from the per-rss_container LRU?  But
-> > how can this be right?  
+>>> ALso, 2.6.22-rc3 might have accidentally fixed this.
+>>>
+>> No. Same thing there.  The traces attached are using 2.6.22-rc3.
+>>
+>> Basically the main RT-process (which is a CPU bound process on processor-2) signals a
+>> thread to do some I/O. That RT-thread (running on the other processor) does a simple 
 > 
-> I don't get your idea here.
+> If the main RT-process monopolizes processor-2, flush_workqueue() (or cancel_work_sync())
+> can hang of course, we can do nothing.
+> 
+>> ioctl(Q->DevSpec1, FDSETPRM, &medprm)
+>>
+>> and there is no return from the call. That thread is hung.
+> 
+> What happens if you kill the main RT-process?
+> 
+> Could you try the patch below? Just to see if it makes any difference.
+> 
+> Oleg.
+> 
+> (against 2.6.22-rcX)
+> 
+> --- OLD/drivers/block/floppy.c~	2007-04-03 13:04:58.000000000 +0400
+> +++ OLD/drivers/block/floppy.c	2007-05-31 20:50:18.000000000 +0400
+> @@ -862,6 +862,8 @@ static void set_fdc(int drive)
+>  		FDCS->reset = 1;
+>  }
+>  
+> +static DECLARE_WORK(floppy_work, NULL);
+> +
+>  /* locks the driver */
+>  static int _lock_fdc(int drive, int interruptible, int line)
+>  {
+> @@ -893,7 +895,7 @@ static int _lock_fdc(int drive, int inte
+>  		set_current_state(TASK_RUNNING);
+>  		remove_wait_queue(&fdc_wait, &wait);
+>  
+> -		flush_scheduled_work();
+> +		cancel_work_sync(&floppy_work);
+>  	}
+>  	command_status = FD_COMMAND_NONE;
+>  
+> @@ -992,8 +994,6 @@ static void empty(void)
+>  {
+>  }
+>  
+> -static DECLARE_WORK(floppy_work, NULL);
+> -
+>  static void schedule_bh(void (*handler) (void))
+>  {
+>  	PREPARE_WORK(&floppy_work, (work_func_t)handler);
+> 
 
-If we have a page which is on the zone LRU with refcount=1 and someone does
-put_page() on it, we will take that page off the zone LRU and then actually
-free the page.
+The patch does make it work. Would you like for me to try again to get a trace with
+something meaningful in it?
 
-I am assuming that your patches change that logic so that we will also
-remove that page from the per-container LRU at the same time?
-
-If so, the problem which I see is that, under rare circumstances, that
-final put_page() will occur from interrupt context.  Hence we would be
-trying to remove the page from the per-container LRU at interrupt time. 
-But the locks which you have in there are not suited for taking from
-interrupt context.
-
+Regards
+Mark
