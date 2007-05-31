@@ -1,56 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbXEaMXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760911AbXEaM0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761408AbXEaMXP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 08:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757762AbXEaMW7
+	id S1760911AbXEaM0i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 08:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbXEaM0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 08:22:59 -0400
-Received: from rtr.ca ([64.26.128.89]:3557 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756771AbXEaMW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 08:22:58 -0400
-Message-ID: <465EBE20.6090803@rtr.ca>
-Date: Thu, 31 May 2007 08:22:56 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: Compact Flash performance...
-References: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com>	 <465E3FF0.9010709@rtr.ca> <6278d2220705310222rde9ad28ndfd8feced84a3c6f@mail.gmail.com>
-In-Reply-To: <6278d2220705310222rde9ad28ndfd8feced84a3c6f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 31 May 2007 08:26:31 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46315 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756784AbXEaM0a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 08:26:30 -0400
+Date: Thu, 31 May 2007 21:26:06 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: mel@csn.ul.ie, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       clameter@sgi.com
+Subject: Re: [PATCH 2/7] KAMEZAWA Hiroyuki - migration by kernel
+Message-Id: <20070531212606.c5acd10c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0705302021040.7044@blonde.wat.veritas.com>
+References: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
+	<20070529173649.1570.85922.sendpatchset@skynet.skynet.ie>
+	<20070530114243.e3c3c75e.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0705302021040.7044@blonde.wat.veritas.com>
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel J Blueman wrote:
-> Hi Mark,
+On Wed, 30 May 2007 20:57:38 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
+
+> I've taken a look at last.  It looks like a good fix to a real problem,
+> but may I suggest a simpler version?  The anon_vma isn't usually held
+> by a refcount, but by having a vma on its linked list: why not just
+> put a dummy vma into that linked list?  No need to add a refcount.
 > 
-> Thanks for the reply; here is the raw identification data:
+> The NUMA shmem_alloc_page already uses a dummy vma on its stack,
+Oh, I didn't notice that. If dummy-vma works well now, I'll use it.
+thank you.
+
+>
+> >  static int unmap_and_move(new_page_t get_new_page, unsigned long private,
+> > -			struct page *page, int force)
+> > +			struct page *page, int force, int nocontext)
+> >  {
 > 
-> # hdparm --Istdout /dev/sdb
+> An "int context" would be a lot better than the negative "int nocontext";
+> even better would be "int holds_mmap_sem".  Or even skip the additional
+> argument completely, use the anon_vma_hold method always without relying
+> on whether or not mmap_sem is held.  I don't know how significant it is
+> to avoid extra locking here: on the one hand we like to avoid unnecessary
+> locking; on the other hand there's probably a thousand commoner places in
+> the kernel where we could pass down an arg to say, actually you won't
+> need to lock in such and such a case.
+Hmm, ok. I'd like to try make things simpler.
+
 > 
-> /dev/sdb:
-> 045a 3fff c837 0010 0000 0000 003f 0000
-> 0000 0000 2020 2020 2020 5644 5334 3142
-> 5434 4456 3038 474a 0003 3bf5 0034 5634
-> 344f 4139 3641 4844 5437 3232 3532 3544
-> 4c41 3338 3020 2020 2020 2020 2020 2020
+> >  	int rc = 0;
+> >  	int *result = NULL;
+> >  	struct page *newpage = get_new_page(page, private, &result);
+> > +	struct anon_vma *anon_vma = NULL;
+> >  
+> >  	if (!newpage)
+> >  		return -ENOMEM;
+> > @@ -632,17 +633,23 @@ static int unmap_and_move(new_page_t get
+> >  			goto unlock;
+> >  		wait_on_page_writeback(page);
+> >  	}
+> > -
+> > +	/* hold this anon_vma until page migration ends */
+> > +	if (nocontext && PageAnon(page) && page_mapped(page))
+> > +		anon_vma = anon_vma_hold(page);
+> >  	/*
+> >  	 * Establish migration ptes or remove ptes
+> >  	 */
+> > -	try_to_unmap(page, 1);
+> > +	if (page_mapped(page))
+> > +		try_to_unmap(page, 1);
+> > +
+> 
+> All these preliminary tests: yes, I suppose they avoid unnecessary
+> locking, so I guess they're good; but it should work without them.
+> 
+> >  	if (!page_mapped(page))
+> >  		rc = move_to_new_page(newpage, page);
+> >  
+> >  	if (rc)
+> >  		remove_migration_ptes(page, page);
+> >  
+> > +	anon_vma_release(anon_vma);
+> > +
+> >  unlock:
+> >  	unlock_page(page);
+> >  
+> > @@ -686,8 +693,8 @@ move_newpage:
+> >   *
+> >   * Return: Number of pages not migrated or error code.
+> >   */
+> > -int migrate_pages(struct list_head *from,
+> > -		new_page_t get_new_page, unsigned long private)
+> > +int __migrate_pages(struct list_head *from,
+> > +		new_page_t get_new_page, unsigned long private, int nocontext)
+> >  {
+> 
+> Remarks on nocontext as above: mmm, I think keep the patch small
+> and don't add that extra argument at all.
+> 
+> >  	int retry = 1;
+> >  	int nr_failed = 0;
+> > @@ -707,7 +714,7 @@ int migrate_pages(struct list_head *from
+> >  			cond_resched();
+> >  
+> >  			rc = unmap_and_move(get_new_page, private,
+> > -						page, pass > 2);
+> > +						page, pass > 2, nocontext);
+> >  
+> >  			switch(rc) {
+> >  			case -ENOMEM:
+> > @@ -737,6 +744,22 @@ out:
+> >  	return nr_failed + retry;
+> >  }
+> >  
+> > +int migrate_pages(struct list_head *from,
+> > +	new_page_t get_new_page, unsigned long private)
+> > +{
+> > +	return __migrate_pages(from, get_new_page, private, 0);
+> > +}
+> > +
+> > +/*
+> > + * When page migration is issued by the kernel itself without page mapper's
+> > + * mm->sem, we have to be more careful to do page migration.
+> > + */
+> > +int migrate_pages_nocontext(struct list_head *from,
+> > +	new_page_t get_new_page, unsigned long private)
+> > +{
+> > +	return __migrate_pages(from, get_new_page, private, 1);
+> > +}
+> > +
+> >  #ifdef CONFIG_NUMA
+> >  /*
+> >   * Move a list of individual pages
+> > Index: linux-2.6.22-rc2-mm1/include/linux/rmap.h
+> > ===================================================================
+> > --- linux-2.6.22-rc2-mm1.orig/include/linux/rmap.h
+> > +++ linux-2.6.22-rc2-mm1/include/linux/rmap.h
+> > @@ -26,6 +26,9 @@
+> >  struct anon_vma {
+> >  	spinlock_t lock;	/* Serialize access to vma list */
+> >  	struct list_head head;	/* List of private "related" vmas */
+> > +#ifdef CONFIG_MIGRATION
+> > +	int	ref;	/* special refcnt for migration */
+> > +#endif
+> >  };
+> >  
+> >  #ifdef CONFIG_MMU
+> > @@ -42,6 +45,14 @@ static inline void anon_vma_free(struct 
+> >  	kmem_cache_free(anon_vma_cachep, anon_vma);
+> >  }
+> >  
+> > +#ifdef  CONFIG_MIGRATION
+> > +extern struct anon_vma *anon_vma_hold(struct page *page);
+> > +extern void anon_vma_release(struct anon_vma *anon_vma);
+> > +#else
+> > +#define anon_vma_hold(page)     do{}while(0)
+> > +#define anon_vma_release(anon)  do{}while(0)
+> 
+> Rather than change those to "do {} while (0)", to which others
+> will ask for static inlines, just delete them, can't you -
+> they're simply not needed in the !CONFIG_MIGRATION case, right?
+> 
+Ok. they are not necessary if !CONFIG_MIGRATION. I'll delete.
 
-ATA device, with non-removable media
-        Model Number:       HDT722525DLA380
-        Serial Number:      VDS41BT4DV08GJ
-        Firmware Revision:  V44OA96A
-...
-        device size with M = 1000*1000:      250059 MBytes (250 GB)
-...
-           *    SATA-I signaling speed (1.5Gb/s)
-           *    SATA-II signaling speed (3.0Gb/s)
+Maybe I was confused at deleting CONFIG_MIGRATON_BY_KERNEL...which needed ifdef.
+ 
+Thank you!.
+-Kame
 
-
-Ooops.. wrong drive.  That's NOT a CF card.   Try again?
-
-Thanks
