@@ -1,43 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbXEaWhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbXEaWh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759810AbXEaWhe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 18:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbXEaWh0
+	id S1760645AbXEaWh4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 18:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbXEaWhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 18:37:26 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:47668 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753304AbXEaWhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 18:37:25 -0400
-Message-ID: <465F4E20.5080503@garzik.org>
-Date: Thu, 31 May 2007 18:37:20 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Daniel J Blueman <daniel.blueman@gmail.com>, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Compact Flash performance...
-References: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com>	 <465E3FF0.9010709@rtr.ca>	 <6278d2220705310222rde9ad28ndfd8feced84a3c6f@mail.gmail.com>	 <465EBE20.6090803@rtr.ca>	 <6278d2220705311025q6ee030e2kd44b7302a50ac902@mail.gmail.com>	 <465F360D.6020603@rtr.ca> <6278d2220705311439x40f7b1c1l7cef54acd2e8fcea@mail.gmail.com> <465F4D4E.6050305@rtr.ca>
-In-Reply-To: <465F4D4E.6050305@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 31 May 2007 18:37:47 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:56945 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753826AbXEaWhq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 18:37:46 -0400
+Date: Thu, 31 May 2007 15:37:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use mutex instead of semaphore in tty_io.c
+Message-Id: <20070531153712.de2f8a68.akpm@linux-foundation.org>
+In-Reply-To: <20070531134226.GO14284@traven>
+References: <20070425154934.GP6798@traven>
+	<20070425191359.GA13241@infradead.org>
+	<20070425194633.GA3280@traven>
+	<20070425194550.GA18914@infradead.org>
+	<20070531134226.GO14284@traven>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Some cards may perform better when their "memory" interface is used
-> instead of the "I/O" interface, or vice-versa.  I'm not sure which
-> of the two methods was selected by libata (probably the "memory" 
-> interface).
+On Thu, 31 May 2007 15:42:26 +0200
+Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
 
-I am very CF-ignorant.  How does libata select a memory or I/O interface 
-on a CF device?
+> drivers/char/tty_io.c: Use spinlock instead of a (binary) semaphore
+> 
 
-	Jeff
+hm.
+
+> 
+> --
+> 
+> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+> index 7a32df5..ff27587 100644
+> --- a/drivers/char/tty_io.c
+> +++ b/drivers/char/tty_io.c
+
+We end up with this:
+
+	/* find a device that is not in use. */
+	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL))
+		return -ENOMEM;
+
+	spin_lock(&allocated_ptys_lock);
+
+	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
+	if (idr_ret < 0) {
+		spin_unlock(&allocated_ptys_lock);
+		if (idr_ret == -EAGAIN)
+			return -ENOMEM;
+		return -EIO;
+	}
+	if (index >= pty_limit) {
+		idr_remove(&allocated_ptys, index);
+		spin_unlock(&allocated_ptys_lock);
+		return -EIO;
+	}
+	spin_unlock(&allocated_ptys_lock);
+
+this leaves a small window in which another thread can come in and steal
+away the idr tree's reserves, causing the idr_get_new() to fail.  It's
+highly improbable, but it's real.
+
+Hence I think a straight semaphore->mutex conversion would be better.
+
+The IDR API absolutely blows chunks: it should require caller-provided
+locking, like radix-tree.  But then it'd need gunk like radix_tree_preload
+to be reliable.  Fact is, storage librares which need to allocate memory at
+insert-time are always going to be problematic in-kernel.
 
 
