@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761519AbXEaTB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761699AbXEaTCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761519AbXEaTB3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 15:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbXEaTBT
+	id S1761699AbXEaTCr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 15:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbXEaTCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 15:01:19 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:17278 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757621AbXEaTBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 15:01:18 -0400
-Date: Thu, 31 May 2007 21:00:13 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Phillip Susi <psusi@cfl.rr.com>
-Cc: David Chinner <dgc@sgi.com>, david@lang.hm, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,  and dm/md.
-Message-ID: <20070531190013.GD32105@kernel.dk>
-References: <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <465F1479.70100@cfl.rr.com>
+	Thu, 31 May 2007 15:02:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38868 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757117AbXEaTCk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 15:02:40 -0400
+Date: Thu, 31 May 2007 21:02:37 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Stephane Eranian <eranian@hpl.hp.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/22] 2.6.22-rc3 perfmon2 : common core functions
+Message-ID: <20070531190237.GB7217@one.firstfloor.org>
+References: <200705291348.l4TDmRvL019775@frankl.hpl.hp.com> <p73ira9ca0d.fsf@bingen.suse.de> <20070531171616.GC23939@frankl.hpl.hp.com> <20070531172828.GC2538@one.firstfloor.org> <20070531182945.GA9747@infradead.org> <20070531184313.GA7217@one.firstfloor.org> <20070531185323.GA10745@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <465F1479.70100@cfl.rr.com>
+In-Reply-To: <20070531185323.GA10745@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31 2007, Phillip Susi wrote:
-> David Chinner wrote:
-> >That sounds like a good idea - we can leave the existing
-> >WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
-> >behaviour that only guarantees ordering. The filesystem can then
-> >choose which to use where appropriate....
-> 
-> So what if you want a synchronous write, but DON'T care about the order? 
->   They need to be two completely different flags which you can choose 
-> to combine, or use individually.
+> People will want perfom and oprofile in the same kernel, and we'd better
 
-If you have a use case for that, we can easily support it as well...
-Depending on the drive capabilities (FUA support or not), it may be
-nearly as slow as a "real" barrier write.
+Yes.
 
--- 
-Jens Axboe
+> allow useage at the same time, so I'd be very much in favour of having
 
+That would be nice, but is not imho critical.
+
+> just one backend.  Especially giving the huge amount of different
+> performance counters we have to support.
+
+It's not that big an issue in my experience -- there aren't new x86 CPUs 
+that often and normally they don't change much between minor revisions.
+Also at least Intel now has an architected subset of perfctrs
+which I expect to cover most people's needs.
+
+-Andi
