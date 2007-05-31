@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbXEaQud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760761AbXEaQvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbXEaQud (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 12:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758244AbXEaQuF
+	id S1760761AbXEaQvw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 12:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbXEaQvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 12:50:05 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:43867 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757621AbXEaQuC (ORCPT
+	Thu, 31 May 2007 12:51:45 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:25452 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753871AbXEaQvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 12:50:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=CNntwSktckmDVUwXwjVtVanViP+lwaj+qsfvyAIQl5qmvhzrARA5/+Nag1v+XXnvj7bXgKTdrIgGOxApRFvyNSq0+lq9Hzmobw8Dv+rHrz2+XfZevyAYz9sMXutYPgo8ogA86vtDQMN+baCCzODFfaeCnBtNLsjgzwZTVMCqBjY=
-Date: Thu, 31 May 2007 20:48:42 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
-Message-ID: <20070531164842.GA8392@cvg>
-References: <20070524165935.GB19709@duck.suse.cz> <20070524170554.GC19709@duck.suse.cz> <20070524203653.GA7693@duck.suse.cz> <465DF0B4.2050203@sandeen.net> <465DF91F.3010201@sandeen.net>
+	Thu, 31 May 2007 12:51:44 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=t3gAxc9lSt7nuYMS/qqRkCva5Rj6EYNfPS8NRVtNOVJPbvtRG0V1gQil1uCfP5Q+f
+	ekSoN5daSDUclAilmqwmQ==
+Message-ID: <b040c32a0705310951t7d9acdf5n34815bc5fc156e26@mail.gmail.com>
+Date: Thu, 31 May 2007 09:51:36 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: walt <wa1ter@myrealbox.com>, "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: + loop-preallocate-eight-loop-devices.patch added to -mm tree
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <f3mro0$u8p$1@sea.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <465DF91F.3010201@sandeen.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <200705212200.l4LM0tYK021050@shell0.pdx.osdl.net>
+	 <20070522001851.GE4095@ftp.linux.org.uk>
+	 <b040c32a0705211830h127dfd8dk8930de6655d37d90@mail.gmail.com>
+	 <20070522014822.GF4095@ftp.linux.org.uk>
+	 <b040c32a0705211914w3843bd46o542476be97e0b6cf@mail.gmail.com>
+	 <b040c32a0705211940xe7cdf1cnb2c882edacc17a27@mail.gmail.com>
+	 <f3mro0$u8p$1@sea.gmane.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Eric Sandeen - Wed, May 30, 2007 at 05:22:23PM -0500]
-| Eric Sandeen wrote:
-| 
-| > Jan, something seems busted here.  I'm getting lockups when testing udf
-| > on a single cpu with this last patch in place...
-| > 
-| > I think it's the BKL stumbling on itself.
-| 
-| To demonstrate, try this:
-| 
-| # BIGFILENAME=`seq -s '' 1 1000`
-| # ln -s $BIGFILENAME foo
-| 
-| instant deadlock :(
-| 
-| -Eric
-| 
+On 5/31/07, walt <wa1ter@myrealbox.com> wrote:
+> Ken Chen wrote:
+> > On 5/21/07, Ken Chen <kenchen@google.com> wrote:
+> ...
+> > tested, like this?
+>
+> Ken, your patch below works for me.  Are you going to send this
+> on to Linus?
 
-Hi, thanks for error report. I'm checking this tommorow I guess
-(too busy now)
-
-		Cyrill
-
+I think akpm will route this to Linus.  andrew?
