@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbXEaS1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbXEaS1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761255AbXEaS1T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758812AbXEaS1N
+	id S1761539AbXEaS1m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759006AbXEaS1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:27:13 -0400
-Received: from alnrmhc12.comcast.net ([204.127.225.92]:35789 "EHLO
-	alnrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758641AbXEaS1M (ORCPT
+	Thu, 31 May 2007 14:27:34 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:33939 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1758812AbXEaS1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 14:27:12 -0400
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 May 2007 14:27:12 EDT
-Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
-From: Nicholas Miell <nmiell@comcast.net>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       torvalds@linux-foundation.org
-In-Reply-To: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
-References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
-Content-Type: text/plain
-Date: Thu, 31 May 2007 11:22:08 -0700
-Message-Id: <1180635728.3104.3.camel@entropy>
+	Thu, 31 May 2007 14:27:33 -0400
+Date: Thu, 31 May 2007 14:19:23 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH] Syslets - Fix cachemiss_thread return value
+Message-ID: <20070531181923.GA9904@c2.user-mode-linux.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.0.njm.1) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-31 at 14:09 -0400, Ulrich Drepper wrote:
-> diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
-> index c154b9d..b847741 100644
-> --- a/include/asm-generic/fcntl.h
-> +++ b/include/asm-generic/fcntl.h
-> @@ -48,6 +48,9 @@
->  #ifndef O_NOATIME
->  #define O_NOATIME	01000000
->  #endif
-> +#ifndef O_CLOEXEC
-> +#define O_CLOEXEC	02000000	/* set close_on_exec */
-> +#endif
->  #ifndef O_NDELAY
->  #define O_NDELAY	O_NONBLOCK
->  #endif
+cachemiss_thread should explicitly return 0 or error instead of
+task_ret_reg(current) (which is -ENOSYS anyway) because
+async_thread_helper is careful to put the return value in eax anyway.
 
-O_CLOSEONEXEC, perhaps?
+On x86_64, it looks like async_child_rip is similarly careful.
 
-We don't want to create another "creat" here... :)
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ kernel/async.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
--- 
-Nicholas Miell <nmiell@comcast.net>
-
+Index: linux-2.6/kernel/async.c
+===================================================================
+--- linux-2.6.orig/kernel/async.c	2007-05-29 20:11:11.000000000 -0400
++++ linux-2.6/kernel/async.c	2007-05-31 14:12:49.000000000 -0400
+@@ -575,7 +575,7 @@ static long cachemiss_thread(void *data)
+ 	struct task_struct *t = current;
+ 	struct async_head *ah = args->ah;
+ 	struct async_thread *at;
+-	int ret;
++	int ret = 0;
+ 
+ 	at = &t->__at;
+ 	async_thread_init(t, at, ah);
+@@ -607,7 +607,7 @@ static long cachemiss_thread(void *data)
+ 	complete(&ah->start_done);
+ 
+ 	async_cachemiss_loop(at, ah, t);
+-	return task_ret_reg(t);
++	return ret;
+ }
+ 
+ /**
