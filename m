@@ -1,132 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759863AbXEaHZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759555AbXEaH1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759863AbXEaHZh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 03:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbXEaHZa
+	id S1759555AbXEaH1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 03:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756700AbXEaH1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 03:25:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:49513 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755166AbXEaHZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 03:25:29 -0400
-Subject: [PATCH 3/3] lguest: faster tls switching
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-In-Reply-To: <1180596254.11133.24.camel@localhost.localdomain>
-References: <1180596191.11133.22.camel@localhost.localdomain>
-	 <1180596254.11133.24.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 31 May 2007 17:25:16 +1000
-Message-Id: <1180596316.11133.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 31 May 2007 03:27:01 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:58206 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756543AbXEaH1A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 03:27:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=AYqqxyWyezECkEvH8/ZHBb1BEsPklMrnTtZ/8F9aF4R9+z8Eo/MqEWkpljpNzaDPv0m2FCDO/yKV46of16Fs4bxzsI7bKl//y3uigpkxgIIN6NPMyh669r1Al7YzprUHGwj4SRue2Rn549Y174T+pBszflryIiYO7Igoc7/vtik=
+Message-ID: <465E78BE.6010807@gmail.com>
+Date: Thu, 31 May 2007 15:26:54 +0800
+From: Rankle_ <crquan@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+MIME-Version: 1.0
+To: netdev@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [git patch] since the definition of dst_discard_in and dst_discard_out
+ are the same,,they should merged into one
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1) When the Guest sets the new TLS entries, we don't need to re-verify
-   the whole GDT.
-2) We also don't need to copy all the GDT entries if only the TLS
-   entries have changed.
+ From 30d6996860f7e5589d1bce10404bbcfd6592c9de Mon Sep 17 00:00:00 2001
+From: Denis Cheng <crquan@gmail.com>
+Date: Thu, 31 May 2007 15:21:58 +0800
+Subject: [PATCH] since the definition of dst_discard_in and 
+dst_discard_out are the same,
+they should merged into one
 
-Before:
-Time for one context switch via pipe: 5406 (5170 - 7467)
+Signed-off-by: Denis Cheng <crquan@gmail.com>
 
-After:
-Time for one context switch via pipe: 4916 (4661 - 7004)
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/lguest/core.c     |    5 ++++-
- drivers/lguest/lg.h       |    2 ++
- drivers/lguest/segments.c |   30 ++++++++++++++++++------------
- 3 files changed, 24 insertions(+), 13 deletions(-)
-
-diff -r e5e8dfc0fda2 drivers/lguest/core.c
---- a/drivers/lguest/core.c	Thu May 31 17:04:16 2007 +1000
-+++ b/drivers/lguest/core.c	Thu May 31 17:12:24 2007 +1000
-@@ -278,6 +278,9 @@ static void copy_in_guest_info(struct lg
- 	/* Copy all GDT entries but the TSS. */
- 	if (lg->changed & CHANGED_GDT)
- 		copy_gdt(lg, pages->state.guest_gdt);
-+	/* If only the TLS entries have changed, copy them. */
-+	else if (lg->changed & CHANGED_GDT_TLS)
-+		copy_gdt_tls(lg, pages->state.guest_gdt);
- 
- 	lg->changed = 0;
- }
-diff -r e5e8dfc0fda2 drivers/lguest/lg.h
---- a/drivers/lguest/lg.h	Thu May 31 17:04:16 2007 +1000
-+++ b/drivers/lguest/lg.h	Thu May 31 17:10:20 2007 +1000
-@@ -115,6 +115,7 @@ struct lguest_pages
- 
- #define CHANGED_IDT		1
- #define CHANGED_GDT		2
-+#define CHANGED_GDT_TLS		4 /* Actually a subset of CHANGED_GDT */
- #define CHANGED_ALL	        3
- 
- /* The private info the thread maintains about the guest. */
-@@ -202,6 +203,7 @@ void load_guest_gdt(struct lguest *lg, u
- void load_guest_gdt(struct lguest *lg, unsigned long table, u32 num);
- void guest_load_tls(struct lguest *lg, unsigned long tls_array);
- void copy_gdt(const struct lguest *lg, struct desc_struct *gdt);
-+void copy_gdt_tls(const struct lguest *lg, struct desc_struct *gdt);
- 
- /* page_tables.c: */
- int init_guest_pagetable(struct lguest *lg, unsigned long pgtable);
-diff -r e5e8dfc0fda2 drivers/lguest/segments.c
---- a/drivers/lguest/segments.c	Thu May 31 17:04:16 2007 +1000
-+++ b/drivers/lguest/segments.c	Thu May 31 17:11:46 2007 +1000
-@@ -34,11 +34,11 @@ static void check_segment_use(struct lgu
- 		kill_guest(lg, "Removed live GDT entry %u", desc);
+diff --git a/net/core/dst.c b/net/core/dst.c
+index 764bccb..c6a0587 100644
+--- a/net/core/dst.c
++++ b/net/core/dst.c
+@@ -111,13 +111,7 @@ out:
+     spin_unlock(&dst_lock);
  }
  
--static void fixup_gdt_table(struct lguest *lg)
-+static void fixup_gdt_table(struct lguest *lg, unsigned start, unsigned end)
+-static int dst_discard_in(struct sk_buff *skb)
+-{
+-    kfree_skb(skb);
+-    return 0;
+-}
+-
+-static int dst_discard_out(struct sk_buff *skb)
++static int dst_discard(struct sk_buff *skb)
  {
- 	unsigned int i;
- 
--	for (i = 0; i < ARRAY_SIZE(lg->gdt); i++) {
-+	for (i = start; i < end; i++) {
- 		/* We never copy these ones to real gdt */
- 		if (ignored_gdt(i))
- 			continue;
-@@ -86,6 +86,16 @@ void setup_guest_gdt(struct lguest *lg)
- 	lg->gdt[GDT_ENTRY_KERNEL_DS].b |= (GUEST_PL << 13);
+     kfree_skb(skb);
+     return 0;
+@@ -138,8 +132,7 @@ void * dst_alloc(struct dst_ops * ops)
+     dst->ops = ops;
+     dst->lastuse = jiffies;
+     dst->path = dst;
+-    dst->input = dst_discard_in;
+-    dst->output = dst_discard_out;
++    dst->input = dst->output = dst_discard;
+ #if RT_CACHE_DEBUG >= 2
+     atomic_inc(&dst_total);
+ #endif
+@@ -153,8 +146,7 @@ static void ___dst_free(struct dst_entry * dst)
+        protocol module is unloaded.
+      */
+     if (dst->dev == NULL || !(dst->dev->flags&IFF_UP)) {
+-        dst->input = dst_discard_in;
+-        dst->output = dst_discard_out;
++        dst->input = dst->output = dst_discard;
+     }
+     dst->obsolete = 2;
  }
+@@ -242,8 +234,7 @@ static inline void dst_ifdown(struct dst_entry *dst, 
+struct net_device *dev,
+         return;
  
-+/* This is a fast version for the common case where only the three TLS entries
-+ * have changed. */
-+void copy_gdt_tls(const struct lguest *lg, struct desc_struct *gdt)
-+{
-+	unsigned int i;
-+
-+	for (i = GDT_ENTRY_TLS_MIN; i <= GDT_ENTRY_TLS_MAX; i++)
-+		gdt[i] = lg->gdt[i];
-+}
-+
- void copy_gdt(const struct lguest *lg, struct desc_struct *gdt)
- {
- 	unsigned int i;
-@@ -101,7 +111,7 @@ void load_guest_gdt(struct lguest *lg, u
- 		kill_guest(lg, "too many gdt entries %i", num);
- 
- 	lgread(lg, lg->gdt, table, num * sizeof(lg->gdt[0]));
--	fixup_gdt_table(lg);
-+	fixup_gdt_table(lg, 0, ARRAY_SIZE(lg->gdt));
- 	lg->changed |= CHANGED_GDT;
- }
- 
-@@ -110,6 +120,6 @@ void guest_load_tls(struct lguest *lg, u
- 	struct desc_struct *tls = &lg->gdt[GDT_ENTRY_TLS_MIN];
- 
- 	lgread(lg, tls, gtls, sizeof(*tls)*GDT_ENTRY_TLS_ENTRIES);
--	fixup_gdt_table(lg);
--	lg->changed |= CHANGED_GDT;
-+	fixup_gdt_table(lg, GDT_ENTRY_TLS_MIN, GDT_ENTRY_TLS_MAX+1);
-+	lg->changed |= CHANGED_GDT_TLS;
- }
-
-
+     if (!unregister) {
+-        dst->input = dst_discard_in;
+-        dst->output = dst_discard_out;
++        dst->input = dst->output = dst_discard;
+     } else {
+         dst->dev = &loopback_dev;
+         dev_hold(&loopback_dev);
