@@ -1,103 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbXEaWjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbXEaWk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760470AbXEaWjV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 18:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbXEaWjK
+	id S1760724AbXEaWk3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 18:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbXEaWkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 18:39:10 -0400
-Received: from palrel13.hp.com ([156.153.255.238]:47027 "EHLO palrel13.hp.com"
+	Thu, 31 May 2007 18:40:21 -0400
+Received: from rtr.ca ([64.26.128.89]:4762 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753426AbXEaWjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 18:39:09 -0400
-Date: Thu, 31 May 2007 17:39:08 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [2/4] 2.6.22-rc3: known regressions
-Message-ID: <20070531223908.GA12325@beardog.cca.cpqcorp.net>
-References: <465C188F.9000900@googlemail.com> <465C22F4.8080505@googlemail.com> <alpine.LFD.0.98.0705301918450.26602@woody.linux-foundation.org> <20070531220833.GA10867@beardog.cca.cpqcorp.net> <alpine.LFD.0.98.0705311516350.26602@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705311516350.26602@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	id S1752942AbXEaWkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 18:40:19 -0400
+Message-ID: <465F4ED0.10508@rtr.ca>
+Date: Thu, 31 May 2007 18:40:16 -0400
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Compact Flash performance...
+References: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com>	 <465E3FF0.9010709@rtr.ca>	 <6278d2220705310222rde9ad28ndfd8feced84a3c6f@mail.gmail.com>	 <465EBE20.6090803@rtr.ca>	 <6278d2220705311025q6ee030e2kd44b7302a50ac902@mail.gmail.com>	 <465F360D.6020603@rtr.ca> <6278d2220705311439x40f7b1c1l7cef54acd2e8fcea@mail.gmail.com>
+In-Reply-To: <6278d2220705311439x40f7b1c1l7cef54acd2e8fcea@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 03:22:07PM -0700, Linus Torvalds wrote:
+Daniel J Blueman wrote:
+> On 31/05/07, Mark Lord <liml@rtr.ca> wrote:
+>> Daniel J Blueman wrote:
+...
+>> I don't know too much about the specifics, though, but perhaps the
+>> card is only capable of full speed in PIO6, which requires special 
+>> cabling
+>> and is currently unsupported in libata (?).
 > 
-> 
-> On Thu, 31 May 2007, Mike Miller (OS Dev) wrote:
-> 
-> > On Wed, May 30, 2007 at 07:22:14PM -0700, Linus Torvalds wrote:
-> > > 
-> > > 
-> > > On Tue, 29 May 2007, Michal Piotrowski wrote:
-> > > > 
-> > > > Subject    : Oops on 2.6.22-rc2 when unloading the cciss driver
-> > > > References : http://lkml.org/lkml/2007/5/24/172
-> > > > Submitter  : Mike Miller (OS Dev) <mikem@beardog.cca.cpqcorp.net>
-> > > > Status     : Unknown
-> > > 
-> > > I thought this one should be fixed by commit e9ca75b53. Not so?
-> > 
-> > I apologize for the slow response. I also apologize that I don't know enough
-> > about git to figure out what commit e9ca75b53 does.
-> 
-> Even without git, you can use the kernel.org gitweb install:
-> 
-> 	http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=e9ca75b53
-> 
-> (where the "h=...." is the magic part - pick any commit SHA1 you want, 
-> including short-hand ones like the one I gave).
-> 
-> With git, you just do
-> 
-> 	git show e9ca75b53
-> 
-> to see a particular named commit.
-> 
-> > I submitted a fix that was blessed by Eric B. that fixed that Oops.
-> 
-> Ok, I don't think I have anything like that. The one I pointed to is the 
-> one by Gerald Britton, acked by you ..
-> 
-> But I now realize that that commit was already in -rc2. In fact, it's just 
-> before the -rc2 release. So while it claims to fix one oops on shutdown, 
-> it may be the _cause_ of the oops on mudule unload.
-> 
-> 		Linus
-Linus,
-The fix from Gerald was a different Oops and is not related to this problem.
-This is the patch I submitted for the rmmod Oops:
+> Seems less likely, as the Extreme IV reader (and another) supports
+> UDMA mode 4; in PIO mode 6, they apparently top out at 17MB/s [2],
+> which seems reasonable.
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index e01380b..6632150 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -558,12 +558,12 @@ static int msi_free_irqs(struct pci_dev* dev)
+That's pio4 (16.6666MBytes/sec).
+pio6 should have the same cycle time as udma4.
 
-        list_for_each_entry_safe(entry, tmp, &dev->msi_list, list) {
-                if (entry->msi_attrib.type == PCI_CAP_ID_MSIX) {
--                       if (list_is_last(&entry->list, &dev->msi_list))
--                               iounmap(entry->mask_base);
--
-                        writel(1, entry->mask_base + entry->msi_attrib.entry_nr
-                                  * PCI_MSIX_ENTRY_SIZE
-                                  + PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
-+
-+                       if (list_is_last(&entry->list, &dev->msi_list))
-+                               iounmap(entry->mask_base);
-                }
-                list_del(&entry->list);
-                kfree(entry);
+>> Another factor, is that hdparm performs discrete, non-overlapping,
+>> reads of 1MByte chunks for its timing test.  Some drives cannot achieve
+>> full performance with such (relatively) large gaps between IO's.
+> 
+> 100MB transfers still achieve 32MB/s:
 
-Reference:
-http://groups.google.com/group/linux.kernel/browse_frm/thread/ed0949e9d42cfdef/5953daaa00ea5bf7?lnk=gst&q=cciss&rnum=3&hl=en#5953daaa00ea5bf7
+But internally libata is probably breaking those up into 64KB transfers,
+with gaps between requests.  The best it could do would be 128KB transfers.
+To maximize throughput, some kind of host-queuing would be needed,
+or just have the driver sit in a tight loop, starting the next I/O
+immediately when the previous one finishes.  Linux isn't that quick (yet).
 
-I'm not sure what the status is right now.
-
-Thanks,
-mikem
+Cheers
