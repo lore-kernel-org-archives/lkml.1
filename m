@@ -1,217 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbXEaUkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbXEaUmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbXEaUkg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXEaUk0
+	id S1754381AbXEaUmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbXEaUmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:40:26 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:62691 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbXEaUkY (ORCPT
+	Thu, 31 May 2007 16:42:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57366 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751953AbXEaUmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:40:24 -0400
-Date: Thu, 31 May 2007 13:39:17 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Herbert van den Bergh <Herbert.van.den.Bergh@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: include private data mappings in RLIMIT_DATA limit
-Message-Id: <20070531133917.a5338876.randy.dunlap@oracle.com>
-In-Reply-To: <465F2554.2030104@oracle.com>
-References: <465F2554.2030104@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 31 May 2007 16:42:07 -0400
+Date: Thu, 31 May 2007 13:42:04 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Prarit Bhargava <prarit@redhat.com>
+cc: "Luck, Tony" <tony.luck@intel.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       David Chinner <dgc@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: BUG: sleeping function called from invalid context at
+ kernel/fork.c:385
+In-Reply-To: <465EE7BB.4050605@redhat.com>
+Message-ID: <Pine.LNX.4.64.0705311341360.6751@schroedinger.engr.sgi.com>
+References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com>
+ <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com>
+ <465EE7BB.4050605@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 May 2007 12:43:16 -0700 Herbert van den Bergh wrote:
+On Thu, 31 May 2007, Prarit Bhargava wrote:
 
-> Below is a patch I would like to submit for limiting process private 
-> memory allocations via setrlimit(RLIMIT_DATA).
-> 
-> Thanks,
-> Herbert van den Bergh.
-> 
-> 
-> This patch changes how the kernel limits memory allocations that are
-> controlled by setrlimit() using the RLIMIT_DATA resource.  Currently the
-> kernel can limit the size of a process data, bss, and heap, but does not
-> limit the amount of process private memory that can be allocated with
-> the mmap() call.  Since malloc() calls mmap() to allocate process memory
-> once brk() calls can no longer grow the heap, process private memory
-> allocations cannot be limited with RLIMIT_DATA.
-> 
-> With this patch, not only memory in the data segment of a process, but
-> also private data mappings, both file-based and anonymous, are counted
-> toward the RLIMIT_DATA resource limit.  Executable mappings, such as
-> text segments of shared objects, are not counted toward the private data
-> limit.  The result is that malloc() will fail once the combined size of
-> the data segment and private data mappings reaches this limit.
-> 
-> This brings the Linux behavior in line with what is documented in the
-> POSIX man page for setrlimit(3p).
-> 
-> Signed-off-by: Herbert van den Bergh (herbert.van.den.bergh@oracle.com)
-> Signed-off-by: Dave McCracken (dave.mccracken@oracle.com)
-> 
+> Christoph, this is one less beer I owe you :) :) :)
 
-Howdy,
-
-The patch seems to have all tabs converted to spaces.
-This could be caused by thunderbird or by copy-and-pasting.
-
-Tbird needs help for sending patches without munging them.
-See http://mbligh.org/linuxdocs/Email/Clients/Thunderbird
-or google for "external editor" and use that with a decent
-text editor.
-
-Maybe it doesn't matter for this patch, but in general you
-should send patches made against the latest mainline kernel,
-such as 2.6.22-rc3 or 2.6.22-rc3-git4 or current git tree.
-
-There are a few lines that are > 80 characters.  Please try
-to avoid that.
-
- ----------------------------------------------------------------------------------
-> --- linux-2.6.21/fs/proc/task_mmu.c.orig        2007-05-29 21:05:31.000000000 -0700
-> +++ linux-2.6.21/fs/proc/task_mmu.c     2007-05-30 08:17:44.000000000 -0700
-> @@ -31,7 +31,7 @@
->         if (hiwater_rss < mm->hiwater_rss)
->                 hiwater_rss = mm->hiwater_rss;
-> 
-> -       data = mm->total_vm - mm->shared_vm - mm->stack_vm;
-> +       data = mm->total_vm - mm->shared_vm - mm->stack_vm - mm->exec_vm;
->         text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK)) >> 10;
->         lib = (mm->exec_vm << (PAGE_SHIFT-10)) - text;
->         buffer += sprintf(buffer,
-> --- linux-2.6.21/mm/mprotect.c.orig     2007-04-25 20:08:32.000000000 -0700
-> +++ linux-2.6.21/mm/mprotect.c  2007-05-30 08:34:36.000000000 -0700
-> @@ -162,6 +162,21 @@
->                 }
->         }
-> 
-> +        /*
-> +        * Check against private data size limit. When execute permission
-> +        * is removed, the mapping is counted toward the private data size.
-> +        */
-> +       if (!(newflags & VM_EXEC) && (vma->vm_flags & VM_EXEC)) {
-> +               unsigned long rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
-> +               if (rlim < RLIM_INFINITY) {
-> +                       unsigned long priv_vm;
-> +                       priv_vm = mm->total_vm - mm->shared_vm - mm->exec_vm;
-> +                       priv_vm <<= PAGE_SHIFT;
-> +                       if (priv_vm + (end - start) > rlim)
-> +                               return -ENOMEM;
-> +               }
-> +        }
-> +
->         /*
->          * First try to merge with previous and/or next vma.
->          */
-> --- linux-2.6.21/mm/mremap.c.orig       2007-04-25 20:08:32.000000000 -0700
-> +++ linux-2.6.21/mm/mremap.c    2007-05-30 08:38:28.000000000 -0700
-> @@ -343,6 +343,22 @@
->                 goto out;
->         }
-> 
-> +        /*
-> +        * Check against private data size limit. Count memory allocations
-> +        * which are not shared and not executable code as private data.
-> +        */
-> +       if (!(vma->vm_flags & (VM_EXEC|VM_SHARED))) {
-> +               unsigned long rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
-> +               if (rlim < RLIM_INFINITY) {
-> +                       unsigned long priv_vm;
-> +                       struct mm_struct *mm = current->mm;
-> +                       priv_vm = mm->total_vm - mm->shared_vm - mm->exec_vm;
-> +                       priv_vm <<= PAGE_SHIFT;
-> +                       if (priv_vm + (new_len - old_len) > rlim)
-> +                               goto out;
-> +               }
-> +        }
-> +
->         if (vma->vm_flags & VM_ACCOUNT) {
->                 charged = (new_len - old_len) >> PAGE_SHIFT;
->                 if (security_vm_enough_memory(charged))
-> --- linux-2.6.21/mm/mmap.c.orig 2007-05-29 21:05:58.000000000 -0700
-> +++ linux-2.6.21/mm/mmap.c      2007-05-30 08:27:55.000000000 -0700
-> @@ -245,16 +245,6 @@
->         if (brk < mm->end_code)
->                 goto out;
-> 
-> -       /*
-> -        * Check against rlimit here. If this check is done later after the test
-> -        * of oldbrk with newbrk then it can escape the test and let the data
-> -        * segment grow beyond its set limit the in case where the limit is
-> -        * not page aligned -Ram Gupta
-> -        */
-> -       rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
-> -       if (rlim < RLIM_INFINITY && brk - mm->start_data > rlim)
-> -               goto out;
-> -
->         newbrk = PAGE_ALIGN(brk);
->         oldbrk = PAGE_ALIGN(mm->brk);
->         if (oldbrk == newbrk)
-> @@ -267,6 +257,18 @@
->                 goto out;
->         }
-> 
-> +        /*
-> +        * Check against private data size limit. Count memory allocations
-> +        * which are not shared and not executable code as private data.
-> +        */
-> +        rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
-> +        if (rlim < RLIM_INFINITY) {
-> +            unsigned long priv_vm;
-> +            priv_vm = (mm->total_vm - mm->shared_vm - mm->exec_vm) << PAGE_SHIFT;
-> +            if (priv_vm + (newbrk-oldbrk) > rlim)
-> +                goto out;
-> +        }
-> +
->         /* Check against existing mmap mappings. */
->         if (find_vma_intersection(mm, oldbrk, newbrk+PAGE_SIZE))
->                 goto out;
-> @@ -875,7 +877,8 @@
->                 = VM_STACK_FLAGS & (VM_GROWSUP|VM_GROWSDOWN);
-> 
->         if (file) {
-> -               mm->shared_vm += pages;
-> +               if (flags & VM_SHARED)
-> +                       mm->shared_vm += pages;
->                 if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
->                         mm->exec_vm += pages;
->         } else if (flags & stack_flags)
-> @@ -1041,6 +1044,20 @@
->         if (!may_expand_vm(mm, len >> PAGE_SHIFT))
->                 return -ENOMEM;
-> 
-> +        /*
-> +        * Check against private data size limit. Count memory allocations
-> +        * which are not shared and not executable code as private data.
-> +        */
-> +       if (!(vm_flags & (VM_SHARED|VM_EXEC))) {
-> +            unsigned long rlim, priv_vm;
-> +            rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
-> +           if (rlim < RLIM_INFINITY) {
-> +                priv_vm = (mm->total_vm - mm->shared_vm - mm->exec_vm) << PAGE_SHIFT;
-> +                if (priv_vm + len > rlim)
-> +                   return -ENOMEM;
-> +            }
-> +        }
-> +
->         if (accountable && (!(flags & MAP_NORESERVE) ||
->                             sysctl_overcommit_memory == OVERCOMMIT_NEVER)) {
->                 if (vm_flags & VM_SHARED) {
-> 
-> 
-> -
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Finally the compile works. Thanks.
