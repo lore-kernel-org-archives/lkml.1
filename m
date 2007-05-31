@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbXEaSfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760817AbXEaShb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761569AbXEaSfh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbXEaSfQ
+	id S1760817AbXEaShb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbXEaShT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:35:16 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2500 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756845AbXEaSfP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 14:35:15 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 31 May 2007 11:35:07 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ulrich Drepper <drepper@redhat.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
-In-Reply-To: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
-Message-ID: <Pine.LNX.4.64.0705311123370.30485@alien.or.mcafeemobile.com>
-References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 31 May 2007 14:37:19 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:41481 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754381AbXEaShR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 14:37:17 -0400
+Message-ID: <465F15ED.1070304@cfl.rr.com>
+Date: Thu, 31 May 2007 14:37:33 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: device-mapper development <dm-devel@redhat.com>,
+       David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Andreas Dilger <adilger@clusterfs.com>,
+       Stefan Bader <Stefan.Bader@de.ibm.com>
+Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices,
+ filesystems, and dm/md.
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <465DAA15.3070703@cfl.rr.com> <465DDE1D.3000809@cfl.rr.com> <20070531062404.GH32105@kernel.dk>
+In-Reply-To: <20070531062404.GH32105@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 May 2007 18:37:28.0897 (UTC) FILETIME=[BDE84310:01C7A3B2]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15210.000
+X-TM-AS-Result: No--6.023500-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 May 2007, Ulrich Drepper wrote:
+Jens Axboe wrote:
+> No Stephan is right, the barrier is both an ordering and integrity
+> constraint. If a driver completes a barrier request before that request
+> and previously submitted requests are on STABLE storage, then it
+> violates that principle. Look at the code and the various ordering
+> options.
 
-> I've brought this topic up before but didn't provide a patch.  Well, here
-> we go again, this time with a patch.  I even throw in a test program.
-> 
-> The problem is as follows: in multi-threaded code (or more correctly: all
-> code using clone() with CLONE_FILES) we have a race when exec'ing.
-> 
->    thread #1                       thread #2
-> 
->    fd=open()
-> 
->                                    fork + exec
-> 
->   fcntl(fd,F_SETFD,FD_CLOEXEC)
-> 
-> In some applications this can happen frequently.  Take a web browser.  One
-> thread opens a file and another thread starts, say, an external PDF viewer.
-> The result can even be a security issue if that open file descriptor refers
-> to a sensitive file and the external program can somehow be tricked into
-> using that descriptor.
-> 
-> Just adding O_CLOEXEC support to open() doesn't solve the whole set of
-> problems.  There are other ways to create file descriptors (socket,
-> epoll_create, Unix domain socket transfer, etc).  These can and should
-> be addressed separately though.  open() is such an easy case that it makes
-> not much sense putting the fix off.
+I am saying that is the wrong thing to do.  Barrier should be about 
+ordering only.  So long as the order they hit the media is maintained, 
+the order the requests are completed in can change.  barrier.txt bears 
+this out:
 
-Isn't this better be a global process flag? Default should be, for legacy
-reasons, !FD_CLOEXEC. But then you can call a sys_task_set_fflags(FD_CLOEXEC)
-and all newly created files get that behavior by default. Then, in case 
-you want some of them to cross the exec boundary, you explicitly
-fcntl(fd, F_SETFD, !FD_CLOEXEC).
-Most the MT+exec apps I write, would like FD_CLOEXEC for everything anyway.
-
-
-
-- Davide
+"Requests in ordered sequence are issued in order, but not required to 
+finish in order.  Barrier implementation can handle out-of-order 
+completion of ordered sequence.  IOW, the requests MUST be processed in 
+order but the hardware/software completion paths are allowed to reorder 
+completion notifications - eg. current SCSI midlayer doesn't preserve 
+completion order during error handling."
 
 
