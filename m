@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbXEaPqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbXEaPtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbXEaPqi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 11:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbXEaPqb
+	id S1757530AbXEaPtS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 11:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXEaPtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 11:46:31 -0400
-Received: from smtpout05-04.prod.mesa1.secureserver.net ([64.202.165.221]:44233
-	"HELO smtpout05.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1753054AbXEaPqb (ORCPT
+	Thu, 31 May 2007 11:49:09 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56247 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbXEaPtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 11:46:31 -0400
-Message-ID: <465EEDD3.4070100@seclark.us>
-Date: Thu, 31 May 2007 11:46:27 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Thu, 31 May 2007 11:49:08 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Zwane Mwaikambo <zwane@linuxpower.ca>
+Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+References: <fa.tUMR7tAB+jMgtfyl/LJ7U9QMgBs@ifi.uio.no>
+	<465EDCF4.7010700@shaw.ca>
+Date: Thu, 31 May 2007 09:47:22 -0600
+In-Reply-To: <465EDCF4.7010700@shaw.ca> (Robert Hancock's message of "Thu, 31
+	May 2007 08:34:28 -0600")
+Message-ID: <m1abvl3shh.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Frank Sorenson <frank@tuxrocks.com>
-CC: LKML <linux-kernel@vger.kernel.org>, jeff@garzik.org
-Subject: Re: Combined mode quirk removal kills performance
-References: <465EDF89.9050207@tuxrocks.com>
-In-Reply-To: <465EDF89.9050207@tuxrocks.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frank Sorenson wrote:
+Robert Hancock <hancockr@shaw.ca> writes:
 
->-----BEGIN PGP SIGNED MESSAGE-----
->Hash: SHA1
+> Eric W. Biederman wrote:
+>> I just realized that except for doing the code review and noticing
+>> that the current cpu hotplug code is fundamentally incompatible
+>> with x86 I haven't done anything about it.  So here is my patch
+>> to document what is wrong.
+>>
+>> The current cpu hotplug code requires irqs to be migrated from a cpu
+>> outside of irq context.  On x86 ioapics simply do not support this,
+>> making the code unfixable without major redesign of the generic cpu
+>> hotplug code.
+>>
+>> So this patch makes CPU_HOTPLUG on x86 depend on CONFIG_BROKEN
+>> and adds a WARN_ON so people that do enable it are not in doubt about
+>> which part of the code is broken, even if it does work for them.
+>>
+>> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 >
->The patch to "remove combined mode quirk" (git bisect says
->8cdfb29c0cd8018f92214c11c631d8926f4cb032) makes my laptop run slower
->than a dead sloth.  "hdparm -T" indicates that buffered disk reads on my
->hard drive drop from 48-50 MB/sec to 1-2MB/sec, and the system is nearly
->unusable.
->
->System is a Dell Inspiron E1705 (Core 2 Duo 2.16GHz) running x86_64 FC6.
->
->Frank
->- --
->Frank Sorenson - KD7TZK
->Linux Systems Engineer, DSS Engineering, UBS AG
->frank@tuxrocks.com
->-----BEGIN PGP SIGNATURE-----
->Version: GnuPG v1.4.7 (GNU/Linux)
->Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
->
->iD8DBQFGXt+JaI0dwg4A47wRAqJmAJ4k4E9ekkitOdQ72HUXbky11nD1cACghGu6
->y7Y71PPaKHYcQhYSfL55bNk=
->=MPYY
->-----END PGP SIGNATURE-----
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->  
->
-Hi Frank,
-
-I had the same problem. I am running FC6 and had to build a custom 
-kernel that did not configure
-in the old ide driver - then my speed of my harddrive went back to normal.
-
-HTH,
-Steve
-
--- 
-
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
+> I don't think this is useful, though the code may be problematic, this patch
+> will break suspend on all SMP machines with an existing config, which is a major
+> regression..
 
 
+Cool.
 
+My patch does not change the functionality of the code just complains
+very loudly that it is broken.
+
+Further the code is broken at a design level.  The code isn't
+problematic the code is impossible.  The cpu hotplug code can not be
+fixed on x86 without a redesign of the generic cpu hotplug code.
+
+Suspend does not need to use cpu hotplug because it already gets in
+deep with the drivers, and can stop interrupts at the source.  I know
+there was some talk about this doing this earlier, but I don't know if
+anything came of that discussion.
+
+Regardless if you care about this being a problem feel free to fix the
+relevant code so it attempts to do something that the hardware
+actually supports.
+
+But if the suspend needs this code for smp support it is also broken.
+
+Eric
