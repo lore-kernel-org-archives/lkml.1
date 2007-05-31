@@ -1,410 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbXEaQAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbXEaQGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759421AbXEaQAh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 12:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbXEaQA2
+	id S1752884AbXEaQGs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 12:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbXEaQGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 12:00:28 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:54531 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753402AbXEaQA0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 12:00:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer;
-        b=eN4QWwyViq/8+4izgSqbxizVk+EvCcnncx3JurAMTSqTKJ9ZRpfH4LFVmiCaSt3wnY9FTgtjfWAY3gKT1vxz7Wn/nu6Yf8OisLg7n1Qt9PEIblJJ61i8RVjoXp1jBmaGDQcQudl5/XOYCF1AEMVb0ol/9oa/ZSqUmwSChrWq2qo=
-Subject: Re: Add INPUT support to toshiba_acpi
-From: Richard Hughes <hughsient@gmail.com>
-To: Bastien Nocera <hadess@hadess.net>
-Cc: John Belmonte <john@neggie.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-In-Reply-To: <1180619002.2693.35.camel@localhost.localdomain>
-References: <1180614979.2693.26.camel@localhost.localdomain>
-	 <1180615994.3030.166.camel@cookie.hadess.net>
-	 <1180619002.2693.35.camel@localhost.localdomain>
-Content-Type: multipart/mixed; boundary="=-iWd3CNRZWogU02e6x+Xv"
-Date: Thu, 31 May 2007 16:46:56 +0100
-Message-Id: <1180626416.3469.7.camel@localhost.localdomain>
+	Thu, 31 May 2007 12:06:40 -0400
+Received: from main.gmane.org ([80.91.229.2]:44118 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752826AbXEaQGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 12:06:39 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: walt <wa1ter@myrealbox.com>
+Subject: Re: + loop-preallocate-eight-loop-devices.patch added to -mm tree
+Date: Thu, 31 May 2007 09:05:16 -0700
+Organization: none
+Message-ID: <f3mro0$u8p$1@sea.gmane.org>
+References: <200705212200.l4LM0tYK021050@shell0.pdx.osdl.net>	 <20070522001851.GE4095@ftp.linux.org.uk>	 <b040c32a0705211830h127dfd8dk8930de6655d37d90@mail.gmail.com>	 <20070522014822.GF4095@ftp.linux.org.uk>	 <b040c32a0705211914w3843bd46o542476be97e0b6cf@mail.gmail.com> <b040c32a0705211940xe7cdf1cnb2c882edacc17a27@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: adsl-69-234-201-154.dsl.irvnca.pacbell.net
+User-Agent: Thunderbird 3.0a1pre (X11/20070531)
+In-Reply-To: <b040c32a0705211940xe7cdf1cnb2c882edacc17a27@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ken Chen wrote:
+> On 5/21/07, Ken Chen <kenchen@google.com> wrote:
+...
+> tested, like this?
 
---=-iWd3CNRZWogU02e6x+Xv
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Ken, your patch below works for me.  Are you going to send this
+on to Linus?
 
-On Thu, 2007-05-31 at 14:44 +0100, Richard Hughes wrote:
-> Nope, impossible AFAICS. The hardware is just broken. Windows XP has an
-> toshiba supplied daemon that polls, so I think we have to just bite the
-> bullet.
+> diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+> index 5526ead..0ed5470 100644
+> --- a/drivers/block/loop.c
+> +++ b/drivers/block/loop.c
+> @@ -1354,7 +1354,7 @@ #endif
+>  */
+> static int max_loop;
+> module_param(max_loop, int, 0);
+> -MODULE_PARM_DESC(max_loop, "obsolete, loop device is created on-demand");
+> +MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
+> MODULE_LICENSE("GPL");
+> MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
+> 
+> @@ -1394,16 +1394,11 @@ int loop_unregister_transfer
+> EXPORT_SYMBOL(loop_register_transfer);
+> EXPORT_SYMBOL(loop_unregister_transfer);
+> 
+> -static struct loop_device *loop_init_one(int i)
+> +static struct loop_device *loop_alloc(int i)
+> {
+>     struct loop_device *lo;
+>     struct gendisk *disk;
+> 
+> -    list_for_each_entry(lo, &loop_devices, lo_list) {
+> -        if (lo->lo_number == i)
+> -            return lo;
+> -    }
+> -
+>     lo = kzalloc(sizeof(*lo), GFP_KERNEL);
+>     if (!lo)
+>         goto out;
+> @@ -1427,8 +1422,6 @@ static struct loop_device *loop_init_one
+>     disk->private_data    = lo;
+>     disk->queue        = lo->lo_queue;
+>     sprintf(disk->disk_name, "loop%d", i);
+> -    add_disk(disk);
+> -    list_add_tail(&lo->lo_list, &loop_devices);
+>     return lo;
+> 
+> out_free_queue:
+> @@ -1439,15 +1432,37 @@ out:
+>     return NULL;
+> }
+> 
+> -static void loop_del_one(struct loop_device *lo)
+> +static void loop_free(struct loop_device *lo)
+> {
+> -    del_gendisk(lo->lo_disk);
+>     blk_cleanup_queue(lo->lo_queue);
+>     put_disk(lo->lo_disk);
+>     list_del(&lo->lo_list);
+>     kfree(lo);
+> }
+> 
+> +static struct loop_device *loop_init_one(int i)
+> +{
+> +    struct loop_device *lo;
+> +
+> +    list_for_each_entry(lo, &loop_devices, lo_list) {
+> +        if (lo->lo_number == i)
+> +            return lo;
+> +    }
+> +
+> +    lo = loop_alloc(i);
+> +    if (lo) {
+> +        add_disk(lo->lo_disk);
+> +        list_add_tail(&lo->lo_list, &loop_devices);
+> +    }
+> +    return lo;
+> +}
+> +
+> +static void loop_del_one(struct loop_device *lo)
+> +{
+> +    del_gendisk(lo->lo_disk);
+> +    loop_free(lo);
+> +}
+> +
+> static struct kobject *loop_probe(dev_t dev, int *part, void *data)
+> {
+>     struct loop_device *lo;
+> @@ -1464,28 +1479,77 @@ static struct kobject *loop_probe
+> 
+> static int __init loop_init(void)
+> {
+> -    if (register_blkdev(LOOP_MAJOR, "loop"))
+> -        return -EIO;
+> -    blk_register_region(MKDEV(LOOP_MAJOR, 0), 1UL << MINORBITS,
+> -                  THIS_MODULE, loop_probe, NULL, NULL);
+> +    int i, nr;
+> +    unsigned long range;
+> +    struct loop_device *lo, *next;
+> +
+> +    /*
+> +     * loop module now has a feature to instantiate underlying device
+> +     * structure on-demand, provided that there is an access dev node.
+> +     * However, this will not work well with user space tool that doesn't
+> +     * know about such "feature".  In order to not break any existing
+> +     * tool, we do the following:
+> +     *
+> +     * (1) if max_loop is specified, create that many upfront, and this
+> +     *     also becomes a hard limit.
+> +     * (2) if max_loop is not specified, create 8 loop device on module
+> +     *     load, user can further extend loop device by create dev node
+> +     *     themselves and have kernel automatically instantiate actual
+> +     *     device on-demand.
+> +     */
+> +    if (max_loop > 1UL << MINORBITS)
+> +        return -EINVAL;
+> 
+>     if (max_loop) {
+> -        printk(KERN_INFO "loop: the max_loop option is obsolete "
+> -                 "and will be removed in March 2008\n");
+> +        nr = max_loop;
+> +        range = max_loop;
+> +    } else {
+> +        nr = 8;
+> +        range = 1UL << MINORBITS;
+> +    }
+> +
+> +    if (register_blkdev(LOOP_MAJOR, "loop"))
+> +        return -EIO;
+> 
+> +    for (i = 0; i < nr; i++) {
+> +        lo = loop_alloc(i);
+> +        if (!lo)
+> +            goto Enomem;
+> +        list_add_tail(&lo->lo_list, &loop_devices);
+>     }
+> +
+> +    /* point of no return */
+> +
+> +    list_for_each_entry(lo, &loop_devices, lo_list)
+> +        add_disk(lo->lo_disk);
+> +
+> +    blk_register_region(MKDEV(LOOP_MAJOR, 0), range,
+> +                  THIS_MODULE, loop_probe, NULL, NULL);
+> +
+>     printk(KERN_INFO "loop: module loaded\n");
+>     return 0;
+> +
+> +Enomem:
+> +    printk(KERN_INFO "loop: out of memory\n");
+> +
+> +    list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
+> +        loop_free(lo);
+> +
+> +    unregister_blkdev(LOOP_MAJOR, "loop");
+> +    return -ENOMEM;
+> }
+> 
+> static void __exit loop_exit(void)
+> {
+> +    unsigned long range;
+>     struct loop_device *lo, *next;
+> 
+> +    range = max_loop ? max_loop :  1UL << MINORBITS;
+> +
+>     list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
+>         loop_del_one(lo);
+> 
+> -    blk_unregister_region(MKDEV(LOOP_MAJOR, 0), 1UL << MINORBITS);
+> +    blk_unregister_region(MKDEV(LOOP_MAJOR, 0), range);
+>     if (unregister_blkdev(LOOP_MAJOR, "loop"))
+>         printk(KERN_WARNING "loop: cannot unregister blkdev\n");
+> }
 
-... adding in reply in different thread...
 
-On Thu, 2007-05-31 at 10:37 -0400, Dmitry Torokhov wrote:
-> Please use input-polldev to set up polled devices. It
-> will create work queue for you and will make sure that polling is
-> stopped when device is closed. 
-
-Okay, I had never heard of this. I've done the suggested changes in the
-attached patch. Please can you have a look and make sure I'm being sane.
-
-> Also I don't think you want to use
-> KEY_BREAK. What is the expected function of that key?
-
-It's a "lock" key, I really want KEY_LOCK added to input.h, but that
-might prove difficult. For now I've used KEY_CLEAR, yell if you think
-there's a better one to substitute or if you guys want me to add get a
-constant added to input.h.
-
-Thanks for the review.
-
-Richard.
-
-
---=-iWd3CNRZWogU02e6x+Xv
-Content-Disposition: attachment; filename=toshiba_acpi_add_buttons_04.patch
-Content-Type: text/x-patch; name=toshiba_acpi_add_buttons_04.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index 139f41f..38835b6 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -222,6 +222,7 @@ config ACPI_TOSHIBA
- 	tristate "Toshiba Laptop Extras"
- 	depends on X86
- 	select BACKLIGHT_CLASS_DEVICE
-+	select INPUT_POLLDEV
- 	---help---
- 	  This driver adds support for access to certain system settings
- 	  on "legacy free" Toshiba laptops.  These laptops can be recognized by
-diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
-index 3906d47..2b1a3d9 100644
---- a/drivers/acpi/toshiba_acpi.c
-+++ b/drivers/acpi/toshiba_acpi.c
-@@ -27,13 +27,13 @@
-  *		engineering the Windows drivers
-  *	Yasushi Nagato - changes for linux kernel 2.4 -> 2.5
-  *	Rob Miller - TV out and hotkeys help
-- *
-+ *	Richard Hughes - emit INPUT events for hotkeys
-  *
-  *  TODO
-  *
-  */
- 
--#define TOSHIBA_ACPI_VERSION	"0.18"
-+#define TOSHIBA_ACPI_VERSION	"0.19"
- #define PROC_INTERFACE_VERSION	1
- 
- #include <linux/kernel.h>
-@@ -42,6 +42,7 @@
- #include <linux/types.h>
- #include <linux/proc_fs.h>
- #include <linux/backlight.h>
-+#include <linux/input-polldev.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -99,6 +100,16 @@ MODULE_LICENSE("GPL");
- #define HCI_VIDEO_OUT_CRT		0x2
- #define HCI_VIDEO_OUT_TV		0x4
- 
-+/* key definitions */
-+#define HCI_HKEY_MUTE			0x0101
-+#define HCI_HKEY_BREAK			0x013b
-+#define HCI_HKEY_SEARCH			0x013c
-+#define HCI_HKEY_SUSPEND		0x013d
-+#define HCI_HKEY_HIBERNATE		0x013e
-+#define HCI_HKEY_BRIGHTNESSDOWN		0x0140
-+#define HCI_HKEY_BRIGHTNESSUP		0x0141
-+#define HCI_HKEY_WLAN			0x0142
-+
- /* utility
-  */
- 
-@@ -213,9 +224,15 @@ static acpi_status hci_read1(u32 reg, u32 * out1, u32 * result)
- 
- static struct proc_dir_entry *toshiba_proc_dir /*= 0*/ ;
- static struct backlight_device *toshiba_backlight_device;
-+static struct input_polled_dev *toshiba_poll_dev;
- static int force_fan;
- static int last_key_event;
- static int key_event_valid;
-+static int hotkeys_over_input = 1;
-+static int hotkeys_check_per_sec = 2;
-+
-+module_param(hotkeys_over_input, uint, 0400);
-+module_param(hotkeys_check_per_sec, uint, 0400);
- 
- typedef struct _ProcItem {
- 	const char *name;
-@@ -443,27 +460,33 @@ static char *read_keys(char *p)
- 	u32 hci_result;
- 	u32 value;
- 
--	if (!key_event_valid) {
--		hci_read1(HCI_SYSTEM_EVENT, &value, &hci_result);
--		if (hci_result == HCI_SUCCESS) {
--			key_event_valid = 1;
--			last_key_event = value;
--		} else if (hci_result == HCI_EMPTY) {
--			/* better luck next time */
--		} else if (hci_result == HCI_NOT_SUPPORTED) {
--			/* This is a workaround for an unresolved issue on
--			 * some machines where system events sporadically
--			 * become disabled. */
--			hci_write1(HCI_SYSTEM_EVENT, 1, &hci_result);
--			printk(MY_NOTICE "Re-enabled hotkeys\n");
--		} else {
--			printk(MY_ERR "Error reading hotkey status\n");
--			goto end;
-+	if (!hotkeys_over_input) {
-+		if (!key_event_valid) {
-+			hci_read1(HCI_SYSTEM_EVENT, &value, &hci_result);
-+			if (hci_result == HCI_SUCCESS) {
-+				key_event_valid = 1;
-+				last_key_event = value;
-+			} else if (hci_result == HCI_EMPTY) {
-+				/* better luck next time */
-+			} else if (hci_result == HCI_NOT_SUPPORTED) {
-+				/* This is a workaround for an unresolved issue on
-+				 * some machines where system events sporadically
-+				 * become disabled. */
-+				hci_write1(HCI_SYSTEM_EVENT, 1, &hci_result);
-+				printk(MY_NOTICE "Re-enabled hotkeys\n");
-+			} else {
-+				printk(MY_ERR "Error reading hotkey status\n");
-+				goto end;
-+			}
- 		}
-+	} else {
-+		key_event_valid = 0;
-+		last_key_event = 0;
- 	}
- 
- 	p += sprintf(p, "hotkey_ready:            %d\n", key_event_valid);
- 	p += sprintf(p, "hotkey:                  0x%04x\n", last_key_event);
-+	p += sprintf(p, "hotkeys_via_input:       %d\n", hotkeys_over_input);
- 
-       end:
- 	return p;
-@@ -534,15 +557,127 @@ static acpi_status __exit remove_device(void)
- }
- 
- static struct backlight_ops toshiba_backlight_data = {
--        .get_brightness = get_lcd,
--        .update_status  = set_lcd_status,
-+	.get_brightness = get_lcd,
-+	.update_status  = set_lcd_status,
- };
- 
-+static void toshiba_deliver_button_event(struct input_dev *input, u32 value)
-+{
-+	int keycode = KEY_UNKNOWN;
-+	int key_down = 1;
-+
-+	if (!input)
-+		return;
-+
-+	/* translate MSB to key up */
-+	if (value & 0x80) {
-+		value &= ~0x80;
-+		key_down = 0;
-+	}
-+
-+	/* ignore FN on its own */
-+	if (value == 0x0100)
-+		return;
-+
-+	/* translate keys to keycodes */
-+	switch (value) {
-+	case HCI_HKEY_MUTE:
-+		keycode = KEY_MUTE;
-+		break;
-+	case HCI_HKEY_BREAK:
-+		keycode = KEY_BREAK;
-+		break;
-+	case HCI_HKEY_SEARCH:
-+		keycode = KEY_SEARCH;
-+		break;
-+	case HCI_HKEY_SUSPEND:
-+		keycode = KEY_SLEEP;
-+		break;
-+	case HCI_HKEY_HIBERNATE:
-+		keycode = KEY_SUSPEND;
-+		break;
-+	case HCI_HKEY_BRIGHTNESSDOWN:
-+		keycode = KEY_BRIGHTNESSDOWN;
-+		break;
-+	case HCI_HKEY_BRIGHTNESSUP:
-+		keycode = KEY_BRIGHTNESSUP;
-+		break;
-+	case HCI_HKEY_WLAN:
-+		keycode = KEY_WLAN;
-+		break;
-+	default:
-+		keycode = KEY_UNKNOWN;
-+	}
-+
-+	if (keycode != KEY_UNKNOWN) {
-+		printk(MY_INFO "mapped hkey %i to keycode %i [%i]\n", value, keycode, key_down);
-+		input_report_key(input, keycode, key_down);
-+		input_sync(input);
-+	}
-+}
-+
-+static void toshiba_keys_clear(void)
-+{
-+	int dropped = 0;
-+	int clear_queue = 0;
-+	u32 hci_result, value;
-+
-+	do {
-+		/* We don't want to get stuck here; older toshibas such as the
-+		 * A60 may load and then return junk during the hci_read */
-+		if (clear_queue++ > 16)
-+			break;
-+
-+		hci_read1(HCI_SYSTEM_EVENT, &value, &hci_result);
-+		if (hci_result == HCI_SUCCESS) {
-+			dropped++;
-+		} else if (hci_result == HCI_EMPTY) {
-+			/* better luck next time */
-+		} else if (hci_result == HCI_NOT_SUPPORTED) {
-+			/* This is a workaround for an unresolved issue on
-+			 * some machines where system events sporadically
-+			 * become disabled. */
-+			hci_write1(HCI_SYSTEM_EVENT, 1, &hci_result);
-+			printk(MY_NOTICE "Re-enabled hotkeys\n");
-+		}
-+	} while (hci_result != HCI_EMPTY);
-+
-+	printk(MY_INFO "Dropped %d keys from the queue on startup\n", dropped);
-+}
-+
-+static void handle_buttons(struct input_polled_dev *dev)
-+{
-+	u32 hci_result, value;
-+	struct input_dev *input = dev->input;
-+
-+	do {
-+		hci_read1(HCI_SYSTEM_EVENT, &value, &hci_result);
-+		if (hci_result == HCI_SUCCESS) {
-+			/* we got a button event */
-+			toshiba_deliver_button_event(input, value);
-+		} else if (hci_result == HCI_EMPTY) {
-+			/* better luck next time */
-+		} else if (hci_result == HCI_NOT_SUPPORTED) {
-+			/* This is a workaround for an
-+			 * unresolved issue on some machines
-+			 * where system events sporadically
-+			 * become disabled. */
-+			hci_write1(HCI_SYSTEM_EVENT, 1, &hci_result);
-+			printk(MY_NOTICE "Re-enabled hotkeys\n");
-+		}
-+	} while (hci_result == HCI_SUCCESS);
-+}
-+
- static void __exit toshiba_acpi_exit(void)
- {
- 	if (toshiba_backlight_device)
- 		backlight_device_unregister(toshiba_backlight_device);
- 
-+	if (toshiba_poll_dev) {
-+		input_unregister_polled_device(toshiba_poll_dev);
-+		input_free_polled_device(toshiba_poll_dev);
-+	}
-+
- 	remove_device();
- 
- 	if (toshiba_proc_dir)
-@@ -551,6 +686,49 @@ static void __exit toshiba_acpi_exit(void)
- 	return;
- }
- 
-+static int __init toshiba_input_polldev_init(void)
-+{
-+	int error;
-+	struct input_dev *input;
-+
-+	/* use INPUT for key events */
-+	toshiba_poll_dev = input_allocate_polled_device();;
-+	if (!toshiba_poll_dev) {
-+		error = -ENOMEM;
-+		goto err_no_mem;
-+	}
-+	toshiba_poll_dev->poll = handle_buttons;
-+	toshiba_poll_dev->poll_interval = HZ / hotkeys_check_per_sec;
-+	input = toshiba_poll_dev->input;
-+
-+	/* create one 'keyboard' virtual input device for all the acpi events */
-+	input->name = "Toshiba Extra Buttons";
-+	input->phys = "toshiba/input0";
-+	input->id.bustype = BUS_HOST;
-+	input->id.product = 0x0001;
-+	input->evbit[0] = BIT(EV_KEY);
-+	set_bit(KEY_MUTE, input->keybit);
-+	set_bit(KEY_BREAK, input->keybit); /* probably should be KEY_LOCK */
-+	set_bit(KEY_SEARCH, input->keybit);
-+	set_bit(KEY_SUSPEND, input->keybit);
-+	set_bit(KEY_SLEEP, input->keybit);
-+	set_bit(KEY_BRIGHTNESSDOWN, input->keybit);
-+	set_bit(KEY_BRIGHTNESSUP, input->keybit);
-+	set_bit(KEY_WLAN, input->keybit);
-+
-+	toshiba_keys_clear();
-+
-+	error = input_register_polled_device(toshiba_poll_dev);
-+	if (error)
-+		goto err_free_input;
-+	return 0;
-+
-+err_free_input:
-+	input_free_polled_device(toshiba_poll_dev);
-+err_no_mem:
-+	return error;
-+}
-+
- static int __init toshiba_acpi_init(void)
- {
- 	acpi_status status = AE_OK;
-@@ -590,12 +768,28 @@ static int __init toshiba_acpi_init(void)
- 	toshiba_backlight_device = backlight_device_register("toshiba",NULL,
- 						NULL,
- 						&toshiba_backlight_data);
--        if (IS_ERR(toshiba_backlight_device)) {
-+	if (IS_ERR(toshiba_backlight_device)) {
- 		printk(KERN_ERR "Could not register toshiba backlight device\n");
- 		toshiba_backlight_device = NULL;
- 		toshiba_acpi_exit();
- 	}
--        toshiba_backlight_device->props.max_brightness = HCI_LCD_BRIGHTNESS_LEVELS - 1;
-+	toshiba_backlight_device->props.max_brightness = HCI_LCD_BRIGHTNESS_LEVELS - 1;
-+
-+	/* we have to poll the device as we do not get events */
-+	if (hotkeys_over_input && hotkeys_check_per_sec > 0) {
-+
-+		/* sanitise to something sane */
-+		if (hotkeys_check_per_sec > 10)
-+			hotkeys_check_per_sec = 10;
-+		printk(KERN_INFO "ktoshkeyd checks per second : %d\n", hotkeys_check_per_sec);
-+
-+		toshiba_input_polldev_init ();
-+		/* just abort */
-+		if (!toshiba_poll_dev) {
-+			printk(KERN_ERR "could not allocate input device\n");
-+			toshiba_acpi_exit();
-+		}
-+	}
- 
- 	return (ACPI_SUCCESS(status)) ? 0 : -ENODEV;
- }
-
---=-iWd3CNRZWogU02e6x+Xv--
 
