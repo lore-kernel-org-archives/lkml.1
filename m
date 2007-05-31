@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbXEaTxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761291AbXEaTyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761575AbXEaTxj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 15:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761152AbXEaTxJ
+	id S1761291AbXEaTyD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 15:54:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759467AbXEaTxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 15:53:09 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:51469 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761054AbXEaTxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 15:53:07 -0400
-Date: Thu, 31 May 2007 21:54:07 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Christoph Lameter <clameter@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Message-ID: <20070531195407.GA27203@uranus.ravnborg.org>
-References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com> <465EE7BB.4050605@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 May 2007 15:53:51 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:61191 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759239AbXEaTxu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 15:53:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jrB+vy/XpH3x8c70n+byO7mo0qigMwvffSUevDoDBxCODbGjC9CS+qR46tEu8KWvI0NNKzS0R+ccUrjO0r8dxiyN2BAKssm7DKbWlhHNtYRMSW8KJaaBzSrHRE9gKCQL9m9i0hqcc/yVqfjmlEuUkKpehtypkrpDdJIcTDozspg=
+Message-ID: <d120d5000705311253n67d4247eh194e6f4457a0b4c@mail.gmail.com>
+Date: Thu, 31 May 2007 15:53:49 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Renato Golin" <rengolin@gmail.com>
+Subject: Re: joydev.c and saitek cyborg evo force
+Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-kernel@vger.kernel.org
+In-Reply-To: <d9b9d95f0705301526i66e99ef3v6c35165aa1a5f5c6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <465EE7BB.4050605@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
+	 <200705210016.20794.dtor@insightbb.com>
+	 <Pine.LNX.4.64.0705211444500.22906@jikos.suse.cz>
+	 <d9b9d95f0705291657o47ef42d3jea2a1dae3e31bbdb@mail.gmail.com>
+	 <Pine.LNX.4.64.0705300207160.3961@jikos.suse.cz>
+	 <d9b9d95f0705300214u7eb257fg783aefd73077d33@mail.gmail.com>
+	 <Pine.LNX.4.64.0705301654560.3961@jikos.suse.cz>
+	 <d9b9d95f0705300818h2eaa8130mf8a7a37966d29cc5@mail.gmail.com>
+	 <d9b9d95f0705301526i66e99ef3v6c35165aa1a5f5c6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 11:20:27AM -0400, Prarit Bhargava wrote:
-> 
-> 
-> Christoph Lameter wrote:
-> >On Wed, 30 May 2007, Luck, Tony wrote:
-> >
-> >  
-> >>>Ahh okay. cscope will do that too.... But all have __exit.
-> >>>      
-> >>The trick is that one of them *shouldn't* have __exit.  With cscope
-> >>you'll have to use the "Find functions calling this function:"
-> >>mode to try and find the __init function that is calling an
-> >>__exit function.
-> >>    
-> >
-> >Urgh... Does it have to be that difficult?
-> >-
-> >  
-> 
-> 
-> Sometimes yes ... but in this case no.
-> 
-> I flipped config options on and off until I tracked the problem down 
-> into the loopback driver, and then manually ran modpost on 
-> drivers/block/built-in.o to reveal:
-> 
-> ....Nothing. 
-> 
-> Something is borken in modpost because I found a bug in the loopback 
-> code which is a _REAL_ bug.
+On 5/30/07, Renato Golin <rengolin@gmail.com> wrote:
+>
+> Now, why joydev's input_dev is reporting -127, 127 just for the two first axis?
 
-In the initial version of the section mismatch check code
-I ignored references to .exit.text from .init.text code.
-Today I do not see why this should be allowed.
-So unless an allmodconfig build for i386 + maybe a few more archs
-does not show any significant regressions I will enable this check.
+Is it getting hit with HID_QUIRK_BADPAD? What does evtest utility show
+for the device?
 
-My initial i386 allmodconfig build pointed out a number of places
-where this happened (I lost the warnings and are doing a rebuild now)A
-.
-One such place is microcode.c where we has
-
-static int __init microcode_init (void)
-{
-	...
-
-	if (IS_ERR(microcode_pdev)) {
-		microcode_dev_exit();
-		return PTR_ERR(microcode_pdev);
-	}
-
-And:
-static void __exit microcode_dev_exit (void)
-{
-	misc_deregister(&microcode_dev);
-}
-
-I assume this is a real bug that we have not triggered
-during testing becasue this is in an error-path.
-
-The linker will not error out because .exit.text are discarded
-at run-time at least for i386.
-
-	Sam
+-- 
+Dmitry
