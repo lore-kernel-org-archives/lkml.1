@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbXEaUIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760544AbXEaUKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761542AbXEaUIo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXEaUIe
+	id S1760544AbXEaUKT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXEaUKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:08:34 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56510 "EHLO pasmtpA.tele.dk"
+	Thu, 31 May 2007 16:10:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49348 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbXEaUId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:08:33 -0400
-Date: Thu, 31 May 2007 22:08:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Prarit Bhargava <prarit@redhat.com>, netdev <netdev@vger.kernel.org>
-Cc: Christoph Lameter <clameter@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: [PATCH] net/hp100: fix section mismatch warning
-Message-ID: <20070531200840.GB27305@uranus.ravnborg.org>
-References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com> <465EE7BB.4050605@redhat.com> <20070531200446.GA27305@uranus.ravnborg.org>
+	id S1753252AbXEaUKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:10:05 -0400
+Date: Thu, 31 May 2007 22:09:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Zach Brown <zach.brown@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] Syslets - Fix cachemiss_thread return value
+Message-ID: <20070531200949.GA10380@elte.hu>
+References: <20070531181923.GA9904@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070531200446.GA27305@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070531181923.GA9904@c2.user-mode-linux.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following section mismatch warning in hp100:
 
-WARNING: drivers/net/hp100.o(.init.text+0x26a): Section mismatch: reference to .exit.text: (after 'init_module')
+* Jeff Dike <jdike@addtoit.com> wrote:
 
-The warning says that we use a function marked __exit from a 
-function marked __init.
-This is not good on architectures where we discard __exit section
-for drivers that are built-in.
+> cachemiss_thread should explicitly return 0 or error instead of 
+> task_ret_reg(current) (which is -ENOSYS anyway) because 
+> async_thread_helper is careful to put the return value in eax anyway.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-Comple tested only.
+oops, indeed! Thanks.
 
-Note: This warning does not appear with modpost in upstream kernel
-      but I would like to submit patches for the obvious bugs ASAP
-
-	Sam
-
-diff --git a/drivers/net/hp100.c b/drivers/net/hp100.c
-index 8118a67..8caa591 100644
---- a/drivers/net/hp100.c
-+++ b/drivers/net/hp100.c
-@@ -3005,7 +3005,7 @@ static int __init hp100_isa_init(void)
- 	return cards > 0 ? 0 : -ENODEV;
- }
- 
--static void __exit hp100_isa_cleanup(void)
-+static void hp100_isa_cleanup(void)
- {
- 	int i;
- 
+	Ingo
