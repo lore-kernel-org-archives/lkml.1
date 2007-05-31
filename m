@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbXEaPOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbXEaPRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbXEaPOS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 11:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbXEaPOG
+	id S1755305AbXEaPRd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 11:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXEaPR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 11:14:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55902 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752641AbXEaPOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 11:14:04 -0400
-Date: Thu, 31 May 2007 16:13:38 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: 2.6.22-rc3-mm1
-Message-ID: <20070531151338.GA759@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jeff Garzik <jeff@garzik.org>,
-	Cornelia Huck <cornelia.huck@de.ibm.com>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	SCSI development list <linux-scsi@vger.kernel.org>,
-	James Bottomley <James.Bottomley@SteelEye.com>,
-	Dan Williams <dan.j.williams@intel.com>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070531140922.2e55aefb@gondolin.boeblingen.de.ibm.com> <20070531121557.GQ23968@parisc-linux.org> <20070531142048.05edf133@gondolin.boeblingen.de.ibm.com> <465EC101.7010105@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 May 2007 11:17:26 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:50289 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752641AbXEaPRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 11:17:25 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/5] serial: convert early_uart to earlycon for 8250
+Date: Thu, 31 May 2007 09:17:18 -0600
+User-Agent: KMail/1.9.6
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "Andi Kleen" <ak@suse.de>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <200705291844.00308.yinghai.lu@sun.com> <86802c440705302136h1f2da2d8j881e062dfa6b7d7a@mail.gmail.com> <20070530214859.ec026ac8.akpm@linux-foundation.org>
+In-Reply-To: <20070530214859.ec026ac8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <465EC101.7010105@garzik.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200705310917.19205.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 08:35:13AM -0400, Jeff Garzik wrote:
-> Cornelia Huck wrote:
-> >On Thu, 31 May 2007 06:15:57 -0600,
-> >Matthew Wilcox <matthew@wil.cx> wrote:
-> >
-> >>On Thu, May 31, 2007 at 02:09:22PM +0200, Cornelia Huck wrote:
-> >>>I split those functions out into a new file. Builds on s390 and i386.
-> >>Why not just put #ifdef CONFIG_HAS_DMA / #endif around the pair of
-> >>functions?  I don't see the need to add a new Kconfig symbol and a new
-> >>file for this.
-> >
-> >I prefer a new file over #ifdefs in c files. (New dma-dependent stuff
-> >would also have a place where it could go to.)
-> >
-> >But I'll do whatever ends up as consensus :)
+On Wednesday 30 May 2007 10:48:59 pm Andrew Morton wrote:
+> On Wed, 30 May 2007 21:36:41 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
 > 
-> 50 lines isn't much need for a new file.
+> > On 5/30/07, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > > On 5/30/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > On Tue, 29 May 2007 18:43:59 -0700 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> > > >
+> > > > > [PATCH 4/5] serial: convert early_uart to earlycon for 8250
+> > > >
+> > > > drivers/serial/8250_early.c: In function 'parse_options':
+> > > > drivers/serial/8250_early.c:143: error: 'FIX_EARLYCON_MEM_BASE' undeclared (first use in this function)
+> > > > drivers/serial/8250_early.c:143: error: (Each undeclared identifier is reported only once
+> > > >
+> > > > That was with http://userweb.kernel.org/~akpm/config-sony.txt, but this is
+> > > > going to break a whole pile of architectures (alpha, powerpc, others).
+> > >
+> > > alpha, powerpc, others may need sth like ia64, if they do not support fixmap.
+> > 
+> > or create dummy fixmap.h that doesn't support fixmap.
+> 
+> You could require that the architecture implement some specific function
+> for mapping the early-uart.
 
-The scsi core shouldn't know anything about dma mappings, so a separate
-file is a good idea just to keep the separation clean.
+We could, but we already have bt_ioremap, dmi_ioremap, and early_ioremap.
+Do we really want to proliferate more flavors of "early ioremap"?  I'd
+rather consolidate the ones we already have.
