@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762108AbXEaUHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbXEaUIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762108AbXEaUHU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbXEaUHJ
+	id S1761542AbXEaUIo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXEaUIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:07:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49885 "EHLO ogre.sisk.pl"
+	Thu, 31 May 2007 16:08:34 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56510 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750825AbXEaUHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:07:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
-Date: Thu, 31 May 2007 22:12:33 +0200
-User-Agent: KMail/1.9.5
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Zwane Mwaikambo <zwane@linuxpower.ca>
-References: <fa.tUMR7tAB+jMgtfyl/LJ7U9QMgBs@ifi.uio.no> <465EDCF4.7010700@shaw.ca> <m1abvl3shh.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1abvl3shh.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1751409AbXEaUId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:08:33 -0400
+Date: Thu, 31 May 2007 22:08:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Prarit Bhargava <prarit@redhat.com>, netdev <netdev@vger.kernel.org>
+Cc: Christoph Lameter <clameter@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: [PATCH] net/hp100: fix section mismatch warning
+Message-ID: <20070531200840.GB27305@uranus.ravnborg.org>
+References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com> <465EE7BB.4050605@redhat.com> <20070531200446.GA27305@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705312212.34053.rjw@sisk.pl>
+In-Reply-To: <20070531200446.GA27305@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 31 May 2007 17:47, Eric W. Biederman wrote:
-> Robert Hancock <hancockr@shaw.ca> writes:
-> 
-> > Eric W. Biederman wrote:
-> >> I just realized that except for doing the code review and noticing
-> >> that the current cpu hotplug code is fundamentally incompatible
-> >> with x86 I haven't done anything about it.  So here is my patch
-> >> to document what is wrong.
-> >>
-> >> The current cpu hotplug code requires irqs to be migrated from a cpu
-> >> outside of irq context.  On x86 ioapics simply do not support this,
-> >> making the code unfixable without major redesign of the generic cpu
-> >> hotplug code.
-> >>
-> >> So this patch makes CPU_HOTPLUG on x86 depend on CONFIG_BROKEN
-> >> and adds a WARN_ON so people that do enable it are not in doubt about
-> >> which part of the code is broken, even if it does work for them.
-> >>
-> >> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> >
-> > I don't think this is useful, though the code may be problematic, this patch
-> > will break suspend on all SMP machines with an existing config, which is a major
-> > regression..
-> 
-> 
-> Cool.
-> 
-> My patch does not change the functionality of the code just complains
-> very loudly that it is broken.
-> 
-> Further the code is broken at a design level.  The code isn't
-> problematic the code is impossible.  The cpu hotplug code can not be
-> fixed on x86 without a redesign of the generic cpu hotplug code.
-> 
-> Suspend does not need to use cpu hotplug because it already gets in
-> deep with the drivers, and can stop interrupts at the source.  I know
-> there was some talk about this doing this earlier, but I don't know if
-> anything came of that discussion.
-> 
-> Regardless if you care about this being a problem feel free to fix the
-> relevant code so it attempts to do something that the hardware
-> actually supports.
-> 
-> But if the suspend needs this code for smp support it is also broken.
+Fix following section mismatch warning in hp100:
 
-Well, from the functionality point of view, it's not.  We have no problems
-with it, at least not that I know of.
+WARNING: drivers/net/hp100.o(.init.text+0x26a): Section mismatch: reference to .exit.text: (after 'init_module')
 
-Greetings,
-Rafael
+The warning says that we use a function marked __exit from a 
+function marked __init.
+This is not good on architectures where we discard __exit section
+for drivers that are built-in.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+Comple tested only.
+
+Note: This warning does not appear with modpost in upstream kernel
+      but I would like to submit patches for the obvious bugs ASAP
+
+	Sam
+
+diff --git a/drivers/net/hp100.c b/drivers/net/hp100.c
+index 8118a67..8caa591 100644
+--- a/drivers/net/hp100.c
++++ b/drivers/net/hp100.c
+@@ -3005,7 +3005,7 @@ static int __init hp100_isa_init(void)
+ 	return cards > 0 ? 0 : -ENODEV;
+ }
+ 
+-static void __exit hp100_isa_cleanup(void)
++static void hp100_isa_cleanup(void)
+ {
+ 	int i;
+ 
