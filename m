@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbXEaAE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbXEaAKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392AbXEaAE7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 20:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbXEaAEw
+	id S1755911AbXEaAKL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 20:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXEaAJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 20:04:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43807 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752398AbXEaAEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 20:04:51 -0400
-Date: Wed, 30 May 2007 17:05:30 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: "Satyam Sharma" <satyam.sharma@gmail.com>,
-       "Matthias Kaehlcke" <matthias.kaehlcke@gmail.com>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       zaitcev@redhat.com
-Subject: Re: [PATCH] drivers/block/ub.c: use list_for_each_entry()
-Message-Id: <20070530170530.08a77359.zaitcev@redhat.com>
-In-Reply-To: <adaodk1q3ny.fsf@cisco.com>
-References: <20070530084752.GE14284@traven>
-	<20070530123840.e54d73c2.zaitcev@redhat.com>
-	<a781481a0705301414t4a0c1b2epe5e14b62ec8dc872@mail.gmail.com>
-	<20070530160850.0c536d55.zaitcev@redhat.com>
-	<adasl9dq4zq.fsf@cisco.com>
-	<20070530163236.8bd5640c.zaitcev@redhat.com>
-	<adaodk1q3ny.fsf@cisco.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 20:09:58 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59442 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750825AbXEaAJ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 20:09:57 -0400
+Date: Wed, 30 May 2007 17:09:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: "Luck, Tony" <tony.luck@intel.com>, David Chinner <dgc@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: BUG: sleeping function called from invalid context at
+ kernel/fork.c:385
+In-Reply-To: <465E0F03.6000103@oracle.com>
+Message-ID: <Pine.LNX.4.64.0705301657530.3832@schroedinger.engr.sgi.com>
+References: <617E1C2C70743745A92448908E030B2A01929C15@scsmsx411.amr.corp.intel.com>
+ <Pine.LNX.4.64.0705301630360.3568@schroedinger.engr.sgi.com>
+ <20070530163413.87ecfe18.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0705301652100.3731@schroedinger.engr.sgi.com>
+ <465E0F03.6000103@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 16:42:41 -0700, Roland Dreier <rdreier@cisco.com> wrote:
+On Wed, 30 May 2007, Randy Dunlap wrote:
 
-> If I just see
-> 
-> 	for (pos = list_entry((head)->next, typeof(*pos), member),
-> 		n = list_entry(pos->member.next, typeof(*pos), member);
-> 	     &pos->member != (head);
-> 	     pos = n, n = list_entry(n->member.next, typeof(*n), member))
-> 
-> then what am I to think?
+> OK.  I would write the file to disk and view it with an editor.
+> Then at each occurrence of /exit.text/, see if it's inside an __init
+> function...
 
-You won't catch me writing this kind of crap, so the question is moot.
-Seriously, a comma operator? Admit it, you just expanded a marcro from
-list.h by hand. Real people cannot write like that.
+Ahh okay. cscope will do that too.... But all have __exit.
 
--- Pete
