@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761025AbXEaURS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbXEaUSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761025AbXEaURS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbXEaURJ
+	id S1761622AbXEaUSL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbXEaUR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:17:09 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:50833 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753121AbXEaURH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:17:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=i4ebNsLZmvMM8ZJKxR4fYDDcezlzGwa3aaMkPblnJZj4cqYt1yOnCJeKJ7DWZWZ0idtYxkDNXt92pplaYxk3tN8BCwsq4gJBYCF3fYZoNaq1bL85Ssb6RAXpluZ+NE247n1MvSM4PN+m1YIf7L9kH526eEFoOCARF8HvIQds9jg=
-Message-ID: <8bd0f97a0705311317t1ed00a29w5b0d980b7e2dba6f@mail.gmail.com>
-Date: Thu, 31 May 2007 15:17:05 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Bryan Wu" <bryan.wu@analog.com>
-Subject: Re: [PATCH 19/20] Blackfin on-chip watchdog driver
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org,
-       "Mike Frysinger" <michael.frysinger@analog.com>,
-       "Wim Van Sebroeck" <wim@iguana.be>
-In-Reply-To: <8bd0f97a0705291020p5263b0bco88c556ff8cabf05c@mail.gmail.com>
+	Thu, 31 May 2007 16:17:58 -0400
+Received: from styx.suse.cz ([82.119.242.94]:56784 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756472AbXEaUR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:17:57 -0400
+Date: Thu, 31 May 2007 22:22:12 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Renato Golin <rengolin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: joydev.c and saitek cyborg evo force
+In-Reply-To: <d120d5000705311253n67d4247eh194e6f4457a0b4c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705312220250.5177@jikos.suse.cz>
+References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com> 
+ <200705210016.20794.dtor@insightbb.com>  <Pine.LNX.4.64.0705211444500.22906@jikos.suse.cz>
+  <d9b9d95f0705291657o47ef42d3jea2a1dae3e31bbdb@mail.gmail.com> 
+ <Pine.LNX.4.64.0705300207160.3961@jikos.suse.cz> 
+ <d9b9d95f0705300214u7eb257fg783aefd73077d33@mail.gmail.com> 
+ <Pine.LNX.4.64.0705301654560.3961@jikos.suse.cz> 
+ <d9b9d95f0705300818h2eaa8130mf8a7a37966d29cc5@mail.gmail.com> 
+ <d9b9d95f0705301526i66e99ef3v6c35165aa1a5f5c6@mail.gmail.com>
+ <d120d5000705311253n67d4247eh194e6f4457a0b4c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11803414753217-git-send-email-bryan.wu@analog.com>
-	 <11803414821370-git-send-email-bryan.wu@analog.com>
-	 <8bd0f97a0705291020p5263b0bco88c556ff8cabf05c@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/29/07, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On 5/28/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> > From: Mike Frysinger <michael.frysinger@analog.com>
-> >
-> > This patch implements the driver necessary use the Analog Devices
-> > Blackfin processor's on-chip watchdog controller, supports
-> > BF53[123]/BF53[467]/BF561.
-> >
-> > Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
-> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> > Cc: Wim Van Sebroeck <wim@iguana.be>
->
-> we probably want to NACK this and wait for me to rip out the timer
-> bits into a sep clockevents driver
+On Thu, 31 May 2007, Dmitry Torokhov wrote:
 
-ive updated our watchdog so it only does reset things ... should be
-ready for mainline inclusion now :)
--mike
+> > Now, why joydev's input_dev is reporting -127, 127 just for the two 
+> > first axis?
+> Is it getting hit with HID_QUIRK_BADPAD? What does evtest utility show
+> for the device?
+
+Yes, the problem with axis ranges definitely looks like that. Renato, 
+could you please send me vendor id and product id of the joystick in 
+question, I will send you a patch to test whether normalizing the values 
+on hid-level (as we already do for several other joypads) will do the 
+trick?
+
+I have currently no idea about the incorrect number of buttons, will look 
+at it a little bit more.
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
