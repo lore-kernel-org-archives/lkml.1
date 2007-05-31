@@ -1,84 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbXEaP0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757963AbXEaP1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757230AbXEaP0V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 11:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbXEaP0O
+	id S1757963AbXEaP1P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 11:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbXEaP1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 11:26:14 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:56977 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752666AbXEaP0N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 11:26:13 -0400
-DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=uWexqsFno25ccz5MddMeboN8uC3/kCgBI5j8Ymo9wa74exP62KZR19dMpr7tFyNdUGONJ0afbwHPDDtGX17ReTTdRSIS4EKs1rrt7+Aq49zdWH3XfAaAFNDb9ODwDsKE;
-X-IronPort-AV: E=Sophos;i="4.14,599,1170655200"; 
-   d="scan'208";a="256871667"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 31 May 2007 11:27:00 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36401 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752728AbXEaP1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 11:27:00 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18n8Bgs1M4ngIdqoD/4Rsk55tc+yGgeNdZIpeqdV/
+	KKJj7vGjUnAyU7
+Date: Thu, 31 May 2007 17:27:09 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: iank@bredband.net, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Something goes wrong with timer statistics.
+Message-ID: <20070531152709.GA18775@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Eric Dumazet <dada1@cosmosbay.com>, iank@bredband.net,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+	linux-kernel@vger.kernel.org
+References: <1180474738.22497.25.camel@pi.pomac.com> <6bffcb0e0705291524y2752d646p94b0bf6ca87af68f@mail.gmail.com> <1180478288.20546.39.camel@chaos> <20070530113825.GA5203@atjola.homenet> <20070530144449.36811a4d.dada1@cosmosbay.com> <20070530131458.GA5432@atjola.homenet> <20070531102047.GG19272@pomac.netswarm.net> <20070531142522.GA16690@atjola.homenet> <20070531171007.5780e5e6.dada1@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C7A398.043A15DA"
-Subject: [linux-usb-devel] [PATCH] bug removing ehci-hcd
-Date: Thu, 31 May 2007 10:26:10 -0500
-Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9524D64@ausx3mpc125.aus.amer.dell.com>
-In-Reply-To: <20070529093324.92e571a0.akpm@linux-foundation.org>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: [linux-usb-devel] [PATCH] bug removing ehci-hcd
-Thread-Index: AceiDxpfkLMZd7RCTzSMcJSC//x3gQAJpkBQ
-References: <20070521024437.GA4751@inferi.kami.home><20070525214005.GA6925@suse.de><20070525150015.b5eaafc3.akpm@linux-foundation.org><DFEF91B22ED07447AB6AA4B237F913F9524D51@ausx3mpc125.aus.amer.dell.com> <20070529093324.92e571a0.akpm@linux-foundation.org>
-From: <Stuart_Hayes@Dell.com>
-To: <akpm@linux-foundation.org>
-Cc: <gregkh@suse.de>, <malattia@linux.it>, <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>,
-       <linux-usb-devel@lists.sourceforge.net>
-X-OriginalArrivalTime: 31 May 2007 15:26:13.0118 (UTC) FILETIME=[05CF59E0:01C7A398]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070531171007.5780e5e6.dada1@cosmosbay.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On 2007.05.31 17:10:07 +0200, Eric Dumazet wrote:
+> Well... :) , there is still a memory barrier missing it seems.
+> 
+> Another cpu might see a bad value if 'active=1' is set before tstat_hash_table is really cleared.
 
-------_=_NextPart_001_01C7A398.043A15DA
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Hm, that even makes the assumption in my first try valid ;-)
+Just for the record, this time I thought that the barrier from the
+spinlock in timer_stats_update_stats (right before the check for active)
+would be enough, but that's obviously running on the wrong cpu if we
+race... *sigh*
+
+Thanks,
+Björn
 
 
-I wasn't actually able to reproduce the bug myself, but I guess it is
-pretty obvious that I shouldn't have called cpufreq_unregister_notifier
-with a spinlock held.  I haven't been doing this long enough to know
-exactly which kernel this patch should be against, so let me know if
-this ins't good.  Thanks!
 
+Fix two races in the timer stats lookup code. One by ensuring that the
+initialization of a new entry is finished upon insertion of that entry.
+The other by cleaning up the hash table when the entries array is
+cleared, so that we don't have "pre-inserted" entries.
 
-This patch (for the 2.6.21.3 kernel plus previously sent cpufreq
-notifier patch) fixes a bug caused by calling
-cpufreq_unregister_notifier (which can sleep) while holding a spinlock.
+Thanks to Eric Dumazet for reminding me of the memory barriers.
 
-Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
-
-------_=_NextPart_001_01C7A398.043A15DA
-Content-Type: application/octet-stream;
-	name="ehci_unregister_cpufreq_notifier.patch"
-Content-Transfer-Encoding: base64
-Content-Description: ehci_unregister_cpufreq_notifier.patch
-Content-Disposition: attachment;
-	filename="ehci_unregister_cpufreq_notifier.patch"
-
-ZGlmZiAtcHVyTiBsaW51eC0yLjYuMjEuM19mcmVxb3JpZy9kcml2ZXJzL3VzYi9ob3N0L2VoY2kt
-aGNkLmMgbGludXgtMi42LjIxLjNfZnJlcWJ1Z2ZpeC9kcml2ZXJzL3VzYi9ob3N0L2VoY2ktaGNk
-LmMKLS0tIGxpbnV4LTIuNi4yMS4zX2ZyZXFvcmlnL2RyaXZlcnMvdXNiL2hvc3QvZWhjaS1oY2Qu
-YwkyMDA3LTA1LTI5IDE2OjA1OjIwLjAwMDAwMDAwMCAtMDUwMAorKysgbGludXgtMi42LjIxLjNf
-ZnJlcWJ1Z2ZpeC9kcml2ZXJzL3VzYi9ob3N0L2VoY2ktaGNkLmMJMjAwNy0wNS0yOSAxNTo0MDo0
-MS4wMDAwMDAwMDAgLTA1MDAKQEAgLTQ0OSwxNCArNDQ5LDE0IEBAIHN0YXRpYyB2b2lkIGVoY2lf
-c3RvcCAoc3RydWN0IHVzYl9oY2QgKmgKIAkvKiBubyBtb3JlIGludGVycnVwdHMgLi4uICovCiAJ
-ZGVsX3RpbWVyX3N5bmMgKCZlaGNpLT53YXRjaGRvZyk7CiAKLQlzcGluX2xvY2tfaXJxKCZlaGNp
-LT5sb2NrKTsKLQlpZiAoSENfSVNfUlVOTklORyAoaGNkLT5zdGF0ZSkpCi0JCWVoY2lfcXVpZXNj
-ZSAoZWhjaSk7Ci0KICNpZmRlZiBDT05GSUdfQ1BVX0ZSRVEKIAljcHVmcmVxX3VucmVnaXN0ZXJf
-bm90aWZpZXIoJmVoY2ktPmNwdWZyZXFfdHJhbnNpdGlvbiwKIAkJCQkgICAgQ1BVRlJFUV9UUkFO
-U0lUSU9OX05PVElGSUVSKTsKICNlbmRpZgorCXNwaW5fbG9ja19pcnEoJmVoY2ktPmxvY2spOwor
-CWlmIChIQ19JU19SVU5OSU5HIChoY2QtPnN0YXRlKSkKKwkJZWhjaV9xdWllc2NlIChlaGNpKTsK
-KwogCWVoY2lfcmVzZXQgKGVoY2kpOwogCWVoY2lfd3JpdGVsKGVoY2ksIDAsICZlaGNpLT5yZWdz
-LT5pbnRyX2VuYWJsZSk7CiAJc3Bpbl91bmxvY2tfaXJxKCZlaGNpLT5sb2NrKTsK
-
-------_=_NextPart_001_01C7A398.043A15DA--
+Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
+---
+diff --git a/kernel/time/timer_stats.c b/kernel/time/timer_stats.c
+index 868f1bc..63d00f9 100644
+--- a/kernel/time/timer_stats.c
++++ b/kernel/time/timer_stats.c
+@@ -117,21 +117,6 @@ static struct entry entries[MAX_ENTRIES];
+ 
+ static atomic_t overflow_count;
+ 
+-static void reset_entries(void)
+-{
+-	nr_entries = 0;
+-	memset(entries, 0, sizeof(entries));
+-	atomic_set(&overflow_count, 0);
+-}
+-
+-static struct entry *alloc_entry(void)
+-{
+-	if (nr_entries >= MAX_ENTRIES)
+-		return NULL;
+-
+-	return entries + nr_entries++;
+-}
+-
+ /*
+  * The entries are in a hash-table, for fast lookup:
+  */
+@@ -149,6 +134,22 @@ static struct entry *alloc_entry(void)
+ 
+ static struct entry *tstat_hash_table[TSTAT_HASH_SIZE] __read_mostly;
+ 
++static void reset_entries(void)
++{
++	nr_entries = 0;
++	memset(entries, 0, sizeof(entries));
++	memset(tstat_hash_table, 0, sizeof(tstat_hash_table));
++	atomic_set(&overflow_count, 0);
++}
++
++static struct entry *alloc_entry(void)
++{
++	if (nr_entries >= MAX_ENTRIES)
++		return NULL;
++
++	return entries + nr_entries++;
++}
++
+ static int match_entries(struct entry *entry1, struct entry *entry2)
+ {
+ 	return entry1->timer       == entry2->timer	  &&
+@@ -202,12 +203,15 @@ static struct entry *tstat_lookup(struct entry *entry, char *comm)
+ 	if (curr) {
+ 		*curr = *entry;
+ 		curr->count = 0;
++		curr->next = NULL;
+ 		memcpy(curr->comm, comm, TASK_COMM_LEN);
++
++		smp_mb(); /* Ensure that curr is initialized before insert */
++
+ 		if (prev)
+ 			prev->next = curr;
+ 		else
+ 			*head = curr;
+-		curr->next = NULL;
+ 	}
+  out_unlock:
+ 	spin_unlock(&table_lock);
+@@ -360,6 +364,7 @@ static ssize_t tstats_write(struct file *file, const char __user *buf,
+ 		if (!active) {
+ 			reset_entries();
+ 			time_start = ktime_get();
++			smb_mb();
+ 			active = 1;
+ 		}
+ 		break;
