@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761418AbXEaSyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbXEaS5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761418AbXEaSyr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757117AbXEaSyj
+	id S1760066AbXEaS5U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbXEaS5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:54:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49411 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755111AbXEaSyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 14:54:38 -0400
-Message-ID: <465F19BF.80005@redhat.com>
-Date: Thu, 31 May 2007 11:53:51 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 31 May 2007 14:57:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:28878 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757216AbXEaS5L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 14:57:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=bj9Af7ssi2L6hkU84mOYrNHmVEg0BQoj+O7++qMg7Bk184QrIB7AnrbFiJrcxHvn8/WKDEyb15IP41E8gfcrm/flz/byJI1HH+K7ZeH5J6dfkVta0Cg+19Jk4yxmtWVNK/Za1nHIeD0IST44guo/NL0MxN5Ze7UGbsL4k1v2q2M=
+Message-ID: <84144f020705311157n6bede2c7ga234d70823d5869f@mail.gmail.com>
+Date: Thu, 31 May 2007 21:57:10 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: trenn@suse.de
+Subject: Re: [PATCH] ACPI Debug - for test, devel and possibly even for production kernels
+Cc: linux-acpi <linux-acpi@vger.kernel.org>, "Len Brown" <lenb@kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1180624839.10908.71.camel@queen.suse.de>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
-References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com> <Pine.LNX.4.64.0705311123370.30485@alien.or.mcafeemobile.com> <465F170B.3070603@redhat.com> <Pine.LNX.4.64.0705311144290.30485@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0705311144290.30485@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1180624839.10908.71.camel@queen.suse.de>
+X-Google-Sender-Auth: 666d55c3394ac2c2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On 5/31/07, Thomas Renninger <trenn@suse.de> wrote:
+> (This should efficiently be the same as the proposed big patch a year
+> ago from Pekka Enberg, just a bit smaller and should make ACPICA and
+> kernel/linux people happy:
+> http://marc.info/?l=linux-kernel&m=113699535303722&w=2)
 
-On 05/31/2007 Davide Libenzi wrote:
-> I was talking for a broader usage, not only glibc centric. Most ppl 
-> writing MT+exec apps wants all but (eventually) and handfull of files 
-> leaking across the exec boundary.
+No, you're keeping these obfuscating macros around:
 
-Policies are not the answer.  Using such a flag is no big issue.  *Iff*
-we should end up with some form of private file descriptors changing the
-default for them would be OK, too.  But the existing semantics mustn't
-be touched, even if it is selectable.  Trying to fix existing buggy code
-this way is foolish since it might just as well break assumptions in the
-same program.
++#define return_VOID                     return
++#define return_ACPI_STATUS(s)           return(s)
++#define return_VALUE(s)                 return(s)
++#define return_UINT8(s)                 return(s)
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGXxm/2ijCOnn/RHQRAm+wAJ9YD6KsS6T96xChZvS/3yCwCo6+0gCgl0IY
-y6OxxUcuQ8yGJsiYebkuIMY=
-=tkxV
------END PGP SIGNATURE-----
+Making the ACPI code look like regular Linux kernel code (or even
+regular C for that matter) was the whole point of my patch. Your patch
+doesn't change that.
