@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbXEaUqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbXEaUub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752487AbXEaUqM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbXEaUp4
+	id S1754193AbXEaUub (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbXEaUuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:45:56 -0400
-Received: from mail-gw3.adaptec.com ([216.52.22.36]:40286 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbXEaUpy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:45:54 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: kexec and aacraid broken
-Date: Thu, 31 May 2007 16:45:51 -0400
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01A553B9@otce2k301.adaptec.com>
-In-reply-to: <86802c440705311259w4e96eafbs799251dd494e47a4@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: kexec and aacraid broken
-Thread-Index: AcejvjH2ZPlzCHecRnmuzvmd9LXaQAABC58A
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Vivek Goyal" <vgoyal@in.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+	Thu, 31 May 2007 16:50:23 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37964 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750766AbXEaUuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:50:22 -0400
+Date: Thu, 31 May 2007 22:51:22 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Prarit Bhargava <prarit@redhat.com>, tigran@aivazian.fsnet.co.uk
+Cc: Christoph Lameter <clameter@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: [PATCH] microcode: fix section mismatch warning
+Message-ID: <20070531205122.GG27305@uranus.ravnborg.org>
+References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com> <465EE7BB.4050605@redhat.com> <20070531200446.GA27305@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070531200446.GA27305@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ahhhh. explains why I am having troubles duping this issue thus far.
+Fix the following section mismatch warnings in microcode.c:
+WARNING: arch/i386/kernel/built-in.o(.init.text+0x3966): Section mismatch: reference to .exit.text: (between 'microcode_init' and 'parse_maxcpus')
+WARNING: arch/i386/kernel/built-in.o(.init.text+0x3992): Section mismatch: reference to .exit.text: (between 'microcode_init' and 'parse_maxcpus')
 
-This is prerelease Firmware on a yet to be released card and thus should
-not get any driver workarounds if this issue can be resolved in
-Firmware. If this can be duped on a released card with released
-Firmware, then the story changes of course; but still does not preclude
-a Firmware/Hardware/Drive Compatibility bug ;-} . Until then, please
-work this issue via SUN channels so that we get all the necessary card
-debug information for our teams to work this.
+The warning are caused by a function marked __init that
+calls a function marked __exit.
+Functions marked __exit may be discarded either during link or run-time
+and thus the reference is not good.
 
-I will ensure Adaptec will remain on top of this issue since it is
-clearly a problem with the Adapter Hardware interfacing. The adapter is
-not surviving an IOP_RESET and is going into an Adapter Firmware Kernel
-Panic or taking an excessively long period (in the testing thus far >
-540 seconds) of time to complete it's reset.
-
-Sincerely -- Mark Salyzyn
-
-Yinghai Lu [mailto:yhlu.kernel@gmail.com] sez:
-> SUN coguar with 11731
-> 
-> On 5/31/07, Salyzyn, Mark <mark_salyzyn@adaptec.com> wrote:
-> > > No, still get adapter kernel panic
-> >
-> > Which adapter are you using?
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+diff --git a/arch/i386/kernel/microcode.c b/arch/i386/kernel/microcode.c
+index 83f825f..d865d04 100644
+--- a/arch/i386/kernel/microcode.c
++++ b/arch/i386/kernel/microcode.c
+@@ -478,7 +478,7 @@ static int __init microcode_dev_init (void)
+ 	return 0;
+ }
+ 
+-static void __exit microcode_dev_exit (void)
++static void microcode_dev_exit (void)
+ {
+ 	misc_deregister(&microcode_dev);
+ }
