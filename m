@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759840AbXEaFrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbXEaFz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759840AbXEaFrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 01:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797AbXEaFrI
+	id S1759974AbXEaFz0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 01:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758052AbXEaFzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 01:47:08 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:44300 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750825AbXEaFrF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 01:47:05 -0400
-Date: Wed, 30 May 2007 22:46:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: markh@compro.net
-Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: floppy.c soft lockup
-Message-Id: <20070530224650.04b33117.akpm@linux-foundation.org>
-In-Reply-To: <465C6359.1020106@compro.net>
-References: <465C6359.1020106@compro.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 31 May 2007 01:55:18 -0400
+Received: from posti5.jyu.fi ([130.234.4.34]:46026 "EHLO posti5.jyu.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750825AbXEaFzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 01:55:17 -0400
+Date: Thu, 31 May 2007 08:54:28 +0300 (EEST)
+From: Tero Roponen <teanropo@jyu.fi>
+X-X-Sender: teanropo@jalava.cc.jyu.fi
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [3/4] 2.6.22-rc3: known regressions
+In-Reply-To: <1180587109.4570.25.camel@daplas>
+Message-ID: <Pine.LNX.4.64.0705310852400.8734@jalava.cc.jyu.fi>
+References: <465C188F.9000900@googlemail.com>  <465C222A.8060003@googlemail.com>
+  <alpine.LFD.0.98.0705301922560.26602@woody.linux-foundation.org>
+ <1180587109.4570.25.camel@daplas>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007 13:31:05 -0400 Mark Hounschell <markh@compro.net> wrote:
+On Thu, 31 May 2007, Antonino A. Daplas wrote:
 
-> Changes in floppy.c from 2.6.17 and 2.6.18 have broken an application I have. I have tracked 
-> it down to a single line of code. When the following patch is applied to the version in 2.6.18
-> my application works.
+> On Wed, 2007-05-30 at 19:33 -0700, Linus Torvalds wrote:
+> > 
+> > On Tue, 29 May 2007, Michal Piotrowski wrote:
+> > > 
 > 
-> --- linux-2.6.18/drivers/block/floppy.c 2006-09-19 23:42:06.000000000 -0400
-> +++ linux-2.6.18-crt/drivers/block/floppy.c     2007-05-29 09:12:20.000000000 -0400
-> @@ -893,7 +893,6 @@
->                 set_current_state(TASK_RUNNING);
->                 remove_wait_queue(&fdc_wait, &wait);
+> > > TTY
+> > > 
+> > > Subject    : tty-related oops in latest kernel(s)
+> > > References : http://lkml.org/lkml/2007/5/27/104
+> > > Submitter  : Tero Roponen <teanropo@jyu.fi>
+> > > Status     : problem is being debugged
+> > 
+> > People seem to have debugged this to neofb palette handling, but I haven't 
+> > seen a patch. Antonino?
+> > 
 > 
-> -               flush_scheduled_work();
->         }
->         command_status = FD_COMMAND_NONE;
+> Already posted one for testing. I'm waiting for Tero to confirm.
 > 
-> I don't claim to understand the changes from 2.6.17 to 2.6.18 except for the devfs removal.
-> All I can say is this one line of code kills the application. I have tried to write a short pgm
-> that shows my problem but everything else I write seems to work. The application only runs
-> on SMP machines and uses process and irq affinities with real-time scheduling. When I turn
-> off process and irq affinities the application runs. 
+> Tony
 > 
-> I have tried kernels up through 2.6.21.1 with the same results. All kernels from 2.6.18 up
-> require that I remove this one line of code or my application does not work?
 
-Interesting.  I'd expect that the calling process is spinning, with realtime
-policy and is expecting some other process to do something (ie: run a workqueue).
+Ok, I tested all the cases I have reported: no corruption
+and nothing in slabinfo -v. This seems to be the right fix.
 
-If you keep the process and irq affinities, and disable the realtime policy
-does that also prevent the problem?
+Thanks.
 
-It would be interesting it you could capture a few task traces while it is stuck:
-echo 1 > /proc/sys/kernel/sysrq then do ALT-SYSRQ-P a bunch of times and ALT-SYSRQ-T,
-see if you can work out where the CPU is stuck.
-
-ALso, 2.6.22-rc3 might have accidentally fixed this.
+Acked-by: Tero Roponen <teanropo@jyu.fi>
