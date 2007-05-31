@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbXEaJOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbXEaJSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbXEaJOu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 05:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbXEaJOm
+	id S1759369AbXEaJSA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 05:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbXEaJRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 05:14:42 -0400
-Received: from holomorphy.com ([66.93.40.71]:48220 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755014AbXEaJOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 05:14:41 -0400
-Date: Thu, 31 May 2007 02:15:34 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, ckrm-tech@lists.sourceforge.net,
-       efault@gmx.de, linux-kernel@vger.kernel.org, tingy@cs.umass.edu,
-       Peter Williams <pwil3058@bigpond.net.au>, kernel@kolivas.org,
-       tong.n.li@intel.com, containers@lists.osdl.org,
-       Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
-Message-ID: <20070531091534.GK6909@holomorphy.com>
-References: <46577CA6.8000807@bigpond.net.au> <20070526154112.GA31925@holomorphy.com> <20070530171405.GA21062@in.ibm.com> <20070530201359.GD6909@holomorphy.com> <20070531032657.GA823@in.ibm.com> <20070531040926.GH6909@holomorphy.com> <20070531054828.GB663@in.ibm.com> <20070531063647.GC15426@holomorphy.com> <20070531083353.GF663@in.ibm.com> <20070531085600.GA9826@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531085600.GA9826@in.ibm.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 31 May 2007 05:17:54 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:35734 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755489AbXEaJRx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 05:17:53 -0400
+Subject: Re: [PATCH 5/6] lockstat: human readability tweaks
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Matthew Helsley <matthltc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <1180553945.4738.13.camel@localhost.localdomain>
+References: <20070530124903.882133089@chello.nl>
+	 <20070530125336.322824180@chello.nl>
+	 <1180553945.4738.13.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 31 May 2007 11:17:43 +0200
+Message-Id: <1180603063.7348.102.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 02:03:53PM +0530, Srivatsa Vaddagiri wrote:
->> Its ->wait_runtime will drop less significantly, which lets it be
->> inserted in rb-tree much to the left of those 1000 tasks (and which
->> indirectly lets it gain back its fair share during subsequent
->> schedule cycles).
->> Hmm ..is that the theory?
+On Wed, 2007-05-30 at 12:39 -0700, Matthew Helsley wrote:
+> On Wed, 2007-05-30 at 14:49 +0200, Peter Zijlstra wrote:
+> > plain text document attachment (lockstat-output.patch)
+> > Present all this fancy new lock statistics information:
+> > 
+> > *warning, _wide_ output ahead*
+> > 
+> > (output edited for purpose of brevity)
+> > 
+> >  # cat /proc/lock_stat
+> > lock_stat version 0.1
+> > -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+> >                               class name    contentions   waittime-min   waittime-max waittime-total   acquisitions   holdtime-min   holdtime-max holdtime-total
+> > -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+> 
+> <snip>
+> 
+> > 'contentions' and 'acquisitions' are the number of such events measured (since 
+> > the last reset). The waittime- and holdtime- (min, max, total) numbers are 
+> > presented in microseconds.
+> 
+> I think it would make sense to actually mention the time scale in the
+> output header someplace. Then a tool written to analyze this file will
+> have a way of determining the time scale without using error-prone
+> heuristics (like "kernel version foo uses microseconds while kernel foo
+> + 100 uses nanoseconds").
 
-On Thu, May 31, 2007 at 02:26:00PM +0530, Srivatsa Vaddagiri wrote:
-> My only concern is the time needed to converge to this fair
-> distribution, especially in face of fluctuating workloads. For ex: a
-> container who does a fork bomb can have a very adverse impact on
-> other container's fair share under this scheme compared to other
-> schemes which dedicate separate rb-trees for differnet containers
-> (and which also support two level hierarchical scheduling inside the
-> core scheduler).
-> I am inclined to have the core scheduler support atleast two levels
-> of hierarchy (to better isolate each container) and resort to the
-> flattening trick for higher levels.
+I did think of putting [us] after each time related column description,
+but that would widen the output even more (not sure it matters that
+much, its very wide already anyway).
 
-Yes, the larger number of schedulable entities and hence slower
-convergence to groupwise weightings is a disadvantage of the flattening.
-A hybrid scheme seems reasonable enough. Ideally one would chop the
-hierarchy in pieces so that n levels of hierarchy become k levels of n/k
-weight-flattened hierarchies for this sort of attack to be most effective
-(at least assuming similar branching factors at all levels of hierarchy
-and sufficient depth to the hierarchy to make it meaningful) but this is
-awkward to do. Peeling off the outermost container or whichever level is
-deemed most important in terms of accuracy of aggregate enforcement as
-a hierarchical scheduler is a practical compromise.
+However, the current format is microseconds with 2 decimals, so that is
+basically a 10 nanosecond granularity. I do not think the extra digit is
+worth much hassle (and it could be added as a 3rd decimal digit without
+breaking the current format).
 
-Hybrid schemes will still incur the difficulties of hierarchical
-scheduling, but they're by no means insurmountable. Sadly, only
-complete flattening yields the simplifications that make task group
-weighting enforcement orthogonal to load balancing and the like. The
-scheme I described for global nice number behavior is also not readily
-adaptable to hybrid schemes.
+Also, there is a version string at the top, which should be changed
+every time the output format changes.
 
-
--- wli
