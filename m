@@ -1,66 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758455AbXEaCwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbXEaCxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758455AbXEaCwF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 22:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXEaCvz
+	id S1759213AbXEaCxk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 22:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbXEaCxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 22:51:55 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58197 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755504AbXEaCvy (ORCPT
+	Wed, 30 May 2007 22:53:33 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:57384 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755600AbXEaCxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 22:51:54 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, ak@suse.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Zou, Nanhai" <nanhai.zou@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Packard, Keith" <keith.packard@intel.com>
-Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
-References: <20070518010119.GB12088@linux-os.sc.intel.com>
-	<m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
-	<20070518180749.GA26081@linux-os.sc.intel.com>
-Date: Wed, 30 May 2007 20:50:55 -0600
-In-Reply-To: <20070518180749.GA26081@linux-os.sc.intel.com> (Suresh
-	B. Siddha's message of "Fri, 18 May 2007 11:07:49 -0700")
-Message-ID: <m1wsyp6700.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 30 May 2007 22:53:33 -0400
+Subject: [PATCH RT] fix faulting bomb in futex_unlock_pi64
+From: Steven Rostedt <rostedt@goodmis.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       Ulrich Drepper <drepper@gmail.com>
+In-Reply-To: <1180572567.6126.44.camel@localhost.localdomain>
+References: <1180572567.6126.44.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 22:52:33 -0400
+Message-Id: <1180579953.21781.34.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Siddha, Suresh B" <suresh.b.siddha@intel.com> writes:
+[CC'ing Uli because John forgot to with the original patch]
 
-> Eric,
->
-> On Fri, May 18, 2007 at 07:40:53AM -0700, Eric W. Biederman wrote:
->> Still in any of those I don't see a problem with switching to edge
->> triggered mode and then back again.  Either Remote IRR will keep
->> it's current state or it will be cleared.   Remote IRR should not
->> get set (when it was clear) by such a procedure because that
->> would mess up the normal interrupt enable sequence that happens
->> on boot.  So I'm pretty certain toggling the edge bit is harmless
->> and it may actually clear Remote IRR for us.
-> ...
->> 
->> I think going more the way that this code has gone on arch/i386 with
->> real functions is preferable.
->
-> There is an issue with this suggestion. We have an inflight
-> EOI broadcast msg to this IOAPIC (that got delayed but still alive) and
-> that can cause problem if we use edge and back to level to reset remote IRR bit.
->
-> If the vector number stays same during irq migration and if we reset remote
-> IRR bit using the above method(edge and then back to level) during
-> irq migration, then we have a problem. A new interrupt arriving on a new
-> cpu will set the remote IRR bit and now the old inflight EOI broadcast
-> reaches IOAPIC RTE(resetting the remote IRR bit, because the vector in the
-> broadcast msg is same), while the kernel code still assumes that the remote
-> IRR bit is still set. This will lead to more problems and issues.
+As John found with futex_unlock_pi (which that patch should apply nicely
+to the -rt tree), the code can get screwed up with faulting in at the
+cmpxchg in futex_unlock_pi code.
 
-Ok.  I will agree that if the level->edge->level switch does not reset
-Remote_IRR and the EOI arrives in that window.  We have another condition
-in which Remote_IRR can get stuck on.
+>From John's original email:
 
-Eric
+----
+In looking into why the kernel was returning -EFAULT, I found the
+following:
+
+...
+retry_locked:
+        /*
+         * To avoid races, try to do the TID -> 0 atomic transition
+         * again. If it succeeds then we can return without waking
+         * anyone else up:
+         */
+        if (!(uval & FUTEX_OWNER_DIED)) {
+                pagefault_disable();
+                uval = futex_atomic_cmpxchg_inatomic(uaddr,
+current->pid, 0);
+                pagefault_enable();
+        }
+
+        if (unlikely(uval == -EFAULT))
+                goto pi_faulted;
+...[snip]...
+pi_faulted:
+        /*
+         * We have to r/w  *(int __user *)uaddr, but we can't modify it
+         * non-atomically.  Therefore, if get_user below is not
+         * enough, we need to handle the fault ourselves, while
+         * still holding the mmap_sem.
+         */
+        if (attempt++) {
+                ret = futex_handle_fault((unsigned long)uaddr, fshared,
+                                         attempt);
+                if (ret)
+                        goto out_unlock;
+                goto retry_locked;
+        }
+----
+
+
+We see that uval is -EFAULT when jumping to pi_faulted. But when it goes
+back to retry_locked, the uval is still -EFAULT. Which just happens to
+have the FUTEX_OWNER_DIED bit set.  So we don't do the
+futex_atomic_cmpxchg_inatomic call, and go to the next conditional which
+just so happens to be a check of uval for -EFAULT. And guess what? it
+still is!!
+
+Way to go John in finding this!!
+
+But, the -rt kernel has pretty much the same code for the
+futex_unlock_pi64, and it has the same bug. Hence this email.
+
+This patch is the same fix that John posted, but simply for the
+futex_unlock_pi64 that exists in the RT kernel and not the mainline.
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+Index: linux-2.6-rt-work/kernel/futex.c
+===================================================================
+--- linux-2.6-rt-work.orig/kernel/futex.c	2007-05-30 22:29:04.000000000 -0400
++++ linux-2.6-rt-work/kernel/futex.c	2007-05-30 22:32:01.000000000 -0400
+@@ -3503,6 +3503,7 @@ pi_faulted:
+ 			ret = -EFAULT;
+ 			goto out_unlock;
+ 		}
++		uval = 0;
+ 		goto retry_locked;
+ 	}
+ 
+
+
