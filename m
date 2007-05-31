@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbXEaUQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761025AbXEaURS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759767AbXEaUQe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbXEaUQZ
+	id S1761025AbXEaURS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbXEaURJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:16:25 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:37809 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750971AbXEaUQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:16:24 -0400
-Date: Thu, 31 May 2007 22:17:24 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Prarit Bhargava <prarit@redhat.com>, avi@qumranet.com
-Cc: Christoph Lameter <clameter@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: [PATCH] kvm: fix section mismatch warning in kvm-intel.o
-Message-ID: <20070531201724.GC27305@uranus.ravnborg.org>
-References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com> <465EE7BB.4050605@redhat.com> <20070531200446.GA27305@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 31 May 2007 16:17:09 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:50833 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753121AbXEaURH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:17:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=i4ebNsLZmvMM8ZJKxR4fYDDcezlzGwa3aaMkPblnJZj4cqYt1yOnCJeKJ7DWZWZ0idtYxkDNXt92pplaYxk3tN8BCwsq4gJBYCF3fYZoNaq1bL85Ssb6RAXpluZ+NE247n1MvSM4PN+m1YIf7L9kH526eEFoOCARF8HvIQds9jg=
+Message-ID: <8bd0f97a0705311317t1ed00a29w5b0d980b7e2dba6f@mail.gmail.com>
+Date: Thu, 31 May 2007 15:17:05 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Bryan Wu" <bryan.wu@analog.com>
+Subject: Re: [PATCH 19/20] Blackfin on-chip watchdog driver
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org,
+       "Mike Frysinger" <michael.frysinger@analog.com>,
+       "Wim Van Sebroeck" <wim@iguana.be>
+In-Reply-To: <8bd0f97a0705291020p5263b0bco88c556ff8cabf05c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070531200446.GA27305@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+References: <11803414753217-git-send-email-bryan.wu@analog.com>
+	 <11803414821370-git-send-email-bryan.wu@analog.com>
+	 <8bd0f97a0705291020p5263b0bco88c556ff8cabf05c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following section mismatch warning in kvm-intel.o:
-WARNING: o-i386/drivers/kvm/kvm-intel.o(.init.text+0xbd): Section mismatch: reference to .exit.text: (between 'hardware_setup' and 'vmx_disabled_by_bios')
+On 5/29/07, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On 5/28/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> > From: Mike Frysinger <michael.frysinger@analog.com>
+> >
+> > This patch implements the driver necessary use the Analog Devices
+> > Blackfin processor's on-chip watchdog controller, supports
+> > BF53[123]/BF53[467]/BF561.
+> >
+> > Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
+> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> > Cc: Wim Van Sebroeck <wim@iguana.be>
+>
+> we probably want to NACK this and wait for me to rip out the timer
+> bits into a sep clockevents driver
 
-The function free_kvm_area is used in the function alloc_kvm_area which
-is marked __init.
-The __exit area is discarded by some archs during link-time if a 
-module is built-in resulting in an oops.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-Note: This warning is only seen by my local copy of modpost
-      but the change will soon hit upstream.
-
-	Sam
-
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index e6e4d24..184238e 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -639,7 +639,7 @@ static void free_vmcs(struct vmcs *vmcs)
- 	free_pages((unsigned long)vmcs, vmcs_descriptor.order);
- }
- 
--static __exit void free_kvm_area(void)
-+static void free_kvm_area(void)
- {
- 	int cpu;
- 
+ive updated our watchdog so it only does reset things ... should be
+ready for mainline inclusion now :)
+-mike
