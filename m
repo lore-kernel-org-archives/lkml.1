@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbXEaIhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbXEaIkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757932AbXEaIhX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 04:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbXEaIhJ
+	id S1758582AbXEaIkN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 04:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbXEaIj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 04:37:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58617
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753366AbXEaIhI (ORCPT
+	Thu, 31 May 2007 04:39:59 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:42608 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752171AbXEaIj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 04:37:08 -0400
-Date: Thu, 31 May 2007 01:37:21 -0700 (PDT)
-Message-Id: <20070531.013721.85688951.davem@davemloft.net>
-To: crquan@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patch] since the definition of dst_discard_in and
- dst_discard_out are the same,,they should merged into one
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <465E78BE.6010807@gmail.com>
-References: <465E78BE.6010807@gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 31 May 2007 04:39:58 -0400
+Message-ID: <465E85B5.2030106@linux.vnet.ibm.com>
+Date: Thu, 31 May 2007 13:52:13 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 8/8] Per-container pages reclamation
+References: <465D9739.8070209@openvz.org> <465D9B62.5050507@openvz.org> <20070530144737.56456aaf.akpm@linux-foundation.org>
+In-Reply-To: <20070530144737.56456aaf.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rankle_ <crquan@gmail.com>
-Date: Thu, 31 May 2007 15:26:54 +0800
 
->  From 30d6996860f7e5589d1bce10404bbcfd6592c9de Mon Sep 17 00:00:00 2001
-> From: Denis Cheng <crquan@gmail.com>
-> Date: Thu, 31 May 2007 15:21:58 +0800
-> Subject: [PATCH] since the definition of dst_discard_in and 
-> dst_discard_out are the same,
-> they should merged into one
+
+Andrew Morton wrote:
+> On Wed, 30 May 2007 19:42:26 +0400
+> Pavel Emelianov <xemul@openvz.org> wrote:
 > 
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
+[snip]
+>>
+>> +#ifdef CONFIG_RSS_CONTAINER
+>> +unsigned long try_to_free_pages_in_container(struct rss_container *cnt)
+>> +{
+>> +	struct scan_control sc = {
+>> +		.gfp_mask = GFP_KERNEL,
+>> +		.may_writepage = 1,
+>> +		.swap_cluster_max = 1,
+>> +		.may_swap = 1,
+>> +		.swappiness = vm_swappiness,
+>> +		.order = 0, /* in this case we wanted one page only */
+>> +		.cnt = cnt,
+>> +		.isolate_pages = isolate_pages_in_container,
+>> +	};
+>> +	int node;
+>> +	struct zone **zones;
+>> +
+>> +	for_each_online_node(node) {
+>> +#ifdef CONFIG_HIGHMEM
+>> +		zones = NODE_DATA(node)->node_zonelists[ZONE_HIGHMEM].zones;
+>> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
+>> +			return 1;
+>> +#endif
+>> +		zones = NODE_DATA(node)->node_zonelists[ZONE_NORMAL].zones;
+>> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
+>> +			return 1;
+>> +	}
+> 
+> Definitely need to handle ZONE_DMA32 and ZONE_DMA (some architectures put
+> all memory into ZONE_DMA (or they used to))
 
-Your email client has changed all of the tab characters into spaces,
-corrupting the patch.
+Can we iterate from MAX_NR_ZONES-1 to automatically choose the right
+zone for the system?
 
-Please configure your email client to not perform any text formatting.
+for_each_online_node(node)
+	for (i = MAX_NR_ZONES - 1; i >= 0; i--) {
+ 		zones = NODE_DATA(node)->node_zonelists[i].zones;
+		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
+			return 1;
 
-Please test this, by emailing the patch to yourself and trying to
-apply it, before resending.
+The above code works on my PPC64 box where all memory is in ZOME_DMA.
 
-Thank you.
+>> +	return 0;
+>> +}
+>> +#endif
+>> +
+>>  unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
+>>  {
+>>  	struct scan_control sc = {
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
