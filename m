@@ -1,113 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbXEaPfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbXEaPgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759661AbXEaPfp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 11:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXEaPeB
+	id S1758623AbXEaPgD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 11:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758376AbXEaPeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 11:34:01 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:40650 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757572AbXEaPdx (ORCPT
+	Thu, 31 May 2007 11:34:03 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:63979 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757544AbXEaPdw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 11:33:53 -0400
-Message-Id: <20070531153437.855226654@de.ibm.com>
+	Thu, 31 May 2007 11:33:52 -0400
+Message-Id: <20070531153437.640366437@de.ibm.com>
 References: <20070531142024.011160634@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 31 May 2007 16:20:30 +0200
+Date: Thu, 31 May 2007 16:20:29 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 6/7] cio: Use device_schedule_callback() for removing disconnected devices.
-Content-Disposition: inline; filename=006-cio-disc.diff
+Subject: [patch 5/7] Fix section annotations.
+Content-Disposition: inline; filename=005-sections.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-We can't deregister disconnected and orphaned devices directly from
-the online attribute's store method, but must take a detour.
+Use the __cpuinit instead of __devinit section annotations for code
+that deals with cpu hotplug. In addition add some more annotations on
+functions that have been left out so far.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/cio/device.c |   49 +++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 38 insertions(+), 11 deletions(-)
+ arch/s390/kernel/setup.c |    4 ++--
+ arch/s390/kernel/smp.c   |    6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Index: quilt-2.6/drivers/s390/cio/device.c
+Index: quilt-2.6/arch/s390/kernel/setup.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/cio/device.c
-+++ quilt-2.6/drivers/s390/cio/device.c
-@@ -296,30 +296,57 @@ static void ccw_device_unregister(struct
- 		device_del(&cdev->dev);
- }
- 
-+static void ccw_device_remove_orphan_cb(struct device *dev)
-+{
-+	struct ccw_device *cdev = to_ccwdev(dev);
-+
-+	ccw_device_unregister(cdev);
-+	put_device(&cdev->dev);
-+}
-+
-+static void ccw_device_remove_sch_cb(struct device *dev)
-+{
-+	struct subchannel *sch;
-+
-+	sch = to_subchannel(dev);
-+	css_sch_device_unregister(sch);
-+	/* Reset intparm to zeroes. */
-+	sch->schib.pmcw.intparm = 0;
-+	cio_modify(sch);
-+	put_device(&sch->dev);
-+}
-+
- static void
- ccw_device_remove_disconnected(struct ccw_device *cdev)
+--- quilt-2.6.orig/arch/s390/kernel/setup.c
++++ quilt-2.6/arch/s390/kernel/setup.c
+@@ -102,7 +102,7 @@ static struct resource data_resource = {
+ /*
+  * cpu_init() initializes state that is per-CPU.
+  */
+-void __devinit cpu_init (void)
++void __cpuinit cpu_init(void)
  {
--	struct subchannel *sch;
- 	unsigned long flags;
-+	int rc;
-+
- 	/*
- 	 * Forced offline in disconnected state means
- 	 * 'throw away device'.
- 	 */
- 	if (ccw_device_is_orphan(cdev)) {
--		/* Deregister ccw device. */
-+		/*
-+		 * Deregister ccw device.
-+		 * Unfortunately, we cannot do this directly from the
-+		 * attribute method.
-+		 */
- 		spin_lock_irqsave(cdev->ccwlock, flags);
- 		cdev->private->state = DEV_STATE_NOT_OPER;
- 		spin_unlock_irqrestore(cdev->ccwlock, flags);
--		ccw_device_unregister(cdev);
--		put_device(&cdev->dev);
--		return ;
-+		rc = device_schedule_callback(&cdev->dev,
-+					      ccw_device_remove_orphan_cb);
-+		if (rc)
-+			dev_info(&cdev->dev, "Couldn't unregister orphan\n");
-+		return;
- 	}
--	sch = to_subchannel(cdev->dev.parent);
--	css_sch_device_unregister(sch);
--	/* Reset intparm to zeroes. */
--	sch->schib.pmcw.intparm = 0;
--	cio_modify(sch);
--	put_device(&sch->dev);
-+	/* Deregister subchannel, which will kill the ccw device. */
-+	rc = device_schedule_callback(cdev->dev.parent,
-+				      ccw_device_remove_sch_cb);
-+	if (rc)
-+		dev_info(&cdev->dev,
-+			 "Couldn't unregister disconnected device\n");
+         int addr = hard_smp_processor_id();
+ 
+@@ -915,7 +915,7 @@ setup_arch(char **cmdline_p)
+ 	setup_zfcpdump(console_devno);
  }
  
- int
+-void print_cpu_info(struct cpuinfo_S390 *cpuinfo)
++void __cpuinit print_cpu_info(struct cpuinfo_S390 *cpuinfo)
+ {
+    printk("cpu %d "
+ #ifdef CONFIG_SMP
+Index: quilt-2.6/arch/s390/kernel/smp.c
+===================================================================
+--- quilt-2.6.orig/arch/s390/kernel/smp.c
++++ quilt-2.6/arch/s390/kernel/smp.c
+@@ -492,7 +492,7 @@ static unsigned int __init smp_count_cpu
+ /*
+  *	Activate a secondary processor.
+  */
+-int __devinit start_secondary(void *cpuvoid)
++int __cpuinit start_secondary(void *cpuvoid)
+ {
+ 	/* Setup the cpu */
+ 	cpu_init();
+@@ -741,7 +741,7 @@ void __init smp_prepare_cpus(unsigned in
+ 			smp_create_idle(cpu);
+ }
+ 
+-void __devinit smp_prepare_boot_cpu(void)
++void __init smp_prepare_boot_cpu(void)
+ {
+ 	BUG_ON(smp_processor_id() != 0);
+ 
+@@ -750,7 +750,7 @@ void __devinit smp_prepare_boot_cpu(void
+ 	current_set[0] = current;
+ }
+ 
+-void smp_cpus_done(unsigned int max_cpus)
++void __init smp_cpus_done(unsigned int max_cpus)
+ {
+ 	cpu_present_map = cpu_possible_map;
+ }
 
 -- 
 blue skies,
