@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbXEaV2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbXEaVam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758691AbXEaV2d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 17:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbXEaV20
+	id S1759600AbXEaVam (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 17:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbXEaVaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 17:28:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50145 "EHLO ogre.sisk.pl"
+	Thu, 31 May 2007 17:30:35 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41117 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750978AbXEaV2Z convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 17:28:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: 2.6.22-rc3-mm1
-Date: Thu, 31 May 2007 23:34:20 +0200
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Pavel Machek" <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
-References: <20070530235823.793f00d9.akpm@linux-foundation.org> <200705312158.26560.rjw@sisk.pl> <6bffcb0e0705311425q2e00cc69j5006d95c3f0df158@mail.gmail.com>
-In-Reply-To: <6bffcb0e0705311425q2e00cc69j5006d95c3f0df158@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+	id S1750978AbXEaVae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 17:30:34 -0400
+Date: Thu, 31 May 2007 23:30:46 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [RFC 1/4] CONFIG_STABLE: Define it
+Message-ID: <20070531213046.GA27923@uranus.ravnborg.org>
+References: <20070531002047.702473071@sgi.com> <20070531003012.302019683@sgi.com> <20070531141147.423ad5e3.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705312334.20834.rjw@sisk.pl>
+In-Reply-To: <20070531141147.423ad5e3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 31 May 2007 23:25, Michal Piotrowski wrote:
-> On 31/05/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Thursday, 31 May 2007 17:29, Michal Piotrowski wrote:
-> > > Hi,
-> > >
-> > > Andrew Morton napisa³(a):
-> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc3/2.6.22-rc3-mm1/
-> > > >
-> > >
-> > > FYI suspend to disk doesn't work anymore on my box, system hangs after "Suspending console(s)" message.
-> > >
-> > > [  186.297753] Shrinking memory...  -\|/-\|done (113064 pages freed)
-> > > [  187.841914] Freed 452256 kbytes in 1.54 seconds (293.67 MB/s)
-> > > [  187.847730] Suspending console(s)
-> > >
-> > > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc3-mm1/console.log
-> > > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc3-mm1/mm-config
-> >
-> > Hmm, that might be a couple of things, actually.
-> >
-> > To see if the patches directly related to hibernation/suspend cause this, can
-> > you please test 2.6.22-rc3 with the patch series at
-> >
-> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/
-> >
-> > applied?
 > 
-> Ok, bug is in suspend tree.
+> So something like this:
+> 
+> diff -puN Makefile~a Makefile
+> --- a/Makefile~a
+> +++ a/Makefile
+> @@ -3,6 +3,7 @@ PATCHLEVEL = 6
+>  SUBLEVEL = 22
+>  EXTRAVERSION = -rc3
+>  NAME = Jeff Thinks I Should Change This, But To What?
+> +DEVEL_KERNEL = 1
 
-Yup.  Please see the message I've just sent (with a fix).
+Could we name this: KERNELDEVEL to fit with current naming convention?
+Alternative: KERNEL_DEVEL
 
-Rafael
+Maybe a little comment that this is mirrored as a CONFIG_ symbol?
+
+>  
+>  # *DOCUMENTATION*
+>  # To see a list of typical targets execute "make help"
+> @@ -320,7 +321,7 @@ AFLAGS          := -D__ASSEMBLY__
+>  KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
+>  KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+>  
+> -export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
+> +export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION DEVEL_KERNEL
+>  export ARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
+>  export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
+>  export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
+> diff -puN scripts/kconfig/symbol.c~a scripts/kconfig/symbol.c
+> --- a/scripts/kconfig/symbol.c~a
+> +++ a/scripts/kconfig/symbol.c
+> @@ -68,6 +68,15 @@ void sym_init(void)
+>  	if (p)
+>  		sym_add_default(sym, p);
+>  
+> +	sym = sym_lookup("DEVEL_KERNEL", 0);
+> +	sym->type = S_BOOLEAN;
+> +	sym->flags |= SYMBOL_AUTO;
+> +	p = getenv("DEVEL_KERNEL");
+> +	if (p && atoi(p))
+> +		sym_add_default(sym, "y");
+> +	else
+> +		sym_add_default(sym, "n");
+> +
+
+		sym_set_tristate_value(sym, yes);
+	else
+		sym_set_tristate_value(sym, no);
+
+should do the trick (untested).
+
+	Sam
