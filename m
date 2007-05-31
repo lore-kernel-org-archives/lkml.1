@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbXEaTwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761044AbXEaTxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760674AbXEaTwX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 15:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbXEaTwP
+	id S1761044AbXEaTxG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 15:53:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbXEaTw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 15:52:15 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41055 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758421AbXEaTwP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 15:52:15 -0400
-Date: Thu, 31 May 2007 12:51:33 -0700
-From: Zach Brown <zach.brown@oracle.com>
-To: clameter@sgi.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org
-Subject: Re: [RFC 2/4] CONFIG_STABLE: Switch off kmalloc(0) tests in slab allocators
-Message-ID: <20070531195133.GK5488@mami.zabbo.net>
-References: <20070531002047.702473071@sgi.com> <20070531003012.532539202@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531003012.532539202@sgi.com>
-User-Agent: Mutt/1.4.2.1i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Thu, 31 May 2007 15:52:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39148 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758600AbXEaTwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 15:52:55 -0400
+Message-ID: <465F2761.4050406@redhat.com>
+Date: Thu, 31 May 2007 15:52:01 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: "vasek@spsmb.cz" <vasek@spsmb.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: V4L2 - Leadtek Winfast PVR 2000 XP makes partial kernel
+ freeze
+References: <465B51DB.6000305@spsmb.cz>
+In-Reply-To: <465B51DB.6000305@spsmb.cz>
+Content-Type: text/plain; charset=windows-1250
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +#ifndef CONFIG_STABLE
->  	/*
->  	 * We should return 0 if size == 0 (which would result in the
->  	 * kmalloc caller to get NULL) but we use the smallest object
-> @@ -81,6 +82,7 @@ static inline int kmalloc_index(size_t s
->  	 * we can discover locations where we do 0 sized allocations.
->  	 */
->  	WARN_ON_ONCE(size == 0);
-> +#endif
+On 05/28/2007 06:04 PM, vasek@spsmb.cz wrote:
+> Kernel very often freezes when I watch TV on my card TV Leadtek Winfast
+> PVR 2000 XP.
+> When I watch TV in KdeTV, I got message like "problem with v4l2" and
+> then no picture, only sound. (Some tv applications dont run at all).
+> After that I can normally work witch computer but I can't run ps aux,
+> which freezes and turn off computer.
+> 
+> Kernel version: 2.6.20.x (kernel in ubuntu 2.6.20-15 is ok, but
+> 2.6.20-16 is not), 
 
-> +#ifndef CONFIG_STABLE
->  	WARN_ON_ONCE(size == 0);
-> +#endif
-
-I wonder if there wouldn't be value in making a WARN_*() variant that
-contained the ifdef internally so we could lose these tedious
-surrounding ifdefs in call sites.  WARN_DEVELOPER_WHEN(), or something.
-I don't care what it's called.  
-
-- z 
+Ask Ubuntu what changed between those two versions.
