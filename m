@@ -1,99 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759871AbXEaR4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbXEaR7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759871AbXEaR4p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 13:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbXEaR4i
+	id S1760572AbXEaR7F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 13:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbXEaR6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 13:56:38 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:38072 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbXEaR4h (ORCPT
+	Thu, 31 May 2007 13:58:55 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:41752 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755119AbXEaR6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 13:56:37 -0400
-Subject: Re: [RFC][PATCH] Replacing the /proc/<pid|self>/exe symlink code
-From: Matt Helsley <matthltc@us.ibm.com>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070530180923.GA22345@vino.hallyn.com>
-References: <1180486369.11715.69.camel@localhost.localdomain>
-	 <20070530180923.GA22345@vino.hallyn.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Thu, 31 May 2007 10:56:14 -0700
-Message-Id: <1180634174.4738.48.camel@localhost.localdomain>
+	Thu, 31 May 2007 13:58:54 -0400
+Date: Thu, 31 May 2007 10:58:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: Balbir Singh <balbir@in.ibm.com>, Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 8/8] Per-container pages reclamation
+Message-Id: <20070531105842.0728f577.akpm@linux-foundation.org>
+In-Reply-To: <465EA4FF.1000904@openvz.org>
+References: <465D9739.8070209@openvz.org>
+	<465D9B62.5050507@openvz.org>
+	<20070530144737.56456aaf.akpm@linux-foundation.org>
+	<465EA4FF.1000904@openvz.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-30 at 13:09 -0500, Serge E. Hallyn wrote:
-> Quoting Matt Helsley (matthltc@us.ibm.com):
-> > This patch avoids holding the mmap semaphore while walking VMAs in response to
-> > programs which read or follow the /proc/<pid|self>/exe symlink. This also allows us
-> > to merge mmu and nommu proc_exe_link() functions. The costs are holding a separate
-> > reference to the executable file stored in the task struct and increased code in
-> > fork, exec, and exit paths.
-> > 
-> > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> > ---
-> > 
-> > Compiled and passed simple tests for regressions when patched against a 2.6.20
-> > and 2.6.22-rc2-mm1 kernel.
-> > 
-> >  fs/exec.c             |    5 +++--
-> >  fs/proc/base.c        |   20 ++++++++++++++++++++
-> >  fs/proc/internal.h    |    1 -
-> >  fs/proc/task_mmu.c    |   34 ----------------------------------
-> >  fs/proc/task_nommu.c  |   34 ----------------------------------
-> >  include/linux/sched.h |    1 +
-> >  kernel/exit.c         |    2 ++
-> >  kernel/fork.c         |   10 +++++++++-
-> >  8 files changed, 35 insertions(+), 72 deletions(-)
+On Thu, 31 May 2007 14:35:43 +0400
+Pavel Emelianov <xemul@openvz.org> wrote:
 
-<snip>
-
-> > Index: linux-2.6.22-rc2-mm1/kernel/exit.c
-> > ===================================================================
-> > --- linux-2.6.22-rc2-mm1.orig/kernel/exit.c
-> > +++ linux-2.6.22-rc2-mm1/kernel/exit.c
-> > @@ -924,10 +924,12 @@ fastcall void do_exit(long code)
-> >  	if (unlikely(tsk->audit_context))
-> >  		audit_free(tsk);
-> >  
-> >  	taskstats_exit(tsk, group_dead);
-> >  
-> > +	if (tsk->exe_file)
-> > +		fput(tsk->exe_file);
+> > Would I be correct in guessing that pages which are on the
+> > per-rss-container lists are also eligible for reclaim off the traditional
+> > page LRUs?  If so, how does that work?  When a page gets freed off the
 > 
-> Hi,
+> Yes. All the pages are accessible from booth - global and per-container
+> LRU lists and reclamation can be performed from booth.
 > 
-> just taking a cursory look so I may be missing something, but doesn't
-> this leave the possibility that right here, with tsk->exe_file being
-> put, another task would try to look at tsk's /proc/tsk->pid/exe?
+> > per-zone LRUs does it also get removed from the per-rss_container LRU?  But
+> > how can this be right?  
 > 
-> thanks,
-> -serge
->
->       exit_mm(tsk);
->
-  
-<snip>
+> I don't get your idea here.
 
-Good question. To be precise, I think the problem doesn't exist here but
-after the exit_mm() because there's a VMA that holds a reference to the
-same file.
+If we have a page which is on the zone LRU with refcount=1 and someone does
+put_page() on it, we will take that page off the zone LRU and then actually
+free the page.
 
-The existing code appears to solve the race between
-reading/following /proc/tsk->pid/exe and exit_mm() in the exit path by
-returning -ENOENT for the case where there is no executable VMA with a
-reference to the file backing it.
+I am assuming that your patches change that logic so that we will also
+remove that page from the per-container LRU at the same time?
 
-So I need to put NULL in the exe_file field and adjust the return value
-to be -ENOENT instead of -ENOSYS.
-
-Thanks for the review!
-
-Cheers,
-	-Matt Helsley
+If so, the problem which I see is that, under rare circumstances, that
+final put_page() will occur from interrupt context.  Hence we would be
+trying to remove the page from the per-container LRU at interrupt time. 
+But the locks which you have in there are not suited for taking from
+interrupt context.
 
