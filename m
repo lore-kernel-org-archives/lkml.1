@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbXEaUub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbXEaUwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbXEaUub (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbXEaUuX
+	id S1757058AbXEaUwc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbXEaUwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:50:23 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37964 "EHLO pasmtpB.tele.dk"
+	Thu, 31 May 2007 16:52:25 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39212 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750766AbXEaUuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:50:22 -0400
-Date: Thu, 31 May 2007 22:51:22 +0200
+	id S1750971AbXEaUwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:52:25 -0400
+Date: Thu, 31 May 2007 22:53:26 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Prarit Bhargava <prarit@redhat.com>, tigran@aivazian.fsnet.co.uk
-Cc: Christoph Lameter <clameter@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: [PATCH] microcode: fix section mismatch warning
-Message-ID: <20070531205122.GG27305@uranus.ravnborg.org>
-References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com> <465EE7BB.4050605@redhat.com> <20070531200446.GA27305@uranus.ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: section mismatches
+Message-ID: <20070531205326.GH27305@uranus.ravnborg.org>
+References: <20070530180217.bebfa4b0.akpm@linux-foundation.org> <20070531045033.GB20795@uranus.ravnborg.org> <20070530215631.bb847429.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070531200446.GA27305@uranus.ravnborg.org>
+In-Reply-To: <20070530215631.bb847429.akpm@linux-foundation.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the following section mismatch warnings in microcode.c:
-WARNING: arch/i386/kernel/built-in.o(.init.text+0x3966): Section mismatch: reference to .exit.text: (between 'microcode_init' and 'parse_maxcpus')
-WARNING: arch/i386/kernel/built-in.o(.init.text+0x3992): Section mismatch: reference to .exit.text: (between 'microcode_init' and 'parse_maxcpus')
+On Wed, May 30, 2007 at 09:56:31PM -0700, Andrew Morton wrote:
+> On Thu, 31 May 2007 06:50:33 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > Is it correct assumed that start_kernel() is never called in the HOTPLUG case since we
+> > are dealign with CPU #2 and more?
+> 
+> start_kernel is called once, on the boot CPU, before the other CPUs are
+> brought up.
+As expectyed - thanks.
+I'm buried in section mismatch warnings at the moment but will come back to this
+one a bit later. This needs a bit more careful thinking.
 
-The warning are caused by a function marked __init that
-calls a function marked __exit.
-Functions marked __exit may be discarded either during link or run-time
-and thus the reference is not good.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-diff --git a/arch/i386/kernel/microcode.c b/arch/i386/kernel/microcode.c
-index 83f825f..d865d04 100644
---- a/arch/i386/kernel/microcode.c
-+++ b/arch/i386/kernel/microcode.c
-@@ -478,7 +478,7 @@ static int __init microcode_dev_init (void)
- 	return 0;
- }
- 
--static void __exit microcode_dev_exit (void)
-+static void microcode_dev_exit (void)
- {
- 	misc_deregister(&microcode_dev);
- }
+	Sam
