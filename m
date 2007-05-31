@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbXEaL5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbXEaMBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760861AbXEaL5e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 07:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759380AbXEaL51
+	id S1760953AbXEaMBT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 08:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759649AbXEaMBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 07:57:27 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50087 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759255AbXEaL50 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 07:57:26 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Nick Piggin <nickpiggin@yahoo.com.au>
+	Thu, 31 May 2007 08:01:13 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53883 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759590AbXEaMBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 08:01:12 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86_64 irq: check remote IRR bit before migrating level triggered irq (v2)
+Date: Thu, 31 May 2007 14:01:02 +0200
+User-Agent: KMail/1.9.6
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Preserve the dirty bit in init_page_buffers
-References: <m14pm5io6h.fsf@ebiederm.dsl.xmission.com>
-	<465A55E7.50904@yahoo.com.au>
-	<m18xb9a7sy.fsf@ebiederm.dsl.xmission.com>
-	<465A6078.6010804@yahoo.com.au> <465A6197.5010402@yahoo.com.au>
-	<m1veed82mz.fsf@ebiederm.dsl.xmission.com>
-	<465BB6C2.7050704@yahoo.com.au>
-Date: Thu, 31 May 2007 05:56:33 -0600
-In-Reply-To: <465BB6C2.7050704@yahoo.com.au> (Nick Piggin's message of "Tue,
-	29 May 2007 15:14:42 +1000")
-Message-ID: <m164695hqm.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, nanhai.zou@intel.com,
+       asit.k.mallick@intel.com, keith.packard@intel.com,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>
+References: <20070517230324.GB8089@linux-os.sc.intel.com> <m1d50h5irm.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1d50h5irm.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705311401.02221.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> writes:
+On Thursday 31 May 2007 13:34:21 Eric W. Biederman wrote:
+> 
+> On x86_64 kernel, level triggered irq migration gets initiated in the context
+> of that interrupt(after executing the irq handler) and following steps are
+> followed to do the irq migration.
 
-> Eric W. Biederman wrote:
->> Nick Piggin <nickpiggin@yahoo.com.au> writes:
->
->>> However we
->>>could still set_page_dirty of a block device page without buffers
->>>via an mmap.
->>
->>
->> After the page is made dirty via mmap we have:
->> sys_write -> ... -> block_prepare_write -> ... -> create_empty_buffers.
->
-> Yep, that's what I mean.
+What's the confidence level in the patch? Is it a .22 candidate?
 
-Actually I just took a second look.  That path is fine because
-create_empty_buffers already performs the page dirty check.
-
->> I suspect that is a pretty rare case but it does indeed seem to exist
->> as a problem.
->
-> I think so too. But either we have some misunderstanding of the
-> codepaths involved, or the author of the comments there didn't
-> consider this case, so...
-
-Do someone needs to stand up and write the additional patches.
-Do we have a maintainer for fs/buffer.c?
-
-Eric
+-Andi
