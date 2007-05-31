@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbXEaP5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbXEaP6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753935AbXEaP5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 11:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbXEaP5M
+	id S1759273AbXEaP6x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 11:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbXEaP6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 11:57:12 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:54250 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbXEaP5L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 11:57:11 -0400
-Date: Thu, 31 May 2007 11:56:11 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Rui Nuno Capela <rncbc@rncbc.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: 2.6.21-rt2..8 troubles
-Message-ID: <20070531155611.GA9207@goodmis.org>
-References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org> <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu> <46574DE4.2080900@rncbc.org>
-MIME-Version: 1.0
+	Thu, 31 May 2007 11:58:46 -0400
+Received: from madara.hpl.hp.com ([192.6.19.124]:62720 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753312AbXEaP6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 11:58:45 -0400
+Date: Thu, 31 May 2007 08:46:15 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/22] 2.6.22-rc3 perfmon2 : new system calls support
+Message-ID: <20070531154615.GA23939@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <200705291348.l4TDmHQd019645@frankl.hpl.hp.com> <20070531152134.GA974@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46574DE4.2080900@rncbc.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070531152134.GA974@infradead.org>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph,
 
-On Fri, May 25, 2007 at 09:58:12PM +0100, Rui Nuno Capela wrote:
->
-> I wish I could give you more details, but the fact is I don't know
-> where
-> to look. The machine just freezes silently, again and again, with all
-> kernels from -rt2 to -rt8 inclusive, with no traceable evidence, at
-> least to my knowledge. The only symptom that I can come about is that,
-> from some moment on and ever since, the system cannot start any new
-> process anymore, or otherwise takes forever to realize and launch any
-> new started process thread.
->
+On Thu, May 31, 2007 at 04:21:34PM +0100, Christoph Hellwig wrote:
+> On Tue, May 29, 2007 at 06:48:17AM -0700, Stephane Eranian wrote:
+> > sys_pfm_create_context():
+> > 	- create a new perfmon2 context and returns a file descriptor in
+> > 	  the pfarg_ctx_t parameters. This is the first call an application
+> > 	  must make to do monitoring 
+> > 	- rewritten to pass sampling format identification as a string
+> > 	- file descriptor is now returned by call
+> > 
+> > sys_pfm_write_pmcs():
+> > 	- program the PMU configuration registers. Accepts vector of arguments
+> > 	  of type pfarg_pmc_t
+> > 	
+> > sys_pfm_write_pmds():
+> > 	- program the PMU data registers. Accepts a vector of arguments of type
+> > 	  pfarg_pmd_t
+> > 
+> > sys_pfm_read_pmds():
+> > 	- read the PMU data registers.  Accepts a vector of arguments of type
+> > 	  pfarg_pmd_t
+> 
+> This kind of interface doesn't make any sense at all.  Information should
+> be read and written from filedescriptors using the read and write family
+> syscalls and through the VFS instead of adding tons of system calls.
+> 
 
-I have a box that looks like it's doing the same thing. Unfortunately
-for now it's being used to test other things.
+They are all using file descriptors already.
+We use read() for receiving overflow notifications. Write is not used.
 
-But I did do a show-task and see a bunch of D processes. I'll post that
-output when I get that box free again.
+> I fear we need to write down the requirements first and then come up
+> with something better.  E.g. for per-task sampling an interface centered
+> around a few files in /proc/<pid>/ would fit very nicely:
+> 
+>   /proc/<pid>/perfmon_pmcs
+>   /proc/<pid>/perfmon_pmds
+>   	Obvious
+>   /proc/<pid>/perfmon_ctl
+>   	Can get control commands as ascii sets written to
+> 
+You don't want to do parsing because usually, when sampling, you have
+to reprogram the registers on the fly and this is on the critical path.
+Information has to be exchanged in binary format.
 
--- Steve
+-- 
 
+-Stephane
