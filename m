@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbXEaUpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbXEaUqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752478AbXEaUpT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbXEaUpD
+	id S1752487AbXEaUqM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbXEaUp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:45:03 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:33199 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751984AbXEaUpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:45:01 -0400
-Date: Thu, 31 May 2007 22:46:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Prarit Bhargava <prarit@redhat.com>, isdn4linux@listserv.isdn4linux.de,
-       kkeil@suse.de
-Cc: Christoph Lameter <clameter@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: [PATCH] isdn: fix section mismatch warnings
-Message-ID: <20070531204601.GF27305@uranus.ravnborg.org>
-References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com> <465EE7BB.4050605@redhat.com> <20070531200446.GA27305@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531200446.GA27305@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 31 May 2007 16:45:56 -0400
+Received: from mail-gw3.adaptec.com ([216.52.22.36]:40286 "EHLO
+	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbXEaUpy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:45:54 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: kexec and aacraid broken
+Date: Thu, 31 May 2007 16:45:51 -0400
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01A553B9@otce2k301.adaptec.com>
+In-reply-to: <86802c440705311259w4e96eafbs799251dd494e47a4@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: kexec and aacraid broken
+Thread-Index: AcejvjH2ZPlzCHecRnmuzvmd9LXaQAABC58A
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the following section mismatch warnings:
+Ahhhh. explains why I am having troubles duping this issue thus far.
 
-WARNING: drivers/isdn/hardware/eicon/divadidd.o(.init.text+0xc4): Section mismatch: reference to .exit.text: (between 'init_module' and 'diddfunc_init')
-WARNING: drivers/isdn/hardware/eicon/divas.o(.init.text+0xf4): Section mismatch: reference to .exit.text:divasfunc_exit (between 'init_module' and 'divasfunc_init')
-WARNING: drivers/isdn/hardware/eicon/divas.o(.init.text+0x10d): Section mismatch: reference to .exit.text:divasfunc_exit (between 'init_module' and 'divasfunc_init')
-WARNING: drivers/isdn/hardware/eicon/divas.o(.init.text+0x148): Section mismatch: reference to .exit.text:divasfunc_exit (between 'init_module' and 'divasfunc_init')
+This is prerelease Firmware on a yet to be released card and thus should
+not get any driver workarounds if this issue can be resolved in
+Firmware. If this can be duped on a released card with released
+Firmware, then the story changes of course; but still does not preclude
+a Firmware/Hardware/Drive Compatibility bug ;-} . Until then, please
+work this issue via SUN channels so that we get all the necessary card
+debug information for our teams to work this.
 
-They all point to situation whare a function marked __init calls a function
-marked __exit - but the __exit section may have been discarded.
+I will ensure Adaptec will remain on top of this issue since it is
+clearly a problem with the Adapter Hardware interfacing. The adapter is
+not surviving an IOP_RESET and is going into an Adapter Firmware Kernel
+Panic or taking an excessively long period (in the testing thus far >
+540 seconds) of time to complete it's reset.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-Note: This warning is generated by a modified copy of modpost in my
-      tree. It will soon hit upstearm.
+Sincerely -- Mark Salyzyn
 
-	Sam
-
-diff --git a/drivers/isdn/hardware/eicon/diva_didd.c b/drivers/isdn/hardware/eicon/diva_didd.c
-index 14298b8..d755d90 100644
---- a/drivers/isdn/hardware/eicon/diva_didd.c
-+++ b/drivers/isdn/hardware/eicon/diva_didd.c
-@@ -99,7 +99,7 @@ static int DIVA_INIT_FUNCTION create_proc(void)
- 	return (0);
- }
- 
--static void DIVA_EXIT_FUNCTION remove_proc(void)
-+static void remove_proc(void)
- {
- 	remove_proc_entry(DRIVERLNAME, proc_net_eicon);
- 	remove_proc_entry("net/eicon", NULL);
-diff --git a/drivers/isdn/hardware/eicon/divasfunc.c b/drivers/isdn/hardware/eicon/divasfunc.c
-index df61e51..46fc21a 100644
---- a/drivers/isdn/hardware/eicon/divasfunc.c
-+++ b/drivers/isdn/hardware/eicon/divasfunc.c
-@@ -231,7 +231,7 @@ int DIVA_INIT_FUNCTION divasfunc_init(int dbgmask)
- /*
-  * exit
-  */
--void DIVA_EXIT_FUNCTION divasfunc_exit(void)
-+void divasfunc_exit(void)
- {
- 	divasa_xdi_driver_unload();
- 	disconnect_didd();
+Yinghai Lu [mailto:yhlu.kernel@gmail.com] sez:
+> SUN coguar with 11731
+> 
+> On 5/31/07, Salyzyn, Mark <mark_salyzyn@adaptec.com> wrote:
+> > > No, still get adapter kernel panic
+> >
+> > Which adapter are you using?
