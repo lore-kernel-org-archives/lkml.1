@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751148AbXEaXRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbXEaXVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751148AbXEaXRR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 19:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbXEaXRI
+	id S1759037AbXEaXVU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 19:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXEaXVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 19:17:08 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:8112 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbXEaXRH (ORCPT
+	Thu, 31 May 2007 19:21:08 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:33203 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751148AbXEaXVH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 19:17:07 -0400
-X-IronPort-AV: i="4.16,371,1175497200"; 
-   d="scan'208"; a="489770076:sNHT43947206"
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [2/4] 2.6.22-rc3: known regressions
-X-Message-Flag: Warning: May contain useful information
-References: <465C188F.9000900@googlemail.com>
-	<465C22F4.8080505@googlemail.com>
-	<alpine.LFD.0.98.0705301918450.26602@woody.linux-foundation.org>
-	<20070531220833.GA10867@beardog.cca.cpqcorp.net>
-	<alpine.LFD.0.98.0705311516350.26602@woody.linux-foundation.org>
-	<20070531223908.GA12325@beardog.cca.cpqcorp.net>
-	<20070531155018.a8226075.akpm@linux-foundation.org>
-	<alpine.LFD.0.98.0705311610440.26602@woody.linux-foundation.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 31 May 2007 16:17:00 -0700
-In-Reply-To: <alpine.LFD.0.98.0705311610440.26602@woody.linux-foundation.org> (Linus Torvalds's message of "Thu, 31 May 2007 16:12:02 -0700 (PDT)")
-Message-ID: <adalkf4oa6r.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 31 May 2007 23:17:00.0761 (UTC) FILETIME=[CAB79C90:01C7A3D9]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Thu, 31 May 2007 19:21:07 -0400
+Date: Thu, 31 May 2007 16:20:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       Chris Zankel <chris@zankel.net>
+Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
+Message-Id: <20070531162021.4cd4e91a.akpm@linux-foundation.org>
+In-Reply-To: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
+References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What about the changes to fix the order that MSI-X irqs are returned
-in (iirc, list_add had to be changed to list_add_tail in a couple of
-places).  Without that change, multiple MSI-X interrupts seem to be
-broken: the kernel programs the MSI-X table in the opposite order that
-it gives the irq numbers to the driver.  The net effect is that if I
-request, say, 3 MSI-X interrupts for a device, then when the device
-generates the first interrupt, the driver thinks it generated the
-third interrupt, and things go fairly haywire.
+On Thu, 31 May 2007 14:09:15 -0400
+Ulrich Drepper <drepper@redhat.com> wrote:
 
- - R.
+> I've brought this topic up before but didn't provide a patch.  Well, here
+> we go again, this time with a patch.  I even throw in a test program.
+> 
+> The problem is as follows: in multi-threaded code (or more correctly: all
+> code using clone() with CLONE_FILES) we have a race when exec'ing.
+> 
+>    thread #1                       thread #2
+> 
+>    fd=open()
+> 
+>                                    fork + exec
+> 
+>   fcntl(fd,F_SETFD,FD_CLOEXEC)
+> 
+> In some applications this can happen frequently.  Take a web browser.  One
+> thread opens a file and another thread starts, say, an external PDF viewer.
+> The result can even be a security issue if that open file descriptor refers
+> to a sensitive file and the external program can somehow be tricked into
+> using that descriptor.
+> 
+> Just adding O_CLOEXEC support to open() doesn't solve the whole set of
+> problems.  There are other ways to create file descriptors (socket,
+> epoll_create, Unix domain socket transfer, etc).  These can and should
+> be addressed separately though.  open() is such an easy case that it makes
+> not much sense putting the fix off.
+> 
+> ...
+>
+> diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
+> index c154b9d..b847741 100644
+> --- a/include/asm-generic/fcntl.h
+> +++ b/include/asm-generic/fcntl.h
+> @@ -48,6 +48,9 @@
+>  #ifndef O_NOATIME
+>  #define O_NOATIME	01000000
+>  #endif
+> +#ifndef O_CLOEXEC
+> +#define O_CLOEXEC	02000000	/* set close_on_exec */
+> +#endif
+>  #ifndef O_NDELAY
+>  #define O_NDELAY	O_NONBLOCK
+>  #endif
+
+This will break xtensa, because that architecture (and only that
+architecture) doesn't include asm-generic/fcntl.h from asm/fcntl.h.
+
+But let's leave this patch as-is: it's xtensa which needs fixing.
+
