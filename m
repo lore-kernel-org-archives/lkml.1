@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbXE3X5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbXEaACG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758555AbXE3X5A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 19:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbXE3X4v
+	id S1756160AbXEaACG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 20:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbXEaABz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 19:56:51 -0400
-Received: from mga03.intel.com ([143.182.124.21]:58159 "EHLO mga03.intel.com"
+	Wed, 30 May 2007 20:01:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43219 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752511AbXE3X4u convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 19:56:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,595,1170662400"; 
-   d="scan'208";a="233851919"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Date: Wed, 30 May 2007 16:56:47 -0700
-Message-ID: <79E93560F4A5FD42BB769DAAF8BEF62A01B633E9@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <f1318b470705301650y5ed9fdbn12ad0ebe30233336@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Thread-Index: AcejFV7TOe/cioVORNWDJLUOa+QbfQAAA6lQ
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "Luck, Tony" <tony.luck@intel.com>, "David Chinner" <dgc@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "lkml" <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>,
-       "Christoph Lameter" <clameter@sgi.com>
-X-OriginalArrivalTime: 30 May 2007 23:56:48.0963 (UTC) FILETIME=[2FC89130:01C7A316]
+	id S1751823AbXEaABy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 20:01:54 -0400
+Date: Wed, 30 May 2007 20:01:34 -0400
+From: Dave Jones <davej@redhat.com>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Richard Hughes <hughsient@gmail.com>,
+       Julian Sikorski <belegdol@gmail.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH} x86_64 PM_TRACE support.
+Message-ID: <20070531000133.GE2794@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Nigel Cunningham <nigel@nigel.suspend2.net>,
+	Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Richard Hughes <hughsient@gmail.com>,
+	Julian Sikorski <belegdol@gmail.com>, Andi Kleen <ak@suse.de>
+References: <1180161174.9773.60.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1180161174.9773.60.camel@nigel.suspend2.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Saw this when running strace -f on a script on 2.6.21 on ia64
-Run strace -f on 2.6.22-rc3 on Tiger4/Montecito. Couldn't reproduce
-this issue. Kernel was built with both defconfig and tiger_defconfig.
+On Sat, May 26, 2007 at 04:32:54PM +1000, Nigel Cunningham wrote:
 
-Thanks.
+Hi Nigel,
 
--Fenghua
+ > As promised I took another look at the patch and at what Randy had
+ > prepared to fix the IA64 compilation error. I did some more work on it,
+ > and believe that the following is the tidiest correct solution I can
+ > come up with. It differs from the version that caused the compilation
+ > error primarily in that:
+ > 
+ > * the #include <asm/resume-trace.h> is inside the #ifdef 
+ >   CONFIG_PM_TRACE.
+ > * now-unnecessary protection for multiple #includes and ifdef testing of
+ >   CONFIG_PM_TRACE in the asm code were removed.
+ > * do-nothing definitions for !PM_TRACE restored to
+ >   include/linux/resume-trace.h.
+ > 
+ > We're therefore depending upon kernel/power/Kconfig having the right
+ > depends condition. As far as I can see, IA64 doesn't define CONFIG_X86.
+ > Is that correct, or do we need to have (X86 && !IA64)?
+
+Can you post a copy of this that isn't mangled by quoted-printable encoding?
+Whilst it looks fine in my MUA, the diff ends up looking like..
+
+diff -ruNp 200.patch-old/arch/x86_64/kernel/vmlinux.lds.S 200.patch-new/arc=
+h/x86_64/kernel/vmlinux.lds.S
+--- 200.patch-old/arch/x86_64/kernel/vmlinux.lds.S      2007-05-26 14:18:22.0000=
+00000 +1000
++++ 200.patch-new/arch/x86_64/kernel/vmlinux.lds.S      2007-05-26 14:23:52.0000=
+00000 +1000
+@@ -52,6 +52,13 @@ SECTIONS
+=20
+   RODATA
+=20
++  . =3D ALIGN(4);
++  .tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {
++       __tracedata_start =3D .;
++       *(.tracedata)
++       __tracedata_end =3D .;
++  }
+
+
+I'm beginning to think we really need a Documentation/Unhorking-MUAs-HOWTO
+judging by the amount of broken encodings we seem to get to lkml these days.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
