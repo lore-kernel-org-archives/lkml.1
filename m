@@ -1,148 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759110AbXEaCg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbXEaChz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759110AbXEaCg5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 22:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbXEaCgt
+	id S1759330AbXEaChz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 22:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbXEaChs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 22:36:49 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35226 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750746AbXEaCgt (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 22:36:49 -0400
-Date: Thu, 31 May 2007 12:36:40 +1000
-From: David Chinner <dgc@sgi.com>
-To: Michal Marek <mmarek@suse.cz>
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/3] Fix XFS_IOC_*_TO_HANDLE and XFS_IOC_{OPEN,READLINK}_BY_HANDLE in compat mode
-Message-ID: <20070531023640.GI85884050@sgi.com>
-References: <20070530125954.706423971@suse.cz> <20070530143043.611931865@suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070530143043.611931865@suse.cz>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 30 May 2007 22:37:48 -0400
+Received: from mga09.intel.com ([134.134.136.24]:38143 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755658AbXEaChq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 22:37:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,596,1170662400"; 
+   d="scan'208";a="92040685"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: BUG: sleeping function called from invalid context at kernel/fork.c:385
+Date: Wed, 30 May 2007 19:37:45 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.64.0705301657530.3832@schroedinger.engr.sgi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: BUG: sleeping function called from invalid context at kernel/fork.c:385
+Thread-Index: AcejGAixn1k91OG4QuyhbKhTkDJfEAAFDLZw
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Christoph Lameter" <clameter@sgi.com>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: "David Chinner" <dgc@sgi.com>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "lkml" <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>
+X-OriginalArrivalTime: 31 May 2007 02:37:45.0776 (UTC) FILETIME=[ABB14B00:01C7A32C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 02:59:56PM +0200, Michal Marek wrote:
-> 32bit struct xfs_fsop_handlereq has different size and offsets (due to
-> pointers). TODO: case XFS_IOC_{FSSETDM,ATTRLIST,ATTRMULTI}_BY_HANDLE
-> still not handled.
-> 
-> Signed-off-by: Michal Marek <mmarek@suse.cz>
-> ---
->  fs/xfs/linux-2.6/xfs_ioctl32.c |   63 +++++++++++++++++++++++++++++++++++++----
->  1 file changed, 58 insertions(+), 5 deletions(-)
-> 
-> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl32.c
-> +++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c
-> @@ -139,6 +139,44 @@ xfs_ioctl32_bulkstat(
->  }
->  #endif
->  
-> +typedef struct xfs_fsop_handlereq32 {
+> Ahh okay. cscope will do that too.... But all have __exit.
 
-xfs_fsop_handlereq_32
+The trick is that one of them *shouldn't* have __exit.  With cscope
+you'll have to use the "Find functions calling this function:"
+mode to try and find the __init function that is calling an
+__exit function.
 
-> +	__u32		fd;		/* fd for FD_TO_HANDLE		*/
-> +	compat_uptr_t	path;		/* user pathname		*/
-> +	__u32		oflags;		/* open flags			*/
-> +	compat_uptr_t	ihandle;	/* user supplied handle		*/
-> +	__u32		ihandlen;	/* user supplied length		*/
-> +	compat_uptr_t	ohandle;	/* user buffer for handle	*/
-> +	compat_uptr_t	ohandlen;	/* user buffer length		*/
-> +} xfs_fsop_handlereq32_t;
-
-xfs_fsop_handlereq_32_t
-
-Add a empty line here...
-
-> +#define XFS_IOC_PATH_TO_FSHANDLE_32 _IOWR('X', 104, struct xfs_fsop_handlereq32)
-> +#define XFS_IOC_PATH_TO_HANDLE_32   _IOWR('X', 105, struct xfs_fsop_handlereq32)
-> +#define XFS_IOC_FD_TO_HANDLE_32	    _IOWR('X', 106, struct xfs_fsop_handlereq32)
-> +#define XFS_IOC_OPEN_BY_HANDLE_32   _IOWR('X', 107, struct xfs_fsop_handlereq32)
-> +#define XFS_IOC_READLINK_BY_HANDLE_32 _IOWR('X', 108, struct xfs_fsop_handlereq32)
-
-Looks kinda whitespacey here - it's mixing spaces and tabs....
-
-> +STATIC unsigned long xfs_ioctl32_fshandle(unsigned long arg)
-> +{
-> +	xfs_fsop_handlereq32_t __user *p32 = (void __user *)arg;
-> +	xfs_fsop_handlereq_t __user *p = compat_alloc_user_space(sizeof(*p));
-> +	u32 addr;
-> +
-> +	if (copy_in_user(&p->fd, &p32->fd, sizeof(__u32)) ||
-> +	    get_user(addr, &p32->path) ||
-> +	    put_user(compat_ptr(addr), &p->path) ||
-> +	    copy_in_user(&p->oflags, &p32->oflags, sizeof(__u32)) ||
-> +	    get_user(addr, &p32->ihandle) ||
-> +	    put_user(compat_ptr(addr), &p->ihandle) ||
-> +	    copy_in_user(&p->ihandlen, &p32->ihandlen, sizeof(__u32)) ||
-> +	    get_user(addr, &p32->ohandle) ||
-> +	    put_user(compat_ptr(addr), &p->ohandle) ||
-> +	    get_user(addr, &p32->ohandlen) ||
-> +	    put_user(compat_ptr(addr), &p->ohandlen))
-> +		return -EFAULT;
-> +
-> +	return (unsigned long)p;
-> +}
-> +
-> +
->  STATIC long
->  xfs_compat_ioctl(
->  	int		mode,
-> @@ -164,12 +202,7 @@ xfs_compat_ioctl(
->  	case XFS_IOC_GETBMAPA:
->  	case XFS_IOC_GETBMAPX:
->  /* not handled
-> -	case XFS_IOC_FD_TO_HANDLE:
-> -	case XFS_IOC_PATH_TO_HANDLE:
-> -	case XFS_IOC_PATH_TO_FSHANDLE:
-> -	case XFS_IOC_OPEN_BY_HANDLE:
->  	case XFS_IOC_FSSETDM_BY_HANDLE:
-> -	case XFS_IOC_READLINK_BY_HANDLE:
->  	case XFS_IOC_ATTRLIST_BY_HANDLE:
->  	case XFS_IOC_ATTRMULTI_BY_HANDLE:
->  */
-> @@ -226,6 +259,26 @@ xfs_compat_ioctl(
->  		arg = xfs_ioctl32_bulkstat(arg);
->  		break;
->  #endif
-> +	case XFS_IOC_FD_TO_HANDLE_32:
-> +		arg = xfs_ioctl32_fshandle(arg);
-> +		cmd = XFS_IOC_FD_TO_HANDLE;
-> +		break;
-> +	case XFS_IOC_PATH_TO_HANDLE_32:
-> +		arg = xfs_ioctl32_fshandle(arg);
-> +		cmd = XFS_IOC_PATH_TO_HANDLE;
-> +		break;
-> +	case XFS_IOC_PATH_TO_FSHANDLE_32:
-> +		arg = xfs_ioctl32_fshandle(arg);
-> +		cmd = XFS_IOC_PATH_TO_FSHANDLE;
-> +		break;
-> +	case XFS_IOC_OPEN_BY_HANDLE_32:
-> +		arg = xfs_ioctl32_fshandle(arg);
-> +		cmd = XFS_IOC_OPEN_BY_HANDLE;
-> +		break;
-> +	case XFS_IOC_READLINK_BY_HANDLE_32:
-> +		arg = xfs_ioctl32_fshandle(arg);
-> +		cmd = XFS_IOC_READLINK_BY_HANDLE;
-> +		break;
-
-+	case XFS_IOC_FD_TO_HANDLE_32:
-+	case XFS_IOC_PATH_TO_HANDLE_32:
-+	case XFS_IOC_PATH_TO_FSHANDLE_32:
-+	case XFS_IOC_OPEN_BY_HANDLE_32:
-+	case XFS_IOC_READLINK_BY_HANDLE_32:
-+		arg = xfs_ioctl32_fshandle(arg);
-+		cmd = _NATIVE_IOC(cmd, struct xfs_fsop_handlereq);
-+		break;
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+-Tony
