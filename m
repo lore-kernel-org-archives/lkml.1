@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbXEaWFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbXEaWHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757975AbXEaWFV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 18:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbXEaWFK
+	id S1757975AbXEaWHv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 18:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbXEaWHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 18:05:10 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55865 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675AbXEaWFJ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 18:05:09 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc3-mm1 - works-for-me and a meta-question...
-In-Reply-To: Your message of "Wed, 30 May 2007 23:58:23 PDT."
-             <20070530235823.793f00d9.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+	Thu, 31 May 2007 18:07:44 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:64005 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752468AbXEaWHn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 18:07:43 -0400
+Date: Thu, 31 May 2007 18:07:42 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 9/9] Scheduler profiling - Use conditional calls
+Message-ID: <20070531220742.GG904@Krystal>
+References: <20070530140025.917261793@polymtl.ca> <20070530140229.811672406@polymtl.ca> <p736469dsdb.fsf@bingen.suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1180649104_8325P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Thu, 31 May 2007 18:05:04 -0400
-Message-ID: <10478.1180649104@turing-police.cc.vt.edu>
+Content-Disposition: inline
+In-Reply-To: <p736469dsdb.fsf@bingen.suse.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:56:45 up 3 days,  6:35,  4 users,  load average: 0.22, 0.12, 0.14
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1180649104_8325P
-Content-Type: text/plain; charset=us-ascii
+* Andi Kleen (andi@firstfloor.org) wrote:
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+> >  	}
+> > -	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
+> > +	cond_call(profile_on,
+> > +		profile_hit(SCHED_PROFILING, __builtin_return_address(0)));
+> 
+> Would it be possible to use a syntax like
+> 
+>         if (unlikely_cond_call(variable)) {     (or better name) 
+>                 ...
+>         } 
+> 
+> instead? I think that would be much nicer to read than having
+> code in a macro argument
+> 
 
-On Wed, 30 May 2007 23:58:23 PDT, Andrew Morton said:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc3/2.6.22-rc3-mm1/
+I see your point, but there is a level of control on the branch I would
+lack by doing so: the ability to put the call in either the if or else
+branch. It is an optimization on i386.
 
-Builds, boots, seems to be behaving on my laptop (Dell D820, X86_64).
+I could do it by defining my home-made if() :
 
-Meta-question: Is there a useful address/mailbox/webpage to toss *working*
-reports at?  
+cond_if (cond_call_name) {
+  code
+}
+
+The macro cond_if could then expand (this is a simplified example) in either in
+
+if (cond)
+
+or
+
+if (cond)
+else
+
+Also, I live in the expectation that, someday, the gcc guys will be nice
+enough to add some kind of support for a nop-based jump that would
+require code patching to put a jump instead. If it ever happens, my
+macro could evolve into this for newer compiler versions, which I could
+not do with the if() statement you are proposing.
 
 
-
-
---==_Exmh_1180649104_8325P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGX0aQcC3lWbTT17ARAnIAAJ93c6lT9H+xP8OG+PtM5xvi0dLaywCfW0Ys
-MteTNUYe1rm2NQ6NQkC8hu0=
-=qtpa
------END PGP SIGNATURE-----
-
---==_Exmh_1180649104_8325P--
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
