@@ -1,53 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbXEaItE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbXEaIwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758916AbXEaItE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 04:49:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbXEaIsz
+	id S1758945AbXEaIwY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 04:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXEaIwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 04:48:55 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:39880 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753374AbXEaIsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 04:48:54 -0400
-Date: Thu, 31 May 2007 14:26:00 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, ckrm-tech@lists.sourceforge.net,
-       efault@gmx.de, linux-kernel@vger.kernel.org, tingy@cs.umass.edu,
-       Peter Williams <pwil3058@bigpond.net.au>, kernel@kolivas.org,
-       tong.n.li@intel.com, containers@lists.osdl.org,
-       Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
-Message-ID: <20070531085600.GA9826@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070525180850.GA26884@in.ibm.com> <46577CA6.8000807@bigpond.net.au> <20070526154112.GA31925@holomorphy.com> <20070530171405.GA21062@in.ibm.com> <20070530201359.GD6909@holomorphy.com> <20070531032657.GA823@in.ibm.com> <20070531040926.GH6909@holomorphy.com> <20070531054828.GB663@in.ibm.com> <20070531063647.GC15426@holomorphy.com> <20070531083353.GF663@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531083353.GF663@in.ibm.com>
-User-Agent: Mutt/1.5.11
+	Thu, 31 May 2007 04:52:17 -0400
+Received: from styx.suse.cz ([82.119.242.94]:53081 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752171AbXEaIwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 04:52:16 -0400
+Message-ID: <465E8CBE.8020709@suse.cz>
+Date: Thu, 31 May 2007 10:52:14 +0200
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.2) Gecko/20061107 SUSE/1.1.1-0.2 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: David Chinner <dgc@sgi.com>
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] Fix XFS_IOC_FSBULKSTAT{,_SINGLE} and XFS_IOC_FSINUMBERS
+ in compat mode
+References: <20070530125954.706423971@suse.cz> <20070530143044.060544510@suse.cz> <20070531063734.GJ85884050@sgi.com>
+In-Reply-To: <20070531063734.GJ85884050@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 02:03:53PM +0530, Srivatsa Vaddagiri wrote:
-> Its ->wait_runtime will drop less significantly, which lets it be
-> inserted in rb-tree much to the left of those 1000 tasks (and which indirectly
-> lets it gain back its fair share during subsequent schedule cycles).
+David Chinner wrote:
+> On Wed, May 30, 2007 at 02:59:57PM +0200, Michal Marek wrote:
+>> +typedef struct xfs_bstat32 {
+>> +	__u64		bs_ino;		/* inode number			*/
+>> +	__u16		bs_mode;	/* type and mode		*/
+>> +	__u16		bs_nlink;	/* number of links		*/
+>> +	__u32		bs_uid;		/* user id			*/
+>> +	__u32		bs_gid;		/* group id			*/
+>> +	__u32		bs_rdev;	/* device value			*/
+>> +	__s32		bs_blksize;	/* block size			*/
+>> +	__s64		bs_size;	/* file size			*/
+>> +	xfs_bstime32_t	bs_atime;	/* access time			*/
+>> +	xfs_bstime32_t	bs_mtime;	/* modify time			*/
+>> +	xfs_bstime32_t	bs_ctime;	/* inode change time		*/
+>> +	int64_t		bs_blocks;	/* number of blocks		*/
+>> +	__u32		bs_xflags;	/* extended flags		*/
+>> +	__s32		bs_extsize;	/* extent size			*/
+>> +	__s32		bs_extents;	/* number of extents		*/
+>> +	__u32		bs_gen;		/* generation count		*/
+>> +	__u16		bs_projid;	/* project id			*/
+>> +	unsigned char	bs_pad[14];	/* pad space, unused		*/
+>> +	__u32		bs_dmevmask;	/* DMIG event mask		*/
+>> +	__u16		bs_dmstate;	/* DMIG state info		*/
+>> +	__u16		bs_aextents;	/* attribute number of extents	*/
+>> +}
+>> +#ifdef BROKEN_X86_ALIGNMENT
+>> +	__attribute__((packed))
+>> +#endif
+>> +	xfs_bstat32_t;
 > 
-> Hmm ..is that the theory?
+> #ifdef BROKEN_X86_ALIGNMENT
+> #define _PACKED	__attribute__((packed))
+> #else
+> #define _PACKED
+> #endif
+> 
+> typedef struct xfs_bstat_32 {
+> 	......
+> } _PACKED xfs_bstat32_t
 
-My only concern is the time needed to converge to this fair
-distribution, especially in face of fluctuating workloads. For ex: a
-container who does a fork bomb can have a very adverse impact on other
-container's fair share under this scheme compared to other schemes which 
-dedicate separate rb-trees for differnet containers (and which also support two 
-level hierarchical scheduling inside the core scheduler).
+Yes, that would look cleaner. Perhaps something like PACKED_IF_NEEDED so
+that it's clear that it's not allways defined to __attribute__((packed))?
 
-I am inclined to have the core scheduler support atleast two levels of 
-hierarchy (to better isolate each container) and resort to the flattening 
-trick for higher levels.
 
--- 
-Regards,
-vatsa
+>> +static int xfs_bstat_store_compat(
+>> +	xfs_bstat32_t __user *p32,
+>> +	xfs_bstat_t __user *p)
+>> +{
+>> +#define copy(memb) copy_in_user(&p32->memb, &p->memb, sizeof(p32->memb))
+> 
+> Hmmm - now I see why you used this.
+> 
+> These copies are used everywhere in this file, maybe it would be best
+> to define a copy_from_32() and a copy_to_32() macros and use them
+> everywhere in the file?
+
+OK, I'll use a "proper" (not playing with some local variables) global
+macro like Arnd suggested in this thread.
+
+
+>> +#define MAX_BSTAT_LEN \
+>> +	((__s32)((64*1024 - sizeof(xfs_fsop_bulkreq_t)) / sizeof(xfs_bstat_t)))
+>> +#define MAX_INOGRP_LEN \
+>> +	((__s32)((64*1024 - sizeof(xfs_fsop_bulkreq_t)) / sizeof(xfs_inogrp_t)))
+> 
+> Oooo magic numbers. Why were these chosen?
+
+I wanted to limit the argument passed to compat_alloc_user_space
+somehow; 64K is probably not the best idea, but some upper bound is
+needed, isn't it? OK, if we can get around without any conversions at
+all (see below), then these constants can go away.
+
+
+>> +
+>> +STATIC int
+>> +xfs_ioctl32_bulkstat_wrap(
+>> +	bhv_vnode_t	*vp,
+>> +	struct inode    *inode,
+>> +	struct file     *file,
+>> +	int             mode,
+>> +	unsigned        cmd,
+>> +	unsigned long   arg)
+>>  {
+>> -	xfs_fsop_bulkreq32_t	__user *p32 = (void __user *)arg;
+>> -	xfs_fsop_bulkreq_t	__user *p = compat_alloc_user_space(sizeof(*p));
+>> -	u32			addr;
+>> -
+>> -	if (get_user(addr, &p32->lastip) ||
+>> -	    put_user(compat_ptr(addr), &p->lastip) ||
+>> -	    copy_in_user(&p->icount, &p32->icount, sizeof(s32)) ||
+>> -	    get_user(addr, &p32->ubuffer) ||
+>> -	    put_user(compat_ptr(addr), &p->ubuffer) ||
+>> -	    get_user(addr, &p32->ocount) ||
+>> -	    put_user(compat_ptr(addr), &p->ocount))
+>> +	xfs_fsop_bulkreq32_t __user *p32 = (void __user *)arg;
+>> +	xfs_fsop_bulkreq_t tmp;
+>> +	u32 addr;
+>> +	void *buf32;
+>> +	int err;
+>> +
+>> +	if (get_user(addr, &p32->lastip))
+>> +		return 0;
+> 
+> return -EFAULT?
+
+Oops, silly mistake. Thanks!
+
+
+>> +	if (cmd == XFS_IOC_FSBULKSTAT_32)
+>> +		cmd = XFS_IOC_FSBULKSTAT;
+>> +	if (cmd == XFS_IOC_FSBULKSTAT_SINGLE_32)
+>> +		cmd = XFS_IOC_FSBULKSTAT_SINGLE;
+>> +	if (cmd == XFS_IOC_FSINUMBERS_32)
+>> +		cmd = XFS_IOC_FSINUMBERS;
+> 
+> 	cmd = _NATIVE_IOC(cmd, struct xfs_fsop_bulkreq);
+> 	switch (cmd) {
+> 	case XFS_IOC_FSBULKSTAT:
+> 	case XFS_IOC_FSBULKSTAT_SINGLE:
+
+Yes, I'll use _NATIVE_IOC here (also in other places as you pointed out).
+
+
+>> +
+>> +	if (cmd == XFS_IOC_FSBULKSTAT || cmd == XFS_IOC_FSBULKSTAT_SINGLE) {
+> 
+> Oh, now it gets messy :(
+
+True :-/
+
+
+> So, we do a whole lot of repacking of the bulkstat structures
+> once we've got the data out of the bulkstat call.
+> 
+> I think this is really the wrong way of doing this - the bulkstat
+> functions themselves take a "formatter" argument that is used to pack
+> the buffer in a given format. I think that we need to be supplying
+> the bulkstat code with different formatters in this case, not
+> repacking the buffer into a different format at a later time.
+> 
+> The formatter used by default is xfs_bulkstat_one() which 
+> falls down to xfs_bulkstat_one_dinode() or xfs_bulkstat_one_iget()
+> depending on whether we are doing icache coherent or blockdev
+> cache coherent lookups. It is these functions that need to be
+> told what format they are packing, I think, and xfs_bulkstat_single()
+> needs to be taught about them....
+
+Well, I didn't want to touch other files but xfs_ioctl32.c so that the
+patch has a higher chance of being accepted ;-) But of course if you
+think that patching the implementation to be aware of the compat ioctls
+is acceptable, then I can do it.
+
+
+>> +	if (cmd == XFS_IOC_FSINUMBERS) {
+> 
+> And I'm wondering if we should be doing the same thing here
+> (i.e. customer formatters), because this is equally ugly...
+
+I'll try to clean up the XFS_IOC_FSBULKSTAT part first...
+
+
+Thanks to all for their comments and suggestions! I'll send updated
+patches later.
+
+Michal
