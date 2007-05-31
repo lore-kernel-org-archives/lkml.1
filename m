@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760280AbXEaRcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbXEaRjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760280AbXEaRcA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 13:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756921AbXEaRbx
+	id S1758757AbXEaRjk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 13:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbXEaRjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 13:31:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55569 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752844AbXEaRbx (ORCPT
+	Thu, 31 May 2007 13:39:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:53706 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754104AbXEaRjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 13:31:53 -0400
-Date: Thu, 31 May 2007 18:31:43 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       cotte@de.ibm.com, neilb@suse.de, zanussi@us.ibm.com,
-       Linus Torvalds <torvalds@osdl.org>, hch@infradead.org
-Subject: Re: [PATCH] sendfile removal
-Message-ID: <20070531173143.GA7605@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Hugh Dickins <hugh@veritas.com>, Jens Axboe <jens.axboe@oracle.com>,
-	linux-kernel@vger.kernel.org, cotte@de.ibm.com, neilb@suse.de,
-	zanussi@us.ibm.com, Linus Torvalds <torvalds@osdl.org>
-References: <20070531103316.GO32105@kernel.dk> <Pine.LNX.4.64.0705311750180.12688@blonde.wat.veritas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705311750180.12688@blonde.wat.veritas.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 31 May 2007 13:39:31 -0400
+Message-ID: <465F07F0.3000406@cv-sv.de>
+Date: Thu, 31 May 2007 19:37:52 +0200
+From: Christian Volkmann <haveaniceday@cv-sv.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.4) Gecko/20070529 SUSE/1.1.2-4.1 SeaMonkey/1.1.2
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Dave Jones <davej@redhat.com>, Adrian Bunk <bunk@stusta.de>,
+       Christian Volkmann <haveaniceday@cv-sv.de>, ak@suse.de,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC: 2.6 patch] i386: remove support for the Rise CPU
+References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <464BB252.8010008@cv-sv.de> <464CC8E1.5010407@cv-sv.de> <20070517214754.GC398@redhat.com> <20070531052238.GX3899@stusta.de> <20070531133106.GA26030@redhat.com>
+In-Reply-To: <20070531133106.GA26030@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+7PGOp85ow037VGFzJZXS7USGGAMSOi5W709R
+ rR/LMyYqXIuVGnVJ9u7mjj6O4tKfJVfI9MjXGPLR4Ev8x71Slh
+ H6orWi2i3kVjF3Glf7Yhw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 06:06:19PM +0100, Hugh Dickins wrote:
-> Christoph already picked up on that, and it's of interest to shmem too:
-> loop over tmpfs in 2.6 was relying on shmem_file_sendfile, for which
-> the generic route is not good enough.
-> 
-> If we're giving a .splice_read to everything which used to have a
-> .sendfile, then I think you just need to make do_lo_read() use
-> ->splice_read now?
+The SIS550 chip uses the mP6 core according to http://en.wikipedia.org/wiki/MP6
+May be this code can improve the capability of these SIS550 system on a chip ?
 
-I'd be perfectly happy with killing support for using ->read.  Any
-simple filesystem can use the generic methods, and any more complex
-filesystem should better have splice aswell.  Btw, someone should
-look into using splice for the loop write path aswell, the current
-useage of ->prepare_write and ->commit_write has similar locking
-problems aswell.
+But this should be a different story.
+
+Dave Jones wrote:
+> On Thu, May 31, 2007 at 07:22:38AM +0200, Adrian Bunk wrote:
+>  > On Thu, May 17, 2007 at 05:47:54PM -0400, Dave Jones wrote:
+>  > > On Thu, May 17, 2007 at 11:28:01PM +0200, Christian Volkmann wrote:
+>  > > 
+>  > >  > - Important: somebody to check other CPU types if the same behavior happens.
+>  > > 
+>  > > arch/i386/kernel/cpu/rise.c
+>  > > 
+>  > > Though, I've *never* seen or even heard of someone with one of those CPUs,
+>  > > so whether we need to care is questionable. The mp6 did actually make it
+>  > > to manufacture aparently, but I don't think anyone actually bought one.
+>  > > http://en.wikipedia.org/wiki/Rise_Technology for a pic of this mythical beast.
+>  > 
+>  > Considering that arch/i386/kernel/cpu/rise.o takes a few bytes in every 
+>  > i386 kernel image, what about removing it?
+> 
+> I'll be amazed if someone complains.
+> We'll still boot fine on those CPUs without that support code too,
+> we just won't advertise cx8 to userspace, and /proc/cpuinfo
+> won't prettyprint the name. whoopdy-do.
+> 
+> Should we actually find someone who a) has one and b) is crazy enough
+> to still run it today, we could always add this stuff back.
+> 
+> Signed-off-by: Dave Jones <davej@redhat.com>
+> 
+> 	Dave
+> 
+
