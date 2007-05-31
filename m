@@ -1,71 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757081AbXEaWWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbXEaW2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757081AbXEaWWz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 18:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbXEaWWr
+	id S1757970AbXEaW2a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 18:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbXEaW2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 18:22:47 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:47185 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750971AbXEaWWq (ORCPT
+	Thu, 31 May 2007 18:28:21 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:50813 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751182AbXEaW2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 18:22:46 -0400
-Date: Thu, 31 May 2007 15:22:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [2/4] 2.6.22-rc3: known regressions
-In-Reply-To: <20070531220833.GA10867@beardog.cca.cpqcorp.net>
-Message-ID: <alpine.LFD.0.98.0705311516350.26602@woody.linux-foundation.org>
-References: <465C188F.9000900@googlemail.com> <465C22F4.8080505@googlemail.com>
- <alpine.LFD.0.98.0705301918450.26602@woody.linux-foundation.org>
- <20070531220833.GA10867@beardog.cca.cpqcorp.net>
+	Thu, 31 May 2007 18:28:20 -0400
+X-Sasl-enc: zXJ5hh/IRJWW+yathI0h9w9wlb0rtrwLe7oZLN1zrUZ2 1180650498
+Date: Thu, 31 May 2007 19:28:14 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: Richard Hughes <hughsient@gmail.com>, linux-acpi@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] Input: document the proper usage of EV_KEY and KEY_UNKNOWN
+Message-ID: <20070531222814.GB4076@khazad-dum.debian.net>
+References: <11802004861625-git-send-email-hmh@hmh.eng.br> <d120d5000705301325yf76d062vefbc79873d23e602@mail.gmail.com> <20070531005305.GC6883@khazad-dum.debian.net> <200705310033.51230.dtor@insightbb.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705310033.51230.dtor@insightbb.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We have all the pieces needed to have sane, generic userland keyboard handling
+in place for a while now, but it was not sufficiently documented (or used!).
+
+If EV_KEY input drivers always generate scan codes that can be used to
+reprogram their keycode maps, and always generate EV_MSC MSC_SCAN events when
+they output an EV_KEY KEY_UNKNOWN event, userspace can trap those and feed it
+to a generic helper that can ask the user to assign a key code and function to
+that key.
+
+This patch documents the requirements and best practices for EV_KEY input
+drivers.
+
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+---
+
+ Dmitry, how is that as a first approximation of the text?
+
+ Documentation/input/input-programming.txt |   53 ++++++++++++++++++++++++++++-
+ 1 files changed, 52 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/input/input-programming.txt b/Documentation/input/input-programming.txt
+index d9d5230..836f0bb 100644
+--- a/Documentation/input/input-programming.txt
++++ b/Documentation/input/input-programming.txt
+@@ -272,7 +272,58 @@ present, it is broken sometimes (at keyboards: Toshiba notebooks). To enable
+ autorepeat for your device, just set EV_REP in dev->evbit. All will be
+ handled by the input system.
+ 
+-1.9 Other event types, handling output events
++1.9 Being friendly to userspace when implementing EV_KEY drivers
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++Input drivers that generate EV_KEY events should always support either
++dev->getkeycode()/dev->setkeycode(), or keycode, keycodemax and keycodesize,
++so as to allow userspace to reprogram the keycodes as needed.  They should
++also either always generate EV_MSC MSC_SCAN events along with every EV_KEY
++event, or special case EV_KEY KEY_UNKNOWN as described below.
++
++If the input driver doesn't support any of the generic methods to manipulate
++the keycode map, it must never issue a EV_KEY KEY_UNKNOWN event.  If you
++need to issue EV_KEY KEY_UNKNOWN events, please implement the code in your
++driver to manipulate its keycode map.  KEY_UNKNOWN is meant to be something
++that can be replaced by the user with a functional keycode.
++
++If the input driver generates an EV_KEY KEY_UNKNOWN event, it should also
++generate *in the same event block* (i.e. before it issues an EV_SYN) an
++EV_MSC MSC_SCAN event, with the scan code for the "unknown key".  This
++should be done both in "press" and "release" EV_KEY events.  The EV_MSC
++MSC_SCAN event allows a generic userspace keyboard helper daemon to ask the
++user if he would like to map a key in a input device to a valid keycode, and
++assign a function to it.
++
++The scan code of a key (as informed in a EV_MSC MSC_SCAN event) must be its
++index in the keycode map, as implemented by dev->getkeycode() /
++dev->setkeycode(), or keycode, keycodemax and keycodesize for the device.
++
++If a key has a specific function that is known to the driver, it should
++generate the appropriate keycode for that function by default.  E.g., in a
++laptop where the FN+F1 key combination is always marked "HELP" in the
++keyboard, the driver is to generate KEY_HELP and not KEY_FN_F1.
++
++Unmarked keys that do not have a set function, or whose functions are
++unknown, should usually generate by default an EV_KEY KEY_UNKNOWN event.  If
++a positional keycode for that key already exists in input.h (e.g. KEY_FN_F1
++for FN+F1), it can also be used for backwards compatibility.  KEY_UNKNOWN is
++preferred for all new drivers, however.
++
++Non-positional keycodes like KEY_PROG1 should never be used by default.
++
++As an example, a ThinkPad T43 laptop hot key keyboard has FN+F1 unmarked,
++and FN+F5 marked with a "RF transmitter" symbol.  The driver for this
++keyboard is to generate EV_KEY KEY_UNKNOWN (plus EV_MSC MSC_SCAN <fn+f1
++scancode>) if the user presses or releases FN+F1.  It could generate EV_KEY
++KEY_FN_F1 *instead* of EV_KEY KEY_UNKNOWN as well.
++
++If the ThinkPad T43 user presses FN+F5, however, the driver is to generate
++EV_KEY KEY_WLAN, and not KEY_FN_F5 or KEY_UNKNOWN (this assumes the driver
++does know it is running on a ThinkPad T43, and that it has a model-specific
++key table for the T43).
++
++1.10 Other event types, handling output events
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+ The other event types up to now are:
+-- 
+1.5.1.6
 
 
-On Thu, 31 May 2007, Mike Miller (OS Dev) wrote:
-
-> On Wed, May 30, 2007 at 07:22:14PM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Tue, 29 May 2007, Michal Piotrowski wrote:
-> > > 
-> > > Subject    : Oops on 2.6.22-rc2 when unloading the cciss driver
-> > > References : http://lkml.org/lkml/2007/5/24/172
-> > > Submitter  : Mike Miller (OS Dev) <mikem@beardog.cca.cpqcorp.net>
-> > > Status     : Unknown
-> > 
-> > I thought this one should be fixed by commit e9ca75b53. Not so?
-> 
-> I apologize for the slow response. I also apologize that I don't know enough
-> about git to figure out what commit e9ca75b53 does.
-
-Even without git, you can use the kernel.org gitweb install:
-
-	http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=e9ca75b53
-
-(where the "h=...." is the magic part - pick any commit SHA1 you want, 
-including short-hand ones like the one I gave).
-
-With git, you just do
-
-	git show e9ca75b53
-
-to see a particular named commit.
-
-> I submitted a fix that was blessed by Eric B. that fixed that Oops.
-
-Ok, I don't think I have anything like that. The one I pointed to is the 
-one by Gerald Britton, acked by you ..
-
-But I now realize that that commit was already in -rc2. In fact, it's just 
-before the -rc2 release. So while it claims to fix one oops on shutdown, 
-it may be the _cause_ of the oops on mudule unload.
-
-		Linus
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
