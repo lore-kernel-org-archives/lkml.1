@@ -1,114 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759904AbXEaFjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760053AbXEaFkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759904AbXEaFjB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 01:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797AbXEaFiy
+	id S1760053AbXEaFkl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 01:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757644AbXEaFke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 01:38:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46418 "EHLO ogre.sisk.pl"
+	Thu, 31 May 2007 01:40:34 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60709 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753661AbXEaFix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 01:38:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
-Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend notifiers
-Date: Thu, 31 May 2007 07:44:43 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Oliver Neukum <oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0705281155270.22682-100000@netrider.rowland.org> <200705302311.40123.rjw@sisk.pl> <1180563897.6777.11.camel@nigel.suspend2.net>
-In-Reply-To: <1180563897.6777.11.camel@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1756797AbXEaFkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 01:40:33 -0400
+Date: Thu, 31 May 2007 11:18:28 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, ckrm-tech@lists.sourceforge.net,
+       Balbir Singh <balbir@in.ibm.com>, efault@gmx.de,
+       linux-kernel@vger.kernel.org, tingy@cs.umass.edu,
+       Peter Williams <pwil3058@bigpond.net.au>, kernel@kolivas.org,
+       tong.n.li@intel.com, containers@lists.osdl.org,
+       Ingo Molnar <mingo@elte.hu>, Kirill Korotaev <dev@sw.ru>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
+Message-ID: <20070531054828.GB663@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <4656DF0C.9090306@sw.ru> <20070525153450.GA4679@in.ibm.com> <46570C70.4050209@sw.ru> <20070525180850.GA26884@in.ibm.com> <46577CA6.8000807@bigpond.net.au> <20070526154112.GA31925@holomorphy.com> <20070530171405.GA21062@in.ibm.com> <20070530201359.GD6909@holomorphy.com> <20070531032657.GA823@in.ibm.com> <20070531040926.GH6909@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705310744.44488.rjw@sisk.pl>
+In-Reply-To: <20070531040926.GH6909@holomorphy.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, May 30, 2007 at 09:09:26PM -0700, William Lee Irwin III wrote:
+> It's not all that tricky. 
 
-On Thursday, 31 May 2007 00:24, Nigel Cunningham wrote:
-> Hi.
+Hmm ..the fact that each task runs for a minimum of 1 tick seems to
+complicate the matters to me (when doing group fairness given a single
+level hierarchy). A user with 1000 (or more) tasks can be unduly
+advantaged compared to another user with just 1 (or fewer) task because of this?
+
+> The ->fair_key computations are already
+> parametrized on load weights. The "task weights" here are just what
+> Linux calls "load weight," so we're largely done once task weights
+> are calculated.
 > 
-> On Wed, 2007-05-30 at 23:11 +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, 30 May 2007 22:44, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > On Wednesday, 30 May 2007 17:37, Pavel Machek wrote:
-> > > > Hi!
-> > > > 
-> > > > > +Suspend notifiers
-> > > > > +	(C) 2007 Rafael J. Wysocki <rjw@sisk.pl>, GPL
-> > > > > +
-> > > > > +There are some operations that device drivers may want to carry out in their
-> > > > > +.suspend() routines, but shouldn't, because they can cause the hibernation or
-> > > > > +suspend to fail. For example, a driver may want to allocate a substantial amount
-> > > > > +of memory (like 50 MB) in .suspend(), but that shouldn't be done after the
-> > > > > +swsusp's memory shrinker has run.
-> > > > > +
-> > > > > +Also, there may be some operations, that subsystems want to carry out before a
-> > > > > +hibernation/suspend or after a restore/resume, requiring the system to be fully
-> > > > > +functional, so the drivers' .suspend() and .resume() routines are not suitable
-> > > > > +for this purpose.  For example, device drivers may want to upload firmware to
-> > > > > +their devices after a restore from a hibernation image, but they cannot do it by
-> > > > > +calling request_firmware() from their .resume() routines (user land processes
-> > > > > +are frozen at this point).  The solution may be to load the firmware into
-> > > > > +memory before processes are frozen and upload it from there in the .resume()
-> > > > > +routine.  Of course, a hibernation notifier may be used for this purpose.
-> > > > > +
-> > > > > +The subsystems that have such needs can register suspend notifiers that will be
-> > > > > +called upon the following events by the suspend core:
-> > > > > +
-> > > > > +PM_PRE_FREEZE		The system is going to hibernate or suspend, tasks will
-> > > > > +			be frozen immediately
-> > > > 
-> > > > Hmm, looks like bad idea if we are going to remove freezer from
-> > > > suspend...?
-> > > 
-> > > We need PM_PRE_FREEZE anyway and it's a different question whether or not
-> > > it'll be used for suspend (STR) too.
-> > > 
-> > > The timing is not the best one, but so far the freezer is in the suspend code
-> > > path and I need to take this into account.
-> > >  
-> > > > > +PM_POST_THAW		Tasks have just been thawed after a resume or restore
-> > > > > +			from a hibernation image
-> > > > > +
-> > > > > +PM_HIBERNATION_PREPARE	The system is preparing for hibernation.  Tasks have
-> > > > > +			been frozen, memory is going to be freed and devices
-> > > > > +			are going to be suspended.
-> > > > 
-> > > > Is not PRE_FREEZE enough? We can allocate memory for drivers there,
-> > > > too...
-> > > 
-> > > Well, there is a reason for not doing this.  Namely, if the memory if freed on
-> > > PM_POST_HIBERNATION after the image has been created, we can use it for saving
-> > > the image (and speed up the saving).
-> > > 
-> > > Besides, if the freezer is dropped from the suspend code, the notifiers will be
-> > > useful to it anyway IMO, and PRE_FREEZE won't make sense in that case.
-> > > 
-> > > I think the rule should be: If you need to do something _before_ tasks are
-> > > frozen, do it in PM_PRE_FREEZE, but if you can do that after the tasks have
-> > > been frozen, do it on PM_HIBERNATION_PREPARE (or PM_SUSPEND_PREPARE in the
-> > > suspend case).
-> > 
-> > OTOH, having considered it for a while, I think that for now I can add just
-> > PM_PRE_FREEZE and PM_POST_THAW, as I don't have any user for the other ones.
-> > The other events may be added in the future if need be (along with some users).
-> > 
-> > I'll post revised patches in a new thread.
-> 
-> I haven't been giving this much attention, so forgive me if I'm about to
-> ask a silly question... which notifiers would you see the avenrun
-> saving/restoring using?
+> The tricky part (if any) is essentially what you've already got nailed
+> down, that is, creating and manipulating the accounting objects for the
+> task groups or whatever you're calling them.
 
-I'm not sure what you mean.  Could you please clarify?
-
-Greetings,
-Rafael
+-- 
+Regards,
+vatsa
