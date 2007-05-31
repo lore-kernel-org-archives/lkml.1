@@ -1,57 +1,54 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbXEXV6l (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 24 May 2007 17:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbXEXV6d
+	id S1759338AbXEaQOn (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 31 May 2007 12:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXEaQOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:58:33 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:44745 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750885AbXEXV6c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:58:32 -0400
-X-Greylist: delayed 928 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 May 2007 17:58:31 EDT
-Date: Thu, 24 May 2007 20:39:54 -0200
-From: "traversal" <burley@admatec.ch>
-To: linux-ha-dev@lists.linux-ha.org,
-	linux-hardware-request@nl.linux.org, linux-howto@metalab.unc.edu,
-	linux-howto@sunsite.unc.edu, linux-kernel@vger.kernel.org
-Subject: Looking for Chiropractors?
-Message-ID: <EA4A7EE3.7684.2915C2D5@localhost>
+	Thu, 31 May 2007 12:14:34 -0400
+Received: from pop.dvdfly.ch ([212.98.60.124]:9390 "EHLO webmail.homedia.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752957AbXEaQOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 12:14:34 -0400
+X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 May 2007 12:14:33 EDT
+Date: Thu, 31 May 2007 16:03:00 -0100
+From: "Shawna escherichia" <Samuelruzrc@admin.merton.ox.ac.uk>
+To: info@trailhorseadventures.com
+Cc: sharon.nichols@mcc.edu, kathietoy@fremont.k12.ca.us,
+	joe@targik-9.com, linux-kernel@vger.kernel.org, gkmaybee@aol.com,
+	info@createonline.net
+Subject: Need to reach Physical Therapists?
+Message-ID: <EAD57EE3.7684.4B15C2D5@localhost>
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
-X-OriginalArrivalTime: 24 May 2007 21:46:01.0265 (UTC) FILETIME=[EBB66210:01C79E4C]
-X-ExchangeSecure-AntiSpam: valid(2)
+X-OriginalArrivalTime: 31 May 2007 16:06:56.0101 (UTC) FILETIME=[B5F0F950:01C7A39D]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-3.800.1026-15208.001
+X-TM-AS-Result: Yes--0.730900-0.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753448AbXEXV6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759338AbXEaQOn@vger.kernel.org>
 
 
 
 
-This week's special:
+ALL NEW Physical Therapy Database
 
---------------------------------------------------
-- New Database : American Chiropractor's Offices -
---------------------------------------------------
+125,414 Physical Therapists/Occupational Therapy Clinics on file with 5,531 emails
 
-Fields: Chiropractor/Clinic Name, Postal Address, Phone, Fax, Email and Website
-Date Created: Apr 5, 2007
-Format: MS Excel
-License: Unlimited Use
+This database was just compiled last week. 95% accuracy guaranteed.
 
+Cost: $199 until June 1st
 
-Breakdown:
+To inquire about this or any of our other high quality medical databases please email: 
 
-108,421 Total Records
-3,414 Emails
-6,553 Faxes
+premiumdatabases@hotmail.com
 
-Special price until May 25 - $199 
-
-Inquiries, please email chiropractordata@hotmail.com
+OR Call us at (206) 600-5313
 
 
 
 
 
-To stop receiving emails from us please email with "off" in the subject.
+
+
+To have yourself taken off our list please send a reply with "takeoff" in the subject.
