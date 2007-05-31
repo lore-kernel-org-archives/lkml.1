@@ -1,80 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbXEaQKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXEaQNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758193AbXEaQKW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 12:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbXEaQKL
+	id S1758266AbXEaQNh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 12:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbXEaQN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 12:10:11 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:44208 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752945AbXEaQKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 12:10:09 -0400
-Subject: Re: [PATCH] Support for controlling leds on xbox 360 pad.
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Jan Kratochvil <honza@jikos.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, dtor@mail.ru, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LRH.0.98.0705311740520.22353@twin.jikos.cz>
-References: <alpine.LRH.0.98.0705292250430.22353@twin.jikos.cz>
-	 <20070531140715.GA5943@ucw.cz>
-	 <alpine.LRH.0.98.0705311740520.22353@twin.jikos.cz>
-Content-Type: text/plain
-Date: Thu, 31 May 2007 17:09:26 +0100
-Message-Id: <1180627767.5863.80.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 31 May 2007 12:13:29 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39092 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752585AbXEaQN3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 12:13:29 -0400
+X-Sasl-enc: /TpI/uSMdiO53yU3/1VJiioCz8sVz39whsueuf7VGTNv 1180628007
+Message-ID: <465EF4F4.1090507@imap.cc>
+Date: Thu, 31 May 2007 18:16:52 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, kkeil@suse.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 02/06] Use menuconfig objects 4 - ISDN part 2/6 (CONFIG_ISDN_I4L)
+References: <200705301906.l4UJ62hC002388@shell0.pdx.osdl.net> <Pine.LNX.4.61.0705302137560.11140@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705302137560.11140@yvahk01.tjqt.qr>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigDCFDCC3C006B371C443A3EF0"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigDCFDCC3C006B371C443A3EF0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2007-05-31 at 17:53 +0200, Jan Kratochvil wrote:
-> On Thu, 31 May 2007, Pavel Machek wrote:
-> >> Led subsystem allows us to set brightness, but there is
-> >> nothing like brightness on this device. So brightness is
-> >> actually interpreted as the command (only values between
-> >> 0 and 14 are accepted).
-> >
-> > Ugh, no, I do not think we want to do that.
-> 
-> finally! I was surprised that it took so long before someone made objection to 
-> this.
+Am 30.05.2007 21:38 schrieb Jan Engelhardt:
+> --- linux-2.6.22-rc3-git1.orig/drivers/isdn/Kconfig
+> +++ linux-2.6.22-rc3-git1/drivers/isdn/Kconfig
+> @@ -21,9 +21,7 @@ menuconfig ISDN
+> =20
+>  if ISDN
+> =20
+> -menu "Old ISDN4Linux"
+> -
+> -config ISDN_I4L
+> +menuconfig ISDN_I4L
+>  	tristate "Old ISDN4Linux (obsolete)"
+>  	---help---
+>  	  This driver allows you to use an ISDN-card for networking
+> @@ -44,8 +42,6 @@ if ISDN_I4L
+>  source "drivers/isdn/i4l/Kconfig"
+>  endif
+> =20
+> -endmenu
+> -
+>  comment "CAPI subsystem"
+> =20
 
-:)
+This results in a rather strange and inconsistent presentation in
+"make xconfig", with ISDN4Linux appearing as a subtree in the left
+pane but CAPI only visible in the right pane after selecting ISDN.
+IMHO it looks much saner like this:
 
-This hadn't gone unnoticed by me and I didn't like it either at first
-however I had a look at the hardware specs and your summary below is
-pretty accurate...
+--- a/drivers/isdn/Kconfig
++++ b/drivers/isdn/Kconfig
+@@ -21,8 +21,6 @@ menuconfig ISDN
 
-> I agree that interpreting brightness as command isn't nice. But what other 
-> options do I have?
->   a) Do not use led subystem, and do everything on my own
->   b) Do not allow user to change state of leds on this device
->   c) Extend led subsystem to have something like command. But it is in 
-> contradiction with desired simplicity of led sybsystem.
+ if ISDN
 
-Since the commands are so device specific and no new device will be the
-same, I doubt this is worth doing (or possible) in a generic way so
-you're back to a).
+-menu "Old ISDN4Linux"
+-
+ config ISDN_I4L
+ 	tristate "Old ISDN4Linux (deprecated)"
+ 	---help---
+@@ -44,12 +42,8 @@ if ISDN_I4L
+ source "drivers/isdn/i4l/Kconfig"
+ endif
 
->   d) Control leds via force feedback effect
->   e) Make 4 leds available and use brightness 0 for off and 255 for on. But only 
-> one of them can be active at one time. And I'll give up some flashing effects.
+-endmenu
+-
+-comment "CAPI subsystem"
+-
+ config ISDN_CAPI
+-	tristate "CAPI2.0 support"
++	tristate "CAPI 2.0 subsystem"
+ 	help
+ 	  This provides the CAPI (Common ISDN Application Programming
+ 	  Interface, a standard making it easy for programs to access ISDN
 
-If you expose 4 leds, you break the API badly as only one can be active.
-That is worse than using the brightness parameter IMO.
+This gives you a single entry in the left pane tree for disabling
+all of ISDN with a single click, and nicely presents all of its
+suboptions in the right pane once you select the tree entry.
 
-> Well actually I don't like this options. Any suggestions? Thanks!
+HTH
+Tilman
 
-After consideration, I agree with your approach of using the brightness
-and I don't have a better suggestion. Its not ideal but its a good
-compromise since it doesn't really impose any limitations on your use of
-the hardware but doesn't need a custom implementation which is the
-alternative. The mode is still a kind of brightness setting if you twist
-the definition a bit ;-).
-
-Cheers,
-
-Richard
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
+--------------enigDCFDCC3C006B371C443A3EF0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGXvT7MdB4Whm86/kRAqKlAJ9uFQSvNw45Fdz03cG1D+GM4m6t3wCeI2KE
+ZwDV9C1rq4/J2kKKAfGvSLY=
+=VO8E
+-----END PGP SIGNATURE-----
+
+--------------enigDCFDCC3C006B371C443A3EF0--
