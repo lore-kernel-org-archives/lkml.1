@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbXEaNcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbXEaNc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519AbXEaNcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 09:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbXEaNcE
+	id S1752794AbXEaNc6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 09:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXEaNcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 09:32:04 -0400
-Received: from mail.tmr.com ([64.65.253.246]:35330 "EHLO gaimboi.tmr.com"
+	Thu, 31 May 2007 09:32:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45635 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751285AbXEaNcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 09:32:01 -0400
-Message-ID: <465ECDDB.9030304@tmr.com>
-Date: Thu, 31 May 2007 09:30:03 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: David Chinner <dgc@sgi.com>, david@lang.hm,
-       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
- and dm/md.
-References: <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <20070531070656.GK32105@kernel.dk>
-In-Reply-To: <20070531070656.GK32105@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751392AbXEaNct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 09:32:49 -0400
+Date: Thu, 31 May 2007 09:31:06 -0400
+From: Dave Jones <davej@redhat.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Christian Volkmann <haveaniceday@cv-sv.de>, linux-kernel@vger.kernel.org,
+       ak@suse.de, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC: 2.6 patch] i386: remove support for the Rise CPU
+Message-ID: <20070531133106.GA26030@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Adrian Bunk <bunk@stusta.de>,
+	Christian Volkmann <haveaniceday@cv-sv.de>,
+	linux-kernel@vger.kernel.org, ak@suse.de,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <464BB252.8010008@cv-sv.de> <464CC8E1.5010407@cv-sv.de> <20070517214754.GC398@redhat.com> <20070531052238.GX3899@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070531052238.GX3899@stusta.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, May 31 2007, David Chinner wrote:
->   
->> On Thu, May 31, 2007 at 08:26:45AM +0200, Jens Axboe wrote:
->>     
->>> On Thu, May 31 2007, David Chinner wrote:
->>>       
->>>> IOWs, there are two parts to the problem:
->>>>
->>>> 	1 - guaranteeing I/O ordering
->>>> 	2 - guaranteeing blocks are on persistent storage.
->>>>
->>>> Right now, a single barrier I/O is used to provide both of these
->>>> guarantees. In most cases, all we really need to provide is 1); the
->>>> need for 2) is a much rarer condition but still needs to be
->>>> provided.
->>>>
->>>>         
->>>>> if I am understanding it correctly, the big win for barriers is that you 
->>>>> do NOT have to stop and wait until the data is on persistant media before 
->>>>> you can continue.
->>>>>           
->>>> Yes, if we define a barrier to only guarantee 1), then yes this
->>>> would be a big win (esp. for XFS). But that requires all filesystems
->>>> to handle sync writes differently, and sync_blockdev() needs to
->>>> call blkdev_issue_flush() as well....
->>>>
->>>> So, what do we do here? Do we define a barrier I/O to only provide
->>>> ordering, or do we define it to also provide persistent storage
->>>> writeback? Whatever we decide, it needs to be documented....
->>>>         
->>> The block layer already has a notion of the two types of barriers, with
->>> a very small amount of tweaking we could expose that. There's absolutely
->>> zero reason we can't easily support both types of barriers.
->>>       
->> That sounds like a good idea - we can leave the existing
->> WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
->> behaviour that only guarantees ordering. The filesystem can then
->> choose which to use where appropriate....
->>     
->
-> Precisely. The current definition of barriers are what Chris and I came
-> up with many years ago, when solving the problem for reiserfs
-> originally. It is by no means the only feasible approach.
->
-> I'll add a WRITE_ORDERED command to the #barrier branch, it already
-> contains the empty-bio barrier support I posted yesterday (well a
-> slightly modified and cleaned up version).
->
->   
-Wait. Do filesystems expect (depend on) anything but ordering now? Does 
-md? Having users of barriers as they currently behave suddenly getting 
-SYNC behavior where they expect ORDERED is likely to have a negative 
-effect on performance. Or do I misread what is actually guaranteed by 
-WRITE_BARRIER now, and a flush is currently happening in all cases?
+On Thu, May 31, 2007 at 07:22:38AM +0200, Adrian Bunk wrote:
+ > On Thu, May 17, 2007 at 05:47:54PM -0400, Dave Jones wrote:
+ > > On Thu, May 17, 2007 at 11:28:01PM +0200, Christian Volkmann wrote:
+ > > 
+ > >  > - Important: somebody to check other CPU types if the same behavior happens.
+ > > 
+ > > arch/i386/kernel/cpu/rise.c
+ > > 
+ > > Though, I've *never* seen or even heard of someone with one of those CPUs,
+ > > so whether we need to care is questionable. The mp6 did actually make it
+ > > to manufacture aparently, but I don't think anyone actually bought one.
+ > > http://en.wikipedia.org/wiki/Rise_Technology for a pic of this mythical beast.
+ > 
+ > Considering that arch/i386/kernel/cpu/rise.o takes a few bytes in every 
+ > i386 kernel image, what about removing it?
 
-And will this also be available to user space f/s, since I just proposed 
-a project which uses one? :-(
-I think the goal is good, more choice is almost always better choice, I 
-just want to be sure there won't be big disk performance regressions.
+I'll be amazed if someone complains.
+We'll still boot fine on those CPUs without that support code too,
+we just won't advertise cx8 to userspace, and /proc/cpuinfo
+won't prettyprint the name. whoopdy-do.
+
+Should we actually find someone who a) has one and b) is crazy enough
+to still run it today, we could always add this stuff back.
+
+Signed-off-by: Dave Jones <davej@redhat.com>
+
+	Dave
 
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+http://www.codemonkey.org.uk
