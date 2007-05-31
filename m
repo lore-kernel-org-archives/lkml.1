@@ -1,51 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbXEaML4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760986AbXEaMQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761357AbXEaML4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 08:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759959AbXEaMLu
+	id S1760986AbXEaMQQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 08:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbXEaMQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 08:11:50 -0400
-Received: from ns1.suse.de ([195.135.220.2]:34022 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759904AbXEaMLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 08:11:49 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: GFP_DMA32 and PAE x86 machines
-Date: Thu, 31 May 2007 14:11:39 +0200
-User-Agent: KMail/1.9.6
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Linus Torvalds" <torvalds@osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <21d7e9970705301410m16ded9esdf7a49371c60a155@mail.gmail.com> <200705310024.25937.ak@suse.de> <21d7e9970705301609w88a9f80t20f83806003f699e@mail.gmail.com>
-In-Reply-To: <21d7e9970705301609w88a9f80t20f83806003f699e@mail.gmail.com>
+	Thu, 31 May 2007 08:16:00 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:38919 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757328AbXEaMP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 08:15:59 -0400
+Date: Thu, 31 May 2007 06:15:57 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: 2.6.22-rc3-mm1
+Message-ID: <20070531121557.GQ23968@parisc-linux.org>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070531140922.2e55aefb@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705311411.39764.ak@suse.de>
+In-Reply-To: <20070531140922.2e55aefb@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 31, 2007 at 02:09:22PM +0200, Cornelia Huck wrote:
+> I split those functions out into a new file. Builds on s390 and i386.
 
-> Funnily enough I have just today with an app I have which uses 1.2GB
-> of textures :-)
+Why not just put #ifdef CONFIG_HAS_DMA / #endif around the pair of
+functions?  I don't see the need to add a new Kconfig symbol and a new
+file for this.
 
-Realistic app which is something users really run?
-Also do the other constraints above apply?
-
-If you use pci_alloc_coherent() then it will already take care of the rules
-above btw (e.g. DTRT when the machine has <3GB etc.) 
-
-> we are currently using GFP_DMA32 in the TTM allocator code, however
-> what I really want on x86 non-PAE is GFP_HIGHMEM (as DMA32 does
-> nothing) however on x86-PAE I don't want that I want a real GFP_DMA32,
-> and on x86-64 I want the current GFP_DMA32,
-
-You should be probably using pci_alloc_coherent() at least on x86.
-It might get more expensive on some obscure platforms (which DRM
-likely doesn't support anyways), but if it does perhaps a pci_alloc_noncoherent()
-or so would be useful (on x86 it would be the same) 
-
--Andi
