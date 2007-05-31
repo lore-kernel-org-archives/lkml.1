@@ -1,279 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbXEaELs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbXEaETZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760561AbXEaELs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 00:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758587AbXEaELK
+	id S1759369AbXEaETZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 00:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbXEaETR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 00:11:10 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:10283 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760095AbXEaELE (ORCPT
+	Thu, 31 May 2007 00:19:17 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:49716 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753661AbXEaETR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 00:11:04 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 3/3] cxgb3 - TP SRAM update
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Wed, 30 May 2007 21:10:58 -0700
-Message-ID: <20070531041057.6153.12032.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 31 May 2007 00:19:17 -0400
+Date: Wed, 30 May 2007 21:18:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: bryan.wu@analog.com
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH] [RAMFS NOMMU]: a bug in ramfs_nommu_resize function,
+ passing old size to vmtruncate
+Message-Id: <20070530211859.355172e2.akpm@linux-foundation.org>
+In-Reply-To: <1180584202.6363.6.camel@roc-laptop>
+References: <1180582315.10836.2.camel@roc-laptop>
+	<1180582528.10836.6.camel@roc-laptop>
+	<alpine.LFD.0.98.0705302054380.26602@woody.linux-foundation.org>
+	<1180584202.6363.6.camel@roc-laptop>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+On Thu, 31 May 2007 12:03:22 +0800 Bryan Wu <bryan.wu@analog.com> wrote:
 
-The chip executes microcode present in internal RAM, 
-whose content is loaded from EEPROM on power cycle. 
-This patch allows an update of the microcode through PIO
-without forcing a power cycle.
+> W: unable to extract a valid address from: torvalds@linux-foundation.org akpm@linux-fundation.org linux-kernel@vger.kernel.org
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
-
- drivers/net/cxgb3/common.h     |   28 +++++++++++++
- drivers/net/cxgb3/cxgb3_main.c |   43 ++++++++++++++++++++
- drivers/net/cxgb3/regs.h       |    7 +++
- drivers/net/cxgb3/t3_hw.c      |   86 ++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 164 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
-index 8d13796..1637800 100644
---- a/drivers/net/cxgb3/common.h
-+++ b/drivers/net/cxgb3/common.h
-@@ -101,6 +101,7 @@ enum {
- 	TCB_SIZE = 128,		/* TCB size */
- 	NMTUS = 16,		/* size of MTU table */
- 	NCCTRL_WIN = 32,	/* # of congestion control windows */
-+	PROTO_SRAM_LINES = 128, /* size of TP sram */
- };
- 
- #define MAX_RX_COALESCING_LEN 16224U
-@@ -124,6 +125,30 @@ enum {				/* adapter interrupt-maintaine
- };
- 
- enum {
-+	TP_VERSION_MAJOR	= 1,
-+	TP_VERSION_MINOR	= 0,
-+	TP_VERSION_MICRO	= 44
-+};
-+
-+#define S_TP_VERSION_MAJOR		16
-+#define M_TP_VERSION_MAJOR		0xFF
-+#define V_TP_VERSION_MAJOR(x)		((x) << S_TP_VERSION_MAJOR)
-+#define G_TP_VERSION_MAJOR(x)		\
-+	    (((x) >> S_TP_VERSION_MAJOR) & M_TP_VERSION_MAJOR)
-+
-+#define S_TP_VERSION_MINOR		8
-+#define M_TP_VERSION_MINOR		0xFF
-+#define V_TP_VERSION_MINOR(x)		((x) << S_TP_VERSION_MINOR)
-+#define G_TP_VERSION_MINOR(x)		\
-+	    (((x) >> S_TP_VERSION_MINOR) & M_TP_VERSION_MINOR)
-+
-+#define S_TP_VERSION_MICRO		0
-+#define M_TP_VERSION_MICRO		0xFF
-+#define V_TP_VERSION_MICRO(x)		((x) << S_TP_VERSION_MICRO)
-+#define G_TP_VERSION_MICRO(x)		\
-+	    (((x) >> S_TP_VERSION_MICRO) & M_TP_VERSION_MICRO)
-+
-+enum {
- 	SGE_QSETS = 8,		/* # of SGE Tx/Rx/RspQ sets */
- 	SGE_RXQ_PER_SET = 2,	/* # of Rx queues per set */
- 	SGE_TXQ_PER_SET = 3	/* # of Tx queues per set */
-@@ -654,6 +679,9 @@ const struct adapter_info *t3_get_adapte
- int t3_seeprom_read(struct adapter *adapter, u32 addr, u32 *data);
- int t3_seeprom_write(struct adapter *adapter, u32 addr, u32 data);
- int t3_seeprom_wp(struct adapter *adapter, int enable);
-+int t3_check_tpsram_version(struct adapter *adapter);
-+int t3_check_tpsram(struct adapter *adapter, u8 *tp_ram, unsigned int size);
-+int t3_set_proto_sram(struct adapter *adap, u8 *data);
- int t3_read_flash(struct adapter *adapter, unsigned int addr,
- 		  unsigned int nwords, u32 *data, int byte_oriented);
- int t3_load_fw(struct adapter *adapter, const u8 * fw_data, unsigned int size);
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 67b4b21..5b80a2a 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -2083,6 +2083,42 @@ static void cxgb_netpoll(struct net_devi
- }
- #endif
- 
-+#define TPSRAM_NAME "t3%c_protocol_sram-%d.%d.%d.bin"
-+int update_tpsram(struct adapter *adap)
-+{
-+	const struct firmware *tpsram;
-+	char buf[64];
-+	struct device *dev = &adap->pdev->dev;
-+	int ret;
-+	char rev;
-+	
-+	rev = adap->params.rev == T3_REV_B2 ? 'b' : 'a';
-+
-+	snprintf(buf, sizeof(buf), TPSRAM_NAME, rev,
-+		 TP_VERSION_MAJOR, TP_VERSION_MINOR, TP_VERSION_MICRO);
-+
-+	ret = request_firmware(&tpsram, buf, dev);
-+	if (ret < 0) {
-+		dev_err(dev, "could not load TP SRAM: unable to load %s\n",
-+			buf);
-+		return ret;
-+	}
-+	
-+	ret = t3_check_tpsram(adap, tpsram->data, tpsram->size);
-+	if (ret)
-+		goto release_tpsram;	
-+
-+	ret = t3_set_proto_sram(adap, tpsram->data);
-+	if (ret)
-+		dev_err(dev, "loading protocol SRAM failed\n");
-+
-+release_tpsram:
-+	release_firmware(tpsram);
-+	
-+	return ret;
-+}
-+
-+
- /*
-  * Periodic accumulation of MAC statistics.
-  */
-@@ -2433,6 +2469,13 @@ static int __devinit init_one(struct pci
- 		goto out_free_dev;
- 	}
- 
-+	err = t3_check_tpsram_version(adapter);
-+	if (err == -EINVAL)
-+		err = update_tpsram(adapter);
-+
-+	if (err)
-+		goto out_free_dev;
-+		
- 	/*
- 	 * The card is now ready to go.  If any errors occur during device
- 	 * registration we do not fail the whole card but rather proceed only
-diff --git a/drivers/net/cxgb3/regs.h b/drivers/net/cxgb3/regs.h
-index 29839ba..e9d3a79 100644
---- a/drivers/net/cxgb3/regs.h
-+++ b/drivers/net/cxgb3/regs.h
-@@ -1218,6 +1218,13 @@
- 
- #define A_TP_PROXY_FLOW_CNTL 0x4b0
- 
-+#define A_TP_EMBED_OP_FIELD0 0x4e8
-+#define A_TP_EMBED_OP_FIELD1 0x4ec
-+#define A_TP_EMBED_OP_FIELD2 0x4f0
-+#define A_TP_EMBED_OP_FIELD3 0x4f4
-+#define A_TP_EMBED_OP_FIELD4 0x4f8
-+#define A_TP_EMBED_OP_FIELD5 0x4fc
-+
- #define A_ULPRX_CTL 0x500
- 
- #define S_ROUND_ROBIN    4
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index 9e3591d..dd3149d 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -847,6 +847,64 @@ static int t3_write_flash(struct adapter
- 	return 0;
- }
- 
-+/**
-+ *	t3_check_tpsram_version - read the tp sram version
-+ *	@adapter: the adapter
-+ *
-+ *	Reads the protocol sram version from serial eeprom.
-+ */
-+int t3_check_tpsram_version(struct adapter *adapter)
-+{
-+	int ret;
-+	u32 vers;
-+	unsigned int major, minor;
-+
-+	/* Get version loaded in SRAM */
-+	t3_write_reg(adapter, A_TP_EMBED_OP_FIELD0, 0);
-+	ret = t3_wait_op_done(adapter, A_TP_EMBED_OP_FIELD0,
-+			      1, 1, 5, 1);
-+	if (ret)
-+		return ret;
-+	
-+	vers = t3_read_reg(adapter, A_TP_EMBED_OP_FIELD1);
-+
-+	major = G_TP_VERSION_MAJOR(vers);
-+	minor = G_TP_VERSION_MINOR(vers);
-+
-+	if (major == TP_VERSION_MAJOR && minor == TP_VERSION_MINOR) 
-+		return 0;
-+
-+	return -EINVAL;
-+}
-+
-+/**
-+ *	t3_check_tpsram - check if provided protocol SRAM 
-+ *			  is compatible with this driver
-+ *	@adapter: the adapter
-+ *	@tp_sram: the firmware image to write
-+ *	@size: image size
-+ *
-+ *	Checks if an adapter's tp sram is compatible with the driver.
-+ *	Returns 0 if the versions are compatible, a negative error otherwise.
-+ */
-+int t3_check_tpsram(struct adapter *adapter, u8 *tp_sram, unsigned int size)
-+{
-+	u32 csum;
-+	unsigned int i;
-+	const u32 *p = (const u32 *)tp_sram;
-+
-+	/* Verify checksum */
-+	for (csum = 0, i = 0; i < size / sizeof(csum); i++)
-+		csum += ntohl(p[i]);
-+	if (csum != 0xffffffff) {
-+		CH_ERR(adapter, "corrupted protocol SRAM image, checksum %u\n",
-+		       csum);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- enum fw_version_type {
- 	FW_VERSION_N3,
- 	FW_VERSION_T3
-@@ -2686,6 +2744,34 @@ static void ulp_config(struct adapter *a
- 	t3_write_reg(adap, A_ULPRX_TDDP_TAGMASK, 0xffffffff);
- }
- 
-+/**
-+ *	t3_set_proto_sram - set the contents of the protocol sram
-+ *	@adapter: the adapter
-+ *	@data: the protocol image
-+ *
-+ *	Write the contents of the protocol SRAM.
-+ */
-+int t3_set_proto_sram(struct adapter *adap, u8 *data)
-+{
-+	int i;
-+	u32 *buf = (u32 *)data;
-+
-+	for (i = 0; i < PROTO_SRAM_LINES; i++) {
-+		t3_write_reg(adap, A_TP_EMBED_OP_FIELD5, cpu_to_be32(*buf++));
-+		t3_write_reg(adap, A_TP_EMBED_OP_FIELD4, cpu_to_be32(*buf++));
-+		t3_write_reg(adap, A_TP_EMBED_OP_FIELD3, cpu_to_be32(*buf++));
-+		t3_write_reg(adap, A_TP_EMBED_OP_FIELD2, cpu_to_be32(*buf++));
-+		t3_write_reg(adap, A_TP_EMBED_OP_FIELD1, cpu_to_be32(*buf++));
-+		
-+		t3_write_reg(adap, A_TP_EMBED_OP_FIELD0, i << 1 | 1 << 31);
-+		if (t3_wait_op_done(adap, A_TP_EMBED_OP_FIELD0, 1, 1, 5, 1))
-+			return -EIO;
-+	}
-+	t3_write_reg(adap, A_TP_EMBED_OP_FIELD0, 0);
-+
-+	return 0;
-+}
-+
- void t3_config_trace_filter(struct adapter *adapter,
- 			    const struct trace_params *tp, int filter_index,
- 			    int invert, int enable)
-
+Maybe it didn't like the "fundation" typo.
