@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbXEaUS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759376AbXEaUXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762148AbXEaUS3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760693AbXEaUST
+	id S1759376AbXEaUXi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbXEaUXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:18:19 -0400
-Received: from mx2.compro.net ([216.54.166.4]:23529 "EHLO mx2.compro.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756420AbXEaUSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:18:18 -0400
-X-IronPort-AV: E=Sophos;i="4.16,370,1175486400"; 
-   d="scan'208";a="401985"
-Message-ID: <465F2D96.9060502@compro.net>
-Date: Thu, 31 May 2007 16:18:30 -0400
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	Thu, 31 May 2007 16:23:31 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4140 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766AbXEaUXa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:23:30 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 31 May 2007 13:23:29 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ulrich Drepper <drepper@redhat.com>
+cc: Jakub Jelinek <jakub@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
+In-Reply-To: <465F270B.5090604@redhat.com>
+Message-ID: <Pine.LNX.4.64.0705311320310.30485@alien.or.mcafeemobile.com>
+References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
+ <Pine.LNX.4.64.0705311123370.30485@alien.or.mcafeemobile.com>
+ <465F170B.3070603@redhat.com> <Pine.LNX.4.64.0705311144290.30485@alien.or.mcafeemobile.com>
+ <20070531190235.GY4033@devserv.devel.redhat.com>
+ <Pine.LNX.4.64.0705311205520.30485@alien.or.mcafeemobile.com>
+ <465F270B.5090604@redhat.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: floppy.c soft lockup
-References: <465C6359.1020106@compro.net> <20070530224650.04b33117.akpm@linux-foundation.org> <465EDB97.5070908@compro.net> <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net> <20070531192256.GA88@tv-sign.ru>
-In-Reply-To: <20070531192256.GA88@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 05/31, Mark Hounschell wrote:
->> Oleg Nesterov wrote:
->>> On 05/31, Mark Hounschell wrote:
->>>> Basically the main RT-process (which is a CPU bound process on processor-2) signals a
->>>> thread to do some I/O. That RT-thread (running on the other processor) does a simple 
->>> If the main RT-process monopolizes processor-2, flush_workqueue() (or cancel_work_sync())
->>> can hang of course, we can do nothing.
->>>
->>>> ioctl(Q->DevSpec1, FDSETPRM, &medprm)
->>>>
->>>> and there is no return from the call. That thread is hung.
->>> What happens if you kill the main RT-process?
->>>
->> When I kill the main process all its threads also go away. Including the floppy thread.
->> Nothing notable happens with this kernel.
-> 
-> Aha, I missed the word "thread", this is the single process.
-> 
-> Still, this means that flush_workqueue() completes when other sub-threads go away,
-> otherwise the thread doing ioctl() couldn't exit.
-> 
-> Thank you very much.
-> 
-> So, the main question is: is it possible that one of RT processes/threads pins itself
-> to some CPU and eats 100% cpu power?
-> 
+On Thu, 31 May 2007, Ulrich Drepper wrote:
 
-The main process is pinned to a processor(2) with all _non-kernel_  processes/threads forced over to processor 1.
-Any already affinitized processes or kernel threads are left as is. Only user land stuff is moved. The main process
-is for sure _not_ relinquishing it's processor(2) intentionally. All the I/O threads, floppy included, are running
-on the other processor(1). During this failure only 1 or 2 of the I/O threads are actually doing anything.
-I assume that what ever is going on in the kernel/floppy driver on behalf of the floppy thread is being done on processor 1? 
-Processor 1 has lots of CPU time available. Processor 2 is running balls to the wall.
- 
->>                                            On previous (2.6.18) I would get a dump
->> from the floppy driver in the syslog when I killed the process.
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Could you send me this output? just in case...
+> Davide Libenzi wrote:
+> > What I meant, was that the vast majority of MT+exec 
+> > apps wants all their fds (but an handfull, maybe)
 > 
+> You never listen when you are told something.  Such a statement cannot
+> be made.  The application doesn't know what the runtime libraries need
+> (not just libc, libstdc++, libxml, whatever) and vice versa.  Policies
+> are always wrong for somebody and changing the standardized behavior is
+> not acceptable.
 
-Today, 2.6.18 is doing the same as 2.6.22-rc3. I hate it when that happens. Maybe it was
-on my box at home. I'll verify when I get there. Nothing from here now though.
+I do always listen when you make a good point. And this is a good one. 
+Some libraries might not like a global behaviour change, I agree.
 
->>> --- OLD/drivers/block/floppy.c~	2007-04-03 13:04:58.000000000 +0400
->>> +++ OLD/drivers/block/floppy.c	2007-05-31 20:50:18.000000000 +0400
->>> @@ -862,6 +862,8 @@ static void set_fdc(int drive)
->>>  		FDCS->reset = 1;
->>>  }
->>>  
->>> +static DECLARE_WORK(floppy_work, NULL);
->>> +
->>>  /* locks the driver */
->>>  static int _lock_fdc(int drive, int interruptible, int line)
->>>  {
->>> @@ -893,7 +895,7 @@ static int _lock_fdc(int drive, int inte
->>>  		set_current_state(TASK_RUNNING);
->>>  		remove_wait_queue(&fdc_wait, &wait);
->>>  
->>> -		flush_scheduled_work();
->>> +		cancel_work_sync(&floppy_work);
->>>  	}
->>>  	command_status = FD_COMMAND_NONE;
->>>  
->>> @@ -992,8 +994,6 @@ static void empty(void)
->>>  {
->>>  }
->>>  
->>> -static DECLARE_WORK(floppy_work, NULL);
->>> -
->>>  static void schedule_bh(void (*handler) (void))
->>>  {
->>>  	PREPARE_WORK(&floppy_work, (work_func_t)handler);
->>>
->> The patch does make it work.
-> 
-> I do not understand floppy.c, absolutely, so I am not sure this patch is correct.
-> 
-> Even if correct, this patch doesn't solve this problem (if we really understand
-> what's going on). cancel_work_sync() may still hang if floppy_work->func() runs
-> on the starved CPU. This is unlikely, but possible.
-> 
-> Thanks!
-> 
-> Oleg.
-> 
+
+
+- Davide
+
 
