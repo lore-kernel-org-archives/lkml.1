@@ -1,94 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759959AbXEaHI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbXEaHRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759959AbXEaHI1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 03:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756746AbXEaHIN
+	id S1755231AbXEaHRv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 03:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbXEaHRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 03:08:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46679 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759450AbXEaHIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 03:08:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: software suspend doesn't work with 2.6.22-rc3
-Date: Thu, 31 May 2007 09:13:44 +0200
-User-Agent: KMail/1.9.5
-Cc: Maximilian Engelhardt <maxi@daemonizer.de>, nigel@nigel.suspend2.net,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200705261128.57332.maxi@daemonizer.de> <200705310854.52490.rjw@sisk.pl> <200705310904.47894.rjw@sisk.pl>
-In-Reply-To: <200705310904.47894.rjw@sisk.pl>
+	Thu, 31 May 2007 03:17:42 -0400
+Received: from adicia.telenet-ops.be ([195.130.132.56]:36371 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825AbXEaHRl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 03:17:41 -0400
+Date: Thu, 31 May 2007 09:17:30 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Tero Roponen <teanropo@jyu.fi>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Linux-fbdev-devel] tty-related oops in latest kernel(s)?
+In-Reply-To: <1180566886.4570.14.camel@daplas>
+Message-ID: <Pine.LNX.4.64.0705310916240.17047@anakin>
+References: <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
+ <84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com>
+ <Pine.LNX.4.64.0705291900001.32656@jalava.cc.jyu.fi>
+ <84144f020705291157k465ec6c4sb81081844bb57514@mail.gmail.com>
+ <Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
+ <84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
+ <Pine.LNX.4.64.0705301458400.4634@jalava.cc.jyu.fi>
+ <20070530083953.9909bcef.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705301857370.29485@jalava.cc.jyu.fi>
+ <20070530090945.ab9d51d9.akpm@linux-foundation.org>
+ <20070530180428.GA5731@martell.zuzino.mipt.ru> <1180566886.4570.14.camel@daplas>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705310913.45234.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 31 May 2007 09:04, Rafael J. Wysocki wrote:
-> On Thursday, 31 May 2007 08:54, Rafael J. Wysocki wrote:
-> > On Tuesday, 29 May 2007 02:39, Herbert Xu wrote:
-> > > On Mon, May 28, 2007 at 08:21:29PM +0200, Rafael J. Wysocki wrote:
-> > > >
-> > > > Well, it looks like we have to fix this one separately.
-> > > > 
-> > > > Can you please tell me what to do to make cryptd run?
-> > > 
-> > > If you build it as a module then just loading it should be sufficient.
-> > > If you have it built-in then it should always be there.
-> > > 
-> > > Let me know when you guys have a final patch.
+On Thu, 31 May 2007, Antonino A. Daplas wrote:
+> On Wed, 2007-05-30 at 22:04 +0400, Alexey Dobriyan wrote:
+> > 2) palette in neofb_par is "u32 palette[16];" which is 4x16 = 64 bytes.
+> >    struct fb_info::pseudo_palette is assigned to it in neo_alloc_fb_info().
+> >    Yet, we check at the beginning of neofb_setcolreg() for color map
+> >    length which neofb advertises as 256 which seems too many.
 > > 
-> > The problem is more serious than I thought:
-> > 
-> > kthread_create() in crypto/cryptd.c line 302 doesn't return, so cryptd is stuck
-> > in TASK_UNINTERRUPTIBLE all the time and it doesn't even execute one
-> > instruction from cryptd_thread() [this happens on x86_64].
 > 
-> Sorry, I was wrong.
+> Yes, 256 is too many. the pseudo_palette is used for the 16-color
+> console only.
 > 
-> kthread_create() returns, but cryptd_thread() is not executed and the cryptd
-> process is stuck in TASK_UNINTERRUPTIBLE.
+> I'm impressed that this bug has escaped notice for this long. That bug
+> is present since the 2.5.x era.
+> 
+> Probably, the best thing to do is hide the pseudo_palette from the
+> drivers and move it to the console layer where it belongs to spare
+> future driver writers from palette usage confusion. That will be a
+> thankless job.
 
-It can be fixed by replacing the kthread_create() with kthread_run().  Patch
-follows.
+The console layer doesn't know how to fill in the pseudo palette in all
+cases, that's why the driver have to do it.
 
-Greetings,
-Rafael
+Gr{oetje,eeting}s,
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+						Geert
 
-Make cryptd actually run and mark it as nonfreezable.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- crypto/cryptd.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.22-rc3/crypto/cryptd.c
-===================================================================
---- linux-2.6.22-rc3.orig/crypto/cryptd.c	2007-05-26 22:08:07.000000000 +0200
-+++ linux-2.6.22-rc3/crypto/cryptd.c	2007-05-31 09:13:38.000000000 +0200
-@@ -298,7 +298,7 @@ static inline int cryptd_create_thread(s
- 	mutex_init(&state->mutex);
- 	crypto_init_queue(&state->queue, CRYPTD_MAX_QLEN);
- 
--	state->task = kthread_create(fn, state, name);
-+	state->task = kthread_run(fn, state, name);
- 	if (IS_ERR(state->task))
- 		return PTR_ERR(state->task);
- 
-@@ -316,6 +316,8 @@ static int cryptd_thread(void *data)
- 	struct cryptd_state *state = data;
- 	int stop;
- 
-+	current->flags |= PF_NOFREEZE;
-+
- 	do {
- 		struct crypto_async_request *req, *backlog;
- 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
