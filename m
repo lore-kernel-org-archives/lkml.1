@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760215AbXEaKUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbXEaK03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760215AbXEaKUT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 06:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXEaKUJ
+	id S1760318AbXEaK03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 06:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758282AbXEaK0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 06:20:09 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:38442 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756780AbXEaKUI (ORCPT
+	Thu, 31 May 2007 06:26:21 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:43485 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757355AbXEaK0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 06:20:08 -0400
-Date: Tue, 29 May 2007 13:35:57 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Trent Waddington <trent.waddington@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Portable syscall inspection
-Message-ID: <20070529123557.GA21684@linux-mips.org>
-References: <3d57814d0705281559y56576567r2c23edda5f22c3cf@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 31 May 2007 06:26:20 -0400
+Date: Thu, 31 May 2007 11:26:04 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Message-ID: <20070531102603.GA16719@srcf.ucam.org>
+References: <8pwhX-46n-3@gated-at.bofh.it> <8pCQo-5QL-7@gated-at.bofh.it> <87abvogbdp.fsf@buer.dfakt.de> <200705281406.57396.david-b@pacbell.net> <20070531043229.GA30888@dose.home.local>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3d57814d0705281559y56576567r2c23edda5f22c3cf@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070531043229.GA30888@dose.home.local>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: RTC_DRV_CMOS can break userspace interface
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 08:59:37AM +1000, Trent Waddington wrote:
+On Thu, May 31, 2007 at 06:32:29AM +0200, Tino Keitel wrote:
 
-> Someone finally noticed that my program that uses ptrace only works on 
-> i386..
-> and, by the looks of it, there is no portable way to refer to the
-> registers of a
-> user_regs_struct when inspecting a system call.
+> rtc_cmos 00:09: rtc core: registered rtc_cmos as rtc0
+> rtc_cmos: probe of 00:09 failed with error -16
+> drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
 
-Correct.
+Try unsetting CONFIG_RTC - you can't use the legacy driver at the same 
+time as the new one.
 
-> I will probably end up making a header file for each architecture that
-> defines where
-> in the user_regs_struct things like the syscall number, the return
-> value and the first 3 parameters are..
-
-Also consider that some architectures pass parts of the arguments in
-registers which on yet others are passed in memory.  Sometimes padding
-arguments are needed and many more oddities.  Similar for results.
-Inescapably such a program is a perment maintenance nightmare.
-
-> has anyone done this already?  or can otherwise save me a lot of time?
-
-Similar things have been tried before but nothing that would be remotely
-sane.
-
-  Ralf
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
