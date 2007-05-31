@@ -1,107 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759841AbXEaTaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbXEaTeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759841AbXEaTaS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 15:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757536AbXEaTaG
+	id S1760049AbXEaTeX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 15:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbXEaTeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 15:30:06 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:48371 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756934AbXEaTaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 15:30:04 -0400
-Date: Thu, 31 May 2007 21:26:50 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add a trivial patch style checker
-In-Reply-To: <9a1288909c10f2935af82ec5cea0c46b@pinky>
-Message-ID: <Pine.LNX.4.61.0705312120320.11140@yvahk01.tjqt.qr>
-References: <9a1288909c10f2935af82ec5cea0c46b@pinky>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Thu, 31 May 2007 15:34:16 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:61249 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753185AbXEaTeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 15:34:15 -0400
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Andrew Victor <andrew@sanpeople.com>
+Cc: Russell King <rmk@arm.linux.org.uk>, Ivan Kuten <ivan.kuten@promwad.com>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] atmel_serial: Fix break handling
+Date: Thu, 31 May 2007 21:31:31 +0200
+Message-Id: <11806398911702-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: git-send-email 1.4.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The RXBRK field in the AT91/AT32 USART status register has the
+following definition according to e.g. the AT32AP7000 data sheet:
 
->+sub top_of_kernel_tree {
->+	if ((-f "COPYING") && (-f "CREDITS") && (-f "Kbuild") &&
->+	    (-f "MAINTAINERS") && (-f "Makefile") && (-f "README") &&
->+	    (-d "Documentation") && (-d "arch") && (-d "include") &&
->+	    (-d "drivers") && (-d "fs") && (-d "init") && (-d "ipc") &&
->+	    (-d "kernel") && (-d "lib") && (-d "scripts")) {
->+		return 1;
->+	}
->+	return 0;
->+}
+    RXBRK: Break Received/End of Break
+    0: No Break received or End of Break detected since the last RSTSTA.
+    1: Break Received or End of Break detected since the last RSTSTA.
 
-Looks like some redundant parentheses.
+Thus, for each break, the USART sets the RXBRK bit twice. This patch
+modifies the driver to report the break event to the serial core only
+once by keeping track of whether a break condition is currently
+active. The break_active flag is reset as soon as a character is
+received, so even if we miss the start-of-break interrupt this should
+do the right thing.
 
->+#gotos aren't indented
->+		if($line=~/^\s*[A-Za-z\d_]+:/ and !($line=~/^\s*default:/)){
->+			print "Gotos should not be indented\n";
->+			print "$herecurr";
->+			$clean = 0;
->+		}
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+It's been almost a year since the last patch I sent attempting to fix
+this. Sorry for not following up any sooner.
 
-I think this was discussed already - some indent (1 space?) should be allowed.
+Anyway, here's a new attempt. It should work even if we miss some
+interrupts, and it should not break break handling by ignoring the
+return value from uart_handle_break() as Russell pointed out.
 
->+#studly caps, commented out until figure out how to distinguish between use
->+#of existing and adding new
+There may be cases which aren't handled well: If you send two breaks
+with no characters in between and we miss an interrupt on the first
+one, the driver probably gets a bit confused. I don't see any way to
+fix this, but the driver should get un-confused upon reception of the
+next character.
 
-Yeah that's a big problem, given that linux's mm/ directory has
-quite a lot of camel case function names.
+I've tested this with Magic SysRq on ATSTK1000: It works with this
+patch but not without. Ivan Kuten reported in a different thread that
+SysRq didn't work on AT91RM9200 and I very much doubt it works on
+AT91SAM926x.
 
->+#		if(($line=~/[\w_][a-z\d]+[A-Z]/) and !($line=~/print/)) {
->+#		    print ("No studly caps, use _\n");
->+#		    print "$herecurr";
->+#		    $clean = 0;
->+#		}
->+
->+#no spaces allowed after \ in define
->+		if($line=~/\#define.*\\\s$/){
+The break count in /proc/tty/driver/atmel_serial also makes more sense
+with this patch applied; without it, the break count increments by two
+every time I send a break.
 
-Usually, #s do _not_ need to be quoted (in contrast to @).
-I am at stake to be wrong, anyone know more? :)
+ drivers/serial/atmel_serial.c |   32 ++++++++++++++++++++++++++++++--
+ 1 files changed, 30 insertions(+), 2 deletions(-)
 
->+#if/while/etc brace do not go on next line, unless #defining a do while loop, or if that brace on the next line is for something else
->+		if ($prevline=~/(if|while|for|switch)\s*\(/) {
-
-/(?:if|while|.../
-
-I don't see $1 being captured/used, so..
-
->+			my @opened = $prevline=~/\(/g;
->+			my @closed = $prevline=~/\)/g;
->+			my $nr_line = $linenr;
->+			my $remaining = $realcnt;
->+			my $next_line = $line;
->+			my $extra_lines = 0;
->+			my $display_segment = $prevline;
->+
->+			while ($remaining > 0 && scalar @opened > scalar @closed) {
->+				$prevline .= $next_line;
->+				$display_segment .= "\n" . $next_line;
->+				$next_line = $lines[$nr_line];
->+				$nr_line++;
->+				$remaining--;
->+
->+				@opened = $prevline=~/\(/g;
->+				@closed = $prevline=~/\)/g;
->+			}
->+
->+			if(($prevline=~/(if|while|for|switch)\s*\(.*\)\s*$/) and ($next_line=~/{/) and
->+			   !($next_line=~/(if|while|for)/) and !($next_line=~/\#define.*do.*while/)) {
-
-Same.
-
->+# don't include <linux/video_decoder.h>
-
-Who does that?
-
-
-
-	Jan
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index 3320bcd..4d6b3c5 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -114,6 +114,7 @@ struct atmel_uart_port {
+ 	struct uart_port	uart;		/* uart */
+ 	struct clk		*clk;		/* uart clock */
+ 	unsigned short		suspended;	/* is port suspended? */
++	int			break_active;	/* break being received */
+ };
+ 
+ static struct atmel_uart_port atmel_ports[ATMEL_MAX_UART];
+@@ -252,6 +253,7 @@ static void atmel_break_ctl(struct uart_port *port, int break_state)
+  */
+ static void atmel_rx_chars(struct uart_port *port)
+ {
++	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *) port;
+ 	struct tty_struct *tty = port->info->tty;
+ 	unsigned int status, ch, flg;
+ 
+@@ -267,13 +269,29 @@ static void atmel_rx_chars(struct uart_port *port)
+ 		 * note that the error handling code is
+ 		 * out of the main execution path
+ 		 */
+-		if (unlikely(status & (ATMEL_US_PARE | ATMEL_US_FRAME | ATMEL_US_OVRE | ATMEL_US_RXBRK))) {
++		if (unlikely(status & (ATMEL_US_PARE | ATMEL_US_FRAME
++				       | ATMEL_US_OVRE | ATMEL_US_RXBRK)
++			     || atmel_port->break_active)) {
+ 			UART_PUT_CR(port, ATMEL_US_RSTSTA);	/* clear error */
+-			if (status & ATMEL_US_RXBRK) {
++			if (status & ATMEL_US_RXBRK
++			    && !atmel_port->break_active) {
+ 				status &= ~(ATMEL_US_PARE | ATMEL_US_FRAME);	/* ignore side-effect */
+ 				port->icount.brk++;
++				atmel_port->break_active = 1;
++				UART_PUT_IER(port, ATMEL_US_RXBRK);
+ 				if (uart_handle_break(port))
+ 					goto ignore_char;
++			} else {
++				/*
++				 * This is either the end-of-break
++				 * condition or we've received at
++				 * least one character without RXBRK
++				 * being set. In both cases, the next
++				 * RXBRK will indicate start-of-break.
++				 */
++				UART_PUT_IDR(port, ATMEL_US_RXBRK);
++				status &= ~ATMEL_US_RXBRK;
++				atmel_port->break_active = 0;
+ 			}
+ 			if (status & ATMEL_US_PARE)
+ 				port->icount.parity++;
+@@ -352,6 +370,16 @@ static irqreturn_t atmel_interrupt(int irq, void *dev_id)
+ 		/* Interrupt receive */
+ 		if (pending & ATMEL_US_RXRDY)
+ 			atmel_rx_chars(port);
++		else if (pending & ATMEL_US_RXBRK) {
++			/*
++			 * End of break detected. If it came along
++			 * with a character, atmel_rx_chars will
++			 * handle it.
++			 */
++			UART_PUT_CR(port, ATMEL_US_RSTSTA);
++			UART_PUT_IDR(port, ATMEL_US_RXBRK);
++			atmel_port->break_active = 0;
++		}
+ 
+ 		// TODO: All reads to CSR will clear these interrupts!
+ 		if (pending & ATMEL_US_RIIC) port->icount.rng++;
 -- 
+1.4.4.4
+
