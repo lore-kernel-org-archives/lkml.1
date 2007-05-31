@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbXEaJS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbXEaJWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760224AbXEaJS7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 05:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbXEaJSw
+	id S1759972AbXEaJWV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 05:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbXEaJWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 05:18:52 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:34325 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756877AbXEaJSv (ORCPT
+	Thu, 31 May 2007 05:22:12 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:21748 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755517AbXEaJWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 05:18:51 -0400
+	Thu, 31 May 2007 05:22:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qZ7cLfbokf53zanOyrDQMy3HsiDnpUf8LHmdEaRJlWZq/FGLf7tDK0eskhNBFkoO1lyMDbgUQJqPLRgiG9DY7bFmXBtI3NBpAaN4DHlG+1hTpGyaACrjtqBwseLnZSFjQI1puZe3vEmjAAm2gITwnIAHX3rjMP7x49LS49Bw4As=
-Message-ID: <6278d2220705310218x2736f652wb8d17095a9a82e6f@mail.gmail.com>
-Date: Thu, 31 May 2007 10:18:48 +0100
+        b=hIksK1P5gOR8/m5vAr4RDHiK8n/C0pMVikMxsp6VTENLspkeanG4uQMdWCIuHNcF/oayyMua+sKuAgWR3XjwjPXpkyHexUMrkL2epKvnyJ34KaboNWN1e0T8RYl9fkBQbRDEgOIorhWdGILZGY7FFF0GueHcrYiYARdCkdHAJGc=
+Message-ID: <6278d2220705310222rde9ad28ndfd8feced84a3c6f@mail.gmail.com>
+Date: Thu, 31 May 2007 10:22:09 +0100
 From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Lee Revell" <rlrevell@joe-job.com>
+To: "Mark Lord" <lkml@rtr.ca>
 Subject: Re: Compact Flash performance...
 Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
        "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <75b66ecd0705301531q1ba78d39od07d2611573c9150@mail.gmail.com>
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>
+In-Reply-To: <465E3FF0.9010709@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com>
-	 <75b66ecd0705301531q1ba78d39od07d2611573c9150@mail.gmail.com>
+	 <465E3FF0.9010709@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30/05/07, Lee Revell <rlrevell@joe-job.com> wrote:
-> On 5/30/07, Daniel J Blueman <daniel.blueman@gmail.com> wrote:
+Hi Mark,
+
+Thanks for the reply; here is the raw identification data:
+
+# hdparm --Istdout /dev/sdb
+
+/dev/sdb:
+045a 3fff c837 0010 0000 0000 003f 0000
+0000 0000 2020 2020 2020 5644 5334 3142
+5434 4456 3038 474a 0003 3bf5 0034 5634
+344f 4139 3641 4844 5437 3232 3532 3544
+4c41 3338 3020 2020 2020 2020 2020 2020
+2020 2020 2020 2020 2020 2020 2020 8010
+0000 2f00 4000 0200 0200 0007 3fff 0010
+003f fc10 00fb 0110 ffff 0fff 0000 0007
+0003 0078 0078 00f0 0078 0000 0000 0000
+0000 0000 0000 001f 0306 0000 005e 0040
+00fc 001a 346b 7fe9 4773 3469 3e01 4763
+407f 0038 0000 00fe fffe 0000 80fe 0008
+00ca 00f9 2710 0000 5970 1d1c 0000 0000
+00ca 0000 0000 5a87 5000 cca2 0bd9 ea2d
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0009 000b 0000 0000 3982 0db1 fe20 0001
+4000 0004 0000 0000 0000 1df7 28db 131a
+0300 0280 3f7f 00c0 0040 2b00 8000 0000
+344f 4339 0000 4004 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 7da5
+
+Daniel
+
+On 31/05/07, Mark Lord <lkml@rtr.ca> wrote:
+> Daniel J Blueman wrote:
 > > I have a SanDisk Extreme IV 4GB CF card, capable of 40MB/s read, but
 > > am seeing 30MB/s read [1], connected directly to the IDE bus on my
 > > ICH8 controller.
+> >
+> > How can I find out if this would be a timing or configuration issue?
+> > On 2.6.20.5 [2], the 120nS timing looks to be right [3], but perhaps
+> > no multi-word transfer is hurting here...alas, it can't be enabled
+> > with the libata subsystem and 'hdparm -m', so what else?
 >
-> How do you know it's capable of 40MB/s read?
-
-Hi Lee,
-
-There are various reports of users getting 40MB/s == 38.1MiB/s with
-UDMA mode 6 media readers (which are few and far between):
-
-http://www.robgalbraith.com/bins/content_page.asp?cid=7-7896-8475
-http://www.it-enquirer.com/media/screenshots/sandisk-extreme-bench.png
-
-If a particular reader is able to get 40MB/s through the CF interface,
-then this most likely will be achievable with ICH8+Linux also, but
-perhaps parameters need to be tuned or the right IDE configuration
-needs to be reached etc.
-
-> Lee
+> Please post the output from "hdparm --Istdout /dev/sdb" for this card.
+>
+> Thanks
 -- 
 Daniel J Blueman
