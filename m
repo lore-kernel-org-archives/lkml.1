@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbXEaS5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761108AbXEaS7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761530AbXEaS5f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760613AbXEaS5Z
+	id S1761108AbXEaS7y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757621AbXEaS7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:57:25 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47337 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757212AbXEaS5Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 14:57:25 -0400
-Date: Thu, 31 May 2007 11:57:23 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Subject: Re: 2.6.22-rc3-mm1
-In-Reply-To: <20070531115319.967f9ff7.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705311157001.21496@schroedinger.engr.sgi.com>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
- <465F0B83.2050100@googlemail.com> <20070531113155.1c6d7185.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705311136200.11008@schroedinger.engr.sgi.com>
- <20070531115319.967f9ff7.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 May 2007 14:59:43 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:5328 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757572AbXEaS7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 14:59:42 -0400
+Date: Thu, 31 May 2007 20:58:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Phillip Susi <psusi@cfl.rr.com>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Andreas Dilger <adilger@clusterfs.com>,
+       Stefan Bader <Stefan.Bader@de.ibm.com>
+Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices,  filesystems, and dm/md.
+Message-ID: <20070531185836.GC32105@kernel.dk>
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <465DAA15.3070703@cfl.rr.com> <465DDE1D.3000809@cfl.rr.com> <20070531062404.GH32105@kernel.dk> <465F15ED.1070304@cfl.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465F15ED.1070304@cfl.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 May 2007, Andrew Morton wrote:
-
-> we're not disbling local irqs on the cpu hotplug path.
+On Thu, May 31 2007, Phillip Susi wrote:
+> Jens Axboe wrote:
+> >No Stephan is right, the barrier is both an ordering and integrity
+> >constraint. If a driver completes a barrier request before that request
+> >and previously submitted requests are on STABLE storage, then it
+> >violates that principle. Look at the code and the various ordering
+> >options.
 > 
-> Could do local_irq_disable() in slab_cpuup_callback(), I guess.
+> I am saying that is the wrong thing to do.  Barrier should be about 
+> ordering only.  So long as the order they hit the media is maintained, 
+> the order the requests are completed in can change.  barrier.txt bears 
 
-Ahh I see.
+But you can't guarentee ordering without flushing the data out as well.
+It all depends on the type of cache on the device, of course. If you
+look at the ordinary sata/ide drive with write back caching, you can't
+just issue the requests in order and pray that the drive cache will make
+it to platter.
 
+If you don't have write back caching, or if the cache is battery backed
+and thus guarenteed to never be lost, maintaining order is naturally
+enough.
 
-SLUB: Fix locking for hotplug callbacks.
+Or if the drive can do ordered queued commands, you can relax the
+flushing (again depending on the cache type, you may need to take
+different paths).
 
-Hotplug callbacks seem to be performed with interrupts enabled. Slub requires
-interrupts to be disabled for flushing caches.
+> "Requests in ordered sequence are issued in order, but not required to 
+> finish in order.  Barrier implementation can handle out-of-order 
+> completion of ordered sequence.  IOW, the requests MUST be processed in 
+> order but the hardware/software completion paths are allowed to reorder 
+> completion notifications - eg. current SCSI midlayer doesn't preserve 
+> completion order during error handling."
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+If you carefully re-read that paragraph, then it just tells you that the
+software implementation can deal with reordered completions. It doesn't
+relax the rconstraints on ordering and integrity AT ALL.
 
-Index: slub/mm/slub.c
-===================================================================
---- slub.orig/mm/slub.c	2007-05-31 11:49:48.000000000 -0700
-+++ slub/mm/slub.c	2007-05-31 11:54:09.000000000 -0700
-@@ -2663,6 +2663,19 @@ static void for_all_slabs(void (*func)(s
- }
- 
- /*
-+ * Version of __flush_cpu_slab for the case that interrupts
-+ * are enabled.
-+ */
-+static void cpu_slab_flush(struct kmem_cache *s, int cpu)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	__flush_cpu_slab(s, cpu);
-+	local_irq_restore(flags);
-+}
-+
-+/*
-  * Use the cpu notifier to insure that the cpu slabs are flushed when
-  * necessary.
-  */
-@@ -2676,7 +2689,7 @@ static int __cpuinit slab_cpuup_callback
- 	case CPU_UP_CANCELED_FROZEN:
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
--		for_all_slabs(__flush_cpu_slab, cpu);
-+		for_all_slabs(cpu_slab_flush, cpu);
- 		break;
- 	default:
- 		break;
- 
+-- 
+Jens Axboe
+
