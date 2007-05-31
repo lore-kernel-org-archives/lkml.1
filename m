@@ -1,105 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbXEaTW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbXEaTXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760241AbXEaTW6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 15:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757765AbXEaTWv
+	id S1759859AbXEaTXx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 15:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbXEaTXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 15:22:51 -0400
-Received: from mail.screens.ru ([213.234.233.54]:36192 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757544AbXEaTWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 15:22:50 -0400
-Date: Thu, 31 May 2007 23:22:56 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Mark Hounschell <markh@compro.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: floppy.c soft lockup
-Message-ID: <20070531192256.GA88@tv-sign.ru>
-References: <465C6359.1020106@compro.net> <20070530224650.04b33117.akpm@linux-foundation.org> <465EDB97.5070908@compro.net> <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net>
+	Thu, 31 May 2007 15:23:45 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45463 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756934AbXEaTXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 15:23:44 -0400
+X-Authenticated: #19452082
+X-Provags-ID: V01U2FsdGVkX1+asIAagBmawIaL7C5YGP9CLhad6P3pCE5B6fGy7H
+	jngYBWdbfTeozq
+Date: Thu, 31 May 2007 21:23:35 +0200
+From: Thomas Kuther <gimpel@sonnenkinder.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: IT821x: no DMA since 2.6.21
+Message-ID: <20070531212335.77486121@SiRiUS.home>
+In-Reply-To: <200705241146.24079.bzolnier@gmail.com>
+References: <20070515125308.3a9f6442@SiRiUS.home>
+	<200705161146.19497.bzolnier@gmail.com>
+	<20070518114722.3109a4a6@SiRiUS.home>
+	<200705241146.24079.bzolnier@gmail.com>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <465F179D.6080203@compro.net>
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; boundary="Sig_rqCRT/oMloihT7BCmfcXVHi";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/31, Mark Hounschell wrote:
->
-> Oleg Nesterov wrote:
-> > On 05/31, Mark Hounschell wrote:
-> >>
-> >> Basically the main RT-process (which is a CPU bound process on processor-2) signals a
-> >> thread to do some I/O. That RT-thread (running on the other processor) does a simple 
-> > 
-> > If the main RT-process monopolizes processor-2, flush_workqueue() (or cancel_work_sync())
-> > can hang of course, we can do nothing.
-> > 
-> >> ioctl(Q->DevSpec1, FDSETPRM, &medprm)
-> >>
-> >> and there is no return from the call. That thread is hung.
-> > 
-> > What happens if you kill the main RT-process?
-> > 
-> 
-> When I kill the main process all its threads also go away. Including the floppy thread.
-> Nothing notable happens with this kernel.
+--Sig_rqCRT/oMloihT7BCmfcXVHi
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Aha, I missed the word "thread", this is the single process.
+On Do, 24.05.07 11:46 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+wrote:
 
-Still, this means that flush_workqueue() completes when other sub-threads go away,
-otherwise the thread doing ioctl() couldn't exit.
+>=20
+> Hi,
+>=20
+> [...]
+>=20
+> Improved patch - this time the issue should be fixed for good (I was
+> looking only at the RAID specific part of the fixups and I overlooked
+> the fact that the original code was clearing too much of
+> id->field_valid), there is now also an extra debugging printk to give
+> us some more info.
+>=20
+> Please give it a try.
+>=20
+> [ recal_intr warning (which should be harmless) is not fixed by this
+>   patch because it is a different problem and requires some more
+> work. ]
+>=20
 
-Thank you very much.
+Hi,
 
-So, the main question is: is it possible that one of RT processes/threads pins itself
-to some CPU and eats 100% cpu power?
+Sorry again for late response.
 
->                                            On previous (2.6.18) I would get a dump
-> from the floppy driver in the syslog when I killed the process.
+This patch works. At least it restores the behaviour before .21 :)
+----------------------------
+IT8212: IDE controller at PCI slot 0000:00:09.0
+ACPI: PCI Interrupt 0000:00:09.0[A] -> GSI 17 (level, low) -> IRQ 18
+IT8212: chipset revision 17
+it821x: controller in smart mode.
+IT8212: 100% native mode on irq 18
+    ide2: BM-DMA at 0xdc00-0xdc07, BIOS settings: hde:pio, hdf:pio
+    ide3: BM-DMA at 0xdc08-0xdc0f, BIOS settings: hdg:pio, hdh:pio
+Probing IDE interface ide2...
+hde: SAMSUNG SP2514N, ATA DISK drive
+hdf: Maxtor 6Y120L0, ATA DISK drive
+hde: field_valid=3D0007 capability=3D2f dma_mword=3D0007 dma_status=3D04
+hde: Performing identify fixups.
+hdf: field_valid=3D0007 capability=3D2f dma_mword=3D0007 dma_status=3D04
+hdf: Performing identify fixups.
+hde: selected mode 0x22
+hdf: selected mode 0x22
+ide2 at 0xec00-0xec07,0xe802 on irq 18
+hde: max request size: 128KiB
+hde: 488397168 sectors (250059 MB) w/8192KiB Cache, CHS=3D30401/255/63,
+DMA hde:hde: recal_intr: status=3D0x51 { DriveReady SeekComplete Error }
+hde: recal_intr: error=3D0x04 { DriveStatusError }
+ide: failed opcode was: unknown
+ hde1
+hdf: max request size: 128KiB
+hdf: 240121728 sectors (122942 MB) w/2048KiB Cache, CHS=3D65535/16/63, DMA
+ hdf:hdf: recal_intr: status=3D0x51 { DriveReady SeekComplete Error }
+hdf: recal_intr: error=3D0x04 { DriveStatusError }
+ide: failed opcode was: unknown
+ hdf1
+----------------------------------------
 
-Could you send me this output? just in case...
+hdparm does not complain, and disk IO speed is OK.
 
-> > --- OLD/drivers/block/floppy.c~	2007-04-03 13:04:58.000000000 +0400
-> > +++ OLD/drivers/block/floppy.c	2007-05-31 20:50:18.000000000 +0400
-> > @@ -862,6 +862,8 @@ static void set_fdc(int drive)
-> >  		FDCS->reset = 1;
-> >  }
-> >  
-> > +static DECLARE_WORK(floppy_work, NULL);
-> > +
-> >  /* locks the driver */
-> >  static int _lock_fdc(int drive, int interruptible, int line)
-> >  {
-> > @@ -893,7 +895,7 @@ static int _lock_fdc(int drive, int inte
-> >  		set_current_state(TASK_RUNNING);
-> >  		remove_wait_queue(&fdc_wait, &wait);
-> >  
-> > -		flush_scheduled_work();
-> > +		cancel_work_sync(&floppy_work);
-> >  	}
-> >  	command_status = FD_COMMAND_NONE;
-> >  
-> > @@ -992,8 +994,6 @@ static void empty(void)
-> >  {
-> >  }
-> >  
-> > -static DECLARE_WORK(floppy_work, NULL);
-> > -
-> >  static void schedule_bh(void (*handler) (void))
-> >  {
-> >  	PREPARE_WORK(&floppy_work, (work_func_t)handler);
-> > 
-> 
-> The patch does make it work.
+Regards,
+Tom
 
-I do not understand floppy.c, absolutely, so I am not sure this patch is correct.
 
-Even if correct, this patch doesn't solve this problem (if we really understand
-what's going on). cancel_work_sync() may still hang if floppy_work->func() runs
-on the starved CPU. This is unlikely, but possible.
+--Sig_rqCRT/oMloihT7BCmfcXVHi
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-Thanks!
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
 
-Oleg.
+iD8DBQFGXyC7MQFfAqZTGfwRAhzVAJ93E0X/j1UFRprEGFTv4qDpqFwtQwCgi34H
+TrdLwFBD/gxfqWhMflaFq5k=
+=KaT3
+-----END PGP SIGNATURE-----
 
+--Sig_rqCRT/oMloihT7BCmfcXVHi--
