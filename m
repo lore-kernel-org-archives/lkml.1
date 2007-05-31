@@ -1,375 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbXEaOa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbXEaOak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757086AbXEaOa1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 10:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXEaOaR
+	id S1758132AbXEaOak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 10:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXEaOaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 10:30:17 -0400
-Received: from lazybastard.de ([212.112.238.170]:44794 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675AbXEaOaP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 10:30:15 -0400
-Date: Thu, 31 May 2007 16:25:35 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Chinner <dgc@sgi.com>,
-       Anton Altaparmakov <aia21@cam.ac.uk>, Al Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH resend] introduce I_SYNC
-Message-ID: <20070531142535.GA25236@lazybastard.org>
-References: <20070516170110.GC8113@lazybastard.org> <20070516101535.94e44b3b.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 31 May 2007 10:30:30 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49664 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757552AbXEaOa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 10:30:28 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1+hhokPSS2hfpM25gi2GkpneMMEdDC5USXVkhZq9b
+	H8niXrvb6JdKCm
+Date: Thu, 31 May 2007 16:30:38 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Folkert van Heusden <folkert@vanheusden.com>, power@bughost.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [2.6.21.1] running powertop 1.5 for 10 seconds causes a kernel panic
+Message-ID: <20070531143038.GA18523@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Folkert van Heusden <folkert@vanheusden.com>, power@bughost.org,
+	linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+References: <20070530203434.GB9806@vanheusden.com> <20070530234331.GA10666@atjola.homenet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070516101535.94e44b3b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070530234331.GA10666@atjola.homenet>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007 10:15:35 -0700, Andrew Morton wrote:
->
-> If we're going to do this then please let's get some exhaustive commentary
-> in there so that others have a chance of understanding these flags without
-> having to do the amount of reverse-engineering which you've been put through.
+On 2007.05.31 01:43:31 +0200, Björn Steinbrink wrote:
+> On 2007.05.30 22:34:34 +0200, Folkert van Heusden wrote:
+> > P4 with HT and 2GB of ram
+> > desktop (altough acting as a sever with 300 processes fighting for cpu
+> > time)
+> > 
+> > [350598.081548] audit(1180545318.054:16): dev=eth1 prom=0 old_prom=256 auid=4294967295
+> > [361753.921304] BUG: unable to handle kernel paging request at virtual address b9d0458f
+> > [361753.921404]  printing eip:
+> > [361753.921446] c10388d8
+> > [361753.921487] *pde = 00000000
+> > [361753.921530] Oops: 0000 [#1]
+> > [361753.921571] SMP
+> > [361753.921682] Modules linked in: tuner tvaudio bttv video_buf ir_common i2c_algo_bit btcx_risc tveeprom nfs pwc wcfxo pl2303 zaptel usbserial plusb usbnet w83627hf hwmon_vid snd_pcm_oss eeprom snd_mixer_oss i2c_isa i2c_core snd_intel8x0 snd_ac97_codec sd_mod snd_pcm scsi_mod snd_timer snd ide_cd soundcore cdrom snd_page_alloc ac97_bus parport_pc parport microcode firmware_class nfsd exportfs lockd sunrpc netconsole ipt_owner ip6table_filter ip6_tables ipv6 ipt_recent xt_limit xt_state act_police sch_ingress cls_u32 sch_sfq sch_cbq ipt_REJECT ipt_MASQUERADE ipt_TOS xt_tcpudp iptable_mangle iptable_filter rtl8150 e1000 3c59x mii iptable_nat ip_tables nf_nat nf_conntrack_ipv4 nf_conntrack nfnetlink x_tables capability commoncap ppp_deflate zlib_deflate zlib_inflate ppp_async crc_ccitt ppp_generic slip slhc genrtc rd
+> > [361753.924725] CPU:    0
+> > [361753.924726] EIP:    0060:[<c10388d8>]    Not tainted VLI
+> > [361753.924728] EFLAGS: 00010046   (2.6.21.1test2 #4)
+> > [361753.924860] EIP is at match_entries+0xb/0x38
+> > [361753.924904] eax: c25f1a80   ebx: 00000000   ecx: b9d0458b   edx: ddc87ec8
+> > [361753.924950] esi: ddc87ec8   edi: c25f19a0   ebp: ddc87ea0   esp: ddc87e9c
+> > [361753.924996] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> > [361753.925043] Process einstein_S5R2_4 (pid: 21004, ti=ddc87000 task=f75780b0 task.ti=ddc87000)
+> > [361753.925092] Stack: b9d0458b ddc87ec0 c1038941 c12109d1 c12ffe90 c25f1ab0 00000096 c25f1b04
+> > [361753.925451]        c25f19a0 ddc87f50 c1038a1c c1494d70 c25f1a80 c103841c c1038620 00000000
+> > [361753.925804]        00000000 45d6f5f0 00000001 f75785f8 c13daf40 00000001 f75785f8 c13f8c70
+> > [361753.926152] Call Trace:
+> > [361753.926230]  [<c1004d53>] show_trace_log_lvl+0x1a/0x30
+> > [361753.926312]  [<c1004e0a>] show_stack_log_lvl+0x8d/0xaa
+> > [361753.926394]  [<c1005044>] show_registers+0x1cd/0x2cb
+> > [361753.926475]  [<c10052a1>] die+0x11b/0x227
+> > [361753.926554]  [<c1212ad7>] do_page_fault+0x319/0x57a
+> > [361753.926636]  [<c12110b4>] error_code+0x7c/0x84
+> > [361753.926716]  [<c1038941>] tstat_lookup+0x3c/0xc9
+> > [361753.926794]  [<c1038a1c>] timer_stats_update_stats+0x4e/0x6f
+> > [361753.926874]  [<c1033d5d>] hrtimer_interrupt+0x184/0x1e3
+> > [361753.926955]  [<c100e9e2>] local_apic_timer_interrupt+0x55/0x5b
+> > [361753.927036]  [<c100ea12>] smp_apic_timer_interrupt+0x2a/0x39
+> > [361753.927118]  [<c1004a3f>] apic_timer_interrupt+0x33/0x38
+> > [361753.927197]  =======================
+> > [361753.927239] Code: 3d ff 03 00 00 89 e5 77 13 89 c2 83 c0 01 c1 e2 07 a3 98 2c 37 c1 81 c2 00 2d 37 c1 89 d0 5d c3 55 89 c1 8b 42 04 89 e5 53 31 db <39> 41 04 74 05 89 d8 5b 5d c3 8b 42 08 39 41 08 75 f3 8b 42 0c
+> > [361753.929496] EIP: [<c10388d8>] match_entries+0xb/0x38 SS:ESP 0068:ddc87e9c
+> > [361753.929619] Kernel panic - not syncing: Fatal exception in interrupt
+> > [361753.929669] BUG: at arch/i386/kernel/smp.c:546 smp_call_function()
+> > [361753.929715]  [<c1004d53>] show_trace_log_lvl+0x1a/0x30
+> > [361753.929795]  [<c1004d7b>] show_trace+0x12/0x14
+> > [361753.929873]  [<c1004e75>] dump_stack+0x16/0x18
+> > [361753.930148]  [<c100df63>] smp_call_function+0x10f/0x114
+> > [361753.930229]  [<c100dfb9>] smp_send_stop+0x1e/0x31
+> > [361753.930309]  [<c101ca83>] panic+0x50/0xf5
+> > [361753.930389]  [<c100539e>] die+0x218/0x227
+> > [361753.930472]  [<c1212ad7>] do_page_fault+0x319/0x57a
+> > [361753.930558]  [<c12110b4>] error_code+0x7c/0x84
+> > [361753.930642]  [<c1038941>] tstat_lookup+0x3c/0xc9
+> > [361753.930724]  [<c1038a1c>] timer_stats_update_stats+0x4e/0x6f
+> > [361753.930807]  [<c1033d5d>] hrtimer_interrupt+0x184/0x1e3
+> > [361753.930890]  [<c100e9e2>] local_apic_timer_interrupt+0x55/0x5b
+> > [361753.930973]  [<c100ea12>] smp_apic_timer_interrupt+0x2a/0x39
+> > [361753.931055]  [<c1004a3f>] apic_timer_interrupt+0x33/0x38
+> > [361753.931139]  =======================
+> 
+> Is that easily reproducable? Could you try the patch from
+> http://lkml.org/lkml/2007/5/30/156 to see if that helps?
 
-Done.  Found and fixed some bugs in the process.  By now I feal
-reasonable certain that the patch fixes more than it breaks.
+That one probably won't do it as there's another race. An updated
+version is here: http://lkml.org/lkml/2007/5/31/171
 
-JÃ¶rn
-
--- 
-Good warriors cause others to come to them and do not go to others.
--- Sun Tzu
-
-Introduce I_SYNC.
-
-I_LOCK was used for several unrelated purposes, which caused deadlock
-situations in certain filesystems as a side effect.  One of the purposes
-now uses the new I_SYNC bit.
-
-Also document the various bits and change their order from historical to
-logical.
-
-Signed-off-by: JÃ¶rn Engel <joern@wohnheim.fh-wedel.de>
----
-
- fs/fs-writeback.c           |   39 +++++++++++++++---------
- fs/hugetlbfs/inode.c        |    2 -
- fs/inode.c                  |    6 +--
- fs/jfs/jfs_txnmgr.c         |    9 +++++
- fs/xfs/linux-2.6/xfs_iops.c |    4 +-
- include/linux/fs.h          |   70 ++++++++++++++++++++++++++++++++++++++------
- include/linux/writeback.h   |    7 ++++
- mm/page-writeback.c         |    2 -
- 8 files changed, 107 insertions(+), 32 deletions(-)
-
---- linux-2.6.21logfs/fs/fs-writeback.c~I_LOCK	2007-05-07 10:28:53.000000000 +0200
-+++ linux-2.6.21logfs/fs/fs-writeback.c	2007-05-07 13:29:35.000000000 +0200
-@@ -99,11 +99,11 @@ void __mark_inode_dirty(struct inode *in
- 		inode->i_state |= flags;
- 
- 		/*
--		 * If the inode is locked, just update its dirty state. 
-+		 * If the inode is being synced, just update its dirty state.
- 		 * The unlocker will place the inode on the appropriate
- 		 * superblock list, based upon its state.
- 		 */
--		if (inode->i_state & I_LOCK)
-+		if (inode->i_state & I_SYNC)
- 			goto out;
- 
- 		/*
-@@ -139,6 +139,15 @@ static int write_inode(struct inode *ino
- 	return 0;
- }
- 
-+static void inode_sync_complete(struct inode *inode)
-+{
-+	/*
-+	 * Prevent speculative execution through spin_unlock(&inode_lock);
-+	 */
-+	smp_mb();
-+	wake_up_bit(&inode->i_state, __I_SYNC);
-+}
-+
- /*
-  * Write a single inode's dirty pages and inode data out to disk.
-  * If `wait' is set, wait on the writeout.
-@@ -158,11 +167,11 @@ __sync_single_inode(struct inode *inode,
- 	int wait = wbc->sync_mode == WB_SYNC_ALL;
- 	int ret;
- 
--	BUG_ON(inode->i_state & I_LOCK);
-+	BUG_ON(inode->i_state & I_SYNC);
- 
--	/* Set I_LOCK, reset I_DIRTY */
-+	/* Set I_SYNC, reset I_DIRTY */
- 	dirty = inode->i_state & I_DIRTY;
--	inode->i_state |= I_LOCK;
-+	inode->i_state |= I_SYNC;
- 	inode->i_state &= ~I_DIRTY;
- 
- 	spin_unlock(&inode_lock);
-@@ -183,7 +192,7 @@ __sync_single_inode(struct inode *inode,
- 	}
- 
- 	spin_lock(&inode_lock);
--	inode->i_state &= ~I_LOCK;
-+	inode->i_state &= ~I_SYNC;
- 	if (!(inode->i_state & I_FREEING)) {
- 		if (!(inode->i_state & I_DIRTY) &&
- 		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
-@@ -231,7 +240,7 @@ __sync_single_inode(struct inode *inode,
- 			list_move(&inode->i_list, &inode_unused);
- 		}
- 	}
--	wake_up_inode(inode);
-+	inode_sync_complete(inode);
- 	return ret;
- }
- 
-@@ -250,7 +259,7 @@ __writeback_single_inode(struct inode *i
- 	else
- 		WARN_ON(inode->i_state & I_WILL_FREE);
- 
--	if ((wbc->sync_mode != WB_SYNC_ALL) && (inode->i_state & I_LOCK)) {
-+	if ((wbc->sync_mode != WB_SYNC_ALL) && (inode->i_state & I_SYNC)) {
- 		struct address_space *mapping = inode->i_mapping;
- 		int ret;
- 
-@@ -269,16 +278,16 @@ __writeback_single_inode(struct inode *i
- 	/*
- 	 * It's a data-integrity sync.  We must wait.
- 	 */
--	if (inode->i_state & I_LOCK) {
--		DEFINE_WAIT_BIT(wq, &inode->i_state, __I_LOCK);
-+	if (inode->i_state & I_SYNC) {
-+		DEFINE_WAIT_BIT(wq, &inode->i_state, __I_SYNC);
- 
--		wqh = bit_waitqueue(&inode->i_state, __I_LOCK);
-+		wqh = bit_waitqueue(&inode->i_state, __I_SYNC);
- 		do {
- 			spin_unlock(&inode_lock);
- 			__wait_on_bit(wqh, &wq, inode_wait,
- 							TASK_UNINTERRUPTIBLE);
- 			spin_lock(&inode_lock);
--		} while (inode->i_state & I_LOCK);
-+		} while (inode->i_state & I_SYNC);
- 	}
- 	return __sync_single_inode(inode, wbc);
- }
-@@ -311,7 +320,7 @@ __writeback_single_inode(struct inode *i
-  * The inodes to be written are parked on sb->s_io.  They are moved back onto
-  * sb->s_dirty as they are selected for writing.  This way, none can be missed
-  * on the writer throttling path, and we get decent balancing between many
-- * throttled threads: we don't want them all piling up on __wait_on_inode.
-+ * throttled threads: we don't want them all piling up on inode_sync_wait.
-  */
- static void
- sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
-@@ -583,7 +592,7 @@ int write_inode_now(struct inode *inode,
- 	ret = __writeback_single_inode(inode, &wbc);
- 	spin_unlock(&inode_lock);
- 	if (sync)
--		wait_on_inode(inode);
-+		inode_sync_wait(inode);
- 	return ret;
- }
- EXPORT_SYMBOL(write_inode_now);
-@@ -658,7 +667,7 @@ int generic_osync_inode(struct inode *in
- 			err = err2;
- 	}
- 	else
--		wait_on_inode(inode);
-+		inode_sync_wait(inode);
- 
- 	return err;
- }
---- linux-2.6.21logfs/include/linux/fs.h~I_LOCK	2007-05-07 13:24:00.000000000 +0200
-+++ linux-2.6.21logfs/include/linux/fs.h	2007-05-29 08:42:18.000000000 +0200
-@@ -1174,16 +1174,68 @@ struct super_operations {
- #endif
- };
- 
--/* Inode state bits.  Protected by inode_lock. */
--#define I_DIRTY_SYNC		1 /* Not dirty enough for O_DATASYNC */
--#define I_DIRTY_DATASYNC	2 /* Data-related inode changes pending */
--#define I_DIRTY_PAGES		4 /* Data-related inode changes pending */
--#define __I_LOCK		3
-+/*
-+ * Inode state bits.  Protected by inode_lock.
-+ *
-+ * Three bits determine the dirty state of the inode, I_DIRTY_SYNC,
-+ * I_DIRTY_DATASYNC and I_DIRTY_PAGES.
-+ *
-+ * Four bits define the lifetime of an inode.  Initially, inodes are I_NEW,
-+ * until that flag is cleared.  I_WILL_FREE, I_FREEING and I_CLEAR are set at
-+ * various stages of removing an inode.
-+ *
-+ * Two bits are used for locking and completion notification, I_LOCK and I_SYNC.
-+ *
-+ * I_DIRTY_SYNC		Inode itself is dirty.
-+ * I_DIRTY_DATASYNC	Data-related inode changes pending
-+ * I_DIRTY_PAGES	Inode has dirty pages.  Inode itself may be clean.
-+ * I_NEW		get_new_inode() sets i_state to I_LOCK|I_NEW.  Both
-+ *			are cleared by unlock_new_inode(), called from iget().
-+ * I_WILL_FREE		Must be set when calling write_inode_now() if i_count
-+ *			is zero.  I_FREEING must be set when I_WILL_FREE is
-+ *			cleared.
-+ * I_FREEING		Set when inode is about to be freed but still has dirty
-+ *			pages or buffers attached or the inode itself is still
-+ *			dirty.
-+ * I_CLEAR		Set by clear_inode().  In this state the inode is clean
-+ *			and can be destroyed.
-+ *
-+ *			Inodes that are I_WILL_FREE, I_FREEING or I_CLEAR are
-+ *			prohibited for many purposes.  iget() must wait for
-+ *			the inode to be completely released, then create it
-+ *			anew.  Other functions will just ignore such inodes,
-+ *			if appropriate.  I_LOCK is used for waiting.
-+ *
-+ * I_LOCK		Serves as both a mutex and completion notification.
-+ *			New inodes set I_LOCK.  If two processes both create
-+ *			the same inode, one of them will release its inode and
-+ *			wait for I_LOCK to be released before returning.
-+ *			Inodes in I_WILL_FREE, I_FREEING or I_CLEAR state can
-+ *			also cause waiting on I_LOCK, without I_LOCK actually
-+ *			being set.  find_inode() uses this to prevent returning
-+ *			nearly-dead inodes.
-+ * I_SYNC		Similar to I_LOCK, but limited in scope to writeback
-+ *			of inode dirty data.  Having a seperate lock for this
-+ *			purpose reduces latency and prevents some filesystem-
-+ *			specific deadlocks.
-+ *
-+ * Q: Why does I_DIRTY_DATASYNC exist?  It appears as if it could be replaced
-+ *    by (I_DIRTY_SYNC|I_DIRTY_PAGES).
-+ * Q: What is the difference between I_WILL_FREE and I_FREEING?
-+ * Q: igrab() only checks on (I_FREEING|I_WILL_FREE).  Should it also check on
-+ *    I_CLEAR?  If not, why?
-+ */
-+#define I_DIRTY_SYNC		1
-+#define I_DIRTY_DATASYNC	2
-+#define I_DIRTY_PAGES		4
-+#define I_NEW			8
-+#define I_WILL_FREE		16
-+#define I_FREEING		32
-+#define I_CLEAR			64
-+#define __I_LOCK		7
- #define I_LOCK			(1 << __I_LOCK)
--#define I_FREEING		16
--#define I_CLEAR			32
--#define I_NEW			64
--#define I_WILL_FREE		128
-+#define __I_SYNC		8
-+#define I_SYNC			(1 << __I_SYNC)
- 
- #define I_DIRTY (I_DIRTY_SYNC | I_DIRTY_DATASYNC | I_DIRTY_PAGES)
- 
---- linux-2.6.21logfs/include/linux/writeback.h~I_LOCK	2007-05-07 13:24:01.000000000 +0200
-+++ linux-2.6.21logfs/include/linux/writeback.h	2007-05-07 13:29:35.000000000 +0200
-@@ -77,6 +77,13 @@ static inline void wait_on_inode(struct 
- 	wait_on_bit(&inode->i_state, __I_LOCK, inode_wait,
- 							TASK_UNINTERRUPTIBLE);
- }
-+static inline void inode_sync_wait(struct inode *inode)
-+{
-+	might_sleep();
-+	wait_on_bit(&inode->i_state, __I_SYNC, inode_wait,
-+							TASK_UNINTERRUPTIBLE);
-+}
-+
- 
- /*
-  * mm/page-writeback.c
---- linux-2.6.21logfs/fs/inode.c~I_LOCK	2007-05-07 10:28:55.000000000 +0200
-+++ linux-2.6.21logfs/fs/inode.c	2007-05-29 13:26:57.000000000 +0200
-@@ -228,7 +228,7 @@ void __iget(struct inode * inode)
- 		return;
- 	}
- 	atomic_inc(&inode->i_count);
--	if (!(inode->i_state & (I_DIRTY|I_LOCK)))
-+	if (!(inode->i_state & (I_DIRTY|I_SYNC)))
- 		list_move(&inode->i_list, &inode_in_use);
- 	inodes_stat.nr_unused--;
- }
-@@ -249,7 +249,7 @@ void clear_inode(struct inode *inode)
- 	BUG_ON(inode->i_data.nrpages);
- 	BUG_ON(!(inode->i_state & I_FREEING));
- 	BUG_ON(inode->i_state & I_CLEAR);
--	wait_on_inode(inode);
-+	inode_sync_wait(inode);
- 	DQUOT_DROP(inode);
- 	if (inode->i_sb && inode->i_sb->s_op->clear_inode)
- 		inode->i_sb->s_op->clear_inode(inode);
-@@ -1038,7 +1038,7 @@ static void generic_forget_inode(struct 
- 	struct super_block *sb = inode->i_sb;
- 
- 	if (!hlist_unhashed(&inode->i_hash)) {
--		if (!(inode->i_state & (I_DIRTY|I_LOCK)))
-+		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
- 			list_move(&inode->i_list, &inode_unused);
- 		inodes_stat.nr_unused++;
- 		if (!sb || (sb->s_flags & MS_ACTIVE)) {
---- linux-2.6.21logfs/fs/jfs/jfs_txnmgr.c~I_LOCK	2007-05-07 10:28:55.000000000 +0200
-+++ linux-2.6.21logfs/fs/jfs/jfs_txnmgr.c	2007-05-29 13:10:32.000000000 +0200
-@@ -1286,7 +1286,14 @@ int txCommit(tid_t tid,		/* transaction 
- 		 * commit the transaction synchronously, so the last iput
- 		 * will be done by the calling thread (or later)
- 		 */
--		if (tblk->u.ip->i_state & I_LOCK)
-+		/*
-+		 * I believe this code is no longer needed.  Splitting I_LOCK
-+		 * into two bits, I_LOCK and I_SYNC should prevent this
-+		 * deadlock as well.  But since I don't have a JFS testload
-+		 * to verify this, only a trivial s/I_LOCK/I_SYNC/ was done.
-+		 * Joern
-+		 */
-+		if (tblk->u.ip->i_state & I_SYNC)
- 			tblk->xflag &= ~COMMIT_LAZY;
- 	}
- 
---- linux-2.6.21logfs/fs/xfs/linux-2.6/xfs_iops.c~I_LOCK	2007-05-07 10:29:00.000000000 +0200
-+++ linux-2.6.21logfs/fs/xfs/linux-2.6/xfs_iops.c	2007-05-29 13:15:14.000000000 +0200
-@@ -133,7 +133,7 @@ xfs_ichgtime(
- 	 */
- 	SYNCHRONIZE();
- 	ip->i_update_core = 1;
--	if (!(inode->i_state & I_LOCK))
-+	if (!(inode->i_state & I_SYNC))
- 		mark_inode_dirty_sync(inode);
- }
- 
-@@ -185,7 +185,7 @@ xfs_ichgtime_fast(
- 	 */
- 	SYNCHRONIZE();
- 	ip->i_update_core = 1;
--	if (!(inode->i_state & I_LOCK))
-+	if (!(inode->i_state & I_SYNC))
- 		mark_inode_dirty_sync(inode);
- }
- 
---- linux-2.6.21logfs/fs/hugetlbfs/inode.c~I_LOCK	2007-05-07 10:28:55.000000000 +0200
-+++ linux-2.6.21logfs/fs/hugetlbfs/inode.c	2007-05-29 13:25:05.000000000 +0200
-@@ -229,7 +229,7 @@ static void hugetlbfs_forget_inode(struc
- 	struct super_block *sb = inode->i_sb;
- 
- 	if (!hlist_unhashed(&inode->i_hash)) {
--		if (!(inode->i_state & (I_DIRTY|I_LOCK)))
-+		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
- 			list_move(&inode->i_list, &inode_unused);
- 		inodes_stat.nr_unused++;
- 		if (!sb || (sb->s_flags & MS_ACTIVE)) {
---- linux-2.6.21logfs/mm/page-writeback.c~I_LOCK	2007-05-07 13:24:03.000000000 +0200
-+++ linux-2.6.21logfs/mm/page-writeback.c	2007-05-29 13:28:10.000000000 +0200
-@@ -36,7 +36,7 @@
- 
- /*
-  * The maximum number of pages to writeout in a single bdflush/kupdate
-- * operation.  We do this so we don't hold I_LOCK against an inode for
-+ * operation.  We do this so we don't hold I_SYNC against an inode for
-  * enormous amounts of time, which would block a userspace task which has
-  * been forced to throttle against that inode.  Also, the code reevaluates
-  * the dirty each time it has written this many pages.
+Thanks,
+Björn
