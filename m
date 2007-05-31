@@ -1,87 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbXEaR0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760135AbXEaR2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759960AbXEaR0E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 13:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbXEaRZx
+	id S1760135AbXEaR2i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 13:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbXEaR2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 13:25:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:28925 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752974AbXEaRZw (ORCPT
+	Thu, 31 May 2007 13:28:31 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58412 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753817AbXEaR2a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 13:25:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iNvcOhLfeDX+h1lNtGkRes1bRNTFzyV1D0kZtWSodeh8vlhCaXWlywHTcU5k9WuZBa6AvawyyZ1yrAcC/5Mp7UceQSkT8oYwhC48upwnsTyGtcja6qWuAeU9paHX3RpUvV82glu32WXS/fdJjvNAX1GZZQFwh+j0JV2ny/dR8hs=
-Message-ID: <6278d2220705311025q6ee030e2kd44b7302a50ac902@mail.gmail.com>
-Date: Thu, 31 May 2007 18:25:49 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Mark Lord" <lkml@rtr.ca>
-Subject: Re: Compact Flash performance...
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>
-In-Reply-To: <465EBE20.6090803@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 31 May 2007 13:28:30 -0400
+Date: Thu, 31 May 2007 19:28:28 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/22] 2.6.22-rc3 perfmon2 : common core functions
+Message-ID: <20070531172828.GC2538@one.firstfloor.org>
+References: <200705291348.l4TDmRvL019775@frankl.hpl.hp.com> <p73ira9ca0d.fsf@bingen.suse.de> <20070531171616.GC23939@frankl.hpl.hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com>
-	 <465E3FF0.9010709@rtr.ca>
-	 <6278d2220705310222rde9ad28ndfd8feced84a3c6f@mail.gmail.com>
-	 <465EBE20.6090803@rtr.ca>
+In-Reply-To: <20070531171616.GC23939@frankl.hpl.hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31/05/07, Mark Lord <lkml@rtr.ca> wrote:
-> Daniel J Blueman wrote:
-> > Hi Mark,
-> >
-> > Thanks for the reply; here is the raw identification data:
-> >
-> > # hdparm --Istdout /dev/sdb
-> >
-> > /dev/sdb:
-[snip]
-> Ooops.. wrong drive.  That's NOT a CF card.   Try again?
+On Thu, May 31, 2007 at 10:16:17AM -0700, Stephane Eranian wrote:
+> Andi,
+> 
+> On Thu, May 31, 2007 at 05:01:38PM +0200, Andi Kleen wrote:
+> > Stephane Eranian <eranian@frankl.hpl.hp.com> writes:
+> > 
+> > The interface looks very complicated. Is there anything 
+> > in there that you feel is not strictly needed and should be eliminated
+> > before merging? After merging it will be more difficult.
+> > 
+> Please pinpoint calls/data structure which you find are complicated.
 
-Whoops, yes. Here is the expected data:
+It's mostly the sheer size of all of them together.
 
-# hdparm --Istdout /dev/sdb
+> All the features currently supported are used by some tools and have
+> been requested by users.
 
-/dev/sdb:
-848a 1f1c 0000 0010 0000 0240 003f 007a
-7e40 0000 2020 2020 3131 3638 3032 4432
-3830 374a 3333 3335 0002 0002 0004 4844
-5820 342e 3034 5361 6e44 6973 6b20 5344
-4346 582d 3430 3936 2020 2020 2020 2020
-2020 2020 2020 2020 2020 2020 2020 0004
-0000 0300 0000 0200 0000 0007 1f1c 0010
-003f 7e40 007a 0100 7e40 007a 0000 0007
-0003 0078 0078 0078 0078 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0010 0000 0020 4004 4000 0000 0004 4000
-101f 0000 0000 0000 0000 2000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0082 001b 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
--- 
-Daniel J Blueman
+But are they actually all used? Is there something you would
+like to get rid of because it turned out more trouble than gain?
+Now is the time to do it.
+
+> > > +#define ulp(_x) ((unsigned long *)_x)
+> > 
+> > Don't use such non standard macros please.
+> 
+> That goes back to the argument earlier about bitmap.h using unsigned long
+> and not u64. To avoid compiler warning, I used this macro. I do want
+> to use the bitmap macros (instead of inventing my own). Andrew once
+> asked if we should not fix bitmap.h instead.
+
+I mean just use the cast if you mean the cast. That makes the readers'
+life much easier.
+
+> There parameter is checked on entry from perfmon syscalls to fail
+> if necessary. So there can potentially be a race with the perfmon init.
+
+A simple flag is not racy.
+
+> Are you talking about the overflow of the message queue?
+
+Yes.
+
+> I made sure there was enough features in perfmon to support Oprofile and reuse its
+> kernel code base. The changes to the user level daemon are fairly limited. It was my
+> goal to ensure that Oprofile users would not see major disruptions. The wording is
+> the documentation was maybe too strong.
+
+I would prefer if oprofile would still work. It doesn't need to work
+in parallel but it should be possible to use it when perfmon
+is not active, but compiled in. That shouldn't be that difficult,
+should it?
+
+> > Weird thing to export. That's purely an internal implementation detail isn't it?
+> 
+> Yes, but that could be leveraged by tools to optimize the number of argument they
+> want to pass per call.
+
+Well is it?  And how would that be implemented? assembler stubs? 
+switch statements? Doesn't make much sense to me.
+
+> > > +   * smpl_buffer_mem_max(RW): maximum amount of memory usable for sampling buffers.
+> > > +   		-1 means all that is available.
+> > 
+> > -1 seems dangerous. 
+> 
+> I could use a % of available memory. Is there another subsystem that ttries to size
+> its buffer based on available memory at boot time?
+
+Yes plenty, e.g. for hash tables. But then the heuristics
+tend to be wrong. Just because I have 16GB of RAM doesn't 
+mean I really want 8GB of perfmon tables.
+
+But how about using mlock per process limits instead?
+
+-Andi
