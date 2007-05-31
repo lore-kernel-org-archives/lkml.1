@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbXEaVFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbXEaVGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbXEaVFf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 17:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXEaVEI
+	id S1759810AbXEaVGg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 17:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbXEaVG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 17:04:08 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.133]:43714 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676AbXEaVEA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 17:04:00 -0400
-Date: Thu, 31 May 2007 14:03:11 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 5/5] serial: assert DTR for serial console devices
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200705311403.12238.yinghai.lu@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.8.2
+	Thu, 31 May 2007 17:06:28 -0400
+Received: from relay00.pair.com ([209.68.5.9]:4182 "HELO relay00.pair.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750722AbXEaVG1 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 17:06:27 -0400
+X-pair-Authenticated: 24.241.238.207
+Message-ID: <465F38D1.1050506@cybsft.com>
+Date: Thu, 31 May 2007 16:06:25 -0500
+From: "K.R. Foley" <kr@cybsft.com>
+Organization: Cybersoft Solutions, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: patch-2.6.21.3-rt9 misnamed?
+References: <465EE33B.4070502@cybsft.com> <20070531153821.GA712@elte.hu> <465EFE31.30904@cybsft.com> <20070531200109.GA8715@elte.hu>
+In-Reply-To: <20070531200109.GA8715@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 5/5] serial: assert DTR for serial console devices
+Ingo Molnar wrote:
+> * K.R. Foley <kr@cybsft.com> wrote:
+> 
+>> Ingo Molnar wrote:
+>>> * K.R. Foley <kr@cybsft.com> wrote:
+>>>
+>>>> Ingo,
+>>>>
+>>>> I believe that patch-2.6.21.3-rt9 is misnamed. It applies cleanly to 
+>>>> 2.6.21 but seems to contain stuff that is already in 2.6.21.3.
+>>> yes - it includes all of 2.6.21.3.
+>>>
+>>> 	Ingo
+>>>
+>> So actually it is not really misnamed, it's just done a bit 
+>> differently than previous versions. Sorry.
+> 
+> yeah. Maybe we should make the 2.6.21.3 -rt patches relative to 2.6.21.3 
+> - but that would be one extra patching step for people who already have 
+> a 2.6.21 tree. But ... maybe that makes the most sense after all.
+> 
+> 	Ingo
+> 
 
-Some RS-232 devices require DTR to be asserted before they can be
-used.  DTR is normally asserted in uart_startup() when the port is
-opened.  But we don't actually open serial console ports, so assert
-DTR when the port is added.
+Well don't change any of this on my account. Whatever is easiest for
+everyone else is fine with me. I was merely pointing it out to possibly
+help someone else out rather than as a complaint.
 
-BTW:
-earlyprintk and early_uart are hard coded to set DTR/RTS.
-
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 326020f..e5a3d8b 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2303,8 +2303,14 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
- 	 * It may be that the port was not available.
- 	 */
- 	if (port->type != PORT_UNKNOWN &&
--	    port->cons && !(port->cons->flags & CON_ENABLED))
-+	    port->cons && !(port->cons->flags & CON_ENABLED)) {
-+		/*
-+		 * We normally assert DTR when a port is opened, but serial
-+		 * console devices aren't actually opened, so do it here.
-+		 */
-+		uart_set_mctrl(port, TIOCM_DTR);
- 		register_console(port->cons);
-+	}
- 
- 	/*
- 	 * Ensure UPF_DEAD is not set.
+-- 
+   kr
