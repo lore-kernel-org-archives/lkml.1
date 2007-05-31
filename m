@@ -1,53 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbXEaCep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759110AbXEaCg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758456AbXEaCep (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 22:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbXEaCei
+	id S1759110AbXEaCg5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 22:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbXEaCgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 22:34:38 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:51406 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750746AbXEaCeh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 22:34:37 -0400
-Date: Wed, 30 May 2007 19:33:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Tero Roponen <teanropo@jyu.fi>,
-       Antonino Daplas <adaplas@gmail.com>
-Subject: Re: [3/4] 2.6.22-rc3: known regressions
-In-Reply-To: <465C222A.8060003@googlemail.com>
-Message-ID: <alpine.LFD.0.98.0705301922560.26602@woody.linux-foundation.org>
-References: <465C188F.9000900@googlemail.com>
- <465C222A.8060003@googlemail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-ID: <alpine.LFD.0.98.0705301923271.26602@woody.linux-foundation.org>
+	Wed, 30 May 2007 22:36:49 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35226 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750746AbXEaCgt (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 22:36:49 -0400
+Date: Thu, 31 May 2007 12:36:40 +1000
+From: David Chinner <dgc@sgi.com>
+To: Michal Marek <mmarek@suse.cz>
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/3] Fix XFS_IOC_*_TO_HANDLE and XFS_IOC_{OPEN,READLINK}_BY_HANDLE in compat mode
+Message-ID: <20070531023640.GI85884050@sgi.com>
+References: <20070530125954.706423971@suse.cz> <20070530143043.611931865@suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070530143043.611931865@suse.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 29 May 2007, Michal Piotrowski wrote:
+On Wed, May 30, 2007 at 02:59:56PM +0200, Michal Marek wrote:
+> 32bit struct xfs_fsop_handlereq has different size and offsets (due to
+> pointers). TODO: case XFS_IOC_{FSSETDM,ATTRLIST,ATTRMULTI}_BY_HANDLE
+> still not handled.
 > 
-> Subject    : hrtimer overflow bug on 64-bit systems
-> References : http://lkml.org/lkml/2007/5/24/391
-> Submitter  : David Miller <davem@davemloft.net>
-> Status     : problem is being debugged
-
-Should be fixed by commit eaad084bb.
-
-> TTY
+> Signed-off-by: Michal Marek <mmarek@suse.cz>
+> ---
+>  fs/xfs/linux-2.6/xfs_ioctl32.c |   63 +++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 58 insertions(+), 5 deletions(-)
 > 
-> Subject    : tty-related oops in latest kernel(s)
-> References : http://lkml.org/lkml/2007/5/27/104
-> Submitter  : Tero Roponen <teanropo@jyu.fi>
-> Status     : problem is being debugged
+> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl32.c
+> +++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c
+> @@ -139,6 +139,44 @@ xfs_ioctl32_bulkstat(
+>  }
+>  #endif
+>  
+> +typedef struct xfs_fsop_handlereq32 {
 
-People seem to have debugged this to neofb palette handling, but I haven't 
-seen a patch. Antonino?
+xfs_fsop_handlereq_32
 
-		Linus
+> +	__u32		fd;		/* fd for FD_TO_HANDLE		*/
+> +	compat_uptr_t	path;		/* user pathname		*/
+> +	__u32		oflags;		/* open flags			*/
+> +	compat_uptr_t	ihandle;	/* user supplied handle		*/
+> +	__u32		ihandlen;	/* user supplied length		*/
+> +	compat_uptr_t	ohandle;	/* user buffer for handle	*/
+> +	compat_uptr_t	ohandlen;	/* user buffer length		*/
+> +} xfs_fsop_handlereq32_t;
+
+xfs_fsop_handlereq_32_t
+
+Add a empty line here...
+
+> +#define XFS_IOC_PATH_TO_FSHANDLE_32 _IOWR('X', 104, struct xfs_fsop_handlereq32)
+> +#define XFS_IOC_PATH_TO_HANDLE_32   _IOWR('X', 105, struct xfs_fsop_handlereq32)
+> +#define XFS_IOC_FD_TO_HANDLE_32	    _IOWR('X', 106, struct xfs_fsop_handlereq32)
+> +#define XFS_IOC_OPEN_BY_HANDLE_32   _IOWR('X', 107, struct xfs_fsop_handlereq32)
+> +#define XFS_IOC_READLINK_BY_HANDLE_32 _IOWR('X', 108, struct xfs_fsop_handlereq32)
+
+Looks kinda whitespacey here - it's mixing spaces and tabs....
+
+> +STATIC unsigned long xfs_ioctl32_fshandle(unsigned long arg)
+> +{
+> +	xfs_fsop_handlereq32_t __user *p32 = (void __user *)arg;
+> +	xfs_fsop_handlereq_t __user *p = compat_alloc_user_space(sizeof(*p));
+> +	u32 addr;
+> +
+> +	if (copy_in_user(&p->fd, &p32->fd, sizeof(__u32)) ||
+> +	    get_user(addr, &p32->path) ||
+> +	    put_user(compat_ptr(addr), &p->path) ||
+> +	    copy_in_user(&p->oflags, &p32->oflags, sizeof(__u32)) ||
+> +	    get_user(addr, &p32->ihandle) ||
+> +	    put_user(compat_ptr(addr), &p->ihandle) ||
+> +	    copy_in_user(&p->ihandlen, &p32->ihandlen, sizeof(__u32)) ||
+> +	    get_user(addr, &p32->ohandle) ||
+> +	    put_user(compat_ptr(addr), &p->ohandle) ||
+> +	    get_user(addr, &p32->ohandlen) ||
+> +	    put_user(compat_ptr(addr), &p->ohandlen))
+> +		return -EFAULT;
+> +
+> +	return (unsigned long)p;
+> +}
+> +
+> +
+>  STATIC long
+>  xfs_compat_ioctl(
+>  	int		mode,
+> @@ -164,12 +202,7 @@ xfs_compat_ioctl(
+>  	case XFS_IOC_GETBMAPA:
+>  	case XFS_IOC_GETBMAPX:
+>  /* not handled
+> -	case XFS_IOC_FD_TO_HANDLE:
+> -	case XFS_IOC_PATH_TO_HANDLE:
+> -	case XFS_IOC_PATH_TO_FSHANDLE:
+> -	case XFS_IOC_OPEN_BY_HANDLE:
+>  	case XFS_IOC_FSSETDM_BY_HANDLE:
+> -	case XFS_IOC_READLINK_BY_HANDLE:
+>  	case XFS_IOC_ATTRLIST_BY_HANDLE:
+>  	case XFS_IOC_ATTRMULTI_BY_HANDLE:
+>  */
+> @@ -226,6 +259,26 @@ xfs_compat_ioctl(
+>  		arg = xfs_ioctl32_bulkstat(arg);
+>  		break;
+>  #endif
+> +	case XFS_IOC_FD_TO_HANDLE_32:
+> +		arg = xfs_ioctl32_fshandle(arg);
+> +		cmd = XFS_IOC_FD_TO_HANDLE;
+> +		break;
+> +	case XFS_IOC_PATH_TO_HANDLE_32:
+> +		arg = xfs_ioctl32_fshandle(arg);
+> +		cmd = XFS_IOC_PATH_TO_HANDLE;
+> +		break;
+> +	case XFS_IOC_PATH_TO_FSHANDLE_32:
+> +		arg = xfs_ioctl32_fshandle(arg);
+> +		cmd = XFS_IOC_PATH_TO_FSHANDLE;
+> +		break;
+> +	case XFS_IOC_OPEN_BY_HANDLE_32:
+> +		arg = xfs_ioctl32_fshandle(arg);
+> +		cmd = XFS_IOC_OPEN_BY_HANDLE;
+> +		break;
+> +	case XFS_IOC_READLINK_BY_HANDLE_32:
+> +		arg = xfs_ioctl32_fshandle(arg);
+> +		cmd = XFS_IOC_READLINK_BY_HANDLE;
+> +		break;
+
++	case XFS_IOC_FD_TO_HANDLE_32:
++	case XFS_IOC_PATH_TO_HANDLE_32:
++	case XFS_IOC_PATH_TO_FSHANDLE_32:
++	case XFS_IOC_OPEN_BY_HANDLE_32:
++	case XFS_IOC_READLINK_BY_HANDLE_32:
++		arg = xfs_ioctl32_fshandle(arg);
++		cmd = _NATIVE_IOC(cmd, struct xfs_fsop_handlereq);
++		break;
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
