@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbXEaHRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758989AbXEaHXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbXEaHRv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 03:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbXEaHRm
+	id S1758989AbXEaHXc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 03:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbXEaHXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 03:17:42 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:36371 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750825AbXEaHRl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 03:17:41 -0400
-Date: Thu, 31 May 2007 09:17:30 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Tero Roponen <teanropo@jyu.fi>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Linux-fbdev-devel] tty-related oops in latest kernel(s)?
-In-Reply-To: <1180566886.4570.14.camel@daplas>
-Message-ID: <Pine.LNX.4.64.0705310916240.17047@anakin>
-References: <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
- <84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com>
- <Pine.LNX.4.64.0705291900001.32656@jalava.cc.jyu.fi>
- <84144f020705291157k465ec6c4sb81081844bb57514@mail.gmail.com>
- <Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
- <84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
- <Pine.LNX.4.64.0705301458400.4634@jalava.cc.jyu.fi>
- <20070530083953.9909bcef.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705301857370.29485@jalava.cc.jyu.fi>
- <20070530090945.ab9d51d9.akpm@linux-foundation.org>
- <20070530180428.GA5731@martell.zuzino.mipt.ru> <1180566886.4570.14.camel@daplas>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 May 2007 03:23:25 -0400
+Received: from ozlabs.org ([203.10.76.45]:49500 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753593AbXEaHXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 03:23:25 -0400
+Subject: [PATCH 1/3] lguest: speed up PARAVIRT_LAZY_FLUSH handling
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 31 May 2007 17:23:11 +1000
+Message-Id: <1180596191.11133.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 May 2007, Antonino A. Daplas wrote:
-> On Wed, 2007-05-30 at 22:04 +0400, Alexey Dobriyan wrote:
-> > 2) palette in neofb_par is "u32 palette[16];" which is 4x16 = 64 bytes.
-> >    struct fb_info::pseudo_palette is assigned to it in neo_alloc_fb_info().
-> >    Yet, we check at the beginning of neofb_setcolreg() for color map
-> >    length which neofb advertises as 256 which seems too many.
-> > 
-> 
-> Yes, 256 is too many. the pseudo_palette is used for the 16-color
-> console only.
-> 
-> I'm impressed that this bug has escaped notice for this long. That bug
-> is present since the 2.5.x era.
-> 
-> Probably, the best thing to do is hide the pseudo_palette from the
-> drivers and move it to the console layer where it belongs to spare
-> future driver writers from palette usage confusion. That will be a
-> thankless job.
+When Zach Amsden added PARAVIRT_LAZY_FLUSH I didn't realize how often
+it would get called.  We only need to do something if we're actually
+in lazy mode.
 
-The console layer doesn't know how to fill in the pseudo palette in all
-cases, that's why the driver have to do it.
+Before:
+Time for one context switch via pipe: 10509 (9863 - 18761)
+Time for one Copy-on-Write fault: 71796 (20625 - 207750)
+Time to exec client once: 1076218 (1066203 - 1085937)
+Time for one fork/exit/wait: 1193125 (574750 - 1197750)
+Time for two PTE updates: 10844 (10659 - 20703)
 
-Gr{oetje,eeting}s,
+After:
+Time for one context switch via pipe: 6745 (6521 - 13966)
+Time for one Copy-on-Write fault: 44734 (11468 - 91988)
+Time to exec client once: 815984 (801218 - 878218)
+Time for one fork/exit/wait: 1023250 (397687 - 1030375)
+Time for two PTE updates: 6699 (6475 - 9279)
 
-						Geert
+(Native for comparison):
+Time for one context switch via pipe: 4031 (3212 - 4146)
+Time for one Copy-on-Write fault: 4402 (4388 - 4426)
+Time to exec client once: 343859 (336859 - 349484)
+Time for one fork/exit/wait: 120234 (118500 - 136140)
+Time for two PTE updates: 2269 (2261 - 2272)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff -r 077496256739 drivers/lguest/lguest.c
+--- a/drivers/lguest/lguest.c	Thu May 31 16:34:17 2007 +1000
++++ b/drivers/lguest/lguest.c	Thu May 31 16:36:23 2007 +1000
+@@ -58,9 +58,10 @@ static enum paravirt_lazy_mode lazy_mode
+ static enum paravirt_lazy_mode lazy_mode;
+ static void lguest_lazy_mode(enum paravirt_lazy_mode mode)
+ {
+-	if (mode == PARAVIRT_LAZY_FLUSH)
+-		hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
+-	else {
++	if (mode == PARAVIRT_LAZY_FLUSH) {
++		if (unlikely(lazy_mode != PARAVIRT_LAZY_NONE))
++			hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
++	} else {
+ 		lazy_mode = mode;
+ 		if (mode == PARAVIRT_LAZY_NONE)
+ 			hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
+
+
