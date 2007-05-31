@@ -1,136 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757797AbXEaPVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbXEaPVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757797AbXEaPVV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 11:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbXEaPVL
+	id S1758257AbXEaPVp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 11:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbXEaPVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 11:21:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56662 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752715AbXEaPVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 11:21:09 -0400
-Message-ID: <465EE7BB.4050605@redhat.com>
-Date: Thu, 31 May 2007 11:20:27 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: "Luck, Tony" <tony.luck@intel.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       David Chinner <dgc@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: BUG: sleeping function called from invalid context at kernel/fork.c:385
-References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com>
-Content-Type: multipart/mixed;
- boundary="------------060500030405060903090609"
+	Thu, 31 May 2007 11:21:36 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46306 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753092AbXEaPVg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 11:21:36 -0400
+Date: Thu, 31 May 2007 16:21:34 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Stephane Eranian <eranian@frankl.hpl.hp.com>
+Cc: linux-kernel@vger.kernel.org, eranian@hpl.hp.com
+Subject: Re: [PATCH 03/22] 2.6.22-rc3 perfmon2 : new system calls support
+Message-ID: <20070531152134.GA974@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Stephane Eranian <eranian@frankl.hpl.hp.com>,
+	linux-kernel@vger.kernel.org, eranian@hpl.hp.com
+References: <200705291348.l4TDmHQd019645@frankl.hpl.hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705291348.l4TDmHQd019645@frankl.hpl.hp.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060500030405060903090609
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, May 29, 2007 at 06:48:17AM -0700, Stephane Eranian wrote:
+> sys_pfm_create_context():
+> 	- create a new perfmon2 context and returns a file descriptor in
+> 	  the pfarg_ctx_t parameters. This is the first call an application
+> 	  must make to do monitoring 
+> 	- rewritten to pass sampling format identification as a string
+> 	- file descriptor is now returned by call
+> 
+> sys_pfm_write_pmcs():
+> 	- program the PMU configuration registers. Accepts vector of arguments
+> 	  of type pfarg_pmc_t
+> 	
+> sys_pfm_write_pmds():
+> 	- program the PMU data registers. Accepts a vector of arguments of type
+> 	  pfarg_pmd_t
+> 
+> sys_pfm_read_pmds():
+> 	- read the PMU data registers.  Accepts a vector of arguments of type
+> 	  pfarg_pmd_t
+
+This kind of interface doesn't make any sense at all.  Information should
+be read and written from filedescriptors using the read and write family
+syscalls and through the VFS instead of adding tons of system calls.
+
+I fear we need to write down the requirements first and then come up
+with something better.  E.g. for per-task sampling an interface centered
+around a few files in /proc/<pid>/ would fit very nicely:
+
+  /proc/<pid>/perfmon_pmcs
+  /proc/<pid>/perfmon_pmds
+  	Obvious
+  /proc/<pid>/perfmon_ctl
+  	Can get control commands as ascii sets written to
 
 
-
-Christoph Lameter wrote:
-> On Wed, 30 May 2007, Luck, Tony wrote:
->
->   
->>> Ahh okay. cscope will do that too.... But all have __exit.
->>>       
->> The trick is that one of them *shouldn't* have __exit.  With cscope
->> you'll have to use the "Find functions calling this function:"
->> mode to try and find the __init function that is calling an
->> __exit function.
->>     
->
-> Urgh... Does it have to be that difficult?
-> -
->   
-
-
-Sometimes yes ... but in this case no.
-
-I flipped config options on and off until I tracked the problem down 
-into the loopback driver, and then manually ran modpost on 
-drivers/block/built-in.o to reveal:
-
-....Nothing. 
-
-Something is borken in modpost because I found a bug in the loopback 
-code which is a _REAL_ bug.
-
-The -mm tree contains a patch which calls __exit loop_exit from __init 
-loop_init .
-
-(I'll submit this patch directly to Andrew in about 5 mins.  I'm 
-including the patch here just so Christoph can grab it and continue on.)
-
-Christoph, this is one less beer I owe you :) :) :)
-
-Tony, the ia64 section mismatch "whack-a-mole" is far from over :(
-
-WARNING: init/built-in.o(.sdata+0x48): Section mismatch: reference to 
-.init.data: (after 'C.261.15930')
-WARNING: init/built-in.o(.sdata+0x50): Section mismatch: reference to 
-.init.data: (after 'C.261.15930')
-WARNING: init/built-in.o(.sdata+0x58): Section mismatch: reference to 
-.init.data:ino (after 'C.261.15930')
-WARNING: arch/ia64/kernel/built-in.o(.sdata+0x0): Section mismatch: 
-reference to .init.data:smp_boot_data before 'acpi_irq_model' (at offset 
--0x0)
-WARNING: arch/ia64/kernel/built-in.o(.sdata+0x98): Section mismatch: 
-reference to .init.data:rsvd_region (between 'ia64_sal' and 
-'ia64_i_cache_stride_shift')
-WARNING: arch/ia64/kernel/built-in.o(.sdata+0xa0): Section mismatch: 
-reference to .init.data:rsvd_region (between 'ia64_sal' and 
-'ia64_i_cache_stride_shift')
-WARNING: arch/ia64/kernel/built-in.o(.sdata+0x228): Section mismatch: 
-reference to .init.data:smp_boot_data (between 'cpu.25776' and 
-'smp_num_siblings')
-WARNING: arch/ia64/mm/built-in.o(.sdata+0x60): Section mismatch: 
-reference to .init.data: (between 'hpage_shift' and 'first_time.26434')
-WARNING: arch/ia64/mm/built-in.o(.sdata+0x68): Section mismatch: 
-reference to .init.data: (between 'hpage_shift' and 'first_time.26434')
-WARNING: mm/built-in.o(.sdata+0x0): Section mismatch: reference to 
-.init.data:early_node_map before 'sysctl_lowmem_reserve_ratio' (at 
-offset -0x0)
-WARNING: mm/built-in.o(.sdata+0x8): Section mismatch: reference to 
-.init.data:early_node_map before 'sysctl_lowmem_reserve_ratio' (at 
-offset -0x0)
-WARNING: mm/built-in.o(.sdata+0x10): Section mismatch: reference to 
-.init.data:early_node_map before 'sysctl_lowmem_reserve_ratio' (at 
-offset -0x0)
-WARNING: mm/built-in.o(.sdata+0x238): Section mismatch: reference to 
-.init.data: (between 'htlb_alloc_mask' and 'slab_early_init')
-WARNING: mm/built-in.o(.sdata+0x240): Section mismatch: reference to 
-.init.data:initkmem_list3 (between 'htlb_alloc_mask' and 'slab_early_init')
-WARNING: mm/built-in.o(.sdata+0x248): Section mismatch: reference to 
-.init.data:initkmem_list3 (between 'htlb_alloc_mask' and 'slab_early_init')
-WARNING: drivers/built-in.o(.sdata+0x8b0): Section mismatch: reference 
-to .init.data: (between 'scsi_null_device_strs' and 'fc_dev_loss_tmo')
-
-P.
-
---------------060500030405060903090609
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff"
-
---- linux/drivers/block/loop.c.orig	2007-05-31 11:15:21.000000000 -0400
-+++ linux/drivers/block/loop.c	2007-05-31 11:11:05.000000000 -0400
-@@ -1456,7 +1456,7 @@ static struct kobject *loop_probe(dev_t 
- 	return kobj;
- }
- 
--static void __exit loop_exit(void)
-+static void loop_exit(void)
- {
- 	unsigned long range;
- 	struct loop_device *lo, *next;
-
---------------060500030405060903090609--
