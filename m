@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761923AbXEaUFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762108AbXEaUHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761923AbXEaUFw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbXEaUFp
+	id S1762108AbXEaUHU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbXEaUHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:05:45 -0400
-Received: from mga03.intel.com ([143.182.124.21]:17434 "EHLO mga03.intel.com"
+	Thu, 31 May 2007 16:07:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49885 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753228AbXEaUFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:05:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,370,1175497200"; 
-   d="scan'208";a="234225335"
-Date: Thu, 31 May 2007 13:02:18 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+	id S1750825AbXEaUHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:07:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, nanhai.zou@intel.com,
-       asit.k.mallick@intel.com, keith.packard@intel.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86_64 irq: check remote IRR bit before migrating level triggered irq (v2)
-Message-ID: <20070531200218.GB17143@linux-os.sc.intel.com>
-References: <20070517230324.GB8089@linux-os.sc.intel.com> <m1d50h5irm.fsf@ebiederm.dsl.xmission.com> <200705311401.02221.ak@suse.de> <m1y7j53yuw.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+Date: Thu, 31 May 2007 22:12:33 +0200
+User-Agent: KMail/1.9.5
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Zwane Mwaikambo <zwane@linuxpower.ca>
+References: <fa.tUMR7tAB+jMgtfyl/LJ7U9QMgBs@ifi.uio.no> <465EDCF4.7010700@shaw.ca> <m1abvl3shh.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1abvl3shh.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1y7j53yuw.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200705312212.34053.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 07:29:43AM -0600, Eric W. Biederman wrote:
-> Andi Kleen <ak@suse.de> writes:
+On Thursday, 31 May 2007 17:47, Eric W. Biederman wrote:
+> Robert Hancock <hancockr@shaw.ca> writes:
 > 
-> > On Thursday 31 May 2007 13:34:21 Eric W. Biederman wrote:
-> >> 
-> >> On x86_64 kernel, level triggered irq migration gets initiated in the context
-> >> of that interrupt(after executing the irq handler) and following steps are
-> >> followed to do the irq migration.
+> > Eric W. Biederman wrote:
+> >> I just realized that except for doing the code review and noticing
+> >> that the current cpu hotplug code is fundamentally incompatible
+> >> with x86 I haven't done anything about it.  So here is my patch
+> >> to document what is wrong.
+> >>
+> >> The current cpu hotplug code requires irqs to be migrated from a cpu
+> >> outside of irq context.  On x86 ioapics simply do not support this,
+> >> making the code unfixable without major redesign of the generic cpu
+> >> hotplug code.
+> >>
+> >> So this patch makes CPU_HOTPLUG on x86 depend on CONFIG_BROKEN
+> >> and adds a WARN_ON so people that do enable it are not in doubt about
+> >> which part of the code is broken, even if it does work for them.
+> >>
+> >> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 > >
-> > What's the confidence level in the patch? Is it a .22 candidate?
+> > I don't think this is useful, though the code may be problematic, this patch
+> > will break suspend on all SMP machines with an existing config, which is a major
+> > regression..
 > 
-> Yes.
 > 
-> I just ran it for a little while and nothing fell over, and level
-> triggered irqs continued to migrate.  So it's not horribly broken.
+> Cool.
 > 
-> Outside of implementation errors the worst case that can happen with
-> this code is the current behavior, with a small slow down.
+> My patch does not change the functionality of the code just complains
+> very loudly that it is broken.
 > 
-> So since I can not reproduce the original problem I would appreciate
-> an eyeball or two more just to make certain I reimplemented this
-> correctly and didn't do anything stupid.   But I don't expect anything
-> to be found.  The code is pretty straight forward.
+> Further the code is broken at a design level.  The code isn't
+> problematic the code is impossible.  The cpu hotplug code can not be
+> fixed on x86 without a redesign of the generic cpu hotplug code.
+> 
+> Suspend does not need to use cpu hotplug because it already gets in
+> deep with the drivers, and can stop interrupts at the source.  I know
+> there was some talk about this doing this earlier, but I don't know if
+> anything came of that discussion.
+> 
+> Regardless if you care about this being a problem feel free to fix the
+> relevant code so it attempts to do something that the hardware
+> actually supports.
+> 
+> But if the suspend needs this code for smp support it is also broken.
 
-Yes. We want this to get included in .22. We did extensive testing with
-our patch before.  We will also do more tests with this version, however.
+Well, from the functionality point of view, it's not.  We have no problems
+with it, at least not that I know of.
 
-thanks,
-suresh
+Greetings,
+Rafael
