@@ -1,217 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbXEaMJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbXEaML4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761349AbXEaMJc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 08:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759904AbXEaMJZ
+	id S1761357AbXEaML4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 08:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759959AbXEaMLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 08:09:25 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:7539 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759459AbXEaMJX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 08:09:23 -0400
-Date: Thu, 31 May 2007 14:09:22 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: 2.6.22-rc3-mm1
-Message-ID: <20070531140922.2e55aefb@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 31 May 2007 08:11:50 -0400
+Received: from ns1.suse.de ([195.135.220.2]:34022 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759904AbXEaMLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 08:11:49 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: GFP_DMA32 and PAE x86 machines
+Date: Thu, 31 May 2007 14:11:39 +0200
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Linus Torvalds" <torvalds@osdl.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <21d7e9970705301410m16ded9esdf7a49371c60a155@mail.gmail.com> <200705310024.25937.ak@suse.de> <21d7e9970705301609w88a9f80t20f83806003f699e@mail.gmail.com>
+In-Reply-To: <21d7e9970705301609w88a9f80t20f83806003f699e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705311411.39764.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 23:58:23 -0700,
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc3/2.6.22-rc3-mm1/
+> Funnily enough I have just today with an app I have which uses 1.2GB
+> of textures :-)
 
-With 
+Realistic app which is something users really run?
+Also do the other constraints above apply?
 
-> +dma-mapping-prevent-dma-dependent-code-from-linking-on.patch
+If you use pci_alloc_coherent() then it will already take care of the rules
+above btw (e.g. DTRT when the machine has <3GB etc.) 
 
-scsi fails to build on !HAS_DMA architectures:
+> we are currently using GFP_DMA32 in the TTM allocator code, however
+> what I really want on x86 non-PAE is GFP_HIGHMEM (as DMA32 does
+> nothing) however on x86-PAE I don't want that I want a real GFP_DMA32,
+> and on x86-64 I want the current GFP_DMA32,
 
-drivers/built-in.o(.text+0x20af6): In function `scsi_dma_map':
-: undefined reference to `dma_map_sg'
-drivers/built-in.o(.text+0x20b5c): In function `scsi_dma_unmap':
-: undefined reference to `dma_unmap_sg'
+You should be probably using pci_alloc_coherent() at least on x86.
+It might get more expensive on some obscure platforms (which DRM
+likely doesn't support anyways), but if it does perhaps a pci_alloc_noncoherent()
+or so would be useful (on x86 it would be the same) 
 
-I split those functions out into a new file. Builds on s390 and i386.
-
-
-
-scsi: Don't build scsi_dma_{map,unmap} for !HAS_DMA
-
-Move scsi_dma_{map,unmap} into scsi_lib_dma.c which is only build
-if HAS_DMA is set.
-
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-
----
- drivers/scsi/Kconfig        |    5 ++++
- drivers/scsi/Makefile       |    6 ++---
- drivers/scsi/scsi_lib.c     |   38 ---------------------------------
- drivers/scsi/scsi_lib_dma.c |   50 ++++++++++++++++++++++++++++++++++++++++++++
- include/scsi/scsi_cmnd.h    |    2 +
- 5 files changed, 60 insertions(+), 41 deletions(-)
-
---- linux-2.6.orig/drivers/scsi/Kconfig
-+++ linux-2.6/drivers/scsi/Kconfig
-@@ -10,6 +10,7 @@ config RAID_ATTRS
- config SCSI
- 	tristate "SCSI device support"
- 	depends on BLOCK
-+	select SCSI_DMA if HAS_DMA
- 	---help---
- 	  If you want to use a SCSI hard disk, SCSI tape drive, SCSI CD-ROM or
- 	  any other SCSI device under Linux, say Y and make sure that you know
-@@ -29,6 +30,10 @@ config SCSI
- 	  However, do not compile this as a module if your root file system
- 	  (the one containing the directory /) is located on a SCSI device.
- 
-+config SCSI_DMA
-+	bool
-+	default n
-+
- config SCSI_TGT
- 	tristate "SCSI target support"
- 	depends on SCSI && EXPERIMENTAL
---- linux-2.6.orig/drivers/scsi/Makefile
-+++ linux-2.6/drivers/scsi/Makefile
-@@ -145,9 +145,9 @@ obj-$(CONFIG_SCSI_DEBUG)	+= scsi_debug.o
- obj-$(CONFIG_SCSI_WAIT_SCAN)	+= scsi_wait_scan.o
- 
- scsi_mod-y			+= scsi.o hosts.o scsi_ioctl.o constants.o \
--				   scsicam.o scsi_error.o scsi_lib.o \
--				   scsi_scan.o scsi_sysfs.o \
--				   scsi_devinfo.o
-+				   scsicam.o scsi_error.o scsi_lib.o
-+scsi_mod-$(CONFIG_SCSI_DMA)	+= scsi_lib_dma.o
-+scsi_mod-y			+= scsi_scan.o scsi_sysfs.o scsi_devinfo.o
- scsi_mod-$(CONFIG_SCSI_NETLINK)	+= scsi_netlink.o
- scsi_mod-$(CONFIG_SYSCTL)	+= scsi_sysctl.o
- scsi_mod-$(CONFIG_SCSI_PROC_FS)	+= scsi_proc.o
---- linux-2.6.orig/drivers/scsi/scsi_lib.c
-+++ linux-2.6/drivers/scsi/scsi_lib.c
-@@ -2290,41 +2290,3 @@ void scsi_kunmap_atomic_sg(void *virt)
- 	kunmap_atomic(virt, KM_BIO_SRC_IRQ);
- }
- EXPORT_SYMBOL(scsi_kunmap_atomic_sg);
--
--/**
-- * scsi_dma_map - perform DMA mapping against command's sg lists
-- * @cmd:	scsi command
-- *
-- * Returns the number of sg lists actually used, zero if the sg lists
-- * is NULL, or -ENOMEM if the mapping failed.
-- */
--int scsi_dma_map(struct scsi_cmnd *cmd)
--{
--	int nseg = 0;
--
--	if (scsi_sg_count(cmd)) {
--		struct device *dev = cmd->device->host->shost_gendev.parent;
--
--		nseg = dma_map_sg(dev, scsi_sglist(cmd), scsi_sg_count(cmd),
--				  cmd->sc_data_direction);
--		if (unlikely(!nseg))
--			return -ENOMEM;
--	}
--	return nseg;
--}
--EXPORT_SYMBOL(scsi_dma_map);
--
--/**
-- * scsi_dma_unmap - unmap command's sg lists mapped by scsi_dma_map
-- * @cmd:	scsi command
-- */
--void scsi_dma_unmap(struct scsi_cmnd *cmd)
--{
--	if (scsi_sg_count(cmd)) {
--		struct device *dev = cmd->device->host->shost_gendev.parent;
--
--		dma_unmap_sg(dev, scsi_sglist(cmd), scsi_sg_count(cmd),
--			     cmd->sc_data_direction);
--	}
--}
--EXPORT_SYMBOL(scsi_dma_unmap);
---- linux-2.6.orig/include/scsi/scsi_cmnd.h
-+++ linux-2.6/include/scsi/scsi_cmnd.h
-@@ -135,8 +135,10 @@ extern void scsi_kunmap_atomic_sg(void *
- extern struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *, gfp_t);
- extern void scsi_free_sgtable(struct scatterlist *, int);
- 
-+#ifdef CONFIG_SCSI_DMA
- extern int scsi_dma_map(struct scsi_cmnd *cmd);
- extern void scsi_dma_unmap(struct scsi_cmnd *cmd);
-+#endif
- 
- #define scsi_sg_count(cmd) ((cmd)->use_sg)
- #define scsi_sglist(cmd) ((struct scatterlist *)(cmd)->request_buffer)
---- /dev/null
-+++ linux-2.6/drivers/scsi/scsi_lib_dma.c
-@@ -0,0 +1,50 @@
-+/*
-+ * SCSI library functions depending on DMA
-+ */
-+
-+#include <linux/blkdev.h>
-+#include <linux/device.h>
-+#include <linux/kernel.h>
-+
-+#include <scsi/scsi.h>
-+#include <scsi/scsi_cmnd.h>
-+#include <scsi/scsi_device.h>
-+#include <scsi/scsi_host.h>
-+
-+/**
-+ * scsi_dma_map - perform DMA mapping against command's sg lists
-+ * @cmd:	scsi command
-+ *
-+ * Returns the number of sg lists actually used, zero if the sg lists
-+ * is NULL, or -ENOMEM if the mapping failed.
-+ */
-+int scsi_dma_map(struct scsi_cmnd *cmd)
-+{
-+	int nseg = 0;
-+
-+	if (scsi_sg_count(cmd)) {
-+		struct device *dev = cmd->device->host->shost_gendev.parent;
-+
-+		nseg = dma_map_sg(dev, scsi_sglist(cmd), scsi_sg_count(cmd),
-+				  cmd->sc_data_direction);
-+		if (unlikely(!nseg))
-+			return -ENOMEM;
-+	}
-+	return nseg;
-+}
-+EXPORT_SYMBOL(scsi_dma_map);
-+
-+/**
-+ * scsi_dma_unmap - unmap command's sg lists mapped by scsi_dma_map
-+ * @cmd:	scsi command
-+ */
-+void scsi_dma_unmap(struct scsi_cmnd *cmd)
-+{
-+	if (scsi_sg_count(cmd)) {
-+		struct device *dev = cmd->device->host->shost_gendev.parent;
-+
-+		dma_unmap_sg(dev, scsi_sglist(cmd), scsi_sg_count(cmd),
-+			     cmd->sc_data_direction);
-+	}
-+}
-+EXPORT_SYMBOL(scsi_dma_unmap);
+-Andi
