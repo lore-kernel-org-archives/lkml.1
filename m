@@ -1,62 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbXEaNc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbXEaNd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbXEaNc6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 09:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXEaNcu
+	id S1752641AbXEaNd5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 09:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbXEaNdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 09:32:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45635 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751392AbXEaNct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 09:32:49 -0400
-Date: Thu, 31 May 2007 09:31:06 -0400
-From: Dave Jones <davej@redhat.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Christian Volkmann <haveaniceday@cv-sv.de>, linux-kernel@vger.kernel.org,
-       ak@suse.de, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC: 2.6 patch] i386: remove support for the Rise CPU
-Message-ID: <20070531133106.GA26030@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Adrian Bunk <bunk@stusta.de>,
-	Christian Volkmann <haveaniceday@cv-sv.de>,
-	linux-kernel@vger.kernel.org, ak@suse.de,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <464BB252.8010008@cv-sv.de> <464CC8E1.5010407@cv-sv.de> <20070517214754.GC398@redhat.com> <20070531052238.GX3899@stusta.de>
-Mime-Version: 1.0
+	Thu, 31 May 2007 09:33:50 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50221 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751664AbXEaNdt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 09:33:49 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>, <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, Zwane Mwaikambo <zwane@linuxpower.ca>
+Subject: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+Date: Thu, 31 May 2007 07:32:05 -0600
+Message-ID: <m1tztt3yqy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531052238.GX3899@stusta.de>
-User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 07:22:38AM +0200, Adrian Bunk wrote:
- > On Thu, May 17, 2007 at 05:47:54PM -0400, Dave Jones wrote:
- > > On Thu, May 17, 2007 at 11:28:01PM +0200, Christian Volkmann wrote:
- > > 
- > >  > - Important: somebody to check other CPU types if the same behavior happens.
- > > 
- > > arch/i386/kernel/cpu/rise.c
- > > 
- > > Though, I've *never* seen or even heard of someone with one of those CPUs,
- > > so whether we need to care is questionable. The mp6 did actually make it
- > > to manufacture aparently, but I don't think anyone actually bought one.
- > > http://en.wikipedia.org/wiki/Rise_Technology for a pic of this mythical beast.
- > 
- > Considering that arch/i386/kernel/cpu/rise.o takes a few bytes in every 
- > i386 kernel image, what about removing it?
 
-I'll be amazed if someone complains.
-We'll still boot fine on those CPUs without that support code too,
-we just won't advertise cx8 to userspace, and /proc/cpuinfo
-won't prettyprint the name. whoopdy-do.
+I just realized that except for doing the code review and noticing
+that the current cpu hotplug code is fundamentally incompatible
+with x86 I haven't done anything about it.  So here is my patch
+to document what is wrong.
 
-Should we actually find someone who a) has one and b) is crazy enough
-to still run it today, we could always add this stuff back.
+The current cpu hotplug code requires irqs to be migrated from a cpu
+outside of irq context.  On x86 ioapics simply do not support this,
+making the code unfixable without major redesign of the generic cpu
+hotplug code.
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+So this patch makes CPU_HOTPLUG on x86 depend on CONFIG_BROKEN
+and adds a WARN_ON so people that do enable it are not in doubt about
+which part of the code is broken, even if it does work for them.
 
-	Dave
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ arch/i386/Kconfig        |    2 +-
+ arch/i386/kernel/irq.c   |   13 +++++++++++++
+ arch/x86_64/Kconfig      |    2 +-
+ arch/x86_64/kernel/irq.c |   13 +++++++++++++
+ 4 files changed, 28 insertions(+), 2 deletions(-)
 
+diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
+index 8770a5d..74444c1 100644
+--- a/arch/i386/Kconfig
++++ b/arch/i386/Kconfig
+@@ -892,7 +892,7 @@ config PHYSICAL_ALIGN
+ 
+ config HOTPLUG_CPU
+ 	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
+-	depends on SMP && HOTPLUG && EXPERIMENTAL && !X86_VOYAGER
++	depends on SMP && HOTPLUG && EXPERIMENTAL && !X86_VOYAGER && BROKEN
+ 	---help---
+ 	  Say Y here to experiment with turning CPUs off and on, and to
+ 	  enable suspend on SMP systems. CPUs can be controlled through
+diff --git a/arch/i386/kernel/irq.c b/arch/i386/kernel/irq.c
+index d2daf67..42aeccb 100644
+--- a/arch/i386/kernel/irq.c
++++ b/arch/i386/kernel/irq.c
+@@ -312,6 +312,19 @@ void fixup_irqs(cpumask_t map)
+ 	unsigned int irq;
+ 	static int warned;
+ 
++	/* 
++	 * Function is so wrong at so many levels.
++	 * - We migrate irqs that are directed at the cpu we are
++	 *   removing.
++	 * - We cannot safely migrate ioapic irqs on x86 except in
++	 *   side of irq context.
++	 * - We are enabling irqs when the interface requires irqs to
++	 *   be disabled.
++	 * Since someone probably finds this useful just warn very
++	 * loudly until cpu hotplug is redesigned.
++	 */
++	WARN_ON(1);
++
+ 	for (irq = 0; irq < NR_IRQS; irq++) {
+ 		cpumask_t mask;
+ 		if (irq == 2)
+diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
+index 5ce9443..a61c4f2 100644
+--- a/arch/x86_64/Kconfig
++++ b/arch/x86_64/Kconfig
+@@ -429,7 +429,7 @@ config NR_CPUS
+ 
+ config HOTPLUG_CPU
+ 	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
+-	depends on SMP && HOTPLUG && EXPERIMENTAL
++	depends on SMP && HOTPLUG && EXPERIMENTAL && BROKEN
+ 	help
+ 		Say Y here to experiment with turning CPUs off and on.  CPUs
+ 		can be controlled through /sys/devices/system/cpu/cpu#.
+diff --git a/arch/x86_64/kernel/irq.c b/arch/x86_64/kernel/irq.c
+index 3eaceac..da6f282 100644
+--- a/arch/x86_64/kernel/irq.c
++++ b/arch/x86_64/kernel/irq.c
+@@ -142,6 +142,19 @@ void fixup_irqs(cpumask_t map)
+ 	unsigned int irq;
+ 	static int warned;
+ 
++	/* 
++	 * Function is so wrong at so many levels.
++	 * - We migrate irqs that are directed at the cpu we are
++	 *   removing.
++	 * - We cannot safely migrate ioapic irqs on x86 except in
++	 *   side of irq context.
++	 * - We are enabling irqs when the interface requires irqs to
++	 *   be disabled.
++	 * Since someone probably finds this useful just warn very
++	 * loudly until cpu hotplug is redesigned.
++	 */
++	WARN_ON(1);
++
+ 	for (irq = 0; irq < NR_IRQS; irq++) {
+ 		cpumask_t mask;
+ 		if (irq == 2)
 -- 
-http://www.codemonkey.org.uk
+1.5.1.1.181.g2de0
+
