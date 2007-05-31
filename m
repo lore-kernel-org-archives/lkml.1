@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbXEaK03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbXEaK1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760318AbXEaK03 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 06:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758282AbXEaK0V
+	id S1760751AbXEaK1W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 06:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758414AbXEaK1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 06:26:21 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:43485 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757355AbXEaK0U (ORCPT
+	Thu, 31 May 2007 06:27:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:29205 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758286AbXEaK1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 06:26:20 -0400
-Date: Thu, 31 May 2007 11:26:04 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Message-ID: <20070531102603.GA16719@srcf.ucam.org>
-References: <8pwhX-46n-3@gated-at.bofh.it> <8pCQo-5QL-7@gated-at.bofh.it> <87abvogbdp.fsf@buer.dfakt.de> <200705281406.57396.david-b@pacbell.net> <20070531043229.GA30888@dose.home.local>
+	Thu, 31 May 2007 06:27:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kLWAwSY+gT8j1zI1jmLdKyzBFAhIhSJMzdUsH63Odq7E8+9DLkUbI3PXw9DQ2oguZEXIW3+A5nuweXGhbTjvsm4nxB5a68eOVQDhgUZiaewTRa4gYqsLVoYkBZObGyJ6PBdInpZPnDESH9o4o6Uki7SVHttaIDhKeAuqkZ7D0Hk=
+Message-ID: <3d57814d0705310327q632aaa10p29254ff777d07b31@mail.gmail.com>
+Date: Thu, 31 May 2007 20:27:14 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: "Ralf Baechle" <ralf@linux-mips.org>
+Subject: Re: Portable syscall inspection
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070529123557.GA21684@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070531043229.GA30888@dose.home.local>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: RTC_DRV_CMOS can break userspace interface
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+References: <3d57814d0705281559y56576567r2c23edda5f22c3cf@mail.gmail.com>
+	 <20070529123557.GA21684@linux-mips.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 06:32:29AM +0200, Tino Keitel wrote:
+On 5/29/07, Ralf Baechle <ralf@linux-mips.org> wrote:
+> Also consider that some architectures pass parts of the arguments in
+> registers which on yet others are passed in memory.  Sometimes padding
+> arguments are needed and many more oddities.  Similar for results.
+> Inescapably such a program is a perment maintenance nightmare.
 
-> rtc_cmos 00:09: rtc core: registered rtc_cmos as rtc0
-> rtc_cmos: probe of 00:09 failed with error -16
-> drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+Yes, I see.  This nightmare appears to be the burden of the strace
+people, god bless them.  I'm looking at moving their plethora of
+#ifdefs into a library so others can be spared the nightmare.
 
-Try unsetting CONFIG_RTC - you can't use the legacy driver at the same 
-time as the new one.
+Thanks,
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Trent
