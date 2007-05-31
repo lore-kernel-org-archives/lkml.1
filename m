@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbXEaNIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752089AbXEaNbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752036AbXEaNIq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 09:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760291AbXEaNIi
+	id S1752089AbXEaNbA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 09:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbXEaNax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 09:08:38 -0400
-Received: from lucidpixels.com ([75.144.35.66]:51843 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750978AbXEaNIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 09:08:37 -0400
-Date: Thu, 31 May 2007 09:08:37 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Parag Warudkar <parag.warudkar@gmail.com>
-cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       crmotherboard@intel.com
-Subject: Re: Case: 7454422: Re: Kernel 2.6.21.3 does not work with 8GB of
- RAM on Intel 965WH motherboards. (FULL DMESG)
-In-Reply-To: <465EC464.7050302@gmail.com>
-Message-ID: <Pine.LNX.4.64.0705310906590.6709@p34.internal.lan>
-References: <82e4877d0705301757v580a4ca5yebe2a565f0b97552@mail.gmail.com>
- <465E513E.60903@shaw.ca> <465EC464.7050302@gmail.com>
+	Thu, 31 May 2007 09:30:53 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50207 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751035AbXEaNaw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 09:30:52 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, nanhai.zou@intel.com,
+       asit.k.mallick@intel.com, keith.packard@intel.com,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86_64 irq: check remote IRR bit before migrating level triggered irq (v2)
+References: <20070517230324.GB8089@linux-os.sc.intel.com>
+	<m1d50h5irm.fsf@ebiederm.dsl.xmission.com>
+	<200705311401.02221.ak@suse.de>
+Date: Thu, 31 May 2007 07:29:43 -0600
+In-Reply-To: <200705311401.02221.ak@suse.de> (Andi Kleen's message of "Thu, 31
+	May 2007 14:01:02 +0200")
+Message-ID: <m1y7j53yuw.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen <ak@suse.de> writes:
 
-
-On Thu, 31 May 2007, Parag Warudkar wrote:
-
-> Robert Hancock wrote:
->> I think that mem=8832M would work as well, to make the kernel use only the 
->> memory that is marked cacheable. (It looks like this parameter takes the 
->> highest memory address we want the kernel to use, not the highest memory 
->> amount.)
+> On Thursday 31 May 2007 13:34:21 Eric W. Biederman wrote:
 >> 
-> Yep, and that would be much easier too.
+>> On x86_64 kernel, level triggered irq migration gets initiated in the context
+>> of that interrupt(after executing the irq handler) and following steps are
+>> followed to do the irq migration.
 >
-> I am curious though as this seems to be somewhat common a problem, could we 
-> make the kernel analyze which memory is not cacheable (it already knows this 
-> via MTRR) and not use that portion for anything? Plus may be warn the user to 
-> contact their BIOS vendor to correct the problem?
->
-> I think that would be possible - even if the kernel knows late that the 
-> memory was uncached we could migrate those pages in that region to someplace 
-> else?
->
-> Parag
->
+> What's the confidence level in the patch? Is it a .22 candidate?
 
-That is an excellent question and I wonder the same thing.  I also had 
-this problem when I only used 4GB of ram and upgraded the (another 
-motherboard, I have two) past version 1666P and I had no idea what was 
-going on other than the BIOS did not work correctly.
+Yes.
 
-In this case however it worked with 4GB with bios version 1612P but not 
-with 8GB.  Is this the case of a buggy BIOS for the 965 chipset or do 
-Intel boards have a lot of issues?
+I just ran it for a little while and nothing fell over, and level
+triggered irqs continued to migrate.  So it's not horribly broken.
 
-Justin.
+Outside of implementation errors the worst case that can happen with
+this code is the current behavior, with a small slow down.
 
+So since I can not reproduce the original problem I would appreciate
+an eyeball or two more just to make certain I reimplemented this
+correctly and didn't do anything stupid.   But I don't expect anything
+to be found.  The code is pretty straight forward.
+
+Eric
