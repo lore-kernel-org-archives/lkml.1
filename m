@@ -1,313 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbXEaBqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbXEaBuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757923AbXEaBqN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 21:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbXEaBp7
+	id S1758052AbXEaBuY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 21:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbXEaBuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 21:45:59 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:19187 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbXEaBp6 (ORCPT
+	Wed, 30 May 2007 21:50:11 -0400
+Received: from omta03ps.mx.bigpond.com ([144.140.82.155]:16469 "EHLO
+	omta03ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752514AbXEaBuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 21:45:58 -0400
-Date: Wed, 30 May 2007 18:45:18 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hugh@veritas.com
-Subject: [PATCH 1/3 v2] hexdump: more output formatting
-Message-Id: <20070530184518.f07b057f.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0705301439520.3358@schroedinger.engr.sgi.com>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-	<46540DB2.5000605@googlemail.com>
-	<Pine.LNX.4.64.0705231016330.20031@schroedinger.engr.sgi.com>
-	<4654AC94.6080601@googlemail.com>
-	<20070523150122.f9946f37.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
-	<20070523153730.e0e9e91d.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
-	<20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
-	<20070524073131.GA17501@elte.hu>
-	<Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
-	<20070524142908.f39f42ea.akpm@linux-foundation.org>
-	<20070524145517.1f32cd94.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com>
-	<20070530143428.2f20446a.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0705301439520.3358@schroedinger.engr.sgi.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 May 2007 21:50:10 -0400
+Message-ID: <465E29C4.4010904@bigpond.net.au>
+Date: Thu, 31 May 2007 11:49:56 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Con Kolivas <kernel@kolivas.org>, Christoph Lameter <clameter@sgi.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] CFS scheduler, -v12
+References: <46523081.6050007@bigpond.net.au> <465275EF.8060905@bigpond.net.au> <4652DC03.60801@bigpond.net.au> <4655423E.6000202@bigpond.net.au> <20070524164538.GA13301@linux-os.sc.intel.com> <46561E67.3030207@bigpond.net.au> <20070529204557.GB3693@linux-os.sc.intel.com> <465CBD35.2000109@bigpond.net.au> <20070530005052.GE3693@linux-os.sc.intel.com> <465CDEEA.9060507@bigpond.net.au> <20070530044201.GF3693@linux-os.sc.intel.com>
+In-Reply-To: <20070530044201.GF3693@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta03ps.mx.bigpond.com from [60.231.45.148] using ID pwil3058@bigpond.net.au at Thu, 31 May 2007 01:50:01 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Siddha, Suresh B wrote:
+> On Tue, May 29, 2007 at 07:18:18PM -0700, Peter Williams wrote:
+>> Siddha, Suresh B wrote:
+>>> I can try 32-bit kernel to check.
+>> Don't bother.  I just checked 2.6.22-rc3 and the problem is not present
+>> which means something between rc2 and rc3 has fixed the problem.  I hate
+>> it when problems (appear to) fix themselves as it usually means they're
+>> just hiding.
+>>
+>> I didn't see any patches between rc2 and rc3 that were likely to have
+>> fixed this (but doesn't mean there wasn't one).  I'm wondering whether I
+>> should do a git bisect to see if I can find where it got fixed?
+>>
+>> Could you see if you can reproduce it on 2.6.22-rc2?
+> 
+> No. Just tried 2.6.22-rc2 64-bit version at runlevel 3 on my remote
+> system at office. 15 attempts didn't show the issue.
+> 
+> Sure that nothing changed in your test setup?
+> 
+> More experiments tomorrow morning..
 
-Add a prefix string parameter.  Callers are responsible for any
-string length/alignment that they want to see in the output.  I.e.,
-callers should pad strings to achieve alignment if they want that.
+I've finished bisecting and the patch at which things appear to improve 
+is cd5477911fc9f5cc64678e2b95cdd606c59a11b5 which is in the middle of a 
+bunch of patches reorganizing the link phase of the build.  Patch 
+description is:
 
-Add rowsize parameter.  This is the number of raw data bytes
-to be printed per line.  Must be 16 or 32.
+kbuild: add "Section mismatch" warning whitelist for powerpc
+author	Li Yang <leoli@freescale.com>
+	Mon, 14 May 2007 10:04:28 +0000 (18:04 +0800)
+committer	Sam Ravnborg <sam@ravnborg.org>
+	Sat, 19 May 2007 07:11:57 +0000 (09:11 +0200)
+commit	cd5477911fc9f5cc64678e2b95cdd606c59a11b5
+tree	d893f07b0040d36dfc60040dc695384e9afcf103	tree | snapshot
+parent	f892b7d480eec809a5dfbd6e65742b3f3155e50e	commit | diff
+kbuild: add "Section mismatch" warning whitelist for powerpc
 
-Add a groupsize parameter.  This allows callers to dump values
-as 1-byte, 2-byte, 4-byte, or 8-byte numbers.  Default is
-1-byte numbers.  If the total length is not an even multiple
-of groupsize, 1-byte numbers are printed.
+This patch fixes the following class of "Section mismatch" warnings when
+building powerpc platforms.
 
-Add an "ascii" output parameter.  This causes ASCII data output
-following the hex data output.
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to 
+.init.data:.got2 from prom_entry (offset 0x0)
+WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference 
+to .init.text:mpc8313_rdb_probe from .machine.desc after 
+'mach_mpc8313_rdb' (at offset 0x4)
+....
 
-Clean up some doc examples.
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 
-Align the ASCII output on all lines that are produced by one call.
+scripts/mod/modpost.c
 
-Add a new interface, print_hex_dump_bytes(), that is a shortcut
-to print_hex_dump(), using default parameter values to print 16 bytes
-in byte-size chunks of hex + ASCII output, using printk level KERN_DEBUG.
+Peter
+-- 
+Peter Williams                                   pwil3058@bigpond.net.au
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/linux/kernel.h |   12 ++-
- lib/hexdump.c          |  149 +++++++++++++++++++++++++++++++++++++++----------
- 2 files changed, 129 insertions(+), 32 deletions(-)
-
---- linux-2622-rc2mm1-slub.orig/include/linux/kernel.h
-+++ linux-2622-rc2mm1-slub/include/linux/kernel.h
-@@ -218,10 +218,14 @@ enum {
- 	DUMP_PREFIX_ADDRESS,
- 	DUMP_PREFIX_OFFSET
- };
--extern void hex_dump_to_buffer(const void *buf, size_t len, char *linebuf,
--				size_t linebuflen);
--extern void print_hex_dump(const char *level, int prefix_type,
--				void *buf, size_t len);
-+extern void hex_dump_to_buffer(const void *buf, size_t len,
-+				int rowsize, int groupsize,
-+				char *linebuf, size_t linebuflen, bool ascii);
-+extern void print_hex_dump(const char *level, const char *prefix_str,
-+				int prefix_type, int rowsize, int groupsize,
-+				void *buf, size_t len, bool ascii);
-+extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
-+			void *buf, size_t len);
- #define hex_asc(x)	"0123456789abcdef"[x]
- 
- #ifdef DEBUG
---- linux-2622-rc2mm1-slub.orig/lib/hexdump.c
-+++ linux-2622-rc2mm1-slub/lib/hexdump.c
-@@ -16,42 +16,98 @@
-  * hex_dump_to_buffer - convert a blob of data to "hex ASCII" in memory
-  * @buf: data blob to dump
-  * @len: number of bytes in the @buf
-+ * @rowsize: number of bytes to print per line; must be 16 or 32
-+ * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
-  * @linebuf: where to put the converted data
-  * @linebuflen: total size of @linebuf, including space for terminating NUL
-+ * @ascii: include ASCII after the hex output
-  *
-  * hex_dump_to_buffer() works on one "line" of output at a time, i.e.,
-- * 16 bytes of input data converted to hex + ASCII output.
-+ * 16 or 32 bytes of input data converted to hex + ASCII output.
-  *
-  * Given a buffer of u8 data, hex_dump_to_buffer() converts the input data
-  * to a hex + ASCII dump at the supplied memory location.
-  * The converted output is always NUL-terminated.
-  *
-  * E.g.:
-- *	hex_dump_to_buffer(frame->data, frame->len, linebuf, sizeof(linebuf));
-+ *   hex_dump_to_buffer(frame->data, frame->len, 16, 1,
-+ *			linebuf, sizeof(linebuf), 1);
-  *
-  * example output buffer:
-- * 40414243 44454647 48494a4b 4c4d4e4f  @ABCDEFGHIJKLMNO
-+ * 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f  @ABCDEFGHIJKLMNO
-  */
--void hex_dump_to_buffer(const void *buf, size_t len, char *linebuf,
--			size_t linebuflen)
-+void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
-+			int groupsize, char *linebuf, size_t linebuflen,
-+			bool ascii)
- {
- 	const u8 *ptr = buf;
- 	u8 ch;
- 	int j, lx = 0;
-+	int ascii_column;
- 
--	for (j = 0; (j < 16) && (j < len) && (lx + 3) < linebuflen; j++) {
--		if (j && !(j % 4))
-+	if (rowsize != 16 && rowsize != 32)
-+		rowsize = 16;
-+
-+	if (!len)
-+		goto nil;
-+	if (len > rowsize)		/* limit to one line at a time */
-+		len = rowsize;
-+	if ((len % groupsize) != 0)	/* no mixed size output */
-+		groupsize = 1;
-+
-+	switch (groupsize) {
-+	case 8: {
-+		const u64 *ptr8 = buf;
-+		int ngroups = len / groupsize;
-+
-+		for (j = 0; j < ngroups; j++)
-+			lx += scnprintf(linebuf + lx, linebuflen - lx,
-+				"%16.16llx ", (unsigned long long)*(ptr8 + j));
-+		ascii_column = 17 * ngroups + 2;
-+		break;
-+	}
-+
-+	case 4: {
-+		const u32 *ptr4 = buf;
-+		int ngroups = len / groupsize;
-+
-+		for (j = 0; j < ngroups; j++)
-+			lx += scnprintf(linebuf + lx, linebuflen - lx,
-+				"%8.8x ", *(ptr4 + j));
-+		ascii_column = 9 * ngroups + 2;
-+		break;
-+	}
-+
-+	case 2: {
-+		const u16 *ptr2 = buf;
-+		int ngroups = len / groupsize;
-+
-+		for (j = 0; j < ngroups; j++)
-+			lx += scnprintf(linebuf + lx, linebuflen - lx,
-+				"%4.4x ", *(ptr2 + j));
-+		ascii_column = 5 * ngroups + 2;
-+		break;
-+	}
-+
-+	default:
-+		for (j = 0; (j < rowsize) && (j < len) && (lx + 4) < linebuflen;
-+		     j++) {
-+			ch = ptr[j];
-+			linebuf[lx++] = hex_asc(ch >> 4);
-+			linebuf[lx++] = hex_asc(ch & 0x0f);
- 			linebuf[lx++] = ' ';
--		ch = ptr[j];
--		linebuf[lx++] = hex_asc(ch >> 4);
--		linebuf[lx++] = hex_asc(ch & 0x0f);
-+		}
-+		ascii_column = 3 * rowsize + 2;
-+		break;
- 	}
--	if ((lx + 2) < linebuflen) {
--		linebuf[lx++] = ' ';
-+	if (!ascii)
-+		goto nil;
-+
-+	while (lx < (linebuflen - 1) && lx < (ascii_column - 1))
- 		linebuf[lx++] = ' ';
--	}
--	for (j = 0; (j < 16) && (j < len) && (lx + 2) < linebuflen; j++)
-+	for (j = 0; (j < rowsize) && (j < len) && (lx + 2) < linebuflen; j++)
- 		linebuf[lx++] = isprint(ptr[j]) ? ptr[j] : '.';
-+nil:
- 	linebuf[lx++] = '\0';
- }
- EXPORT_SYMBOL(hex_dump_to_buffer);
-@@ -59,46 +115,83 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
- /**
-  * print_hex_dump - print a text hex dump to syslog for a binary blob of data
-  * @level: kernel log level (e.g. KERN_DEBUG)
-+ * @prefix_str: string to prefix each line with;
-+ *  caller supplies trailing spaces for alignment if desired
-  * @prefix_type: controls whether prefix of an offset, address, or none
-  *  is printed (%DUMP_PREFIX_OFFSET, %DUMP_PREFIX_ADDRESS, %DUMP_PREFIX_NONE)
-+ * @rowsize: number of bytes to print per line; must be 16 or 32
-+ * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
-  * @buf: data blob to dump
-  * @len: number of bytes in the @buf
-+ * @ascii: include ASCII after the hex output
-  *
-  * Given a buffer of u8 data, print_hex_dump() prints a hex + ASCII dump
-  * to the kernel log at the specified kernel log level, with an optional
-  * leading prefix.
-  *
-+ * print_hex_dump() works on one "line" of output at a time, i.e.,
-+ * 16 or 32 bytes of input data converted to hex + ASCII output.
-+ * print_hex_dump() iterates over the entire input @buf, breaking it into
-+ * "line size" chunks to format and print.
-+ *
-  * E.g.:
-- *   print_hex_dump(KERN_DEBUG, DUMP_PREFIX_ADDRESS, frame->data, frame->len);
-+ *   print_hex_dump(KERN_DEBUG, "raw data: ", DUMP_PREFIX_ADDRESS,
-+ *		16, 1, frame->data, frame->len, 1);
-  *
-- * Example output using %DUMP_PREFIX_OFFSET:
-- * 0009ab42: 40414243 44454647 48494a4b 4c4d4e4f  @ABCDEFGHIJKLMNO
-- * Example output using %DUMP_PREFIX_ADDRESS:
-- * ffffffff88089af0: 70717273 74757677 78797a7b 7c7d7e7f  pqrstuvwxyz{|}~.
-+ * Example output using %DUMP_PREFIX_OFFSET and 1-byte mode:
-+ * 0009ab42: 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f  @ABCDEFGHIJKLMNO
-+ * Example output using %DUMP_PREFIX_ADDRESS and 4-byte mode:
-+ * ffffffff88089af0: 73727170 77767574 7b7a7978 7f7e7d7c  pqrstuvwxyz{|}~.
-  */
--void print_hex_dump(const char *level, int prefix_type, void *buf, size_t len)
-+void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
-+			int rowsize, int groupsize,
-+			void *buf, size_t len, bool ascii)
- {
- 	u8 *ptr = buf;
- 	int i, linelen, remaining = len;
--	unsigned char linebuf[100];
-+	unsigned char linebuf[200];
- 
--	for (i = 0; i < len; i += 16) {
--		linelen = min(remaining, 16);
--		remaining -= 16;
--		hex_dump_to_buffer(ptr + i, linelen, linebuf, sizeof(linebuf));
-+	if (rowsize != 16 && rowsize != 32)
-+		rowsize = 16;
-+
-+	for (i = 0; i < len; i += rowsize) {
-+		linelen = min(remaining, rowsize);
-+		remaining -= rowsize;
-+		hex_dump_to_buffer(ptr + i, linelen, rowsize, groupsize,
-+				linebuf, sizeof(linebuf), ascii);
- 
- 		switch (prefix_type) {
- 		case DUMP_PREFIX_ADDRESS:
--			printk("%s%*p: %s\n", level,
-+			printk("%s%s%*p: %s\n", level, prefix_str,
- 				(int)(2 * sizeof(void *)), ptr + i, linebuf);
- 			break;
- 		case DUMP_PREFIX_OFFSET:
--			printk("%s%.8x: %s\n", level, i, linebuf);
-+			printk("%s%s%.8x: %s\n", level, prefix_str, i, linebuf);
- 			break;
- 		default:
--			printk("%s%s\n", level, linebuf);
-+			printk("%s%s%s\n", level, prefix_str, linebuf);
- 			break;
- 		}
- 	}
- }
- EXPORT_SYMBOL(print_hex_dump);
-+
-+/**
-+ * print_hex_dump_bytes - shorthand form of print_hex_dump() with default params
-+ * @prefix_str: string to prefix each line with;
-+ *  caller supplies trailing spaces for alignment if desired
-+ * @prefix_type: controls whether prefix of an offset, address, or none
-+ *  is printed (%DUMP_PREFIX_OFFSET, %DUMP_PREFIX_ADDRESS, %DUMP_PREFIX_NONE)
-+ * @buf: data blob to dump
-+ * @len: number of bytes in the @buf
-+ *
-+ * Calls print_hex_dump(), with log level of KERN_DEBUG,
-+ * rowsize of 16, groupsize of 1, and ASCII output included.
-+ */
-+void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
-+			void *buf, size_t len)
-+{
-+	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, 16, 1,
-+			buf, len, 1);
-+}
-+EXPORT_SYMBOL(print_hex_dump_bytes);
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
