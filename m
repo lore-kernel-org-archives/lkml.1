@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760629AbXEaJgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbXEaJkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760629AbXEaJgA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 05:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758056AbXEaJfw
+	id S1759910AbXEaJkN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 05:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbXEaJj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 05:35:52 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:29035 "EHLO kernel.dk"
+	Thu, 31 May 2007 05:39:58 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43968 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757400AbXEaJfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 05:35:51 -0400
-Date: Thu, 31 May 2007 11:34:51 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070531093449.GN32105@kernel.dk>
-References: <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org> <465DE992.6070803@redhat.com> <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org> <Pine.LNX.4.64.0705301443340.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301457350.26602@woody.linux-foundation.org> <20070531061303.GA4436@elte.hu> <20070531093202.GA4784@elte.hu>
-Mime-Version: 1.0
+	id S1756020AbXEaJj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 05:39:57 -0400
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, kaber@trash.net,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
+References: <20070530105936.6c988da5.akpm@linux-foundation.org>
+	<20070530112056.0aeb9498@freepuppy> <465DC598.5060407@trash.net>
+	<20070530.125551.41636333.davem@davemloft.net>
+	<20070530133039.7feb2064@freepuppy>
+	<20070530213541.GA13953@linux-os.sc.intel.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 31 May 2007 12:36:26 +0200
+In-Reply-To: <20070530213541.GA13953@linux-os.sc.intel.com>
+Message-ID: <p73ejkxe0ut.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531093202.GA4784@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31 2007, Ingo Molnar wrote:
+Venki Pallipadi <venkatesh.pallipadi@intel.com> writes:
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > (i definitely remember having written code for that too, but i cannot 
-> > find that in the archives. hm.) In theory we could avoid _all_ 
-> > fd-bitmap overhead as well and use a per-process list/pool of struct 
-> > file buffers plus a maximum-fd field as the 'non-linear fd allocator' 
-> > (at the price of only deallocating them at process exit time).
-> 
-> btw., this also allows mostly-lockless fd allocation, which would 
-> probably benefit threaded apps too. (we can just recycle it from a 
-> per-CPU list of cached fds for that process)
+> If this does not work:
+> Another option is to use 'deferrable timer' here which will be called at
+> same as before time when CPU is busy and on idle CPU it will be delayed until
+> CPU comes out of idle due to any other events.
 
-See also:
+That would sound like a good idea here and at least power wise 
+it should be nearly free
 
-http://lkml.org/lkml/2006/6/16/144
-
-which originates from a much simpler patch I did to fix performance
-regressions in this area for the SLES10 kernel.
-
--- 
-Jens Axboe
-
+-Andi
