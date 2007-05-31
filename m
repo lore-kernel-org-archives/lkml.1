@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbXEaAyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbXEaA5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759015AbXEaAyA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 20:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbXEaAxw
+	id S1758170AbXEaA5u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 20:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbXEaA5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 20:53:52 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60880 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754108AbXEaAxv (ORCPT
+	Wed, 30 May 2007 20:57:44 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:18731 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbXEaA5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 20:53:51 -0400
-Date: Thu, 31 May 2007 10:53:41 +1000
-From: David Chinner <dgc@sgi.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Message-ID: <20070531005341.GF85884050@sgi.com>
-References: <20070530044448.GK86004887@sgi.com> <617E1C2C70743745A92448908E030B2A019298C6@scsmsx411.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 30 May 2007 20:57:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=qaTIkW7W4NtWNpOwOiRoSMEJ3U9TmSns1PVQ7MqhpzV2wBsT2hds+ft40hf+jP03JPRywpD+IjnKWC8NcsPWRp+6iOB9Lp/rgtSYwnhnNpyrdXKq1NmGZe06ejFz6CfBO8WyQeHd5mlhpugoXlemtksWRIQiouDWCBi8AUv/c2k=
+Message-ID: <82e4877d0705301757v580a4ca5yebe2a565f0b97552@mail.gmail.com>
+Date: Wed, 30 May 2007 20:57:41 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>, jpiszcz@lucidpixels.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Case: 7454422: Re: Kernel 2.6.21.3 does not work with 8GB of RAM on Intel 965WH motherboards. (FULL DMESG)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <617E1C2C70743745A92448908E030B2A019298C6@scsmsx411.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 01:11:17PM -0700, Luck, Tony wrote:
-> > Hmmm - I wonder if my tree is screwed up in some weird way. I'm seeing link
-> > warnings as well:
-> >
-> > WARNING: init/built-in.o - Section mismatch: reference to .init.data: from .sdata after 'root_mountflags' (at offset 0x38)
-> 
-> I thought that I'd got the section mis-match warnings down to
-> just one (and that was in ACPI code, so I sent a patch to Len
-> for it).
-> 
-> Are you building from defconfig, or one of the standard ones?
+Robert Hancock wrote:
 
-sn2defconfig + kernel debug option plus xfs options.
 
-> But I've had other complaints that these Section mismatch warnings
-> are still showing up in kernels built from the "standard" config
-> files (arch/ia64/configs/*) ... which I'm not seeing.  So I'm more
-> than a little confused about this.
-> 
-> These errors are unlikely to be related to the strace bug that
-> you've reported.  I'll try to pound on this some more when I'm
-> back on the same continent as my test machines.
+> 0-3319MB
+> 4096-8832MB
+>
+> leaving 64MB of memory at the top of RAM uncached. What do you want to
+> bet that something important (kernel code?) is getting loaded there..
+>
+> So essentially it's a BIOS problem, it's not setting up the MTRRs
+> properly in order to map all of RAM as cacheable. As Andi says, complain
+> to Intel.
+>
 
-Ok - no real hurry - they don't appear to be causing me any problems
-except build noise....
+Could the BADRAM patch be useful for him?
+http://rick.vanrein.org/linux/badram/download.html has 2.6.21 version.
+It says it supports x86_64. May be using this patch he can exclude
+that RAM from being used/accessed?
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Parag
+--
