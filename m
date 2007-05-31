@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbXEaQps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760429AbXEaQqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbXEaQps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 12:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbXEaQpl
+	id S1760429AbXEaQqu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 12:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbXEaQqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 12:45:41 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:51777 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753912AbXEaQpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 12:45:41 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH 4/5] serial: convert early_uart to earlycon for 8250
-Date: Thu, 31 May 2007 10:45:35 -0600
-User-Agent: KMail/1.9.6
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <200705291844.00308.yinghai.lu@sun.com> <200705310917.19205.bjorn.helgaas@hp.com> <86802c440705310932x3c85d9eao109fcf6445bd5938@mail.gmail.com>
-In-Reply-To: <86802c440705310932x3c85d9eao109fcf6445bd5938@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 31 May 2007 12:46:42 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:43225 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753155AbXEaQql (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 12:46:41 -0400
+Date: Thu, 31 May 2007 18:46:39 +0200
+From: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
+To: Richard Hughes <hughsient@gmail.com>
+Cc: Bastien Nocera <hadess@hadess.net>, John Belmonte <john@neggie.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: Add INPUT support to toshiba_acpi
+Message-ID: <20070531164639.GA13742@rhlx01.hs-esslingen.de>
+References: <1180614979.2693.26.camel@localhost.localdomain> <1180615994.3030.166.camel@cookie.hadess.net> <1180619002.2693.35.camel@localhost.localdomain> <1180626416.3469.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705311045.36411.bjorn.helgaas@hp.com>
+In-Reply-To: <1180626416.3469.7.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-Priority: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 May 2007 10:32:42 am Yinghai Lu wrote:
-> On 5/31/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > On Wednesday 30 May 2007 10:48:59 pm Andrew Morton wrote:
-> > > You could require that the architecture implement some specific function
-> > > for mapping the early-uart.
-> >
-> > We could, but we already have bt_ioremap, dmi_ioremap, and early_ioremap.
-> > Do we really want to proliferate more flavors of "early ioremap"?  I'd
-> > rather consolidate the ones we already have.
-> >
-> not really.
+Hi,
 
-I'm sorry, I don't understand the point you're making.
+On Thu, May 31, 2007 at 04:46:56PM +0100, Richard Hughes wrote:
 
-Andrew's proposal was that we could add early_uart_ioremap to the list of
-bt_ioremap and dmi_ioremap.
++	if (!hotkeys_over_input) {
++		if (!key_event_valid) {
++			hci_read1(HCI_SYSTEM_EVENT, &value, &hci_result);
++			if (hci_result == HCI_SUCCESS) {
++				key_event_valid = 1;
++				last_key_event = value;
++			} else if (hci_result == HCI_EMPTY) {
++				/* better luck next time */
 
-I'm suggesting that maybe we should make bt_ioremap smart enough that
-we could use it for early uart mapping.  And maybe we could get rid
-of dmi_ioremap, and make DMI use bt_ioremap as well (this would require
-some shims for x86_64 and ia64).
+HCI_EMPTY is *by far* the most frequent state to occur I think
+(users won't press keys all the time), thus it's probably better(?)
+for branch prediction to have this placed first, right?
+Not that it matters too much instruction-wise, but still...
 
-> dhcp-umpk12-63-201:/home/yhlu/xx/xx/kernel/linux-2.6/include # grep
-> bt_ioremap * -r
-> asm-i386/dmi.h:#define dmi_ioremap bt_ioremap
-> asm-i386/io.h: * bt_ioremap() and bt_iounmap() are for temporary early boot-time
-> asm-i386/io.h:extern void *bt_ioremap(unsigned long offset, unsigned long size);
-> asm-i386/io.h:#define dmi_ioremap bt_ioremap
-> 
-> dhcp-umpk12-63-201:/home/yhlu/xx/xx/kernel/linux-2.6/include # grep
-> early_ioremap * -r
-> asm-x86_64/dmi.h:#define dmi_ioremap early_ioremap
-> asm-x86_64/io.h:extern void *early_ioremap(unsigned long addr,
-> unsigned long size);
-> 
-> dhcp-umpk12-63-201:/home/yhlu/xx/xx/kernel/linux-2.6/include # grep
-> dmi_ioremap * -r
-> asm-i386/dmi.h:#define dmi_ioremap bt_ioremap
-> asm-i386/io.h:#define dmi_ioremap bt_ioremap
-> asm-ia64/io.h:#define dmi_ioremap ioremap
-> asm-x86_64/dmi.h:extern void *dmi_ioremap(unsigned long addr, unsigned
-> long size);
-> asm-x86_64/dmi.h:#define dmi_ioremap early_ioremap
+Apart from that I'm very happy to see progress on this front
+(speaking as a "proud" owner of an old Toshiba notebook requiring
+this stuff).
+
+Oh, and maybe merge the sprintf()s into a single one to reduce code size.
+
+And I'd definitely move the multiple identical "Re-enabled hotkeys" parts
+into one single non-inlined(!) function for the same reason.
+Not to mention that it's BUTT UGLY to have the *same* fat
+multi-line comment duplicated bazillion times.
+
+Thanks a lot!
+
+Andreas Mohr
