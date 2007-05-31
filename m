@@ -1,118 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbXEaOQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbXEaORj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbXEaOQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 10:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbXEaOQU
+	id S1755367AbXEaORj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 10:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXEaORc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 10:16:20 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:59503 "EHLO madara.hpl.hp.com"
+	Thu, 31 May 2007 10:17:32 -0400
+Received: from er-systems.de ([85.25.136.202]:59336 "EHLO er-systems.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751755AbXEaOQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 10:16:20 -0400
-Date: Thu, 31 May 2007 07:16:00 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 19/22] 2.6.22-rc3 perfmon2 : modified x86_64 files
-Message-ID: <20070531141600.GH22798@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <200705291348.l4TDmYaf019853@frankl.hpl.hp.com> <p73ejkxc9un.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73ejkxc9un.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+	id S1752002AbXEaORc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 10:17:32 -0400
+X-Greylist: delayed 1967 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 May 2007 10:17:31 EDT
+Date: Thu, 31 May 2007 15:44:38 +0200 (CEST)
+From: Thomas Voegtle <tv@lio96.de>
+To: linux-kernel@vger.kernel.org
+Subject: hisax isdn card (Sedlbauer Speed Fax+) does not get an interrupt
+Message-ID: <Pine.LNX.4.63.0705311520150.9151@er-systems.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="425052808-622072900-1180619078=:9151"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Thu, May 31, 2007 at 05:05:04PM +0200, Andi Kleen wrote:
-> Stephane Eranian <eranian@frankl.hpl.hp.com> writes:
-> 
-> > @@ -557,6 +561,10 @@ static inline void __switch_to_xtra(stru
-> >  		 */
-> >  		memset(tss->io_bitmap, 0xff, prev->io_bitmap_max);
-> >  	}
-> > +
-> > +	if (test_tsk_thread_flag(next_p, TIF_PERFMON_CTXSW)
-> > +	    || test_tsk_thread_flag(prev_p, TIF_PERFMON_CTXSW))
-> > +		pfm_ctxsw(prev_p, next_p);
-> >  }
-> 
-> I thought we had agreed earlier to put this into single "all uncommon
-> bits" check first?
-> 
+--425052808-622072900-1180619078=:9151
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-This is it. the check for uncommon bits is below (_TIF_WORK_CTXSW). Then
-we need to check each uncommon bits (done above). Did you have something else
-in mind?
+Hi,
 
-> >  
-> >  /*
-> > @@ -661,7 +669,7 @@ __switch_to(struct task_struct *prev_p, 
-> >  	 * Now maybe reload the debug registers and handle I/O bitmaps
-> >  	 */
-> >  	if (unlikely((task_thread_info(next_p)->flags & _TIF_WORK_CTXSW))
-> > -	    || test_tsk_thread_flag(prev_p, TIF_IO_BITMAP))
-> > +  	    || (task_thread_info(prev_p)->flags & _TIF_WORK_CTXSW))
-> 
-> >  		__switch_to_xtra(prev_p, next_p, tss);
-> >  
-> >  	/* If the task has used fpu the last 5 timeslices, just do a full
-> > diff --exclude=.git -urp linux-2.6.22.base/arch/x86_64/kernel/setup64.c linux-2.6.22/arch/x86_64/kernel/setup64.c
-> > --- linux-2.6.22.base/arch/x86_64/kernel/setup64.c	2007-05-29 03:17:16.000000000 -0700
-> > +++ linux-2.6.22/arch/x86_64/kernel/setup64.c	2007-05-29 03:24:14.000000000 -0700
-> > @@ -11,6 +11,7 @@
-> >  #include <linux/bootmem.h>
-> >  #include <linux/bitops.h>
-> >  #include <linux/module.h>
-> > +#include <linux/perfmon.h>
-> >  #include <asm/bootsetup.h>
-> >  #include <asm/pda.h>
-> >  #include <asm/pgtable.h>
-> > @@ -283,4 +284,6 @@ void __cpuinit cpu_init (void)
-> >  	fpu_init(); 
-> >  
-> >  	raw_local_save_flags(kernel_eflags);
-> > +
-> > + 	pfm_init_percpu();
-> 
-> Just use a cpu notifier instead. No need to add everybody's per cpu init code here.
+after finally upgrading our systems from Kernel 2.4 to 2.6 we experienced 
+problems with the ISDN cards, a hisax driven Sedlbauer Speed Fax+.
 
-The code must run on the CPU that is being initialized.
 
-> > diff --exclude=.git -urp linux-2.6.22.base/arch/x86_64/kernel/smpboot.c linux-2.6.22/arch/x86_64/kernel/smpboot.c
-> > --- linux-2.6.22.base/arch/x86_64/kernel/smpboot.c	2007-05-29 03:17:16.000000000 -0700
-> > +++ linux-2.6.22/arch/x86_64/kernel/smpboot.c	2007-05-29 03:24:14.000000000 -0700
-> > @@ -49,6 +49,7 @@
-> >  #include <linux/mc146818rtc.h>
-> >  #include <linux/smp.h>
-> >  #include <linux/kdebug.h>
-> > +#include <linux/perfmon.h>
-> >  
-> >  #include <asm/mtrr.h>
-> >  #include <asm/pgalloc.h>
-> > @@ -1043,6 +1044,7 @@ int __cpu_disable(void)
-> >  	spin_unlock(&vector_lock);
-> >  	remove_cpu_from_maps();
-> >  	fixup_irqs(cpu_online_map);
-> > +	pfm_cpu_disable();
-> 
-> Also cpu notifier.
-> 
-Same thing here. I need to run on the CPU that is being disabled.
+A "modprobe hisax type=28 protocol=2" ends in this mess:
 
-> 
-> No compat syscalls? 
-> 
-compat syscalls for what? I need to ensure backward compatiblity on IA-64 only.
+==========================================================================
+<05>2007 May 30 14:21:40 cbs kern: ISDN subsystem Rev: 1.1.2.3/1.1.2.3/1.1.2.2/1.1.2.3/1.1.2.2/1.1.2.2 loaded
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Linux Driver for passive ISDN cards
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Version 3.5 (module)
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Layer1 Revision 2.46.2.5
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Layer2 Revision 2.30.2.4
+<06>2007 May 30 14:21:40 cbs kern: HiSax: TeiMgr Revision 2.20.2.3
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Layer3 Revision 2.22.2.3
+<06>2007 May 30 14:21:40 cbs kern: HiSax: LinkLayer Revision 2.59.2.4
+<06>2007 May 30 14:21:40 cbs kern: HiSax module removed
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Linux Driver for passive ISDN cards
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Version 3.5 (module)
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Layer1 Revision 2.46.2.5
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Layer2 Revision 2.30.2.4
+<06>2007 May 30 14:21:40 cbs kern: HiSax: TeiMgr Revision 2.20.2.3
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Layer3 Revision 2.22.2.3
+<06>2007 May 30 14:21:40 cbs kern: HiSax: LinkLayer Revision 2.59.2.4
+<07>2007 May 30 14:21:40 cbs kern: HiSax: Total 1 card defined
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Card 1 Protocol EDSS1 Id=isdn0 (0)
+<06>2007 May 30 14:21:40 cbs kern: HiSax: Sedlbauer driver Rev. 1.34.2.6
+<06>2007 May 30 14:21:40 cbs kern: ACPI: PCI Interrupt 0000:01:03.0[A] -> Link [LNKD] -> GSI 11 (level, low) -> IRQ 11
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: PCI subvendor:51 subid 1
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: PCI base adr 0xa800
+<03>2007 May 30 14:21:40 cbs kern: irq 11: nobody cared (try booting with the \"irqpoll\" option)
+<04>2007 May 30 14:21:40 cbs kern: [<c012f243>] __report_bad_irq+0x2b/0x69
+<04>2007 May 30 14:21:40 cbs kern: [<c012f3e7>] note_interrupt+0x166/0x193
+<04>2007 May 30 14:21:40 cbs kern: [<c03089c0>] usb_hcd_irq+0x23/0x4f
+<04>2007 May 30 14:21:40 cbs kern: [<c012ee7c>] handle_IRQ_event+0x21/0x4a
+<04>2007 May 30 14:21:40 cbs kern: [<c012ef0d>] __do_IRQ+0x68/0x8f
+<04>2007 May 30 14:21:40 cbs kern: [<c01050de>] do_IRQ+0x5c/0x77
+<04>2007 May 30 14:21:40 cbs kern: =======================
+<04>2007 May 30 14:21:40 cbs kern: [<c0103ada>] common_interrupt+0x1a/0x20
+<04>2007 May 30 14:21:40 cbs kern: [<c011a87c>] __do_softirq+0x2c/0x7d
+<04>2007 May 30 14:21:40 cbs kern: [<c0105131>] do_softirq+0x38/0x3f
+<04>2007 May 30 14:21:40 cbs kern: =======================
+<04>2007 May 30 14:21:40 cbs kern: [<c01050f0>] do_IRQ+0x6e/0x77
+<04>2007 May 30 14:21:40 cbs kern: [<c0103ada>] common_interrupt+0x1a/0x20
+<04>2007 May 30 14:21:40 cbs kern: [<d894007b>] W6692B_interrupt+0x23c/0x559 [hisax]
+<04>2007 May 30 14:21:40 cbs kern: [<c010b893>] delay_pmtmr+0xb/0x13
+<04>2007 May 30 14:21:40 cbs kern: [<c01b73f5>] __delay+0x9/0xa
+<04>2007 May 30 14:21:40 cbs kern: [<d892f834>] setup_sedlbauer+0x1ee/0x534 [hisax]
+<04>2007 May 30 14:21:40 cbs kern: [<c01175e8>] printk+0x12/0x16
+<04>2007 May 30 14:21:40 cbs kern: [<d890dcdb>] checkcard+0x201/0x566 [hisax]
+<04>2007 May 30 14:21:40 cbs kern: [<d890dd62>] checkcard+0x288/0x566 [hisax]
+<04>2007 May 30 14:21:40 cbs kern: [<d88554dc>] HiSax_init+0x4dc/0x57a [hisax]
+<04>2007 May 30 14:21:40 cbs kern: [<c0159693>] new_inode+0x14/0x76
+<04>2007 May 30 14:21:40 cbs kern: [<c017340c>] sysfs_add_file+0x1f/0x52
+<04>2007 May 30 14:21:40 cbs kern: [<c01275fc>] debug_mutex_add_waiter+0x14/0x24
+<04>2007 May 30 14:21:40 cbs kern: [<c0173995>] sysfs_new_dirent+0x17/0x56
+<04>2007 May 30 14:21:40 cbs kern: [<c012a782>] sys_init_module+0x1364/0x1439
+<04>2007 May 30 14:21:40 cbs kern: [<c013711c>] vma_prio_tree_insert+0x17/0x2a
+<04>2007 May 30 14:21:40 cbs kern: [<c013ac54>] vma_link+0x85/0x8b
+<04>2007 May 30 14:21:40 cbs kern: [<c013c7a4>] do_mmap_pgoff+0x4e7/0x634
+<04>2007 May 30 14:21:40 cbs kern: [<c0106f44>] sys_mmap2+0x61/0x90
+<04>2007 May 30 14:21:40 cbs kern: [<c0102a79>] syscall_call+0x7/0xb
+<03>2007 May 30 14:21:40 cbs kern: handlers:
+<03>2007 May 30 14:21:40 cbs kern: [<c030899d>] (usb_hcd_irq+0x0/0x4f)
+<00>2007 May 30 14:21:40 cbs kern: Disabling IRQ #11
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: defined at 0xa800-0xa900 IRQ 11
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: speed fax+ pyramid detected
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: ISAC version (0): 2086/2186 V1.1
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: resetting card
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: ISAR version 1
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer Speed Fax +: IRQ 11 count 100000
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: resetting card
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer Speed Fax +: IRQ 11 count 100000
+<04>2007 May 30 14:21:40 cbs kern: Sedlbauer Speed Fax +: IRQ(11) getting no interrupts during init 1
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: resetting card
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: resetting card
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer Speed Fax +: IRQ 11 count 100000
+<04>2007 May 30 14:21:40 cbs kern: Sedlbauer Speed Fax +: IRQ(11) getting no interrupts during init 2
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: resetting card
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: resetting card
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer Speed Fax +: IRQ 11 count 100000
+<04>2007 May 30 14:21:40 cbs kern: Sedlbauer Speed Fax +: IRQ(11) getting no interrupts during init 3
+<06>2007 May 30 14:21:40 cbs kern: Sedlbauer: resetting card
+<04>2007 May 30 14:21:40 cbs kern: HiSax: Card Sedlbauer Speed Fax + not installed !
+==========================================================================
+
+While the output seems to suggest a hardware problem, the same system 
+loads the hisax driver perfectly on recent 2.4 kernels.
+
+We tried several kernel versions, up to 2.6.21.3
+
+Any hints are appreciated :)
+
+Best,
+      Thomas
 
 -- 
-
--Stephane
+ Thomas Vögtle    email: thomas@voegtle-clan.de
+ ----- http://www.voegtle-clan.de/thomas ------
+--425052808-622072900-1180619078=:9151--
