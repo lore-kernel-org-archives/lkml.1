@@ -1,106 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbXEaUkC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbXEaUkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753119AbXEaUkC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:40:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXEaUjx
+	id S1756130AbXEaUkg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXEaUk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:39:53 -0400
-Received: from smtp6-g19.free.fr ([212.27.42.36]:37573 "EHLO smtp6-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750904AbXEaUjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:39:52 -0400
-Message-ID: <465F3361.106@free.fr>
-Date: Thu, 31 May 2007 22:43:13 +0200
-From: Thierry Merle <thierry.merle@free.fr>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-References: <2172422218943432279@wsc.cz>	 <1180364420.21547.160.camel@localhost>	 <d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>	 <1180378677.21547.189.camel@localhost>	 <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>	 <1180383071.21547.230.camel@localhost> <465B49EB.4080204@free.fr>	 <465BBAFB.30906@free.fr> <1180448712.21547.314.camel@localhost>	 <465C7920.2080203@free.fr> <1180467116.9509.73.camel@localhost>
-In-Reply-To: <1180467116.9509.73.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 31 May 2007 16:40:26 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:62691 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbXEaUkY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:40:24 -0400
+Date: Thu, 31 May 2007 13:39:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Herbert van den Bergh <Herbert.van.den.Bergh@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: include private data mappings in RLIMIT_DATA limit
+Message-Id: <20070531133917.a5338876.randy.dunlap@oracle.com>
+In-Reply-To: <465F2554.2030104@oracle.com>
+References: <465F2554.2030104@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 31 May 2007 12:43:16 -0700 Herbert van den Bergh wrote:
 
+> Below is a patch I would like to submit for limiting process private 
+> memory allocations via setrlimit(RLIMIT_DATA).
+> 
+> Thanks,
+> Herbert van den Bergh.
+> 
+> 
+> This patch changes how the kernel limits memory allocations that are
+> controlled by setrlimit() using the RLIMIT_DATA resource.  Currently the
+> kernel can limit the size of a process data, bss, and heap, but does not
+> limit the amount of process private memory that can be allocated with
+> the mmap() call.  Since malloc() calls mmap() to allocate process memory
+> once brk() calls can no longer grow the heap, process private memory
+> allocations cannot be limited with RLIMIT_DATA.
+> 
+> With this patch, not only memory in the data segment of a process, but
+> also private data mappings, both file-based and anonymous, are counted
+> toward the RLIMIT_DATA resource limit.  Executable mappings, such as
+> text segments of shared objects, are not counted toward the private data
+> limit.  The result is that malloc() will fail once the combined size of
+> the data segment and private data mappings reaches this limit.
+> 
+> This brings the Linux behavior in line with what is documented in the
+> POSIX man page for setrlimit(3p).
+> 
+> Signed-off-by: Herbert van den Bergh (herbert.van.den.bergh@oracle.com)
+> Signed-off-by: Dave McCracken (dave.mccracken@oracle.com)
+> 
 
-Mauro Carvalho Chehab a écrit :
-> Em Ter, 2007-05-29 às 21:04 +0200, Thierry Merle escreveu:
->   
->> Mauro Carvalho Chehab a écrit :
->>     
->>>   
->>>   
->>>       
->>>>> Hi Mauro and Markus,
->>>>> Just to summ up what I understood we need:
->>>>>
->>>>> What do we need in userspace, only for v4l (dvb is not concerned):
->>>>> - colorspace translations
->>>>> - filters that be done in hardware if the selected hardware can, 
->>>>> otherwise software plugin
->>>>> - decompression algorithm like stk11xx or usbvision (the decompression 
->>>>> algorithm is in kernelspace since it is of linear complexity but shall 
->>>>> be moved to userspace)
->>>>>       
->>>>>           
->>> Yes. The first focus, IMO, should be the last one.
->>>
->>>   
->>>       
->> OK, so we must open the V4L2 API to add a custom pixel format.
->>     
-> I don't think we need to change the API. The API already exports the
-> format, as a fourcc-like info. We just need to add newer codes as
-> they'll be added into kernel.
->
->   
->> While brainstorming, I thought it would be funny to create userspace 
->> drivers like FUSE based projects do.
->> Applications would see nothing but a new device driver to access, all 
->> decompression algorithm would be in userspace.
->> The path from the application to the v4l2 kernel driver:
->> [Application]<->[/mnt/video0 (created by FUSE-like userspace 
->> lib)]<->[/dev/video0 (created by kernel v4l2 driver)]
->> There are limitations that I don't know, but this would be transparent 
->> for the applications.
->>     
->
-> This seems to be an interesting approach.
->
->   
-Interesting but impossible to do for ioctl calls.
-When the application does a ioctl(fd_of_mnt_video0,VIDIOC_G_FMT,&arg) 
-for example, there is no way for the userspace helper to catch this ioctl.
-The application could only open/read from the userspace helper's file 
-/mnt/video0.
-ioctl would still have to be done on the kernel device driver.
-I thought also about a /proc interface for decompression algorithms (a 
-helper would listen on a /proc file and write on another /proc file) but 
-/proc is not designed for that kind of thing.
-A separate library seems to be the simplest solution.
->>> Yes, it is possible. In fact, some devices currently work by generating
->>> a common audio and video stream. The driver may just send the packet
->>> as-is, leaving to the userspace API the function to de-merge and
->>> synchronize audio and video.
->>>   
->>>       
->> So we have a userspace lib that will demux/uncompress device driver output.
->> This lib will know each device driver particularities to know how to 
->> demux/uncompress in a a/v format that will be understood by the application.
->>     
->
-> Yes. However, we should try to do loose coupling whenever possible, to
-> keep maintainership of the "library"(*) as simple as possible.
->
-> (*) With this approach, it seems that it will turn into a helper daemon,
-> instead of just a library.
->
-> Cheers,
-> Mauro
->
->   
+Howdy,
+
+The patch seems to have all tabs converted to spaces.
+This could be caused by thunderbird or by copy-and-pasting.
+
+Tbird needs help for sending patches without munging them.
+See http://mbligh.org/linuxdocs/Email/Clients/Thunderbird
+or google for "external editor" and use that with a decent
+text editor.
+
+Maybe it doesn't matter for this patch, but in general you
+should send patches made against the latest mainline kernel,
+such as 2.6.22-rc3 or 2.6.22-rc3-git4 or current git tree.
+
+There are a few lines that are > 80 characters.  Please try
+to avoid that.
+
+ ----------------------------------------------------------------------------------
+> --- linux-2.6.21/fs/proc/task_mmu.c.orig        2007-05-29 21:05:31.000000000 -0700
+> +++ linux-2.6.21/fs/proc/task_mmu.c     2007-05-30 08:17:44.000000000 -0700
+> @@ -31,7 +31,7 @@
+>         if (hiwater_rss < mm->hiwater_rss)
+>                 hiwater_rss = mm->hiwater_rss;
+> 
+> -       data = mm->total_vm - mm->shared_vm - mm->stack_vm;
+> +       data = mm->total_vm - mm->shared_vm - mm->stack_vm - mm->exec_vm;
+>         text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK)) >> 10;
+>         lib = (mm->exec_vm << (PAGE_SHIFT-10)) - text;
+>         buffer += sprintf(buffer,
+> --- linux-2.6.21/mm/mprotect.c.orig     2007-04-25 20:08:32.000000000 -0700
+> +++ linux-2.6.21/mm/mprotect.c  2007-05-30 08:34:36.000000000 -0700
+> @@ -162,6 +162,21 @@
+>                 }
+>         }
+> 
+> +        /*
+> +        * Check against private data size limit. When execute permission
+> +        * is removed, the mapping is counted toward the private data size.
+> +        */
+> +       if (!(newflags & VM_EXEC) && (vma->vm_flags & VM_EXEC)) {
+> +               unsigned long rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+> +               if (rlim < RLIM_INFINITY) {
+> +                       unsigned long priv_vm;
+> +                       priv_vm = mm->total_vm - mm->shared_vm - mm->exec_vm;
+> +                       priv_vm <<= PAGE_SHIFT;
+> +                       if (priv_vm + (end - start) > rlim)
+> +                               return -ENOMEM;
+> +               }
+> +        }
+> +
+>         /*
+>          * First try to merge with previous and/or next vma.
+>          */
+> --- linux-2.6.21/mm/mremap.c.orig       2007-04-25 20:08:32.000000000 -0700
+> +++ linux-2.6.21/mm/mremap.c    2007-05-30 08:38:28.000000000 -0700
+> @@ -343,6 +343,22 @@
+>                 goto out;
+>         }
+> 
+> +        /*
+> +        * Check against private data size limit. Count memory allocations
+> +        * which are not shared and not executable code as private data.
+> +        */
+> +       if (!(vma->vm_flags & (VM_EXEC|VM_SHARED))) {
+> +               unsigned long rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+> +               if (rlim < RLIM_INFINITY) {
+> +                       unsigned long priv_vm;
+> +                       struct mm_struct *mm = current->mm;
+> +                       priv_vm = mm->total_vm - mm->shared_vm - mm->exec_vm;
+> +                       priv_vm <<= PAGE_SHIFT;
+> +                       if (priv_vm + (new_len - old_len) > rlim)
+> +                               goto out;
+> +               }
+> +        }
+> +
+>         if (vma->vm_flags & VM_ACCOUNT) {
+>                 charged = (new_len - old_len) >> PAGE_SHIFT;
+>                 if (security_vm_enough_memory(charged))
+> --- linux-2.6.21/mm/mmap.c.orig 2007-05-29 21:05:58.000000000 -0700
+> +++ linux-2.6.21/mm/mmap.c      2007-05-30 08:27:55.000000000 -0700
+> @@ -245,16 +245,6 @@
+>         if (brk < mm->end_code)
+>                 goto out;
+> 
+> -       /*
+> -        * Check against rlimit here. If this check is done later after the test
+> -        * of oldbrk with newbrk then it can escape the test and let the data
+> -        * segment grow beyond its set limit the in case where the limit is
+> -        * not page aligned -Ram Gupta
+> -        */
+> -       rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+> -       if (rlim < RLIM_INFINITY && brk - mm->start_data > rlim)
+> -               goto out;
+> -
+>         newbrk = PAGE_ALIGN(brk);
+>         oldbrk = PAGE_ALIGN(mm->brk);
+>         if (oldbrk == newbrk)
+> @@ -267,6 +257,18 @@
+>                 goto out;
+>         }
+> 
+> +        /*
+> +        * Check against private data size limit. Count memory allocations
+> +        * which are not shared and not executable code as private data.
+> +        */
+> +        rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+> +        if (rlim < RLIM_INFINITY) {
+> +            unsigned long priv_vm;
+> +            priv_vm = (mm->total_vm - mm->shared_vm - mm->exec_vm) << PAGE_SHIFT;
+> +            if (priv_vm + (newbrk-oldbrk) > rlim)
+> +                goto out;
+> +        }
+> +
+>         /* Check against existing mmap mappings. */
+>         if (find_vma_intersection(mm, oldbrk, newbrk+PAGE_SIZE))
+>                 goto out;
+> @@ -875,7 +877,8 @@
+>                 = VM_STACK_FLAGS & (VM_GROWSUP|VM_GROWSDOWN);
+> 
+>         if (file) {
+> -               mm->shared_vm += pages;
+> +               if (flags & VM_SHARED)
+> +                       mm->shared_vm += pages;
+>                 if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
+>                         mm->exec_vm += pages;
+>         } else if (flags & stack_flags)
+> @@ -1041,6 +1044,20 @@
+>         if (!may_expand_vm(mm, len >> PAGE_SHIFT))
+>                 return -ENOMEM;
+> 
+> +        /*
+> +        * Check against private data size limit. Count memory allocations
+> +        * which are not shared and not executable code as private data.
+> +        */
+> +       if (!(vm_flags & (VM_SHARED|VM_EXEC))) {
+> +            unsigned long rlim, priv_vm;
+> +            rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+> +           if (rlim < RLIM_INFINITY) {
+> +                priv_vm = (mm->total_vm - mm->shared_vm - mm->exec_vm) << PAGE_SHIFT;
+> +                if (priv_vm + len > rlim)
+> +                   return -ENOMEM;
+> +            }
+> +        }
+> +
+>         if (accountable && (!(flags & MAP_NORESERVE) ||
+>                             sysctl_overcommit_memory == OVERCOMMIT_NEVER)) {
+>                 if (vm_flags & VM_SHARED) {
+> 
+> 
+> -
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
