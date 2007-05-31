@@ -1,176 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759895AbXEaDsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759528AbXEaDvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759895AbXEaDsg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 23:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757076AbXEaDs0
+	id S1759528AbXEaDvj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 23:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbXEaDvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 23:48:26 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:31134 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756067AbXEaDsZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 23:48:25 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 4/5 RESEND] cxgb3 - Stop mac RX when changing MTU
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Wed, 30 May 2007 20:48:21 -0700
-Message-ID: <20070531034820.5825.42160.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 23:51:32 -0400
+Received: from mga01.intel.com ([192.55.52.88]:39510 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755601AbXEaDvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 23:51:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,596,1170662400"; 
+   d="scan'208";a="251512923"
+Date: Thu, 31 May 2007 11:51:12 +0800
+From: Wang Zhenyu <zhenyu.z.wang@intel.com>
+To: Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Keith Packard <keithp@keithp.com>, Eric Anholt <eric@anholt.net>
+Subject: [AGPGART] intel_agp: add support for 945GME
+Message-ID: <20070531035112.GC25433@zhen-devel.sh.intel.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Keith Packard <keithp@keithp.com>, Eric Anholt <eric@anholt.net>
+References: <20070531033406.GB25433@zhen-devel.sh.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070531033406.GB25433@zhen-devel.sh.intel.com>
+User-Agent: Mutt/1.4.2.1i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
 
-Rx traffic needs to be halted when the MTU is changed
-to avoid a potential chip hang.
-Reset/restore MAC filters around a MTU change.
-Also fix the pause frames high materwark setting.
+[AGPGART] intel_agp: add support for 945GME
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
+Add pci id info for 945GME.
+
+Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
 ---
+ drivers/char/agp/intel-agp.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
- drivers/net/cxgb3/regs.h  |    4 +++
- drivers/net/cxgb3/xgmac.c |   70 +++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 67 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/cxgb3/regs.h b/drivers/net/cxgb3/regs.h
-index bf9d6be..020859c 100644
---- a/drivers/net/cxgb3/regs.h
-+++ b/drivers/net/cxgb3/regs.h
-@@ -1882,6 +1882,10 @@
- #define V_COPYALLFRAMES(x) ((x) << S_COPYALLFRAMES)
- #define F_COPYALLFRAMES    V_COPYALLFRAMES(1U)
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index 5c1bffe..3c4a1c2 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -21,6 +21,7 @@
+ #define PCI_DEVICE_ID_INTEL_82965GM_HB      0x2A00
+ #define PCI_DEVICE_ID_INTEL_82965GM_IG      0x2A02
+ #define PCI_DEVICE_ID_INTEL_82965GME_IG     0x2A12
++#define PCI_DEVICE_ID_INTEL_82945GME_IG     0x27AE
  
-+#define S_DISBCAST    1
-+#define V_DISBCAST(x) ((x) << S_DISBCAST)
-+#define F_DISBCAST    V_DISBCAST(1U)
-+
- #define A_XGM_RX_HASH_LOW 0x814
- 
- #define A_XGM_RX_HASH_HIGH 0x818
-diff --git a/drivers/net/cxgb3/xgmac.c b/drivers/net/cxgb3/xgmac.c
-index a506792..cbc3f04 100644
---- a/drivers/net/cxgb3/xgmac.c
-+++ b/drivers/net/cxgb3/xgmac.c
-@@ -231,6 +231,28 @@ int t3_mac_set_num_ucast(struct cmac *ma
- 	return 0;
- }
- 
-+static void disable_exact_filters(struct cmac *mac)
-+{
-+	unsigned int i, reg = mac->offset + A_XGM_RX_EXACT_MATCH_LOW_1;
-+
-+	for (i = 0; i < EXACT_ADDR_FILTERS; i++, reg += 8) {
-+		u32 v = t3_read_reg(mac->adapter, reg);
-+		t3_write_reg(mac->adapter, reg, v);
-+	}
-+	t3_read_reg(mac->adapter, A_XGM_RX_EXACT_MATCH_LOW_1);	/* flush */
-+}
-+
-+static void enable_exact_filters(struct cmac *mac)
-+{
-+	unsigned int i, reg = mac->offset + A_XGM_RX_EXACT_MATCH_HIGH_1;
-+
-+	for (i = 0; i < EXACT_ADDR_FILTERS; i++, reg += 8) {
-+		u32 v = t3_read_reg(mac->adapter, reg);
-+		t3_write_reg(mac->adapter, reg, v);
-+	}
-+	t3_read_reg(mac->adapter, A_XGM_RX_EXACT_MATCH_LOW_1);	/* flush */
-+}
-+
- /* Calculate the RX hash filter index of an Ethernet address */
- static int hash_hw_addr(const u8 * addr)
- {
-@@ -281,6 +303,14 @@ int t3_mac_set_rx_mode(struct cmac *mac,
- 	return 0;
- }
- 
-+static int rx_fifo_hwm(int mtu)
-+{
-+	int hwm;
-+
-+	hwm = max(MAC_RXFIFO_SIZE - 3 * mtu, (MAC_RXFIFO_SIZE * 38) / 100);
-+	return min(hwm, MAC_RXFIFO_SIZE - 8192);
-+}
-+
- int t3_mac_set_mtu(struct cmac *mac, unsigned int mtu)
- {
- 	int hwm, lwm;
-@@ -294,23 +324,41 @@ int t3_mac_set_mtu(struct cmac *mac, uns
- 	mtu += 14;
- 	if (mtu > MAX_FRAME_SIZE - 4)
- 		return -EINVAL;
--	t3_write_reg(adap, A_XGM_RX_MAX_PKT_SIZE + mac->offset, mtu);
-+
-+	if (adap->params.rev == T3_REV_B2 &&
-+	    (t3_read_reg(adap, A_XGM_RX_CTRL + mac->offset) & F_RXEN)) {
-+		disable_exact_filters(mac);
-+		v = t3_read_reg(adap, A_XGM_RX_CFG + mac->offset);
-+		t3_set_reg_field(adap, A_XGM_RX_CFG + mac->offset,
-+				 F_ENHASHMCAST | F_COPYALLFRAMES, F_DISBCAST);
-+
-+		/* drain rx FIFO */
-+		if (t3_wait_op_done(adap,
-+				    A_XGM_RX_MAX_PKT_SIZE_ERR_CNT + mac->offset,
-+				    1 << 31, 1, 20, 5)) {
-+			t3_write_reg(adap, A_XGM_RX_CFG + mac->offset, v);
-+			enable_exact_filters(mac);
-+			return -EIO;
-+		}
-+		t3_write_reg(adap, A_XGM_RX_MAX_PKT_SIZE + mac->offset, mtu);
-+		t3_write_reg(adap, A_XGM_RX_CFG + mac->offset, v);
-+		enable_exact_filters(mac);
-+	} else
-+		t3_write_reg(adap, A_XGM_RX_MAX_PKT_SIZE + mac->offset, mtu);
- 
- 	/*
- 	 * Adjust the PAUSE frame watermarks.  We always set the LWM, and the
- 	 * HWM only if flow-control is enabled.
- 	 */
--	hwm = max_t(unsigned int, MAC_RXFIFO_SIZE - 3 * mtu, 
--		    MAC_RXFIFO_SIZE * 38 / 100);
--	hwm = min(hwm, MAC_RXFIFO_SIZE - 8192);
--	lwm = min(3 * (int)mtu, MAC_RXFIFO_SIZE / 4);
--
-+	hwm = rx_fifo_hwm(mtu);
-+	lwm = min(3 * (int) mtu, MAC_RXFIFO_SIZE /4);
- 	v = t3_read_reg(adap, A_XGM_RXFIFO_CFG + mac->offset);
- 	v &= ~V_RXFIFOPAUSELWM(M_RXFIFOPAUSELWM);
- 	v |= V_RXFIFOPAUSELWM(lwm / 8);
- 	if (G_RXFIFOPAUSEHWM(v))
- 		v = (v & ~V_RXFIFOPAUSEHWM(M_RXFIFOPAUSEHWM)) |
- 		    V_RXFIFOPAUSEHWM(hwm / 8);
-+
- 	t3_write_reg(adap, A_XGM_RXFIFO_CFG + mac->offset, v);
- 
- 	/* Adjust the TX FIFO threshold based on the MTU */
-@@ -329,7 +377,6 @@ int t3_mac_set_mtu(struct cmac *mac, uns
- 			     (hwm - lwm) * 4 / 8);
- 	t3_write_reg(adap, A_XGM_TX_PAUSE_QUANTA + mac->offset,
- 		     MAC_RXFIFO_SIZE * 4 * 8 / 512);
--
- 	return 0;
- }
- 
-@@ -357,6 +404,15 @@ int t3_mac_set_speed_duplex_fc(struct cm
- 				 V_PORTSPEED(M_PORTSPEED), val);
- 	}
- 
-+	val = t3_read_reg(adap, A_XGM_RXFIFO_CFG + oft);
-+	val &= ~V_RXFIFOPAUSEHWM(M_RXFIFOPAUSEHWM);
-+	if (fc & PAUSE_TX)
-+		val |= V_RXFIFOPAUSEHWM(rx_fifo_hwm(
-+						t3_read_reg(adap,
-+						A_XGM_RX_MAX_PKT_SIZE
-+						+ oft)) / 8);
-+	t3_write_reg(adap, A_XGM_RXFIFO_CFG + oft, val);
-+
- 	t3_set_reg_field(adap, A_XGM_TX_CFG + oft, F_TXPAUSEEN,
- 			 (fc & PAUSE_RX) ? F_TXPAUSEEN : 0);
- 	return 0;
-
+ #define IS_I965 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82946GZ_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_1_HB || \
+@@ -1782,6 +1783,8 @@ static const struct intel_driver_description {
+ 		&intel_845_driver, &intel_915_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, "945GM",
+ 		&intel_845_driver, &intel_915_driver },
++	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GME_IG, "945GME",
++		&intel_845_driver, &intel_915_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82946GZ_HB, PCI_DEVICE_ID_INTEL_82946GZ_IG, "946GZ",
+ 		&intel_845_driver, &intel_i965_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82965G_1_HB, PCI_DEVICE_ID_INTEL_82965G_1_IG, "965G",
+-- 
+1.4.4.4
