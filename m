@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbXEaILO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbXEaIPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758842AbXEaILO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 04:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXEaILD
+	id S1755965AbXEaIPa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 04:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXEaIPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 04:11:03 -0400
-Received: from styx.suse.cz ([82.119.242.94]:51311 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753044AbXEaILB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 04:11:01 -0400
-Message-ID: <465E8313.20309@suse.cz>
-Date: Thu, 31 May 2007 10:10:59 +0200
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.2) Gecko/20061107 SUSE/1.1.1-0.2 SeaMonkey/1.1.1
+	Thu, 31 May 2007 04:15:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:52845 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbXEaIPO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 04:15:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=B5RKmJhTdsiYSnecfDUD2nWI/nJhyoT6cyq+aVIoSxzsMmFfCg2fgKZn4AJHQeQXMclrj6iM6Xw2l01V3YyCrGZYDwZiC9DBxq+nYQoDS69iMtdQhKyPu4Ydu+eOK7QNNXvhCOKS0wc0g0lLsGlCcC28t08a2QzBOpR0A8P73jU=
+Message-ID: <787b0d920705310115n13b4dd3bk59e1072dea147724@mail.gmail.com>
+Date: Thu, 31 May 2007 04:15:12 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       jeff@garzik.org, zach.brown@oracle.com, arjan@infradead.org,
+       hch@infradead.org, drepper@redhat.com, akpm@zip.com.au,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Chris Wedgwood <cw@f00f.org>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] Fix XFS_IOC_FSGEOMETRY_V1 in compat mode
-References: <20070530125954.706423971@suse.cz> <20070530143043.216024061@suse.cz> <20070530170530.GA4197@tuatara.stupidest.org> <200705302348.54259.arnd@arndb.de>
-In-Reply-To: <200705302348.54259.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Wednesday 30 May 2007, Chris Wedgwood wrote:
->> On Wed, May 30, 2007 at 02:59:55PM +0200, Michal Marek wrote:
->>
->>> +typedef struct xfs_fsop_geom_v132 {
->> wouldn't xfs_fsop_geom_v1_32
-...
->> and xfs_fsop_geom_v1_32_t
->>                     ^
->>
->> read better there?
-> 
-> Actually, the current convention would be struct compat_xfs_fsop_geom_v1
-> and compat_xfs_fsop_geom_v1_t.
+Ingo Molnar writes:
 
-I see. I'll change it to struct compat_xfs_*.
+> looking over the list of our new generic APIs (see further below) i
+> think there are three important things that are needed for an API to
+> become widely used:
+>
+>  1) it should solve a real problem (ha ;-), it should be intuitive to
+>     humans and it should fit into existing things naturally.
+>
+>  2) it should be ubiquitous. (if it's about IO it should cover block IO,
+>     network IO, timers, signals and everything) Even if it might look
+>     silly in some of the cases, having complete, utter, no compromises,
+>     100% coverage for everything massively helps the uptake of an API,
+>     because it allows the user-space coder to pick just one paradigm
+>     that is closest to his application and stick to it and only to it.
+>
+>  3) it should be end-to-end supported by glibc.
 
-Michal
+4) At least slightly portable.
+
+Anything supported by any similar OS is already ahead, even if it
+isn't the perfect API of our dreams. This means kqueue and doors.
+
+If it's not on any BSD or UNIX, then most app developers won't
+touch it. Worse yet, it won't appear in programming books, so even
+the Linux-only app programmers won't know about it.
+
+Running ideas by the FreeBSD and OpenSolaris developers wouldn't
+be a bad idea. Agreement leads to standardization, which leads to
+interfaces getting used.
+
+BTW, wrapper libraries that bury the new API under a layer of
+gunk are not helpful. One might as well just use the old API.
