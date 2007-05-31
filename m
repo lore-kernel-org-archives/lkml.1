@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbXEaTxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbXEaTxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759034AbXEaTxZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 15:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760978AbXEaTxE
+	id S1761575AbXEaTxj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 15:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761152AbXEaTxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 15:53:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49780 "EHLO ogre.sisk.pl"
+	Thu, 31 May 2007 15:53:09 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:51469 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760855AbXEaTxD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 15:53:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: 2.6.22-rc3-mm1
-Date: Thu, 31 May 2007 21:58:25 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
-References: <20070530235823.793f00d9.akpm@linux-foundation.org> <465EE9F2.8080905@googlemail.com>
-In-Reply-To: <465EE9F2.8080905@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	id S1761054AbXEaTxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 15:53:07 -0400
+Date: Thu, 31 May 2007 21:54:07 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Christoph Lameter <clameter@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: BUG: sleeping function called from invalid context at kernel/fork.c:385
+Message-ID: <20070531195407.GA27203@uranus.ravnborg.org>
+References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com> <465EE7BB.4050605@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705312158.26560.rjw@sisk.pl>
+In-Reply-To: <465EE7BB.4050605@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 31 May 2007 17:29, Michal Piotrowski wrote:
-> Hi,
+On Thu, May 31, 2007 at 11:20:27AM -0400, Prarit Bhargava wrote:
 > 
-> Andrew Morton napisał(a):
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc3/2.6.22-rc3-mm1/
-> > 
 > 
-> FYI suspend to disk doesn't work anymore on my box, system hangs after "Suspending console(s)" message.
+> Christoph Lameter wrote:
+> >On Wed, 30 May 2007, Luck, Tony wrote:
+> >
+> >  
+> >>>Ahh okay. cscope will do that too.... But all have __exit.
+> >>>      
+> >>The trick is that one of them *shouldn't* have __exit.  With cscope
+> >>you'll have to use the "Find functions calling this function:"
+> >>mode to try and find the __init function that is calling an
+> >>__exit function.
+> >>    
+> >
+> >Urgh... Does it have to be that difficult?
+> >-
+> >  
 > 
-> [  186.297753] Shrinking memory...  -\|/-\|done (113064 pages freed)
-> [  187.841914] Freed 452256 kbytes in 1.54 seconds (293.67 MB/s)
-> [  187.847730] Suspending console(s)
 > 
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc3-mm1/console.log
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc3-mm1/mm-config
+> Sometimes yes ... but in this case no.
+> 
+> I flipped config options on and off until I tracked the problem down 
+> into the loopback driver, and then manually ran modpost on 
+> drivers/block/built-in.o to reveal:
+> 
+> ....Nothing. 
+> 
+> Something is borken in modpost because I found a bug in the loopback 
+> code which is a _REAL_ bug.
 
-Hmm, that might be a couple of things, actually.
+In the initial version of the section mismatch check code
+I ignored references to .exit.text from .init.text code.
+Today I do not see why this should be allowed.
+So unless an allmodconfig build for i386 + maybe a few more archs
+does not show any significant regressions I will enable this check.
 
-To see if the patches directly related to hibernation/suspend cause this, can
-you please test 2.6.22-rc3 with the patch series at
+My initial i386 allmodconfig build pointed out a number of places
+where this happened (I lost the warnings and are doing a rebuild now)A
+.
+One such place is microcode.c where we has
 
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/
+static int __init microcode_init (void)
+{
+	...
 
-applied?
+	if (IS_ERR(microcode_pdev)) {
+		microcode_dev_exit();
+		return PTR_ERR(microcode_pdev);
+	}
 
-Greetings,
-Rafael
+And:
+static void __exit microcode_dev_exit (void)
+{
+	misc_deregister(&microcode_dev);
+}
+
+I assume this is a real bug that we have not triggered
+during testing becasue this is in an error-path.
+
+The linker will not error out because .exit.text are discarded
+at run-time at least for i386.
+
+	Sam
