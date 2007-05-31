@@ -1,128 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760894AbXEaKvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761007AbXEaKya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760894AbXEaKvz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 06:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758742AbXEaKvs
+	id S1761007AbXEaKya (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 06:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbXEaKyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 06:51:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38512 "EHLO mx3.mail.elte.hu"
+	Thu, 31 May 2007 06:54:23 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9344 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758694AbXEaKvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 06:51:47 -0400
-Date: Thu, 31 May 2007 12:50:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	id S1758691AbXEaKyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 06:54:23 -0400
+Date: Thu, 31 May 2007 12:53:22 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
 To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070531105048.GA19796@elte.hu>
-References: <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org> <465DE992.6070803@redhat.com> <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org> <Pine.LNX.4.64.0705301443340.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301457350.26602@woody.linux-foundation.org> <20070531061303.GA4436@elte.hu> <20070531090252.GA29817@elte.hu> <20070531124129.31c14ddd.dada1@cosmosbay.com>
+Cc: linux-kernel@vger.kernel.org, cotte@de.ibm.com, hugh@veritas.com,
+       neilb@suse.de, zanussi@us.ibm.com, Linus Torvalds <torvalds@osdl.org>,
+       hch@infradead.org
+Subject: Re: [PATCH] sendfile removal
+Message-ID: <20070531105321.GQ32105@kernel.dk>
+References: <20070531103316.GO32105@kernel.dk> <20070531124753.a99f713c.dada1@cosmosbay.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070531124129.31c14ddd.dada1@cosmosbay.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070531124753.a99f713c.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Eric Dumazet <dada1@cosmosbay.com> wrote:
-
-> I tried your bench and found two problems :
-> - You scan half of the bitmap
-[...]
-> Try to close not a 'middle fd', but a really low one (10 for example), 
-> and latencie is doubled.
-
-that was intentional. I really didnt want to fabricate a worst-case 
-result but something more representative: in real apps the bitmap isnt 
-fully filled all the time and most of the find-bit sequences are short. 
-Hence the two fds and one of them goes from the middle of the range.
-
-> - You incorrectlty divide best_delta and worst_delta by LOOPS (5)
-
-ah, indeed, that's a bug - victim of a last minute edit :) Since the 
-divident is constant it doesnt really matter to the validity of the 
-relative nature of the slowdown (which is what i was intested in), but 
-you are right - i have fixed the download and have redone the numbers. 
-Here are the correct results from my box:
-
- # ./fd-scale-bench 1000000 0
- checking the cache-hot performance of open()-ing 1000000 fds.
- num_fds: 1, best cost: 6.00 us, worst cost: 8.00 us
- num_fds: 2, best cost: 6.00 us, worst cost: 7.00 us
- ...
- num_fds: 31586, best cost: 7.00 us, worst cost: 8.00 us
- num_fds: 39483, best cost: 8.00 us, worst cost: 8.00 us
- num_fds: 49354, best cost: 7.00 us, worst cost: 9.00 us
- num_fds: 61693, best cost: 8.00 us, worst cost: 10.00 us
- num_fds: 77117, best cost: 8.00 us, worst cost: 13.00 us
- num_fds: 96397, best cost: 9.00 us, worst cost: 11.00 us
- num_fds: 120497, best cost: 10.00 us, worst cost: 14.00 us
- num_fds: 150622, best cost: 11.00 us, worst cost: 13.00 us
- num_fds: 188278, best cost: 12.00 us, worst cost: 15.00 us
- num_fds: 235348, best cost: 14.00 us, worst cost: 20.00 us
- num_fds: 294186, best cost: 16.00 us, worst cost: 22.00 us
- num_fds: 367733, best cost: 19.00 us, worst cost: 35.00 us
- num_fds: 459667, best cost: 22.00 us, worst cost: 37.00 us
- num_fds: 574584, best cost: 26.00 us, worst cost: 40.00 us
- num_fds: 718231, best cost: 31.00 us, worst cost: 62.00 us
- num_fds: 897789, best cost: 37.00 us, worst cost: 54.00 us
- num_fds: 1000000, best cost: 41.00 us, worst cost: 59.00 us
-
-and cache-cold:
-
- # ./fd-scale-bench 1000000 1
- checking the cache-cold performance of open()-ing 1000000 fds.
- num_fds: 1, best cost: 24.00 us, worst cost: 32.00 us
- ...
- num_fds: 49354, best cost: 26.00 us, worst cost: 28.00 us
- num_fds: 61693, best cost: 25.00 us, worst cost: 30.00 us
- num_fds: 77117, best cost: 27.00 us, worst cost: 30.00 us
- num_fds: 96397, best cost: 27.00 us, worst cost: 31.00 us
- num_fds: 120497, best cost: 31.00 us, worst cost: 43.00 us
- num_fds: 150622, best cost: 31.00 us, worst cost: 34.00 us
- num_fds: 188278, best cost: 33.00 us, worst cost: 36.00 us
- num_fds: 235348, best cost: 35.00 us, worst cost: 42.00 us
- num_fds: 294186, best cost: 36.00 us, worst cost: 41.00 us
- num_fds: 367733, best cost: 40.00 us, worst cost: 43.00 us
- num_fds: 459667, best cost: 44.00 us, worst cost: 46.00 us
- num_fds: 574584, best cost: 48.00 us, worst cost: 65.00 us
- num_fds: 718231, best cost: 54.00 us, worst cost: 59.00 us
- num_fds: 897789, best cost: 60.00 us, worst cost: 62.00 us
- num_fds: 1000000, best cost: 65.00 us, worst cost: 68.00 us
-
-> with a corrected bench; cache-cold numbers are > 100 us on this Intel 
-> Pentium-M
+On Thu, May 31 2007, Eric Dumazet wrote:
+> On Thu, 31 May 2007 12:33:16 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> num_fds: 1000000, best cost: 120.00 us, worst cost: 131.00 us
+> > Hi,
+> > 
+> > This patch removes the ->sendfile() hook from the file_operations
+> > structure, and replaces the sys_sendfile() mechanism to be based on
+> > ->splice_read() instead. There should be no functional changes.
+> > 
+>   
+> > -	retval = in_file->f_op->sendfile(in_file, ppos, count, file_send_actor, out_file);
+> > +	fl = 0;
+> > +	if (in_file->f_flags & O_NONBLOCK)
+> > +		fl = SPLICE_F_NONBLOCK;
+> > +
+> > +	retval = do_splice_direct(in_file, ppos, out_file, count, fl);
 > 
-> On an Opteron x86_64 machine, results are better :)
+> I like this, but are you sure it wont break user land ?
 > 
-> num_fds: 1000000, best cost: 28.00 us, worst cost: 106.00 us
+> Some applications might react badly if sendfile() returns EAGAIN ?
 
-yeah. I quoted the full range because i was really more interested of 
-our current 'limit' range (which is somewhere between 50K and 100K open 
-fds) where the scanning cost becomes directly measurable, and the nature 
-of slowdown.
+Yeah, I didn't actually intend for that to sneak in. I'd think that
+userspace should handle it if they opened the file O_NONBLOCK (or used
+fcntl()), but it's a change in behaviour none the less and probably not
+a good idea.
 
-	Ingo
+Encourage those people to use splice() instead :-)
+
+-- 
+Jens Axboe
+
