@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbXEaLBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760403AbXEaLFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760920AbXEaLBt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 07:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759059AbXEaLBm
+	id S1760403AbXEaLFF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 07:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbXEaLE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 07:01:42 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:60819 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758842AbXEaLBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 07:01:41 -0400
-Date: Thu, 31 May 2007 20:00:37 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.22-rc4
-Message-ID: <20070531110037.GA4167@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+	Thu, 31 May 2007 07:04:56 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:26745 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754166AbXEaLEz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 07:04:55 -0400
+Message-ID: <465EABD2.9090102@de.ibm.com>
+Date: Thu, 31 May 2007 13:04:50 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070521)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, hugh@veritas.com, neilb@suse.de,
+       zanussi@us.ibm.com, Linus Torvalds <torvalds@osdl.org>,
+       hch@infradead.org
+Subject: Re: [PATCH] sendfile removal
+References: <20070531103316.GO32105@kernel.dk>
+In-Reply-To: <20070531103316.GO32105@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+Jens Axboe wrote:
+> Work to be done:
+> 
+> - The ext2 xip support needs a splice_read() implementation, currently I
+>   just if 0'ed out the send xip_file_sendfile(). CC'ed Carsten, who
+>   seems to be the author of this code.
+Yup. Will do the splice_read implementation for xip. Do you want to 
+see it in splice.c or should it go to filemap_xip?
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
-
-Which contains:
-
-Andrew Morton (1):
-      sh: support older gcc's
-
-Evgeniy Polyakov (1):
-      sh: trivial build cleanups.
-
-Manuel Lauss (2):
-      sh: Trivial fix for dma-api compile failure.
-      sh: Fix vsyscall build failure.
-
-Paul Mundt (1):
-      sh: section mismatch fixes for system timer.
-
-Takashi YOSHII (1):
-      sh: Fix pcrel too far for in_nmi label.
-
- arch/sh/Makefile                   |    2 +-
- arch/sh/drivers/dma/dma-api.c      |    1 +
- arch/sh/kernel/cf-enabler.c        |    6 ++++++
- arch/sh/kernel/cpu/sh3/entry.S     |    1 +
- arch/sh/kernel/cpu/sh4/probe.c     |    1 +
- arch/sh/kernel/smp.c               |    2 ++
- arch/sh/kernel/timers/timer.c      |    5 ++---
- arch/sh/kernel/vsyscall/vsyscall.c |    1 +
- include/asm-sh/cpu-sh4/freq.h      |    3 +++
- include/asm-sh/dma.h               |    1 +
- include/asm-sh/io.h                |    6 +++---
- include/asm-sh/smp.h               |    2 +-
- include/asm-sh/spinlock.h          |    8 +++++++-
- include/asm-sh/spinlock_types.h    |    4 +++-
- 14 files changed, 33 insertions(+), 10 deletions(-)
+Acked-by: Carsten Otte <cotte@de.ibm.com>
