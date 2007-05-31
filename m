@@ -1,106 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbXEaAty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759263AbXEaAuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758685AbXEaAty (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 20:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbXEaAtr
+	id S1759263AbXEaAuN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 20:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbXEaAt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 20:49:47 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:59771 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752479AbXEaAtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 20:49:46 -0400
-Subject: [BUG] futex_unlock_pi() hurts my brain and may cause application
-	deadlock
-From: john stultz <johnstul@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Sripathi Kodi <sripathik@in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 17:49:27 -0700
-Message-Id: <1180572567.6126.44.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 20:49:58 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60759 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758818AbXEaAt5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 20:49:57 -0400
+Date: Wed, 30 May 2007 17:49:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: young dave <hidave.darkstar@gmail.com>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org
+Subject: Re: [RFC 1/4] CONFIG_STABLE: Define it
+In-Reply-To: <a8e1da0705301735r5619f79axcb3ea6c7dd344efc@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705301747370.4809@schroedinger.engr.sgi.com>
+References: <20070531002047.702473071@sgi.com>  <20070531003012.302019683@sgi.com>
+ <a8e1da0705301735r5619f79axcb3ea6c7dd344efc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All,
-	So we've been seeing PI mutex deadlocks with a few of our applications
-using the -rt kernel. After narrowing things down, we were finding that
-the applications were indirectly calling futex_unlock_pi(), which on
-occasion would return -EFAULT, which is promptly ignored by glibc. This
-would cause the application to continue on as if it has unlocked the
-mutex, until it tried to reacquire it and deadlock.
+On Thu, 31 May 2007, young dave wrote:
 
-In looking into why the kernel was returning -EFAULT, I found the
-following:
+> Hi Christoph,
+> 
+> > Introduce CONFIG_STABLE to control checks only useful for development.
+> 
+> What about control checks only as SLUB_DEBUG is set?
 
-...
-retry_locked:
-	/*
-	 * To avoid races, try to do the TID -> 0 atomic transition
-	 * again. If it succeeds then we can return without waking
-	 * anyone else up:
-	 */
-	if (!(uval & FUTEX_OWNER_DIED)) {
-		pagefault_disable();
-		uval = futex_atomic_cmpxchg_inatomic(uaddr, current->pid, 0);
-		pagefault_enable();
-	}
+Debug code is always included in all builds unless it is an embedded 
+system. Debug code is kept out of the hot path.
 
-	if (unlikely(uval == -EFAULT))
-		goto pi_faulted;
-...[snip]...
-pi_faulted:
-	/*
-	 * We have to r/w  *(int __user *)uaddr, but we can't modify it
-	 * non-atomically.  Therefore, if get_user below is not
-	 * enough, we need to handle the fault ourselves, while
-	 * still holding the mmap_sem.
-	 */
-	if (attempt++) {
-		ret = futex_handle_fault((unsigned long)uaddr, fshared,
-					 attempt);
-		if (ret)
-			goto out_unlock;
-		goto retry_locked;
-	}
-
-
-Should we fault through normal causes, on the second round we call
-futex_handle_fault, which faults in the address, and we then jump back
-to retry_locked. However, since uval is -EFAULT from the last cmpxchg,
-it &s w/ FUTEX_OWNER_DIED so we don't enter the first conditional to try
-to cmpxchg again. So since uval is still -EFAULT, we loop back to
-pi_faulted! This will loop until futex_handle_fault() bombs out because
-attempt is too big and we return -EFAULT.
-
-I *think* this is a possible quick fix here, but I'm no futex guru, so I
-wanted to run it by folks for review.
-
-Big thanks to Sripathi and Angela Lin for helping debug this, and Steven
-for suggesting a cleaner fix then what I first tried.
-
-thanks
--john
-
-Avoid futex_unlock_pi returning -EFAULT (which results in deadlock), by
-clearing uval before jumping to retry_locked.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
----
-diff --git a/kernel/futex.c b/kernel/futex.c
-index b7ce15c..9969b36 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -2011,6 +2011,7 @@ pi_faulted:
- 					 attempt);
- 		if (ret)
- 			goto out_unlock;
-+		uval = 0;
- 		goto retry_locked;
- 	}
- 
-
+Disabling SLUB_DEBUG should only be done for embedded systems. That is why 
+the option is in CONFIG_EMBEDDED.
 
