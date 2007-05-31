@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760574AbXEaSVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXEaSXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760574AbXEaSVf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbXEaSV2
+	id S1760908AbXEaSXr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbXEaSXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:21:28 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:36552 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757350AbXEaSV2 (ORCPT
+	Thu, 31 May 2007 14:23:40 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:34171 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbXEaSXj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 14:21:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KktRm8Mc3vOjVkE0r0hXZXwwq3+f/sdLIqAeVudGCPACPtPZLY0mRWrauu4ROWvVys4uu4hgVIwWjRa6nY2LDgmK/UIiMMxofa3h0cBt60Z49nNPQyPd+ILO3msf9NfNFc864fnd3LnIIFBEjQePNQMeSzH6vr7N97MXS5U9w8M=
-Message-ID: <a781481a0705311121h3a977461t82a2a02b9035df8@mail.gmail.com>
-Date: Thu, 31 May 2007 23:51:26 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-Subject: Re: [RFC] LZO de/compression support - take 6
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Richard Purdie" <richard@openedhand.com>,
-       "Bret Towe" <magnade@gmail.com>
-In-Reply-To: <4cefeab80705310534jb92535dy45fcf5fbe363b55b@mail.gmail.com>
+	Thu, 31 May 2007 14:23:39 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=mpUz8Nu4YlF46SHvnvTuiXlsAXPV1igCnsSkGoD4/kp1NHvY9cdBKkAzSDIIkrb4U
+	tbf0MjCAEKNLdAR5DGB+A==
+Message-ID: <b040c32a0705311123i518ab280j88cb4675ea97b315@mail.gmail.com>
+Date: Thu, 31 May 2007 11:23:32 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: + loop-preallocate-eight-loop-devices.patch added to -mm tree
+Cc: walt <wa1ter@myrealbox.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070531111052.534573b8.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
-	 <4cefeab80705310534jb92535dy45fcf5fbe363b55b@mail.gmail.com>
+References: <200705212200.l4LM0tYK021050@shell0.pdx.osdl.net>
+	 <20070522001851.GE4095@ftp.linux.org.uk>
+	 <b040c32a0705211830h127dfd8dk8930de6655d37d90@mail.gmail.com>
+	 <20070522014822.GF4095@ftp.linux.org.uk>
+	 <b040c32a0705211914w3843bd46o542476be97e0b6cf@mail.gmail.com>
+	 <b040c32a0705211940xe7cdf1cnb2c882edacc17a27@mail.gmail.com>
+	 <f3mro0$u8p$1@sea.gmane.org>
+	 <b040c32a0705310951t7d9acdf5n34815bc5fc156e26@mail.gmail.com>
+	 <20070531111052.534573b8.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/31/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
-> [...]
-> The author (Markus Oberhumer) of LZO  provided these comments for this patch:
+On 5/31/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> I have a note here that it needs additional work.  This discussion:
 >
-> ---
-> I've only briefly looked over it, but it's obvious that your version does not
-> work on architechtures which do not allow unaligned access (arm, mips, ...).
+> http://lkml.org/lkml/2007/5/21/602
 >
-> As for further quality assurance, your version should generate byte-identical
-> object code to LZO 2.02 when using the same compiler & flags. So you could do
-> some semi-automatic testing by compiling with -ffunction-sections and use
-> "objcopy --only-section .text.XXX" to compare the md5sum of all generated
-> functions. This also works fine with crosscompilers.
->
-> Finally I'm not too happy that you renamed the functions and #defines like
-> LZO1X_WORKMEM_SIZE - please stay compatible with the official library version.
+> seemed to peter out and go nowhere?
 
-As suggested by Johannes earlier, it'd be great if you could submit
-the various changes (as per Changelog) as _individual patches_ on
-the original userspace code. That would be easier for others to review,
-and there's lesser chances of bugs / issues leaking in that way.
+The first rev went in -mm needs work and the above url is the result
+of feedback from Al Viro.  He also acked the patch in the follow on
+thread:
+http://lkml.org/lkml/2007/5/22/5
 
-As for "byte-identical object code", I definitely do *not* think it is
-necessarily a requirement / good idea. As long as all the changes
-you make are reviewed individually / closely by people here on this
-list, there's very low chances of any bugs creeping in. [ F.e. I see
-nothing wrong in removing the usage of "register" -- that could clearly
-lead to different object code, but with no bugs introduced. ]
+Not sure how widely it was tested on that last patch, I see a few
+reports that the patch works out OK.
