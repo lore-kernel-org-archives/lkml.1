@@ -1,58 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760921AbXEaEwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbXEaE4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760921AbXEaEwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 00:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760706AbXEaEv7
+	id S1760072AbXEaE4a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 00:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757624AbXEaE4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 00:51:59 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:23414 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760693AbXEaEv6 (ORCPT
+	Thu, 31 May 2007 00:56:23 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:11352 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757576AbXEaE4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 00:51:58 -0400
+	Thu, 31 May 2007 00:56:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=nuQJZsT3QoacjZ30eI+0CzZpEQrT3XXDbQebW6y15P/rZH3+qaGLGeawr/G+l998rmxXedmC6iEezn9M8lTIaZKrY9frmmMk3CYQXnqbaYVjEluZaEUCBlXzQK/L5DXsnGVShfWzG3JNmhXUJKuP9d0jnCYL7ndDpCcGOkfUk8Q=
-Subject: Re: [3/4] 2.6.22-rc3: known regressions
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Tero Roponen <teanropo@jyu.fi>
-In-Reply-To: <alpine.LFD.0.98.0705301922560.26602@woody.linux-foundation.org>
-References: <465C188F.9000900@googlemail.com>
-	 <465C222A.8060003@googlemail.com>
-	 <alpine.LFD.0.98.0705301922560.26602@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 31 May 2007 12:51:49 +0800
-Message-Id: <1180587109.4570.25.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LcqpP6zPcpAX+uic+w7opRDX6U1MiNJkTj1o5gWLwJimxEAxwZsnHtARWxJ1V3vpYeynI/X9Lc+DBo3qzt6Qw/ezd6tpSuqPY2Z/2IhZAdn/7lCpPlyXqPfjbemeRxgffUlW1qZioJwDuBFl/V/qS9MbN8kWlYyhVbS6mNOThlk=
+Message-ID: <86802c440705302156k37407e2eice027bef9c69bd9d@mail.gmail.com>
+Date: Wed, 30 May 2007 21:56:21 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: Case: 7454422: Re: Kernel 2.6.21.3 does not work with 8GB of RAM on Intel 965WH motherboards. (FULL DMESG)
+Cc: "Justin Piszcz" <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       crmotherboard@mailbox.cps.intel.com
+In-Reply-To: <465E08CD.2080302@shaw.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fa.t8TZNHj4vrYcIs37jScT0oZl02s@ifi.uio.no>
+	 <fa.nsJ3dX+uNBCD7bTYffkYm0DLnR4@ifi.uio.no>
+	 <fa.lfTXDj3RBbaCLDUJJFzLVowMlxc@ifi.uio.no>
+	 <fa.lrZMTvBB9xwYW1mcA0nyYFjB9qY@ifi.uio.no>
+	 <fa.AIUKY82rbgpQ/AiIxhRL0fahxaQ@ifi.uio.no>
+	 <fa.yz+v/A2zkJKIswF0Y4Mo4FxwnCI@ifi.uio.no> <465E08CD.2080302@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-30 at 19:33 -0700, Linus Torvalds wrote:
-> 
-> On Tue, 29 May 2007, Michal Piotrowski wrote:
-> > 
+On 5/30/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> Justin Piszcz wrote:
+> > That output looked nasty, attaching entries from syslog.
+> >
+> > Justin.
+>
+> Here's your E820 memory map, from dmesg:
+>
+> BIOS-e820: 0000000000000000 - 000000000008f000 (usable)
+> BIOS-e820: 000000000008f000 - 00000000000a0000 (reserved)
+> BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+> BIOS-e820: 0000000000100000 - 00000000cf58f000 (usable)
+> BIOS-e820: 00000000cf58f000 - 00000000cf59c000 (reserved)
+> BIOS-e820: 00000000cf59c000 - 00000000cf653000 (usable)
+> BIOS-e820: 00000000cf653000 - 00000000cf6a5000 (ACPI NVS)
+> BIOS-e820: 00000000cf6a5000 - 00000000cf6a8000 (ACPI data)
+> BIOS-e820: 00000000cf6a8000 - 00000000cf6ef000 (ACPI NVS)
+> BIOS-e820: 00000000cf6ef000 - 00000000cf6f1000 (ACPI data)
+> BIOS-e820: 00000000cf6f1000 - 00000000cf6f2000 (usable)
+> BIOS-e820: 00000000cf6f2000 - 00000000cf6ff000 (ACPI data)
+> BIOS-e820: 00000000cf6ff000 - 00000000cf700000 (usable)
+> BIOS-e820: 00000000cf700000 - 00000000d0000000 (reserved)
+> BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
+> BIOS-e820: 0000000100000000 - 000000022c000000 (usable)
+>
+> so the usable memory ranges are:
+>
+> 0-572K
+> 1MB-3317.55MB
+> 3317.60MB-3317.75MB
+> 3318.94MB-3318.945MB
+> 3318.996MB-3319MB
+> 4096MB-8896MB
+>
+> and the MTRRs (from /proc/mtrr, from private email):
+>
+> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+> reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
+> reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
+> reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
+> reg05: base=0x100000000 (4096MB), size=4096MB: write-back, count=1
+> reg06: base=0x200000000 (8192MB), size= 512MB: write-back, count=1
+> reg07: base=0x220000000 (8704MB), size= 128MB: write-back, count=1
+>
+> so the ranges mapped as cacheable are:
+>
+> 0-3319MB
+> 4096-8832MB
+>
+> leaving 64MB of memory at the top of RAM uncached. What do you want to
+> bet that something important (kernel code?) is getting loaded there..
+>
+> So essentially it's a BIOS problem, it's not setting up the MTRRs
+> properly in order to map all of RAM as cacheable. As Andi says, complain
+> to Intel.
 
-> > TTY
-> > 
-> > Subject    : tty-related oops in latest kernel(s)
-> > References : http://lkml.org/lkml/2007/5/27/104
-> > Submitter  : Tero Roponen <teanropo@jyu.fi>
-> > Status     : problem is being debugged
-> 
-> People seem to have debugged this to neofb palette handling, but I haven't 
-> seen a patch. Antonino?
-> 
+the BIOS used up of VAR MTRR ( = 8).
 
-Already posted one for testing. I'm waiting for Tero to confirm.
+it supposed change to sth like
+> reg00: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+> reg01: base=, size=64MB: uncachable, count=1
+> reg02: base=, size=128MB: uncachable, count=1
+> reg03: base=, size=512MB: uncachable, count=1
+> reg04: base=0x100000000 (4096MB), size=4096MB: write-back, count=1
+> reg05: base=0x200000000 (8192MB), size= 512MB: write-back, count=1
+> reg06: base=0x220000000 (8704MB), size= 128MB: write-back, count=1
+> reg07: base=(8832MB), size= 64MB: write-back, count=1
 
-Tony
+or you can set var mtrr and then use kexec to load another kernel.
 
+AMD Rev F later cpu, will assume 4G above is write back, and even
+without var mtrr for it.
 
+YH
