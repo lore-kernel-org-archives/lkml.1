@@ -1,111 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbXEaVjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbXEaVpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759947AbXEaVjm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 17:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXEaVjf
+	id S1753983AbXEaVpF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 17:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbXEaVo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 17:39:35 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:20155 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbXEaVje (ORCPT
+	Thu, 31 May 2007 17:44:57 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:34713 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbXEaVo4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 17:39:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Yc/MxOxxkZWlBR1nDqvMfZZL7SJCmaMbVsYO7VfgBfp5+gl+IxJIIpl5b15jrzlB5YlwLGY3SGHFeypH3v2M/Ch4JQd0qHZeAL77reoZxQca3hTF4T/sIqGJHyhj4R2ncrhVHvco3bkElCCXz81tgC8QQAoIZaPBtzP3+wLfOSk=
-Message-ID: <6278d2220705311439x40f7b1c1l7cef54acd2e8fcea@mail.gmail.com>
-Date: Thu, 31 May 2007 22:39:29 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Mark Lord" <liml@rtr.ca>
-Subject: Re: Compact Flash performance...
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>
-In-Reply-To: <465F360D.6020603@rtr.ca>
+	Thu, 31 May 2007 17:44:56 -0400
+Message-ID: <465F41D4.9040304@oracle.com>
+Date: Thu, 31 May 2007 14:44:52 -0700
+From: Herbert van den Bergh <Herbert.van.den.Bergh@oracle.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070418)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com>
-	 <465E3FF0.9010709@rtr.ca>
-	 <6278d2220705310222rde9ad28ndfd8feced84a3c6f@mail.gmail.com>
-	 <465EBE20.6090803@rtr.ca>
-	 <6278d2220705311025q6ee030e2kd44b7302a50ac902@mail.gmail.com>
-	 <465F360D.6020603@rtr.ca>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: include private data mappings in RLIMIT_DATA limit
+References: <465F2554.2030104@oracle.com> <20070531133917.a5338876.randy.dunlap@oracle.com>
+In-Reply-To: <20070531133917.a5338876.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------000200090009030509040903"
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31/05/07, Mark Lord <liml@rtr.ca> wrote:
-> Daniel J Blueman wrote:
-> > Whoops, yes. Here is the expected data:
-[snip]
+This is a multi-part message in MIME format.
+--------------000200090009030509040903
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+
+Randy Dunlap wrote:
+> On Thu, 31 May 2007 12:43:16 -0700 Herbert van den Bergh wrote:
+>   
+>> Below is a patch I would like to submit for limiting process private 
+>> memory allocations via setrlimit(RLIMIT_DATA).
 >
-> Thanks.  I'll use that data to update/validate future versions of hdparm.
-> At UDMA66, it *should* be capable of the 40MByte/sec realm of readback perf,
-> assuming the card itself is really that fast.
+> The patch seems to have all tabs converted to spaces.
+> This could be caused by thunderbird or by copy-and-pasting.
+>
+> Tbird needs help for sending patches without munging them.
+> See http://mbligh.org/linuxdocs/Email/Clients/Thunderbird
+> or google for "external editor" and use that with a decent
+> text editor.
 
-hdparm in the other identify mode does list the UDMA3/4 modes twice
-[1], which looks odd.
+Most likely a combination of copy&paste in editors and email.
+Thanks for the pointer to the Thunderbird info.  I'm attaching
+the patch file this time.
 
-> I don't know too much about the specifics, though, but perhaps the
-> card is only capable of full speed in PIO6, which requires special cabling
-> and is currently unsupported in libata (?).
+> Maybe it doesn't matter for this patch, but in general you
+> should send patches made against the latest mainline kernel,
+> such as 2.6.22-rc3 or 2.6.22-rc3-git4 or current git tree.
 
-Seems less likely, as the Extreme IV reader (and another) supports
-UDMA mode 4; in PIO mode 6, they apparently top out at 17MB/s [2],
-which seems reasonable.
+The patch is against 2.6.22-rc3.  Just to make it clear, the patch
+below has the top level directory renamed from the default.
 
-> Another factor, is that hdparm performs discrete, non-overlapping,
-> reads of 1MByte chunks for its timing test.  Some drives cannot achieve
-> full performance with such (relatively) large gaps between IO's.
+> There are a few lines that are > 80 characters.  Please try
+> to avoid that.
 
-100MB transfers still achieve 32MB/s:
+I took care of those as well.  Here follows the resubmitted patch.
 
-# dd if=/dev/sdb of=/dev/null bs=100000k count=10
-10+0 records in
-10+0 records out
-1024000000 bytes (1.0 GB) copied, 31.9328 seconds, 32.1 MB/s
+Thanks,
+Herbert.
 
-> Also, just for fun, you could try "hdparm --direct -t /dev/sdb"
 
-# hdparm --direct -t /dev/sdb
+This patch changes how the kernel limits memory allocations that are
+controlled by setrlimit() using the RLIMIT_DATA resource.  Currently the
+kernel can limit the size of a process data, bss, and heap, but does not
+limit the amount of process private memory that can be allocated with
+the mmap() call.  Since malloc() calls mmap() to allocate process memory
+once brk() calls can no longer grow the heap, process private memory
+allocations cannot be limited with RLIMIT_DATA.
 
-/dev/sdb:
- Timing O_DIRECT disk reads:   96 MB in  3.05 seconds =  31.47 MB/sec
+With this patch, not only memory in the data segment of a process, but
+also private data mappings, both file-based and anonymous, are counted
+toward the RLIMIT_DATA resource limit.  Executable mappings, such as
+text segments of shared objects, are not counted toward the private data
+limit.  The result is that malloc() will fail once the combined size of
+the data segment and private data mappings reaches this limit.
 
-It is conceivable that the controller in the two particular readers
-which get 40MB/s are doing some kind of prefetching, but seems seems
-like an extreme gain.
+This brings the Linux behavior in line with what is documented in the
+POSIX man page for setrlimit(3p).
 
-I'll check things out with the IDE PIIX code also. Thanks for your help!
-  Daniel
+Signed-off-by: Herbert van den Bergh (herbert.van.den.bergh@oracle.com)
+Signed-off-by: Dave McCracken (dave.mccracken@oracle.com)
 
-> Cheers
 
---- [1]
 
-# hdparm -i /dev/sdb
+--------------000200090009030509040903
+Content-Type: text/x-patch;
+ name="linux-2.6.22-vm-private-rlimit.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="linux-2.6.22-vm-private-rlimit.patch"
 
-/dev/sdb:
+--- linux-2.6.22-rc3/fs/proc/task_mmu.c.orig	2007-05-29 21:05:31.000000000 -0700
++++ linux-2.6.22-rc3/fs/proc/task_mmu.c	2007-05-30 08:17:44.000000000 -0700
+@@ -31,7 +31,7 @@
+ 	if (hiwater_rss < mm->hiwater_rss)
+ 		hiwater_rss = mm->hiwater_rss;
+ 
+-	data = mm->total_vm - mm->shared_vm - mm->stack_vm;
++	data = mm->total_vm - mm->shared_vm - mm->stack_vm - mm->exec_vm;
+ 	text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK)) >> 10;
+ 	lib = (mm->exec_vm << (PAGE_SHIFT-10)) - text;
+ 	buffer += sprintf(buffer,
+--- linux-2.6.22-rc3/mm/mprotect.c.orig	2007-04-25 20:08:32.000000000 -0700
++++ linux-2.6.22-rc3/mm/mprotect.c	2007-05-31 14:20:59.000000000 -0700
+@@ -162,6 +162,22 @@
+ 		}
+ 	}
+ 
++	/* 
++	 * Check against private data size limit. When execute permission
++	 * is removed, the mapping is counted toward the private data size.
++	 */
++	if (!(newflags & VM_EXEC) && (vma->vm_flags & VM_EXEC)) {
++		unsigned long rlim;
++		rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
++		if (rlim < RLIM_INFINITY) {
++			unsigned long priv_vm;
++			priv_vm = mm->total_vm - mm->shared_vm - mm->exec_vm;
++			priv_vm <<= PAGE_SHIFT;
++			if (priv_vm + (end - start) > rlim)
++				return -ENOMEM;
++		}
++	}
++
+ 	/*
+ 	 * First try to merge with previous and/or next vma.
+ 	 */
+--- linux-2.6.22-rc3/mm/mremap.c.orig	2007-04-25 20:08:32.000000000 -0700
++++ linux-2.6.22-rc3/mm/mremap.c	2007-05-31 14:20:42.000000000 -0700
+@@ -343,6 +343,23 @@
+ 		goto out;
+ 	}
+ 
++	/*
++	 * Check against private data size limit. Count memory allocations 
++	 * which are not shared and not executable code as private data.
++	 */
++	if (!(vma->vm_flags & (VM_EXEC|VM_SHARED))) {
++		unsigned long rlim;
++		rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
++		if (rlim < RLIM_INFINITY) {
++			unsigned long priv_vm;
++			struct mm_struct *mm = current->mm;
++			priv_vm = mm->total_vm - mm->shared_vm - mm->exec_vm;
++			priv_vm <<= PAGE_SHIFT;
++			if (priv_vm + (new_len - old_len) > rlim)
++				goto out;
++		}
++	}
++
+ 	if (vma->vm_flags & VM_ACCOUNT) {
+ 		charged = (new_len - old_len) >> PAGE_SHIFT;
+ 		if (security_vm_enough_memory(charged))
+--- linux-2.6.22-rc3/mm/mmap.c.orig	2007-05-29 21:05:58.000000000 -0700
++++ linux-2.6.22-rc3/mm/mmap.c	2007-05-31 14:20:10.000000000 -0700
+@@ -245,16 +245,6 @@
+ 	if (brk < mm->end_code)
+ 		goto out;
+ 
+-	/*
+-	 * Check against rlimit here. If this check is done later after the test
+-	 * of oldbrk with newbrk then it can escape the test and let the data
+-	 * segment grow beyond its set limit the in case where the limit is
+-	 * not page aligned -Ram Gupta
+-	 */
+-	rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+-	if (rlim < RLIM_INFINITY && brk - mm->start_data > rlim)
+-		goto out;
+-
+ 	newbrk = PAGE_ALIGN(brk);
+ 	oldbrk = PAGE_ALIGN(mm->brk);
+ 	if (oldbrk == newbrk)
+@@ -267,6 +257,19 @@
+ 		goto out;
+ 	}
+ 
++	/*
++	 * Check against private data size limit. Count memory allocations 
++	 * which are not shared and not executable code as private data.
++	 */
++	rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
++	if (rlim < RLIM_INFINITY) {
++		unsigned long priv_vm;
++		priv_vm = mm->total_vm - mm->shared_vm - mm->exec_vm;
++		priv_vm <<= PAGE_SHIFT;
++		if (priv_vm + (newbrk-oldbrk) > rlim)
++			goto out;
++	}
++
+ 	/* Check against existing mmap mappings. */
+ 	if (find_vma_intersection(mm, oldbrk, newbrk+PAGE_SIZE))
+ 		goto out;
+@@ -875,7 +878,8 @@
+ 		= VM_STACK_FLAGS & (VM_GROWSUP|VM_GROWSDOWN);
+ 
+ 	if (file) {
+-		mm->shared_vm += pages;
++		if (flags & VM_SHARED)
++			mm->shared_vm += pages;
+ 		if ((flags & (VM_EXEC|VM_WRITE)) == VM_EXEC)
+ 			mm->exec_vm += pages;
+ 	} else if (flags & stack_flags)
+@@ -1041,6 +1045,21 @@
+ 	if (!may_expand_vm(mm, len >> PAGE_SHIFT))
+ 		return -ENOMEM;
+ 
++	/*
++	 * Check against private data size limit. Count memory allocations 
++	 * which are not shared and not executable code as private data.
++	 */
++	if (!(vm_flags & (VM_SHARED|VM_EXEC))) {
++		unsigned long rlim, priv_vm;
++		rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
++		if (rlim < RLIM_INFINITY) {
++			priv_vm = mm->total_vm - mm->shared_vm - mm->exec_vm;
++			priv_vm <<= PAGE_SHIFT;
++			if (priv_vm + len > rlim)
++				return -ENOMEM;
++		}
++	}
++
+ 	if (accountable && (!(flags & MAP_NORESERVE) ||
+ 			    sysctl_overcommit_memory == OVERCOMMIT_NEVER)) {
+ 		if (vm_flags & VM_SHARED) {
 
- Model=SanDisk SDCFX-4096                      , FwRev=HDX 4.04,
-SerialNo=    116802D2807J3335
- Config={ HardSect NotMFM Removeable DTR>10Mbs nonMagnetic }
- RawCHS=7964/16/63, TrkSize=0, SectSize=576, ECCbytes=4
- BuffType=DualPort, BuffSize=1kB, MaxMultSect=4, MultSect=?0?
- CurCHS=7964/16/63, CurSects=8027712, LBA=yes, LBAsects=8027712
- IORDY=no, tPIO={min:120,w/IORDY:120}, tDMA={min:120,rec:120}
- PIO modes:  pio0 pio1 pio2 pio3 pio4
- DMA modes:  mdma0 mdma1 mdma2
- UDMA modes: udma0 udma1 udma2 udma3 *udma4 udma3 *udma4
- AdvancedPM=no WriteCache=disabled
- Drive conforms to: Unspecified:  ATA/ATAPI-4
 
- * signifies the current active mode
-
---- [2]
-
-http://www.robgalbraith.com/bins/content_page.asp?cid=7-7896-8475
--- 
-Daniel J Blueman
+--------------000200090009030509040903--
