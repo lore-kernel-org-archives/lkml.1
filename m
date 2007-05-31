@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759684AbXEaJHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbXEaJOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759684AbXEaJHg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 05:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbXEaJH3
+	id S1759337AbXEaJOu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 05:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbXEaJOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 05:07:29 -0400
-Received: from mail1.perex.cz ([212.20.107.53]:37795 "EHLO mail1.perex.cz"
+	Thu, 31 May 2007 05:14:42 -0400
+Received: from holomorphy.com ([66.93.40.71]:48220 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756054AbXEaJH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 05:07:28 -0400
-Date: Thu, 31 May 2007 11:07:26 +0200 (CEST)
-From: Jaroslav Kysela <perex@suse.cz>
-X-X-Sender: perex@tm8103.perex-int.cz
-To: Linus Torvalds <torvalds@osdl.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
-       Andrew Morton <akpm@osdl.org>
-Subject: [ALSA PATCH] alsa-git merge request
-Message-ID: <Pine.LNX.4.61.0705311104020.15545@tm8103.perex-int.cz>
+	id S1755014AbXEaJOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 05:14:41 -0400
+Date: Thu, 31 May 2007 02:15:34 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, ckrm-tech@lists.sourceforge.net,
+       efault@gmx.de, linux-kernel@vger.kernel.org, tingy@cs.umass.edu,
+       Peter Williams <pwil3058@bigpond.net.au>, kernel@kolivas.org,
+       tong.n.li@intel.com, containers@lists.osdl.org,
+       Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
+Message-ID: <20070531091534.GK6909@holomorphy.com>
+References: <46577CA6.8000807@bigpond.net.au> <20070526154112.GA31925@holomorphy.com> <20070530171405.GA21062@in.ibm.com> <20070530201359.GD6909@holomorphy.com> <20070531032657.GA823@in.ibm.com> <20070531040926.GH6909@holomorphy.com> <20070531054828.GB663@in.ibm.com> <20070531063647.GC15426@holomorphy.com> <20070531083353.GF663@in.ibm.com> <20070531085600.GA9826@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070531085600.GA9826@in.ibm.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 31, 2007 at 02:03:53PM +0530, Srivatsa Vaddagiri wrote:
+>> Its ->wait_runtime will drop less significantly, which lets it be
+>> inserted in rb-tree much to the left of those 1000 tasks (and which
+>> indirectly lets it gain back its fair share during subsequent
+>> schedule cycles).
+>> Hmm ..is that the theory?
 
-Linus, please pull from [the linus branch at]:
+On Thu, May 31, 2007 at 02:26:00PM +0530, Srivatsa Vaddagiri wrote:
+> My only concern is the time needed to converge to this fair
+> distribution, especially in face of fluctuating workloads. For ex: a
+> container who does a fork bomb can have a very adverse impact on
+> other container's fair share under this scheme compared to other
+> schemes which dedicate separate rb-trees for differnet containers
+> (and which also support two level hierarchical scheduling inside the
+> core scheduler).
+> I am inclined to have the core scheduler support atleast two levels
+> of hierarchy (to better isolate each container) and resort to the
+> flattening trick for higher levels.
 
-  master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
-gitweb interface:
-  http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
+Yes, the larger number of schedulable entities and hence slower
+convergence to groupwise weightings is a disadvantage of the flattening.
+A hybrid scheme seems reasonable enough. Ideally one would chop the
+hierarchy in pieces so that n levels of hierarchy become k levels of n/k
+weight-flattened hierarchies for this sort of attack to be most effective
+(at least assuming similar branching factors at all levels of hierarchy
+and sufficient depth to the hierarchy to make it meaningful) but this is
+awkward to do. Peeling off the outermost container or whichever level is
+deemed most important in terms of accuracy of aggregate enforcement as
+a hierarchical scheduler is a practical compromise.
 
-The GNU patch is available at:
-
-  ftp://ftp.alsa-project.org/pub/kernel-patches/alsa-git-2007-05-31.patch.gz
-
-Additional notes:
-
-  Only obvious fixes and new HW IDs including quirks mostly for HD Audio.
-
-The following files will be updated:
-
- Documentation/sound/alsa/ALSA-Configuration.txt |    1 +
- include/sound/version.h                         |    4 +-
- sound/pci/ali5451/ali5451.c                     |    6 +-
- sound/pci/hda/hda_codec.c                       |   13 +++++
- sound/pci/hda/hda_local.h                       |    2 +
- sound/pci/hda/patch_conexant.c                  |   48 +++++++++++++++++-
- sound/pci/hda/patch_realtek.c                   |    5 ++-
- sound/pci/hda/patch_si3054.c                    |    2 +
- sound/pci/hda/patch_sigmatel.c                  |   64 +++++++++++++++++++++--
- sound/soc/s3c24xx/s3c24xx-pcm.c                 |    2 +
- 10 files changed, 136 insertions(+), 11 deletions(-)
+Hybrid schemes will still incur the difficulties of hierarchical
+scheduling, but they're by no means insurmountable. Sadly, only
+complete flattening yields the simplifications that make task group
+weighting enforcement orthogonal to load balancing and the like. The
+scheme I described for global nice number behavior is also not readily
+adaptable to hybrid schemes.
 
 
-The following things were done:
-
-Baruch Even (1):
-      [ALSA] hda-codec - Add quirk for MSI S420
-
-Christian Rothlaender (1):
-      [ALSA] hda-codec - Add support for ASUS A8J modem
-
-Daniel Drake (1):
-      [ALSA] hda-intel: fix ASUS M2V detection
-
-Daniel T Chen (1):
-      [ALSA] hda-codec - Add quirk for Supermicro PDSBA to alc883_cfg_tbl[]
-
-Jaroslav Kysela (1):
-      [ALSA] version 1.0.14
-
-Steve Longerbeam (1):
-      [ALSA] hda-codec - Fix pin configs for Gateway MX6453
-
-Takashi Iwai (3):
-      [ALSA] ali5451 - Fix possible NULL dereference
-      [ALSA] hda-codec - Fix input with STAC92xx
-      [ALSA] hda-codec - Fix STAC922x capture boost level
-
-Tobin Davis (4):
-      [ALSA] HDA: Add support for Gateway NX860
-      [ALSA] HDA: Add more systems to Sigmatel codec
-      [ALSA] HDA: Fix headphone mute issue on non-eapd Conexant systems
-      [ALSA] hda-codec - Add support for MSI K9N Ultra
-
-Zoltan Devai (1):
-      [ALSA] Fix ASoC s3c24xx-pcm spinlock bug
-
------
-Jaroslav Kysela <perex@suse.cz>
-Linux Kernel Sound Maintainer
-ALSA Project, SUSE Labs
+-- wli
