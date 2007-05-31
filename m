@@ -1,222 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXEaXIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbXEaXJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758090AbXEaXIg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 19:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbXEaXI0
+	id S1754364AbXEaXJA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 19:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbXEaXIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 19:08:26 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:6140 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbXEaXIY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 19:08:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=IOMtO/Yp2mxncOGRkXzLA6lOPmXXCSI3t/b3HoLOgEZYcFpT7TOQda3feBQjL/uZaBHXOB9T7lypoahcyluWbnvbhDSORFbwKPGGtW1XWkOAwDxeSnqX/0vDpwEOPUuQxbZ9/VROV7jVCj86QNY+m24uwzgHg2N3eyjNFTosmzM=
-Message-ID: <524f69650705311608l5433dedj4ec4f903e9af3ce4@mail.gmail.com>
-Date: Thu, 31 May 2007 18:08:23 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH] support larger cifs network reads
-Cc: linux-cifs-client@lists.samba.org
+	Thu, 31 May 2007 19:08:51 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43663 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758962AbXEaXIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 19:08:50 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX183Cusdqt43qlckf8ZzYkRQTQwVjK+g5vFWm7wmR9
+	9VkdXnD990jvoX
+Date: Fri, 1 Jun 2007 01:09:03 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Ian Kumlien <iank@bredband.net>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Something goes wrong with timer statistics.
+Message-ID: <20070531230903.GA19353@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Ian Kumlien <iank@bredband.net>, Eric Dumazet <dada1@cosmosbay.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+	linux-kernel@vger.kernel.org
+References: <6bffcb0e0705291524y2752d646p94b0bf6ca87af68f@mail.gmail.com> <1180478288.20546.39.camel@chaos> <20070530113825.GA5203@atjola.homenet> <20070530144449.36811a4d.dada1@cosmosbay.com> <20070530131458.GA5432@atjola.homenet> <20070531102047.GG19272@pomac.netswarm.net> <20070531142522.GA16690@atjola.homenet> <20070531171007.5780e5e6.dada1@cosmosbay.com> <20070531152709.GA18775@atjola.homenet> <1180652361.30698.11.camel@pi.pomac.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1180652361.30698.11.camel@pi.pomac.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With Samba 3.0.26pre it is now possible for a cifs client (one which
-supports the newest Unix/Posix cifs extensions) to request up to
-almost 8MB at a time on a cifs read request.
+On 2007.06.01 00:59:11 +0200, Ian Kumlien wrote:
+> On tor, 2007-05-31 at 17:27 +0200, Björn Steinbrink wrote:
+> > On 2007.05.31 17:10:07 +0200, Eric Dumazet wrote:
+> > > Well... :) , there is still a memory barrier missing it seems.
+> > > 
+> > > Another cpu might see a bad value if 'active=1' is set before tstat_hash_table is really cleared.
+> > 
+> > Hm, that even makes the assumption in my first try valid ;-)
+> > Just for the record, this time I thought that the barrier from the
+> > spinlock in timer_stats_update_stats (right before the check for active)
+> > would be enough, but that's obviously running on the wrong cpu if we
+> > race... *sigh*
+> > 
+> 
+> Fix the comment below and you can add:
+> Signed-off-by: Ian Kumlien <pomac@vapor.com>
+> 
+> It's currently been running for the longest period ever, ie, 11 minutes
+> =)
 
-A patch for the cifs client to support larger reads follows.  In this
-patch, using very large reads is not the default behavior, since it
-would require larger buffer allocations for the large cifs request
-buffers, but in the future when cifs can demultiplex reads to a page
-list in the cifs_demultiplex_thread (without having to copy to a large
-temporary buffer) this will be even more useful.
+Finally! :-)
 
-diff --git a/fs/cifs/README b/fs/cifs/README
-index 4d01697..6ad722b 100644
---- a/fs/cifs/README
-+++ b/fs/cifs/README
-@@ -301,8 +301,19 @@ A partial list of the supported mount op
- 		during the local client kernel build will be used.
- 		If server does not support Unicode, this parameter is
- 		unused.
--  rsize		default read size (usually 16K)
--  wsize		default write size (usually 16K, 32K is often better over GigE)
-+  rsize		default read size (usually 16K). The client currently
-+		can not use rsize larger than CIFSMaxBufSize. CIFSMaxBufSize
-+		defaults to 16K and may be changed (from 8K to the maximum
-+		kmalloc size allowed by your kernel) at module install time
-+		for cifs.ko. Setting CIFSMaxBufSize to a very large value
-+		will cause cifs to use more memory and may reduce performance
-+		in some cases.  To use rsize greater than 127K (the original
-+		cifs protocol maximum) also requires that the server support
-+		a new Unix Capability flag (for very large read) which some
-+		newer servers (e.g. Samba 3.0.26 or later) do. rsize can be
-+		set from a minimum of 2048 to a maximum of 8388608 (depending
-+		on the value of CIFSMaxBufSize)
-+  wsize		default write size (default 57344)
- 		maximum wsize currently allowed by CIFS is 57344 (14 4096 byte
- 		pages)
-   rw		mount the network share read-write (note that the
-diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
-index d38c69b..8c4365d 100644
---- a/fs/cifs/cifsfs.c
-+++ b/fs/cifs/cifsfs.c
-@@ -732,10 +732,21 @@ cifs_init_request_bufs(void)
- 	/* Buffer size can not be smaller than 2 * PATH_MAX since maximum
- 	Unicode path name has to fit in any SMB/CIFS path based frames */
- 		CIFSMaxBufSize = 8192;
--	} else if (CIFSMaxBufSize > 1024*127) {
--		CIFSMaxBufSize = 1024 * 127;
- 	} else {
--		CIFSMaxBufSize &= 0x1FE00; /* Round size to even 512 byte mult*/
-+		if (CIFSMaxBufSize + MAX_CIFS_HDR_SIZE > KMALLOC_MAX_SIZE) {
-+			CIFSMaxBufSize = KMALLOC_MAX_SIZE - MAX_CIFS_HDR_SIZE;
-+			cERROR(1,("CIFSMaxBufSize too large, resetting to %ld",
-+				   KMALLOC_MAX_SIZE));
-+		}
-+		
-+		/* The length field is 3 bytes, but for time being we use only
-+		 *  23 of the available 24 length bits */
-+		if (CIFSMaxBufSize > 8388608) {
-+			CIFSMaxBufSize = 8388608;
-+			cERROR(1,
-+				("CIFSMaxBufSize set to protocol max 8388608"));
-+		} else	/* round buffer size to even 512 byte multiple */
-+			CIFSMaxBufSize &= 0x7FFE00;
- 	}
- /*	cERROR(1,("CIFSMaxBufSize %d 0x%x",CIFSMaxBufSize,CIFSMaxBufSize)); */
- 	cifs_req_cachep = kmem_cache_create("cifs_request",
-diff --git a/fs/cifs/cifspdu.h b/fs/cifs/cifspdu.h
-index d619ca7..6e6cda0 100644
---- a/fs/cifs/cifspdu.h
-+++ b/fs/cifs/cifspdu.h
-@@ -1885,15 +1885,19 @@ typedef struct {
- #define CIFS_UNIX_POSIX_PATHNAMES_CAP   0x00000010 /* Allow POSIX
-path chars  */
- #define CIFS_UNIX_POSIX_PATH_OPS_CAP    0x00000020 /* Allow new POSIX
-path based
- 						      calls including posix open
--						      and posix unlink */
-+						      and posix unlink */
-+#define CIFS_UNIX_LARGE_READ_CAP        0x00000040 /* support reads >128K (up
-+						      to 0xFFFF00 */				
-+#define CIFS_UNIX_LARGE_WRITE_CAP       0x00000080
-+
- #ifdef CONFIG_CIFS_POSIX
- /* Can not set pathnames cap yet until we send new posix create SMB since
-    otherwise server can treat such handles opened with older ntcreatex
-    (by a new client which knows how to send posix path ops)
-    as non-posix handles (can affect write behavior with byte range locks.
-    We can add back in POSIX_PATH_OPS cap when Posix Create/Mkdir finished */
--/* #define CIFS_UNIX_CAP_MASK              0x0000003b */
--#define CIFS_UNIX_CAP_MASK              0x0000001b
-+/* #define CIFS_UNIX_CAP_MASK              0x000000fb */
-+#define CIFS_UNIX_CAP_MASK              0x000000db
- #else
- #define CIFS_UNIX_CAP_MASK              0x00000013
- #endif /* CONFIG_CIFS_POSIX */
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index f4e9266..0ba0d09 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -1650,19 +1650,19 @@ void reset_cifs_unix_caps(int xid, struc
- 		}
- 		
- 		cap &= CIFS_UNIX_CAP_MASK;
--		if(vol_info && vol_info->no_psx_acl)
-+		if (vol_info && vol_info->no_psx_acl)
- 			cap &= ~CIFS_UNIX_POSIX_ACL_CAP;
--		else if(CIFS_UNIX_POSIX_ACL_CAP & cap) {
-+		else if (CIFS_UNIX_POSIX_ACL_CAP & cap) {
- 			cFYI(1,("negotiated posix acl support"));
- 			if(sb)
- 				sb->s_flags |= MS_POSIXACL;
- 		}
+> I'm gonna leave it running during the night and send a status update
+> when the evil daystar reaches it's peak CET. (i haven't been able to
+> stop since linus mentioned it... damn it... =))
+> 
+> > @@ -360,6 +364,7 @@ static ssize_t tstats_write(struct file *file, const char __user *buf,
+> >  		if (!active) {
+> >  			reset_entries();
+> >  			time_start = ktime_get();
+> > +			smb_mb();
+> 
+> smb? you mean smp =)
 
--		if(vol_info && vol_info->posix_paths == 0)
-+		if (vol_info && vol_info->posix_paths == 0)
- 			cap &= ~CIFS_UNIX_POSIX_PATHNAMES_CAP;
--		else if(cap & CIFS_UNIX_POSIX_PATHNAMES_CAP) {
-+		else if (cap & CIFS_UNIX_POSIX_PATHNAMES_CAP) {
- 			cFYI(1,("negotiate posix pathnames"));
--			if(sb)
-+			if (sb)
- 				CIFS_SB(sb)->mnt_cifs_flags |=
- 					CIFS_MOUNT_POSIX_PATHS;
- 		}
-@@ -1670,21 +1670,32 @@ void reset_cifs_unix_caps(int xid, struc
- 		/* We might be setting the path sep back to a different
- 		form if we are reconnecting and the server switched its
- 		posix path capability for this share */	
--		if(sb && (CIFS_SB(sb)->prepathlen > 0))
-+		if (sb && (CIFS_SB(sb)->prepathlen > 0))
- 			CIFS_SB(sb)->prepath[0] = CIFS_DIR_SEP(CIFS_SB(sb));
-+
-+		if (sb && (CIFS_SB(sb)->rsize > 127 * 1024)) {
-+			if ((cap & CIFS_UNIX_LARGE_READ_CAP) == 0) {
-+				CIFS_SB(sb)->rsize = 127 * 1024;
-+			}
-+		}
-+		
- 	
- 		cFYI(1,("Negotiate caps 0x%x",(int)cap));
- #ifdef CONFIG_CIFS_DEBUG2
--		if(cap & CIFS_UNIX_FCNTL_CAP)
-+		if (cap & CIFS_UNIX_FCNTL_CAP)
- 			cFYI(1,("FCNTL cap"));
--		if(cap & CIFS_UNIX_EXTATTR_CAP)
-+		if (cap & CIFS_UNIX_EXTATTR_CAP)
- 			cFYI(1,("EXTATTR cap"));
--		if(cap & CIFS_UNIX_POSIX_PATHNAMES_CAP)
-+		if (cap & CIFS_UNIX_POSIX_PATHNAMES_CAP)
- 			cFYI(1,("POSIX path cap"));
--		if(cap & CIFS_UNIX_XATTR_CAP)
-+		if (cap & CIFS_UNIX_XATTR_CAP)
- 			cFYI(1,("XATTR cap"));
--		if(cap & CIFS_UNIX_POSIX_ACL_CAP)
-+		if (cap & CIFS_UNIX_POSIX_ACL_CAP)
- 			cFYI(1,("POSIX ACL cap"));
-+		if (cap & CIFS_UNIX_LARGE_READ_CAP)
-+			cFYI(1,("very large read cap"));
-+		if (cap & CIFS_UNIX_LARGE_WRITE_CAP)
-+			cFYI(1,("very large write cap"));
- #endif /* CIFS_DEBUG2 */
- 		if (CIFSSMBSetFSUnixInfo(xid, tcon, cap)) {
- 			cFYI(1,("setting capabilities failed"));
-@@ -1935,7 +1946,8 @@ cifs_mount(struct super_block *sb, struc
- 			cERROR(1,("rsize %d too large, using MaxBufSize",
- 				volume_info.rsize));
- 			cifs_sb->rsize = CIFSMaxBufSize;
--		} else if((volume_info.rsize) && (volume_info.rsize <= CIFSMaxBufSize))
-+		} else if ((volume_info.rsize) &&
-+				(volume_info.rsize <= CIFSMaxBufSize))
- 			cifs_sb->rsize = volume_info.rsize;
- 		else /* default */
- 			cifs_sb->rsize = CIFSMaxBufSize;
-@@ -2116,7 +2128,9 @@ cifs_mount(struct super_block *sb, struc
- 		/* tell server which Unix caps we support */
- 		if (tcon->ses->capabilities & CAP_UNIX)
- 			reset_cifs_unix_caps(xid, tcon, sb, &volume_info);
--		
-+		else if(cifs_sb->rsize > (1024 * 127)) {
-+			cifs_sb->rsize = 1024 * 127;
-+		}
- 		if (!(tcon->ses->capabilities & CAP_LARGE_WRITE_X))
- 			cifs_sb->wsize = min(cifs_sb->wsize,
- 					     (tcon->ses->server->maxBuf -
+No idea how I managed to break that after test compiling it... :-/
+Thanks for catching it :-)
 
+So unless I messed up something again, here's the final patch.
 
-
-
-
--- 
 Thanks,
+Björn
 
-Steve
+
+Fix two races in the timer stats lookup code. One by ensuring that the
+initialization of a new entry is finished upon insertion of that entry.
+The other by cleaning up the hash table when the entries array is
+cleared, so that we don't have any "pre-inserted" entries.
+
+Thanks to Eric Dumazet for reminding me of the memory barriers.
+
+Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
+Signed-off-by: Ian Kumlien <pomac@vapor.com>
+---
+diff --git a/kernel/time/timer_stats.c b/kernel/time/timer_stats.c
+index 868f1bc..fa3d380 100644
+--- a/kernel/time/timer_stats.c
++++ b/kernel/time/timer_stats.c
+@@ -117,21 +117,6 @@ static struct entry entries[MAX_ENTRIES];
+ 
+ static atomic_t overflow_count;
+ 
+-static void reset_entries(void)
+-{
+-	nr_entries = 0;
+-	memset(entries, 0, sizeof(entries));
+-	atomic_set(&overflow_count, 0);
+-}
+-
+-static struct entry *alloc_entry(void)
+-{
+-	if (nr_entries >= MAX_ENTRIES)
+-		return NULL;
+-
+-	return entries + nr_entries++;
+-}
+-
+ /*
+  * The entries are in a hash-table, for fast lookup:
+  */
+@@ -149,6 +134,22 @@ static struct entry *alloc_entry(void)
+ 
+ static struct entry *tstat_hash_table[TSTAT_HASH_SIZE] __read_mostly;
+ 
++static void reset_entries(void)
++{
++	nr_entries = 0;
++	memset(entries, 0, sizeof(entries));
++	memset(tstat_hash_table, 0, sizeof(tstat_hash_table));
++	atomic_set(&overflow_count, 0);
++}
++
++static struct entry *alloc_entry(void)
++{
++	if (nr_entries >= MAX_ENTRIES)
++		return NULL;
++
++	return entries + nr_entries++;
++}
++
+ static int match_entries(struct entry *entry1, struct entry *entry2)
+ {
+ 	return entry1->timer       == entry2->timer	  &&
+@@ -202,12 +203,15 @@ static struct entry *tstat_lookup(struct entry *entry, char *comm)
+ 	if (curr) {
+ 		*curr = *entry;
+ 		curr->count = 0;
++		curr->next = NULL;
+ 		memcpy(curr->comm, comm, TASK_COMM_LEN);
++
++		smp_mb(); /* Ensure that curr is initialized before insert */
++
+ 		if (prev)
+ 			prev->next = curr;
+ 		else
+ 			*head = curr;
+-		curr->next = NULL;
+ 	}
+  out_unlock:
+ 	spin_unlock(&table_lock);
+@@ -360,6 +364,7 @@ static ssize_t tstats_write(struct file *file, const char __user *buf,
+ 		if (!active) {
+ 			reset_entries();
+ 			time_start = ktime_get();
++			smp_mb();
+ 			active = 1;
+ 		}
+ 		break;
