@@ -1,87 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761705AbXEaMfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761907AbXEaMgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761705AbXEaMfq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 08:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757762AbXEaMfj
+	id S1761907AbXEaMgE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 08:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761489AbXEaMfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 08:35:39 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:12508 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757368AbXEaMfi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 08:35:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=O/MnRBlorfVIk6lIhWa6fRE8LNg3hfgD4OFcS/sYH+9ikcEa4mWMnxzvIFe32nYisxv9I4t0cDNioU6s2c6jVQHVwpQyPOIU9xWUmxBO94uBTGduK4LS3zb3GXrjjQuXvDhHlFdc3Bnf2n7n+S9i3RmLfIGGFsc4xyZKV+wNW7w=
-Message-ID: <2bd9ebfa0705310535j412f11f4tfd2b44a5a4d04cfc@mail.gmail.com>
-Date: Thu, 31 May 2007 18:05:34 +0530
-From: "Tej Parkash" <tejparkash.d@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: reg: kprobe method
+	Thu, 31 May 2007 08:35:51 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42877 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761304AbXEaMfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 08:35:50 -0400
+Message-ID: <465EC101.7010105@garzik.org>
+Date: Thu, 31 May 2007 08:35:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: 2.6.22-rc3-mm1
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>	<20070531140922.2e55aefb@gondolin.boeblingen.de.ibm.com>	<20070531121557.GQ23968@parisc-linux.org> <20070531142048.05edf133@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070531142048.05edf133@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi all
+Cornelia Huck wrote:
+> On Thu, 31 May 2007 06:15:57 -0600,
+> Matthew Wilcox <matthew@wil.cx> wrote:
+> 
+>> On Thu, May 31, 2007 at 02:09:22PM +0200, Cornelia Huck wrote:
+>>> I split those functions out into a new file. Builds on s390 and i386.
+>> Why not just put #ifdef CONFIG_HAS_DMA / #endif around the pair of
+>> functions?  I don't see the need to add a new Kconfig symbol and a new
+>> file for this.
+> 
+> I prefer a new file over #ifdefs in c files. (New dma-dependent stuff
+> would also have a place where it could go to.)
+> 
+> But I'll do whatever ends up as consensus :)
 
-there is some problem in adding simple printk using kprobe method
+50 lines isn't much need for a new file.
 
-i m posting the my code anybody can suggest how to make it work
-
-#include<linux/kernel.h>
-#include<linux/version.h>
-#include<linux/module.h>
-#include<linux/init.h>
-#include<linux/kprobes.h>
-#include<linux/kallsyms.h>
-
-MODULE_AUTHOR("TEJ");
-MODULE_LICENSE("GPL");
-//MODULE_PARM(int,val,I_IRUGO);
-
-struct kprobe kp;
-static int handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
- printk("my name is tej parkash dhiman");
-        return 0;
-}
+	Jeff
 
 
-void handler_post(struct kprobe *p, struct pt_regs *regs, unsigned long flags)
-{
-        printk("mast hai na tej ash ker");
-}
 
-static int init_mod(void)
-{
-
-struct kprobe kp;
-kp.post_handler=handler_post;
-kp.pre_handler=handler_pre;
-
-kp.addr = (kprobe_opcode_t *) 0xc0278e50; //add for __sock_create
-
-if(kp.addr== NULL) {
-                printk("kallsyms_lookup_name could not find address
-for the specified symbol name\n");
-                return 0;
-                    }
-
-register_kprobe(&kp);
-printk("Module is inserted");
-return 0;
-}
-void exit_mod(void)
-{
-unregister_kprobe(&kp);
-printk("module is removed");
-}
-module_init(init_mod);
-module_exit(exit_mod);
-
-thanks
-TEJ
