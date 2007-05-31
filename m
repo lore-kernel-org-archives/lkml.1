@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbXEaEKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760047AbXEaEKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759829AbXEaEKf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 00:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbXEaEK0
+	id S1760047AbXEaEKv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 00:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbXEaEKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 00:10:26 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:10271 "EHLO
+	Thu, 31 May 2007 00:10:39 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:8132 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753661AbXEaEKZ (ORCPT
+	with ESMTP id S1759899AbXEaEKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 00:10:25 -0400
-Message-ID: <465E4AA9.70706@chelsio.com>
-Date: Wed, 30 May 2007 21:10:17 -0700
+	Thu, 31 May 2007 00:10:38 -0400
+Message-ID: <465E4AB8.2000903@chelsio.com>
+Date: Wed, 30 May 2007 21:10:32 -0700
 From: Divy Le Ray <divy@chelsio.com>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Subject: Re: [PATCH 1/7] cxgb3 - Fix SGE page management
-References: <20070526225947.12097.82363.stgit@localhost.localdomain> <465B58DE.1010308@garzik.org>
-In-Reply-To: <465B58DE.1010308@garzik.org>
+To: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Steve Wise <swise@opengridcomputing.com>
+Subject: [PATCH 0/3] cxgb3 - Driver updates 
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 May 2007 04:09:59.0436 (UTC) FILETIME=[8E02CCC0:01C7A339]
+X-OriginalArrivalTime: 31 May 2007 04:10:13.0654 (UTC) FILETIME=[967C4B60:01C7A339]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> divy@chelsio.com wrote:
->> From: Divy Le Ray <divy@chelsio.com>
->>
->> Streamline page management on RX.
->> Fix dma mappings.
->>
->
-> NAK #2:  You should use the page_address(page) accessor rather than 
-> creating a struct member in the same struct as your page, solely to 
-> contain the virtual address.
-Jeff,
+Hi Jeff,
 
-The struct member caches the value of page_address(page) + current 
-offset for optimization purposes.
+I'm submitting a patch series for inclusion in netdev#upstream.
 
+Here is a brief description:
+- update page management in the SGE code,
+- update FW to 4.1 and proceed to subsequent HW tuning,
+- allow microcode update without a power cycle.
+
+Cheers,
 Divy
-
