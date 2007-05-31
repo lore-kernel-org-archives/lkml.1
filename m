@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXEaSXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761289AbXEaSYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760908AbXEaSXr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 14:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbXEaSXk
+	id S1761289AbXEaSYR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 14:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbXEaSYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 14:23:40 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:34171 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbXEaSXj (ORCPT
+	Thu, 31 May 2007 14:24:00 -0400
+Received: from pool-151-205-99-173.ny325.east.verizon.net ([151.205.99.173]:40103
+	"HELO gatworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757060AbXEaSX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 14:23:39 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=mpUz8Nu4YlF46SHvnvTuiXlsAXPV1igCnsSkGoD4/kp1NHvY9cdBKkAzSDIIkrb4U
-	tbf0MjCAEKNLdAR5DGB+A==
-Message-ID: <b040c32a0705311123i518ab280j88cb4675ea97b315@mail.gmail.com>
-Date: Thu, 31 May 2007 11:23:32 -0700
-From: "Ken Chen" <kenchen@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: + loop-preallocate-eight-loop-devices.patch added to -mm tree
-Cc: walt <wa1ter@myrealbox.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070531111052.534573b8.akpm@linux-foundation.org>
+	Thu, 31 May 2007 14:23:59 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 May 2007 14:23:59 EDT
+Message-ID: <465F112C.6090409@gatworks.com>
+Date: Thu, 31 May 2007 14:17:16 -0400
+From: Uncle George <netbeans@gatworks.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: SELECT() returns 1 But FIONREAD says (Input/output error)
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705212200.l4LM0tYK021050@shell0.pdx.osdl.net>
-	 <20070522001851.GE4095@ftp.linux.org.uk>
-	 <b040c32a0705211830h127dfd8dk8930de6655d37d90@mail.gmail.com>
-	 <20070522014822.GF4095@ftp.linux.org.uk>
-	 <b040c32a0705211914w3843bd46o542476be97e0b6cf@mail.gmail.com>
-	 <b040c32a0705211940xe7cdf1cnb2c882edacc17a27@mail.gmail.com>
-	 <f3mro0$u8p$1@sea.gmane.org>
-	 <b040c32a0705310951t7d9acdf5n34815bc5fc156e26@mail.gmail.com>
-	 <20070531111052.534573b8.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/31/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> I have a note here that it needs additional work.  This discussion:
->
-> http://lkml.org/lkml/2007/5/21/602
->
-> seemed to peter out and go nowhere?
+i am using the GARMIN_GPS/usb driver to read a gps receiver.
+In testing the ability of my software to recover from various errors, I 
+try this: unplug the gps/USB cable from the usb hub.
 
-The first rev went in -mm needs work and the above url is the result
-of feedback from Al Viro.  He also acked the patch in the follow on
-thread:
-http://lkml.org/lkml/2007/5/22/5
+Interestingly enough the thread spins.
+the SELECT() waits for something to happen, and I get one channel that 
+something interesting happened.
+Then i try to find out how many chars are in the read buff via FIONREAD. 
+That call errors out with an i/o error.
 
-Not sure how widely it was tested on that last patch, I see a few
-reports that the patch works out OK.
+Needless to day, the code resets the SELECT parameters, and SELECT is 
+called again. It again says that something interesting has happened on 
+that ( i/o errored ) channel. And we now repeat the  FIONREAD.
+
+In this case what, will reset the "something interesting has happened" 
+report from the SELECT call? Will it ever be reset in this case?
+
