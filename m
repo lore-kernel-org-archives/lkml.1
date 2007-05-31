@@ -1,70 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbXEaU2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbXEaUkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727AbXEaU2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 16:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbXEaU2F
+	id S1753119AbXEaUkC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 16:40:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXEaUjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 16:28:05 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:39476 "EHLO pasmtpB.tele.dk"
+	Thu, 31 May 2007 16:39:53 -0400
+Received: from smtp6-g19.free.fr ([212.27.42.36]:37573 "EHLO smtp6-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751504AbXEaU2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 16:28:03 -0400
-Date: Thu, 31 May 2007 22:29:03 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Prarit Bhargava <prarit@redhat.com>, len.brown@intel.com
-Cc: Christoph Lameter <clameter@sgi.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
+	id S1750904AbXEaUjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 16:39:52 -0400
+Message-ID: <465F3361.106@free.fr>
+Date: Thu, 31 May 2007 22:43:13 +0200
+From: Thierry Merle <thierry.merle@free.fr>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] acpi: fix section mismatch warning in asus + toshiba
-Message-ID: <20070531202903.GE27305@uranus.ravnborg.org>
-References: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com> <Pine.LNX.4.64.0705302019040.5583@schroedinger.engr.sgi.com> <465EE7BB.4050605@redhat.com> <20070531200446.GA27305@uranus.ravnborg.org> <20070531202440.GD27305@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531202440.GD27305@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+References: <2172422218943432279@wsc.cz>	 <1180364420.21547.160.camel@localhost>	 <d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>	 <1180378677.21547.189.camel@localhost>	 <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>	 <1180383071.21547.230.camel@localhost> <465B49EB.4080204@free.fr>	 <465BBAFB.30906@free.fr> <1180448712.21547.314.camel@localhost>	 <465C7920.2080203@free.fr> <1180467116.9509.73.camel@localhost>
+In-Reply-To: <1180467116.9509.73.camel@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following section mismatch warnings in acpi
 
-WARNING: drivers/acpi/asus_acpi.o(.init.text+0xb7): Section mismatch: reference to .exit.text: (after 'init_module')
-WARNING: o-i386/drivers/acpi/toshiba_acpi.o(.init.text+0x13a): Section mismatch: reference to .exit.text: (after 'init_module')
 
-The exit function is used in the init function during an error codition.
-As __exit may be discarded during link-time / run-time this is no good.
-Do not mark the exit function __exit.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-Updated patch that covers both drivers.
-
-	Sam
-
-diff --git a/drivers/acpi/asus_acpi.c b/drivers/acpi/asus_acpi.c
-index b770dea..6d7d415 100644
---- a/drivers/acpi/asus_acpi.c
-+++ b/drivers/acpi/asus_acpi.c
-@@ -1357,7 +1357,7 @@ static struct backlight_ops asus_backlight_data = {
-         .update_status  = set_brightness_status,
- };
- 
--static void __exit asus_acpi_exit(void)
-+static void asus_acpi_exit(void)
- {
- 	if (asus_backlight_device)
- 		backlight_device_unregister(asus_backlight_device);
-diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
-index 3906d47..1cfbecb 100644
---- a/drivers/acpi/toshiba_acpi.c
-+++ b/drivers/acpi/toshiba_acpi.c
-@@ -538,7 +538,7 @@ static struct backlight_ops toshiba_backlight_data = {
-         .update_status  = set_lcd_status,
- };
- 
--static void __exit toshiba_acpi_exit(void)
-+static void toshiba_acpi_exit(void)
- {
- 	if (toshiba_backlight_device)
- 		backlight_device_unregister(toshiba_backlight_device);
+Mauro Carvalho Chehab a écrit :
+> Em Ter, 2007-05-29 às 21:04 +0200, Thierry Merle escreveu:
+>   
+>> Mauro Carvalho Chehab a écrit :
+>>     
+>>>   
+>>>   
+>>>       
+>>>>> Hi Mauro and Markus,
+>>>>> Just to summ up what I understood we need:
+>>>>>
+>>>>> What do we need in userspace, only for v4l (dvb is not concerned):
+>>>>> - colorspace translations
+>>>>> - filters that be done in hardware if the selected hardware can, 
+>>>>> otherwise software plugin
+>>>>> - decompression algorithm like stk11xx or usbvision (the decompression 
+>>>>> algorithm is in kernelspace since it is of linear complexity but shall 
+>>>>> be moved to userspace)
+>>>>>       
+>>>>>           
+>>> Yes. The first focus, IMO, should be the last one.
+>>>
+>>>   
+>>>       
+>> OK, so we must open the V4L2 API to add a custom pixel format.
+>>     
+> I don't think we need to change the API. The API already exports the
+> format, as a fourcc-like info. We just need to add newer codes as
+> they'll be added into kernel.
+>
+>   
+>> While brainstorming, I thought it would be funny to create userspace 
+>> drivers like FUSE based projects do.
+>> Applications would see nothing but a new device driver to access, all 
+>> decompression algorithm would be in userspace.
+>> The path from the application to the v4l2 kernel driver:
+>> [Application]<->[/mnt/video0 (created by FUSE-like userspace 
+>> lib)]<->[/dev/video0 (created by kernel v4l2 driver)]
+>> There are limitations that I don't know, but this would be transparent 
+>> for the applications.
+>>     
+>
+> This seems to be an interesting approach.
+>
+>   
+Interesting but impossible to do for ioctl calls.
+When the application does a ioctl(fd_of_mnt_video0,VIDIOC_G_FMT,&arg) 
+for example, there is no way for the userspace helper to catch this ioctl.
+The application could only open/read from the userspace helper's file 
+/mnt/video0.
+ioctl would still have to be done on the kernel device driver.
+I thought also about a /proc interface for decompression algorithms (a 
+helper would listen on a /proc file and write on another /proc file) but 
+/proc is not designed for that kind of thing.
+A separate library seems to be the simplest solution.
+>>> Yes, it is possible. In fact, some devices currently work by generating
+>>> a common audio and video stream. The driver may just send the packet
+>>> as-is, leaving to the userspace API the function to de-merge and
+>>> synchronize audio and video.
+>>>   
+>>>       
+>> So we have a userspace lib that will demux/uncompress device driver output.
+>> This lib will know each device driver particularities to know how to 
+>> demux/uncompress in a a/v format that will be understood by the application.
+>>     
+>
+> Yes. However, we should try to do loose coupling whenever possible, to
+> keep maintainership of the "library"(*) as simple as possible.
+>
+> (*) With this approach, it seems that it will turn into a helper daemon,
+> instead of just a library.
+>
+> Cheers,
+> Mauro
+>
+>   
