@@ -1,164 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbXEaNwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbXEaNxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753062AbXEaNwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 09:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbXEaNwJ
+	id S1753354AbXEaNxa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 09:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbXEaNxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 09:52:09 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57836 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751182AbXEaNwI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 09:52:08 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, ak@suse.de,
-       linux-kernel@vger.kernel.org, nanhai.zou@intel.com,
-       asit.k.mallick@intel.com, keith.packard@intel.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86_64 irq: check remote IRR bit before migrating level triggered irq (v3)
-References: <20070517230324.GB8089@linux-os.sc.intel.com>
-	<m1d50h5irm.fsf@ebiederm.dsl.xmission.com>
-	<20070531133426.GA30616@elte.hu>
-Date: Thu, 31 May 2007 07:50:58 -0600
-In-Reply-To: <20070531133426.GA30616@elte.hu> (Ingo Molnar's message of "Thu,
-	31 May 2007 15:34:26 +0200")
-Message-ID: <m1hcpt3xvh.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 31 May 2007 09:53:22 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43446 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751629AbXEaNxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 09:53:22 -0400
+Message-ID: <465ED34C.2060801@garzik.org>
+Date: Thu, 31 May 2007 09:53:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
+       Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org
+Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
+References: <20070528143101.GB10008@csclub.uwaterloo.ca> <200705310051.l4V0pvk2018678@turbo.physics.adelaide.edu.au> <20070531134003.GQ10006@csclub.uwaterloo.ca>
+In-Reply-To: <20070531134003.GQ10006@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Lennart Sorensen wrote:
+> On Thu, May 31, 2007 at 10:21:57AM +0930, Jonathan Woithe wrote:
+>> I don't think so but I could be wrong.  When "Configure SATA as" was set to
+>> "IDE" the HDD was being detected as a SATA drive and showed up as /dev/sda. 
+>> The only visible difference the change to "AHCI" made was that instead of
+>> the drive being handled by the ata_piix it now utilises the ahci driver
+>> (which is a much better driver).  The other interesting thing is that the
+>> probe for the Marvell PATA device occured before the initialisation of the
+>> ata_piix driver (or ahci for that matter), so as far as I can tell ata_piix
+>> had no chance to grab any ports before the marvell driver initialised.
+> 
+> Linux can still detect the chip and drive it natively even if the bios
+> is emulating IDE/PATA on the chip.  And libata will make both PATA and
+> SATA show up as /dev/sda now if you use libata for both.  On the other
+> hand if the bios has configured the intel chip to use the standard ide
+> registers, then it can't have configured the marvell to do so I would
+> guess, which could make it difficult to talk to.
 
-On x86_64 kernel, level triggered irq migration gets initiated in the context
-of that interrupt(after executing the irq handler) and following steps are
-followed to do the irq migration.
+Mostly true...  "standard IDE" can be configured in two modes, legacy 
+mode and native mode.  Legacy mode has fixed addresses originating from 
+the ISA days (0x170, 0x1f0, irqs 14 & 15), and (as you implied) you 
+cannot bind two IDE controllers to the same ISA addresses.
 
-1. mask IOAPIC RTE entry;     // write to IOAPIC RTE
-2. EOI;                       // processor EOI write
-3. reprogram IOAPIC RTE entry // write to IOAPIC RTE with new destination and
-                              // and interrupt vector due to per cpu vector
-                              // allocation.
-4. unmask IOAPIC RTE entry;   // write to IOAPIC RTE
+OTOH, an unlimited number of IDE controllers can be configured into 
+native mode, where all addresses and irq are allocated using standard 
+means accorded all PCI devices.
 
-Because of the per cpu vector allocation in x86_64 kernels, when the irq
-migrates to a different cpu, new vector(corresponding to the new cpu) will
-get allocated.
+	Jeff
 
-An EOI write to local APIC has a side effect of generating an EOI write
-for level trigger interrupts (normally this is a broadcast to all IOAPICs).
-The EOI broadcast generated as a side effect of EOI write to processor may
-be delayed while the other IOAPIC writes (step 3 and 4) can go through.
 
-Normally, the EOI generated by local APIC for level trigger interrupt
-contains vector number. The IOAPIC will take this vector number and
-search the IOAPIC RTE entries for an entry with matching vector number and
-clear the remote IRR bit (indicate EOI). However, if the vector number is
-changed (as in step 3) the IOAPIC will not find the RTE entry when the EOI
-is received later. This will cause the remote IRR to get stuck causing the
-interrupt hang (no more interrupt from this RTE).
-
-Current x86_64 kernel assumes that remote IRR bit is cleared by the time
-IOAPIC RTE is reprogrammed. Fix this assumption by checking for remote IRR
-bit and if it still set, delay the irq migration to the next interrupt
-arrival event(hopefully, next time remote IRR bit will get cleared
-before the IOAPIC RTE is reprogrammed).
-
-Initial analysis and patch from Nanhai.
-
-Clean up patch from Suresh.
-
-Rewritten to be less intrusive, and to contain a big fat comment by Eric.
-
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Cc: Nanhai Zou <nanhai.zou@intel.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Asit Mallick <asit.k.mallick@intel.com>
-Cc: Keith Packard <keith.packard@intel.com>
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- arch/x86_64/kernel/io_apic.c |   58 ++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 56 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86_64/kernel/io_apic.c b/arch/x86_64/kernel/io_apic.c
-index d8bfe31..7c032f2 100644
---- a/arch/x86_64/kernel/io_apic.c
-+++ b/arch/x86_64/kernel/io_apic.c
-@@ -152,6 +152,32 @@ static inline void io_apic_modify(unsigned int apic, unsigned int value)
- 	writel(value, &io_apic->data);
- }
- 
-+static int io_apic_level_ack_pending(unsigned int irq)
-+{
-+	struct irq_pin_list *entry;
-+	unsigned long flags;
-+	int pending = 0;
-+
-+	spin_lock_irqsave(&ioapic_lock, flags);
-+	entry = irq_2_pin + irq;
-+	for (;;) {
-+		unsigned int reg;
-+		int pin;
-+
-+		pin = entry->pin;
-+		if (pin == -1)
-+			break;
-+		reg = io_apic_read(entry->apic, 0x10 + pin*2);
-+		/* Is the remote IRR bit set? */
-+		pending |= (reg >> 14) & 1;
-+		if (!entry->next)
-+			break;
-+		entry = irq_2_pin + entry->next;
-+	}
-+	spin_unlock_irqrestore(&ioapic_lock, flags);
-+	return pending;
-+}
-+
- /*
-  * Synchronize the IO-APIC and the CPU by doing
-  * a dummy read from the IO-APIC
-@@ -1418,9 +1444,37 @@ static void ack_apic_level(unsigned int irq)
- 	ack_APIC_irq();
- 
- 	/* Now we can move and renable the irq */
--	move_masked_irq(irq);
--	if (unlikely(do_unmask_irq))
-+	if (unlikely(do_unmask_irq)) {
-+		/* Only migrate the irq if the ack has been received.
-+		 *
-+		 * On rare occaions the broadcast level triggered ack gets
-+		 * delayed going to ioapics, and if we reprogram the
-+		 * vector while Remote IRR is still the irq will never
-+		 * fire again.
-+		 *
-+		 * To prevent this scenario we read the Remote IRR bit
-+		 * of the ioapic.  This has two affects.
-+		 * - On any sane system the read of the ioapic will
-+		 *   flush writes (and acks) going to the ioapic from
-+		 *   this cpu.
-+		 * - We get to see if the ACK has actually been delivered.
-+		 *
-+		 * Based on failed experiments of reprogramming the
-+		 * ioapic entry from outside of irq context starting
-+		 * with masking the ioapic entry and then polling until
-+		 * Remote IRR was clear before reprogramming the
-+		 * ioapic I don't trust the Remote IRR bit to be
-+		 * completey accurate.
-+		 *
-+		 * However there appears to be no other way to plug
-+		 * this race, so if the Remote IRR bit is not
-+		 * accurate and causing problems it is a hardware bug
-+		 * and you can go talk chipset vendor about it.
-+		 */
-+		if (!io_apic_level_ack_pending(irq))
-+			move_masked_irq(irq);
- 		unmask_IO_APIC_irq(irq);
-+	}
- }
- 
- static struct irq_chip ioapic_chip __read_mostly = {
--- 
-1.5.1.1.181.g2de0
 
