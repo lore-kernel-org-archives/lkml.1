@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbXEaChz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758455AbXEaCwF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbXEaChz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 22:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbXEaChs
+	id S1758455AbXEaCwF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 22:52:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXEaCvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 22:37:48 -0400
-Received: from mga09.intel.com ([134.134.136.24]:38143 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755658AbXEaChq convert rfc822-to-8bit (ORCPT
+	Wed, 30 May 2007 22:51:55 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58197 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755504AbXEaCvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 22:37:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,596,1170662400"; 
-   d="scan'208";a="92040685"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 30 May 2007 22:51:54 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: mingo@elte.hu, ak@suse.de, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Zou, Nanhai" <nanhai.zou@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Packard, Keith" <keith.packard@intel.com>
+Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
+References: <20070518010119.GB12088@linux-os.sc.intel.com>
+	<m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
+	<20070518180749.GA26081@linux-os.sc.intel.com>
+Date: Wed, 30 May 2007 20:50:55 -0600
+In-Reply-To: <20070518180749.GA26081@linux-os.sc.intel.com> (Suresh
+	B. Siddha's message of "Fri, 18 May 2007 11:07:49 -0700")
+Message-ID: <m1wsyp6700.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Date: Wed, 30 May 2007 19:37:45 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A01929DD3@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <Pine.LNX.4.64.0705301657530.3832@schroedinger.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Thread-Index: AcejGAixn1k91OG4QuyhbKhTkDJfEAAFDLZw
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Christoph Lameter" <clameter@sgi.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>
-Cc: "David Chinner" <dgc@sgi.com>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "lkml" <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-X-OriginalArrivalTime: 31 May 2007 02:37:45.0776 (UTC) FILETIME=[ABB14B00:01C7A32C]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ahh okay. cscope will do that too.... But all have __exit.
+"Siddha, Suresh B" <suresh.b.siddha@intel.com> writes:
 
-The trick is that one of them *shouldn't* have __exit.  With cscope
-you'll have to use the "Find functions calling this function:"
-mode to try and find the __init function that is calling an
-__exit function.
+> Eric,
+>
+> On Fri, May 18, 2007 at 07:40:53AM -0700, Eric W. Biederman wrote:
+>> Still in any of those I don't see a problem with switching to edge
+>> triggered mode and then back again.  Either Remote IRR will keep
+>> it's current state or it will be cleared.   Remote IRR should not
+>> get set (when it was clear) by such a procedure because that
+>> would mess up the normal interrupt enable sequence that happens
+>> on boot.  So I'm pretty certain toggling the edge bit is harmless
+>> and it may actually clear Remote IRR for us.
+> ...
+>> 
+>> I think going more the way that this code has gone on arch/i386 with
+>> real functions is preferable.
+>
+> There is an issue with this suggestion. We have an inflight
+> EOI broadcast msg to this IOAPIC (that got delayed but still alive) and
+> that can cause problem if we use edge and back to level to reset remote IRR bit.
+>
+> If the vector number stays same during irq migration and if we reset remote
+> IRR bit using the above method(edge and then back to level) during
+> irq migration, then we have a problem. A new interrupt arriving on a new
+> cpu will set the remote IRR bit and now the old inflight EOI broadcast
+> reaches IOAPIC RTE(resetting the remote IRR bit, because the vector in the
+> broadcast msg is same), while the kernel code still assumes that the remote
+> IRR bit is still set. This will lead to more problems and issues.
 
--Tony
+Ok.  I will agree that if the level->edge->level switch does not reset
+Remote_IRR and the EOI arrives in that window.  We have another condition
+in which Remote_IRR can get stuck on.
+
+Eric
