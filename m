@@ -1,104 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbXEaXfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760833AbXEaXfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759642AbXEaXfZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 19:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbXEaXfO
+	id S1760833AbXEaXfo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 19:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbXEaXfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 19:35:14 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:57927 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752241AbXEaXfM (ORCPT
+	Thu, 31 May 2007 19:35:31 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60786 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760266AbXEaXf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 19:35:12 -0400
-Date: Thu, 31 May 2007 16:34:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [2/4] 2.6.22-rc3: known regressions
-Message-Id: <20070531163403.6f845c84.akpm@linux-foundation.org>
-In-Reply-To: <adalkf4oa6r.fsf@cisco.com>
-References: <465C188F.9000900@googlemail.com>
-	<465C22F4.8080505@googlemail.com>
-	<alpine.LFD.0.98.0705301918450.26602@woody.linux-foundation.org>
-	<20070531220833.GA10867@beardog.cca.cpqcorp.net>
-	<alpine.LFD.0.98.0705311516350.26602@woody.linux-foundation.org>
-	<20070531223908.GA12325@beardog.cca.cpqcorp.net>
-	<20070531155018.a8226075.akpm@linux-foundation.org>
-	<alpine.LFD.0.98.0705311610440.26602@woody.linux-foundation.org>
-	<adalkf4oa6r.fsf@cisco.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 31 May 2007 19:35:29 -0400
+Date: Fri, 1 Jun 2007 09:34:49 +1000
+From: David Chinner <dgc@sgi.com>
+To: Phillip Susi <psusi@cfl.rr.com>
+Cc: David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       david@lang.hm, Neil Brown <neilb@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+Message-ID: <20070531233449.GT86004887@sgi.com>
+References: <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <465F1479.70100@cfl.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465F1479.70100@cfl.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 May 2007 16:17:00 -0700
-Roland Dreier <rdreier@cisco.com> wrote:
-
-> What about the changes to fix the order that MSI-X irqs are returned
-> in (iirc, list_add had to be changed to list_add_tail in a couple of
-> places).  Without that change, multiple MSI-X interrupts seem to be
-> broken: the kernel programs the MSI-X table in the opposite order that
-> it gives the irq numbers to the driver.  The net effect is that if I
-> request, say, 3 MSI-X interrupts for a device, then when the device
-> generates the first interrupt, the driver thinks it generated the
-> third interrupt, and things go fairly haywire.
+On Thu, May 31, 2007 at 02:31:21PM -0400, Phillip Susi wrote:
+> David Chinner wrote:
+> >That sounds like a good idea - we can leave the existing
+> >WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
+> >behaviour that only guarantees ordering. The filesystem can then
+> >choose which to use where appropriate....
 > 
+> So what if you want a synchronous write, but DON'T care about the order? 
 
-That's msi-fix-the-ordering-of-msix-irqs.patch, which is also queued for
-the next batch.
+submit_bio(WRITE_SYNC, bio);
 
+Already there, already used by XFS, JFS and direct I/O.
 
-"next batch" == around 40 patches atm.  Some of these need maintainer acks
-so they will be further delayed, or more likely just merged without the
-appropriate ack.
+Cheers,
 
-
-
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-
-"Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> writes:
-
-Found what seems the problem with our vectors being listed backward.  In
-drivers/pci/msi.c we should be using list_add_tail rather than list_add to
-preserve the ordering across various kernels.  Please consider this for
-inclusion.
-
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
-Screwed-up-by: Michael Ellerman <michael@ellerman.id.au>
-Cc: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Greg KH <greg@kroah.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/pci/msi.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff -puN drivers/pci/msi.c~msi-fix-the-ordering-of-msix-irqs drivers/pci/msi.c
---- a/drivers/pci/msi.c~msi-fix-the-ordering-of-msix-irqs
-+++ a/drivers/pci/msi.c
-@@ -333,7 +333,7 @@ static int msi_capability_init(struct pc
- 			msi_mask_bits_reg(pos, is_64bit_address(control)),
- 			maskbits);
- 	}
--	list_add(&entry->list, &dev->msi_list);
-+	list_add_tail(&entry->list, &dev->msi_list);
- 
- 	/* Configure MSI capability structure */
- 	ret = arch_setup_msi_irqs(dev, 1, PCI_CAP_ID_MSI);
-@@ -404,7 +404,7 @@ static int msix_capability_init(struct p
- 		entry->dev = dev;
- 		entry->mask_base = base;
- 
--		list_add(&entry->list, &dev->msi_list);
-+		list_add_tail(&entry->list, &dev->msi_list);
- 	}
- 
- 	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
-_
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
