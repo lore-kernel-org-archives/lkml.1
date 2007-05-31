@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbXEaG7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758357AbXEaHEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759249AbXEaG7L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 02:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbXEaG65
+	id S1758357AbXEaHEe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 03:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbXEaHEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 02:58:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46640 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754068AbXEaG64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 02:58:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: software suspend doesn't work with 2.6.22-rc3
-Date: Thu, 31 May 2007 09:04:47 +0200
-User-Agent: KMail/1.9.5
-Cc: Maximilian Engelhardt <maxi@daemonizer.de>, nigel@nigel.suspend2.net,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200705261128.57332.maxi@daemonizer.de> <20070529003959.GA32543@gondor.apana.org.au> <200705310854.52490.rjw@sisk.pl>
-In-Reply-To: <200705310854.52490.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 31 May 2007 03:04:23 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44352 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754146AbXEaHEV (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 03:04:21 -0400
+Date: Thu, 31 May 2007 17:03:08 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: David Chinner <dgc@sgi.com>, david@lang.hm,
+       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+Message-ID: <20070531070307.GK85884050@sgi.com>
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705310904.47894.rjw@sisk.pl>
+In-Reply-To: <20070531062644.GI32105@kernel.dk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 31 May 2007 08:54, Rafael J. Wysocki wrote:
-> On Tuesday, 29 May 2007 02:39, Herbert Xu wrote:
-> > On Mon, May 28, 2007 at 08:21:29PM +0200, Rafael J. Wysocki wrote:
-> > >
-> > > Well, it looks like we have to fix this one separately.
-> > > 
-> > > Can you please tell me what to do to make cryptd run?
+On Thu, May 31, 2007 at 08:26:45AM +0200, Jens Axboe wrote:
+> On Thu, May 31 2007, David Chinner wrote:
+> > IOWs, there are two parts to the problem:
 > > 
-> > If you build it as a module then just loading it should be sufficient.
-> > If you have it built-in then it should always be there.
+> > 	1 - guaranteeing I/O ordering
+> > 	2 - guaranteeing blocks are on persistent storage.
 > > 
-> > Let me know when you guys have a final patch.
+> > Right now, a single barrier I/O is used to provide both of these
+> > guarantees. In most cases, all we really need to provide is 1); the
+> > need for 2) is a much rarer condition but still needs to be
+> > provided.
+> > 
+> > > if I am understanding it correctly, the big win for barriers is that you 
+> > > do NOT have to stop and wait until the data is on persistant media before 
+> > > you can continue.
+> > 
+> > Yes, if we define a barrier to only guarantee 1), then yes this
+> > would be a big win (esp. for XFS). But that requires all filesystems
+> > to handle sync writes differently, and sync_blockdev() needs to
+> > call blkdev_issue_flush() as well....
+> > 
+> > So, what do we do here? Do we define a barrier I/O to only provide
+> > ordering, or do we define it to also provide persistent storage
+> > writeback? Whatever we decide, it needs to be documented....
 > 
-> The problem is more serious than I thought:
-> 
-> kthread_create() in crypto/cryptd.c line 302 doesn't return, so cryptd is stuck
-> in TASK_UNINTERRUPTIBLE all the time and it doesn't even execute one
-> instruction from cryptd_thread() [this happens on x86_64].
+> The block layer already has a notion of the two types of barriers, with
+> a very small amount of tweaking we could expose that. There's absolutely
+> zero reason we can't easily support both types of barriers.
 
-Sorry, I was wrong.
+That sounds like a good idea - we can leave the existing
+WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
+behaviour that only guarantees ordering. The filesystem can then
+choose which to use where appropriate....
 
-kthread_create() returns, but cryptd_thread() is not executed and the cryptd
-process is stuck in TASK_UNINTERRUPTIBLE.
+Cheers,
 
-Greetings,
-Rafael
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
