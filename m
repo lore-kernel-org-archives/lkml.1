@@ -1,86 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbXFAXAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbXFAXBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757805AbXFAXAy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 19:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbXFAXAs
+	id S1759304AbXFAXBq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 19:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbXFAXBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 19:00:48 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:42970 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752546AbXFAXAr (ORCPT
+	Fri, 1 Jun 2007 19:01:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58002 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754162AbXFAXBi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 19:00:47 -0400
-Date: Fri, 1 Jun 2007 16:00:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-In-Reply-To: <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.0.98.0706011554300.3957@woody.linux-foundation.org>
-References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
- <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
- <20070601135900.ec44b1aa.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
- <20070601151649.bb23c6f9.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com>
- <20070601153328.1118ccaf.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 1 Jun 2007 19:01:38 -0400
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com, Markus Rechberger <mrechberger@gmail.com>
+In-Reply-To: <465DD40B.10409@gmail.com>
+References: <2172422218943432279@wsc.cz>
+	 <1180364420.21547.160.camel@localhost>  <465DD40B.10409@gmail.com>
+Content-Type: text/plain
+Date: Fri, 01 Jun 2007 20:00:22 -0300
+Message-Id: <1180738822.3904.35.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Fri, 1 Jun 2007, Christoph Lameter wrote:
+> >> + * Copyright (C) Nicolas VIVIEN
+> > 
+> > It would be interesting to have Nicolas SOB as well, if possible.
 > 
-> Right it could catch a lot of other bugs as well.
+> I don't think he ever knows about this version of the driver. I got his GPL
+> driver, cleaned up -- coding style, v4l1 and v4l2 ioctl conversion to v4l2
+> functions, some bug fixes and so on... If you still want him to sign this
+> of, I'll try my best to catch him but can't guarantee any results.
 
-I'd actually prefer "malloc(0)" to _not_ return NULL, but some known 
-(non-NULL) bogus pointer.
+It would be nice. I can accept it without his ack, but it would be
+better to have it, if possible.
+> 
+> >> +
+> >> +#ifndef CONFIG_STK11XX_DEBUG_STREAM
+> >> +#define CONFIG_STK11XX_DEBUG_STREAM	0
+> >> +#endif
+> >> +
+> >> +#if CONFIG_STK11XX_DEBUG_STREAM
+> > 
+> > I would instead use:
+> > #ifdef CONFIG_STK11XX_DEBUG_STREAM
+> 
+> Hmm, no, I would rather get rid of CONFIG_ thing, it may make things
+> unclear, beacuse there is (will be) no option in Kconfig for this, because
+> this is the most verbose option for the driver mainly used for algorithms
+> debugging.
+Seems ok to me.
 
-Why?
+> > We don't do format conversions in kernel. Instead, you should return a
+> > proper Bayer Fourcc format (like V4L2_PIX_FMT_SBGGR8).
+> 
+> 
+> Ok, there is a debate about this, I will do the changes after some decision
+> will be made.
 
-Because it's quite sane to have simple logic like
+As you wish.
 
-	ptr = malloc(size);
-	if (!ptr)
-		return -ENOMEM;
+> > Please use instead the load_firmware routines. It is not a good idea to
+> > have firmware inside the kernel. Also, this might rise some legal issues
+> > due to licensing models.
+> 
+> Markus wrote:
+> <cite>
+> Jiri, are you allowed to include that microcode, did you get any
+> information about this from the manufacturer which could allow the
+> inclusion?
+> The sequences are rather small not putting it into extra firmware
+> files would make life much easier for some users, on the other side if
+> it raises legal issues Mauro's right with loading it from a file
+> </cite>
+> 
+> This seems to be a reverse engineered driver, I think, all those values are
+> intercepted, so there are no licensing issues.
 
-and writing it as
+Are those a code, or just another internal driver configuration (for
+example, maybe some register initialization inside the sensors)? We
+should take care to avoid adding material here that can be later
+complained.
+> > 
+> > Instead of using all those write, you should consider creating a table
+> > of values and use something like:
+> > 	stk11xx_write_regs(dev, table1);
+> 
+> There is a problem with this approach. There are reads every 3-5 writes and
+> this can grow into many small tables.
 
-	if (size && !ptr)
-		return -ENOMEM;
+Maybe you can do this then just for the bigger tables.
 
-is just annoying.
+> > You may also consider writing a separate c file for stk1135. Having a
+> > large .c file is not very nice. The better is to split the code into a
+> > few parts.
+> 
+> I don't like many files for one driver and finding little pieces of code
+> in each file separately -- 1125 + 1235 will be small pieces. Not considering
+> the static functions and warning about unused code. But it's up to you, it's
+> your subtree, make a decision.
 
-Also, NULL is _special_. There are absolutely tons of code in the kernel 
-(and elsewhere) that just does something *different* from NULL pointers, 
-and that totally breaks the whole notion of "you can allocate a zero-sized 
-allocation, you just must not dereference it". If people special-case 
-NULL as something else, they won't even go through the normal code-path.
+Your driver have about 3600 lines. We target to keep newer files with a
+maximum of about 1000 lines on the same file (unfortunately, some
+drivers are bigger than that), separating the driver into logical
+pieces. I think it would be interesting to split it into two or tree
+files.
 
-So for *both* of the above reasons, it's actually stupid to return NULL 
-for a zero-sized allocation. It would be much better to return another 
-pointer that will trap on access. A good candidate might be to return
+> 
+> >> +static void *stk11xx_rvmalloc(unsigned long size)
+> > 
+> > Another rvmalloc implementation? You should consider using the one
+> > already at kernel.
+> 
+> What's the name, I can't find it?
 
-	#define BADPTR ((void *)16)
+There are some rvmalloc on cpia, cpia2, em28xx, ... 
 
-which is a portable-enough (where "portable-enough" is "against strict 
-ANSI C rules, but works in practice on all architectures") way to return 
-something that will cause the same page fault behaviour as NULL, but will 
-_not_ trigger the "NULL is special" code.
+What the current drivers are doing is to replace it to vmalloc_32:
 
-(Of course, you then need to teach "kfree()" to accept it as another 
-pointer to be ignored, that's fine).
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)
+                if ((buff = rvmalloc(dev->num_frames * imagesize))) {
+#else
+                if ((buff = vmalloc_32(dev->num_frames * imagesize))) {
+#endif
 
-I bet you'd find *more* problems that way than by returning NULL, and 
-you'd also avoid the whole problem with "if (!ptr) return -ENOMEM".
+> 
+> The rest of comments has been applied, thanks,
 
-		Linus
+You're welcome.
+
+-- 
+Cheers,
+Mauro
+
