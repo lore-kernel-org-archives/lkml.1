@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763518AbXFAStp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763516AbXFASu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763518AbXFAStp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762137AbXFAStj
+	id S1763516AbXFASu1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762018AbXFASuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:49:39 -0400
-Received: from waste.org ([66.93.16.53]:42917 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762122AbXFASti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:49:38 -0400
-Date: Fri, 1 Jun 2007 13:49:13 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/9] Conditional Calls - Hash Table
-Message-ID: <20070601184913.GB11115@waste.org>
-References: <20070530140025.917261793@polymtl.ca> <20070530140227.398040643@polymtl.ca> <p731wgxds85.fsf@bingen.suse.de> <20070601160802.GL11166@waste.org> <20070601164623.GB4112@Krystal> <20070601170739.GA11115@waste.org> <20070601174510.GG7217@one.firstfloor.org> <20070601180654.GB7641@Krystal>
+	Fri, 1 Jun 2007 14:50:18 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:59860 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761924AbXFASuR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 14:50:17 -0400
+Date: Fri, 1 Jun 2007 19:50:14 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc3-mm1: IA64 make allnoconfig broken
+Message-ID: <20070601185013.GA13126@skynet.ie>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070601164204.GA25049@skynet.ie> <20070601100004.1e72654d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070601180654.GB7641@Krystal>
+In-Reply-To: <20070601100004.1e72654d.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 02:06:54PM -0400, Mathieu Desnoyers wrote:
-> * Andi Kleen (andi@firstfloor.org) wrote:
-> > > It's not clear to me why either of those things are necessary. An
-> > > example please?
-> > 
-> > It's certainly possible that a global flag would need to be tested
-> > more than once.
-> > 
-> > I guess it would work if a symbol is associated with a single
-> > definition. e.g. if there is a DEFINE_COND_CALL() somewhere
-> > and the individual cond calls reference it.
+On (01/06/07 10:00), Andrew Morton didst pronounce:
+> On Fri, 1 Jun 2007 17:42:04 +0100 mel@skynet.ie (Mel Gorman) wrote:
 > 
-> Yes, but as you have probably understood, I want to have everything
-> embedded at the cond_call() site rather than polluting the rest of the
-> code with declarations.
+> > mm/memory.c: In function `do_wp_page':
+> > mm/memory.c:1700: error: parse error before "__changed"
+> > mm/memory.c:1700: error: parse error before ')' token
+> > mm/memory.c:1704: error: parse error before "ret"
+> 
+> this?
+> 
+> --- a/include/asm-ia64/pgtable.h~rework-ptep_set_access_flags-and-fix-sun4c-fix
+> +++ a/include/asm-ia64/pgtable.h
+> @@ -546,7 +546,7 @@ extern void lazy_mmu_prot_update (pte_t 
+>  # define ptep_set_access_flags(__vma, __addr, __ptep, __entry, __safely_writable) \
+>  ({										\
+>  	int __changed = !pte_same(*(__ptep), __entry);				\
+> -	if (__changed) {							\
+> +	if (__changed)							\
+>  		ptep_establish(__vma, __addr, __ptep, __entry)			\
+>  	__changed;								\
+>  })
 
-And you do so at the expensive of the ability to have compile-time
-checks and the need to jump through a hash table at run-time. This
-doesn't seem like a good trade-off.
+Fails with
 
-Even if we -don't- do something like DEFINE_COND_CALL, it's still
-probably a good idea to not use raw strings inline and to instead use
-#defines. Raw strings are only slightly better than magic numbers.
+mm/memory.c: In function `do_wp_page':
+mm/memory.c:1700: error: parse error before "__changed"
+mm/memory.c: In function `handle_pte_fault':
+mm/memory.c:2544: error: parse error before "__changed"
 
-> Also, if we have the same cond_calls in different modules, in which
-> module shall it be defined ?
+Am currently testing the following;
 
-This isn't a new problem. It exists for every other type of object in
-the kernel.
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc3-mm1-clean/include/asm-ia64/pgtable.h linux-2.6.22-rc3-mm1-ia64fix/include/asm-ia64/pgtable.h
+--- linux-2.6.22-rc3-mm1-clean/include/asm-ia64/pgtable.h	2007-06-01 09:24:39.000000000 +0100
++++ linux-2.6.22-rc3-mm1-ia64fix/include/asm-ia64/pgtable.h	2007-06-01 19:44:48.000000000 +0100
+@@ -546,8 +546,8 @@ extern void lazy_mmu_prot_update (pte_t 
+ # define ptep_set_access_flags(__vma, __addr, __ptep, __entry, __safely_writable) \
+ ({										\
+ 	int __changed = !pte_same(*(__ptep), __entry);				\
+-	if (__changed) {							\
+-		ptep_establish(__vma, __addr, __ptep, __entry)			\
++	if (__changed)							\
++		ptep_establish(__vma, __addr, __ptep, __entry);			\
+ 	__changed;								\
+ })
+ #endif
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
