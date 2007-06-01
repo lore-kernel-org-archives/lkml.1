@@ -1,70 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763578AbXFAUnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764141AbXFAUoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763578AbXFAUnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762435AbXFAUnJ
+	id S1764141AbXFAUoU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762805AbXFAUoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:43:09 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35180 "EHLO
+	Fri, 1 Jun 2007 16:44:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49873 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762327AbXFAUnH (ORCPT
+	with ESMTP id S1762549AbXFAUoI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:43:07 -0400
-Date: Fri, 1 Jun 2007 13:43:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Jackson <pj@sgi.com>
-cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
+	Fri, 1 Jun 2007 16:44:08 -0400
+Date: Fri, 1 Jun 2007 13:44:07 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, torvalds@linux-foundation.org,
        vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+       clameter@sgi.com, clameter@cthulhu.engr.sgi.com, rientjes@google.com
 Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
  warning
-In-Reply-To: <20070601131950.0f3a507b.pj@sgi.com>
-Message-ID: <Pine.LNX.4.64.0706011340110.4323@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
- <Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
- <20070601121114.b165f1e8.pj@sgi.com> <Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
- <20070601124757.fe91a002.pj@sgi.com> <Pine.LNX.4.64.0706011249530.3598@schroedinger.engr.sgi.com>
- <20070601130212.7be4432a.pj@sgi.com> <Pine.LNX.4.64.0706011305230.3976@schroedinger.engr.sgi.com>
- <20070601131950.0f3a507b.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20070601134407.6e4d72de.pj@sgi.com>
+In-Reply-To: <466081DE.70205@goop.org>
+References: <465FCA79.70207@in.ibm.com>
+	<200706011620.05756.srinivasa@in.ibm.com>
+	<466081DE.70205@goop.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007, Paul Jackson wrote:
+> I think this is a good example of why having to special-case kmalloc(0)
+> is a bad idea.  The original code was straightforward and, barring
+> silliness, should be completely correct with npids==0.  This new code
+> does nothing other than make things more complex.
 
-> > There are no checks necessary. Your function worked fine so far for 
-> > the case of zero objects with the pointer returned by kmalloc. If the 
-> > code is correct then it will not dereference the pointer to the zero 
-> > sized array. If not then we may find a bug and fix it.
-> 
-> I suspect you got lucky.  The check for a full pidarray[] in the routine
-> pid_array_load() occurs -after- a pid is put in the array.  If a task
-> showed up in this cpuset at the wrong time, we would fall over and die
-> in the code:
+Perhaps so.  Perhaps not.
 
-Then you are deferencing an element in the pidarray that you did not 
-allocate! This is a bug in cpuset code. So we would need to allocate at 
-mininum one array element? Or would we need to allocate npids + 1 to be 
-safe???
+Actually, the original cpuset pid_array_load() code was not correct,
+and Christoph's work is smoking this out.
 
+The original code assumed that it could access the first element of the
+kmalloc'd array, before it checked if it could go even further.
 
----
- kernel/cpuset.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+But with the kmalloc call of:
 
-Index: linux-2.6/kernel/cpuset.c
-===================================================================
---- linux-2.6.orig/kernel/cpuset.c	2007-06-01 13:41:24.000000000 -0700
-+++ linux-2.6/kernel/cpuset.c	2007-06-01 13:42:08.000000000 -0700
-@@ -1741,7 +1741,7 @@ static int cpuset_tasks_open(struct inod
- 	 * show up until sometime later on.
- 	 */
- 	npids = atomic_read(&cs->count);
--	pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
-+	pidarray = kmalloc(max(1, npids) * sizeof(pid_t), GFP_KERNEL);
- 	if (!pidarray)
- 		goto err1;
- 
+	kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
+
+it is impossible for kmalloc to know how much to allocate, to guarantee
+such behaviour.  If npids is zero, all kmalloc sees, in essence, is the
+call:
+
+	kmalloc(0, GFP_KERNEL);
+
+There is no way it can guess that I might still want to access the
+first "size(pid_t)" bytes of whatever it returned.
+
+If we had a different sort of kmalloc API, such as would be called with:
+
+	kmalloc(npids, sizeof(pid_t), GFP_KERNEL);
+
+rather like the libc calloc() routine, having separate count and size
+fields, then in theory, kmalloc could treat calls of the form:
+
+	kmalloc(0, sz, GFP_KERNEL);	/* for sz > 0 */
+
+as if they were actually:
+
+	kmalloc(1, sz, GFP_KERNEL);
+
+and then my cpuset code might not have been broken.  But, since
+some of us can never remember whether it is the size or the count
+that comes first in such an API, we would still have had such
+bugs -- just fewer, for those who got those arguments backwards,
+and finally tripped over this anyway.
+
+That doesn't address the other likely broken code, elsewhere in
+the kernel somewhere that happened to try to access the 2nd or
+3rd element of such an empty array before noticing.
+
+So ... while I started this reply agreeing with you, I end up still
+agreeing with Christoph's changes here.
+
+Thanks, Christoph, for finding a bug in the cpuset code - good work!
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
