@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762037AbXFABRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761556AbXFABSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762037AbXFABRV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 21:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760690AbXFABQE
+	id S1761556AbXFABSv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 21:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758734AbXFABSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 21:16:04 -0400
-Received: from mail.kroah.org ([69.55.234.183]:46586 "EHLO perch.kroah.org"
+	Thu, 31 May 2007 21:18:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50299 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757812AbXFABP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 21:15:59 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Cc: linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/5] msi: fix ARM compile
-Date: Thu, 31 May 2007 18:16:53 -0700
-Message-Id: <11806606172653-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.2
-In-Reply-To: <20070601011612.GA28262@kroah.com>
-References: <20070601011612.GA28262@kroah.com>
+	id S1758332AbXFABSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 21:18:41 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Adam Belay <abelay@novell.com>
+Subject: Re: [RFC][PATCH 0/3] A Dynticks Aware Processor Idle PM Governor
+Date: Thu, 31 May 2007 21:17:48 -0400
+User-Agent: KMail/1.9.5
+Cc: Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Shaohua Li <shaohua.li@intel.com>,
+       Pallipadi@vger.kernel.org, Venkatesh <venkatesh.pallipadi@intel.com>,
+       linux-acpi@vger.kernel.org
+References: <1174722412.32554.81.camel@localhost.localdomain>
+In-Reply-To: <1174722412.32554.81.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705312117.48690.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Williams <dan.j.williams@intel.com>
+Applied this series to acpi-test
+in anticipation that Venki is about to send some incremental
+patches to address the feedback on it.
 
-In file included from drivers/pci/msi.c:22:
-include/asm/smp.h:17:26: asm/arch/smp.h: No such file or directory
-include/asm/smp.h:20:3: #error "<asm-arm/smp.h> included in non-SMP build"
-include/asm/smp.h:23:1: warning: "raw_smp_processor_id" redefined
-In file included from include/linux/sched.h:65,
-                 from include/linux/mm.h:4,
-                 from drivers/pci/msi.c:10:
-include/linux/smp.h:85:1: warning: this is the location of the previous
-definition
+thanks,
+-Len
 
-Tested on powerpc, i386, and x86_64.
-
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Acked-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/pci/msi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index d9cbd58..f7f7470 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -15,10 +15,10 @@
- #include <linux/pci.h>
- #include <linux/proc_fs.h>
- #include <linux/msi.h>
-+#include <linux/smp.h>
- 
- #include <asm/errno.h>
- #include <asm/io.h>
--#include <asm/smp.h>
- 
- #include "pci.h"
- #include "msi.h"
--- 
-1.5.2
-
+On Saturday 24 March 2007 03:46, Adam Belay wrote:
+> Hi All,
+> 
+> Here is my first take at implementing an idle PM governor that takes
+> full advantage of NO_HZ.  I call it the 'menu' governor because it
+> considers the full list of idle states before each entry.
+> 
+> I've kept the implementation fairly simple.  It attempts to guess the
+> next residency time and then chooses a state that would meet at least
+> the break-even point between power savings and entry cost.  To this end,
+> it selects the deepest idle state that satisfies the following
+> constraints:
+>      1. If the idle time elapsed since bus master activity was detected
+>         is below a threshold (currently 20 ms), then limit the selection
+>         to C2-type or above.
+>      2. Do not choose a state with a break-even residency that exceeds
+>         the expected time remaining until the next timer interrupt.
+>      3. Do not choose a state with a break-even residency that exceeds
+>         the elapsed time between the last pair of break events,
+>         excluding timer interrupts.
+> 
+> This governor has an advantage over "ladder" governor because it
+> proactively checks how much time remains until the next timer interrupt
+> using the tick infrastructure.  Also, it handles device interrupt
+> activity more intelligently by not including timer interrupts in break
+> event calculations.  Finally, it doesn't make policy decisions using the
+> number of state entries, which can have variable residency times (NO_HZ
+> makes these potentially very large), and instead only considers sleep
+> time deltas.
+> 
+> The menu governor can be selected during runtime using the cpuidle sysfs
+> interface like so:
+> "echo "menu" > /sys/devices/system/cpu/cpuidle/current_governor"
+> 
+> This patchset applies against 2.6.21-rc4 plus the latest from the acpi
+> testing tree, which is available here:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/test/2.6.21/acpi-test-20070126-2.6.21-rc4.diff.bz2
+> 
+> I'd really appreciate any comments, benchmarks, or suggestions.
+> 
+> Cheers,
+> Adam
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
