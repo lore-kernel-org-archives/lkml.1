@@ -1,61 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764895AbXFAUtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbXFAUvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764895AbXFAUtm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763139AbXFAUt3
+	id S932190AbXFAUvQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762971AbXFAUvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:49:29 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:42664
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763052AbXFAUt2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:49:28 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [1/3] 2.6.22-rc3: known regressions v2
-Date: Fri, 1 Jun 2007 22:48:53 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>,
-       Toralf =?iso-8859-2?q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       Thierry Volpiatto <tvolpiatt@neuf.fr>, alsa-devel@alsa-project.org,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       Ben Collins <bcollins@ubuntu.com>, linux-wireless@vger.kernel.org,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       Gary Zambrano <zambrano@broadcom.com>
-References: <46600F1C.5000302@googlemail.com>
-In-Reply-To: <46600F1C.5000302@googlemail.com>
+	Fri, 1 Jun 2007 16:51:04 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4264 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762963AbXFAUvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:51:01 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.22-rc3-mm1
+Date: Fri, 1 Jun 2007 22:50:58 +0200
+User-Agent: KMail/1.9.5
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+       Arnd Bergmann <arndb@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org> <200705312243.18724.m.kozlowski@tuxland.pl> <20070531141943.5c4d587c.akpm@linux-foundation.org>
+In-Reply-To: <20070531141943.5c4d587c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200706012248.53971.mb@bu3sch.de>
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706012250.58962.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 June 2007 14:20:44 Michal Piotrowski wrote:
-> Networking
+> > 	This is from iMac G3. The spufs_mem_mmap_fault() code looks bad
+> > in arch/powerpc/platforms/cell/spufs/file.c but somehow I'm unable to find
+> > the patch to blame hmm.
+> > 
+> > arch/powerpc/platforms/cell/spufs/file.c: In function 'spufs_mem_mmap_fault':
+> > arch/powerpc/platforms/cell/spufs/file.c:122: error: 'address' undeclared (first use in this function)
+> > arch/powerpc/platforms/cell/spufs/file.c:122: error: (Each undeclared identifier is reported only once
+> > arch/powerpc/platforms/cell/spufs/file.c:122: error: for each function it appears in.)
+> > arch/powerpc/platforms/cell/spufs/file.c:141: error: expected ';' before 'if'
+> > arch/powerpc/platforms/cell/spufs/file.c:122: warning: unused variable 'addr0'
+> > make[3]: *** [arch/powerpc/platforms/cell/spufs/file.o] Blad 1
+> > make[2]: *** [arch/powerpc/platforms/cell/spufs] Blad 2
+> > make[1]: *** [arch/powerpc/platforms/cell] Blad 2
+> > 
 > 
-> Subject    : b44: regression in 2.6.22
-> References : http://lkml.org/lkml/2007/5/27/108
-> Submitter  : Maximilian Engelhardt <maxi@daemonizer.de>
-> Handled-By : Michael Buesch <mb@bu3sch.de>
+> Yeah, that's the fix-fault-vs-invalidate-race patches, or my poor attempt
+> to fix them when spufs changed.  I suppose I'll have a poke at it next time
+> I get the powerpc machine fired up.
 
-Well, it looks like a highres-timers problem or something
-like that. So I can't really be handling that, as I have no
-clue about this.
-I suggest you also add Gary Zambrano <zambrano@broadcom.com>
-here, as he is actually the maintainer of b44. Not me.
-My role was just helping in debugging the issue, as I know
-some details of b44.
+I #if 0'ed that piece of code inside spufs_mem_mmap_fault() and run make again.
+This is 'make allmodconfig && make' result:
 
-> Status     : problem is being debugged
+ERROR: ".ps3av_set_hdr" [drivers/ps3/ps3av_cmd.ko] undefined!
+ERROR: ".ps3av_do_pkt" [drivers/ps3/ps3av_cmd.ko] undefined!
+ERROR: ".ps3_vuart_write" [drivers/ps3/ps3av_cmd.ko] undefined!
+ERROR: ".ps3_vuart_read" [drivers/ps3/ps3av_cmd.ko] undefined!
+ERROR: ".ps3av_cmd_fin" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_av_video_disable_sig" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_set_video_mode" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_video_get_monitor_info" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_audio_active" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_set_audio_mode" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_set_av_audio_param" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_vuart_read" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_av_get_hw_conf" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_av_video_mute" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_av_tv_mute" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_audio_mode" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_av_hdmi_mode" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_set_av_video_cs" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_vuart_write" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_audio_mute" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_avb_param" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_init" [drivers/ps3/ps3av.ko] undefined!
+ERROR: ".ps3av_cmd_av_audio_mute" [drivers/ps3/ps3av.ko] undefined!
+ERROR: "pmu_batteries" [drivers/power/pmu_battery.ko] undefined!
+ERROR: "pmu_battery_count" [drivers/power/pmu_battery.ko] undefined!
+ERROR: "pmu_power_flags" [drivers/power/pmu_battery.ko] undefined!
+ERROR: "irq_map" [drivers/net/pasemi_mac.ko] undefined!
+ERROR: "pmu_batteries" [drivers/macintosh/apm_emu.ko] undefined!
+ERROR: "pmu_battery_count" [drivers/macintosh/apm_emu.ko] undefined!
+ERROR: "pmu_power_flags" [drivers/macintosh/apm_emu.ko] undefined!
+ERROR: ".cpufreq_set_policy" [arch/powerpc/platforms/cell/cbe_cpufreq.ko] undefined!
+make[1]: *** [__modpost] Blad 1
+make: *** [modules] Blad 2
 
+Regards,
 
-
--- 
-Greetings Michael.
+	Mariusz
