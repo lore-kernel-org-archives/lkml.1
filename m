@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763516AbXFASu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763470AbXFASvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763516AbXFASu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762018AbXFASuS
+	id S1763470AbXFASvi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762018AbXFASvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:50:18 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:59860 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761924AbXFASuR (ORCPT
+	Fri, 1 Jun 2007 14:51:31 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57209 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760792AbXFASvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:50:17 -0400
-Date: Fri, 1 Jun 2007 19:50:14 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc3-mm1: IA64 make allnoconfig broken
-Message-ID: <20070601185013.GA13126@skynet.ie>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070601164204.GA25049@skynet.ie> <20070601100004.1e72654d.akpm@linux-foundation.org>
+	Fri, 1 Jun 2007 14:51:31 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Chandramouli Narayanan <mouli@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, ak@suse.de, akpm@linux-foundation.org
+Subject: Re: [PATCH 2.6.21 2/3] x86_64: EFI64 support
+References: <20070501185945.237601000@em64tdvp.jf.intel.com>
+	<20070501190110.958988000@em64tdvp.jf.intel.com>
+Date: Fri, 01 Jun 2007 12:50:33 -0600
+In-Reply-To: <20070501190110.958988000@em64tdvp.jf.intel.com> (Chandramouli
+	Narayanan's message of "Tue, 01 May 2007 11:59:47 -0700")
+Message-ID: <m13b1b1pc6.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070601100004.1e72654d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (01/06/07 10:00), Andrew Morton didst pronounce:
-> On Fri, 1 Jun 2007 17:42:04 +0100 mel@skynet.ie (Mel Gorman) wrote:
-> 
-> > mm/memory.c: In function `do_wp_page':
-> > mm/memory.c:1700: error: parse error before "__changed"
-> > mm/memory.c:1700: error: parse error before ')' token
-> > mm/memory.c:1704: error: parse error before "ret"
-> 
-> this?
-> 
-> --- a/include/asm-ia64/pgtable.h~rework-ptep_set_access_flags-and-fix-sun4c-fix
-> +++ a/include/asm-ia64/pgtable.h
-> @@ -546,7 +546,7 @@ extern void lazy_mmu_prot_update (pte_t 
->  # define ptep_set_access_flags(__vma, __addr, __ptep, __entry, __safely_writable) \
->  ({										\
->  	int __changed = !pte_same(*(__ptep), __entry);				\
-> -	if (__changed) {							\
-> +	if (__changed)							\
->  		ptep_establish(__vma, __addr, __ptep, __entry)			\
->  	__changed;								\
->  })
+Chandramouli Narayanan <mouli@linux.intel.com> writes:
 
-Fails with
+> diff -uprN -X linux-2.6.21rc7-git2-orig/Documentation/dontdiff
+> linux-2.6.21rc7-git2-orig/arch/x86_64/kernel/reboot.c
+> linux-2.6.21rc7-git2-uefi-finaltest/arch/x86_64/kernel/reboot.c
+> --- linux-2.6.21rc7-git2-orig/arch/x86_64/kernel/reboot.c 2007-02-04
+> 10:44:54.000000000 -0800
+> +++ linux-2.6.21rc7-git2-uefi-finaltest/arch/x86_64/kernel/reboot.c 2007-04-19
+> 13:01:02.000000000 -0700
+> @@ -7,6 +7,7 @@
+>  #include <linux/ctype.h>
+>  #include <linux/string.h>
+>  #include <linux/pm.h>
+> +#include <linux/efi.h>
+>  #include <asm/io.h>
+>  #include <asm/kdebug.h>
+>  #include <asm/delay.h>
+> @@ -116,9 +117,15 @@ void machine_emergency_restart(void)
+>  {
+>  	int i;
+>  
+> +	/* If EFI enabled, reset system through EFI protocol. */
+> +	if (efi_enabled) {
+> +		efi.reset_system(EFI_RESET_WARM, EFI_SUCCESS, 0, NULL);
+> +		return;
+> +	}
+> +
+>  	/* Tell the BIOS if we want cold or warm reboot */
+>  	*((unsigned short *)__va(0x472)) = reboot_mode;
+> -       
+> +
 
-mm/memory.c: In function `do_wp_page':
-mm/memory.c:1700: error: parse error before "__changed"
-mm/memory.c: In function `handle_pte_fault':
-mm/memory.c:2544: error: parse error before "__changed"
+Don't do this.
 
-Am currently testing the following;
+Instead add an architecture specific pointer that the EFI
+initialization code can override.  That should be a lot less
+intrusive and more maintainable.
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc3-mm1-clean/include/asm-ia64/pgtable.h linux-2.6.22-rc3-mm1-ia64fix/include/asm-ia64/pgtable.h
---- linux-2.6.22-rc3-mm1-clean/include/asm-ia64/pgtable.h	2007-06-01 09:24:39.000000000 +0100
-+++ linux-2.6.22-rc3-mm1-ia64fix/include/asm-ia64/pgtable.h	2007-06-01 19:44:48.000000000 +0100
-@@ -546,8 +546,8 @@ extern void lazy_mmu_prot_update (pte_t 
- # define ptep_set_access_flags(__vma, __addr, __ptep, __entry, __safely_writable) \
- ({										\
- 	int __changed = !pte_same(*(__ptep), __entry);				\
--	if (__changed) {							\
--		ptep_establish(__vma, __addr, __ptep, __entry)			\
-+	if (__changed)							\
-+		ptep_establish(__vma, __addr, __ptep, __entry);			\
- 	__changed;								\
- })
- #endif
+>  	for (;;) {
+>  		/* Could also try the reset bit in the Hammer NB */
+>  		switch (reboot_type) { 
+> diff -uprN -X linux-2.6.21rc7-git2-orig/Documentation/dontdiff
+> linux-2.6.21rc7-git2-orig/arch/x86_64/kernel/setup.c
+> linux-2.6.21rc7-git2-uefi-finaltest/arch/x86_64/kernel/setup.c
+> --- linux-2.6.21rc7-git2-orig/arch/x86_64/kernel/setup.c 2007-04-19
+> 12:39:39.000000000 -0700
+> +++ linux-2.6.21rc7-git2-uefi-finaltest/arch/x86_64/kernel/setup.c 2007-04-19
+> 13:01:02.000000000 -0700
+> @@ -44,6 +44,7 @@
+>  #include <linux/dmi.h>
+>  #include <linux/dma-mapping.h>
+>  #include <linux/ctype.h>
+> +#include <linux/efi.h>
+>  
+>  #include <asm/mtrr.h>
+>  #include <asm/uaccess.h>
+> @@ -69,6 +70,10 @@
+>   * Machine setup..
+>   */
+>  
+> +#ifdef CONFIG_EFI
+> +int efi_enabled = 0;
+> +EXPORT_SYMBOL(efi_enabled);
+> +#endif
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Please remove this variable.
+
+I didn't see a single use where it appears to be actually needed.
+
+Eric
