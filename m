@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762998AbXFASN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762106AbXFASNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762998AbXFASN2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762016AbXFASNS
+	id S1762106AbXFASNy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762014AbXFASNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:13:18 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:33908 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760420AbXFASNQ (ORCPT
+	Fri, 1 Jun 2007 14:13:46 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55968 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760692AbXFASNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:13:16 -0400
-Date: Fri, 1 Jun 2007 23:23:44 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Fri, 1 Jun 2007 14:13:46 -0400
+Date: Fri, 1 Jun 2007 11:13:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Srinivasa Ds <srinivasa@in.ibm.com>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pcmcia@lists.infradead.org,
-       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
-       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Gregor Jasny <gjasny@googlemail.com>,
-       linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Mark Salyzyn <aacraid@adaptec.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [2/3] 2.6.22-rc3: known regressions v2
-Message-ID: <20070601175344.GA13721@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <465FED20.3090206@googlemail.com> <46600F27.1090202@googlemail.com> <20070601090115.3271a397.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070601090115.3271a397.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
+       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
+ warning
+In-Reply-To: <200706011620.05756.srinivasa@in.ibm.com>
+Message-ID: <Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
+References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 09:01:15AM -0700, Andrew Morton wrote:
-> On Fri, 01 Jun 2007 14:20:55 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> 
-> > SCSI
-> > 
-> > Subject    : aacraid: adapter kernel panic'd fffffffd (kexec)
-> > References : http://lkml.org/lkml/2007/5/29/491
-> > Submitter  : Yinghai Lu <yhlu.kernel@gmail.com>
-> > Handled-By : Salyzyn, Mark <mark_salyzyn@adaptec.com>
-> >              Vivek Goyal <vgoyal@in.ibm.com>
-> > Status     : problem is being debugged
-> 
-> Mark's aacraid-fix-shutdown-handler-to-also-disable-interrupts.patch is
-> known to fix this, so we can move this to "known regressions with patches"
+On Fri, 1 Jun 2007, Srinivasa Ds wrote:
 
-Hi Andrew,
+> I have modified the patch little bit, Thanks Vatsa for input and hence 
+> resending it. Please let me know your comments on this.
 
-aacraid-fix-shutdown-handler-to-also-disable-interrupts.patch is meant
-to ensure that we don't perform an unnecessary reset of the device
-during a kexec boot. During kexec, we perform the device_shutdown()
-which should bring the device to a known sane state and a reset is
-not required while next kernel is coming up.
-
-I think this fix just masks Yinghai's problem and as such does not
-fix the root cause of the problem. In his case a software reset
-of the card is not successful and this is a problem. This problem
-will become visible during kdump.
-
-So I would think that this regression is still there just that got
-shifted from kexec to kdump.
-
-But we do need above patch to make sure kexec boot is fast and does
-not perform any unrequired device reset.
-
-Thanks
-Vivek
+Hmmmm.... Isnt it easier to set the pidarray to NULL in the case it
+has no objects? Then any deferences will fail. Paul?
 
 
+---
+ kernel/cpuset.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/kernel/cpuset.c
+===================================================================
+--- linux-2.6.orig/kernel/cpuset.c	2007-06-01 11:09:39.000000000 -0700
++++ linux-2.6/kernel/cpuset.c	2007-06-01 11:11:59.000000000 -0700
+@@ -1723,7 +1723,7 @@ static int cpuset_tasks_open(struct inod
+ {
+ 	struct cpuset *cs = __d_cs(file->f_path.dentry->d_parent);
+ 	struct ctr_struct *ctr;
+-	pid_t *pidarray;
++	pid_t *pidarray = NULL;
+ 	int npids;
+ 	char c;
+ 
+@@ -1741,9 +1741,11 @@ static int cpuset_tasks_open(struct inod
+ 	 * show up until sometime later on.
+ 	 */
+ 	npids = atomic_read(&cs->count);
+-	pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
+-	if (!pidarray)
+-		goto err1;
++	if (npids)
++		pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
++		if (!pidarray)
++			goto err1;
++	}
+ 
+ 	npids = pid_array_load(pidarray, npids, cs);
+ 	sort(pidarray, npids, sizeof(pid_t), cmppid, NULL);
