@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764702AbXFAUbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764687AbXFAUbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764702AbXFAUbe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762477AbXFAUbW
+	id S1764687AbXFAUbw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763670AbXFAUbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:31:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57475 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762200AbXFAUbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:31:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-Date: Fri, 1 Jun 2007 22:37:16 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <878xb35sje.fsf@goat.bogus.local>
-In-Reply-To: <878xb35sje.fsf@goat.bogus.local>
+	Fri, 1 Jun 2007 16:31:31 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35202 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763437AbXFAUba (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:31:30 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Zwane Mwaikambo <zwane@linuxpower.ca>
+Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+References: <fa.tUMR7tAB+jMgtfyl/LJ7U9QMgBs@ifi.uio.no>
+	<200705312212.34053.rjw@sisk.pl>
+	<m1d50fzcaa.fsf@ebiederm.dsl.xmission.com>
+	<200706012206.15794.rjw@sisk.pl>
+Date: Fri, 01 Jun 2007 14:29:43 -0600
+In-Reply-To: <200706012206.15794.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Fri, 1 Jun 2007 22:06:14 +0200")
+Message-ID: <m14plrzadk.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706012237.17375.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 1 June 2007 22:27, Olaf Dietsche wrote:
-> Hi,
-> 
-> resume from suspend to ram doesn't work for my laptop and never
-> has. So, this is not a regression.
-> 
-> Hibernate (aka suspend to disk) works, however.
-> 
-> When I resume, everything seems to come up (fan becomes busy, disk and
-> dvd spin up for a short time),
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Hmm, what about the screen?
+> Very well, but could you _please_ give us some time to do this?
+>
+> We know of the problem now and will work to fix it, but it's not _that_ easy.
+>
+> In fact, we also rely on the CPU hotplug's code that takes tasks away from the
+> offlined CPUs (and does the opposite with respect to the onlined CPUs), so
+> we just can't get rid of the CPU hotplug _right_ _now_.
 
-Rafael
+Sure.  My primary point was to document this, and get things moving if
+possible to fix it.  This patch is 2.6.23 at the earliest, so there is
+some time to work on it even on the most optimistic merge schedule.
 
+I just don't want to be complacent and let this problem sit undetected
+in back corner any more.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Eric
