@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbXFASgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762784AbXFASiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762297AbXFASgp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761227AbXFASgj
+	id S1762784AbXFASiU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761282AbXFASiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:36:39 -0400
-Received: from mail.screens.ru ([213.234.233.54]:52728 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760441AbXFASgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:36:38 -0400
-Date: Fri, 1 Jun 2007 22:36:42 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Mark Hounschell <dmarkh@cfl.rr.com>
-Cc: Mark Hounschell <markh@compro.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: floppy.c soft lockup
-Message-ID: <20070601183642.GA92@tv-sign.ru>
-References: <20070530224650.04b33117.akpm@linux-foundation.org> <465EDB97.5070908@compro.net> <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net> <20070531192256.GA88@tv-sign.ru> <465F2D96.9060502@compro.net> <20070601110058.GA83@tv-sign.ru> <466028DB.3060509@compro.net> <20070601151605.GA108@tv-sign.ru> <4660534E.6050903@cfl.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4660534E.6050903@cfl.rr.com>
-User-Agent: Mutt/1.5.11
+	Fri, 1 Jun 2007 14:38:13 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57229 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760938AbXFASiM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 14:38:12 -0400
+Date: Fri, 1 Jun 2007 11:38:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org
+Subject: Re: [RFC 0/4] CONFIG_STABLE to switch off development checks
+In-Reply-To: <46603371.50808@goop.org>
+Message-ID: <Pine.LNX.4.64.0706011126030.2284@schroedinger.engr.sgi.com>
+References: <20070531002047.702473071@sgi.com> <46603371.50808@goop.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/01, Mark Hounschell wrote:
->
-> Oleg Nesterov wrote:
-> > 
-> > Could you apply the trivial patch below, and change the i/o thread to do
-> > 
-> > 		prctl(1234);				// hangs ???
-> > 		printf(something);
-> > 		ioctl(Q->DevSpec1, FDSETPRM, &medprm);	// this hangs
-> > 
-> > to see if prctl() hangs or not? This way we can narrow the problem.
-> > (of course, you can just kill the above ioctl() if this is possible).
-> > 
-> > Thanks!
-> > 
-> > Oleg.
-> > 
-> > --- OLD/kernel/sys.c~	2007-04-03 13:05:02.000000000 +0400
-> > +++ OLD/kernel/sys.c	2007-06-01 18:56:22.000000000 +0400
-> > @@ -2147,6 +2147,11 @@ asmlinkage long sys_prctl(int option, un
-> >  {
-> >  	long error;
-> >  
-> > +	if (option == 1234) {
-> > +		flush_scheduled_work();
-> > +		return 0;
-> > +	}
-> > +
-> >  	error = security_task_prctl(option, arg2, arg3, arg4, arg5);
-> >  	if (error)
-> >  		return error;
-> > 
-> > -
-> 
-> 
-> Ok the prctl never returned. I just replaced the ioctl with it and added
-> a printf before and after. I only get the one before. The thread is hung
-> at this point just as if I'd done the ioctl?
+On Fri, 1 Jun 2007, Jeremy Fitzhardinge wrote:
 
-Thanks. So we can rule out floppy.c. flush_scheduled_work/flush_workqueue
-is broken by this RT application. Imho, this is not the kernel problem.
+> Perhaps I missed it, but what's the rationale for complaining about
+> 0-sized allocations?  They seem like a perfectly reasonable thing to me;
+> they turn up at the boundary conditions of many algorithms, and avoiding
+> them just cruds up the callsites to make them go through hoops to avoid
+> allocation. 
 
-Now I am very sure that the initial suspect was correct: cpu starvation.
-I can cook a debug patch to be 100% sure tomorrow, which kernel version is
-most convenient to you?
+Hmmm... We got there because SLUB initially return NULL for kmalloc(0). 
+Rationale: The user did not request any memory so we wont give him 
+any.
 
-Oleg.
+That (to my surprise) caused some strange behavior of code and so we then 
+decided to keep SLAB behavior and return the smallest available object 
+size and put a warning in there. At some later point we plan to switch
+to returning NULL for kmalloc(0).
+ 
+> Why not just do a 1 byte allocation instead, and be done with it?  Any
+> non-constant-sized allocation will potentially have to deal with this
+> case, so it seems to me we could just put the fix in common code (and
+> use an inline wrapper to avoid it when dealing with constant non-zero
+> sized allocations).
+
+The smallest allocation that SLUB can do is 8 bytes (SLAB 32). We are
+giving the user the smallest object that we can allocate. We could just 
+remove the warning and would have the behavior that you want.
+
+But now allocating code gets memory although none was requested. The 
+object can be modified without us being able to check.
+
+By returning NULL any use of the returned pointer would BUG.
+
+An allocation of zero bytes usually indicates that the code is not dealing 
+with a special case. Later code may operate on the allocated object. I 
+think its clearer and cleaner if code would deal with that special case 
+explicitly. We have seen a series of code pieces that do uncomfortably 
+looking operations on structures with no objects.
+
 
