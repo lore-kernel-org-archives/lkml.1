@@ -1,143 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbXFAGuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbXFAHEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759468AbXFAGuv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 02:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbXFAGum
+	id S1757951AbXFAHEI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 03:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbXFAHD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 02:50:42 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:60835 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758730AbXFAGul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 02:50:41 -0400
-Message-ID: <465FC1E6.7000003@drzeus.cx>
-Date: Fri, 01 Jun 2007 08:51:18 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=_hera.drzeus.cx-12578-1180680640-0001-2"
+	Fri, 1 Jun 2007 03:03:57 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:32816 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754301AbXFAHD4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 03:03:56 -0400
+Message-ID: <465FC489.1030509@linux.vnet.ibm.com>
+Date: Fri, 01 Jun 2007 12:32:33 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Make prepare_namespace() wait for devices
-References: <4655834F.3050301@drzeus.cx>	<20070524170654.5d674474.akpm@linux-foundation.org>	<4656602A.3010000@drzeus.cx>	<20070524211737.daa3c99c.akpm@linux-foundation.org>	<465666AE.5020600@drzeus.cx>	<465EAF90.3030803@drzeus.cx>	<20070531085114.420b9cbe.akpm@linux-foundation.org>	<465FAD94.4020200@drzeus.cx> <20070531234037.bebbc659.akpm@linux-foundation.org>
-In-Reply-To: <20070531234037.bebbc659.akpm@linux-foundation.org>
+CC: Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 8/8] Per-container pages reclamation
+References: <465D9739.8070209@openvz.org> <465D9B62.5050507@openvz.org> <20070530144737.56456aaf.akpm@linux-foundation.org>
+In-Reply-To: <20070530144737.56456aaf.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
-
---=_hera.drzeus.cx-12578-1180680640-0001-2
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-
 Andrew Morton wrote:
-> Could we have an update for Documentation/kernel-parameters.txt, please?
->   
+> On Wed, 30 May 2007 19:42:26 +0400
+> Pavel Emelianov <xemul@openvz.org> wrote:
+> 
+>> Implement try_to_free_pages_in_container() to free the
+>> pages in container that has run out of memory.
+>>
+>> The scan_control->isolate_pages() function is set to
+>> isolate_pages_in_container() that isolates the container
+>> pages only. The exported __isolate_lru_page() call
+>> makes things look simpler than in the previous version.
+>>
+>> Includes fix from Balbir Singh <balbir@in.ibm.com>
+>>
+>>  }
+>>  
+>> +void container_rss_move_lists(struct page *pg, bool active)
+>> +{
+>> +	struct rss_container *rss;
+>> +	struct page_container *pc;
+>> +
+>> +	if (!page_mapped(pg))
+>> +		return;
+>> +
+>> +	pc = page_container(pg);
+>> +	if (pc == NULL)
+>> +		return;
+>> +
+>> +	rss = pc->cnt;
+>> +
+>> +	spin_lock(&rss->res.lock);
+>> +	if (active)
+>> +		list_move(&pc->list, &rss->active_list);
+>> +	else
+>> +		list_move(&pc->list, &rss->inactive_list);
+>> +	spin_unlock(&rss->res.lock);
+>> +}
+> 
+> This is an interesting-looking function.  Please document it?
+> 
 
-Sorry, of course.
+Will do. This function is called when we want to move a page in
+the LRU list. This could happen when a page is activated or when
+reclaim finds that a particular page cannot be reclaimed right now.
 
-New patch included. "rootwait" is also just a boolean, so make sure it
-is treated as such.
+> I'm inferring that the rss container has an active and inactive list and
+> that this basically follows the same operation as the traditional per-zone
+> lists?
+> 
 
-Rgds
+Yes, correct.
+
+> Would I be correct in guessing that pages which are on the
+> per-rss-container lists are also eligible for reclaim off the traditional
+> page LRUs?  If so, how does that work?  When a page gets freed off the
+> per-zone LRUs does it also get removed from the per-rss_container LRU?  But
+> how can this be right?  Pages can get taken off the LRU and freed at
+> interrupt time, and this code isn't interrupt-safe.
+> 
+
+Yes, before a page is reclaimed from the global LRU list, we go through
+page_remove_rmap() in try_to_unmap(). Pages are removed from the container
+LRU before they are reclaimed. 
+
+> I note that this lock is not irq-safe, whereas the lru locks are irq-safe. 
+> So we don't perform the rotate_reclaimable_page() operation within the RSS
+> container?  I think we could do so.  I wonder if this was considered.
+> 
+
+The lock needs to be interrupt safe.
+
+> A description of how all this code works would help a lot.
+> 
+>> +static unsigned long isolate_container_pages(unsigned long nr_to_scan,
+>> +		struct list_head *src, struct list_head *dst,
+>> +		unsigned long *scanned, struct zone *zone, int mode)
+>> +{
+>> +	unsigned long nr_taken = 0;
+>> +	struct page *page;
+>> +	struct page_container *pc;
+>> +	unsigned long scan;
+>> +	LIST_HEAD(pc_list);
+>> +
+>> +	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
+>> +		pc = list_entry(src->prev, struct page_container, list);
+>> +		page = pc->page;
+>> +		if (page_zone(page) != zone)
+>> +			continue;
+> 
+> That page_zone() check is interesting.  What's going on here?
+> 
+> I'm suspecting that we have a problem here: if there are a lot of pages on
+> *src which are in the wrong zone, we can suffer reclaim distress leading to
+> omm-killings, or excessive CPU consumption?
+> 
+
+We discussed this on lkml. Basically, now for every zone we try to reclaim
+pages from the container, it increases CPU utilization if we choose the wrong
+zone to reclaim from, but it provides the following benefit
+
+Code reuse (shrink_zone* is reused along with helper functions). I am not sure
+if Pavel had any other benefits in mind like benefits on a NUMA box.
+
+
+>> +	for_each_online_node(node) {
+>> +#ifdef CONFIG_HIGHMEM
+>> +		zones = NODE_DATA(node)->node_zonelists[ZONE_HIGHMEM].zones;
+>> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
+>> +			return 1;
+>> +#endif
+>> +		zones = NODE_DATA(node)->node_zonelists[ZONE_NORMAL].zones;
+>> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
+>> +			return 1;
+>> +	}
+> 
+> Definitely need to handle ZONE_DMA32 and ZONE_DMA (some architectures put
+> all memory into ZONE_DMA (or they used to))
+> 
+
+node_zonelists[ZONE_NORMAL].zones should contain ZONE_DMA and ZONE_DMA32 right?
+
 
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-
---=_hera.drzeus.cx-12578-1180680640-0001-2
-Content-Type: text/x-patch; name="initwait.patch"; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="initwait.patch"
-
-commit 1e5e9315f431f54d2a2ee90ed11279271a346764
-Author: Pierre Ossman <drzeus@drzeus.cx>
-Date:   Mon May 14 14:15:46 2007 +0200
-
-    init: wait for asynchronously scanned block devices
-    
-    Some buses (e.g. USB and MMC) do their scanning of devices in the
-    background, causing a race between them and prepare_namespace().
-    In order to be able to use these buses without an initrd, we now
-    wait for the device specified in root= to actually show up.
-    
-    If the device never shows up than we will hang in an infinite loop.
-    In order to not mess with setups that reboot on panic, the feature
-    must be turned on via the command line option "rootwait".
-    
-    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index aae2282..685b748 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1538,6 +1538,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 
- 	rootfstype=	[KNL] Set root filesystem type
- 
-+	rootwait	[KNL] Wait (indefinitely) for root device to show up.
-+			Useful for devices that are detected asynchronously
-+			(e.g. USB and MMC devices).
-+
- 	rw		[KNL] Mount root device read-write on boot
- 
- 	S		[KNL] Run init in single mode
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 46fe407..187dcb5 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -25,6 +25,7 @@ int __initdata rd_doload;	/* 1 = load RAM disk, 0 = don't load */
- int root_mountflags = MS_RDONLY | MS_SILENT;
- char * __initdata root_device_name;
- static char __initdata saved_root_name[64];
-+int __initdata root_wait;
- 
- dev_t ROOT_DEV;
- 
-@@ -216,6 +217,16 @@ static int __init root_dev_setup(char *line)
- 
- __setup("root=", root_dev_setup);
- 
-+static int __init rootwait_setup(char *str)
-+{
-+	if (*str)
-+		return 0;
-+	root_wait = 1;
-+	return 1;
-+}
-+
-+__setup("rootwait", rootwait_setup);
-+
- static char * __initdata root_mount_data;
- static int __init root_data_setup(char *str)
- {
-@@ -438,11 +449,20 @@ void __init prepare_namespace(void)
- 			root_device_name += 5;
- 	}
- 
--	is_floppy = MAJOR(ROOT_DEV) == FLOPPY_MAJOR;
--
- 	if (initrd_load())
- 		goto out;
- 
-+	/* wait for any asynchronous scanning to complete */
-+	if ((ROOT_DEV == 0) && root_wait) {
-+		printk(KERN_INFO "Waiting for root device %s...\n",
-+			saved_root_name);
-+		while (driver_probe_done() != 0 ||
-+			(ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
-+			msleep(100);
-+	}
-+
-+	is_floppy = MAJOR(ROOT_DEV) == FLOPPY_MAJOR;
-+
- 	if (is_floppy && rd_doload && rd_load_disk(0))
- 		ROOT_DEV = Root_RAM0;
- 
-
---=_hera.drzeus.cx-12578-1180680640-0001-2--
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
