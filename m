@@ -1,79 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761662AbXFAPHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761394AbXFAPQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761662AbXFAPHT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 11:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760587AbXFAPHF
+	id S1761394AbXFAPQS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 11:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbXFAPQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 11:07:05 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33678 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759209AbXFAPHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 11:07:03 -0400
-X-Sasl-enc: SE98i7Iq7XFnAUgX7HDxqoXFDnqg+n4fNL92QRzeyoc+ 1180710420
-Date: Fri, 1 Jun 2007 12:06:57 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Richard Hughes <hughsient@gmail.com>, linux-acpi@vger.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Input: document the proper usage of EV_KEY and KEY_UNKNOWN
-Message-ID: <20070601150657.GD8211@khazad-dum.debian.net>
-References: <11802004861625-git-send-email-hmh@hmh.eng.br> <200705312333.11477.dtor@insightbb.com> <20070601040824.GA5042@srcf.ucam.org> <200706010037.59496.dtor@insightbb.com> <20070601131324.GB12204@srcf.ucam.org> <d120d5000706010704h71c817a9p55e0bba5d54efd3f@mail.gmail.com>
-MIME-Version: 1.0
+	Fri, 1 Jun 2007 11:16:10 -0400
+Received: from mail.screens.ru ([213.234.233.54]:35538 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757066AbXFAPQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 11:16:08 -0400
+Date: Fri, 1 Jun 2007 19:16:05 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Mark Hounschell <markh@compro.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: floppy.c soft lockup
+Message-ID: <20070601151605.GA108@tv-sign.ru>
+References: <465C6359.1020106@compro.net> <20070530224650.04b33117.akpm@linux-foundation.org> <465EDB97.5070908@compro.net> <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net> <20070531192256.GA88@tv-sign.ru> <465F2D96.9060502@compro.net> <20070601110058.GA83@tv-sign.ru> <466028DB.3060509@compro.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d120d5000706010704h71c817a9p55e0bba5d54efd3f@mail.gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <466028DB.3060509@compro.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 01 Jun 2007, Dmitry Torokhov wrote:
-> On 6/1/07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> What I am trying to say - there already EVIOCSKEYCODE ioctl in the
-> kernel. And for force feedback devices to work you need to nable
-> writing to corresponding /dev/input/eventX thus opening possibility to
-> alter the keymap table. I guess you coudl analyze capabilities of a
-> device and only relax permissions for devices that have FF...
-
-Agreed. CAP_SYSADMIN or somesuch should be required for some of those
-IOCTLs, at least on keyboards. I don't see a problem with a digitizing
-tablet relaxing that to allow anyone, for example, so it makes sense to punt
-this test to the driver level (and not input layer level), or to make it
-configurable somehow from the driver level before registering the input
-device.
-
-> Anyway, I think that we don't want ordinary users to alter hardware
-> keymapping, it should indeed be priveleged operation done by box's
-> administrator. Hopefully the infrastructure (hal/udev/whatever) will
-> be able to load proper keymap at boot time so even that is not needed.
+On 06/01, Mark Hounschell wrote:
+>
+> Oleg Nesterov wrote:
+> > Yes, but see above. flush_scheduled_work() needs a cooperation from events/2
+> > which is bound to CPU 2.
+> > 
 > 
-> Why I think using kernel remapping_in addition_ to X remapping is better:
+> Again I don't understand why flush_scheduled_work() running on behalf of a process
+> affinitized to processor-1 requires cooperation from events/2 (affinitized to processor-2)
+> when there is an events/1 already affinitized to processor 1?
 
-Agreed.
+flush_workqueue() blocks until any scheduled work on any CPU has run to
+completion. If we have some work_struct pending on CPU 2, it can be completed
+only when events/2 executes it.
 
-> The biggest cons for KEY_UNKNOWN + scancode is that presently we do
-> not have the code to iteract with user.
-
-Actually, it is more like "we don't have it, and it is non-trivial to do it
-right", if I understood Matthew correctly.
-
-> >> > The standard setup in an office environment is likely to be
-> >> > multiuser.
-> >>
-> >> Huh? In my limited experience everyone in the office gets its own box.
-> >> And I am not talking about software shop.
-> >
-> >Standard is that everyone gets their own machine, but usually everyone
-> >has an account on all of them.
+> > If you changed irq/X/smp_affinity, the patch I sent should help, because
+> > floppy_work can't be scheduled on CPU 2, but still I don't think it is right
+> > to run 100% cpu-bound RT-process.
 > 
-> Which is never used (except remotely)...
+> The patch you sent helps with no other intervention from me. But then so does 
+> the patch mentioned in the original post.  I am able to bang on the floppies pretty
+> hard doing all kinds of things with no trouble using either. 
 
-Oh yes, it *is* used, and very much so.
+This patch replaces flush_scheduled_work() with cancel_work_sync(). The latter
+can still hang if the floppy interrupt happens on CPU 2 and does schedule_bh(),
+events/2 starts running floppy_work->func() and preempted by RT-thread. This is
+very unlikely, but possible.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+>From your original post:
+	>
+	> The application only runs on SMP machines and uses process and irq affinities
+
+if the floppy interrupt can't happen on CPU 2, the above scenario is not possible.
+
+> As far as a 100% cpu-bound RT-process goes, well I say I don't intentionally relinquish
+> the processor but it's not really 100% cpu-bound. Running xosview I see some spare time. 
+
+Well, I don't know what is xosview, sorry :) so I don't understand what does
+"spare time" precisely mean. If this thread does some i/o or something which
+can sleep, then...
+
+OK. In that case we may have another reason for deadlock, say a pending
+floppy_work needs open_lock or test_and_set_bit(0, &fdc_busy).
+
+Could you apply the trivial patch below, and change the i/o thread to do
+
+		prctl(1234);				// hangs ???
+		printf(something);
+		ioctl(Q->DevSpec1, FDSETPRM, &medprm);	// this hangs
+
+to see if prctl() hangs or not? This way we can narrow the problem.
+(of course, you can just kill the above ioctl() if this is possible).
+
+Thanks!
+
+Oleg.
+
+--- OLD/kernel/sys.c~	2007-04-03 13:05:02.000000000 +0400
++++ OLD/kernel/sys.c	2007-06-01 18:56:22.000000000 +0400
+@@ -2147,6 +2147,11 @@ asmlinkage long sys_prctl(int option, un
+ {
+ 	long error;
+ 
++	if (option == 1234) {
++		flush_scheduled_work();
++		return 0;
++	}
++
+ 	error = security_task_prctl(option, arg2, arg3, arg4, arg5);
+ 	if (error)
+ 		return error;
+
