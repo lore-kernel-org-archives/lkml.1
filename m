@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764263AbXFAUkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764719AbXFAUkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764263AbXFAUkP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762998AbXFAUkA
+	id S1764719AbXFAUkq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762968AbXFAUki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:40:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55739 "EHLO mail.dvmed.net"
+	Fri, 1 Jun 2007 16:40:38 -0400
+Received: from mx1.suse.de ([195.135.220.2]:46723 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762503AbXFAUj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:39:59 -0400
-Message-ID: <4660841D.5050003@garzik.org>
-Date: Fri, 01 Jun 2007 16:39:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1762465AbXFAUkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:40:37 -0400
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Dependent CPU core speed reporting not updated with CPUFREQ_SHARED_TYPE_HW?
+References: <460C5D24.608@us.ibm.com>
+	<653FFBB4508B9042B5D43DC9E18836F52DF4D8@scsmsx415.amr.corp.intel.com>
+	<20070601184342.GA13751@tree.beaverton.ibm.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 01 Jun 2007 23:37:07 +0200
+In-Reply-To: <20070601184342.GA13751@tree.beaverton.ibm.com>
+Message-ID: <p73ejkvbblo.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Tuncer Ayaz <tuncer.ayaz@gmail.com>
-CC: linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: 2.6.22 libata spindown
-References: <4ac8254d0706011314g5468f02m3cf5a5281bd30018@mail.gmail.com>
-In-Reply-To: <4ac8254d0706011314g5468f02m3cf5a5281bd30018@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tuncer Ayaz wrote:
-> I'm still seeing the libata warning that disks were not spun down
-> properly on the following two setups and am wondering whether I need
-> a new shutdown binary or the changeset mentioned below is not meant
-> to fix what I'm triggering by halt'ing.
+"Darrick J. Wong" <djwong@us.ibm.com> writes:
+
+> On Thu, Mar 29, 2007 at 06:06:22PM -0700, Pallipadi, Venkatesh wrote:
+> > thought of
+> > making affected CPUs show the dependency in case of hw coord, but
+> > retaining the percpu
+> > control. But, it seemed complicated change for something that is
+> > cosmetic.
 > 
-> If it's not a bug I will try to update my shutdown utility and if
-> that does not work I promise not to bother lkml about a problem
-> caused by my userland. If it is a bug I hope it will be of interest
-> for 2.6.22 bug tracking.
-> 
-> Setup 1:
-> SATA 1 Disks
-> AMD64 3200+
-> nVidia nForce 3 250 (Ultra?)
-> Debian i386 Unstable
-> 
-> Setup 2:
-> SATA 2 disks
-> Core 2 Duo E6600
-> Intel 975X
-> Debian x86_64 Unstable
-> 
-> Just to be clear what warning I'm talking about:
-> DISK MIGHT NOT BE SPUN DOWN PROPERLY. UPDATE SHUTDOWN UTILITY
-> For more info, visit http://linux-ata.org/shutdown.html
+> Actually, it's not so cosmetic any more.  Our newest servers have a
+> power meter that measures power consumption, and I'm writing a program
+> to measure the power cost of various cpufreq transitions in order to
+> enforce a power cap.  
 
+How would that work? You would adjust the power cap dynamically during
+runtime based on the power meter feedback?  How long would 
+the adjustment interval be?
 
-IIRC, Debian was the one OS that really did need a shutdown utility 
-update, as the message says :)
+> Due to the under-reporting in affected_cpus, the
+> app thinks that (taking your example above) CPUs 0 and 2 can be
+> controlled independently.  Thus, a p-state transition of (x, x) ->
+> (x, x-1) yields no energy saving at all, while (x, x-1) -> (x-1, x-1)
+> does.  My program considers the effects of a single CPU's transition
+> independently of which CPU it is and without considering what
+> frequencies the other CPUs are operating at, which means that it will
+> conclude that the cost of increasing speed (or the reward for decreasing
+> it) is half of what it is ... sort of.  It's mildly broken as a result,
+> though amusingly enough it still seems to work ok.  I suspect that it
+> might flail around trying to hit a cap a bit more than it would if
+> affected_cpus were more accurate.
 
-	Jeff
+Not sure affected CPUs is accurate enough for your purposes anyways.
+It cannot express "other core can be independent if I'm idle, otherwise not"
+which is common on Intel systems.
 
-
+-Andi
