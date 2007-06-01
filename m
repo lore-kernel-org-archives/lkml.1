@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760389AbXFAVmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbXFAVpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760389AbXFAVmW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761172AbXFAVmL
+	id S1763671AbXFAVpl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761419AbXFAVpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:42:11 -0400
-Received: from outbound-mail-03.bluehost.com ([69.89.21.13]:44174 "HELO
-	outbound-mail-03.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761154AbXFAVmJ (ORCPT
+	Fri, 1 Jun 2007 17:45:35 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37992 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761412AbXFAVpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:42:09 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
-Date: Fri, 1 Jun 2007 14:41:57 -0700
-User-Agent: KMail/1.9.6
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <200706011407.51779.jbarnes@virtuousgeek.org> <20070601211943.GO7217@one.firstfloor.org>
-In-Reply-To: <20070601211943.GO7217@one.firstfloor.org>
+	Fri, 1 Jun 2007 17:45:34 -0400
+Date: Fri, 1 Jun 2007 14:45:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, Srinivasa Ds <srinivasa@in.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
+       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
+ warning
+In-Reply-To: <20070601135900.ec44b1aa.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
+References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
+ <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
+ <20070601135900.ec44b1aa.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706011441.57149.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, June 1, 2007 2:19:43 Andi Kleen wrote:
-> And normally the MTRRs win, don't they (if I remember the table correctly)
-> So if the MTRR says UC and PAT disagrees it might not actually help
+On Fri, 1 Jun 2007, Andrew Morton wrote:
 
-I just checked, yes the MTRRs win for UC types.  But it sounds like the cases 
-we're talking about are actually situations where there's no MTRR coverage, 
-so the default type is used.  The manual doesn't specifically call out how 
-memory using the default type interacts with PAT, but it may well be that it 
-stays uncached if the default type is uncached.  Again that argues for fixing 
-the MTRR mapping problem in some way.
+> Poisoning and redzoning could have caught that.
 
-Thanks,
-Jesse
+Redzoning would not have caught it. This was a kmalloc allocation and 
+SLAB always gave them 32 bytes to play with. Only writes more than 32 
+bytes behind would have been caught.
+
+Poisoning is only applicable to unallocated objects and these were 
+allocated.
+
