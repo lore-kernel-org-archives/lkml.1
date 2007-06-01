@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764115AbXFAVIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763995AbXFAVMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764115AbXFAVIL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762327AbXFAVH6
+	id S1763995AbXFAVMR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762858AbXFAVMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:07:58 -0400
-Received: from outbound-mail-42.bluehost.com ([69.89.18.11]:47981 "HELO
-	outbound-mail-42.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762129AbXFAVH5 (ORCPT
+	Fri, 1 Jun 2007 17:12:05 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:61964 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762370AbXFAVME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:07:57 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
-Date: Fri, 1 Jun 2007 14:07:51 -0700
-User-Agent: KMail/1.9.6
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <200706011210.15808.jbarnes@virtuousgeek.org> <p73k5unbcnq.fsf@bingen.suse.de>
-In-Reply-To: <p73k5unbcnq.fsf@bingen.suse.de>
+	Fri, 1 Jun 2007 17:12:04 -0400
+From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+References: <878xb35sje.fsf@goat.bogus.local> <200706012237.17375.rjw@sisk.pl>
+Date: Fri, 01 Jun 2007 23:12:27 +0200
+Message-ID: <87k5un4bwk.fsf@goat.bogus.local>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706011407.51779.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX189IJTVxxo1bvlhDyvKR5H3hjD8X44XogRXFYu
+ 1KXXrkqTSCgSA80AO1XBqxWl5loxtYcetvfcUKoxFHeNKBd51/
+ js7PfqvpXuqXe28KG6Kow==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, June 1, 2007 2:14:17 Andi Kleen wrote:
-> Jesse Barnes <jbarnes@virtuousgeek.org> writes:
-> > (or we get proper PAT support, which I think would make this problem
-> > go away as well).
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+> On Friday, 1 June 2007 22:27, Olaf Dietsche wrote:
+>> When I resume, everything seems to come up (fan becomes busy, disk and
+>> dvd spin up for a short time),
 >
-> No it won't. If the basic MTRRs for memory are wrong just having PAT
-> support in drivers (which already exist in a limited form already, just for
-> UC only) won't change anything.
+> Hmm, what about the screen?
 
-No obviously just using PAT for drivers wouldn't help, I was thinking more of 
-having one PAT type be WB memory, and using it by default for most PTEs 
-covering normal memory.  If that's not possible, then it seems sensible to 
-try to fix this MTRR problem in a better way, either with something like the 
-patch I posted earlier or a more advanced MTRR remapper that runs at early 
-boot.  Depending on platform requirements though, that could get complicated 
-pretty fast...
+When the laptop is dead, screen remains black.
 
-Jesse
+When I skip acpi_enter_sleep_state(), the screen works like everything
+else.
 
+Regards, Olaf.
