@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbXFAWss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbXFAWxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758317AbXFAWss (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 18:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbXFAWsl
+	id S1757404AbXFAWxe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 18:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXFAWx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 18:48:41 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:39277 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752344AbXFAWsl (ORCPT
+	Fri, 1 Jun 2007 18:53:28 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:15291 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbXFAWx1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 18:48:41 -0400
-Date: Fri, 1 Jun 2007 15:48:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
-Message-Id: <20070601154834.53558d1b.akpm@linux-foundation.org>
-In-Reply-To: <46609FBD.5040407@sandeen.net>
-References: <20070524165935.GB19709@duck.suse.cz>
-	<20070524170554.GC19709@duck.suse.cz>
-	<20070524203653.GA7693@duck.suse.cz>
-	<465DF0B4.2050203@sandeen.net>
-	<20070601211036.GA23975@duck.suse.cz>
-	<46609FBD.5040407@sandeen.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jun 2007 18:53:27 -0400
+Date: Fri, 1 Jun 2007 15:53:15 -0700
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc3-mm1 - page_mkwrite() breakage
+Message-ID: <20070601225315.GZ20632@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <20070601010129.GA15878@wotan.suse.de> <20070601012440.GS20632@ca-server1.us.oracle.com> <20070601013402.GB28585@wotan.suse.de> <20070601014517.GT20632@ca-server1.us.oracle.com> <20070601015349.GC28585@wotan.suse.de> <20070601052039.GU20632@ca-server1.us.oracle.com> <20070601220117.GW20632@ca-server1.us.oracle.com> <20070601152537.a04209ff.akpm@linux-foundation.org> <20070601223302.GY20632@ca-server1.us.oracle.com> <20070601154735.197b663f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070601154735.197b663f.akpm@linux-foundation.org>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 01 Jun 2007 17:37:49 -0500
-Eric Sandeen <sandeen@sandeen.net> wrote:
+On Fri, Jun 01, 2007 at 03:47:35PM -0700, Andrew Morton wrote:
+> Right.  I did a lot of tricksy work for rc3-mm1 to merge git-ocfs2 on top
+> of Nick's stuff.  Then I repulled your tree and lost it all.  This is
+> because I was dumb and I fixed rc3-mm1's git-ocfs.patch rather than doing a
+> separate fix-rejects-in-git-ocfs2.patch.
+> 
+> This is all unique-to-akpm stuff which you don't need to worry about ;)
 
-> Jan Kara wrote:
-> >   Thanks for info - I'm now mostly out of email for a few days but I'll
-> > have a look at it as soon as I return.
+Ok, I am no longer concerned! :)
+
+
+> > So, which of Nick's patches are we talking about here?
 > > 
-> > 								Honza
+> > Btw, I know you tend to handle rejects yourself, but if it's a major PITA
+> > I'd be happy to help out. Boy, I'm hoping I didn't just ask for a load of
+> > trouble there :)
 > 
-> Here we go:
-> 
-> [1]kdb> btp 3263
-> Stack traceback for pid 3263
-> 0xffff81006f1b8100     3263     3247  1    0   R  0xffff81006f1b83d0 
-> lt-fsstress
-> rsp                rip                Function (args)
-> 0xffff81006f335c48 0xffffffff8044b989 _spin_lock+0x7
-> 0xffff81006f335c70 0xffffffff802a914b __mark_inode_dirty+0xe0
-> 0xffff81006f335ca0 0xffffffff882d47d0 [udf]udf_write_aext+0x101
-> 0xffff81006f335cd0 0xffffffff882dd95a [udf]extent_trunc+0xd6
-> 0xffff81006f335d20 0xffffffff882dda81 [udf]udf_truncate_tail_extent+0xda
-> 0xffff81006f335da0 0xffffffff882d7c26 [udf]udf_drop_inode+0x26
-> 0xffff81006f335db0 0xffffffff8029f816 iput+0x74
-> 0xffff81006f335dc0 0xffffffff8029d6a8 dentry_iput+0x8f
-> 0xffff81006f335de0 0xffffffff8029d748 d_kill+0x21
-> 0xffff81006f335e00 0xffffffff8029e450 prune_one_dentry+0x3a
-> 0xffff81006f335e20 0xffffffff8029e5e8 prune_dcache+0xe3
-> 0xffff81006f335e50 0xffffffff8029e6bf shrink_dcache_parent+0x21
-> 0xffff81006f335e80 0xffffffff80294a27 dentry_unhash+0x1d
-> 0xffff81006f335e90 0xffffffff80295d43 vfs_rmdir+0x88
-> 0xffff81006f335eb0 0xffffffff80297d5b do_rmdir+0x9c
-> 0xffff81006f335f40 0xffffffff8020ce23 syscall_trace_enter+0x8d
-> 0xffff81006f335f70 0xffffffff80297dd4 sys_rmdir+0x11
-> 0xffff81006f335f80 0xffffffff80209d5c tracesys+0xdc
-> 
-> going for the inode_lock twice?
-> 
+> Is OK - I'll move Nick's patches back to behind the git trees and it'll all come
+> good.
 
-lockdep should catch that.
+Phew ok. Once again, thanks for all the work you do getting the ocfs2 git
+patches into -mm.
+	--Mark
+
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
