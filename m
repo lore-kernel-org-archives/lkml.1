@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbXFAEOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbXFAEOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbXFAEOZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 00:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbXFAEOQ
+	id S1756430AbXFAEOi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 00:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbXFAEOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 00:14:16 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:57993 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751016AbXFAEOP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 00:14:15 -0400
-Message-ID: <465F9BEF.20504@zytor.com>
-Date: Thu, 31 May 2007 21:09:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 1 Jun 2007 00:14:22 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:58560 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753836AbXFAEOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 00:14:21 -0400
+Date: Fri, 1 Jun 2007 13:13:17 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] slab: Fix slab debug for non alien caches.
+Message-ID: <20070601041317.GA8490@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       cotte@de.ibm.com, hugh@veritas.com, neilb@suse.de, zanussi@us.ibm.com,
-       Linus Torvalds <torvalds@osdl.org>, hch@infradead.org
-Subject: Re: [PATCH] sendfile removal
-References: <20070531103316.GO32105@kernel.dk> <20070531124753.a99f713c.dada1@cosmosbay.com> <20070531105321.GQ32105@kernel.dk>
-In-Reply-To: <20070531105321.GQ32105@kernel.dk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
->>   
->>> -	retval = in_file->f_op->sendfile(in_file, ppos, count, file_send_actor, out_file);
->>> +	fl = 0;
->>> +	if (in_file->f_flags & O_NONBLOCK)
->>> +		fl = SPLICE_F_NONBLOCK;
->>> +
->>> +	retval = do_splice_direct(in_file, ppos, out_file, count, fl);
->> I like this, but are you sure it wont break user land ?
->>
->> Some applications might react badly if sendfile() returns EAGAIN ?
-> 
-> Yeah, I didn't actually intend for that to sneak in. I'd think that
-> userspace should handle it if they opened the file O_NONBLOCK (or used
-> fcntl()), but it's a change in behaviour none the less and probably not
-> a good idea.
-> 
+Currently when slab debugging is enabled, the WARN_ON() nodeid checks
+trigger if we boot with 'noaliencache'. In the noaliencache case the
+WARN_ON()'s seem to be superfluous, so only bother doing the nodeid
+comparison if use_alien_caches is set.
 
-I would personally argue that sendfile() blocking on an O_NONBLOCK
-desriptor, as opposed to returning EAGAIN, is a bug, and a fairly
-serious such.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-	-hpa
+--
+
+ mm/slab.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mm/slab.c b/mm/slab.c
+index 2e71a32..88db26b 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2663,7 +2663,7 @@ static void *slab_get_obj(struct kmem_cache *cachep, struct slab *slabp,
+ 	next = slab_bufctl(slabp)[slabp->free];
+ #if DEBUG
+ 	slab_bufctl(slabp)[slabp->free] = BUFCTL_FREE;
+-	WARN_ON(slabp->nodeid != nodeid);
++	WARN_ON(use_alien_caches && slabp->nodeid != nodeid);
+ #endif
+ 	slabp->free = next;
+ 
+@@ -2677,7 +2677,7 @@ static void slab_put_obj(struct kmem_cache *cachep, struct slab *slabp,
+ 
+ #if DEBUG
+ 	/* Verify that the slab belongs to the intended node */
+-	WARN_ON(slabp->nodeid != nodeid);
++	WARN_ON(use_alien_caches && slabp->nodeid != nodeid);
+ 
+ 	if (slab_bufctl(slabp)[objnr] + 1 <= SLAB_LIMIT + 1) {
+ 		printk(KERN_ERR "slab: double free detected in cache "
