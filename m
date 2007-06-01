@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbXFAGs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbXFAGtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbXFAGs4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 02:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbXFAGss
+	id S1758873AbXFAGtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 02:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757449AbXFAGtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 02:48:48 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:60410 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751652AbXFAGsr (ORCPT
+	Fri, 1 Jun 2007 02:49:04 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:10110 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758145AbXFAGtB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 02:48:47 -0400
-Message-ID: <465FC12A.5040708@linux.vnet.ibm.com>
-Date: Fri, 01 Jun 2007 12:18:10 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Fri, 1 Jun 2007 02:49:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Plcii/GX6KjanZAizJNlDADKy6f6UHuignS8ZFvyRetOr+xATYIQcuL+l2eXdhA9c6XCripuvVINv4Wd/vqU2VS9E9h9MT862WaYSpBdOV0aDkazlmggfRShQ0ROoa0/32Diixhy5mA40D73SfDQUK0zdtRQPa6MJaqTRVVqIIo=
+Message-ID: <25ae38200705312348r3cd02c90h5080617fa1f0a987@mail.gmail.com>
+Date: Fri, 1 Jun 2007 12:18:59 +0530
+From: "Anand Jahagirdar" <anandjigar@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: Patch related with Fork Bombing Atack
+Cc: security@kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070531134611.GZ32105@kernel.dk>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 5/8] RSS accounting hooks over the code
-References: <465D9739.8070209@openvz.org> <465D997A.3030706@openvz.org> <20070530144629.09dad0df.akpm@linux-foundation.org>
-In-Reply-To: <20070530144629.09dad0df.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <25ae38200705310645n5e913a91weaa14521908f7989@mail.gmail.com>
+	 <20070531134611.GZ32105@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 30 May 2007 19:34:18 +0400
-> Pavel Emelianov <xemul@openvz.org> wrote:
-> 
->> As described above, pages are charged to their first touchers.
->> The first toucher is determined using pages' _mapcount 
->> manipulations in rmap calls.
->>
->> Page is charged in two stages:
->> 1. preparation, in which the resource availability is checked.
->>    This stage may lead to page reclamation, thus it is performed
->>    in a "might-sleep" places;
->> 2. the container assignment to page. This is done in an atomic
->>    code that handles races between multiple touchers.
-> 
-> I suppose we need to think about what to do about higher-order pages, and
-> compound pages, and hugetlb memory.
+On 5/31/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Thu, May 31 2007, Anand Jahagirdar wrote:
+> > 2) Printk message in my patch will definitely help Administrator/Root
+> > User to detect which particular user is trying fork bombing attack on
+> > his machine by looking at /var/log/messages or dmesg . he can take
+> > action against that particular user and kill his processes.
+>
+> You just opened a DoS possibility for any user, they can now flood the
+> syslog instead.
+>
+Jens Axboe
 
-Yes, that needs to be done eventually. I feel that support can be added
-incrementally once we have a stable controller.
+     when they try to flood the syslog using fork bombing attack,
+their messge will be printed only once in syslog and it will show how
+many times it has repeated. due to this he will not able to flood the
+syslog.and i am using only one single variable in my printk messge so
+it is quite not possible to flood the syslog.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+   am i missing something??
+
+anand
+> --
+>
+>
+>
