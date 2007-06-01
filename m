@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbXFAF4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXFAF5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758371AbXFAF4e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 01:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbXFAF4Z
+	id S1758544AbXFAF5i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 01:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754799AbXFAF5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 01:56:25 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42530 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754327AbXFAF4Z (ORCPT
+	Fri, 1 Jun 2007 01:57:31 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41576 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754608AbXFAF5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 01:56:25 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Michael Ellerman" <michael@ellerman.id.au>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc3-mm1
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
-	<dc1166600705312052j490b1fads17e190249d178406@mail.gmail.com>
-Date: Thu, 31 May 2007 23:55:28 -0600
-In-Reply-To: <dc1166600705312052j490b1fads17e190249d178406@mail.gmail.com>
-	(Michael Ellerman's message of "Fri, 1 Jun 2007 13:52:28 +1000")
-Message-ID: <m1tzts1anj.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 1 Jun 2007 01:57:31 -0400
+Date: Fri, 01 Jun 2007 14:56:43 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Paul Mundt <lethal@linux-sh.org>, Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparsemem: Shut up unused symbol compiler warnings.
+In-Reply-To: <20070601053404.GA8841@linux-sh.org>
+References: <20070601142124.91F8.Y-GOTO@jp.fujitsu.com> <20070601053404.GA8841@linux-sh.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070601145517.9204.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Michael Ellerman" <michael@ellerman.id.au> writes:
+> On Fri, Jun 01, 2007 at 02:26:17PM +0900, Yasunori Goto wrote:
+> > I think this issue is fixed by
+> > move-three-functions-that-are-only-needed-for.patch in current -mm tree.
+> > Is it not enough?
+> > 
+> That's possible, I hadn't checked -mm. This was simply against current
+> git. If there's already a fix in -mm, then this can simply be ignored.
 
-> On 5/31/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->>
-> ...
->> +msi-fix-the-ordering-of-msix-irqs.patch
->> +msi-mask-the-msix-vector-before-we-unmap-it.patch
-> ...
->>  2.6.22 probable-queue
->
-> I think these two should be in the 2.6.22 definite-queue, unless Eric disagrees.
+Okay. Thanks for your report.
 
-They are simple bug fixes for regression in 2.6.22 so I don't see a reason
-to delay them.
+-- 
+Yasunori Goto 
 
-Eric
+
