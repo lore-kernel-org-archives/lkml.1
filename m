@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbXFACBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbXFACJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbXFACBj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 22:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbXFACBb
+	id S1752795AbXFACJW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 22:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXFACJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 22:01:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54131 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbXFACBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 22:01:30 -0400
-Message-ID: <465F7DEB.5090700@redhat.com>
-Date: Thu, 31 May 2007 23:01:15 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-Organization: Red Hat Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc3-mm1
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
-In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 31 May 2007 22:09:13 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34593 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751107AbXFACJM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 22:09:12 -0400
+Message-Id: <200706010209.l51299kN000531@shell0.pdx.osdl.net>
+Subject: [patch 1/1] document Acked-by:
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+From: akpm@linux-foundation.org
+Date: Thu, 31 May 2007 19:09:10 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc3/2.6.22-rc3-mm1/
->
-> - Merged the convert-cpusets-to-container-infrastructure patches.  These
->   will probably be dropped and redone.
->
->
->
->   
-<BIG SNIP>
->  x86 things
->
-> +add-select-phylib-to-the-ucc_geth-kconfig-option.patch
-> +m68k-parenthesis-balance.patch
-> +msi-fix-the-ordering-of-msix-irqs.patch
-> +msi-mask-the-msix-vector-before-we-unmap-it.patch
-> +potential-parse-error-in-ifdef.patch
-> +potential-parse-error-in-ifdef-fix.patch
-> +potential-parse-error-in-ifdef-update.patch
-> +pci_ids-update-patch-for-intel-ich9m.patch
-> +x86-fix-oprofile-double-free-was-re-multiple-free.patch
->   
-http://lkml.org/lkml/2007/5/30/565 fixes the above patch :-)
+From: Andrew Morton <akpm@linux-foundation.org>
 
-<BIG SNIP>
+Explain what we use Acked-by: for, and how it differs from Signed-off-by:
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-- Arnaldo
+ Documentation/SubmittingPatches |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff -puN Documentation/SubmittingPatches~document-acked-by Documentation/SubmittingPatches
+--- a/Documentation/SubmittingPatches~document-acked-by
++++ a/Documentation/SubmittingPatches
+@@ -328,7 +328,20 @@ now, but you can do this to mark interna
+ point out some special detail about the sign-off. 
+ 
+ 
+-12) The canonical patch format
++12) When to use Acked-by:
++
++The Signed-off-by: tag implies that the signer was involved in the development
++of the patch, or that he/she was in the patch's delivery path.
++
++If a person was not directly involved in the preparation or handling of a
++patch but wishes to signify and record their approval of it then they can
++arrange to have an Acked-by: line added to the patch's changelog.
++
++Acked-by: is often used by the maintainer of the affected code when that
++maintainer neither wrote, merged nor forwarded the patch themselves.
++
++
++13) The canonical patch format
+ 
+ The canonical patch subject line is:
+ 
+_
