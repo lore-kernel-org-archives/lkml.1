@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbXFAB3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761208AbXFABeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761232AbXFAB3s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 21:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757569AbXFAB3j
+	id S1761208AbXFABeQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 21:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbXFABeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 21:29:39 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35298 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754134AbXFAB3h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 21:29:37 -0400
-X-Sasl-enc: oHXHxZgZCCU34SPGzbk+v421C+JCWHdlQ/GnOlOwvAB3 1180661373
-Date: Thu, 31 May 2007 22:29:28 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Dmitry Torokhov <dtor@insightbb.com>, Richard Hughes <hughsient@gmail.com>,
-       linux-acpi@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Input: document the proper usage of EV_KEY and KEY_UNKNOWN
-Message-ID: <20070601012928.GD5407@khazad-dum.debian.net>
-References: <11802004861625-git-send-email-hmh@hmh.eng.br> <d120d5000705301325yf76d062vefbc79873d23e602@mail.gmail.com> <20070531005305.GC6883@khazad-dum.debian.net> <200705310033.51230.dtor@insightbb.com> <20070531222814.GB4076@khazad-dum.debian.net> <20070531233326.GA1947@srcf.ucam.org> <20070601001304.GB5407@khazad-dum.debian.net> <20070601002435.GA2621@srcf.ucam.org>
-MIME-Version: 1.0
+	Thu, 31 May 2007 21:34:05 -0400
+Received: from mx1.suse.de ([195.135.220.2]:41621 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757713AbXFABeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 21:34:04 -0400
+Date: Fri, 1 Jun 2007 03:34:02 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Mark Fasheh <mark.fasheh@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc3-mm1 - page_mkwrite() breakage
+Message-ID: <20070601013402.GB28585@wotan.suse.de>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070531231354.GR20632@ca-server1.us.oracle.com> <20070601010129.GA15878@wotan.suse.de> <20070601012440.GS20632@ca-server1.us.oracle.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070601002435.GA2621@srcf.ucam.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070601012440.GS20632@ca-server1.us.oracle.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 01 Jun 2007, Matthew Garrett wrote:
-> On Thu, May 31, 2007 at 09:13:04PM -0300, Henrique de Moraes Holschuh wrote:
-> > Well, we already produce KEY_UNKNOWN anyway, and the stuff you quoted above
-> > just makes KEY_UNKNOWN useful for something instead of keeping it as an
-> > useless notice to the user that some key (which one? who knows!) was
-> > pressed.
+On Thu, May 31, 2007 at 06:24:40PM -0700, Mark Fasheh wrote:
+> On Fri, Jun 01, 2007 at 03:01:29AM +0200, Nick Piggin wrote:
+> > Ah, I didn't realise you were using that yet. I expect ocfs2 is using
+> > VM_CAN_INVALIDATE there anyway.
+> > 
+> > Hmm, this becomes easier to deal with after page_mkwrite is merged with
+> > ->fault. But for now, can we just lock the page at the do_wp_page site
+> > as well, and change the API? All users I have seen want the page locked
+> > there anyway...
 > 
-> Given existing userspace, it's never useful to generate KEY_UNKNOWN. 
-> Adding extra information to the event doesn't alter that.
+> Unfortunately that doesn't work for ocfs2 for exactly the same reasons page
+> lock doesn't work during a write either - there's a cluster lock inversion
+> and we might have to zero adjacent pages for an allocating write.
 
-It will not break anything, and it is trivial to write an application to
-intelligently handle KEY_UNKNOWN+scancode events.  This really is not a
-reason to not do it, at all.
+I guess you could just fail the page_mkwrite and have it try again? ..
+that would require changing it not to always go SIGBUS though.
 
-> > Perhaps what you dislike re. KEY_UNKNOWN is the part where KEY_UNKNOWN+scan
-> > code is declared to be the prefered way to report keys that do not have a
-> > specific function?  Your reply seems to indicate this, but I am not sure I
-> > really understood what you meant.
-> 
-> Yes.
 
-That could easily be removed or switched around but...
+> What's involved in merging it with ->fault?
 
-> > I am not exactly in love with the idea of using KEY_UNKNOWN in place of
-> > stuff like KEY_FN_F1 either (I'd prefer to just bump up KEY_MAX and have
-> > more posicional keycodes), but Dmitry is being quite clear that he does not
-> > want to increase KEY_MAX to add more positional keycodes.
-> 
-> I think using positional keycodes would also be a mistake. We just need 
-> a slightly larger set of keycodes representing user-definable keys. 
-> There's 4 of them already - I really can't imagine there being many 
-> keyboards with a significantly larger set of unlabelled keys.
+Just I have't sent the patch (because at the time there were no
+page_mkwrite users to look at).
 
-I had this exact PoV, too, until Dmitry reminded me that keycodes are
-*global* to the system in practice, and that different keys (as in keys that
-have no correlation between their position, labels or lack thereof, and
-function) in different input devices would end up mapped to KEY_PROGx by
-default.
+It is nicer too, because the nopage path only has  to call into
+the filesystem once, to return the page (the filesystem can check
+whether it is for write, and do the page_mkwrite thing at that
+time). do_wp_page obviously still involves the extra call, and
+that will be with a flag telling the fs that it isn't a "nopage"
+fault, but a write fault on an existing page.
 
-And in that scenario, KEY_UNKNOWN (i.e. "please remap me to what you want
-this key to do for real") makes a lot more sense, given that we don't have
-all the positional keycodes we need, and more are not being added.
+ 
+> Here's a nasty idea... Would it be valid for ->page_mkwrite to unlock the
+> page, so long as it's returned in a locked state? Though, do we even need
+> the page lock that early? It seemed to me that you were adding it for
+> consistency reasons (I could be wrong though).
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+You could do that, but you'd have to probably check that it is
+within i_size after you relock it, I think... yeah, that might
+be the best thing for ocfs to do for now.
