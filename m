@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbXFAVDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764273AbXFAVFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764933AbXFAVDg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763185AbXFAVDa
+	id S1764273AbXFAVFu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762893AbXFAVFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:03:30 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:47984 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763019AbXFAVD3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:03:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SVDbtklmL6ob/5BpQg43tN5M2w+IquwSuxoRUndxTd5XrrTMQgEwFpugVa99q7zBLSlrwx/FiAKU60x7B8jjVlZR3iFQyzq/WhRXj0z3ERs5LF1t677COK8dIpxnqZ8BD3aEfbuOCaMoorD7zleh7qQIrw3jXDrfzGJPKcKO/KU=
-Message-ID: <b6a2187b0706011403p49805044q89ebe1a4204caa56@mail.gmail.com>
-Date: Sat, 2 Jun 2007 05:03:27 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [1/3] 2.6.22-rc3: known regressions v2
-Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton LKML" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070601171003.GA3040@uranus.ravnborg.org>
+	Fri, 1 Jun 2007 17:05:44 -0400
+Received: from sandeen.net ([209.173.210.139]:15030 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762864AbXFAVFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 17:05:43 -0400
+Message-ID: <46608A26.3080605@sandeen.net>
+Date: Fri, 01 Jun 2007 16:05:42 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
 MIME-Version: 1.0
+To: Jan Kara <jack@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
+References: <20070524165935.GB19709@duck.suse.cz> <20070524170554.GC19709@duck.suse.cz> <20070524203653.GA7693@duck.suse.cz> <465DF0B4.2050203@sandeen.net> <20070601211036.GA23975@duck.suse.cz>
+In-Reply-To: <20070601211036.GA23975@duck.suse.cz>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46600F1C.5000302@googlemail.com>
-	 <b6a2187b0706010628m3d9ffad5y9a76e22719f439b7@mail.gmail.com>
-	 <6bffcb0e0706010923y5a2bc729x7388b60cc73d94f7@mail.gmail.com>
-	 <b6a2187b0706010943w370f2d5ft4f16a49cc4161012@mail.gmail.com>
-	 <20070601171003.GA3040@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/2/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+Jan Kara wrote:
 
-> The fix is in -mm and sent to Andi.
-> So it will likely be merged soon.
->
-> I recommemd to ignore the warnings for now.
+>> but iput goes
+>> iput->iput_final->drop_inode->udf_drop_inode->lock_kernel() again
+>   As Andrew already wrote, BKL is free to recurse...
+> 
+>> looking for the right way around it but figured I'd ping you early :)
+>   Thanks for info - I'm now mostly out of email for a few days but I'll
+> have a look at it as soon as I return.
 
-Thanks, I'll check when the next rc4 is ready.
+Ok.  I was offbase in my first analysis (sorry!) but something -is- 
+definitely locking up when I run fsstress, and w/o the patch mentioned 
+it's ok.
 
-Jeff.
+I'm trying to manage to get it sorted but i'm out a couple of days now, too.
+
+-Eric
