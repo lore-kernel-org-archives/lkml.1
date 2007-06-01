@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbXFAKxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759415AbXFALBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758881AbXFAKxT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 06:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbXFAKxM
+	id S1759415AbXFALBJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 07:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXFALA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 06:53:12 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:54043 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbXFAKxL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 06:53:11 -0400
-Date: Fri, 1 Jun 2007 06:53:06 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Valdis.Kletnieks@vt.edu, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/1] document Acked-by:
-In-Reply-To: <465FB862.207@zytor.com>
-Message-ID: <alpine.DEB.0.99.0706010648030.9768@sigma.j-a-k-j.com>
-References: <200706010209.l51299kN000531@shell0.pdx.osdl.net>
- <28278.1180675923@turing-police.cc.vt.edu> <465FB862.207@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 1 Jun 2007 07:00:56 -0400
+Received: from mail.screens.ru ([213.234.233.54]:56366 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbXFALA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 07:00:56 -0400
+Date: Fri, 1 Jun 2007 15:00:58 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Mark Hounschell <markh@compro.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: floppy.c soft lockup
+Message-ID: <20070601110058.GA83@tv-sign.ru>
+References: <465C6359.1020106@compro.net> <20070530224650.04b33117.akpm@linux-foundation.org> <465EDB97.5070908@compro.net> <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net> <20070531192256.GA88@tv-sign.ru> <465F2D96.9060502@compro.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465F2D96.9060502@compro.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> +If a person was not directly involved in the preparation or handling of a
-> >> +patch but wishes to signify and record their approval of it then they can
-> >> +arrange to have an Acked-by: line added to the patch's changelog.
-> >> +
-> >> +Acked-by: is often used by the maintainer of the affected code when that
-> >> +maintainer neither wrote, merged nor forwarded the patch themselves.
-> > 
-> > Do we want to add verbiage saying that an Acked-By: is also useful when it
-> > comes from somebody (likely the original reporter) who has actually tested the
-> > patch?
-> 
-> I'd rather see a Tested-By: for that.
-> 
-> There is a difference between a maintainer ack and a tester ok.
+I hope Ingo will correct me if I am wrong,
 
-Indeed. Acked-by: implies authority, and only very few people should be 
-able to do it. Namely, the only person who can ACK a patch is a person who 
-could also NACK a patch and expect it to actually be dropped. If I think a 
-patch is bad, I can say so, but as I have no authority, my statement would 
-be taken on merit alone, whereas Linus or Andrew or such could just NACK 
-it and move on without having to spew a blurb every time.
+On 05/31, Mark Hounschell wrote:
+>
+> Oleg Nesterov wrote:
+> > 
+> > So, the main question is: is it possible that one of RT processes/threads pins itself
+> > to some CPU and eats 100% cpu power?
+> > 
+> 
+> The main process is pinned to a processor(2) with all _non-kernel_  processes/threads forced over to processor 1.
+> Any already affinitized processes or kernel threads are left as is. Only user land stuff is moved. The main process
+> is for sure _not_ relinquishing it's processor(2) intentionally.
+
+This means that a non-rt kernel thread bound to CPU 2 can't run. In particular,
+events/2. This means that the problem is not directly connected to floppy.c,
+any flush_scheduled_work() (or schedule_on_each_cpu()) can't succeed.
+
+You can change irq/X/smp_affinity, but smp_apic_timer_interrupt() still can
+queue work_struct on CPU 2 (for example, mm/slab.c uses per-cpu reap_work).
+Since events/2 is blocked by the main RT thread, such a work_struct can't be
+executed, and so flush_scheduled_work() hangs.
+
+> All the I/O threads, floppy included, are running
+> on the other processor(1). During this failure only 1 or 2 of the I/O threads are actually doing anything.
+> I assume that what ever is going on in the kernel/floppy driver on behalf of the floppy thread is being done on processor 1? 
+> Processor 1 has lots of CPU time available.
+
+Yes, but see above. flush_scheduled_work() needs a cooperation from events/2
+which is bound to CPU 2.
+
+If you changed irq/X/smp_affinity, the patch I sent should help, because
+floppy_work can't be scheduled on CPU 2, but still I don't think it is right
+to run 100% cpu-bound RT-process.
+
+Oleg.
+
