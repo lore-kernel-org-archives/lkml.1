@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761538AbXFAO36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761466AbXFAOfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761538AbXFAO36 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 10:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758615AbXFAO3v
+	id S1761466AbXFAOfV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 10:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbXFAOfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 10:29:51 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:2273 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758595AbXFAO3u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 10:29:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fnQ1jTDe9CoZZBLqGuMxyrGKErbw5jw7IWiw89e7Gs1wuwrgBOXlpHgu3mXeip08Gv9xoJC+z/+/hXKbUtabtqGGxeKl8V+WY+rHZLbb9J+2mNcwMA9YtIJVCf14Dh0AjcbHuSwdYFU21UnVhmtThFvp1lhAUWdCmDNfTOhVkL8=
-Message-ID: <25ae38200706010729t10d68b99v10dcd9b5a190f4f0@mail.gmail.com>
-Date: Fri, 1 Jun 2007 19:59:49 +0530
-From: "Anand Jahagirdar" <anandjigar@gmail.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: Patch related with Fork Bombing Atack
-Cc: "Jens Axboe" <jens.axboe@oracle.com>, security@kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706011032490.29896@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jun 2007 10:35:09 -0400
+Received: from madara.hpl.hp.com ([192.6.19.124]:60548 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759480AbXFAOfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 10:35:07 -0400
+Date: Fri, 1 Jun 2007 07:34:29 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: linux-kernel@vger.kernel.org
+Cc: Stephane Eranian <eranian@hpl.hp.com>, ak@suse.de,
+       akpm@linux-foundation.org
+Subject: [PATCH] i386 add cpu_has_arch_perfmon macro
+Message-ID: <20070601143429.GH24898@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <25ae38200705310645n5e913a91weaa14521908f7989@mail.gmail.com>
-	 <20070531134611.GZ32105@kernel.dk>
-	 <25ae38200705312348r3cd02c90h5080617fa1f0a987@mail.gmail.com>
-	 <Pine.LNX.4.64.0706011032490.29896@twin.jikos.cz>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All
+Hello,
 
-                I totally agree with all of you, but my idea behind
-this patch is that administrator/root user must be able to know that
-there is fork bombing attack on his machine and he should be able take
-action agianst that particular user and kill all his processes.
+The following patch for i386 adds a macro to test for X86_FEATURE_ARCH_PERFMON.
+An equivalent patch will follow for x86-64.
 
-can anybody please tell me how can we achive this??
+changelog:
+	- add cpu_has_arch_perfmon macro to test for X86_FEATURE_ARCH_PERFMON
 
-Regards
-Anand
+signed-off-by: stephane eranian <eranian@hpl.hp.com>
 
-On 6/1/07, Jiri Kosina <jikos@jikos.cz> wrote:
-> On Fri, 1 Jun 2007, Anand Jahagirdar wrote:
->
-> >     when they try to flood the syslog using fork bombing attack, their
-> > messge will be printed only once in syslog and it will show how many
-> > times it has repeated. due to this he will not able to flood the
-> > syslog.and i am using only one single variable in my printk messge so it
-> > is quite not possible to flood the syslog.
->
-> Your argument is flawed - if the kernel provides more than one possibility
-> to flood the syslogd, the is free to invoke the events interleaved. This
-> trivially prevents syslogd from grouping identical reports together.
->
-> --
-> Jiri Kosina
->
+diff -urNp --exclude=.git linux-2.6.22.orig/include/asm-i386/cpufeature.h linux-2.6.22.base/include/asm-i386/cpufeature.h
+--- linux-2.6.22.orig/include/asm-i386/cpufeature.h	2007-05-30 04:02:26.000000000 -0700
++++ linux-2.6.22.base/include/asm-i386/cpufeature.h	2007-06-01 07:22:25.000000000 -0700
+@@ -150,6 +150,7 @@
+ #define cpu_has_pebs 		boot_cpu_has(X86_FEATURE_PEBS)
+ #define cpu_has_clflush		boot_cpu_has(X86_FEATURE_CLFLSH)
+ #define cpu_has_bts 		boot_cpu_has(X86_FEATURE_BTS)
++#define cpu_has_arch_perfmon	boot_cpu_has(X86_FEATURE_ARCH_PERFMON)
+ 
+ #endif /* __ASM_I386_CPUFEATURE_H */
+ 
+-- 
+
+-Stephane
