@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761981AbXFARec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762640AbXFARen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761981AbXFARec (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 13:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760036AbXFAReX
+	id S1762640AbXFARen (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 13:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761690AbXFARe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 13:34:23 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4065 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759665AbXFAReX (ORCPT
+	Fri, 1 Jun 2007 13:34:29 -0400
+Received: from mail-gw3.adaptec.com ([216.52.22.36]:37222 "EHLO
+	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761575AbXFARe1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 13:34:23 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <netbeans@gatworks.com>, <linux-kernel@vger.kernel.org>
-Subject: RE: SELECT() returns 1 But FIONREAD says (Input/output error)
-Date: Fri, 1 Jun 2007 10:33:44 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEBMEEAC.davids@webmaster.com>
+	Fri, 1 Jun 2007 13:34:27 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <4660523B.3000206@gatworks.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Fri, 01 Jun 2007 11:34:17 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Fri, 01 Jun 2007 11:34:18 -0700
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] aacraid: fix shutdown handler to also disable interrupts.
+Date: Fri, 1 Jun 2007 13:34:24 -0400
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01A5551E@otce2k301.adaptec.com>
+In-reply-to: <86802c440706011007r7c9162c3w1fe0ba1952361f19@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] aacraid: fix shutdown handler to also disable interrupts.
+Thread-Index: Acekb2NfqL3UCzO5SQGaWq9s7MuVigAADPAw
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>, <vgoyal@in.ibm.com>
+Cc: <linux-scsi@vger.kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yes, this patch makes sure that the Adapter is shut down correctly, and
+thus when the kexec driver loads, it does not automatically reset the
+adapter during initialization. This regression was a result of adding
+code to the driver to detect if the adapter needed a reset as a result
+of an unclean shutdown in order to deal with an issue that came up with
+kdump. Kdump does not issue a clean shutdown. As you see, it was the
+process of making the driver smarter to find out if it needed to reset
+the adaptec fw that triggered the problem.
 
-> The misunderstanding is from the docs.
-> The select() does not report device errors.
-> Select will just "more precisely, to see if a read will not block".
+As noted before, please be advised to go through SUN channels. Upgrade
+your Drive(s), SES, Motherboard and Card Firmware to the latest
+versions; and make sure you are using compatible drives and drive bays
+to see if this problem dealing with the superfluous reset on your
+pre-release system goes away. You will be able to trigger this by trying
+to perform a kdump on the system, OR by reverting this patch and running
+your kexec test. The superfluous reset has yet to cause an issue with a
+released card beyond noticing a superfluous Firmware reset as Vivek has
+pointed out.
 
-This is a much slighter misunderstanding. The result of the 'select'
-function tells you nothing about what a particular 'read' will or will not
-do. It's just a status reporting function. Saying that 'select' tells you 'a
-read will not block' is as misleading as saying 'access' tells you if an
-'open' will succeed.
+Sincerely -- Mark Salyzyn
 
-All status reporting functions report status. You can phrase this about what
-a hypothetical concurrent operation *would* *have* done. But it is
-misleading to phrase it as what an actual future operation *will* do. The
-kernel does not predict the future.
-
-DS
-
-
+From: Yinghai Lu [mailto:yhlu.kernel@gmail.com] sez:
+> On 6/1/07, Vivek Goyal <vgoyal@in.ibm.com> wrote:
+> > Thanks Mark. This does fix the issue of unnecessary reset of aacraid
+> > adapter over kexec on my machine.
+> i'm little confused about that.
+> this patch is some clear shutdown, so even next start will have tight
+> condition will not try to reset the adapter fw. right Mark?
+> Maybe the driver could be smart to find out if it need to 
+> reset adaptec fw.
+> 
+> YH 
