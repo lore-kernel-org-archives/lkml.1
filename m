@@ -1,94 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbXFAOKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbXFAOTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760743AbXFAOKf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 10:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbXFAOK1
+	id S1760697AbXFAOTD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 10:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758385AbXFAOSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 10:10:27 -0400
-Received: from mx2.compro.net ([216.54.166.4]:39985 "EHLO mx2.compro.net"
+	Fri, 1 Jun 2007 10:18:53 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:50732 "EHLO smtp01.cdmon.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758121AbXFAOK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 10:10:26 -0400
-X-IronPort-AV: E=Sophos;i="4.16,373,1175486400"; 
-   d="scan'208";a="404064"
-Message-ID: <466028DB.3060509@compro.net>
-Date: Fri, 01 Jun 2007 10:10:35 -0400
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: floppy.c soft lockup
-References: <465C6359.1020106@compro.net> <20070530224650.04b33117.akpm@linux-foundation.org> <465EDB97.5070908@compro.net> <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net> <20070531192256.GA88@tv-sign.ru> <465F2D96.9060502@compro.net> <20070601110058.GA83@tv-sign.ru>
-In-Reply-To: <20070601110058.GA83@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1758096AbXFAOSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 10:18:53 -0400
+Date: Fri, 1 Jun 2007 16:20:58 +0200
+From: DervishD <lkml@dervishd.net>
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Kernel utf-8 handling
+Message-ID: <20070601142058.GA2587@DervishD>
+Mail-Followup-To: Linux-kernel <linux-kernel@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> I hope Ingo will correct me if I am wrong,
-> 
-> On 05/31, Mark Hounschell wrote:
->> Oleg Nesterov wrote:
->>> So, the main question is: is it possible that one of RT processes/threads pins itself
->>> to some CPU and eats 100% cpu power?
->>>
->> The main process is pinned to a processor(2) with all _non-kernel_  processes/threads forced over to processor 1.
->> Any already affinitized processes or kernel threads are left as is. Only user land stuff is moved. The main process
->> is for sure _not_ relinquishing it's processor(2) intentionally.
-> 
-> This means that a non-rt kernel thread bound to CPU 2 can't run. In particular,
-> events/2. This means that the problem is not directly connected to floppy.c,
-> any flush_scheduled_work() (or schedule_on_each_cpu()) can't succeed.
-> 
+    Hi all :)
 
-Well, I have multiple I/O threads for many other types of I/O that don't have any problems. 
-And until these changes in 2.6.18 I didn't have any problems with the floppy. I have multiple
-ethernet threads, multiple scsi (SG) device threads, multiple rs232 device threads, parallel port, 
-and others, no problem??
+    I have a do-it-yourself Linux box, and I'm planning to move to UTF8
+(currently I'm using es_ES locale, with latin1 encoding). One of my main
+concerns (apart from programs with little or no utf8 support, which I
+will have to suffer) is kernel handling, because I only use the console;
+I only use X and a terminal emulator if I can't avoid it.
 
+    This said, I know that the console will give me no problems
+regarding character representantion (heck, I'm pretty sure that I will
+be able to use even the same font I'm using right now in the console if
+I get the proper unicode map), but probably will give me problems when
+*entering* characters. I've read that the kernel handles accented chars,
+and things like 'ñ' (ntilde) because it assumes that any composed
+character (composed using dead keys, for example) is in the latin1
+range. While this is not a perfect behaviour, it will work for me.
 
-> You can change irq/X/smp_affinity, but smp_apic_timer_interrupt() still can
-> queue work_struct on CPU 2 (for example, mm/slab.c uses per-cpu reap_work).
-> Since events/2 is blocked by the main RT thread, such a work_struct can't be
-> executed, and so flush_scheduled_work() hangs.
-> 
+    Will the console work as it works now if I can live with latin1
+accented characters only? Is there any terminal emulator *for the
+console*, not for X, that handles utf8? Will I be sentenced to X to be
+able to use my computer with utf8?
 
-I don't mean to sound stupid but why would a process running on processor 1 require anything
-from events/2 when there is an events/1? Forgive my ignorance please.
+    Don't take me bad, I really would love to spend 100MiB of RAM just
+to run mutt under xterm, but for the time being I prefer the console to
+work even if I must run X...
 
->> All the I/O threads, floppy included, are running
->> on the other processor(1). During this failure only 1 or 2 of the I/O threads are actually doing anything.
->> I assume that what ever is going on in the kernel/floppy driver on behalf of the floppy thread is being done on processor 1? 
->> Processor 1 has lots of CPU time available.
-> 
-> Yes, but see above. flush_scheduled_work() needs a cooperation from events/2
-> which is bound to CPU 2.
-> 
+    Thanks a lot! :))
 
-Again I don't understand why flush_scheduled_work() running on behalf of a process
-affinitized to processor-1 requires cooperation from events/2 (affinitized to processor-2)
-when there is an events/1 already affinitized to processor 1? Again though, Forgive my 
-ignorance please.
+    Raúl Núñez de Arenas Coronado
 
-> If you changed irq/X/smp_affinity, the patch I sent should help, because
-> floppy_work can't be scheduled on CPU 2, but still I don't think it is right
-> to run 100% cpu-bound RT-process.
-> 
-> Oleg.
-> 
-
-The patch you sent helps with no other intervention from me. But then so does 
-the patch mentioned in the original post.  I am able to bang on the floppies pretty
-hard doing all kinds of things with no trouble using either. 
-
-As far as a 100% cpu-bound RT-process goes, well I say I don't intentionally relinquish
-the processor but it's not really 100% cpu-bound. Running xosview I see some spare time. 
-
-Thanks
-Mark
-
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
