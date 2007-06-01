@@ -1,105 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762199AbXFAR5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762488AbXFASAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762199AbXFAR5j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 13:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761227AbXFAR5d
+	id S1762488AbXFASAN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:00:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760766AbXFAR77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 13:57:33 -0400
-Received: from lucidpixels.com ([75.144.35.66]:58874 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761185AbXFAR5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 13:57:32 -0400
-Date: Fri, 1 Jun 2007 13:57:31 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Robert Hancock <hancockr@shaw.ca>
-cc: Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Case: 7454422: Re: Kernel 2.6.21.3 does not work with 8GB of
- RAM on Intel 965WH motherboards. (FULL DMESG)
-In-Reply-To: <Pine.LNX.4.64.0706011233100.18986@p34.internal.lan>
-Message-ID: <Pine.LNX.4.64.0706011355520.3716@p34.internal.lan>
-References: <82e4877d0705301757v580a4ca5yebe2a565f0b97552@mail.gmail.com>
- <465E513E.60903@shaw.ca> <Pine.LNX.4.64.0706011233100.18986@p34.internal.lan>
+	Fri, 1 Jun 2007 13:59:59 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34017 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758028AbXFAR76 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 13:59:58 -0400
+Date: Fri, 1 Jun 2007 10:59:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jgarzik@pobox.com>
+cc: Tejun Heo <htejun@gmail.com>, Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux v2.6.22-rc3
+In-Reply-To: <466058F8.4050107@pobox.com>
+Message-ID: <alpine.LFD.0.98.0706011047000.3957@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
+ <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com> 
+ <46599E6B.1000209@pobox.com>  <9d2cd630705270907y4722653cpf79f073fa8f12f08@mail.gmail.com>
+ <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org> 
+ <9d2cd630705271315x7030c91ew2f175c921c022880@mail.gmail.com> 
+ <465AA536.6080608@gmail.com> <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com>
+ <465BF244.5080200@gmail.com> <alpine.LFD.0.98.0705290924350.26602@woody.linux-foundation.org>
+ <465F6F48.8080804@gmail.com> <alpine.LFD.0.98.0705311830360.26602@woody.linux-foundation.org>
+ <465F8230.2040105@gmail.com> <46604E62.1000105@pobox.com>
+ <alpine.LFD.0.98.0706010955390.3957@woody.linux-foundation.org>
+ <466058F8.4050107@pobox.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Fri, 1 Jun 2007, Justin Piszcz wrote:
+On Fri, 1 Jun 2007, Jeff Garzik wrote:
+> 
+> With these old PATA devices, device reset is "six of one, half-dozen of the
+> other."  Using SRST is the only way to kick some ATAPI devices into working:
+> http://suif.stanford.edu/~csapuntz/blackmagic.html#reset
 
->
->
-> On Wed, 30 May 2007, Robert Hancock wrote:
->
->> Parag Warudkar wrote:
->>> Robert Hancock wrote:
->>> 
->>> 
->>>> 0-3319MB
->>>> 4096-8832MB
->>>> 
->>>> leaving 64MB of memory at the top of RAM uncached. What do you want to
->>>> bet that something important (kernel code?) is getting loaded there..
->>>> 
->>>> So essentially it's a BIOS problem, it's not setting up the MTRRs
->>>> properly in order to map all of RAM as cacheable. As Andi says, complain
->>>> to Intel.
->>>> 
->>> 
->>> Could the BADRAM patch be useful for him?
->>> http://rick.vanrein.org/linux/badram/download.html has 2.6.21 version.
->>> It says it supports x86_64. May be using this patch he can exclude
->>> that RAM from being used/accessed?
->> 
->> I think that mem=8832M would work as well, to make the kernel use only the 
->> memory that is marked cacheable. (It looks like this parameter takes the 
->> highest memory address we want the kernel to use, not the highest memory 
->> amount.)
->> 
->> -- 
->> Robert Hancock      Saskatoon, SK, Canada
->> To email, remove "nospam" from hancockr@nospamshaw.ca
->> Home Page: http://www.roberthancock.com/
->> 
->
-> Is 8832MB a typo?  8GB of memory is ~8192MB right?  Did you mean 8132MB or? 
-> Intel wants me to flash my bios and reset everything to the defaults to see 
-> if it is still an issue, I'd prefer to try the mem= option first.
->
-> Justin.
->
+Well, wouldn't it be a good thing to
+ 1) if BUSY/DRQ is set even before you try the problem, obviously skip the 
+    two polite cases, and go to #4
+ 2) try to just do an IDENTIFY 
+ 3) if that doesn't work, do a HOST RESET and then try again
+ 4) if that doesn't work, do the full SRST
 
-mem=8064M" [top: Mem:   7264144k total]
-mem=8832M" [top: Mem:   8039820k total]
+(or some variation of the above).
 
-I am using 8832MB and it does not have the bug/slowness!  How did you 
-calculate that from the MTRR output?
+That at least has the potential to get you six working devices, and half a 
+dozen other working devices, for a total of 12. With no unnecessary resets 
+or long timeouts!
 
-$ cat /proc/mtrr
-reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
-reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
-reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
-reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
-reg05: base=0x100000000 (4096MB), size=4096MB: write-back, count=1
-reg06: base=0x200000000 (8192MB), size= 512MB: write-back, count=1
-reg07: base=0x220000000 (8704MB), size= 128MB: write-back, count=1
+(Btw, the 150ms wait after reset is really nasty. A few of those, and 
+we're wasting seconds during bootup. Why the hell does it do that, when 
+the old driver - and the spec - said 2ms?)
 
-It sees 7.66GB now!
+> I'm mainly interested in hearing feedback from Fedora 7 damage, before making
+> a major decision about the probing code.  If this is a single dain bramaged
+> device, we should avoid punishing the majority.  But if this is a trend, it
+> warrants careful reconsideration.
 
-8039820 / 1024 / 1024
-7.66GB
+I thought the default in Fedora was to use the PATA driver first? If so, 
+you're going to miss a lot of cases that "just work", because they use the 
+old driver.
 
-top - 13:56:48 up 3 min,  5 users,  load average: 0.12, 0.14, 0.06
-Tasks: 163 total,   1 running, 162 sleeping,   0 stopped,   0 zombie
-Cpu0  :  4.4%us,  1.4%sy,  0.2%ni, 89.7%id,  4.1%wa,  0.0%hi,  0.1%si,  0.0%st
-Cpu1  :  0.1%us,  0.5%sy,  0.6%ni, 98.4%id,  0.3%wa,  0.0%hi,  0.0%si,  0.0%st
-Cpu2  :  1.2%us,  0.3%sy,  0.1%ni, 97.9%id,  0.5%wa,  0.0%hi,  0.0%si,  0.0%st
-Cpu3  :  0.2%us,  1.9%sy,  0.7%ni, 96.0%id,  1.1%wa,  0.0%hi,  0.0%si,  0.0%st
-Mem:   8039820k total,  1039588k used,  7000232k free,     3552k buffers
-Swap: 16787768k total,        0k used, 16787768k free,   141480k cached
+At least that was what my situation was on the P4 that I recently 
+complained about the "set transfer mode" problem: it used to use the old 
+PATA drivers that didn't have the issue, so I never even _knew_ the new 
+libata-based code had problems.
 
-
-
+		Linus
