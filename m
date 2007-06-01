@@ -1,90 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbXFADRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbXFADSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbXFADRr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 23:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbXFADRf
+	id S1756198AbXFADSw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 23:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbXFADSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 23:17:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:41818 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752461AbXFADRd (ORCPT
+	Thu, 31 May 2007 23:18:44 -0400
+Received: from mga01.intel.com ([192.55.52.88]:48430 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752742AbXFADSn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 23:17:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=fs1hIWei5G5Egzys15XNYlCGyugWcIoqF1eSW8vr3o+KyODWvbymgZpfP704kj662F7KOamGBxZDA2RpOZMJpkLUOKHmUe/hLhQHoGFaoQz30u7ECu5eFob9nD8Oi1ntnDFkINF8k7YIRrtg2H86SU7BKr1m5WvdsNlZpyyCFhw=
-Message-ID: <465F8F71.20302@gmail.com>
-Date: Fri, 01 Jun 2007 12:16:01 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 31 May 2007 23:18:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,371,1175497200"; 
+   d="scan'208";a="251960012"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: David Chinner <dgc@sgi.com>, david@lang.hm,
-       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
- and dm/md.
-References: <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <20070531070656.GK32105@kernel.dk>
-In-Reply-To: <20070531070656.GK32105@kernel.dk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: BUG: sleeping function called from invalid context at kernel/fork.c:385
+Date: Thu, 31 May 2007 20:18:42 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A01961A60@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <465EE7BB.4050605@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: BUG: sleeping function called from invalid context at kernel/fork.c:385
+Thread-Index: Acejlzwp7CQXH85kSYambu4kxN+ErwAZCdKw
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Prarit Bhargava" <prarit@redhat.com>,
+       "Christoph Lameter" <clameter@sgi.com>
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>, "David Chinner" <dgc@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "lkml" <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>
+X-OriginalArrivalTime: 01 Jun 2007 03:18:43.0131 (UTC) FILETIME=[8ECDA8B0:01C7A3FB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, May 31 2007, David Chinner wrote:
->> On Thu, May 31, 2007 at 08:26:45AM +0200, Jens Axboe wrote:
->>> On Thu, May 31 2007, David Chinner wrote:
->>>> IOWs, there are two parts to the problem:
->>>>
->>>> 	1 - guaranteeing I/O ordering
->>>> 	2 - guaranteeing blocks are on persistent storage.
->>>>
->>>> Right now, a single barrier I/O is used to provide both of these
->>>> guarantees. In most cases, all we really need to provide is 1); the
->>>> need for 2) is a much rarer condition but still needs to be
->>>> provided.
->>>>
->>>>> if I am understanding it correctly, the big win for barriers is that you 
->>>>> do NOT have to stop and wait until the data is on persistant media before 
->>>>> you can continue.
->>>> Yes, if we define a barrier to only guarantee 1), then yes this
->>>> would be a big win (esp. for XFS). But that requires all filesystems
->>>> to handle sync writes differently, and sync_blockdev() needs to
->>>> call blkdev_issue_flush() as well....
->>>>
->>>> So, what do we do here? Do we define a barrier I/O to only provide
->>>> ordering, or do we define it to also provide persistent storage
->>>> writeback? Whatever we decide, it needs to be documented....
->>> The block layer already has a notion of the two types of barriers, with
->>> a very small amount of tweaking we could expose that. There's absolutely
->>> zero reason we can't easily support both types of barriers.
->> That sounds like a good idea - we can leave the existing
->> WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
->> behaviour that only guarantees ordering. The filesystem can then
->> choose which to use where appropriate....
-> 
-> Precisely. The current definition of barriers are what Chris and I came
-> up with many years ago, when solving the problem for reiserfs
-> originally. It is by no means the only feasible approach.
-> 
-> I'll add a WRITE_ORDERED command to the #barrier branch, it already
-> contains the empty-bio barrier support I posted yesterday (well a
-> slightly modified and cleaned up version).
+> Tony, the ia64 section mismatch "whack-a-mole" is far from over :(
 
-Would that be very different from issuing barrier and not waiting for
-its completion?  For ATA and SCSI, we'll have to flush write back cache
-anyway, so I don't see how we can get performance advantage by
-implementing separate WRITE_ORDERED.  I think zero-length barrier
-(haven't looked at the code yet, still recovering from jet lag :-) can
-serve as genuine barrier without the extra write tho.
+Can you post the .config file that you are using when you see all those
+warnings ... I'll start bopping them on their cute little heads.
 
-Thanks.
-
--- 
-tejun
+-Tony
