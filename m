@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762725AbXFARIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762822AbXFARJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762725AbXFARIb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 13:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762378AbXFARII
+	id S1762822AbXFARJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 13:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761297AbXFARJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 13:08:08 -0400
-Received: from waste.org ([66.93.16.53]:60427 "EHLO waste.org"
+	Fri, 1 Jun 2007 13:09:04 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60832 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762325AbXFARIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 13:08:07 -0400
-Date: Fri, 1 Jun 2007 12:07:40 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/9] Conditional Calls - Hash Table
-Message-ID: <20070601170739.GA11115@waste.org>
-References: <20070530140025.917261793@polymtl.ca> <20070530140227.398040643@polymtl.ca> <p731wgxds85.fsf@bingen.suse.de> <20070601160802.GL11166@waste.org> <20070601164623.GB4112@Krystal>
-MIME-Version: 1.0
+	id S1762080AbXFARJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 13:09:03 -0400
+Date: Fri, 1 Jun 2007 19:10:03 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [1/3] 2.6.22-rc3: known regressions v2
+Message-ID: <20070601171003.GA3040@uranus.ravnborg.org>
+References: <46600F1C.5000302@googlemail.com> <b6a2187b0706010628m3d9ffad5y9a76e22719f439b7@mail.gmail.com> <6bffcb0e0706010923y5a2bc729x7388b60cc73d94f7@mail.gmail.com> <b6a2187b0706010943w370f2d5ft4f16a49cc4161012@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070601164623.GB4112@Krystal>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <b6a2187b0706010943w370f2d5ft4f16a49cc4161012@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 12:46:23PM -0400, Mathieu Desnoyers wrote:
-> * Matt Mackall (mpm@selenic.com) wrote:
-> > On Thu, May 31, 2007 at 03:42:50PM +0200, Andi Kleen wrote:
-> > > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
-> > > 
-> > > > Reimplementation of the cond calls which uses a hash table to hold the active
-> > > > cond_calls. It permits to first arm a cond_call and then load supplementary
-> > > > modules that contain this cond_call.
-> > > 
-> > > Hash table is probably overkill. This is a very very slow path operation.
-> > > Can you simplify the code? Just a linked list of all the condcall segments
-> > > should be enough  and then walk it.
-> > 
-> > I think it could be greatly simplified by using symbols instead of
-> > strings.
-> > 
-> > That is, doing cond_call(foo, func()) rather than cond_call("foo",
-> > func()). Here foo is a structure or type holding the relevant info to
-> > deal with the cond_call infrastructure. For unoptimized architectures,
-> > it can simply be a bool, which will be faster.
-> > 
-> > This has the added advantage that the compiler will automatically pick
-> > up any misspellings of these things. And it saves the space we'd use
-> > on the hash table too.
-> > 
+On Sat, Jun 02, 2007 at 12:43:06AM +0800, Jeff Chua wrote:
+> On 6/2/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 > 
-> The idea is interesting, but does not fit the problem: AFAIK, it will
-> not be possible to do multiple declarations of the same symbol, which is
-> needed whenever we want to declare a cond_call() more than once or to
-> embed it in an inline function.
+> >I think that Sam is working on this.
+> 
+> I'm a bit lost looking at those patches and don't know which ones are
+> the appropriate ones I should I apply?
+The fix is in -mm and sent to Andi.
+So it will likely be merged soon.
 
-It's not clear to me why either of those things are necessary. An
-example please?
+I recommemd to ignore the warnings for now.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+	Sam
