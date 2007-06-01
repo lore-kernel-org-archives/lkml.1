@@ -1,252 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbXFACpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbXFACqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753357AbXFACpd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 22:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXFACpZ
+	id S1754533AbXFACqj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 22:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbXFACqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 22:45:25 -0400
-Received: from ns1.suse.de ([195.135.220.2]:46850 "EHLO mx1.suse.de"
+	Thu, 31 May 2007 22:46:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51921 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751107AbXFACpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 22:45:24 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Fri, 1 Jun 2007 12:44:30 +1000
+	id S1751107AbXFACqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 22:46:30 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
+Date: Thu, 31 May 2007 22:46:11 -0400
+User-Agent: KMail/1.9.5
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705171842.44134.lenb@kernel.org> <20070521121139.GB8332@elf.ucw.cz>
+In-Reply-To: <20070521121139.GB8332@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18015.34830.401191.916084@notabene.brown>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       cotte@de.ibm.com, hugh@veritas.com, zanussi@us.ibm.com,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] sendfile removal (nfsd update)
-In-Reply-To: message from Jens Axboe on Thursday May 31
-References: <20070531103316.GO32105@kernel.dk>
-	<20070531105543.GA25676@infradead.org>
-	<20070531110550.GR32105@kernel.dk>
-	<18014.48878.442628.260297@notabene.brown>
-	<20070531122723.GT32105@kernel.dk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+Message-Id: <200705312246.11576.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 21 May 2007 08:11, Pavel Machek wrote:
+> On Thu 2007-05-17 18:42:43, Len Brown wrote:
+> > > Something similar happened to me on XE3, yes.
+> > > 
+> > > (Actual values were different; BIOS specified critical temperature at
+> > > cca 95C, but hw killed the power at cca 83C. Setting critical trip
+> > > point at 80C made the problem go away.)
+> > 
+> > Great, please file a bug and include the acpidump from the XE3
+> > and we'll fix it, rather than supporting a bogus (manual) workaround for it.
+> 
+> It is few years since I do not have that XE3 machine.
+> 
+> > Of course if your system is running at 80*C and the hardware shuts
+> > off at 83*C, you may have a broken fan, or one clogged with dust...
+> 
+> It _did_ have broken fan. It also had broken trip points.
 
-Ok, here is a patch that makes nfsd use splice instead of sendfile.
-It appears to both compile and work.
+Thanks for clarifying this, Pavel.
+If you come upon an XE3 where Linux-2.6.22 doesn't work as well
+as Windows, please let me know.
 
-Some observations:
-  - __splice_from_pipe wants a "struct file*" and I wanted to pass a
-    "struct svcrqst *".  Maybe it should take a void * ?
-  - It also wants a *ppos which I had no use for.. It that really
-    need?  Cannot &file->f_pos be used?
-  - I copied do_splice_to from splice.c as it wasn't exported, and
-    then found I couldn't compile because rw_verify_area wasn't
-    exported. As nfsd doesn't need that (we never export
-    mandatory-locking files) I just remove it and some other cruft
-    that I didn't need.... Not sure if that was the best approach.
-  - I needed to export alloc_pipe_info.  Maybe there should be a 
-    get_current_pipe instead which does the alloc if needed.
-  - I would much rather have something like free_pipe_info exported
-    than open code it in do_splice_read (which is based heavily on
-    do_splice_direct).
-  
-NeilBrown
+Given that the justification for this ill-conceived workaround
+seems to have diminished to the memory of broken hardware,
+it is clear that we should stay the course of removing it
+so that it doesn't further confuse future users.
 
--------------------------------
-Replace ->sendfile with ->splice_read
+If SuSE violently disagrees with me, you are certainly empowered
+to restore the workaround in your distribution staring at 2.6.22
+as part of your value add.  However, given its history of confusing
+users, it seems that it might increase your support burden rather
+than decrease it.
 
-Apparently ->sendfile is going away, so change nfsd to use ->splice_read
-to get pages for a file.
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./fs/nfsd/vfs.c |  125 ++++++++++++++++++++++++++++++++++++++++++++++++--------
- ./fs/pipe.c     |    1 
- 2 files changed, 109 insertions(+), 17 deletions(-)
-
-diff .prev/fs/nfsd/vfs.c ./fs/nfsd/vfs.c
---- .prev/fs/nfsd/vfs.c	2007-06-01 10:41:27.000000000 +1000
-+++ ./fs/nfsd/vfs.c	2007-06-01 12:32:51.000000000 +1000
-@@ -23,7 +23,7 @@
- #include <linux/file.h>
- #include <linux/mount.h>
- #include <linux/major.h>
--#include <linux/ext2_fs.h>
-+#include <linux/pipe_fs_i.h>
- #include <linux/proc_fs.h>
- #include <linux/stat.h>
- #include <linux/fcntl.h>
-@@ -801,26 +801,32 @@ found:
- }
- 
- /*
-- * Grab and keep cached pages assosiated with a file in the svc_rqst
-- * so that they can be passed to the netowork sendmsg/sendpage routines
-- * directrly. They will be released after the sending has completed.
-+ * Grab and keep cached pages associated with a file in the svc_rqst
-+ * so that they can be passed to the network sendmsg/sendpage routines
-+ * directly. They will be released after the sending has completed.
-  */
- static int
--nfsd_read_actor(read_descriptor_t *desc, struct page *page, unsigned long offset , unsigned long size)
-+nfsd_splice_actor(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
-+		  struct splice_desc *sd)
- {
--	unsigned long count = desc->count;
--	struct svc_rqst *rqstp = desc->arg.data;
-+	struct svc_rqst *rqstp = (struct svc_rqst *)sd->file;
- 	struct page **pp = rqstp->rq_respages + rqstp->rq_resused;
-+	struct page *page = buf->page;
-+	size_t size;
-+	int ret;
-+
-+	ret = buf->ops->pin(pipe, buf);
-+	if (unlikely(ret))
-+		return ret;
- 
--	if (size > count)
--		size = count;
-+	size = sd->len;
- 
- 	if (rqstp->rq_res.page_len == 0) {
- 		get_page(page);
- 		put_page(*pp);
- 		*pp = page;
- 		rqstp->rq_resused++;
--		rqstp->rq_res.page_base = offset;
-+		rqstp->rq_res.page_base = buf->offset;
- 		rqstp->rq_res.page_len = size;
- 	} else if (page != pp[-1]) {
- 		get_page(page);
-@@ -832,11 +838,98 @@ nfsd_read_actor(read_descriptor_t *desc,
- 	} else
- 		rqstp->rq_res.page_len += size;
- 
--	desc->count = count - size;
--	desc->written += size;
- 	return size;
- }
- 
-+static long do_splice_to(struct file *in, loff_t *ppos,
-+			 struct pipe_inode_info *pipe, size_t len,
-+			 unsigned int flags)
-+{
-+	loff_t isize, left;
-+
-+	isize = i_size_read(in->f_mapping->host);
-+	if (unlikely(*ppos >= isize))
-+		return 0;
-+
-+	left = isize - *ppos;
-+	if (unlikely(left < len))
-+		len = left;
-+
-+	return in->f_op->splice_read(in, ppos, pipe, len, flags);
-+}
-+
-+static int do_splice_read(struct file *in, loff_t *ppos, size_t count,
-+			  struct svc_rqst *rqstp)
-+{
-+	struct pipe_inode_info *pipe;
-+	long ret, bytes;
-+	int i;
-+
-+	rqstp->rq_resused = 1;
-+
-+	pipe = current->splice_pipe;
-+	if (unlikely(!pipe)) {
-+		pipe = alloc_pipe_info(NULL);
-+		if (!pipe)
-+			return -ENOMEM;
-+
-+		pipe->readers = 1;
-+		current->splice_pipe = pipe;
-+	}
-+
-+	ret = 0;
-+	bytes = 0;
-+
-+	while (count) {
-+		loff_t unused = 0;
-+		size_t read_len, max_read_len;
-+
-+		max_read_len = min(count, (size_t)(PIPE_BUFFERS*PAGE_SIZE));
-+
-+		ret = do_splice_to(in, ppos, pipe, max_read_len, 0);
-+		if (unlikely(ret < 0))
-+			goto out_release;
-+
-+		read_len = ret;
-+
-+		ret = __splice_from_pipe(pipe, (struct file *)rqstp,
-+					 &unused, read_len, 0,
-+					 nfsd_splice_actor);
-+		if (unlikely(ret < 0))
-+			goto out_release;
-+
-+		bytes += ret;
-+		count -= ret;
-+	}
-+
-+	pipe->nrbufs = pipe->curbuf = 0;
-+
-+	return bytes;
-+
-+ out_release:
-+	/*
-+	 * If we did an incomplete transfer we must release
-+	 * the pipe buffers in question:
-+	 */
-+	for (i = 0; i < PIPE_BUFFERS; i++) {
-+		struct pipe_buffer *buf = pipe->bufs + i;
-+
-+		if (buf->ops) {
-+			buf->ops->release(pipe, buf);
-+			buf->ops = NULL;
-+		}
-+	}
-+	pipe->nrbufs = pipe->curbuf = 0;
-+
-+	/*
-+	 * If we transferred some data, return the number of bytes:
-+	 */
-+	if (bytes > 0)
-+		return bytes;
-+
-+	return ret;
-+}
-+
- static __be32
- nfsd_vfs_read(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
-               loff_t offset, struct kvec *vec, int vlen, unsigned long *count)
-@@ -861,11 +954,9 @@ nfsd_vfs_read(struct svc_rqst *rqstp, st
- 	if (ra && ra->p_set)
- 		file->f_ra = ra->p_ra;
- 
--	if (file->f_op->sendfile && rqstp->rq_sendfile_ok) {
--		rqstp->rq_resused = 1;
--		host_err = file->f_op->sendfile(file, &offset, *count,
--						 nfsd_read_actor, rqstp);
--	} else {
-+	if (file->f_op->splice_read && rqstp->rq_sendfile_ok)
-+		host_err = do_splice_read(file, &offset, *count, rqstp);
-+	else {
- 		oldfs = get_fs();
- 		set_fs(KERNEL_DS);
- 		host_err = vfs_readv(file, (struct iovec __user *)vec, vlen, &offset);
-
-diff .prev/fs/pipe.c ./fs/pipe.c
---- .prev/fs/pipe.c	2007-06-01 12:30:43.000000000 +1000
-+++ ./fs/pipe.c	2007-06-01 12:31:58.000000000 +1000
-@@ -865,6 +865,7 @@ struct pipe_inode_info * alloc_pipe_info
- 
- 	return pipe;
- }
-+EXPORT_SYMBOL(alloc_pipe_info);
- 
- void __free_pipe_info(struct pipe_inode_info *pipe)
- {
+-Len
