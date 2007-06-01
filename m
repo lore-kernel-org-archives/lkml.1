@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763917AbXFAVra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbXFAVrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763917AbXFAVra (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761412AbXFAVrY
+	id S1761619AbXFAVrx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763601AbXFAVrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:47:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:53704 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760836AbXFAVrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:47:23 -0400
-Message-ID: <466093E3.4010701@goop.org>
-Date: Fri, 01 Jun 2007 14:47:15 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 1 Jun 2007 17:47:45 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56092 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761412AbXFAVro (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 17:47:44 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <466093F1.8040204@s5r6.in-berlin.de>
+Date: Fri, 01 Jun 2007 23:47:29 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Extending boot protocol & bzImage for paravirt_ops
-References: <4656FB8F.4090604@goop.org> <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <466087CF.70708@goop.org> <4660924A.2070009@zytor.com>
-In-Reply-To: <4660924A.2070009@zytor.com>
+To: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@gmail.com>
+Subject: Re: [PATCH] lib: add idr_for_each()
+References: <11807281632412-git-send-email-krh@redhat.com>
+In-Reply-To: <11807281632412-git-send-email-krh@redhat.com>
+X-Enigmail-Version: 0.94.1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
->> Do we care particularly? If 8 bytes is enough for the subarch, do we
->> care whether its a pointer or literal? After all, this is just a private
->> channel between the bootloader and some subarch-specific piece of code
->> in the kernel.
->>
->>     
->
-> I see two options: either we make it a pointer *and a length* so that a
-> loader can reshuffle it at will (that also implies no absolute pointers
-> within the data), or it's an opaque cookie anyway.
->   
+Kristian Høgsberg wrote:
+>  /**
+> + * idr_for_each - iterate through all stored pointers
+...
+> + * The caller must serialize idr_find() vs idr_get_new() and idr_remove().
+                                ^^^^^^^^
+> + */
+> +int idr_for_each(struct idr *idp,
+> +		 int (*fn)(int id, void *p, void *data), void *data)
+> +{
 
-No, it has to be completely opaque.  It might be a pointer to some
-special shared memory or something, and not movable.
+...must serialize idr_for_each() vs...
 
-    J
+-- 
+Stefan Richter
+-=====-=-=== -==- ----=
+http://arcgraph.de/sr/
