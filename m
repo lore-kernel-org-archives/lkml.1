@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763300AbXFATrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763716AbXFATsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763300AbXFATrm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762477AbXFATrg
+	id S1763716AbXFATsO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:48:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762763AbXFATr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:47:36 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48854 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762441AbXFATrf (ORCPT
+	Fri, 1 Jun 2007 15:47:59 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46942 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762435AbXFATr6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:47:35 -0400
-Date: Fri, 1 Jun 2007 21:47:34 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, andrew.vasquez@qlogic.com
-Subject: Re: [PATCH] quiet down swiotlb warnings
-Message-ID: <20070601194734.GJ7217@one.firstfloor.org>
-References: <466057B1.9090309@redhat.com> <p73odjzbism.fsf@bingen.suse.de> <20070601181225.GA16460@infradead.org> <20070601193703.GI7217@one.firstfloor.org> <466075D1.8080807@redhat.com>
+	Fri, 1 Jun 2007 15:47:58 -0400
+Date: Fri, 1 Jun 2007 12:47:57 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
+       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
+ warning
+Message-Id: <20070601124757.fe91a002.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
+References: <465FCA79.70207@in.ibm.com>
+	<200706011620.05756.srinivasa@in.ibm.com>
+	<Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
+	<20070601121114.b165f1e8.pj@sgi.com>
+	<Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <466075D1.8080807@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 03:38:57PM -0400, Rik van Riel wrote:
-> Andi Kleen wrote:
-> 
-> >An pci_map_sg failing typically leads to an IO error and we've
-> >always printk'ed those. Otherwise people will wonder why they
-> >get EIO.
-> 
-> In some situations.  In this case the qla2xxx driver uses
-> the pci_map_sg() failure as a throttling mechanism and
+> The allocated array has 0 bytes. Any dereference is an error.
 
-First WTF does it need swiotlb anyways? QA hardware should
-be definitely DAC capable, shouldn't it?
+Well, then, that doesn't work either.
 
-> printing out all the warnings will actually slow down the
-> system.
+We -agree- we can't have this failing. You suggested (if I understood
+correctly, which I doubt) that we set the pointer to NULL, and noted
+that derefencing a NULL pointer would fail.  I agree such derefences
+would fail, and tried to point out that this would be bad.  We can't
+have pointer dereferences failing in the kernel ... duh.
 
-Another reason is that there is a lot of code that
-still doesn't check the return values and when that
-happens you might get data corruption too.
+Your reply seems like a non sequiter to me, pointing out that having
+a pointer to an array of 0 bytes fails as well.  Ok - that's bad too.
 
-> 
-> Andi, what do you propose as a solution?
+So we cannot have a NULL pointer, used unchecked, and we cannot have
+a non-NULL pointer to a zero byte array, used unchecked.
 
-A different interface; like I wrote in my earlier mail.
+As I said, and as I thought Srinivasa coded, with these patch lines:
 
-Another probabibility would be to have a blocking interface
-to swiotlb that won't fail. That would be the better solution
-long term, but i was told it is hard to fit into some current
-driver interfaces.
+@@ -1772,6 +1779,9 @@ static ssize_t cpuset_tasks_read(struct 
+ {
+ 	struct ctr_struct *ctr = file->private_data;
+ 
++	if (!ctr->buf)     /* No tasks in this cpuset */
++		return 0;
++
+ 	return simple_read_from_buffer(buf, nbytes, ppos, ctr->buf, ctr->bufsz);
+ }
 
--Andi
+we actually have to check the NULL-ness (or emptiness) of this thing,
+down where it would be used, to avoid using NULL or empty things.
+
+Summary - Srinivasa's patch still looks ok to me.  This followup
+discussion between you and I is just confusing me - sorry.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
