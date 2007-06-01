@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbXFAMEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbXFAMJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760752AbXFAMEx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 08:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758934AbXFAMEo
+	id S1760727AbXFAMJf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 08:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbXFAMJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 08:04:44 -0400
-Received: from lazybastard.de ([212.112.238.170]:49522 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754314AbXFAMEn (ORCPT
+	Fri, 1 Jun 2007 08:09:28 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:59061 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753868AbXFAMJ1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 08:04:43 -0400
-Date: Fri, 1 Jun 2007 14:00:08 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Chinner <dgc@sgi.com>,
-       Anton Altaparmakov <aia21@cam.ac.uk>, Al Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH resend] introduce I_SYNC
-Message-ID: <20070601120008.GB30328@lazybastard.org>
-References: <20070516170110.GC8113@lazybastard.org> <20070516101535.94e44b3b.akpm@linux-foundation.org> <20070531142535.GA25236@lazybastard.org> <20070531154648.b21d9fe2.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070531154648.b21d9fe2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Fri, 1 Jun 2007 08:09:27 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 1 Jun 2007 14:09:03 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [GIT PULL] ieee1394 fixes
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.b48f5c718ecc4c84@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 May 2007 15:46:48 -0700, Andrew Morton wrote:
-> > 
-> > I_LOCK was used for several unrelated purposes, which caused deadlock
-> > situations in certain filesystems as a side effect.  One of the purposes
-> > now uses the new I_SYNC bit.
-> 
-> Do we know what those deadlocks were?  It's a bit of a mystery patch otherwise.
-> 
-> Put yourself in the position of random-distro-engineer wondering "should I
-> backport this?".
+Linus, please pull from the for-linus branch at
 
-The logfs deadlock is well-known.  All others are very handwavy and may
-or may not really exist.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-Will resend with description and without the jfs comment.
+to receive the following updates to the old and the new IEEE 1394 subsystem:
 
-> > Also document the various bits and change their order from historical to
-> > logical.
-> 
-> What a nice comment you added ;)
+  - fix hang in s2ram,
+  - port a sysfs attribute from sbp2 to firewire-sbp2,
+  - fix userspace-exported headers,
+  - list new firewire stack in MAINTAINERS.
 
-And now I know how to bribe you into accepting patches. ;)
+I'm sorry that the s2ram fix is rather large for an -rc fix but I think
+it is acceptable in preparation of the very first release of the new
+firewire stack.  Things will get back to normal from now on.
 
-JÃ¶rn
+
+The diff will follow in a reply.  The stat and shortlog:
+
+ MAINTAINERS                   |    8 ++
+ drivers/firewire/fw-card.c    |    5 -
+ drivers/firewire/fw-cdev.c    |   17 +++-
+ drivers/firewire/fw-device.h  |    1 +
+ drivers/firewire/fw-ohci.c    |  187 +++++++++++++++++++++-----------
+ drivers/firewire/fw-sbp2.c    |   53 +++++++++
+ drivers/ieee1394/nodemgr.c    |    7 +-
+ drivers/ieee1394/nodemgr.h    |    1 +
+ drivers/ieee1394/sbp2.c       |   31 +++++-
+ include/linux/Kbuild          |    2 +
+ include/linux/firewire-cdev.h |   14 ++-
+ 11 files changed, 247 insertions(+), 79 deletions(-)
+
+Kristian Høgsberg (3):
+      firewire: Implement suspend/resume PCI driver hooks.
+      firewire: Change struct fw_cdev_iso_packet to not use bitfields.
+      firewire: Install firewire-constants.h and firewire-cdev.h for userspace.
+
+Stefan Richter (4):
+      ieee1394: fix calculation of sysfs attribute "address"
+      ieee1394: sbp2: offer SAM-conforming target port ID in sysfs
+      firewire: fw-sbp2: implement sysfs ieee1394_id
+      firewire: add to MAINTAINERS
 
 -- 
-Unless something dramatically changes, by 2015 we'll be largely
-wondering what all the fuss surrounding Linux was really about.
--- Rob Enderle
+Stefan Richter
+-=====-=-=== -==- ----=
+http://arcgraph.de/sr/
+
