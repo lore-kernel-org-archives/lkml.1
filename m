@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbXFAVYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbXFAVY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932113AbXFAVYX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760693AbXFAVYO
+	id S1763695AbXFAVY6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:24:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760935AbXFAVYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:24:14 -0400
-Received: from gw.goop.org ([64.81.55.164]:45506 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758505AbXFAVYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:24:13 -0400
-Message-ID: <46608E76.9080109@goop.org>
-Date: Fri, 01 Jun 2007 14:24:06 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 1 Jun 2007 17:24:50 -0400
+Received: from homer.mvista.com ([63.81.120.155]:52667 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760918AbXFAVYt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 17:24:49 -0400
+Message-ID: <46608EFE.1030202@ru.mvista.com>
+Date: Sat, 02 Jun 2007 01:26:22 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org
-Subject: Re: [RFC 0/4] CONFIG_STABLE to switch off development checks
-References: <20070531002047.702473071@sgi.com> <46603371.50808@goop.org> <Pine.LNX.4.64.0706011126030.2284@schroedinger.engr.sgi.com> <46606C71.9010008@goop.org> <Pine.LNX.4.64.0706011357290.4664@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706011357290.4664@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=US-ASCII
+To: Geller Sandor <wildy@petra.hos.u-szeged.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: HPT374 IDE problem with 2.6.21.* kernels
+References: <Pine.LNX.4.62.0705301112170.1260@petra.hos.u-szeged.hu> <20070601134607.ce4a37bd.akpm@linux-foundation.org> <46608764.5060807@ru.mvista.com> <Pine.LNX.4.62.0706012311320.16639@petra.hos.u-szeged.hu>
+In-Reply-To: <Pine.LNX.4.62.0706012311320.16639@petra.hos.u-szeged.hu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
->> I disagree.  There are plenty of boundary conditions where 0 is not
->> really a special case, and making it a special case just complicates
->> things.  I think at least some of the patches posted to silence this
->> warning have been generally negative for code quality.  If we were
->> seeing lots of zero-sized allocations then that might indicate something
->> is amiss, but it seems to me that there's just a scattered handful.
+Hello.
+
+Geller Sandor wrote:
+
+>>>> I saw a similar report yesterday with '2.6.21.1 - 97% wait time on 
+>>>> IDE operations' subject.
+
+>>>> After upgrading from 2.6.20.7 kernel to 2.6.21.1 my system started 
+>>>> to reset infrequenly the IDE bus. In the syslog DMA timeout, 
+>>>> resetting IDE bus messages appeared. I've changed the two disks 
+>>>> attached to the HPT374 controller, and always the first disk had 
+>>>> problems. I've replaced cables, plugged the disks into other IDE 
+>>>> ports, but it was only a matter of time to experience an IDE reset. 
+>>>> When I upgraded to 2.6.21.3 the resets became much more frequent, 
+>>>> this time even DMA was disabled too on the first disk. I turned DMA 
+>>>> back Manually with hdparm, and a few seconds of intense IO activity 
+>>>> resulted in another IDE reset.
 >>
->> I agree that it's always a useful debugging aid to make sure that
->> allocated regions are not over-run, but 0-sized allocations are not
->> special in this regard.
->>     
->
-> Still insisting on it even after the discovery of the cpuset kmalloc(0) issue?
->   
+>>
+>>>> Reverting back to 2.6.20.12 the problem seems to be gone. BTW I'm 
+>>>> using the PATA driver for the HTP374, not the libata one.
+>>
+>>
+>>>> Is this a known problem/ is there a way I can help locating the 
+>>>> cause of the problem?
 
-Sure. That was a normal buffer-overrun bug. There's nothing special
-about 0-sized allocations.
+>>   Yes, please post the boot log and the IDE reset log too for starters...
 
-J
+>>> (cc's added)
+
+> The log of a typical IDE reset is available here:
+
+> http://petra.hos.u-szeged.hu/~wildy/syslog.gz
+
+> This was the worst case: the IDE bus was resetted during the system boot.
+
+    Could you try setting HPT374_ALLOW_ATA133_6 to 0 in 
+drivers/ide/pci/hpt366.c and rebuild/reboot the kernel?
+
+MBR, Sergei
