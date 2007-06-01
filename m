@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbXFAByx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbXFACBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752512AbXFAByx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 21:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbXFAByp
+	id S1753370AbXFACBj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 22:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbXFACBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 21:54:45 -0400
-Received: from pool-151-205-99-173.ny325.east.verizon.net ([151.205.99.173]:50984
-	"HELO gatworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751481AbXFAByo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 21:54:44 -0400
-Message-ID: <465F7C2A.5020702@gatworks.com>
-Date: Thu, 31 May 2007 21:53:46 -0400
-From: Uncle George <netbeans@gatworks.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 31 May 2007 22:01:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54131 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750822AbXFACBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 22:01:30 -0400
+Message-ID: <465F7DEB.5090700@redhat.com>
+Date: Thu, 31 May 2007 23:01:15 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Organization: Red Hat Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: davids@webmaster.com
+To: Andrew Morton <akpm@linux-foundation.org>
 CC: linux-kernel@vger.kernel.org
-Subject: Re: SELECT() returns 1 But FIONREAD says (Input/output error)
-References: <MDEHLPKNGKAHNMBLJOLKCENHEDAC.davids@webmaster.com>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCENHEDAC.davids@webmaster.com>
+Subject: Re: 2.6.22-rc3-mm1
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Schwartz wrote:
+Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc3/2.6.22-rc3-mm1/
+>
+> - Merged the convert-cpusets-to-container-infrastructure patches.  These
+>   will probably be dropped and redone.
+>
+>
+>
+>   
+<BIG SNIP>
+>  x86 things
+>
+> +add-select-phylib-to-the-ucc_geth-kconfig-option.patch
+> +m68k-parenthesis-balance.patch
+> +msi-fix-the-ordering-of-msix-irqs.patch
+> +msi-mask-the-msix-vector-before-we-unmap-it.patch
+> +potential-parse-error-in-ifdef.patch
+> +potential-parse-error-in-ifdef-fix.patch
+> +potential-parse-error-in-ifdef-update.patch
+> +pci_ids-update-patch-for-intel-ich9m.patch
+> +x86-fix-oprofile-double-free-was-re-multiple-free.patch
+>   
+http://lkml.org/lkml/2007/5/30/565 fixes the above patch :-)
 
-> Nope. An errored connection is always ready for read/write -- there is
-> nothing to wait for as far as the kernel is concerned. Your code keeps
-> asking the kernel if something interesting has happened, the kernel keeps
-> telling it yes, and it refuses to do anything about it.
-> 
-The select() returns because i pulled the USB cable from hub. Seems 
-reasonable.
+<BIG SNIP>
 
-The next select() found what? to be interesting in order to prematurely 
-terminate the select-wait? As far as I can tell, nothing interesting has 
-happened since the previous select(). In this case the select() is only 
-looking at read()'s.
+- Arnaldo
