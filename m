@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbXFADII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbXFADRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbXFADII (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 23:08:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbXFADH4
+	id S1754533AbXFADRr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 23:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbXFADRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 23:07:56 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:46007 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752305AbXFADH4 (ORCPT
+	Thu, 31 May 2007 23:17:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:41818 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbXFADRd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 23:07:56 -0400
-Date: Thu, 31 May 2007 23:07:54 -0400
-From: Kyle McMartin <kyle@parisc-linux.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, torvalds@linux-foundation.org,
-       Chris Zankel <chris@zankel.net>, parisc-linux@lists.parisc-linux.org
-Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
-Message-ID: <20070601030754.GB14217@fattire.cabal.ca>
-References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com> <20070531162021.4cd4e91a.akpm@linux-foundation.org> <20070601113840.813463db.sfr@canb.auug.org.au>
+	Thu, 31 May 2007 23:17:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=fs1hIWei5G5Egzys15XNYlCGyugWcIoqF1eSW8vr3o+KyODWvbymgZpfP704kj662F7KOamGBxZDA2RpOZMJpkLUOKHmUe/hLhQHoGFaoQz30u7ECu5eFob9nD8Oi1ntnDFkINF8k7YIRrtg2H86SU7BKr1m5WvdsNlZpyyCFhw=
+Message-ID: <465F8F71.20302@gmail.com>
+Date: Fri, 01 Jun 2007 12:16:01 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070601113840.813463db.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: David Chinner <dgc@sgi.com>, david@lang.hm,
+       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
+ and dm/md.
+References: <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <20070531070656.GK32105@kernel.dk>
+In-Reply-To: <20070531070656.GK32105@kernel.dk>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 11:38:40AM +1000, Stephen Rothwell wrote:
-> This also breaks Alpha (which uses 02000000 for O_DIRECT) and parisc
-> (which uses 02000000 for O_RSYNC).  So you ether need to choose a
-> different value or define O_CLOEXEC for those two architectures.
+Jens Axboe wrote:
+> On Thu, May 31 2007, David Chinner wrote:
+>> On Thu, May 31, 2007 at 08:26:45AM +0200, Jens Axboe wrote:
+>>> On Thu, May 31 2007, David Chinner wrote:
+>>>> IOWs, there are two parts to the problem:
+>>>>
+>>>> 	1 - guaranteeing I/O ordering
+>>>> 	2 - guaranteeing blocks are on persistent storage.
+>>>>
+>>>> Right now, a single barrier I/O is used to provide both of these
+>>>> guarantees. In most cases, all we really need to provide is 1); the
+>>>> need for 2) is a much rarer condition but still needs to be
+>>>> provided.
+>>>>
+>>>>> if I am understanding it correctly, the big win for barriers is that you 
+>>>>> do NOT have to stop and wait until the data is on persistant media before 
+>>>>> you can continue.
+>>>> Yes, if we define a barrier to only guarantee 1), then yes this
+>>>> would be a big win (esp. for XFS). But that requires all filesystems
+>>>> to handle sync writes differently, and sync_blockdev() needs to
+>>>> call blkdev_issue_flush() as well....
+>>>>
+>>>> So, what do we do here? Do we define a barrier I/O to only provide
+>>>> ordering, or do we define it to also provide persistent storage
+>>>> writeback? Whatever we decide, it needs to be documented....
+>>> The block layer already has a notion of the two types of barriers, with
+>>> a very small amount of tweaking we could expose that. There's absolutely
+>>> zero reason we can't easily support both types of barriers.
+>> That sounds like a good idea - we can leave the existing
+>> WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
+>> behaviour that only guarantees ordering. The filesystem can then
+>> choose which to use where appropriate....
 > 
+> Precisely. The current definition of barriers are what Chris and I came
+> up with many years ago, when solving the problem for reiserfs
+> originally. It is by no means the only feasible approach.
+> 
+> I'll add a WRITE_ORDERED command to the #barrier branch, it already
+> contains the empty-bio barrier support I posted yesterday (well a
+> slightly modified and cleaned up version).
 
-That's easy enough to fix...
+Would that be very different from issuing barrier and not waiting for
+its completion?  For ATA and SCSI, we'll have to flush write back cache
+anyway, so I don't see how we can get performance advantage by
+implementing separate WRITE_ORDERED.  I think zero-length barrier
+(haven't looked at the code yet, still recovering from jet lag :-) can
+serve as genuine barrier without the extra write tho.
 
-Signed-off-by: Kyle McMartin <kyle@parisc-linux.org>
+Thanks.
 
-diff --git a/include/asm-parisc/fcntl.h b/include/asm-parisc/fcntl.h
-index 317851f..4ca0fb0 100644
---- a/include/asm-parisc/fcntl.h
-+++ b/include/asm-parisc/fcntl.h
-@@ -14,6 +14,7 @@
- #define O_DSYNC		01000000 /* HPUX only */
- #define O_RSYNC		02000000 /* HPUX only */
- #define O_NOATIME	04000000
-+#define O_CLOEXEC	08000000 /* set close_on_exec */
- 
- #define O_DIRECTORY	00010000 /* must be a directory */
- #define O_NOFOLLOW	00000200 /* don't follow links */
+-- 
+tejun
