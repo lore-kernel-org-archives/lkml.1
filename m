@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763553AbXFATV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763605AbXFATWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763553AbXFATV5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762885AbXFATVt
+	id S1763605AbXFATWZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762107AbXFATWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:21:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51688 "EHLO mx2.mail.elte.hu"
+	Fri, 1 Jun 2007 15:22:08 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:50842 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762477AbXFATVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:21:48 -0400
-Date: Fri, 1 Jun 2007 21:21:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Yu <raise.sail@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v14
-Message-ID: <20070601192142.GA10039@elte.hu>
-References: <20070523120616.GA23407@elte.hu> <4658F1D6.3070706@gmail.com> <20070529061544.GA28523@elte.hu> <20070529080738.GA28657@elte.hu> <465E992C.4020601@gmail.com> <20070531095337.GA8104@elte.hu> <465FC7E7.7080804@gmail.com>
+	id S1762182AbXFATWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 15:22:06 -0400
+Date: Fri, 1 Jun 2007 21:21:49 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: DervishD <lkml@dervishd.net>
+cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Kernel utf-8 handling
+In-Reply-To: <20070601142058.GA2587@DervishD>
+Message-ID: <Pine.LNX.4.61.0706012117250.11140@yvahk01.tjqt.qr>
+References: <20070601142058.GA2587@DervishD>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <465FC7E7.7080804@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Li Yu <raise.sail@gmail.com> wrote:
+On Jun 1 2007 16:20, DervishD wrote:
+>
+>    This said, I know that the console will give me no problems
+>regarding character representantion (heck, I'm pretty sure that I will
+>be able to use even the same font I'm using right now in the console if
+>I get the proper unicode map), but probably will give me problems when
+>*entering* characters. I've read that the kernel handles accented chars,
+>and things like 'ñ' (ntilde) because it assumes that any composed
+>character (composed using dead keys, for example) is in the latin1
+>range. While this is not a perfect behaviour, it will work for me.
 
-> Also, I have want to know what's real meaning of
-> 
->    add_wait_runtime(rq, curr, delta_mine - delta_exec);
-> 
-> in update_curr(), IMHO, it should be
-> 
->    add_wait_runtime(rq, curr, delta_mine - delta_fair);
-> 
-> Is this just another heuristics? or my opinion is wrong again? :-)
+(1) I can do <Compose><~><n> just fine on vt
+(2) I can do <ö> just fine on vt too
+(3) And copy+paste them both using GPM too, again w/o probs
 
-well, ->wait_runtime is in real time units. If a task executes 
-delta_exec time on the CPU, we deduct "-delta_exec" 1:1. But during that 
-time the task also got entitled to a bit more CPU time, that is 
-+delta_mine. The calculation above expresses this. I'm not sure what 
-sense '-delta_fair' would make - "delta_fair" is the amount of time a 
-nice-0 task would be entitled to - but this task might not be a nice-0 
-task. Furthermore, even for a nice-0 task why deduct -delta_fair - it 
-spent delta_exec on the CPU.
+so not sure where your problem is. I do however have a patch that
+you could try should a problem arise. I should repost and ask
+around again and beat until it's in :)
 
-	Ingo
+
+
+	Jan
+-- 
