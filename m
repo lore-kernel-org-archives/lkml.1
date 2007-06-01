@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759474AbXFAKub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbXFAKxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759474AbXFAKub (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 06:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXFAKuX
+	id S1758881AbXFAKxT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 06:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbXFAKxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 06:50:23 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:37533 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbXFAKuW (ORCPT
+	Fri, 1 Jun 2007 06:53:12 -0400
+Received: from hammerhead.shentel.net ([204.111.1.228]:54043 "EHLO
+	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbXFAKxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 06:50:22 -0400
-From: Srinivasa Ds <srinivasa@in.ibm.com>
-Organization: IBM
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777 warning
-Date: Fri, 1 Jun 2007 16:20:05 +0530
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
-       clameter@sgi.com, clameter@cthulhu.engr.sgi.com, rientjes@google.com
-References: <465FCA79.70207@in.ibm.com>
-In-Reply-To: <465FCA79.70207@in.ibm.com>
+	Fri, 1 Jun 2007 06:53:11 -0400
+Date: Fri, 1 Jun 2007 06:53:06 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Valdis.Kletnieks@vt.edu, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/1] document Acked-by:
+In-Reply-To: <465FB862.207@zytor.com>
+Message-ID: <alpine.DEB.0.99.0706010648030.9768@sigma.j-a-k-j.com>
+References: <200706010209.l51299kN000531@shell0.pdx.osdl.net>
+ <28278.1180675923@turing-police.cc.vt.edu> <465FB862.207@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706011620.05756.srinivasa@in.ibm.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 June 2007 12:57:53 Srinivasa Ds wrote:
+> >> +If a person was not directly involved in the preparation or handling of a
+> >> +patch but wishes to signify and record their approval of it then they can
+> >> +arrange to have an Acked-by: line added to the patch's changelog.
+> >> +
+> >> +Acked-by: is often used by the maintainer of the affected code when that
+> >> +maintainer neither wrote, merged nor forwarded the patch themselves.
+> > 
+> > Do we want to add verbiage saying that an Acked-By: is also useful when it
+> > comes from somebody (likely the original reporter) who has actually tested the
+> > patch?
+> 
+> I'd rather see a Tested-By: for that.
+> 
+> There is a difference between a maintainer ack and a tester ok.
 
-I have modified the patch little bit, Thanks Vatsa for input and hence 
-resending it. Please let me know your comments on this.
-
-Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
-
----
- kernel/cpuset.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-Index: linux-2.6.22-rc3/kernel/cpuset.c
-===================================================================
---- linux-2.6.22-rc3.orig/kernel/cpuset.c
-+++ linux-2.6.22-rc3/kernel/cpuset.c
-@@ -1741,6 +1741,13 @@ static int cpuset_tasks_open(struct inod
- 	 * show up until sometime later on.
- 	 */
- 	npids = atomic_read(&cs->count);
-+	if (!npids) {
-+		ctr->buf = NULL;
-+		ctr->bufsz = 0;
-+		file->private_data = ctr;
-+		return 0;
-+	}
-+
- 	pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
- 	if (!pidarray)
- 		goto err1;
-@@ -1772,6 +1779,9 @@ static ssize_t cpuset_tasks_read(struct 
- {
- 	struct ctr_struct *ctr = file->private_data;
- 
-+	if (!ctr->buf)     /* No tasks in this cpuset */
-+		return 0;
-+
- 	return simple_read_from_buffer(buf, nbytes, ppos, ctr->buf, ctr->bufsz);
- }
- 
-
-
+Indeed. Acked-by: implies authority, and only very few people should be 
+able to do it. Namely, the only person who can ACK a patch is a person who 
+could also NACK a patch and expect it to actually be dropped. If I think a 
+patch is bad, I can say so, but as I have no authority, my statement would 
+be taken on merit alone, whereas Linus or Andrew or such could just NACK 
+it and move on without having to spew a blurb every time.
