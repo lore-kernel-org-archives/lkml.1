@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762167AbXFAR1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbXFARan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762167AbXFAR1g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 13:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759964AbXFAR1a
+	id S1762204AbXFARan (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 13:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760890AbXFARah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 13:27:30 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:46638 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760572AbXFAR13 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 13:27:29 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/1] document Acked-by:
-In-Reply-To: Your message of "Thu, 31 May 2007 23:10:42 PDT."
-             <465FB862.207@zytor.com>
-From: Valdis.Kletnieks@vt.edu
-References: <200706010209.l51299kN000531@shell0.pdx.osdl.net> <28278.1180675923@turing-police.cc.vt.edu>
-            <465FB862.207@zytor.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1180718845_9513P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 01 Jun 2007 13:27:25 -0400
-Message-ID: <11341.1180718845@turing-police.cc.vt.edu>
+	Fri, 1 Jun 2007 13:30:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44251 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760073AbXFARag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 13:30:36 -0400
+Message-ID: <466057B1.9090309@redhat.com>
+Date: Fri, 01 Jun 2007 13:30:25 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: andrew.vasquez@qlogic.com
+Subject: [PATCH] quiet down swiotlb warnings
+Content-Type: multipart/mixed;
+ boundary="------------050103060900040607080908"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1180718845_9513P
-Content-Type: text/plain; charset=us-ascii
+This is a multi-part message in MIME format.
+--------------050103060900040607080908
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thu, 31 May 2007 23:10:42 PDT, "H. Peter Anvin" said:
-> Valdis.Kletnieks@vt.edu wrote:
-> > On Thu, 31 May 2007 19:09:10 PDT, akpm@linux-foundation.org said:
-> > 
-> >> +If a person was not directly involved in the preparation or handling of a
-> >> +patch but wishes to signify and record their approval of it then they can
-> >> +arrange to have an Acked-by: line added to the patch's changelog.
-> >> +
-> >> +Acked-by: is often used by the maintainer of the affected code when that
-> >> +maintainer neither wrote, merged nor forwarded the patch themselves.
-> > 
-> > Do we want to add verbiage saying that an Acked-By: is also useful when it
-> > comes from somebody (likely the original reporter) who has actually tested the
-> > patch?
-> 
-> I'd rather see a Tested-By: for that.
-> 
-> There is a difference between a maintainer ack and a tester ok.
+It turns out that the qla2xxx driver sometimes fills up the iotlb
+on purpose and throttles itself when pci_map_sg() fails.  In the
+case of a driver that expects and handles pci_map_sg() failures,
+we should not spam the user's console with swiotlb full messages.
 
-OK by me.  Half the time when a -mm breaks for me, it's an obvious one-liner
-I can S-o-b: myself, the other half the time somebody else has a fix that
-I keep thinking I should stick *something* on once I confirm it's fixed.
+If the user runs a driver that cannot handle the swiotlb filling
+up, 5 warnings should be enough to leave a clue.
 
-Do Linus/Andrew/major maintainers want Tested-By:'s for patches?
+Signed-off-by: Rik van Riel <riel@redhat.com>
 
+--------------050103060900040607080908
+Content-Type: text/x-patch;
+ name="2.6.21-swiotlb-quiet.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="2.6.21-swiotlb-quiet.patch"
 
---==_Exmh_1180718845_9513P
-Content-Type: application/pgp-signature
+--- linux-2.6.21.noarch/lib/swiotlb.c.quiet	2007-06-01 13:23:04.000000000 -0400
++++ linux-2.6.21.noarch/lib/swiotlb.c	2007-06-01 13:25:49.000000000 -0400
+@@ -505,6 +505,7 @@ swiotlb_free_coherent(struct device *hwd
+ static void
+ swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
+ {
++	static int warnings = 0;
+ 	/*
+ 	 * Ran out of IOMMU space for this operation. This is very bad.
+ 	 * Unfortunately the drivers cannot handle this operation properly.
+@@ -512,8 +513,9 @@ swiotlb_full(struct device *dev, size_t 
+ 	 * When the mapping is small enough return a static buffer to limit
+ 	 * the damage, or panic when the transfer is too big.
+ 	 */
+-	printk(KERN_ERR "DMA: Out of SW-IOMMU space for %zu bytes at "
+-	       "device %s\n", size, dev ? dev->bus_id : "?");
++	if (++warnings < 5)
++		printk(KERN_ERR "DMA: Out of SW-IOMMU space for %zu bytes at "
++		       "device %s\n", size, dev ? dev->bus_id : "?");
+ 
+ 	if (size > io_tlb_overflow && do_panic) {
+ 		if (dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGYFb9cC3lWbTT17ARAqZaAKC5zRlcC0vVKuMjSA9J6Q6K6UTTDgCgiEMh
-DcY1RAOcTK7Xf3xd63/IMOY=
-=S7F1
------END PGP SIGNATURE-----
-
---==_Exmh_1180718845_9513P--
+--------------050103060900040607080908--
