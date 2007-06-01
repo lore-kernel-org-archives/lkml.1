@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764280AbXFAUHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763755AbXFAUKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764280AbXFAUHB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762980AbXFAUGy
+	id S1763755AbXFAUKX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762577AbXFAUKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:06:54 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:33373 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762957AbXFAUGy (ORCPT
+	Fri, 1 Jun 2007 16:10:13 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51721 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762271AbXFAUKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:06:54 -0400
-Date: Fri, 1 Jun 2007 13:06:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Jackson <pj@sgi.com>
-cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-In-Reply-To: <20070601130212.7be4432a.pj@sgi.com>
-Message-ID: <Pine.LNX.4.64.0706011305230.3976@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
- <Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
- <20070601121114.b165f1e8.pj@sgi.com> <Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
- <20070601124757.fe91a002.pj@sgi.com> <Pine.LNX.4.64.0706011249530.3598@schroedinger.engr.sgi.com>
- <20070601130212.7be4432a.pj@sgi.com>
+	Fri, 1 Jun 2007 16:10:11 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH/WIP] Remove 'irq' argument from all IRQ handlers
+References: <464E9739.40909@garzik.org>
+Date: Fri, 01 Jun 2007 14:08:55 -0600
+In-Reply-To: <464E9739.40909@garzik.org> (Jeff Garzik's message of "Sat, 19
+	May 2007 02:20:41 -0400")
+Message-ID: <m18xb3zbc8.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007, Paul Jackson wrote:
+Jeff Garzik <jeff@garzik.org> writes:
 
-> > We must have a NULL pointer exactly because it cannot be dereferenced.
-> 
-> Well, both patch versions had NULL pointers - either pidarray or ctr->buf.
-> 
-> But now I can make more sense of what you say -- you -want- the pidarray
-> pointer, in particular, to be NULL, so that we don't accidentally use it.
-> 
-> Does that still mean that your patch suggestion was incomplete, in that
-> it lacked the additional checks to avoid using a NULL pidarray?
+> Attached is the patch and description that represents a current
+> work-in-progress, removal of the 'irq' argument passed to all driver IRQ
+> handlers.
+>
+> As this patch demonstrates, the 'irq' argument is useless and practically
+> unused.  The vast majority of drivers have this information elsewhere (struct
+> pci_dev or private struct).  The cases where it is actually used are as follows:
+>
+> * a couple Mac drivers have multiple IRQs, and use the irq argument for
+> disambiguation purposes.  This can easily be remedied by moving that information
+> into the info passed in the normal void* pointer.
+>
+> * Several ancient ISA drivers, which mainly use it for printk-in-irq-handler
+> purposes.  A couple use the irq argument as an index into a structure, which is
+> a buggy approach.  I fixed up these.
+>
+> This can be found in the 'hacking-irq-remove' branch of
+> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
+>
+>
+> Before I will even consider submitting this upstream, this patchset needs
+>
+> * non-x86[-64] build fixes, and testing
+> * update the Mac drivers
+> * one more review pass, to make sure everything is kosher
+>
+> so IOW, not anytime soon :)
+>
+> Jeff Garzik (12):
+>       [irq-remove] Update core irq handling code to omit 'irq' parameter
+>       [irq-remove] update sound drivers for new irq handler function sig
+>       [irq-remove] update SCSI, ATA, IDE drivers for new irq handler function
+> sig
+>       [irq-remove] update net drivers for new irq handler function sig
+>       driver irq handler arg removal: acorn, atm, block, bluetooth, cdrom
+>       driver irq handler arg removal: arch-specific code
+>       driver irq handler arg removal: acpi, char, dma, fc4
+>       driver irq handler arg removal: i2c, ieee1394, infiniband, input, isdn
+>       driver irq handler arg removal: macintosh, media, message, mfd, misc, mmc
+>       driver irq handler arg removal: serial, video
+>       driver irq handler arg removal: the rest
+>       irq-remove: build and warning fixes for 2.6.21
 
-There are no checks necessary. Your function worked fine so far for 
-the case of zero objects with the pointer returned by kmalloc. If the 
-code is correct then it will not dereference the pointer to the zero 
-sized array. If not then we may find a bug and fix it.
+Looks reasonable to me.  In my nefarious plans to make everything use
+a struct irq pointer this would certainly help.
 
+The get_irqfunc_irq() function to get the irq for the functions that
+still need it looks like a very useful migration path.
+
+Eric
