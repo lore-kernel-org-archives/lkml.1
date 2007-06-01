@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762427AbXFATC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762372AbXFATK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762427AbXFATC2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760713AbXFATCW
+	id S1762372AbXFATK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXFATKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:02:22 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35547 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755514AbXFATCV (ORCPT
+	Fri, 1 Jun 2007 15:10:19 -0400
+Received: from outbound-mail-41.bluehost.com ([69.89.18.10]:60950 "HELO
+	outbound-mail-41.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753306AbXFATKS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:02:21 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-References: <1177567481.5025.211.camel@nigel.suspend2.net>
-	<1177654110.4737.91.camel@nigel.suspend2.net>
-	<Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI>
-	<200704272324.43359.rjw@sisk.pl>
-	<alpine.LFD.0.98.0704271442160.9964@woody.linux-foundation.org>
-	<463292C8.9000307@goop.org> <20070428010043.GA21136@srcf.ucam.org>
-	<46329DE3.6020307@goop.org> <20070503151408.GC3866@ucw.cz>
-Date: Fri, 01 Jun 2007 13:00:19 -0600
-In-Reply-To: <20070503151408.GC3866@ucw.cz> (Pavel Machek's message of "Thu, 3
-	May 2007 15:14:09 +0000")
-Message-ID: <m1tztrzeik.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 1 Jun 2007 15:10:18 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
+Date: Fri, 1 Jun 2007 12:10:15 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706011210.15808.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
-
-> Hi!
+> and the MTRRs (from /proc/mtrr, from private email):
 >
->> > While that would certainly be nifty, I think we're arguably starting 
->> > from the wrong point here. Why are we booting a kernel, trying to poke 
->> > the hardware back into some sort of mock-quiescent state, freeing memory 
->> > and then (finally) overwriting the entire contents of RAM rather than 
->> > just doing all of this from the bootloader?
+> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+> reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
+> reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
+> reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
+> reg05: base=0x100000000 (4096MB), size=4096MB: write-back, count=1
+> reg06: base=0x200000000 (8192MB), size= 512MB: write-back, count=1
+> reg07: base=0x220000000 (8704MB), size= 128MB: write-back, count=1
 >
-> Doing it from the bootloader sounds attractive... but it is lot of
-> work. I'm essentially using linux as a bootloader.
+> so the ranges mapped as cacheable are:
 >
-> Patch for grub welcome.
+> 0-3319MB
+> 4096-8832MB
+>
+> leaving 64MB of memory at the top of RAM uncached. What do you want to
+> bet that something important (kernel code?) is getting loaded there..
+>
+> So essentially it's a BIOS problem, it's not setting up the MTRRs
+> properly in order to map all of RAM as cacheable. As Andi says, complain
+> to Intel.
 
-Well.  We actually have first class support for using linux as a
-bootloader.  So you could use linux and do whatever dance you are
-doing from a bootloader if you felt the desire.
+If it's just 64M you'll end up losing, you could try the "[RFC] trim memory 
+not covered by MTRR WB type" patch I posted yesterday.  It won't reinit the 
+MTRRs (maybe we should) but it will at least prevent your system from 
+crawling if the BIOS doesn't set them up right.  That would at least let you 
+use most of your memory until the BIOS guys acknowledge that they have a 
+problem (or we get proper PAT support, which I think would make this problem 
+go away as well).
 
-That might make the dance a little easier.
-
-Eric
+Jesse
