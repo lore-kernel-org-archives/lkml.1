@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761208AbXFABeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761286AbXFABhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761208AbXFABeQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 21:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbXFABeF
+	id S1761286AbXFABhc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 21:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbXFABhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 21:34:05 -0400
-Received: from mx1.suse.de ([195.135.220.2]:41621 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757713AbXFABeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 21:34:04 -0400
-Date: Fri, 1 Jun 2007 03:34:02 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc3-mm1 - page_mkwrite() breakage
-Message-ID: <20070601013402.GB28585@wotan.suse.de>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070531231354.GR20632@ca-server1.us.oracle.com> <20070601010129.GA15878@wotan.suse.de> <20070601012440.GS20632@ca-server1.us.oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070601012440.GS20632@ca-server1.us.oracle.com>
-User-Agent: Mutt/1.5.9i
+	Thu, 31 May 2007 21:37:24 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:49494 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754134AbXFABhX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 21:37:23 -0400
+Date: Thu, 31 May 2007 18:37:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Tejun Heo <htejun@gmail.com>
+cc: Gregor Jasny <gjasny@googlemail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux v2.6.22-rc3
+In-Reply-To: <465F6F48.8080804@gmail.com>
+Message-ID: <alpine.LFD.0.98.0705311830360.26602@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
+  <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com> 
+ <46599E6B.1000209@pobox.com>  <9d2cd630705270907y4722653cpf79f073fa8f12f08@mail.gmail.com>
+  <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org> 
+ <9d2cd630705271315x7030c91ew2f175c921c022880@mail.gmail.com> 
+ <465AA536.6080608@gmail.com> <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com>
+ <465BF244.5080200@gmail.com> <alpine.LFD.0.98.0705290924350.26602@woody.linux-foundation.org>
+ <465F6F48.8080804@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 06:24:40PM -0700, Mark Fasheh wrote:
-> On Fri, Jun 01, 2007 at 03:01:29AM +0200, Nick Piggin wrote:
-> > Ah, I didn't realise you were using that yet. I expect ocfs2 is using
-> > VM_CAN_INVALIDATE there anyway.
-> > 
-> > Hmm, this becomes easier to deal with after page_mkwrite is merged with
-> > ->fault. But for now, can we just lock the page at the do_wp_page site
-> > as well, and change the API? All users I have seen want the page locked
-> > there anyway...
-> 
-> Unfortunately that doesn't work for ocfs2 for exactly the same reasons page
-> lock doesn't work during a write either - there's a cluster lock inversion
-> and we might have to zero adjacent pages for an allocating write.
-
-I guess you could just fail the page_mkwrite and have it try again? ..
-that would require changing it not to always go SIGBUS though.
 
 
-> What's involved in merging it with ->fault?
+On Fri, 1 Jun 2007, Tejun Heo wrote:
+>
+> Gregor's cdrom has broken SRST support which is extremely rare and
+> broken.
 
-Just I have't sent the patch (because at the time there were no
-page_mkwrite users to look at).
+Well, the concept is neither rare nor arguably all that broken. 
 
-It is nicer too, because the nopage path only has  to call into
-the filesystem once, to return the page (the filesystem can check
-whether it is for write, and do the page_mkwrite thing at that
-time). do_wp_page obviously still involves the extra call, and
-that will be with a flag telling the fs that it isn't a "nopage"
-fault, but a write fault on an existing page.
+The paper standards floating around in the industry are so much toilet 
+paper. The only standard that seems to really matter is what Windows has 
+traditionally done. We may not like it, but there it is...
 
- 
-> Here's a nasty idea... Would it be valid for ->page_mkwrite to unlock the
-> page, so long as it's returned in a locked state? Though, do we even need
-> the page lock that early? It seemed to me that you were adding it for
-> consistency reasons (I could be wrong though).
+This bites us more when it comes to the real el-cheapo stuff, notably when 
+it comes to various USB mass storage things (which have some random 
+USB->flash controller cobbled together by a senile llama on crack), and is 
+almost unheard of for anythign that is "server-grade", but when it comes 
+to no-brand random devices, it really does tend to be the case that the 
+only testing they ever had was using Windows.
 
-You could do that, but you'd have to probably check that it is
-within i_size after you relock it, I think... yeah, that might
-be the best thing for ocfs to do for now.
+And hardware is seldom any different from software: if it wasn't tested, 
+it probably doesn't work.
+
+So it would be good if somebody knew what the Windows ID/startup sequence 
+was/is. I think we figured it out by trial-and-error for the USB mass 
+storage stuff. But it tends to boil down to: don't do things that aren't 
+absolutely required (for SCSI, it was things like not asking for mode 
+pages that weren't absolutely required, because some devices wouldn't 
+support it, and would simply lock up if you did so!)
+
+			Linus
