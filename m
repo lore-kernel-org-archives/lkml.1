@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbXFAWRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXFAWRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbXFAWRh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 18:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbXFAWRG
+	id S1756856AbXFAWRv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 18:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbXFAWRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 18:17:06 -0400
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:52096 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753928AbXFAWRE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 18:17:04 -0400
-Date: Fri, 1 Jun 2007 23:17:00 +0100
-From: Ken Moffat <zarniwhoop@ntlworld.com>
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Cc: DervishD <lkml@dervishd.net>
-Subject: Re: Kernel utf-8 handling
-Message-ID: <20070601221700.GA15242@deepthought>
-References: <20070601142058.GA2587@DervishD>
+	Fri, 1 Jun 2007 18:17:33 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:32865 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755529AbXFAWRc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 18:17:32 -0400
+Message-ID: <46609AEC.4070603@zytor.com>
+Date: Fri, 01 Jun 2007 15:17:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070601142058.GA2587@DervishD>
-User-Agent: Mutt/1.5.12-2006-07-14
-Content-Transfer-Encoding: 8BIT
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Scott Preece <sepreece@gmail.com>,
+       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>, Valdis.Kletnieks@vt.edu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/1] document Acked-by:
+References: <200706010209.l51299kN000531@shell0.pdx.osdl.net>	<28278.1180675923@turing-police.cc.vt.edu> <465FB862.207@zytor.com>	<alpine.DEB.0.99.0706010648030.9768@sigma.j-a-k-j.com>	<m3sl9b5vcm.fsf@maximus.localdomain>	<7b69d1470706011237j50f29e4ch73f86acdc294fecd@mail.gmail.com> <m3fy5b5nrt.fsf@maximus.localdomain>
+In-Reply-To: <m3fy5b5nrt.fsf@maximus.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 04:20:58PM +0200, DervishD wrote:
->     Hi all :)
+Krzysztof Halasa wrote:
+> "Scott Preece" <sepreece@gmail.com> writes:
 > 
->     I have a do-it-yourself Linux box, and I'm planning to move to UTF8
-> (currently I'm using es_ES locale, with latin1 encoding). One of my main
-> concerns (apart from programs with little or no utf8 support, which I
-> will have to suffer) is kernel handling, because I only use the console;
-> I only use X and a terminal emulator if I can't avoid it.
+>> This is a question worth answering - is it rude to ack/nak a patch if
+>> you're not a maintainer or otherwise known-to-be-trusted, or is it OK
+>> for anyone to express an opinion? Andrew's patch text seems to imply
+>> that it's generally OK.
 > 
-[...]
-> 
->     Will the console work as it works now if I can live with latin1
-> accented characters only? Is there any terminal emulator *for the
-> console*, not for X, that handles utf8? Will I be sentenced to X to be
-> able to use my computer with utf8?
-> 
- Sure, the console will work (don't know about a console terminal
-emulator).  I'm not very keen on compose keys - I find dead
-diacriticals (like in X) are usually easier to enter, and I've got
-all the dead latin1 accents working on my uk keymap.  Other
-diacriticals for normally-latin1 keymaps are a different matter
-(e.g. caron, ogonek, dot above) - they could be mapped for a
-specific letter on a specific key (e.g. AltGr z for ż ; z with dot
-above) but the diacritical modifiers can't be mapped for non latin1,
-at least in kbd-1.12.  You can also alter the keymap to allow you do
-ISO 14755 input (ctrl+shift+hex_digits) - useful for occasional
-characters, if they are in your font and you can remember their
-value.
+> Every pair of eyes (or a single one) looking at the patch in question
+> is a good thing. I can't imagine why would one want to look at the
+> code if he/she can't ack or nak or otherwise comment it.
 
-Ken
--- 
-das eine Mal als Tragödie, das andere Mal als Farce
+I think the comment had to do with the concept that ACK/NAK implies
+authority.  If you're not the maintainer, it's rude to imply that you
+are.  Obvious, test reports (good or bad!) are always welcome.
+
+	-hpa
