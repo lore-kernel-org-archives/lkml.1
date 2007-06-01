@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763422AbXFATSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763509AbXFATTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763422AbXFATSx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762024AbXFATSq
+	id S1763509AbXFATTW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762024AbXFATTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:18:46 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39043 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761943AbXFATSp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:18:45 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Greg KH" <gregkh@suse.de>, "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Vivek Goyal" <vgoyal@in.ibm.com>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3]i386: early init pgt for fix virtual addr in head.S
-References: <86802c440705202219o21d11023od1018d253364bf5c@mail.gmail.com>
-Date: Fri, 01 Jun 2007 13:17:27 -0600
-In-Reply-To: <86802c440705202219o21d11023od1018d253364bf5c@mail.gmail.com>
-	(Yinghai Lu's message of "Sun, 20 May 2007 22:19:13 -0700")
-Message-ID: <m1ps4fzdq0.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 1 Jun 2007 15:19:14 -0400
+Received: from lucidpixels.com ([75.144.35.66]:41435 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761466AbXFATTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 15:19:13 -0400
+Date: Fri, 1 Jun 2007 15:19:12 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't
+ the kernel realize the BIOS has problems and re-map appropriately?
+In-Reply-To: <200706011210.15808.jbarnes@virtuousgeek.org>
+Message-ID: <Pine.LNX.4.64.0706011519080.6696@p34.internal.lan>
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
+ <200706011210.15808.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+It works ok on
+my machine (correctly detects the condition, adjusts end_pfn, and keeps
+the machine fast), aside from the fact that X won't start.
 
-> early init pgt for fix virtual addr in head.S, so can use set_fixmap
-> before setup_arch.
-> otherwise set_fixmap_nocache will not work for i386
+But X won't start? :\
+
+On Fri, 1 Jun 2007, Jesse Barnes wrote:
+
+>> and the MTRRs (from /proc/mtrr, from private email):
+>>
+>> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+>> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+>> reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
+>> reg03: base=0xcf800000 (3320MB), size=   8MB: uncachable, count=1
+>> reg04: base=0xcf700000 (3319MB), size=   1MB: uncachable, count=1
+>> reg05: base=0x100000000 (4096MB), size=4096MB: write-back, count=1
+>> reg06: base=0x200000000 (8192MB), size= 512MB: write-back, count=1
+>> reg07: base=0x220000000 (8704MB), size= 128MB: write-back, count=1
+>>
+>> so the ranges mapped as cacheable are:
+>>
+>> 0-3319MB
+>> 4096-8832MB
+>>
+>> leaving 64MB of memory at the top of RAM uncached. What do you want to
+>> bet that something important (kernel code?) is getting loaded there..
+>>
+>> So essentially it's a BIOS problem, it's not setting up the MTRRs
+>> properly in order to map all of RAM as cacheable. As Andi says, complain
+>> to Intel.
 >
-> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
-Hmm.  I'm wondering how my signed off by got on this one.
-Maybe I did this at some point.
-
-In any case this patch looks wrong (unless I'm completely mistaken)
-because it doesn't appear to handle PAE mode.
-
-Which is why I initialized the early page table in C, in my
-last round of patches on this subject.
-
-If we don't know the page table format doing this kind of
-thing is very difficult.
-
-Eric
+> If it's just 64M you'll end up losing, you could try the "[RFC] trim memory
+> not covered by MTRR WB type" patch I posted yesterday.  It won't reinit the
+> MTRRs (maybe we should) but it will at least prevent your system from
+> crawling if the BIOS doesn't set them up right.  That would at least let you
+> use most of your memory until the BIOS guys acknowledge that they have a
+> problem (or we get proper PAT support, which I think would make this problem
+> go away as well).
+>
+> Jesse
+>
