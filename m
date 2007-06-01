@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932236AbXFASlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762815AbXFASml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932236AbXFASlw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762004AbXFASlg
+	id S1762815AbXFASml (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761915AbXFASmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:41:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35918 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761815AbXFASld (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:41:33 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Chandramouli Narayanan <mouli@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, ak@suse.de, akpm@linux-foundation.org,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH 2.6.21 1/3] x86_64: EFI64 support
-References: <20070501185945.237601000@em64tdvp.jf.intel.com>
-	<20070501190110.770881000@em64tdvp.jf.intel.com>
-Date: Fri, 01 Jun 2007 12:39:33 -0600
-In-Reply-To: <20070501190110.770881000@em64tdvp.jf.intel.com> (Chandramouli
-	Narayanan's message of "Tue, 01 May 2007 11:59:46 -0700")
-Message-ID: <m1fy5b1pui.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 1 Jun 2007 14:42:33 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44497 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761815AbXFASmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 14:42:32 -0400
+Date: Fri, 1 Jun 2007 11:43:42 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Dependent CPU core speed reporting not updated with CPUFREQ_SHARED_TYPE_HW?
+Message-ID: <20070601184342.GA13751@tree.beaverton.ibm.com>
+References: <460C5D24.608@us.ibm.com> <653FFBB4508B9042B5D43DC9E18836F52DF4D8@scsmsx415.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
+Content-Disposition: inline
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F52DF4D8@scsmsx415.amr.corp.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Sorry for the late replay I missed this patch series going by the first time.
-> +static efi_status_t
-> +phys_efi_set_virtual_address_map(unsigned long memory_map_size,
-> +				 unsigned long descriptor_size,
-> +				 u32 descriptor_version,
-> +				 efi_memory_desc_t *virtual_map)
-> +{
-> +	efi_status_t status;
-> +
-> +	efi_call_phys_prelog();
-> +	status = efi_call_phys(efi_phys.set_virtual_address_map,
-> +					EFI_ARG_NUM_SET_VIRTUAL_ADDRESS_MAP,
-> +					(unsigned long)memory_map_size,
-> +					(unsigned long)descriptor_size,
-> +					(unsigned long)descriptor_version, 
-> +					(unsigned long)virtual_map);
-> +	efi_call_phys_epilog();
-> +	return status;
-> +}
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Please, Please kill this.
+On Thu, Mar 29, 2007 at 06:06:22PM -0700, Pallipadi, Venkatesh wrote:
+> thought of
+> making affected CPUs show the dependency in case of hw coord, but
+> retaining the percpu
+> control. But, it seemed complicated change for something that is
+> cosmetic.
 
-As far as I can tell virtual mode is incompatible with kexec.
-It is unnecessary because none of the EFI calls are fast path.
+Actually, it's not so cosmetic any more.  Our newest servers have a
+power meter that measures power consumption, and I'm writing a program
+to measure the power cost of various cpufreq transitions in order to
+enforce a power cap.  Due to the under-reporting in affected_cpus, the
+app thinks that (taking your example above) CPUs 0 and 2 can be
+controlled independently.  Thus, a p-state transition of (x, x) ->
+(x, x-1) yields no energy saving at all, while (x, x-1) -> (x-1, x-1)
+does.  My program considers the effects of a single CPU's transition
+independently of which CPU it is and without considering what
+frequencies the other CPUs are operating at, which means that it will
+conclude that the cost of increasing speed (or the reward for decreasing
+it) is half of what it is ... sort of.  It's mildly broken as a result,
+though amusingly enough it still seems to work ok.  I suspect that it
+might flail around trying to hit a cap a bit more than it would if
+affected_cpus were more accurate.
 
-Further I believe that using virtual addresses is likely to
-make things more brittle.
+--D
 
-So please drop the EFI virtual mode nonsense.
+--rwEMma7ioTxnRzrJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Thank you,
-Eric
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGYGjea6vRYYgWQuURAjC0AKCwOqKYqrWFTYb4ECe9TGYwpt/9owCghm35
+qXrxjzFqJiZYxZ50auZt740=
+=mOaP
+-----END PGP SIGNATURE-----
+
+--rwEMma7ioTxnRzrJ--
