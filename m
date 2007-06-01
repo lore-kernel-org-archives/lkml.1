@@ -1,399 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758884AbXFAGMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbXFAGMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758884AbXFAGMQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 02:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbXFAGL7
+	id S1759321AbXFAGMb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 02:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756691AbXFAGMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 1 Jun 2007 02:12:00 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:39387 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755117AbXFAGL7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 1 Jun 2007 02:11:59 -0400
-Received: from il.qumranet.com ([82.166.9.18]:37221 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753488AbXFAGL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 02:11:58 -0400
-Message-ID: <465FB8AA.6050504@qumranet.com>
-Date: Fri, 01 Jun 2007 09:11:54 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=CH4ftWXAkFO4phvDeQAJcw9hQ67nCl5wNwohcgNLMVLkufl9G/suEXybRGYst7PI5
+	nuV5fQ23R0m/DN4nS9dsg==
+Message-ID: <465FB899.9030605@google.com>
+Date: Thu, 31 May 2007 23:11:37 -0700
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [GIT PULL][RESEND] KVM cpu hotplug fixes
+To: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@google.com>, a.p.zijlstra@chello.nl
+Subject: [RFC 3/7] cpuset write throttle
+References: <465FB6CF.4090801@google.com>
+In-Reply-To: <465FB6CF.4090801@google.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Fri, 01 Jun 2007 09:11:54 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Make page writeback obey cpuset constraints
 
-Please pull from the repository and branch
+Currently dirty throttling does not work properly in a cpuset.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git hotplug-linus
+If f.e a cpuset contains only 1/10th of available memory then all of the
+memory of a cpuset can be dirtied without any writes being triggered.
+If all of the cpusets memory is dirty then only 10% of total memory is dirty.
+The background writeback threshold is usually set at 10% and the synchrononous
+threshold at 40%. So we are still below the global limits while the dirty
+ratio in the cpuset is 100%! Writeback throttling and background writeout
+do not work at all in such scenarios.
 
-to receive a patchset which makes cpu hotplug (and therefore, suspend
-and resume) more robust when running virtual machines.  The core issue
-is that we need a notification about a cpu going away at a point in time
-where it's still alive, but not running any user processes.  Such a
-notification does not exist today, so the patchset adds it as a new
-CPU_DYING notification.
+This patch makes dirty writeout cpuset aware. When determining the
+dirty limits in get_dirty_limits() we calculate values based on the
+nodes that are reachable from the current process (that has been
+dirtying the page). Then we can trigger writeout based on the
+dirty ratio of the memory in the cpuset.
 
-The patchset is against 2.6.22-rc3.
+We trigger writeout in a a cpuset specific way. We go through the dirty
+inodes and search for inodes that have dirty pages on the nodes of the
+active cpuset. If an inode fulfills that requirement then we begin writeout
+of the dirty pages of that inode.
 
-Shortlog:
+Adding up all the counters for each node in a cpuset may seem to be quite
+an expensive operation (in particular for large cpusets with hundreds of
+nodes) compared to just accessing the global counters if we do not have
+a cpuset. However, please remember that the global counters were only
+introduced recently. Before 2.6.18 we did add up per processor
+counters for each processor on each invocation of get_dirty_limits().
+We now add per node information which I think is equal or less effort
+since there are less nodes than processors.
 
-Avi Kivity (7):
-      HOTPLUG: Add CPU_DYING notifier
-      HOTPLUG: Adapt cpuset hotplug callback to CPU_DYING
-      HOTPLUG: Adapt thermal throttle to CPU_DYING
-      SMP: Implement on_cpu()
-      KVM: Keep track of which cpus have virtualization enabled
-      KVM: Tune hotplug/suspend IPIs
-      KVM: Use CPU_DYING for disabling virtualization
+Originally by Christoph Lameter <clameter@sgi.com>
 
- arch/i386/kernel/cpu/mcheck/therm_throt.c |    6 ++-
- drivers/kvm/kvm_main.c                    |   50
-+++++++++++++++++++++--------
- include/linux/notifier.h                  |    3 ++
- include/linux/smp.h                       |   16 +++++++++
- kernel/cpu.c                              |   16 ++++++++-
- kernel/cpuset.c                           |    3 ++
- kernel/softirq.c                          |   24 ++++++++++++++
- 7 files changed, 100 insertions(+), 18 deletions(-)
+Signed-off-by: Ethan Solomita <solo@google.com>
 
-And the patch in all its glory:
+---
 
-diff --git a/arch/i386/kernel/cpu/mcheck/therm_throt.c
-b/arch/i386/kernel/cpu/mcheck/therm_throt.c
-index 7ba7c3a..1203dc5 100644
---- a/arch/i386/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/i386/kernel/cpu/mcheck/therm_throt.c
-@@ -134,19 +134,21 @@ static __cpuinit int
-thermal_throttle_cpu_callback(struct notifier_block *nfb,
- 	int err;
-
- 	sys_dev = get_cpu_sysdev(cpu);
--	mutex_lock(&therm_cpu_lock);
- 	switch (action) {
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
-+		mutex_lock(&therm_cpu_lock);
- 		err = thermal_throttle_add_dev(sys_dev);
-+		mutex_unlock(&therm_cpu_lock);
- 		WARN_ON(err);
- 		break;
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
-+		mutex_lock(&therm_cpu_lock);
- 		thermal_throttle_remove_dev(sys_dev);
-+		mutex_unlock(&therm_cpu_lock);
- 		break;
- 	}
--	mutex_unlock(&therm_cpu_lock);
- 	return NOTIFY_OK;
- }
-
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index da985b3..1ad5ea1 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -41,6 +41,7 @@
- #include <linux/fs.h>
- #include <linux/mount.h>
- #include <linux/sched.h>
-+#include <linux/cpumask.h>
-
- #include "x86_emulate.h"
- #include "segment_descriptor.h"
-@@ -51,8 +52,12 @@ MODULE_LICENSE("GPL");
- static DEFINE_SPINLOCK(kvm_lock);
- static LIST_HEAD(vm_list);
-
-+static cpumask_t cpus_hardware_enabled;
-+
- struct kvm_arch_ops *kvm_arch_ops;
-
-+static void hardware_disable(void *ignored);
-+
- #define STAT_OFFSET(x) offsetof(struct kvm_vcpu, stat.x)
-
- static struct kvm_stats_debugfs_item {
-@@ -2840,7 +2845,7 @@ static int kvm_reboot(struct notifier_block
-*notifier, unsigned long val,
- 		 * in vmx root mode.
- 		 */
- 		printk(KERN_INFO "kvm: exiting hardware virtualization\n");
--		on_each_cpu(kvm_arch_ops->hardware_disable, NULL, 0, 1);
-+		on_each_cpu(hardware_disable, NULL, 0, 1);
- 	}
- 	return NOTIFY_OK;
- }
-@@ -2883,28 +2888,46 @@ static void decache_vcpus_on_cpu(int cpu)
- 	spin_unlock(&kvm_lock);
- }
-
-+static void hardware_enable(void *junk)
-+{
-+	int cpu = raw_smp_processor_id();
-+
-+	if (cpu_isset(cpu, cpus_hardware_enabled))
-+		return;
-+	cpu_set(cpu, cpus_hardware_enabled);
-+	kvm_arch_ops->hardware_enable(NULL);
-+}
-+
-+static void hardware_disable(void *junk)
-+{
-+	int cpu = raw_smp_processor_id();
-+
-+	if (!cpu_isset(cpu, cpus_hardware_enabled))
-+		return;
-+	cpu_clear(cpu, cpus_hardware_enabled);
-+	decache_vcpus_on_cpu(cpu);
-+	kvm_arch_ops->hardware_disable(NULL);
-+}
-+
- static int kvm_cpu_hotplug(struct notifier_block *notifier, unsigned
-long val,
- 			   void *v)
- {
- 	int cpu = (long)v;
-
- 	switch (val) {
--	case CPU_DOWN_PREPARE:
--	case CPU_DOWN_PREPARE_FROZEN:
-+	case CPU_DYING:
-+	case CPU_DYING_FROZEN:
- 	case CPU_UP_CANCELED:
- 	case CPU_UP_CANCELED_FROZEN:
- 		printk(KERN_INFO "kvm: disabling virtualization on CPU%d\n",
- 		       cpu);
--		decache_vcpus_on_cpu(cpu);
--		smp_call_function_single(cpu, kvm_arch_ops->hardware_disable,
--					 NULL, 0, 1);
-+		on_cpu(cpu, hardware_disable, NULL, 0, 1);
- 		break;
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
- 		printk(KERN_INFO "kvm: enabling virtualization on CPU%d\n",
- 		       cpu);
--		smp_call_function_single(cpu, kvm_arch_ops->hardware_enable,
--					 NULL, 0, 1);
-+		on_cpu(cpu, hardware_enable, NULL, 0, 1);
- 		break;
- 	}
- 	return NOTIFY_OK;
-@@ -2961,14 +2984,13 @@ static void kvm_exit_debug(void)
-
- static int kvm_suspend(struct sys_device *dev, pm_message_t state)
- {
--	decache_vcpus_on_cpu(raw_smp_processor_id());
--	on_each_cpu(kvm_arch_ops->hardware_disable, NULL, 0, 1);
-+	hardware_disable(NULL);
- 	return 0;
- }
-
- static int kvm_resume(struct sys_device *dev)
- {
--	on_each_cpu(kvm_arch_ops->hardware_enable, NULL, 0, 1);
-+	hardware_enable(NULL);
- 	return 0;
- }
-
-@@ -3021,7 +3043,7 @@ int kvm_init_arch(struct kvm_arch_ops *ops, struct
-module *module)
- 	if (r < 0)
- 		goto out;
-
--	on_each_cpu(kvm_arch_ops->hardware_enable, NULL, 0, 1);
-+	on_each_cpu(hardware_enable, NULL, 0, 1);
- 	r = register_cpu_notifier(&kvm_cpu_notifier);
- 	if (r)
- 		goto out_free_1;
-@@ -3053,7 +3075,7 @@ out_free_2:
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	unregister_cpu_notifier(&kvm_cpu_notifier);
- out_free_1:
--	on_each_cpu(kvm_arch_ops->hardware_disable, NULL, 0, 1);
-+	on_each_cpu(hardware_disable, NULL, 0, 1);
- 	kvm_arch_ops->hardware_unsetup();
- out:
- 	kvm_arch_ops = NULL;
-@@ -3067,7 +3089,7 @@ void kvm_exit_arch(void)
- 	sysdev_class_unregister(&kvm_sysdev_class);
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	unregister_cpu_notifier(&kvm_cpu_notifier);
--	on_each_cpu(kvm_arch_ops->hardware_disable, NULL, 0, 1);
-+	on_each_cpu(hardware_disable, NULL, 0, 1);
- 	kvm_arch_ops->hardware_unsetup();
- 	kvm_arch_ops = NULL;
- }
-diff --git a/include/linux/notifier.h b/include/linux/notifier.h
-index 9431101..576f2bb 100644
---- a/include/linux/notifier.h
-+++ b/include/linux/notifier.h
-@@ -196,6 +196,8 @@ extern int __srcu_notifier_call_chain(struct
-srcu_notifier_head *nh,
- #define CPU_DEAD		0x0007 /* CPU (unsigned)v dead */
- #define CPU_LOCK_ACQUIRE	0x0008 /* Acquire all hotcpu locks */
- #define CPU_LOCK_RELEASE	0x0009 /* Release all hotcpu locks */
-+#define CPU_DYING		0x000A /* CPU (unsigned)v not running any task,
-+				        * not handling interrupts, soon dead */
-
- /* Used for CPU hotplug events occuring while tasks are frozen due to a
-suspend
-  * operation in progress
-@@ -208,6 +210,7 @@ extern int __srcu_notifier_call_chain(struct
-srcu_notifier_head *nh,
- #define CPU_DOWN_PREPARE_FROZEN	(CPU_DOWN_PREPARE | CPU_TASKS_FROZEN)
- #define CPU_DOWN_FAILED_FROZEN	(CPU_DOWN_FAILED | CPU_TASKS_FROZEN)
- #define CPU_DEAD_FROZEN		(CPU_DEAD | CPU_TASKS_FROZEN)
-+#define CPU_DYING_FROZEN	(CPU_DYING | CPU_TASKS_FROZEN)
-
- #endif /* __KERNEL__ */
- #endif /* _LINUX_NOTIFIER_H */
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index 96ac21f..613edd2 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -7,6 +7,7 @@
-  */
-
- #include <linux/errno.h>
-+#include <asm/system.h>
-
- extern void cpu_idle(void);
-
-@@ -61,6 +62,11 @@ int smp_call_function_single(int cpuid, void (*func)
-(void *info), void *info,
-  * Call a function on all processors
-  */
- int on_each_cpu(void (*func) (void *info), void *info, int retry, int
-wait);
-+/*
-+ * Call a function on one processor
-+ */
-+int on_cpu(int cpu, void (*func)(void *info), void *info,
-+	       int retry, int wait);
-
- #define MSG_ALL_BUT_SELF	0x8000	/* Assume <32768 CPU's */
- #define MSG_ALL			0x8001
-@@ -96,6 +102,16 @@ static inline int up_smp_call_function(void)
- 		local_irq_enable();		\
- 		0;				\
- 	})
-+
-+static inline int on_cpu(int cpu, void (*func)(void *info), void *info,
-+			     int retry, int wait)
-+{
-+	local_irq_disable();
-+	func(info);
-+	local_irq_enable();
-+	return 0;
-+}
-+
- static inline void smp_send_reschedule(int cpu) { }
- #define num_booting_cpus()			1
- #define smp_prepare_boot_cpu()			do {} while (0)
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 208cf34..181ae70 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -103,11 +103,19 @@ static inline void check_for_tasks(int cpu)
- 	write_unlock_irq(&tasklist_lock);
- }
-
-+struct take_cpu_down_param {
-+	unsigned long mod;
-+	void *hcpu;
+diff -uprN -X 0/Documentation/dontdiff 2/mm/page-writeback.c 3/mm/page-writeback.c
+--- 2/mm/page-writeback.c	2007-05-30 11:31:22.000000000 -0700
++++ 3/mm/page-writeback.c	2007-05-30 11:34:26.000000000 -0700
+@@ -103,6 +103,14 @@ EXPORT_SYMBOL(laptop_mode);
+ 
+ static void background_writeout(unsigned long _min_pages, nodemask_t *nodes);
+ 
++struct dirty_limits {
++	long thresh_background;
++	long thresh_dirty;
++	unsigned long nr_dirty;
++	unsigned long nr_unstable;
++	unsigned long nr_writeback;
 +};
 +
- /* Take this CPU down. */
--static int take_cpu_down(void *unused)
-+static int take_cpu_down(void *_param)
+ /*
+  * Work out the current dirty-memory clamping and background writeout
+  * thresholds.
+@@ -121,13 +129,15 @@ static void background_writeout(unsigned
+  * clamping level.
+  */
+ 
+-static unsigned long highmem_dirtyable_memory(unsigned long total)
++static unsigned long highmem_dirtyable_memory(nodemask_t *nodes, unsigned long total)
  {
-+	struct take_cpu_down_param *param = _param;
- 	int err;
-
-+	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
-+				param->hcpu);
- 	/* Ensure this CPU doesn't handle any more interrupts. */
- 	err = __cpu_disable();
- 	if (err < 0)
-@@ -127,6 +135,10 @@ static int _cpu_down(unsigned int cpu, int
-tasks_frozen)
- 	cpumask_t old_allowed, tmp;
- 	void *hcpu = (void *)(long)cpu;
- 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
-+	struct take_cpu_down_param tcd_param = {
-+		.mod = mod,
-+		.hcpu = hcpu,
-+	};
-
- 	if (num_online_cpus() == 1)
- 		return -EBUSY;
-@@ -153,7 +165,7 @@ static int _cpu_down(unsigned int cpu, int tasks_frozen)
- 	set_cpus_allowed(current, tmp);
-
- 	mutex_lock(&cpu_bitmask_lock);
--	p = __stop_machine_run(take_cpu_down, NULL, cpu);
-+	p = __stop_machine_run(take_cpu_down, &tcd_param, cpu);
- 	mutex_unlock(&cpu_bitmask_lock);
-
- 	if (IS_ERR(p) || cpu_online(cpu)) {
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index f57854b..584953a 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -2138,6 +2138,9 @@ static void common_cpu_mem_hotplug_unplug(void)
- static int cpuset_handle_cpuhp(struct notifier_block *nb,
- 				unsigned long phase, void *cpu)
+ #ifdef CONFIG_HIGHMEM
+ 	int node;
+ 	unsigned long x = 0;
+ 
+-	for_each_online_node(node) {
++	if (nodes == NULL)
++		nodes = &node_online_mask;
++	for_each_node_mask(node, *nodes) {
+ 		struct zone *z =
+ 			&NODE_DATA(node)->node_zones[ZONE_HIGHMEM];
+ 
+@@ -154,13 +164,13 @@ static unsigned long determine_dirtyable
+ 	x = global_page_state(NR_FREE_PAGES)
+ 		+ global_page_state(NR_INACTIVE)
+ 		+ global_page_state(NR_ACTIVE);
+-	x -= highmem_dirtyable_memory(x);
++	x -= highmem_dirtyable_memory(NULL, x);
+ 	return x + 1;	/* Ensure that we never return 0 */
+ }
+ 
+-static void
+-get_dirty_limits(long *pbackground, long *pdirty,
+-					struct address_space *mapping)
++static int
++get_dirty_limits(struct dirty_limits *dl, struct address_space *mapping,
++					nodemask_t *nodes)
  {
-+	if (phase == CPU_DYING || phase == CPU_DYING_FROZEN)
-+		return NOTIFY_DONE;
+ 	int background_ratio;		/* Percentages */
+ 	int dirty_ratio;
+@@ -168,12 +178,60 @@ get_dirty_limits(long *pbackground, long
+ 	long background;
+ 	long dirty;
+ 	unsigned long available_memory = determine_dirtyable_memory();
++	unsigned long dirtyable_memory;
++	unsigned long nr_mapped;
+ 	struct task_struct *tsk;
++	int is_subset = 0;
 +
- 	common_cpu_mem_hotplug_unplug();
- 	return 0;
- }
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 0b9886a..11666f7 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -658,4 +658,28 @@ int on_each_cpu(void (*func) (void *info), void
-*info, int retry, int wait)
- 	return ret;
- }
- EXPORT_SYMBOL(on_each_cpu);
++#ifdef CONFIG_CPUSETS
++	if (unlikely(nodes &&
++			!nodes_subset(node_online_map, *nodes))) {
++		int node;
 +
-+/*
-+ * Call a function on one processor, which might be the currently executing
-+ * processor.
-+ */
-+int on_cpu(int cpu, void (*func) (void *info), void *info,
-+	       int retry, int wait)
-+{
-+	int ret;
-+	int this_cpu;
-+
-+	this_cpu = get_cpu();
-+	if (this_cpu == cpu) {
-+		local_irq_disable();
-+		func(info);
-+		local_irq_enable();
-+		ret = 0;
++		/*
++		 * Calculate the limits relative to the current cpuset.
++		 *
++		 * We do not disregard highmem because all nodes (except
++		 * maybe node 0) have either all memory in HIGHMEM (32 bit) or
++		 * all memory in non HIGHMEM (64 bit). If we would disregard
++		 * highmem then cpuset throttling would not work on 32 bit.
++		 */
++		is_subset = 1;
++		memset(dl, 0, sizeof(struct dirty_limits));
++		dirtyable_memory = 0;
++		nr_mapped = 0;
++		for_each_node_mask(node, *nodes) {
++			if (!node_online(node))
++				continue;
++			dl->nr_dirty += node_page_state(node, NR_FILE_DIRTY);
++			dl->nr_unstable +=
++				node_page_state(node, NR_UNSTABLE_NFS);
++			dl->nr_writeback +=
++				node_page_state(node, NR_WRITEBACK);
++			dirtyable_memory +=
++				node_page_state(node, NR_ACTIVE) +
++				node_page_state(node, NR_INACTIVE) +
++				node_page_state(node, NR_FREE_PAGES);
++			nr_mapped += node_page_state(node, NR_FILE_MAPPED) +
++				node_page_state(node, NR_ANON_PAGES);
++		}
++		dirtyable_memory -= highmem_dirtyable_memory(nodes,
++							     dirtyable_memory);
 +	} else
-+		ret = smp_call_function_single(cpu, func, info, retry, wait);
-+	put_cpu();
-+	return ret;
-+}
-+EXPORT_SYMBOL(on_cpu);
++#endif
++	{
++		/* Global limits */
++		dl->nr_dirty = global_page_state(NR_FILE_DIRTY);
++		dl->nr_unstable = global_page_state(NR_UNSTABLE_NFS);
++		dl->nr_writeback = global_page_state(NR_WRITEBACK);
++		dirtyable_memory = determine_dirtyable_memory();
++		nr_mapped = global_page_state(NR_FILE_MAPPED) +
++			global_page_state(NR_ANON_PAGES);
++	}
+ 
+ 	unmapped_ratio = 100 - ((global_page_state(NR_FILE_MAPPED) +
+ 				global_page_state(NR_ANON_PAGES)) * 100) /
+-					available_memory;
+-
++					vm_total_pages;
+ 	dirty_ratio = vm_dirty_ratio;
+ 	if (dirty_ratio > unmapped_ratio / 2)
+ 		dirty_ratio = unmapped_ratio / 2;
+@@ -185,15 +243,16 @@ get_dirty_limits(long *pbackground, long
+ 	if (background_ratio >= dirty_ratio)
+ 		background_ratio = dirty_ratio / 2;
+ 
+-	background = (background_ratio * available_memory) / 100;
+-	dirty = (dirty_ratio * available_memory) / 100;
++	background = (background_ratio * dirtyable_memory) / 100;
++	dirty = (dirty_ratio * dirtyable_memory) / 100;
+ 	tsk = current;
+ 	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
+ 		background += background / 4;
+ 		dirty += dirty / 4;
+ 	}
+-	*pbackground = background;
+-	*pdirty = dirty;
++	dl->thresh_background = background;
++	dl->thresh_dirty = dirty;
++	return is_subset;
+ }
+ 
+ /*
+@@ -206,8 +265,7 @@ get_dirty_limits(long *pbackground, long
+ static void balance_dirty_pages(struct address_space *mapping)
+ {
+ 	long nr_reclaimable;
+-	long background_thresh;
+-	long dirty_thresh;
++	struct dirty_limits dl;
+ 	unsigned long pages_written = 0;
+ 	unsigned long write_chunk = sync_writeback_pages();
+ 
+@@ -222,11 +280,12 @@ static void balance_dirty_pages(struct a
+ 			.range_cyclic	= 1,
+ 		};
+ 
+-		get_dirty_limits(&background_thresh, &dirty_thresh, mapping);
+-		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+-					global_page_state(NR_UNSTABLE_NFS);
+-		if (nr_reclaimable + global_page_state(NR_WRITEBACK) <=
+-			dirty_thresh)
++		if (get_dirty_limits(&dl, mapping,
++				&cpuset_current_mems_allowed))
++			wbc.nodes = &cpuset_current_mems_allowed;
++		nr_reclaimable = dl.nr_dirty + dl.nr_unstable;
++		if (nr_reclaimable + dl.nr_writeback <=
++			dl.thresh_dirty)
+ 				break;
+ 
+ 		if (!dirty_exceeded)
+@@ -240,13 +299,10 @@ static void balance_dirty_pages(struct a
+ 		 */
+ 		if (nr_reclaimable) {
+ 			writeback_inodes(&wbc);
+-			get_dirty_limits(&background_thresh,
+-					 	&dirty_thresh, mapping);
+-			nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+-					global_page_state(NR_UNSTABLE_NFS);
+-			if (nr_reclaimable +
+-				global_page_state(NR_WRITEBACK)
+-					<= dirty_thresh)
++			get_dirty_limits(&dl, mapping,
++				&cpuset_current_mems_allowed);
++			nr_reclaimable = dl.nr_dirty + dl.nr_unstable;
++			if (nr_reclaimable + dl.nr_writeback <= dl.thresh_dirty)
+ 						break;
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			if (pages_written >= write_chunk)
+@@ -255,8 +311,8 @@ static void balance_dirty_pages(struct a
+ 		congestion_wait(WRITE, HZ/10);
+ 	}
+ 
+-	if (nr_reclaimable + global_page_state(NR_WRITEBACK)
+-		<= dirty_thresh && dirty_exceeded)
++	if (nr_reclaimable + dl.nr_writeback
++		<= dl.thresh_dirty && dirty_exceeded)
+ 			dirty_exceeded = 0;
+ 
+ 	if (writeback_in_progress(bdi))
+@@ -271,8 +327,9 @@ static void balance_dirty_pages(struct a
+ 	 * background_thresh, to keep the amount of dirty memory low.
+ 	 */
+ 	if ((laptop_mode && pages_written) ||
+-	     (!laptop_mode && (nr_reclaimable > background_thresh)))
+-		pdflush_operation(background_writeout, 0, NULL);
++	     (!laptop_mode && (nr_reclaimable > dl.thresh_background)))
++		pdflush_operation(background_writeout, 0,
++			&cpuset_current_mems_allowed);
+ }
+ 
+ void set_page_dirty_balance(struct page *page)
+@@ -329,8 +386,7 @@ EXPORT_SYMBOL(balance_dirty_pages_rateli
+ 
+ void throttle_vm_writeout(gfp_t gfp_mask)
+ {
+-	long background_thresh;
+-	long dirty_thresh;
++	struct dirty_limits dl;
+ 
+ 	if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
+ 		/*
+@@ -342,27 +398,26 @@ void throttle_vm_writeout(gfp_t gfp_mask
+ 		return;
+ 	}
+ 
+-        for ( ; ; ) {
+-		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
++	for ( ; ; ) {
++		get_dirty_limits(&dl, NULL, &node_online_map);
+ 
+-                /*
+-                 * Boost the allowable dirty threshold a bit for page
+-                 * allocators so they don't get DoS'ed by heavy writers
+-                 */
+-                dirty_thresh += dirty_thresh / 10;      /* wheeee... */
+-
+-                if (global_page_state(NR_UNSTABLE_NFS) +
+-			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+-                        	break;
+-                congestion_wait(WRITE, HZ/10);
+-        }
++		/*
++		 * Boost the allowable dirty threshold a bit for page
++		 * allocators so they don't get DoS'ed by heavy writers
++		 */
++		dl.thresh_dirty += dl.thresh_dirty / 10; /* wheeee... */
 +
- #endif
++		if (dl.nr_unstable + dl.nr_writeback <= dl.thresh_dirty)
++			break;
++		congestion_wait(WRITE, HZ/10);
++	}
+ }
+ 
+ /*
+  * writeback at least _min_pages, and keep writing until the amount of dirty
+  * memory is less than the background threshold, or until we're all clean.
+  */
+-static void background_writeout(unsigned long _min_pages, nodemask_t *unused)
++static void background_writeout(unsigned long _min_pages, nodemask_t *nodes)
+ {
+ 	long min_pages = _min_pages;
+ 	struct writeback_control wbc = {
+@@ -375,12 +430,11 @@ static void background_writeout(unsigned
+ 	};
+ 
+ 	for ( ; ; ) {
+-		long background_thresh;
+-		long dirty_thresh;
++		struct dirty_limits dl;
+ 
+-		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
+-		if (global_page_state(NR_FILE_DIRTY) +
+-			global_page_state(NR_UNSTABLE_NFS) < background_thresh
++		if (get_dirty_limits(&dl, NULL, nodes))
++			wbc.nodes = nodes;
++		if (dl.nr_dirty + dl.nr_unstable < dl.thresh_background
+ 				&& min_pages <= 0)
+ 			break;
+ 		wbc.encountered_congestion = 0;
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
-_______________________________________________
-kvm-devel mailing list
-kvm-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/kvm-devel
