@@ -1,44 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbXFAEQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbXFAE02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbXFAEQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 00:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbXFAEQX
+	id S1755281AbXFAE02 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 00:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbXFAE0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 00:16:23 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57377 "EHLO pasmtpB.tele.dk"
+	Fri, 1 Jun 2007 00:26:20 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:60575 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752869AbXFAEQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 00:16:22 -0400
-Date: Fri, 1 Jun 2007 06:17:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Prarit Bhargava <prarit@redhat.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Message-ID: <20070601041722.GA30506@uranus.ravnborg.org>
-References: <617E1C2C70743745A92448908E030B2A01961A60@scsmsx411.amr.corp.intel.com> <465F9315.2050207@redhat.com> <Pine.LNX.4.64.0705312105280.30098@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	id S1751652AbXFAE0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 00:26:20 -0400
+Date: Fri, 1 Jun 2007 13:25:15 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] sparsemem: Shut up unused symbol compiler warnings.
+Message-ID: <20070601042515.GA8628@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705312105280.30098@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 09:05:54PM -0700, Christoph Lameter wrote:
-> On Thu, 31 May 2007, Prarit Bhargava wrote:
-> 
-> > I used the sn2_defconfig in the tree :)
-> 
-> That is a static kernel build. Ideal for that kind of bug.
-Quite the opposite.
-If modpost cannot resolve symbols you are jsut told what
-top-level file it is in.
-A allmodconfig should be more useful and give you warnings in all normal
-cases.
+__kmalloc_section_memmap()/__kfree_section_memmap() and friends are only
+used by the memory hotplug code. Move these in to the existing
+CONFIG_MEMORY_HOTPLUG block.
 
-Let me know if I shall look over some of the warnings.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-	Sam
+--
+
+ mm/sparse.c |   42 +++++++++++++++++++++---------------------
+ 1 file changed, 21 insertions(+), 21 deletions(-)
+
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 1302f83..35f739a 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -229,6 +229,7 @@ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
+ 	return NULL;
+ }
+ 
++#ifdef CONFIG_MEMORY_HOTPLUG
+ static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
+ {
+ 	struct page *page, *ret;
+@@ -269,27 +270,6 @@ static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
+ }
+ 
+ /*
+- * Allocate the accumulated non-linear sections, allocate a mem_map
+- * for each and record the physical to section mapping.
+- */
+-void __init sparse_init(void)
+-{
+-	unsigned long pnum;
+-	struct page *map;
+-
+-	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+-		if (!valid_section_nr(pnum))
+-			continue;
+-
+-		map = sparse_early_mem_map_alloc(pnum);
+-		if (!map)
+-			continue;
+-		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
+-	}
+-}
+-
+-#ifdef CONFIG_MEMORY_HOTPLUG
+-/*
+  * returns the number of sections whose mem_maps were properly
+  * set.  If this is <=0, then that means that the passed-in
+  * map was not consumed and must be freed.
+@@ -329,3 +309,23 @@ out:
+ 	return ret;
+ }
+ #endif
++
++/*
++ * Allocate the accumulated non-linear sections, allocate a mem_map
++ * for each and record the physical to section mapping.
++ */
++void __init sparse_init(void)
++{
++	unsigned long pnum;
++	struct page *map;
++
++	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
++		if (!valid_section_nr(pnum))
++			continue;
++
++		map = sparse_early_mem_map_alloc(pnum);
++		if (!map)
++			continue;
++		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
++	}
++}
