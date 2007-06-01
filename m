@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764940AbXFAUwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764430AbXFAUy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764940AbXFAUwh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762980AbXFAUw0
+	id S1764430AbXFAUy2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762327AbXFAUyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:52:26 -0400
-Received: from homer.mvista.com ([63.81.120.155]:52504 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763542AbXFAUwZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:52:25 -0400
-Message-ID: <46608764.5060807@ru.mvista.com>
-Date: Sat, 02 Jun 2007 00:53:56 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Geller Sandor <wildy@petra.hos.u-szeged.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: HPT374 IDE problem with 2.6.21.* kernels
-References: <Pine.LNX.4.62.0705301112170.1260@petra.hos.u-szeged.hu> <20070601134607.ce4a37bd.akpm@linux-foundation.org>
-In-Reply-To: <20070601134607.ce4a37bd.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jun 2007 16:54:19 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56636 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762129AbXFAUyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:54:18 -0400
+Date: Fri, 1 Jun 2007 22:55:19 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [RFC 1/4] CONFIG_STABLE: Define it
+Message-ID: <20070601205519.GA4469@uranus.ravnborg.org>
+References: <20070531002047.702473071@sgi.com> <20070531003012.302019683@sgi.com> <20070531141147.423ad5e3.akpm@linux-foundation.org> <20070531213046.GA27923@uranus.ravnborg.org> <20070601180200.GA7968@redhat.com> <20070601202202.GA4232@uranus.ravnborg.org> <20070601203006.GB865@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070601203006.GB865@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Fri, Jun 01, 2007 at 04:30:06PM -0400, Dave Jones wrote:
+> On Fri, Jun 01, 2007 at 10:22:02PM +0200, Sam Ravnborg wrote:
+>  > On Fri, Jun 01, 2007 at 02:02:00PM -0400, Dave Jones wrote:
+>  > > On Thu, May 31, 2007 at 11:30:46PM +0200, Sam Ravnborg wrote:
+>  > >  > > +	sym = sym_lookup("DEVEL_KERNEL", 0);
+>  > >  > > +	sym->type = S_BOOLEAN;
+>  > >  > > +	sym->flags |= SYMBOL_AUTO;
+>  > >  > > +	p = getenv("DEVEL_KERNEL");
+>  > >  > > +	if (p && atoi(p))
+>  > >  > > +		sym_add_default(sym, "y");
+>  > >  > > +	else
+>  > >  > > +		sym_add_default(sym, "n");
+>  > >  > > +
+>  > >  > 
+>  > >  > 		sym_set_tristate_value(sym, yes);
+>  > >  > 	else
+>  > >  > 		sym_set_tristate_value(sym, no);
+>  > >  > 
+>  > >  > should do the trick (untested).
+>  > > 
+>  > > Odd. What's the third state ? Undefined?
+>  > no, mod, yes
+>  > Representing: no, module, yes as the three config choices.
+> 
+> Now I'm even more puzzled.  Why would 'DEVEL_KERNEL' need
+> to be modular ?
+The same type is used to represent a boolean and a tristate
+within kconfig:
 
-Andrew Morton wrote:
+typedef enum tristate {
+	no, mod, yes
+} tristate;
 
->>I saw a similar report yesterday with '2.6.21.1 - 97% wait time on IDE 
->>operations' subject.
+And in the cases where the config symbol is of type 'bool' then
+the value 'mod' is not used.
 
->>After upgrading from 2.6.20.7 kernel to 2.6.21.1 my system started to 
->>reset infrequenly the IDE bus. In the syslog DMA timeout, resetting IDE 
->>bus messages appeared. I've changed the two disks attached to the HPT374 
->>controller, and always the first disk had problems. I've replaced cables, 
->>plugged the disks into other IDE ports, but it was only a matter of time 
->>to experience an IDE reset. When I upgraded to 2.6.21.3 the resets became 
->>much more frequent, this time even DMA was disabled too on the first disk. 
->>I turned DMA back Manually with hdparm, and a few seconds of intense IO 
->>activity resulted in another IDE reset.
-
->>Reverting back to 2.6.20.12 the problem seems to be gone. BTW I'm using 
->>the PATA driver for the HTP374, not the libata one.
-
->>Is this a known problem/ is there a way I can help locating the cause of 
->>the problem?
-
-    Yes, please post the boot log and the IDE reset log too for starters...
-
-> (cc's added)
-
-WBR, Sergei
+	Sam
