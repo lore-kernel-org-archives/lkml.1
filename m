@@ -1,75 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761063AbXFABCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760730AbXFABCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761063AbXFABCN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 21:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbXFABB7
+	id S1760730AbXFABCe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 21:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbXFABC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 21:01:59 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4928 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754381AbXFABB6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 21:01:58 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: RE: SELECT() returns 1 But FIONREAD says (Input/output error)
-Date: Thu, 31 May 2007 18:01:31 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCENHEDAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Thu, 31 May 2007 21:02:26 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45321 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754152AbXFABCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 21:02:25 -0400
+Date: Fri, 1 Jun 2007 11:02:21 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: chris@zankel.net
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: [PATCH] Let Xtense use asm-generic/fcntl.h
+Message-Id: <20070601110221.62054a46.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <465F112C.6090409@gatworks.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 31 May 2007 19:02:05 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 31 May 2007 19:02:05 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit fc4fb2adf944d45a7f3d4d38df991c79ffdb6a43 "fixed" the Xtensa
+asm/fcntl.h and in doing so ignored asm-generic/fcntl.h completely.
+It turns out that it is now exactly the same as asm-generic/fcntl.h.
 
-> i am using the GARMIN_GPS/usb driver to read a gps receiver.
-> In testing the ability of my software to recover from various errors, I
-> try this: unplug the gps/USB cable from the usb hub.
->
-> Interestingly enough the thread spins.
-> the SELECT() waits for something to happen, and I get one channel that
-> something interesting happened.
-> Then i try to find out how many chars are in the read buff via FIONREAD.
-> That call errors out with an i/o error.
->
-> Needless to day, the code resets the SELECT parameters, and SELECT is
-> called again. It again says that something interesting has happened on
-> that ( i/o errored ) channel. And we now repeat the  FIONREAD.
->
-> In this case what, will reset the "something interesting has happened"
-> report from the SELECT call? Will it ever be reset in this case?
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-xtensa/fcntl.h |  100 +-------------------------------------------
+ 1 files changed, 1 insertions(+), 99 deletions(-)
 
-Nope. An errored connection is always ready for read/write -- there is
-nothing to wait for as far as the kernel is concerned. Your code keeps
-asking the kernel if something interesting has happened, the kernel keeps
-telling it yes, and it refuses to do anything about it.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-At minimum, a detection of an error condition that could be persistent
-should be followed by a delay. A detection of an error condition that has in
-fact persisted and was previously detected should *never* be followed by an
-immediate return to 'select'.
-
-You need to *handle* the I/O error. Backoff might be one way, sleeping for
-an increasing amount of time after each fatal error, subject to some limit.
-
-And why are you calling FIONREAD? Just 'read' the data -- you're going to
-have to eventually anyway.
-
-DS
-
+diff --git a/include/asm-xtensa/fcntl.h b/include/asm-xtensa/fcntl.h
+index 0609fc6..46ab12d 100644
+--- a/include/asm-xtensa/fcntl.h
++++ b/include/asm-xtensa/fcntl.h
+@@ -1,99 +1 @@
+-/*
+- * include/asm-xtensa/fcntl.h
+- *
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License.  See the file "COPYING" in the main directory of this archive
+- * for more details.
+- *
+- * Copyright (C) 1995, 1996, 1997, 1998 by Ralf Baechle
+- * Copyright (C) 2001 - 2005 Tensilica Inc.
+- */
+-
+-#ifndef _XTENSA_FCNTL_H
+-#define _XTENSA_FCNTL_H
+-
+-/* open/fcntl - O_SYNC is only implemented on blocks devices and on files
+-   located on an ext2 file system */
+-#define O_ACCMODE	   0003
+-#define O_RDONLY	     00
+-#define O_WRONLY	     01
+-#define O_RDWR		     02
+-#define O_CREAT		   0100	/* not fcntl */
+-#define O_EXCL		   0200	/* not fcntl */
+-#define O_NOCTTY	   0400	/* not fcntl */
+-#define O_TRUNC		  01000	/* not fcntl */
+-#define O_APPEND	  02000
+-#define O_NONBLOCK	  04000
+-#define O_NDELAY	O_NONBLOCK
+-#define O_SYNC		 010000
+-#define FASYNC		 020000	/* fcntl, for BSD compatibility */
+-#define O_DIRECT	 040000	/* direct disk access hint */
+-#define O_LARGEFILE	0100000
+-#define O_DIRECTORY	0200000	/* must be a directory */
+-#define O_NOFOLLOW	0400000 /* don't follow links */
+-#define O_NOATIME	01000000
+-
+-#define F_DUPFD		0	/* dup */
+-#define F_GETFD		1	/* get close_on_exec */
+-#define F_SETFD		2	/* set/clear close_on_exec */
+-#define F_GETFL		3	/* get file->f_flags */
+-#define F_SETFL		4	/* set file->f_flags */
+-#define F_GETLK		5
+-#define F_SETLK		6
+-#define F_SETLKW	7
+-
+-#define F_SETOWN	8	/*  for sockets. */
+-#define F_GETOWN	9	/*  for sockets. */
+-#define F_SETSIG	10	/*  for sockets. */
+-#define F_GETSIG	11	/*  for sockets. */
+-
+-#define F_GETLK64	12	/*  using 'struct flock64' */
+-#define F_SETLK64	13
+-#define F_SETLKW64	14
+-
+-/* for F_[GET|SET]FL */
+-#define FD_CLOEXEC	1	/* actually anything with low bit set goes */
+-
+-/* for posix fcntl() and lockf() */
+-#define F_RDLCK		0
+-#define F_WRLCK		1
+-#define F_UNLCK		2
+-
+-/* for old implementation of bsd flock () */
+-#define F_EXLCK		4	/* or 3 */
+-#define F_SHLCK		8	/* or 4 */
+-
+-/* for leases */
+-#define F_INPROGRESS	16
+-
+-/* operations for bsd flock(), also used by the kernel implementation */
+-#define LOCK_SH		1	/* shared lock */
+-#define LOCK_EX		2	/* exclusive lock */
+-#define LOCK_NB		4	/* or'd with one of the above to prevent
+-				   blocking */
+-#define LOCK_UN		8	/* remove lock */
+-
+-#define LOCK_MAND	32	/* This is a mandatory flock */
+-#define LOCK_READ	64	/* ... Which allows concurrent read operations */
+-#define LOCK_WRITE	128	/* ... Which allows concurrent write operations */
+-#define LOCK_RW		192	/* ... Which allows concurrent read & write ops */
+-
+-struct flock {
+-	short l_type;
+-	short l_whence;
+-	off_t l_start;
+-	off_t l_len;
+-	pid_t l_pid;
+-};
+-
+-struct flock64 {
+-	short  l_type;
+-	short  l_whence;
+-	loff_t l_start;
+-	loff_t l_len;
+-	pid_t  l_pid;
+-};
+-
+-#define F_LINUX_SPECIFIC_BASE	1024
+-
+-#endif /* _XTENSA_FCNTL_H */
++#include <asm-generic/fcntl.h>
+-- 
+1.5.2
 
