@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbXFAAPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbXFAARQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760121AbXFAAPb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 20:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbXFAAPY
+	id S1760780AbXFAARQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 20:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbXFAARF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 20:15:24 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:42983 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756339AbXFAAPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 20:15:24 -0400
-Date: Fri, 1 Jun 2007 02:14:53 +0200 (MEST)
-Message-Id: <200706010014.l510ErWa022252@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [patch 8/9] F00F bug fixup for i386 - use conditional calls
-Cc: linux-kernel@vger.kernel.org
+	Thu, 31 May 2007 20:17:05 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.133]:52356 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbXFAARE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 20:17:04 -0400
+Date: Thu, 31 May 2007 17:16:35 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH 2/5] console: console handover to preferred console
+In-reply-to: <20070531170200.3738f834.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai.Lu@Sun.COM
+Message-id: <465F6563.7060804@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+References: <200705311358.26559.yinghai.lu@sun.com>
+ <20070531170200.3738f834.akpm@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Andrew Morton wrote:
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> On Thu, 31 May 2007 13:58:26 -0700
+> Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 > 
-> > * Andrew Morton (akpm@linux-foundation.org) wrote:
-> >  
-> > > > Use the faster conditional calls for F00F bug handling in do_page_fault.
-> > > > 
-> > > 
-> > > I guess this means that CONDCALL will be enabled on pretty much all i386,
-> > > in which case making the whole feature Kconfigurable is starting to look
-> > > marginal.
-> > > 
-> > > Perhaps a better approach would have to made this change dependent upon
-> > > CONDCALL, rather than forcing it on.
-> > > 
-> > 
-> > Do you mean making X86_F00F_BUG depend on COND_CALL instead of selecting
-> > it ?
+>> [PATCH 2/5] console: console handover to preferred console
+>>
+>> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+>>
+>> diff --git a/kernel/printk.c b/kernel/printk.c
+>> index 0bbdeac..7b96cae 100644
+>> --- a/kernel/printk.c
+>> +++ b/kernel/printk.c
+>> @@ -985,12 +1007,15 @@ void register_console(struct console *console)
+>>  	if (!(console->flags & CON_ENABLED))
+>>  		return;
+>>  
+>> -	if (bootconsole) {
+>> +	if (bootconsole && (console->flags & CON_CONSDEV)) {
+>>  		printk(KERN_INFO "console handover: boot [%s%d] -> real [%s%d]\n",
+>>  		       bootconsole->name, bootconsole->index,
+>>  		       console->name, console->index);
+>>  		unregister_console(bootconsole);
+>>  		console->flags &= ~CON_PRINTBUFFER;
+>> +	} else {
+>> +		printk(KERN_INFO "console [%s%d] enabled\n",
+>> +		       console->name, console->index);
+>>  	}
+>>  
+>>  	/*
 > 
-> yup
+> What does this change do, and what is the reason for it??
 
-X86_F00F_BUG needs to be enabled in all kernels capable of booting on
-P5 class machines, whether or not some obscure CONFIG_COND_CALL thingy
-is enabled or not. X86_F00F_BUG is not some optional optimisation, it's
-an essential workaround for a serious hardware bug.
+for earlyprintk=ttyS0,9600 console=tty0 console=ttyS0,9600n8
 
-Therefore it seems select rather than depend is called for.
+the handover will happen from earlyser0 to tty0. but what we want is to ttyS0.
+
+later with patch4,
+console=tty0 console=uart8250,io,0x3f8,9600n8
+will handover to ttyS0 instead of tty0.
+
+Maybe can put above lines into commit log.
+
+YH
+
