@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbXFAXNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759973AbXFAXOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbXFAXNa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 19:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbXFAXNY
+	id S1759973AbXFAXOs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 19:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbXFAXOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 19:13:24 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:40238 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707AbXFAXNX (ORCPT
+	Fri, 1 Jun 2007 19:14:42 -0400
+Received: from sccrmhc14.comcast.net ([204.127.200.84]:44157 "EHLO
+	sccrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753423AbXFAXOm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 19:13:23 -0400
-Message-ID: <4660A7E0.6070600@zytor.com>
-Date: Fri, 01 Jun 2007 16:12:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 1 Jun 2007 19:14:42 -0400
+Date: Fri, 1 Jun 2007 16:10:53 -0700
+From: Deepak Saxena <dsaxena@plexity.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       rmk@arm.linux.org.uk
+Subject: [PATCH RT] Fix NR_syscalls in ARM
+Message-ID: <20070601231053.GA26602@plexity.net>
+Reply-To: dsaxena@plexity.net
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steve Fox <drfickle@us.ibm.com>
-Subject: Re: 2.6.22-rc1-mm1
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com> <20070516174046.GE10225@skynet.ie> <464B9573.8030407@zytor.com> <Pine.LNX.4.64.0705171013560.27336@skynet.skynet.ie> <465CAA86.5020402@shadowen.org> <465FEBD3.7020801@shadowen.org>
-In-Reply-To: <465FEBD3.7020801@shadowen.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Plexity Networks
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> 
-> I think that my debugging says that newsetup got the compressed kernel
-> and decompressor into memory ok and execution passed to it normally.
-> But I cannot figure out where the corruption is coming from.  I tried
-> annotating the gzip decompressor to see if the input and output buffers
-> were overlapping at any time and that debug said no (unsure how reliable
-> that is).  And yet at some point the output image is munched up.
-> 
-> One last piece of information.  The decompressor also always seems to
-> get to the end of the input stream in exactly the right place without
-> reporting any kind of error, that is with exactly 8 bytes left over for
-> the length and crc checks.  Which given the context sensitive nature of
-> the algorithm tends to imply the input stream was ok for the whole
-> duration of the decompress.  Yet the output stream is badly broken.
-> 
-> Anyone got any wacky suggestions ...
-> 
 
-It definitely sounds like a memory clobber of some sort.
+The -rt patch adds a NR_syscalls symbol to the arm/unistd.h but
+it is not the correct value as there are 348 syscalls on ARM
+and the existing change sets the symbol to 322.
 
-Usual suspects, in addition to the input/output buffers you already
-looked at, would be the heap and the stack.  Finding where the stack
-pointer lives would be my first, instinctive guess.
+Signed-off-by: Deepak Saxena <dsaxena@mvista.com>
 
-	-hpa
+---
+
+Russell: Why isn't this in mainline? Other arches all seem to have 
+this symbol already defined.
+
+Index: linux-2.6.21/include/asm-arm/unistd.h
+===================================================================
+--- linux-2.6.21.orig/include/asm-arm/unistd.h
++++ linux-2.6.21/include/asm-arm/unistd.h
+@@ -375,7 +375,7 @@
+ #define __NR_kexec_load			(__NR_SYSCALL_BASE+347)
+ 
+ #ifndef __ASSEMBLY__
+-#define NR_syscalls			(__NR_set_mempolicy + 1 - __NR_SYSCALL_BASE)
++#define NR_syscalls			(__NR_kexec_load + 1 - __NR_SYSCALL_BASE)
+ #endif
+ 
+ /*
+
+-- 
+Deepak Saxena - dsaxena@plexity.net - http://www.plexity.net 
