@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbXFAHuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbXFAHy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759979AbXFAHuV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 03:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbXFAHuJ
+	id S1760074AbXFAHy0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 03:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbXFAHyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 03:50:09 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:52913 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753752AbXFAHuH (ORCPT
+	Fri, 1 Jun 2007 03:54:15 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51448 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756478AbXFAHyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 03:50:07 -0400
-Date: Fri, 1 Jun 2007 00:49:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelianov <xemul@openvz.org>
-Cc: Balbir Singh <balbir@in.ibm.com>, Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 8/8] Per-container pages reclamation
-Message-Id: <20070601004922.b03cfc75.akpm@linux-foundation.org>
-In-Reply-To: <465FCE59.2070703@openvz.org>
-References: <465D9739.8070209@openvz.org>
-	<465D9B62.5050507@openvz.org>
-	<20070530144737.56456aaf.akpm@linux-foundation.org>
-	<465EA4FF.1000904@openvz.org>
-	<20070531105842.0728f577.akpm@linux-foundation.org>
-	<465FCE59.2070703@openvz.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 1 Jun 2007 03:54:13 -0400
+Date: Fri, 1 Jun 2007 17:53:36 +1000
+From: David Chinner <dgc@sgi.com>
+To: Neil Brown <neilb@suse.de>
+Cc: David Chinner <dgc@sgi.com>, Phillip Susi <psusi@cfl.rr.com>,
+       Jens Axboe <jens.axboe@oracle.com>, david@lang.hm,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+Message-ID: <20070601075336.GX86004887@sgi.com>
+References: <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <465F1479.70100@cfl.rr.com> <20070531233449.GT86004887@sgi.com> <18015.46551.209946.204238@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18015.46551.209946.204238@notabene.brown>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 01 Jun 2007 11:44:25 +0400 Pavel Emelianov <xemul@openvz.org> wrote:
-
-> Andrew Morton wrote:
-> > On Thu, 31 May 2007 14:35:43 +0400
-> > Pavel Emelianov <xemul@openvz.org> wrote:
+On Fri, Jun 01, 2007 at 03:59:51PM +1000, Neil Brown wrote:
+> On Friday June 1, dgc@sgi.com wrote:
+> > On Thu, May 31, 2007 at 02:31:21PM -0400, Phillip Susi wrote:
+> > > David Chinner wrote:
+> > > >That sounds like a good idea - we can leave the existing
+> > > >WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
+> > > >behaviour that only guarantees ordering. The filesystem can then
+> > > >choose which to use where appropriate....
+> > > 
+> > > So what if you want a synchronous write, but DON'T care about the order? 
 > > 
-> >>> Would I be correct in guessing that pages which are on the
-> >>> per-rss-container lists are also eligible for reclaim off the traditional
-> >>> page LRUs?  If so, how does that work?  When a page gets freed off the
-> >> Yes. All the pages are accessible from booth - global and per-container
-> >> LRU lists and reclamation can be performed from booth.
-> >>
-> >>> per-zone LRUs does it also get removed from the per-rss_container LRU?  But
-> >>> how can this be right?  
-> >> I don't get your idea here.
+> > submit_bio(WRITE_SYNC, bio);
 > > 
-> > If we have a page which is on the zone LRU with refcount=1 and someone does
-> > put_page() on it, we will take that page off the zone LRU and then actually
-> > free the page.
-> > 
-> > I am assuming that your patches change that logic so that we will also
-> > remove that page from the per-container LRU at the same time?
+> > Already there, already used by XFS, JFS and direct I/O.
 > 
-> Oh, I see. No that will work another way. Page stays in per-container
-> LRU lists as long as it is mapped. When the last process is unmapping
-> the page, it it is removed, but stays in global LRU till its refcount
-> drops to 0.
+> Are you sure?
+> 
+> You seem to be saying that WRITE_SYNC causes the write to be safe on
+> media before the request returns.
 
-ho hum, OK.  This wasn't obvious from the code and it isn't something
-I should have learned by emailing you guys!  Please have a think about
-preparing an overall decription of the design and implementation of this
-rather important kernel change?
+Sorry, I wasn't really all that clear :/
+
+What I'm saying the *interface* for higher layer to tell the block layers
+that a sync write is being executed is already there. i.e. we can already
+tell the block layer that we are doing a synchronous I/O.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
