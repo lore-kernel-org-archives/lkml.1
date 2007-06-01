@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762774AbXFARPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762651AbXFARQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762774AbXFARPe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 13:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761297AbXFARPK
+	id S1762651AbXFARQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 13:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760958AbXFARQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 13:15:10 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:53770 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760572AbXFARPI (ORCPT
+	Fri, 1 Jun 2007 13:16:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:60869 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760692AbXFARQU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 13:15:08 -0400
-Date: Fri, 1 Jun 2007 05:38:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Tilman Schmidt <tilman@imap.cc>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: 2.6.22-rc2-mm1
-Message-ID: <20070601123848.GH7426@kroah.com>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <46585953.80200@imap.cc> <20070526090117.dda72286.akpm@linux-foundation.org> <465A033C.3070400@imap.cc> <3ae72650705271541o2c3755edwdc769883e79820e5@mail.gmail.com> <20070529092543.21ccd8ad@gondolin.boeblingen.de.ibm.com> <465C5AF9.20601@imap.cc> <20070529192511.24924171@gondolin.boeblingen.de.ibm.com>
+	Fri, 1 Jun 2007 13:16:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=upB0W0ElpgbOOvxp5Hr638bqE/Qk2ORmSSxK1GTw0FNm3ZlPBjG8nX3a2MYN3sThGfu6w+rCne+sWKFXScTvWKa8gB2IuOLEvxqSRb+o/aodgHG3bsOjFujRpMyai6zS3n/Wr24Tw0fEcD0la7zU6qKSkaqzLoVNUckuAZgBpWQ=
+Date: Fri, 1 Jun 2007 21:15:11 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Eric Sandeen <sandeen@sandeen.net>,
+       Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
+Message-ID: <20070601171511.GB8398@cvg>
+References: <20070524165935.GB19709@duck.suse.cz> <20070524170554.GC19709@duck.suse.cz> <20070524203653.GA7693@duck.suse.cz> <465DF0B4.2050203@sandeen.net> <465DF91F.3010201@sandeen.net> <20070531174201.GB8392@cvg> <465F09E7.7000300@sandeen.net> <20070601164926.GA8398@cvg> <20070601100425.89537dda.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070529192511.24924171@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070601100425.89537dda.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 07:25:11PM +0200, Cornelia Huck wrote:
-> On Tue, 29 May 2007 18:55:21 +0200,
-> Tilman Schmidt <tilman@imap.cc> wrote:
-> 
-> > Am 29.05.2007 09:25 schrieb Cornelia Huck:
-> > > Could those folks that had trouble with this kernel check out whether
-> > > the following patch helps?
-> > 
-> > Yes, that patch fixes my problem.
-> > 
-> > Thanks,
-> > Tilman
-> 
-> Thanks for testing (to both of you) and again sorry for the breakage.
+[Andrew Morton - Fri, Jun 01, 2007 at 10:04:25AM -0700]
+| On Fri, 1 Jun 2007 20:49:26 +0400 Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > [Eric Sandeen - Thu, May 31, 2007 at 12:46:15PM -0500]
+| > | Cyrill Gorcunov wrote:
+| > | 
+| > | >Eric, could you please try the following:
+| > | >
+| > | >1) declare the spinlock in the top of inode.c as
+| > | >
+| > | >	DEFINE_SPINLOCK(udf_drop_lock);
+| > | >
+| > | >2) replace in udf_drop_inode()
+| > | >
+| > | >	kernel_lock -> spin_lock(&udf_drop_lock);
+| > | >	kernel_unlock -> spin_unlock(&udf_drop_lock);
+| > | >
+| > | >I'm not sure if it help but you may try ;)
+| > | >
+| > | >		Cyrill
+| > | >
+| > | 
+| > | I'm sure it'll avoid the deadlock but....
+| > | 
+| > | Any sense of what the BKL is actually trying to protect in this case?
+| > | 
+| > | Is it really only trying to prevent concurrent prealloc-discarders, or 
+| > | is there more?
+| > | 
+| > | -Eric
+| > | 
+| > 
+| > Hi Eric,
+| > it seems BKL only trying to protect from concurrent discard_prealloc.
+| > Moreover, a lot of UDF code does call iput with BKL held, so the only
+| > solution I see is to add spinlocks to udf_drop_inode... I'm making patch
+| > soon. Any comments?
+| > 
+| 
+| Recursive lock_kernel() is OK.
+| 
+| spin_lock() insode lock_kernel() is OK.
+| 
+| lock_kernel() inside spin_lock() is not OK, but if this was happening you'd
+| only rarely hit a deadlock and I think this locks up every time.
+| 
+| We don't know what's causing this hang, do we?
+| 
 
-Can you resend me the new patch, I seem to have lost it in this thread
-:(
+Actually I've read in Robert Love book that recursive kernel_lock is
+supposed but as Eric wrote "he's sure spin_lock will avoid deadlock"...
+So I'm investigating this (unfortunelly can't test it myself - have
+UDF compiled into kernel :(.
 
-thanks,
+		Cyrill
 
-greg k-h
