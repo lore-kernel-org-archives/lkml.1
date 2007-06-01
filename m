@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763732AbXFAU4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932237AbXFAU4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763732AbXFAU4X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764100AbXFAUzz
+	id S932237AbXFAU4g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764890AbXFAUz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:55:55 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:46912 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763791AbXFAUzy (ORCPT
+	Fri, 1 Jun 2007 16:55:59 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:40892 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764598AbXFAUz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:55:54 -0400
-Date: Fri, 1 Jun 2007 21:55:51 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix problem with IA64 make allnoconfig
-Message-ID: <20070601205551.GA31325@skynet.ie>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070601164204.GA25049@skynet.ie> <20070601100004.1e72654d.akpm@linux-foundation.org> <20070601185013.GA13126@skynet.ie>
+	Fri, 1 Jun 2007 16:55:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Q3FKloZyJZivo3L3EvQxOrgnwvDLEUl47optqEM23BFrPOw8H/ypD3B9pBPft2EonzfVCZft/qs7hZ6vg5ad6Poz6/gBcHMVhO8kAauGM2kHeIa/ccMuNiyknBQ+soCt/MGNrp1oc5qzr9YRITTC0bdPqo4ZTuChXCNChBVjEUo=
+Message-ID: <4ac8254d0706011355y71f9c0b1q237617c6c0fb89c7@mail.gmail.com>
+Date: Fri, 1 Jun 2007 22:55:56 +0200
+From: "Tuncer Ayaz" <tuncer.ayaz@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: 2.6.22 libata spindown
+Cc: linux-kernel@vger.kernel.org,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+In-Reply-To: <4660841D.5050003@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070601185013.GA13126@skynet.ie>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+References: <4ac8254d0706011314g5468f02m3cf5a5281bd30018@mail.gmail.com>
+	 <4660841D.5050003@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IA64 fails to build with allnoconfig due to an error in the !CONFIG_SMP
-case. Ths following patch fixes it and should be considered a fix to
-rework-ptep_set_access_flags-and-fix-sun4c.patch.
+On 6/1/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Tuncer Ayaz wrote:
+> > I'm still seeing the libata warning that disks were not spun down
+> > properly on the following two setups and am wondering whether I need
+> > a new shutdown binary or the changeset mentioned below is not meant
+> > to fix what I'm triggering by halt'ing.
+> >
+> > If it's not a bug I will try to update my shutdown utility and if
+> > that does not work I promise not to bother lkml about a problem
+> > caused by my userland. If it is a bug I hope it will be of interest
+> > for 2.6.22 bug tracking.
+> >
+> > Setup 1:
+> > SATA 1 Disks
+> > AMD64 3200+
+> > nVidia nForce 3 250 (Ultra?)
+> > Debian i386 Unstable
+> >
+> > Setup 2:
+> > SATA 2 disks
+> > Core 2 Duo E6600
+> > Intel 975X
+> > Debian x86_64 Unstable
+> >
+> > Just to be clear what warning I'm talking about:
+> > DISK MIGHT NOT BE SPUN DOWN PROPERLY. UPDATE SHUTDOWN UTILITY
+> > For more info, visit http://linux-ata.org/shutdown.html
+>
+>
+> IIRC, Debian was the one OS that really did need a shutdown utility
+> update, as the message says :)
 
-allmodconfig and defconfig tests are still running.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- pgtable.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc3-mm1-clean/include/asm-ia64/pgtable.h linux-2.6.22-rc3-mm1-ia64fix/include/asm-ia64/pgtable.h
---- linux-2.6.22-rc3-mm1-clean/include/asm-ia64/pgtable.h	2007-06-01 09:24:39.000000000 +0100
-+++ linux-2.6.22-rc3-mm1-ia64fix/include/asm-ia64/pgtable.h	2007-06-01 19:44:48.000000000 +0100
-@@ -546,8 +546,8 @@ extern void lazy_mmu_prot_update (pte_t 
- # define ptep_set_access_flags(__vma, __addr, __ptep, __entry, __safely_writable) \
- ({										\
- 	int __changed = !pte_same(*(__ptep), __entry);				\
--	if (__changed) {							\
--		ptep_establish(__vma, __addr, __ptep, __entry)			\
-+	if (__changed)							\
-+		ptep_establish(__vma, __addr, __ptep, __entry);			\
- 	__changed;								\
- })
- #endif
+Thanks for the confirmation.
