@@ -1,60 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbXFAX2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbXFAX3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759508AbXFAX2Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 19:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXFAX2F
+	id S1759082AbXFAX3h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 19:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbXFAX3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 19:28:05 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2101 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753270AbXFAX2E (ORCPT
+	Fri, 1 Jun 2007 19:29:30 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57017 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752691AbXFAX33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 19:28:04 -0400
-Date: Sat, 2 Jun 2007 00:27:56 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Deepak Saxena <dsaxena@plexity.net>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RT] Fix NR_syscalls in ARM
-Message-ID: <20070601232756.GB5024@flint.arm.linux.org.uk>
-Mail-Followup-To: Deepak Saxena <dsaxena@plexity.net>,
-	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-	linux-kernel@vger.kernel.org
-References: <20070601231053.GA26602@plexity.net> <20070601231840.GA5024@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070601231840.GA5024@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 1 Jun 2007 19:29:29 -0400
+Date: Fri, 1 Jun 2007 16:29:29 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
+       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
+ warning
+In-Reply-To: <alpine.LFD.0.98.0706011554300.3957@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706011617330.9781@schroedinger.engr.sgi.com>
+References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
+ <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
+ <20070601135900.ec44b1aa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
+ <20070601151649.bb23c6f9.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com>
+ <20070601153328.1118ccaf.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0706011554300.3957@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 02, 2007 at 12:18:40AM +0100, Russell King wrote:
-> On Fri, Jun 01, 2007 at 04:10:53PM -0700, Deepak Saxena wrote:
-> > The -rt patch adds a NR_syscalls symbol to the arm/unistd.h but
-> > it is not the correct value as there are 348 syscalls on ARM
-> > and the existing change sets the symbol to 322.
-> > 
-> > Russell: Why isn't this in mainline? Other arches all seem to have 
-> > this symbol already defined.
-> 
-> The hint is that it isn't in mainline; it's just plainly not required.
-> It's also the wrong place to define it; it's not a property that
-> unistd.h should concern itself with - it's a property of the kernel's
-> branch table for calling the syscalls, and on ARM we calculate that
-> number directly from the size of the kernel's branch table.
-> 
-> It's also not just last_syscall_number+1 since the table is sized to
-> make the assembly easy - iow, a number divisible by 4.
-> 
-> So all in all, NR_syscalls in unistd.h is just utterly wrong.
+On Fri, 1 Jun 2007, Linus Torvalds wrote:
 
-BTW, it should be pointed out that you've found the exact reason why
-putting it in unistd.h is _wrong_.  It's all to easy for it to get
-out of sync with updates to the place where it really matters - the
-code which bounds-checks the syscall number (that being the assembly
-code which indexes the branch table.)
+> So for *both* of the above reasons, it's actually stupid to return NULL 
+> for a zero-sized allocation. It would be much better to return another 
+> pointer that will trap on access. A good candidate might be to return
+> 
+> 	#define BADPTR ((void *)16)
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Something like this? (Not tested yet just for review):
+
+
+SLUB: Return BADPTR instead of warning for kmalloc(0)
+
+Remove the WARN_ON_ONCE and simply return BADPTR.
+
+BADPTR can be used legitimately as long as it is not dereferenced.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ include/linux/slub_def.h |   18 ++++++++----------
+ mm/slub.c                |    8 ++++----
+ 2 files changed, 12 insertions(+), 14 deletions(-)
+
+Index: slub/include/linux/slub_def.h
+===================================================================
+--- slub.orig/include/linux/slub_def.h	2007-06-01 16:19:36.000000000 -0700
++++ slub/include/linux/slub_def.h	2007-06-01 16:24:54.000000000 -0700
+@@ -12,6 +12,8 @@
+ #include <linux/kobject.h>
+ #include <linux/log2.h>
+ 
++#define BADPTR ((void *)16)
++
+ struct kmem_cache_node {
+ 	spinlock_t list_lock;	/* Protect partial list and nr_partial */
+ 	unsigned long nr_partial;
+@@ -74,13 +76,9 @@ extern struct kmem_cache kmalloc_caches[
+  */
+ static inline int kmalloc_index(size_t size)
+ {
+-	/*
+-	 * We should return 0 if size == 0 (which would result in the
+-	 * kmalloc caller to get NULL) but we use the smallest object
+-	 * here for legacy reasons. Just issue a warning so that
+-	 * we can discover locations where we do 0 sized allocations.
+-	 */
+-	WARN_ON_ONCE(size == 0);
++
++	if (!size)
++		return 0;
+ 
+ 	if (size > KMALLOC_MAX_SIZE)
+ 		return -1;
+@@ -133,7 +131,7 @@ static inline void *kmalloc(size_t size,
+ 		struct kmem_cache *s = kmalloc_slab(size);
+ 
+ 		if (!s)
+-			return NULL;
++			return BADPTR;
+ 
+ 		return kmem_cache_alloc(s, flags);
+ 	} else
+@@ -146,7 +144,7 @@ static inline void *kzalloc(size_t size,
+ 		struct kmem_cache *s = kmalloc_slab(size);
+ 
+ 		if (!s)
+-			return NULL;
++			return BADPTR;
+ 
+ 		return kmem_cache_zalloc(s, flags);
+ 	} else
+@@ -162,7 +160,7 @@ static inline void *kmalloc_node(size_t 
+ 		struct kmem_cache *s = kmalloc_slab(size);
+ 
+ 		if (!s)
+-			return NULL;
++			return BADPTR;
+ 
+ 		return kmem_cache_alloc_node(s, flags, node);
+ 	} else
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-06-01 16:21:00.000000000 -0700
++++ slub/mm/slub.c	2007-06-01 16:27:12.000000000 -0700
+@@ -2286,7 +2286,7 @@ void *__kmalloc(size_t size, gfp_t flags
+ 
+ 	if (s)
+ 		return slab_alloc(s, flags, -1, __builtin_return_address(0));
+-	return NULL;
++	return BADPTR;
+ }
+ EXPORT_SYMBOL(__kmalloc);
+ 
+@@ -2297,7 +2297,7 @@ void *__kmalloc_node(size_t size, gfp_t 
+ 
+ 	if (s)
+ 		return slab_alloc(s, flags, node, __builtin_return_address(0));
+-	return NULL;
++	return BADPTR;
+ }
+ EXPORT_SYMBOL(__kmalloc_node);
+ #endif
+@@ -2707,7 +2707,7 @@ void *__kmalloc_track_caller(size_t size
+ 	struct kmem_cache *s = get_slab(size, gfpflags);
+ 
+ 	if (!s)
+-		return NULL;
++		return BADPTR;
+ 
+ 	return slab_alloc(s, gfpflags, -1, caller);
+ }
+@@ -2718,7 +2718,7 @@ void *__kmalloc_node_track_caller(size_t
+ 	struct kmem_cache *s = get_slab(size, gfpflags);
+ 
+ 	if (!s)
+-		return NULL;
++		return BADPTR;
+ 
+ 	return slab_alloc(s, gfpflags, node, caller);
+ }
