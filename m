@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762552AbXFARY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762839AbXFARYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762552AbXFARY2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 13:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760341AbXFARYF
+	id S1762839AbXFARYn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 13:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762563AbXFARY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 13:24:05 -0400
-Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:45061 "HELO
-	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757698AbXFARYD (ORCPT
+	Fri, 1 Jun 2007 13:24:28 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:1212 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762503AbXFARY1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 13:24:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=oG3IHwrHeMq7XyiqBVCVD1i6EnGCU475lvZNHpeig+kRBNLtyQ0IqhmlXJ+dlGvjQ66PwtigtVOSDNwyqFOLzKwcjndpBB9gF69AbdAsF+m8MiS/K9IVmhigi98KFisYBe+JNSVM0m36fqLiFYZ13xSdzjkFHxh+twaPyVmdQuw=  ;
-X-YMail-OSG: e1k2HPYVM1mmh9PqkCffuBH8.7ZkVTq9MeLAP4I14j6YoKlvbupQQ0i0Qf9N0w9.dVxV3YjzOg--
-From: David Brownell <david-b@pacbell.net>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: RTC_DRV_CMOS can break userspace interface
-Date: Fri, 1 Jun 2007 10:11:44 -0700
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <8pwhX-46n-3@gated-at.bofh.it> <20070601074606.GA6060@dose.home.local> <20070601125422.GA12204@srcf.ucam.org>
-In-Reply-To: <20070601125422.GA12204@srcf.ucam.org>
+	Fri, 1 Jun 2007 13:24:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZVrR4ICc5m3R7EFQI58FEELvL5s/K6Bx6crAF62l75V6dB4p8IrTvKiux5UNN493jxS50cfVTR3Eb20y8zWaz1vU77nnhDuYr5qPuCy1p4gMhaXY67wu31klpSahVurX+EdgkBjiPyjWy+mMhmhbI/d+vgz+Agfpr5HyIMbQ6G8=
+Message-ID: <a781481a0706011024o4a21712bw9e4342204ebfc490@mail.gmail.com>
+Date: Fri, 1 Jun 2007 22:54:26 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Daniel Hazelton" <dhazelton@enter.net>
+Subject: Re: JFFS2 using 'private' zlib header (was [RFC] LZO de/compression support - take 6)
+Cc: "Mark Adler" <madler@alumni.caltech.edu>,
+       "Michael-Luke Jones" <mlj28@cam.ac.uk>,
+       lkml <linux-kernel@vger.kernel.org>, dwmw2@infradead.org,
+       jloup@gzip.org
+In-Reply-To: <200705312306.12626.dhazelton@enter.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706011011.44607.david-b@pacbell.net>
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
+	 <a781481a0705300630r51a31f93v1301da92f6a70f01@mail.gmail.com>
+	 <1084DBE5-D72F-4403-B231-66DA8FE6AC73@alumni.caltech.edu>
+	 <200705312306.12626.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 June 2007, Matthew Garrett wrote:
+Hi Daniel,
 
-> The code for checking for a platform device only gets included if 
-> CONFIG_PNP isn't set! David, surely this should be a runtime thing 
-> rather than a compile-time one? Right now building a kernel with PNP 
-> support will break horribly if it's then run on a non-PNP system...
+On 6/1/07, Daniel Hazelton <dhazelton@enter.net> wrote:
+> On Wednesday 30 May 2007 19:02:28 Mark Adler wrote:
+> > On May 30, 2007, at 6:30 AM, Satyam Sharma wrote:
+> > > [1] For your reference, here is the user code in question:
+> >
+> > ...
+> >
+> > >        if (srclen > 2 && !(data_in[1] & PRESET_DICT) &&
+> > >         ((data_in[0] & 0x0f) == Z_DEFLATED) &&
+> > >         !(((data_in[0]<<8) + data_in[1]) % 31)) {
+> >
+> > The funny thing here is that the author felt compelled to use a
+> > #defined constant for the dictionary bit (PRESET_DICT), but had no
+> > problem with a numeric constant to isolate the compression method
+> > (0x0f), or for that matter extracting the window bits from the
+> > header.  The easy way to avoid the use of an internal zlib header
+> > file here is to simply replace PRESET_DICT with 0x20.  That constant
+> > will never change -- it is part of the definition of the zlib header
+> > in RFC 1950.
+>
+> If there is no objection, I'll put together a patch that changes the use in
+> JFFS2 into a "magic number", complete with documentation on it, and also
+> moves all of the zlib stuff into a single directory.
 
-Maybe it should be a runtime thing.  But then, on x86 there's
-nothing to create the platform device for this driver either...
+Right, s/PRESET_DICT/0x20/ would have the least fall-out / unknown
+side-effects.
 
-I had posted code to create that platform device at one point,
-adjacent to what creates the pcspeaker device, but after ACPI
-changed to require PNPACPI it wasn't needed on any system I
-could test with.  There are probably a bunch of platform_device
-nodes that should be created automagically on old PNP-less PCs.
+> > The slightly more involved patch to avoid the problem is to let
+> > inflate() do all that work for you, including the integrity check on
+> > the zlib header (% 31).  Also this corrects an error in the original
+> > code, which is that it continues to try to decompress after finding
+> > that a dictionary is needed or that the zlib header is invalid.  In
+> > this version, a bad header simply returns an error:
+> >
+>
+> Does anyone know if doing as Mark suggests would negatively impact the
+> performance of JFFS2 to such a degree that it could be considered a
+> regression? I, unfortunately, don't have the hardware to properly test the
+> code. And, at this point in time, I also don't have enough familiarity with
+> the JFFS2 code to make such a change myself.
 
-- Dave
+David would have to comment on that, but you could simultaneously
+make and submit the patch as suggested by Mark with both your
+signed-offs-by. That'll naturally need to go through David's tree, so we'll
+know if he likes/accepts the suggested modifications ...
