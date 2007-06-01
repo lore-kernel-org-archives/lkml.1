@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764719AbXFAUkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763578AbXFAUnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764719AbXFAUkq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762968AbXFAUki
+	id S1763578AbXFAUnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762435AbXFAUnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:40:38 -0400
-Received: from mx1.suse.de ([195.135.220.2]:46723 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762465AbXFAUkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:40:37 -0400
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Dependent CPU core speed reporting not updated with CPUFREQ_SHARED_TYPE_HW?
-References: <460C5D24.608@us.ibm.com>
-	<653FFBB4508B9042B5D43DC9E18836F52DF4D8@scsmsx415.amr.corp.intel.com>
-	<20070601184342.GA13751@tree.beaverton.ibm.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 01 Jun 2007 23:37:07 +0200
-In-Reply-To: <20070601184342.GA13751@tree.beaverton.ibm.com>
-Message-ID: <p73ejkvbblo.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Fri, 1 Jun 2007 16:43:09 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35180 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762327AbXFAUnH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:43:07 -0400
+Date: Fri, 1 Jun 2007 13:43:04 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Paul Jackson <pj@sgi.com>
+cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
+       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
+ warning
+In-Reply-To: <20070601131950.0f3a507b.pj@sgi.com>
+Message-ID: <Pine.LNX.4.64.0706011340110.4323@schroedinger.engr.sgi.com>
+References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
+ <Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
+ <20070601121114.b165f1e8.pj@sgi.com> <Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
+ <20070601124757.fe91a002.pj@sgi.com> <Pine.LNX.4.64.0706011249530.3598@schroedinger.engr.sgi.com>
+ <20070601130212.7be4432a.pj@sgi.com> <Pine.LNX.4.64.0706011305230.3976@schroedinger.engr.sgi.com>
+ <20070601131950.0f3a507b.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Darrick J. Wong" <djwong@us.ibm.com> writes:
+On Fri, 1 Jun 2007, Paul Jackson wrote:
 
-> On Thu, Mar 29, 2007 at 06:06:22PM -0700, Pallipadi, Venkatesh wrote:
-> > thought of
-> > making affected CPUs show the dependency in case of hw coord, but
-> > retaining the percpu
-> > control. But, it seemed complicated change for something that is
-> > cosmetic.
+> > There are no checks necessary. Your function worked fine so far for 
+> > the case of zero objects with the pointer returned by kmalloc. If the 
+> > code is correct then it will not dereference the pointer to the zero 
+> > sized array. If not then we may find a bug and fix it.
 > 
-> Actually, it's not so cosmetic any more.  Our newest servers have a
-> power meter that measures power consumption, and I'm writing a program
-> to measure the power cost of various cpufreq transitions in order to
-> enforce a power cap.  
+> I suspect you got lucky.  The check for a full pidarray[] in the routine
+> pid_array_load() occurs -after- a pid is put in the array.  If a task
+> showed up in this cpuset at the wrong time, we would fall over and die
+> in the code:
 
-How would that work? You would adjust the power cap dynamically during
-runtime based on the power meter feedback?  How long would 
-the adjustment interval be?
+Then you are deferencing an element in the pidarray that you did not 
+allocate! This is a bug in cpuset code. So we would need to allocate at 
+mininum one array element? Or would we need to allocate npids + 1 to be 
+safe???
 
-> Due to the under-reporting in affected_cpus, the
-> app thinks that (taking your example above) CPUs 0 and 2 can be
-> controlled independently.  Thus, a p-state transition of (x, x) ->
-> (x, x-1) yields no energy saving at all, while (x, x-1) -> (x-1, x-1)
-> does.  My program considers the effects of a single CPU's transition
-> independently of which CPU it is and without considering what
-> frequencies the other CPUs are operating at, which means that it will
-> conclude that the cost of increasing speed (or the reward for decreasing
-> it) is half of what it is ... sort of.  It's mildly broken as a result,
-> though amusingly enough it still seems to work ok.  I suspect that it
-> might flail around trying to hit a cap a bit more than it would if
-> affected_cpus were more accurate.
 
-Not sure affected CPUs is accurate enough for your purposes anyways.
-It cannot express "other core can be independent if I'm idle, otherwise not"
-which is common on Intel systems.
+---
+ kernel/cpuset.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--Andi
+Index: linux-2.6/kernel/cpuset.c
+===================================================================
+--- linux-2.6.orig/kernel/cpuset.c	2007-06-01 13:41:24.000000000 -0700
++++ linux-2.6/kernel/cpuset.c	2007-06-01 13:42:08.000000000 -0700
+@@ -1741,7 +1741,7 @@ static int cpuset_tasks_open(struct inod
+ 	 * show up until sometime later on.
+ 	 */
+ 	npids = atomic_read(&cs->count);
+-	pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
++	pidarray = kmalloc(max(1, npids) * sizeof(pid_t), GFP_KERNEL);
+ 	if (!pidarray)
+ 		goto err1;
+ 
