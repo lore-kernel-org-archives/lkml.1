@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763641AbXFAV5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064AbXFAV6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763641AbXFAV5b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761568AbXFAV5W
+	id S1753064AbXFAV6S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXFAV6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:57:22 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:43711 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760823AbXFAV5V (ORCPT
+	Fri, 1 Jun 2007 17:58:06 -0400
+Received: from mx.laposte.net ([81.255.54.16]:7437 "EHLO mx.laposte.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751426AbXFAV6F convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:57:21 -0400
-Message-ID: <46609636.4050208@zytor.com>
-Date: Fri, 01 Jun 2007 14:57:10 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 1 Jun 2007 17:58:05 -0400
+Date: Fri,  1 Jun 2007 23:57:41 +0200
+Message-Id: <JIZ905$469B6EF277FE655A66C9ACE2321FC036@laposte.net>
+Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Extending boot protocol & bzImage for paravirt_ops
-References: <4656FB8F.4090604@goop.org> <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <466087CF.70708@goop.org> <4660924A.2070009@zytor.com> <466093E3.4010701@goop.org>
-In-Reply-To: <466093E3.4010701@goop.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+X-Sensitivity: 3
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+From: =?iso-8859-1?b?RW1tYW51ZWwgRnVzdOk=?= <emmanuel.fuste@laposte.net>
+To: "djwong" <djwong@us.ibm.com>, "ebiederm" <ebiederm@xmission.com>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
+X-XaM3-API-Version: 4.1 (B103)
+X-SenderIP: 127.0.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->>> Do we care particularly? If 8 bytes is enough for the subarch, do we
->>> care whether its a pointer or literal? After all, this is just a private
->>> channel between the bootloader and some subarch-specific piece of code
->>> in the kernel.
->>>
->>>     
->> I see two options: either we make it a pointer *and a length* so that a
->> loader can reshuffle it at will (that also implies no absolute pointers
->> within the data), or it's an opaque cookie anyway.
-> 
-> No, it has to be completely opaque.  It might be a pointer to some
-> special shared memory or something, and not movable.
-> 
+> There exists a similar scenario.  Set the IRQ affinity to a
+bunch of
+> CPUs, watch /proc/interrupts to see which CPU is actually
+servicing the
+> interrupts, then offline that CPU.  The kernel does not
+reroute the IRQ
+> to any of the other CPUs and the device also hangs.
+>
+> The furthest that I've dug is that it works on 2.6.17 and is
+broken in
+> 2.6.22-rc3 and 2.6.21.  Will git-bisect further, but I
+wanted to know if
+> anyone else has seen this sort of problem.  afaik, this
+seems to happen
+> with both IOAPIC and MSI interrupts, possibly more.
+Hi,
+As a side note, on my very old SMP machine, 2.6.20 correctly
+load-balance IRQs across CPU but 2.6.21 not. I know that
+in-kernel IRQ load balancer is marked as deprecated and
+somewhat broken, but with your report it make me think it
+could be a bug in the IRQ rerouting part in my case too and
+not necessary in the load-balancer (decision) part.
 
-Well, if we define is as a movable object then it has to be treated as
-such.  It's a protocol definition issue.  If we define it opaque, though
--- of for that matter, if we don't -- we should define what memory it
-can live in, though.  Right now, the only "available" memory we have is
-end of setup to 0xa0000; the command line is defined to be allocated
-from this memory.
+Emmanuel.
 
-	-hpa
+---
+
+Créez votre adresse électronique prenom.nom@laposte.net 
+1 Go d'espace de stockage, anti-spam et anti-virus intégrés.
+
