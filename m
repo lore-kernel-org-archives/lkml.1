@@ -1,92 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764141AbXFAUoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbXFAUop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764141AbXFAUoU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762805AbXFAUoK
+	id S932136AbXFAUop (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762874AbXFAUoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:44:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49873 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762549AbXFAUoI (ORCPT
+	Fri, 1 Jun 2007 16:44:37 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46273 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762805AbXFAUog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:44:08 -0400
-Date: Fri, 1 Jun 2007 13:44:07 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
-       clameter@sgi.com, clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-Message-Id: <20070601134407.6e4d72de.pj@sgi.com>
-In-Reply-To: <466081DE.70205@goop.org>
-References: <465FCA79.70207@in.ibm.com>
-	<200706011620.05756.srinivasa@in.ibm.com>
-	<466081DE.70205@goop.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Fri, 1 Jun 2007 16:44:36 -0400
+Date: Fri, 1 Jun 2007 22:44:34 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/9] Conditional Calls - Hash Table
+Message-ID: <20070601204434.GN7217@one.firstfloor.org>
+References: <20070530140025.917261793@polymtl.ca> <20070530140227.398040643@polymtl.ca> <p731wgxds85.fsf@bingen.suse.de> <20070601160802.GL11166@waste.org> <20070601164623.GB4112@Krystal> <20070601170739.GA11115@waste.org> <20070601174510.GG7217@one.firstfloor.org> <20070601180654.GB7641@Krystal> <20070601193558.GH7217@one.firstfloor.org> <20070601203306.GA14316@Krystal>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070601203306.GA14316@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think this is a good example of why having to special-case kmalloc(0)
-> is a bad idea.  The original code was straightforward and, barring
-> silliness, should be completely correct with npids==0.  This new code
-> does nothing other than make things more complex.
+On Fri, Jun 01, 2007 at 04:33:06PM -0400, Mathieu Desnoyers wrote:
+> * Andi Kleen (andi@firstfloor.org) wrote:
+> > > Yes, but as you have probably understood, I want to have everything
+> > > embedded at the cond_call() site rather than polluting the rest of the
+> > > code with declarations.
+> > 
+> > A cond call is essentially a fancy variable. And the Linux kernel
+> > is written in C and in C you declare variables before you use them.
+> > Also it would allow compile time checking against typos and 
+> > allow removing some nasty hash table code. The proposal sounds like a 
+> > clear winner to me. 
+> > 
+> 
+> You could not declare in advance a structure that would contain pointers
+> to every load immediate instruction of the optimized cond_calls. Unless
 
-Perhaps so.  Perhaps not.
+To find them you just walk the sections.  Changing cond call is a slow
+path operation. That is similar to how the smp lock switching
+works today.
 
-Actually, the original cpuset pid_array_load() code was not correct,
-and Christoph's work is smoking this out.
+> I understand that if we limit ourselves to applications like the two
+> toy examples I proposed (enabling profiling and bug fixups), it could
+> make sense to try to declare a variable somewhere and later use it in
+> the body of functions (except the fact that it cannot work, due to
+> incapacity to declare pointers to each load immediate instruction, as
+> stated above). Even if it would work, the main purpose here is to
+> support the Linux Kernel Markers, where the goal is to provide the
+> ability to declare a marker within the body of a function without
+> requiring more hassle than a printk, but with less performance impact
+> than the latter. Also, we would not want the whole kernel to recompile
+> simply because someone chose to add one or two marker in his own driver
+> to extract some more information and had to add them to some globally
+> included header file.
 
-The original code assumed that it could access the first element of the
-kmalloc'd array, before it checked if it could go even further.
+Sounds similar to config.h then when Kconfig keeps track of those
+dependencies for the CONFIG_*s and only recompiles what is needed. Perhaps 
+this infrastructure could be reused.
 
-But with the kmalloc call of:
-
-	kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
-
-it is impossible for kmalloc to know how much to allocate, to guarantee
-such behaviour.  If npids is zero, all kmalloc sees, in essence, is the
-call:
-
-	kmalloc(0, GFP_KERNEL);
-
-There is no way it can guess that I might still want to access the
-first "size(pid_t)" bytes of whatever it returned.
-
-If we had a different sort of kmalloc API, such as would be called with:
-
-	kmalloc(npids, sizeof(pid_t), GFP_KERNEL);
-
-rather like the libc calloc() routine, having separate count and size
-fields, then in theory, kmalloc could treat calls of the form:
-
-	kmalloc(0, sz, GFP_KERNEL);	/* for sz > 0 */
-
-as if they were actually:
-
-	kmalloc(1, sz, GFP_KERNEL);
-
-and then my cpuset code might not have been broken.  But, since
-some of us can never remember whether it is the size or the count
-that comes first in such an API, we would still have had such
-bugs -- just fewer, for those who got those arguments backwards,
-and finally tripped over this anyway.
-
-That doesn't address the other likely broken code, elsewhere in
-the kernel somewhere that happened to try to access the 2nd or
-3rd element of such an empty array before noticing.
-
-So ... while I started this reply agreeing with you, I end up still
-agreeing with Christoph's changes here.
-
-Thanks, Christoph, for finding a bug in the cpuset code - good work!
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+-Andi  
