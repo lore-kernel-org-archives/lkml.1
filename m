@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763780AbXFATg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763700AbXFAThU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763780AbXFATg1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763357AbXFATgP
+	id S1763700AbXFAThU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762517AbXFAThJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:36:15 -0400
-Received: from xes-mad.com ([216.165.139.214]:40877 "EHLO xes-mad.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762947AbXFATgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:36:13 -0400
-X-Greylist: delayed 2154 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Jun 2007 15:36:13 EDT
-Message-ID: <46606CBA.9020904@xes-inc.com>
-Date: Fri, 01 Jun 2007 14:00:10 -0500
-From: Andrew Kilkenny <akilkenny@xes-inc.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: khollis@bitgate.com
-CC: linux-standards@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Watchdog API Update
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jun 2007 15:37:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53209 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762520AbXFAThF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 15:37:05 -0400
+Date: Fri, 1 Jun 2007 21:37:03 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Rik van Riel <riel@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, andrew.vasquez@qlogic.com
+Subject: Re: [PATCH] quiet down swiotlb warnings
+Message-ID: <20070601193703.GI7217@one.firstfloor.org>
+References: <466057B1.9090309@redhat.com> <p73odjzbism.fsf@bingen.suse.de> <20070601181225.GA16460@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070601181225.GA16460@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patched from 2.6.16
+On Fri, Jun 01, 2007 at 07:12:25PM +0100, Christoph Hellwig wrote:
+> On Fri, Jun 01, 2007 at 09:01:45PM +0200, Andi Kleen wrote:
+> > Bad idea imho. swiotlb mappings should always lead to printk by default
+> > because it is pretty dangerous.
+> > 
+> > One possible solution for this I could think of would be to define a
+> > new pci_map_sg_couldfail() or similar that doesn't warn and use a weak
+> > fallback just calling pci_map_sg on other IOMMU implementations. 
+> 
+> pci_map_sg is defined to be failing when running out of ressources, which
+> is perfectly fine.  We don't printk on kmalloc failures either (actually
 
-Included are patches for the Watchdog API. This API is already AD HOC 
-according to the documentation, so the update is not expected to meet 
-much opposition.
+Actually we do as you point out.
 
-The patch/api update adds support for enabling watchdog monitoring 
-directly via the kernel driver. It appears some drivers do this on their 
-own, while others implement the api, dictating that userspace programs 
-manage the watchdog. This includes adding both the ability for userspace 
-to enable/disable the feature, and to compile in the feature to be 
-enabled automatically at boot.
+> in some cases which is highly annoying and leads people to stick a
+> __GFP_NOWARN into various places)
 
-The Patch file includes diffs from watchdog.h, the watchdog.txt 
-documentation, and a KConfig file.
+An pci_map_sg failing typically leads to an IO error and we've
+always printk'ed those. Otherwise people will wonder why they
+get EIO.
 
-I am unsure on the licensing information. The header file only mentions 
-it was derived from Ken's original code. GPL information is absent, 
-along with dates. In fact, I am unsure where the copyright belongs, if 
-it defaults to Berkshire PC, if it must be GPL, and the like. Guidance 
-will be greatly appreciated, especially if (absent a GPL declaration) I 
-need permission to handle this code.
+-Andi
