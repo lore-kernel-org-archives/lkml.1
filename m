@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763383AbXFASQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763202AbXFASRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763383AbXFASQf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763268AbXFASQ1
+	id S1763202AbXFASRY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762086AbXFASRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:16:27 -0400
-Received: from heineken.digium.com ([216.207.245.2]:47455 "EHLO
-	heineken.digium.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763264AbXFASQ0 (ORCPT
+	Fri, 1 Jun 2007 14:17:07 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:37397 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762167AbXFASRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:16:26 -0400
-X-Greylist: delayed 1756 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Jun 2007 14:16:26 EDT
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Transfer-Encoding: 7bit
-Message-Id: <a714c0e137cf5cf814e790e3fdef23c8@digium.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: linux-kernel <linux-kernel@vger.kernel.org>
-From: Matthew Fredrickson <creslin@digium.com>
-Subject: Device Driver Etiquette
-Date: Fri, 1 Jun 2007 12:47:07 -0500
-X-Mailer: Apple Mail (2.624)
+	Fri, 1 Jun 2007 14:17:06 -0400
+Date: Fri, 1 Jun 2007 11:16:59 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Rik van Riel <riel@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] quiet down swiotlb warnings
+Message-ID: <20070601181659.GG12143@andrew-vasquezs-computer.local>
+References: <466057B1.9090309@redhat.com> <p73odjzbism.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73odjzbism.fsf@bingen.suse.de>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 01 Jun 2007 18:16:27.0600 (UTC) FILETIME=[F8875D00:01C7A478]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+On Fri, 01 Jun 2007, Andi Kleen wrote:
 
-I maintain a device driver that has been bitten by the transition to 4K 
-stacks.  It is a T1/E1 line interface PCI card driver that is 
-maintained outside of the kernel, although is used by a significant 
-number of people.  The card has a part for doing echo cancellation, but 
-it is accessed through a vendor API which (when we received it) was 
-quite stack heavy.  It used the stack for a number of large data 
-structures, although I have moved a great deal of them (particularly 
-the larger ones) onto the heap instead of the stack.  Although this has 
-reduced stack usage to the point where it is usable within 4K stacks, 
-on some code paths, it can still use quite a bit of stack space (though 
-under 4K) for local variables and a handful of small data structures.  
-The problem is that in order to initialize and use the echo canceler, 
-there is a firmware load portion which takes a noticeable period of 
-time (~5-10 seconds).  That is done through this stack heavy portion of 
-the code.
+> Rik van Riel <riel@redhat.com> writes:
+> 
+> > It turns out that the qla2xxx driver sometimes fills up the iotlb
+> > on purpose and throttles itself when pci_map_sg() fails.  In the
+> > case of a driver that expects and handles pci_map_sg() failures,
+> > we should not spam the user's console with swiotlb full messages.
+> 
+> Why does it do that? Could we supply a better interface
+> for whatever it is trying to do here?
 
-The problem that I am seeing is that while this card is loading its 
-firmware, there are other device interrupts that occur, and if enough 
-levels of interrupt happen, it overflows the stack.  Oh, the firmware 
-load occurs in the context of an ioctl, FWIW.
+The driver only calls pci_map_sg() once it's insured that all local
+driver resources are available to submit an I/O to the hardware.
 
-My solution was to disable interrupts while the firmware was being 
-loaded using local_irq_save/local_irq_restore, although that seems to 
-be a naughty thing to do, especially given the long period of time it 
-takes to load the firmware on the card.
+> > -	printk(KERN_ERR "DMA: Out of SW-IOMMU space for %zu bytes at "
+> > -	       "device %s\n", size, dev ? dev->bus_id : "?");
+> > +	if (++warnings < 5)
+> > +		printk(KERN_ERR "DMA: Out of SW-IOMMU space for %zu bytes at "
+> > +		       "device %s\n", size, dev ? dev->bus_id : "?");
+> 
+> Bad idea imho. swiotlb mappings should always lead to printk by default
+> because it is pretty dangerous.
 
-My question is this: is there a way to either work around the problem I 
-am seeing with the stack without recompiling the kernel with 8K stack 
-size or without disabling irqs for such a long period of time (which I 
-think is not a nice thing to do either) OR is it acceptable (although 
-not nice) to simply fix it this way, by disabling irqs while it loads 
-the firmware?
+Why?  It's just another resource which is consumed -- the qla2xxx
+driver is the final consumer before I/O is submitted out on the wire.
+The mappings are held for the shorted time required -- as such, are
+released as soon as the I/O completes.
 
-Thanks,
-Matthew Fredrickson
-Kernel Developer
-Digium, Inc.
-
+> One possible solution for this I could think of would be to define a
+> new pci_map_sg_couldfail() or similar that doesn't warn and use a weak
+> fallback just calling pci_map_sg on other IOMMU implementations. 
