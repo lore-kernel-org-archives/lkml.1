@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762881AbXFATLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762581AbXFATPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762881AbXFATLY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbXFATLR
+	id S1762581AbXFATPn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761943AbXFATPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:11:17 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44962 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755514AbXFATLR (ORCPT
+	Fri, 1 Jun 2007 15:15:36 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50871 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761924AbXFATPg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:11:17 -0400
-Date: Fri, 1 Jun 2007 12:11:14 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-Message-Id: <20070601121114.b165f1e8.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com>
-	<200706011620.05756.srinivasa@in.ibm.com>
-	<Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jun 2007 15:15:36 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Patch [1/1] Remove JFFS2 dependancy on zlib private header
+Date: Fri, 1 Jun 2007 15:15:28 -0400
+User-Agent: KMail/1.9.6
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_QBHYGIZW8SO1aum"
+Message-Id: <200706011515.28773.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph wrote:
-> Hmmmm.... Isnt it easier to set the pidarray to NULL in the case it
-> has no objects? Then any deferences will fail. Paul?
+--Boundary-00=_QBHYGIZW8SO1aum
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
->From what I can tell, in 30 seconds of reading, either of these
-approaches, Christoph's or Srinivasa's, based on Vatsa's suggestions
--could- be made to work.
+This change is based on recent discussions of the JFFS2 code relying on 
+constants defined in the private zlib header zutil.h
 
-I don't understand how Christoph's approach works, as stated, however.
+The result of this discussion is to change the use of the constant into 
+a 'Magic Number' (according to Mark Adler this number is part of the standard 
+and will never change - defined in RFC 1950)
 
-What do you mean, Christoph, by "then any dereferences will fail" ?
-That sounds bad to me -- we don't want pointer dereferences failing
-in the kernel, do we?  Wouldn't you have to add some more lines of
-code, a bit further down, where pidarray is used, to avoid trying to
-use it if its NULL?
+Signed-off-by: Daniel Hazelton <dhazelton@enter.net>
 
-I think that Srinivasa's point is that it is legitimate for this array
-to be empty, and that we have to code for that case, one way or another.
-Now that we can't simply kmalloc zero bytes and get away with it, that
-requires explicit tests in the code for the empty case, one way or
-another.  This sounds like a valid point to me.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+--Boundary-00=_QBHYGIZW8SO1aum
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="remove-jffs2-zutil.h-dependency.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="remove-jffs2-zutil.h-dependency.patch"
+
+diff --git a/fs/jffs2/compr_zlib.c b/fs/jffs2/compr_zlib.c
+index 2b87fcc..9f1b935 100644
+--- a/fs/jffs2/compr_zlib.c
++++ b/fs/jffs2/compr_zlib.c
+@@ -16,7 +16,6 @@
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/zlib.h>
+-#include <linux/zutil.h>
+ #include "nodelist.h"
+ #include "compr.h"
+ 
+@@ -154,7 +153,7 @@ static int jffs2_zlib_decompress(unsigned char *data_in,
+ 
+ 	/* If it's deflate, and it's got no preset dictionary, then
+ 	   we can tell zlib to skip the adler32 check. */
+-	if (srclen > 2 && !(data_in[1] & PRESET_DICT) &&
++	if (srclen > 2 && !(data_in[1] & 0x20) &&
+ 	    ((data_in[0] & 0x0f) == Z_DEFLATED) &&
+ 	    !(((data_in[0]<<8) + data_in[1]) % 31)) {
+ 
+
+--Boundary-00=_QBHYGIZW8SO1aum--
