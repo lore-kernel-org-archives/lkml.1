@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbXFAHYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759376AbXFAHZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbXFAHYc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 03:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbXFAHYZ
+	id S1759376AbXFAHZg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 03:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbXFAHZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 03:24:25 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:33476 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbXFAHYY (ORCPT
+	Fri, 1 Jun 2007 03:25:29 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50045 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbXFAHZ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 03:24:24 -0400
-Message-ID: <465FC92C.50608@cosmosbay.com>
-Date: Fri, 01 Jun 2007 09:22:20 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Fri, 1 Jun 2007 03:25:28 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: "Anand Jahagirdar" <anandjigar@gmail.com>
+Subject: Re: Patch related with Fork Bombing Atack
+Date: Fri, 1 Jun 2007 03:25:22 -0400
+User-Agent: KMail/1.9.6
+Cc: "Jens Axboe" <jens.axboe@oracle.com>, security@kernel.org,
+       linux-kernel@vger.kernel.org
+References: <25ae38200705310645n5e913a91weaa14521908f7989@mail.gmail.com> <20070531134611.GZ32105@kernel.dk> <25ae38200705312348r3cd02c90h5080617fa1f0a987@mail.gmail.com>
+In-Reply-To: <25ae38200705312348r3cd02c90h5080617fa1f0a987@mail.gmail.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       cotte@de.ibm.com, hugh@veritas.com, neilb@suse.de, zanussi@us.ibm.com,
-       Linus Torvalds <torvalds@osdl.org>, hch@infradead.org
-Subject: Re: [PATCH] sendfile removal
-References: <20070531103316.GO32105@kernel.dk> <20070531124753.a99f713c.dada1@cosmosbay.com> <20070531105321.GQ32105@kernel.dk> <465F9BEF.20504@zytor.com> <20070601054120.GI32105@kernel.dk> <465FB3AD.5030807@zytor.com>
-In-Reply-To: <465FB3AD.5030807@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Fri, 01 Jun 2007 09:22:28 +0200 (CEST)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706010325.23185.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin a écrit :
-> Jens Axboe wrote:
->>> I would personally argue that sendfile() blocking on an O_NONBLOCK
->>> desriptor, as opposed to returning EAGAIN, is a bug, and a fairly
->>> serious such.
->> I agree, but it's still a change in behaviour. Even if we consider the
->> app buggy (it is), can we potentially break it?
->>
-> 
-> It depends on which app it is, of course.  However, I think we have to
-> smoke that out the hard way.  I don't think we should retain a bug in
-> the kernel just because some unknown app might depend on that bug --
-> taking that to the extreme  we could never fix bugs at all...
-> 
+On Friday 01 June 2007 02:48:59 Anand Jahagirdar wrote:
+> On 5/31/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > On Thu, May 31 2007, Anand Jahagirdar wrote:
+> > > 2) Printk message in my patch will definitely help Administrator/Root
+> > > User to detect which particular user is trying fork bombing attack on
+> > > his machine by looking at /var/log/messages or dmesg . he can take
+> > > action against that particular user and kill his processes.
+> >
+> > You just opened a DoS possibility for any user, they can now flood the
+> > syslog instead.
+>
+> Jens Axboe
+>
+>      when they try to flood the syslog using fork bombing attack,
+> their messge will be printed only once in syslog and it will show how
+> many times it has repeated. due to this he will not able to flood the
+> syslog.and i am using only one single variable in my printk messge so
+> it is quite not possible to flood the syslog.
+>
+>    am i missing something??
+>
+> anand
 
-As I said, this new non blocking feature on the input side (disk), is nice and 
-usefull. (For people scared by splice() syscall :) )
+Most definately. Each printk() call outputs to syslog - which means that every 
+time your code outputs its message there is another line in the logs. It then 
+becomes possible to use that to flood the syslog.
 
-Just have to mention it is a change of behavior, and documentation probably 
-needs to reflect this change. "Since linux 2.6.23, sendfile() repects 
-O_NONBLOCK on in_fd as well"
+DRH
 
-
-My man page here says :
-
-ERRORS
-        EAGAIN Non-blocking I/O has been selected using O_NONBLOCK and the 
-write would block.
-
-        EBADF  The input file was not opened for reading or the output file 
-was not opened for writing.
-
-        EFAULT Bad address.
-
-        EINVAL Descriptor is not valid or locked, or an mmap()-like operation 
-is not available for in_fd.
-
-        EIO    Unspecified error while reading from in_fd.
-
-        ENOMEM Insufficient memory to read from in_fd.
-
-
-This implies O_NONBLOCK on the out filedesc, not the input one :)
-
+(I hate having to explain the obvious)
