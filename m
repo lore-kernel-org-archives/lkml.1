@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbXFAWRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbXFAWRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbXFAWRX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 18:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbXFAWRE
+	id S1756065AbXFAWRh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 18:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbXFAWRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 1 Jun 2007 18:17:06 -0400
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:52096 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753928AbXFAWRE convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 1 Jun 2007 18:17:04 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:57683 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753840AbXFAWRB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 18:17:01 -0400
-Date: Fri, 1 Jun 2007 15:16:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Srinivasa Ds <srinivasa@in.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-Message-Id: <20070601151649.bb23c6f9.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com>
-	<200706011620.05756.srinivasa@in.ibm.com>
-	<466081DE.70205@goop.org>
-	<Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
-	<20070601135900.ec44b1aa.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Date: Fri, 1 Jun 2007 23:17:00 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Cc: DervishD <lkml@dervishd.net>
+Subject: Re: Kernel utf-8 handling
+Message-ID: <20070601221700.GA15242@deepthought>
+References: <20070601142058.GA2587@DervishD>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070601142058.GA2587@DervishD>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007 14:45:27 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Fri, 1 Jun 2007, Andrew Morton wrote:
+On Fri, Jun 01, 2007 at 04:20:58PM +0200, DervishD wrote:
+>     Hi all :)
 > 
-> > Poisoning and redzoning could have caught that.
+>     I have a do-it-yourself Linux box, and I'm planning to move to UTF8
+> (currently I'm using es_ES locale, with latin1 encoding). One of my main
+> concerns (apart from programs with little or no utf8 support, which I
+> will have to suffer) is kernel handling, because I only use the console;
+> I only use X and a terminal emulator if I can't avoid it.
 > 
-> Redzoning would not have caught it. This was a kmalloc allocation and 
-> SLAB always gave them 32 bytes to play with. Only writes more than 32 
-> bytes behind would have been caught.
+[...]
 > 
-> Poisoning is only applicable to unallocated objects and these were 
-> allocated.
+>     Will the console work as it works now if I can live with latin1
+> accented characters only? Is there any terminal emulator *for the
+> console*, not for X, that handles utf8? Will I be sentenced to X to be
+> able to use my computer with utf8?
+> 
+ Sure, the console will work (don't know about a console terminal
+emulator).  I'm not very keen on compose keys - I find dead
+diacriticals (like in X) are usually easier to enter, and I've got
+all the dead latin1 accents working on my uk keymap.  Other
+diacriticals for normally-latin1 keymaps are a different matter
+(e.g. caron, ogonek, dot above) - they could be mapped for a
+specific letter on a specific key (e.g. AltGr z for ż ; z with dot
+above) but the diacritical modifiers can't be mapped for non latin1,
+at least in kbd-1.12.  You can also alter the keymap to allow you do
+ISO 14755 input (ctrl+shift+hex_digits) - useful for occasional
+characters, if they are in your font and you can remember their
+value.
 
-Nope and nope.
-
-This is a special case where the user asked for zero bytes and the kernel
-gave him 8 (or 32) bytes instead.
-
-If slab was smart enough, it would have poisoned those 8 bytes to some
-known pattern, and then checked that they still had that pattern when the
-memory got freed again.
-
-But it isn't smart enough, so the bug went undetected.
-
-As I said, it's specific to the kmalloc(0) problem, and we're fixing that
-by other means anyway.
-
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
