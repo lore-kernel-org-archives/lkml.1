@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763527AbXFATuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762903AbXFATuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763527AbXFATuM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762504AbXFATuA
+	id S1762903AbXFATuh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763631AbXFATuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:50:00 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47683 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762410AbXFATt7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:49:59 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Zwane Mwaikambo <zwane@linuxpower.ca>
-Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
-References: <fa.tUMR7tAB+jMgtfyl/LJ7U9QMgBs@ifi.uio.no>
-	<465EDCF4.7010700@shaw.ca> <m1abvl3shh.fsf@ebiederm.dsl.xmission.com>
-	<200705312212.34053.rjw@sisk.pl>
-Date: Fri, 01 Jun 2007 13:48:29 -0600
-In-Reply-To: <200705312212.34053.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Thu, 31 May 2007 22:12:33 +0200")
-Message-ID: <m1d50fzcaa.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 1 Jun 2007 15:50:24 -0400
+Received: from winds.org ([68.75.195.9]:47546 "EHLO winds.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762410AbXFATuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 15:50:23 -0400
+X-Greylist: delayed 1998 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Jun 2007 15:50:22 EDT
+Date: Fri, 1 Jun 2007 15:17:03 -0400 (EDT)
+From: Byron Stanoszek <bstanoszek@comtime.com>
+X-X-Sender: gandalf@winds.org
+To: Kyle McMartin <kyle@parisc-linux.org>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, torvalds@linux-foundation.org,
+       Chris Zankel <chris@zankel.net>, parisc-linux@lists.parisc-linux.org
+Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
+In-Reply-To: <20070601030754.GB14217@fattire.cabal.ca>
+Message-ID: <Pine.LNX.4.64.0706011510220.26938@winds.org>
+References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com>
+ <20070531162021.4cd4e91a.akpm@linux-foundation.org>
+ <20070601113840.813463db.sfr@canb.auug.org.au> <20070601030754.GB14217@fattire.cabal.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
->> Cool.
->> 
->> My patch does not change the functionality of the code just complains
->> very loudly that it is broken.
->> 
->> Further the code is broken at a design level.  The code isn't
->> problematic the code is impossible.  The cpu hotplug code can not be
->> fixed on x86 without a redesign of the generic cpu hotplug code.
->> 
->> Suspend does not need to use cpu hotplug because it already gets in
->> deep with the drivers, and can stop interrupts at the source.  I know
->> there was some talk about this doing this earlier, but I don't know if
->> anything came of that discussion.
->> 
->> Regardless if you care about this being a problem feel free to fix the
->> relevant code so it attempts to do something that the hardware
->> actually supports.
->> 
->> But if the suspend needs this code for smp support it is also broken.
+On Thu, 31 May 2007, Kyle McMartin wrote:
+
+> On Fri, Jun 01, 2007 at 11:38:40AM +1000, Stephen Rothwell wrote:
+>> This also breaks Alpha (which uses 02000000 for O_DIRECT) and parisc
+>> (which uses 02000000 for O_RSYNC).  So you ether need to choose a
+>> different value or define O_CLOEXEC for those two architectures.
+>>
 >
-> Well, from the functionality point of view, it's not.  We have no problems
-> with it, at least not that I know of.
+> That's easy enough to fix...
+>
+> Signed-off-by: Kyle McMartin <kyle@parisc-linux.org>
+>
+> diff --git a/include/asm-parisc/fcntl.h b/include/asm-parisc/fcntl.h
+> index 317851f..4ca0fb0 100644
+> --- a/include/asm-parisc/fcntl.h
+> +++ b/include/asm-parisc/fcntl.h
+> @@ -14,6 +14,7 @@
+> #define O_DSYNC		01000000 /* HPUX only */
+> #define O_RSYNC		02000000 /* HPUX only */
+> #define O_NOATIME	04000000
+> +#define O_CLOEXEC	08000000 /* set close_on_exec */
+>
+> #define O_DIRECTORY	00010000 /* must be a directory */
+> #define O_NOFOLLOW	00000200 /* don't follow links */
 
-Luck, or enough other issues someone hasn't tracked their problems
-down to this.  On the pure cpu hotplug path I just got a bug
-report about it not working:  http://lkml.org/lkml/2007/5/31/419
+These are octal values, so you really want to use 010000000 instead of
+08000000. :-)
 
-So apparently real people can hit this one.  Not just theoretical
-people seen by code reviewers.
+While looking at that file further, I noticed these two flags share the same
+value. I don't know DMAPI/XDSM, but could they potentially conflict?
 
-The code is broken by design and cannot be made to support existing
-x86 SMP systems.  Please find a way to use something that works.
+#define O_NOATIME       04000000
+#define O_INVISIBLE     04000000 /* invisible I/O, for DMAPI/XDSM */
 
-The suspend path is already talking to the drivers and can stop IRQs
-at their source so it should not be a big deal.
+Regards,
+  -Byron
 
-Eric
+--
+Byron Stanoszek                         Ph: (330) 644-3059
+Systems Programmer                      Fax: (330) 644-8110
+Commercial Timesharing Inc.             Email: byron@comtime.com
