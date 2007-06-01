@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765287AbXFAU75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764532AbXFAVCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765287AbXFAU75 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764491AbXFAU7q
+	id S1764532AbXFAVCc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762893AbXFAVCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:59:46 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:50952 "EHLO
+	Fri, 1 Jun 2007 17:02:25 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:35423 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765117AbXFAU7n (ORCPT
+	by vger.kernel.org with ESMTP id S1763716AbXFAVCY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:59:43 -0400
-Date: Fri, 1 Jun 2007 13:59:00 -0700
+	Fri, 1 Jun 2007 17:02:24 -0400
+Date: Fri, 1 Jun 2007 14:02:11 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Srinivasa Ds <srinivasa@in.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-Message-Id: <20070601135900.ec44b1aa.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com>
-	<200706011620.05756.srinivasa@in.ibm.com>
-	<466081DE.70205@goop.org>
-	<Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+       Arnd Bergmann <arndb@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: 2.6.22-rc3-mm1
+Message-Id: <20070601140211.81e5c301.akpm@linux-foundation.org>
+In-Reply-To: <200706012250.58962.m.kozlowski@tuxland.pl>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+	<200705312243.18724.m.kozlowski@tuxland.pl>
+	<20070531141943.5c4d587c.akpm@linux-foundation.org>
+	<200706012250.58962.m.kozlowski@tuxland.pl>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,23 +30,70 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007 13:47:23 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+On Fri, 1 Jun 2007 22:50:58 +0200
+Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-> On Fri, 1 Jun 2007, Jeremy Fitzhardinge wrote:
+> > > 	This is from iMac G3. The spufs_mem_mmap_fault() code looks bad
+> > > in arch/powerpc/platforms/cell/spufs/file.c but somehow I'm unable to find
+> > > the patch to blame hmm.
+> > > 
+> > > arch/powerpc/platforms/cell/spufs/file.c: In function 'spufs_mem_mmap_fault':
+> > > arch/powerpc/platforms/cell/spufs/file.c:122: error: 'address' undeclared (first use in this function)
+> > > arch/powerpc/platforms/cell/spufs/file.c:122: error: (Each undeclared identifier is reported only once
+> > > arch/powerpc/platforms/cell/spufs/file.c:122: error: for each function it appears in.)
+> > > arch/powerpc/platforms/cell/spufs/file.c:141: error: expected ';' before 'if'
+> > > arch/powerpc/platforms/cell/spufs/file.c:122: warning: unused variable 'addr0'
+> > > make[3]: *** [arch/powerpc/platforms/cell/spufs/file.o] Blad 1
+> > > make[2]: *** [arch/powerpc/platforms/cell/spufs] Blad 2
+> > > make[1]: *** [arch/powerpc/platforms/cell] Blad 2
+> > > 
+> > 
+> > Yeah, that's the fix-fault-vs-invalidate-race patches, or my poor attempt
+> > to fix them when spufs changed.  I suppose I'll have a poke at it next time
+> > I get the powerpc machine fired up.
 > 
-> > I think this is a good example of why having to special-case kmalloc(0)
-> > is a bad idea.  The original code was straightforward and, barring
-> > silliness, should be completely correct with npids==0.  This new code
-> > does nothing other than make things more complex.
+> I #if 0'ed that piece of code inside spufs_mem_mmap_fault() and run make again.
+> This is 'make allmodconfig && make' result:
 > 
-> Hehe we got you. The code is indexing the pidarray allocated with 
-> kmalloc(0). So it uncovered a latent bug. It only worked because SLAB gave 
-> him 32 bytes and it now only works because SLUB give him 8. That is enough 
-> to illegally index the first array element.
+> ERROR: ".ps3av_set_hdr" [drivers/ps3/ps3av_cmd.ko] undefined!
+> ERROR: ".ps3av_do_pkt" [drivers/ps3/ps3av_cmd.ko] undefined!
+> ERROR: ".ps3_vuart_write" [drivers/ps3/ps3av_cmd.ko] undefined!
+> ERROR: ".ps3_vuart_read" [drivers/ps3/ps3av_cmd.ko] undefined!
+> ERROR: ".ps3av_cmd_fin" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_av_video_disable_sig" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_set_video_mode" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_video_get_monitor_info" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_audio_active" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_set_audio_mode" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_set_av_audio_param" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_vuart_read" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_av_get_hw_conf" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_av_video_mute" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_av_tv_mute" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_audio_mode" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_av_hdmi_mode" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_set_av_video_cs" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_vuart_write" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_audio_mute" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_avb_param" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_init" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: ".ps3av_cmd_av_audio_mute" [drivers/ps3/ps3av.ko] undefined!
+> ERROR: "pmu_batteries" [drivers/power/pmu_battery.ko] undefined!
+> ERROR: "pmu_battery_count" [drivers/power/pmu_battery.ko] undefined!
+> ERROR: "pmu_power_flags" [drivers/power/pmu_battery.ko] undefined!
+> ERROR: "irq_map" [drivers/net/pasemi_mac.ko] undefined!
+> ERROR: "pmu_batteries" [drivers/macintosh/apm_emu.ko] undefined!
+> ERROR: "pmu_battery_count" [drivers/macintosh/apm_emu.ko] undefined!
+> ERROR: "pmu_power_flags" [drivers/macintosh/apm_emu.ko] undefined!
+> ERROR: ".cpufreq_set_policy" [arch/powerpc/platforms/cell/cbe_cpufreq.ko] undefined!
+> make[1]: *** [__modpost] Blad 1
+> make: *** [modules] Blad 2
 > 
 
-Poisoning and redzoning could have caught that.
+Yeah, allmodconfig tends to fall over in a heap on a lot of the
+less-lavishly-maintained architectures.  If any of these are specific to
+-mm then I guess we should fix them up, prevent the kernel from actually
+going backwards.
 
-But I guess it doesn't matter now, as this shortcoming is specific to
-the zero-length allocations, and we're weeding those out anyway.
+
+
