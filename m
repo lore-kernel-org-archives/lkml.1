@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761172AbXFAXmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761457AbXFAXmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761172AbXFAXmd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 19:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbXFAXmH
+	id S1761457AbXFAXmr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 19:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbXFAXmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 19:42:07 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:44701 "EHLO
+	Fri, 1 Jun 2007 19:42:11 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:49933 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754141AbXFAXmF (ORCPT
+	by vger.kernel.org with ESMTP id S1756918AbXFAXmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 19:42:05 -0400
-Date: Fri, 1 Jun 2007 16:41:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-In-Reply-To: <Pine.LNX.4.64.0706011617330.9781@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.0.98.0706011638360.3957@woody.linux-foundation.org>
-References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
- <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
- <20070601135900.ec44b1aa.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
- <20070601151649.bb23c6f9.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com>
- <20070601153328.1118ccaf.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
- <alpine.LFD.0.98.0706011554300.3957@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706011617330.9781@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 1 Jun 2007 19:42:09 -0400
+Date: Fri, 1 Jun 2007 16:42:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Reinaldo Carvalho" <reinaldow@gmail.com>
+Cc: linux-kernel@vger.kernel.org, megaraidlinux@lsi.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: megaraid.c, all kernel versions, problem with multi-luns
+Message-Id: <20070601164203.f69dee1d.akpm@linux-foundation.org>
+In-Reply-To: <ec36785a0705301609t62676c76q3a2b726bf51d50db@mail.gmail.com>
+References: <ec36785a0705301609t62676c76q3a2b726bf51d50db@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 30 May 2007 20:09:44 -0300
+"Reinaldo Carvalho" <reinaldow@gmail.com> wrote:
 
+> Hi,
 
-On Fri, 1 Jun 2007, Christoph Lameter wrote:
+(cc's added) (CONFIG_SCSI_MULTI_LUN is set)
+
+> I have a Dell PowerEdge Expandable RAID controller, with a hardware
+> Raid-5 at Channel 01 running perfectly, and a nCipher Crypter at
+> Channel 02.
 > 
-> Something like this? (Not tested yet just for review):
-
-I'm not seeing the path on the freeing side that silently accepts BADPTR.
-
-It is not ok to derefence BADPTR, but it's obviously ok to _free_ it.
-
-Also, if I read the patch correctly, you _also_ return BADPTR for slabs 
-that are too large. No?  That would be wrong - those need to return NULL 
-for "out of memory".
-
-(But I only looked at the diff, not at the end result, so it may be that 
-all the cases where you changed "return NULL" into "return BADPTR" were 
-really just the size-zero ones - it just looked suspicious).
-
-		Linus
+> This controller doesn't correctly detect devices (e.g. nCipher
+> Crypter) with multiples LUNs. Only one LUN is detected.
+> 
+> At another controller (e.g. Adaptec 79xx) two LUNs were detect. I
+> compiled 2.6.8, 2.6.18 and 2.6.21.3 to test megaraid driver and all
+> failed detecting two LUNs.
+> 
+> I think that this is a firmware problem, but i'd like have some opinions.
+> 
+> I read some docs
+> (http://www.suse.de/~garloff/linux/scsi-scan/scsi-scanning.html,
+> http://www.ictp.trieste.it/~radionet/nuc1996/ref/howto-html/scsi-howto-2.html)
+> and this problem doesn't seem to be simple.
+> 
+> Best regards,
+> 
+> More information with Dell PowerEdge Expandable RAID controller (LSI
+> Logic MegaRaid):
+> 
+> Attached devices:
+> Host: scsi0 Channel: 00 Id: 06 Lun: 00
+>   Vendor: PE/PV    Model: 1x5 SCSI BP      Rev: 1.0
+>   Type:   Processor                        ANSI  SCSI revision: 02
+> Host: scsi0 Channel: 01 Id: 00 Lun: 00
+>   Vendor: nCipher  Model: Fastness Crypto  Rev: 2*00
+>   Type:   Processor                        ANSI  SCSI revision: 02
+> Host: scsi0 Channel: 02 Id: 00 Lun: 00
+>   Vendor: MegaRAID Model: LD 0 RAID5  279G Rev: 522A
+>   Type:   Direct-Access                    ANSI  SCSI revision: 02
+> 
+> 
+> 14:0e.0 RAID bus controller: Dell PowerEdge Expandable RAID controller
+> 4 (rev 06)
+>         Subsystem: Dell PowerEdge Expandable RAID Controller 4e/Di
+>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
+> ParErr- Stepping+ SERR+ FastB2B-
+>         Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium
+> >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>         Latency: 64 (32000ns min), Cache Line Size: 64 bytes
+>         Interrupt: pin A routed to IRQ 22
+>         Region 0: Memory at d7ff0000 (32-bit, prefetchable) [size=64K]
+>         Region 2: Memory at defc0000 (32-bit, non-prefetchable) [size=256K]
+>         Expansion ROM at df000000 [disabled] [size=128K]
+>         Capabilities: <access denied>
+> 
+> 14:0e.0 0104: 1028:0013 (rev 06)
+> 
+> 
+> Information with Adaptec 79xx or others SCSI controllers:
+> 
+> Host: scsi0 Channel: 01 Id: 00 Lun: 00
+>   Vendor: nCipher  Model: Fastness Crypto  Rev: 2*00
+>   Type:   Processor                        ANSI  SCSI revision: 02
+> Host: scsi0 Channel: 01 Id: 00 Lun: 01
+>   Vendor: nCipher  Model: Fastness Crypto  Rev: 2*00
+>   Type:   Processor                        ANSI  SCSI revision: 02
+> 
+> 
