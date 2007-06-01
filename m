@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763716AbXFATsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763527AbXFATuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763716AbXFATsO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762763AbXFATr7
+	id S1763527AbXFATuM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762504AbXFATuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:47:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46942 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762435AbXFATr6 (ORCPT
+	Fri, 1 Jun 2007 15:50:00 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47683 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762410AbXFATt7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:47:58 -0400
-Date: Fri, 1 Jun 2007 12:47:57 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-Message-Id: <20070601124757.fe91a002.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com>
-	<200706011620.05756.srinivasa@in.ibm.com>
-	<Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
-	<20070601121114.b165f1e8.pj@sgi.com>
-	<Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jun 2007 15:49:59 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Zwane Mwaikambo <zwane@linuxpower.ca>
+Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+References: <fa.tUMR7tAB+jMgtfyl/LJ7U9QMgBs@ifi.uio.no>
+	<465EDCF4.7010700@shaw.ca> <m1abvl3shh.fsf@ebiederm.dsl.xmission.com>
+	<200705312212.34053.rjw@sisk.pl>
+Date: Fri, 01 Jun 2007 13:48:29 -0600
+In-Reply-To: <200705312212.34053.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Thu, 31 May 2007 22:12:33 +0200")
+Message-ID: <m1d50fzcaa.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The allocated array has 0 bytes. Any dereference is an error.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> Cool.
+>> 
+>> My patch does not change the functionality of the code just complains
+>> very loudly that it is broken.
+>> 
+>> Further the code is broken at a design level.  The code isn't
+>> problematic the code is impossible.  The cpu hotplug code can not be
+>> fixed on x86 without a redesign of the generic cpu hotplug code.
+>> 
+>> Suspend does not need to use cpu hotplug because it already gets in
+>> deep with the drivers, and can stop interrupts at the source.  I know
+>> there was some talk about this doing this earlier, but I don't know if
+>> anything came of that discussion.
+>> 
+>> Regardless if you care about this being a problem feel free to fix the
+>> relevant code so it attempts to do something that the hardware
+>> actually supports.
+>> 
+>> But if the suspend needs this code for smp support it is also broken.
+>
+> Well, from the functionality point of view, it's not.  We have no problems
+> with it, at least not that I know of.
 
-Well, then, that doesn't work either.
+Luck, or enough other issues someone hasn't tracked their problems
+down to this.  On the pure cpu hotplug path I just got a bug
+report about it not working:  http://lkml.org/lkml/2007/5/31/419
 
-We -agree- we can't have this failing. You suggested (if I understood
-correctly, which I doubt) that we set the pointer to NULL, and noted
-that derefencing a NULL pointer would fail.  I agree such derefences
-would fail, and tried to point out that this would be bad.  We can't
-have pointer dereferences failing in the kernel ... duh.
+So apparently real people can hit this one.  Not just theoretical
+people seen by code reviewers.
 
-Your reply seems like a non sequiter to me, pointing out that having
-a pointer to an array of 0 bytes fails as well.  Ok - that's bad too.
+The code is broken by design and cannot be made to support existing
+x86 SMP systems.  Please find a way to use something that works.
 
-So we cannot have a NULL pointer, used unchecked, and we cannot have
-a non-NULL pointer to a zero byte array, used unchecked.
+The suspend path is already talking to the drivers and can stop IRQs
+at their source so it should not be a big deal.
 
-As I said, and as I thought Srinivasa coded, with these patch lines:
-
-@@ -1772,6 +1779,9 @@ static ssize_t cpuset_tasks_read(struct 
- {
- 	struct ctr_struct *ctr = file->private_data;
- 
-+	if (!ctr->buf)     /* No tasks in this cpuset */
-+		return 0;
-+
- 	return simple_read_from_buffer(buf, nbytes, ppos, ctr->buf, ctr->bufsz);
- }
-
-we actually have to check the NULL-ness (or emptiness) of this thing,
-down where it would be used, to avoid using NULL or empty things.
-
-Summary - Srinivasa's patch still looks ok to me.  This followup
-discussion between you and I is just confusing me - sorry.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Eric
