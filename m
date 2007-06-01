@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764273AbXFAVFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764115AbXFAVIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764273AbXFAVFu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762893AbXFAVFo
+	id S1764115AbXFAVIL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:08:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762327AbXFAVH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:05:44 -0400
-Received: from sandeen.net ([209.173.210.139]:15030 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762864AbXFAVFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:05:43 -0400
-Message-ID: <46608A26.3080605@sandeen.net>
-Date: Fri, 01 Jun 2007 16:05:42 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+	Fri, 1 Jun 2007 17:07:58 -0400
+Received: from outbound-mail-42.bluehost.com ([69.89.18.11]:47981 "HELO
+	outbound-mail-42.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1762129AbXFAVH5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 17:07:57 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
+Date: Fri, 1 Jun 2007 14:07:51 -0700
+User-Agent: KMail/1.9.6
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <200706011210.15808.jbarnes@virtuousgeek.org> <p73k5unbcnq.fsf@bingen.suse.de>
+In-Reply-To: <p73k5unbcnq.fsf@bingen.suse.de>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
-References: <20070524165935.GB19709@duck.suse.cz> <20070524170554.GC19709@duck.suse.cz> <20070524203653.GA7693@duck.suse.cz> <465DF0B4.2050203@sandeen.net> <20070601211036.GA23975@duck.suse.cz>
-In-Reply-To: <20070601211036.GA23975@duck.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706011407.51779.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
+On Friday, June 1, 2007 2:14:17 Andi Kleen wrote:
+> Jesse Barnes <jbarnes@virtuousgeek.org> writes:
+> > (or we get proper PAT support, which I think would make this problem
+> > go away as well).
+>
+> No it won't. If the basic MTRRs for memory are wrong just having PAT
+> support in drivers (which already exist in a limited form already, just for
+> UC only) won't change anything.
 
->> but iput goes
->> iput->iput_final->drop_inode->udf_drop_inode->lock_kernel() again
->   As Andrew already wrote, BKL is free to recurse...
-> 
->> looking for the right way around it but figured I'd ping you early :)
->   Thanks for info - I'm now mostly out of email for a few days but I'll
-> have a look at it as soon as I return.
+No obviously just using PAT for drivers wouldn't help, I was thinking more of 
+having one PAT type be WB memory, and using it by default for most PTEs 
+covering normal memory.  If that's not possible, then it seems sensible to 
+try to fix this MTRR problem in a better way, either with something like the 
+patch I posted earlier or a more advanced MTRR remapper that runs at early 
+boot.  Depending on platform requirements though, that could get complicated 
+pretty fast...
 
-Ok.  I was offbase in my first analysis (sorry!) but something -is- 
-definitely locking up when I run fsstress, and w/o the patch mentioned 
-it's ok.
+Jesse
 
-I'm trying to manage to get it sorted but i'm out a couple of days now, too.
-
--Eric
