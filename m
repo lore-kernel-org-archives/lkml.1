@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763613AbXFATdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763787AbXFATd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763613AbXFATdr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762430AbXFATda
+	id S1763787AbXFATd6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762763AbXFATdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:33:30 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:50270 "EHLO
+	Fri, 1 Jun 2007 15:33:33 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:50292 "EHLO
 	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762312AbXFATd3 (ORCPT
+	with ESMTP id S1762706AbXFATdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:33:29 -0400
+	Fri, 1 Jun 2007 15:33:32 -0400
 Subject: Re: [PATCH 3/5] lockstat: core infrastructure
 From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070601183053.GA30072@elte.hu>
-References: <20070530132431.GA23947@elte.hu>
+In-Reply-To: <1180723421.5676.8.camel@lappy>
+References: <20070529125248.877196281@chello.nl>
+	 <20070529130107.112347096@chello.nl>
+	 <1180470525.32594.71.camel@imap.mvista.com>
+	 <20070530132431.GA23947@elte.hu>
 	 <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com>
 	 <20070530134907.GA27085@elte.hu>
 	 <1180544796.32594.184.camel@imap.mvista.com>
@@ -26,81 +28,38 @@ References: <20070530132431.GA23947@elte.hu>
 	 <1180545913.32594.194.camel@imap.mvista.com>
 	 <20070601131249.GA17059@elte.hu>
 	 <1180711606.15884.32.camel@imap.mvista.com> <1180713154.5676.4.camel@lappy>
-	 <1180714263.15884.52.camel@imap.mvista.com>
-	 <20070601183053.GA30072@elte.hu>
+	 <1180714263.15884.52.camel@imap.mvista.com> <1180723421.5676.8.camel@lappy>
 Content-Type: text/plain
 Date: Fri, 01 Jun 2007 12:30:37 -0700
-Message-Id: <1180726237.15884.103.camel@imap.mvista.com>
+Message-Id: <1180726238.15884.104.camel@imap.mvista.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-01 at 20:30 +0200, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
+On Fri, 2007-06-01 at 20:43 +0200, Peter Zijlstra wrote:
+> On Fri, 2007-06-01 at 09:11 -0700, Daniel Walker wrote:
+> > On Fri, 2007-06-01 at 17:52 +0200, Peter Zijlstra wrote:
 > 
-> > > So, having two interfaces, one fast and one accurate is the right 
-> > > answer IMHO.
+> > > The whole issue is that you don't have any control over what clocksource
+> > > you'll end up with. If it so happens that pmtimer gets selected your
+> > > whole box will crawl if its used liberaly, like the patch under
+> > > discussion does.
 > > 
-> > In the case of lockstat you have two cases fast and functional, and 
-> > non-functional .. Right now your patch has no slow and functional 
-> > state.
+> > You can have control over it, which I think the whole point of this
+> > discussion ..
 > 
-> let me explain it to you:
-> 
-> 1) there is absolutely no problem here to begin with. If a rare 
-> architecture is lazy enough to not bother implementing a finegrained 
-> sched_clock() then it certainly does not care about the granularity of 
-> lockstat fields either. If it does, it can improve scheduling and get 
-> more finegrained lockstat by implementing a proper sched_clock() 
-> function - all for the same price! ;-)
+> No you don't, clocksource will gladly discard the TSC when its not found
+> stable enough (the majority of the systems today). While it would be
+> good enough for sched_clock().
 
-There is a problem, which we are discussing ... sched_clock() can be
-lowres in lots of different situations, and lockstat fails to account
-for that .. That in turn makes it's timing non-functional.
-
-> 2) the 'solution' you suggested for this non-problem is _far worse_ than 
-> the granularity non-problem, on the _majority_ of server systems today! 
-> Think about it! Your suggestion would make lockstat _totally unusable_. 
-> Not "slow and functional" like you claim but "dead-slow and unusable".
-
-I'm not sure how to respond to this.. You taking a big ball of
-assumptions, and molding it into what ever you want ..
-
-> in light of all this it is puzzling to me how you can still call Peter's 
-> code "non-functional" with a straight face. I have just tried lockstat 
-> with jiffies granular sched_clock() and it was still fully functional. 
-> So if you want to report some bug then please do it in a proper form.
-
-Clearly you can't have sane microsecond level timestamps with a clock
-that doesn't support microsecond resolution.. This is even something
-Peter acknowledged in his first email to me.
-
-> > As I said before there is no reason why and architectures should be 
-> > forced to implement sched_clock() .. Is there some specific reason why 
-> > you think it should be mandatory?
-> 
-> Easy: it's not mandatory, but it's certainly "nice" even today, even 
-> without lockstat. It will get you:
-> 
->  - better scheduling
->  - better printk timestamps
->  - higher-quality blktrace timestamps
-> 
-> With lockstat, append "more finegrained lockstat output" to that list of 
-> benefits too. That's why every sane server architecture has a 
-> sched_clock() implementation - go check the kernel source. Now i wouldnt 
-> mind to clean the API up and call it get_stat_clock() or whatever - but 
-> that was not your suggestion at all - your suggestion was flawed: to 
-> implement sched_clock() via the GTOD clocksource.
-
-At this point it's not clear to me you know what my suggestion was ..
-Your saying you want a better API for sched_clock(), and yes I agree
-with that 100% sched_clock() needs a better API .. The paragraph above
-it looks like your on the verge of agreeing with me ..
-
-You think my words are puzzling, try it from this end.. 
+Your misreading the sentence above "You can have control over it" , this
+means that you _can_ make lockstat use the TSC or disable itself when
+the TSC is unstable.. Clock management is secondary to me, and we can
+change it.. What matters more is if the "struct clocksource" provides a
+better method for accessing lowlevel clocks than sched_clock() .. My
+contention is that it does provide a better method.
 
 Daniel
 
