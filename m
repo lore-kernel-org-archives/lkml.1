@@ -1,246 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbXFACQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbXFACUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754185AbXFACQP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 22:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXFACQA
+	id S1754598AbXFACUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 22:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXFACUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 22:16:00 -0400
-Received: from hqemgate02.nvidia.com ([216.228.112.143]:9840 "EHLO
-	HQEMGATE02.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676AbXFACP7 convert rfc822-to-8bit (ORCPT
+	Thu, 31 May 2007 22:20:43 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:36870 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751107AbXFACUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 22:15:59 -0400
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 31 May 2007 22:20:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=UVRj+i2pbhxtPGu4iz5jkeOPXGYwyL6nrmtJxqKcdETSrHy9GMjOP71SRkJH++NjSOQGZRqZIizJaUoSeZJ0qOfyl9u8XDS51GEz9C0iMFAjHO4wB5+OybmPpXLYcVTvoTHSye5mlV0UxdwftZ3W8C2vynHTAMa70lwm2rhU7x4=
+Message-ID: <465F8230.2040105@gmail.com>
+Date: Fri, 01 Jun 2007 11:19:28 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: MCP55 NCQ problem?
-Date: Fri, 1 Jun 2007 10:15:42 +0800
-Message-ID: <15F501D1A78BD343BE8F4D8DB854566B1478DB51@hkemmail01.nvidia.com>
-In-Reply-To: <465EDC37.3010002@shaw.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: MCP55 NCQ problem?
-Thread-Index: AcejkGMu5jyVHDkpSLKxJsWuuyX+igAYPHsw
-References: <fa.g0ZgLrv0is9pYHXy6dxiSz+vSug@ifi.uio.no> <465EDC37.3010002@shaw.ca>
-From: "Peer Chen" <pchen@nvidia.com>
-To: "Robert Hancock" <hancockr@shaw.ca>,
-       "Zoltan Boszormenyi" <zboszor@dunaweb.hu>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "Kuan Luo" <kluo@nvidia.com>
-X-OriginalArrivalTime: 01 Jun 2007 02:15:43.0766 (UTC) FILETIME=[C2205360:01C7A3F2]
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+CC: Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux v2.6.22-rc3
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>  <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>  <46599E6B.1000209@pobox.com>  <9d2cd630705270907y4722653cpf79f073fa8f12f08@mail.gmail.com>  <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org>  <9d2cd630705271315x7030c91ew2f175c921c022880@mail.gmail.com>  <465AA536.6080608@gmail.com> <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com> <465BF244.5080200@gmail.com> <alpine.LFD.0.98.0705290924350.26602@woody.linux-foundation.org> <465F6F48.8080804@gmail.com> <alpine.LFD.0.98.0705311830360.26602@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705311830360.26602@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zoltan,
-What's your board's model number? Could you post the pci dump using 'lspci -xxx'? Thanks.
+Hello,
 
+Linus Torvalds wrote:
+> On Fri, 1 Jun 2007, Tejun Heo wrote:
+>> Gregor's cdrom has broken SRST support which is extremely rare and
+>> broken.
+> 
+> Well, the concept is neither rare nor arguably all that broken. 
+> 
+> The paper standards floating around in the industry are so much toilet 
+> paper. The only standard that seems to really matter is what Windows has 
+> traditionally done. We may not like it, but there it is...
+> 
+> This bites us more when it comes to the real el-cheapo stuff, notably when 
+> it comes to various USB mass storage things (which have some random 
+> USB->flash controller cobbled together by a senile llama on crack), and is 
+> almost unheard of for anythign that is "server-grade", but when it comes 
+> to no-brand random devices, it really does tend to be the case that the 
+> only testing they ever had was using Windows.
+> 
+> And hardware is seldom any different from software: if it wasn't tested, 
+> it probably doesn't work.
 
-BRs
-Peer Chen
+Yeap, agreed.  SRST on PATA works on most devices tho.  This device is
+the first reported one which genuinely doesn't like SRST itself but we
+also had a case where a device doesn't report proper diagnostic code and
+another one which reports incorrect device class code.
 
------Original Message-----
-From: Robert Hancock [mailto:hancockr@shaw.ca] 
-Sent: Thursday, May 31, 2007 10:31 PM
-To: Zoltan Boszormenyi
-Cc: linux-kernel; Peer Chen; Kuan Luo
-Subject: Re: MCP55 NCQ problem?
+Hardreset on SATA works better because it's much more integral part of
+the protocol.  SRST also seems to work better but there is an emulated
+PMP device which craps itself if SRST is issued to it.
 
-CCing Peer Chen and Kuan Luo from NVIDIA..
+> So it would be good if somebody knew what the Windows ID/startup sequence 
+> was/is. I think we figured it out by trial-and-error for the USB mass 
+> storage stuff. But it tends to boil down to: don't do things that aren't 
+> absolutely required (for SCSI, it was things like not asking for mode 
+> pages that weren't absolutely required, because some devices wouldn't 
+> support it, and would simply lock up if you did so!)
 
-Looks like there were some unrecognized FIS errors from the controller 
-in there?
+Most BIOSen, Windows and old IDE driver don't reset at all during
+probing.  They first issue IDENTIFY unconditionally, if that fails,
+IDENTIFY_PACKET.  From the beginning, libata has issued reset during
+probing.  We've had a few problems regarding this but they have been
+worked around successfully till now.  One of the upsides of doing reset
+during probing is that the reset code path gets tested a lot and libata
+is more likely to recover properly after error conditions.  With SATA,
+this is getting more important because errors are much more common and
+happen occasionally even on perfectly healthy machines.
 
-Zoltan Boszormenyi wrote:
-> Hi,
-> 
-> I just got this with 2.6.22-rc2 + cfs-v13 + swncq patch:
-> 
-> ata2.00: exception Emask 0x0 SAct 0x6 SErr 0x0 action 0x2 frozen
-> ata2.00: cmd 61/18:08:0f:b7:68/00:00:16:00:00/40 tag 1 cdb 0x0 data 
-> 12288 out
->         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata2.00: cmd 61/18:10:7f:b7:68/00:00:16:00:00/40 tag 2 cdb 0x0 data 
-> 12288 out
->         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata2: hard resetting port
-> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata2.00: ata_hpa_resize 1: sectors = 625142448, hpa_sectors = 625142448
-> ata2.00: ata_hpa_resize 1: sectors = 625142448, hpa_sectors = 625142448
-> ata2.00: configured for UDMA/133
-> ata2: EH pending after completion, repeating EH (cnt=4)
-> ata2: EH complete
-> sd 1:0:0:0: [sdb] 625142448 512-byte hardware sectors (320073 MB)
-> sd 1:0:0:0: [sdb] Write Protect is off
-> sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-> sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
-> 
-> At the time I was creating a DVD ISO image (reads and writes went to the 
-> disk
-> that was resetted), browsing mail in thunderbird which also exercised 
-> the same
-> disk and I was downloading another ISO with about 400-450 kB/sec to
-> another disk. Here are the disks in question:
-> 
-> scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD160JJ  WU10 PQ: 0 
-> ANSI: 5
-> scsi 1:0:0:0: Direct-Access     ATA      ST3320620AS      3.AA PQ: 0 
-> ANSI: 5
-> 
-> I got almost the same yesterday with 2.6.22-rc2-mm1:
-> 
-> May 29 12:44:20 localhost kernel: ata2.00: exception Emask 0x0 SAct 0x6 
-> SErr 0x0 action 0x2 frozen
-> May 29 12:44:20 localhost kernel: ata2.00: cmd 
-> 61/10:08:2f:41:e9/00:00:07:00:00/40 tag 1 cdb 0x0 data 8192 out
-> May 29 12:44:20 localhost kernel:          res 
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> May 29 12:44:20 localhost kernel: ata2.00: status: {DRDY }
-> May 29 12:44:20 localhost kernel: ata2.00: cmd 
-> 61/30:10:8f:42:e9/00:00:07:00:00/40 tag 2 cdb 0x0 data 24576 out
-> May 29 12:44:20 localhost kernel:          res 
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> May 29 12:44:20 localhost kernel: ata2.00: status: {DRDY }
-> May 29 12:44:20 localhost kernel: ata2: hard resetting port
-> May 29 12:44:21 localhost kernel: ata2: SATA link up 1.5 Gbps (SStatus 
-> 113 SControl 300)
-> May 29 12:44:21 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
-> 625142448, hpa_sectors = 625142448
-> May 29 12:44:21 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
-> 625142448, hpa_sectors = 625142448
-> May 29 12:44:21 localhost kernel: ata2.00: configured for UDMA/133
-> May 29 12:44:21 localhost kernel: ata2: EH pending after completion, 
-> repeating EH (cnt=4)
-> May 29 12:44:21 localhost kernel: ata2: EH complete
-> May 29 12:44:21 localhost kernel: sd 1:0:0:0: [sdb] 625142448 512-byte 
-> hardware sectors (320073 MB)
-> May 29 12:44:21 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is off
-> May 29 12:44:21 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
-> enabled, read cache: enabled, doesn't support DPO or FUA
-> ..
-> May 29 12:47:46 localhost kernel: ata2.00: exception Emask 0x0 SAct 0x7 
-> SErr 0x0 action 0x2 frozen
-> May 29 12:47:46 localhost kernel: ata2.00: cmd 
-> 61/08:00:27:5a:eb/00:00:07:00:00/40 tag 0 cdb 0x0 data 4096 out
-> May 29 12:47:46 localhost kernel:          res 
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> May 29 12:47:46 localhost kernel: ata2.00: status: {DRDY }
-> May 29 12:47:46 localhost kernel: ata2.00: cmd 
-> 61/08:08:bf:61:9e/00:00:0f:00:00/40 tag 1 cdb 0x0 data 4096 out
-> May 29 12:47:46 localhost kernel:          res 
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> May 29 12:47:46 localhost kernel: ata2.00: status: {DRDY }
-> May 29 12:47:46 localhost kernel: ata2.00: cmd 
-> 61/20:10:97:5a:eb/00:00:07:00:00/40 tag 2 cdb 0x0 data 16384 out
-> May 29 12:47:46 localhost kernel:          res 
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> May 29 12:47:46 localhost kernel: ata2.00: status: {DRDY }
-> May 29 12:47:46 localhost kernel: ata2: hard resetting port
-> May 29 12:47:46 localhost kernel: ata2: SATA link up 1.5 Gbps (SStatus 
-> 113 SControl 300)
-> May 29 12:47:46 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
-> 625142448, hpa_sectors = 625142448
-> May 29 12:47:46 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
-> 625142448, hpa_sectors = 625142448
-> May 29 12:47:47 localhost kernel: ata2.00: configured for UDMA/133
-> May 29 12:47:47 localhost kernel: ata2: EH pending after completion, 
-> repeating EH (cnt=4)
-> May 29 12:47:47 localhost kernel: ata2: EH complete
-> May 29 12:47:47 localhost kernel: sd 1:0:0:0: [sdb] 625142448 512-byte 
-> hardware sectors (320073 MB)
-> May 29 12:47:47 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is off
-> May 29 12:47:47 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
-> enabled, read cache: enabled, doesn't support DPO or FUA
-> May 29 12:49:23 localhost kernel: ata2.00: exception Emask 0x0 SAct 0x6 
-> SErr 0x2000000 action 0x2 frozen
-> May 29 12:49:23 localhost kernel: ata2: SError: {UnrecFIS }
-> May 29 12:49:23 localhost kernel: ata2.00: cmd 
-> 61/40:08:3f:71:fa/00:00:07:00:00/40 tag 1 cdb 0x0 data 32768 out
-> May 29 12:49:23 localhost kernel:          res 
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> May 29 12:49:23 localhost kernel: ata2.00: status: {DRDY }
-> May 29 12:49:23 localhost kernel: ata2.00: cmd 
-> 61/10:10:7f:e7:fa/00:00:07:00:00/40 tag 2 cdb 0x0 data 8192 out
-> May 29 12:49:23 localhost kernel:          res 
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> May 29 12:49:23 localhost kernel: ata2.00: status: {DRDY }
-> May 29 12:49:23 localhost kernel: ata2: hard resetting port
-> May 29 12:49:24 localhost kernel: ata2: SATA link up 1.5 Gbps (SStatus 
-> 113 SControl 300)
-> May 29 12:49:24 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
-> 625142448, hpa_sectors = 625142448
-> May 29 12:49:24 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
-> 625142448, hpa_sectors = 625142448
-> May 29 12:49:24 localhost kernel: ata2.00: configured for UDMA/133
-> May 29 12:49:24 localhost kernel: ata2: EH pending after completion, 
-> repeating EH (cnt=4)
-> May 29 12:49:24 localhost kernel: ata2: EH complete
-> May 29 12:49:24 localhost kernel: sd 1:0:0:0: [sdb] 625142448 512-byte 
-> hardware sectors (320073 MB)
-> May 29 12:49:24 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is off
-> May 29 12:49:24 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
-> enabled, read cache: enabled, doesn't support DPO or FUA
-> May 29 12:50:24 localhost kernel: ata2.00: NCQ disabled due to excessive 
-> errors
-> May 29 12:50:24 localhost kernel: ata2.00: exception Emask 0x0 SAct 0x6 
-> SErr 0x0 action 0x2 frozen
-> May 29 12:50:24 localhost kernel: ata2.00: cmd 
-> 61/10:08:c7:88:b8/00:00:0f:00:00/40 tag 1 cdb 0x0 data 8192 out
-> May 29 12:50:24 localhost kernel:          res 
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> May 29 12:50:24 localhost kernel: ata2.00: status: {DRDY }
-> May 29 12:50:24 localhost kernel: ata2.00: cmd 
-> 61/10:10:9f:8a:b8/00:00:0f:00:00/40 tag 2 cdb 0x0 data 8192 out
-> May 29 12:50:24 localhost kernel:          res 
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> May 29 12:50:24 localhost kernel: ata2.00: status: {DRDY }
-> May 29 12:50:24 localhost kernel: ata2: hard resetting port
-> May 29 12:50:25 localhost kernel: ata2: SATA link up 1.5 Gbps (SStatus 
-> 113 SControl 300)
-> May 29 12:50:25 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
-> 625142448, hpa_sectors = 625142448
-> May 29 12:50:25 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
-> 625142448, hpa_sectors = 625142448
-> May 29 12:50:25 localhost kernel: ata2.00: configured for UDMA/133
-> May 29 12:50:25 localhost kernel: ata2: EH pending after completion, 
-> repeating EH (cnt=4)
-> May 29 12:50:25 localhost kernel: ata2: EH complete
-> May 29 12:50:25 localhost kernel: sd 1:0:0:0: [sdb] 625142448 512-byte 
-> hardware sectors (320073 MB)
-> May 29 12:50:25 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is off
-> May 29 12:50:25 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
-> enabled, read cache: enabled, doesn't support DPO or FUA
-> 
-> After the system disabled NCQ there weren't any more more ata resets
-> and the disks were working OK.
-> 
-> Strange thing is, when I have run PostgreSQL pgbench with 25 clients
-> on 2.6.22-rc2 + cfs-v13 + swncq (which clearly showed advanced transfer 
-> rate)
-> I had no such problems. The PostgreSQL DB was also on ata2.00.
-> 
-> Best regards,
-> Zoltán Böszörményi
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+As libata gets much wider userbase including old/weird PATA devices, we
+seem to be facing more of these broken devices.  We may be reaching the
+point where the benefit of doing reset during probing isn't worth the
+price we have to pay, at least on PATA.
 
+Jeff, what do you think?
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
-
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+tejun
