@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761057AbXFAACS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760128AbXFAALs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761057AbXFAACS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 20:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbXFAACI
+	id S1760128AbXFAALs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 20:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbXFAALk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 20:02:08 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:49970 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756780AbXFAACG (ORCPT
+	Thu, 31 May 2007 20:11:40 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.133]:52176 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754671AbXFAALj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 20:02:06 -0400
-Date: Thu, 31 May 2007 17:02:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+	Thu, 31 May 2007 20:11:39 -0400
+Date: Thu, 31 May 2007 17:11:07 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH 4/5] serial: convert early_uart to earlycon for 8250
+In-reply-to: <20070531165428.c6cdc042.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] console: console handover to preferred console
-Message-Id: <20070531170200.3738f834.akpm@linux-foundation.org>
-In-Reply-To: <200705311358.26559.yinghai.lu@sun.com>
-References: <200705311358.26559.yinghai.lu@sun.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Reply-to: Yinghai.Lu@Sun.COM
+Message-id: <465F641B.1070403@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+References: <200705311401.33715.yinghai.lu@sun.com>
+ <20070531165428.c6cdc042.akpm@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 May 2007 13:58:26 -0700
-Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-
-> [PATCH 2/5] console: console handover to preferred console
+Andrew Morton wrote:
+> On Thu, 31 May 2007 14:01:33 -0700
+> Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 > 
-> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+>> Andrew,
+>>
+>> Please don't drop others if there is problem with this one.
+>>
+>> YH
+>>
+>> [PATCH 4/5] serial: convert early_uart to earlycon for 8250
+>>
+>> +config FIX_EARLYCON_MEM
+>> +	bool
+>> +	depends on X86
+>> +	default y
+>> +
 > 
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index 0bbdeac..7b96cae 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
-> @@ -985,12 +1007,15 @@ void register_console(struct console *console)
->  	if (!(console->flags & CON_ENABLED))
->  		return;
->  
-> -	if (bootconsole) {
-> +	if (bootconsole && (console->flags & CON_CONSDEV)) {
->  		printk(KERN_INFO "console handover: boot [%s%d] -> real [%s%d]\n",
->  		       bootconsole->name, bootconsole->index,
->  		       console->name, console->index);
->  		unregister_console(bootconsole);
->  		console->flags &= ~CON_PRINTBUFFER;
-> +	} else {
-> +		printk(KERN_INFO "console [%s%d] enabled\n",
-> +		       console->name, console->index);
->  	}
->  
->  	/*
+> It might have been nicer to do this in arch/i386/Kconfig and
+> arch/x86_64/Kconfig.  That way we don't end up with a great string of arch
+> selectors in non-arch Kconfig files (do "grep SPARC */Kconfig*")
+> 
+> otoh, doing that means that FIX_EARLYCON_MEM doesn't get mentioned in
+> drivers/serial/Kconfig and you need to go on a great hunting expedition to
+> find out who sets it.
+> 
 
-What does this change do, and what is the reason for it??
+we could extend that to others arch that is support fixmap like
+./asm-i386/fixmap.h
+./asm-mips/fixmap.h
+./asm-parisc/fixmap.h
+./asm-sh/fixmap.h
+./asm-sparc/fixmap.h
+./asm-um/fixmap.h
+./asm-x86_64/fixmap.h
+
+so it will be
+ >> +config FIX_EARLYCON_MEM
+ >> +	bool
+ >> +	depends on X86 || MIPS || PARISC || SH || SPARC || UM
+ >> +	default y
+ >> +
+
+You you can provide another config like
+
+CONFIG_FIXMAP
+
+YH
