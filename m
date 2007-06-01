@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbXFAWl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759841AbXFAWmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759637AbXFAWl4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 18:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbXFAWlt
+	id S1759841AbXFAWmr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 18:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbXFAWml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 18:41:49 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55163 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753046AbXFAWls (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 18:41:48 -0400
-Date: Fri, 1 Jun 2007 15:41:48 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, Srinivasa Ds <srinivasa@in.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-In-Reply-To: <20070601153328.1118ccaf.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
- <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
- <20070601135900.ec44b1aa.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
- <20070601151649.bb23c6f9.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com>
- <20070601153328.1118ccaf.akpm@linux-foundation.org>
+	Fri, 1 Jun 2007 18:42:41 -0400
+Received: from khc.piap.pl ([195.187.100.11]:52897 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753394AbXFAWmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 18:42:40 -0400
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Scott Preece <sepreece@gmail.com>,
+       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>, Valdis.Kletnieks@vt.edu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/1] document Acked-by:
+References: <200706010209.l51299kN000531@shell0.pdx.osdl.net>
+	<28278.1180675923@turing-police.cc.vt.edu> <465FB862.207@zytor.com>
+	<alpine.DEB.0.99.0706010648030.9768@sigma.j-a-k-j.com>
+	<m3sl9b5vcm.fsf@maximus.localdomain>
+	<7b69d1470706011237j50f29e4ch73f86acdc294fecd@mail.gmail.com>
+	<m3fy5b5nrt.fsf@maximus.localdomain> <46609AEC.4070603@zytor.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 02 Jun 2007 00:42:38 +0200
+In-Reply-To: <46609AEC.4070603@zytor.com> (H. Peter Anvin's message of "Fri, 01 Jun 2007 15:17:16 -0700")
+Message-ID: <m33b1b5map.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007, Andrew Morton wrote:
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> > I should make SLUB put poisoning values in unused areas of a kmalloced 
-> > object?
-> 
-> hm, I hadn't thought of it that way actually.  I was thinking it was
-> specific to kmalloc(0) but as you point out, the situation is
-> generalisable.
+> I think the comment had to do with the concept that ACK/NAK implies
+> authority.  If you're not the maintainer, it's rude to imply that you
+> are.  Obvious, test reports (good or bad!) are always welcome.
 
-Right it could catch a lot of other bugs as well.
+Well, I understand a test is a different thing, an experiment to
+see if the patch works or not, while ack/etc. is just opinion
+of someone who reads the patch without actually using it.
 
-> Yes, if someone does kmalloc(42) and we satisfy the allocation from the
-> size-64 slab, we should poison and then check the allegedly-unused 22
-> bytes.
-> 
-> Please ;)
-> 
-> (vaguely stunned that we didn't think of doing this years ago).
+I think ack/etc doesn't, in any way, imply being the maintainer,
+though it imply that the "acker" has actually read the code,
+understands it, and believes it's correct (or not, and why).
 
-Well there are architectural problems. We determine the power of two slab 
-at compile time. The object size information is currently not available in 
-the binary :=).
- 
-> It'll be a large patch, I expect?
-
-Ummm... Yes. We need to switch off the compile time power of two slab 
-calculation. Then I need to have some way of storing the object size in 
-the metainformation of each object. Changes a lot of function calls.
-
-> Actually, I have this vague memory that slab would take that kmalloc(42)
-> and would then return kmalloc(64)+22, so the returned memory is
-> "right-aligned".  This way the existing overrun-detection is applicable to
-> all kmallocs.  Maybe I dreamed it.
-
-Yes, that would be possible by simply adding a compile time generated 
-offset to the compile time generated call to kmem_cache_alloc. But then 
-kfree() will have a difficult time figuring out which object to free. 
-Hmmm... But I can get to the slab via the page struct which allows me to 
-figure out the power of two size. This would mean that kfree would work 
-with an arbitrary pointer anywhere into the object.
+If we want to differentiate between "authoritative" and
+"non-authoritative" opinions (and the name and email address
+aren't enough) then I think we need to state that explicite
+(perhaps something like "Acked-by: FIRST M. LAST <addr>, XXX
+subsystem maintainer" would suffice).
+-- 
+Krzysztof Halasa
