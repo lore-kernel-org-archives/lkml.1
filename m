@@ -1,48 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbXFAHqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760303AbXFAHqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758833AbXFAHqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 03:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbXFAHqK
+	id S1760303AbXFAHqw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 03:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbXFAHqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 03:46:10 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:51510 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755647AbXFAHqI (ORCPT
+	Fri, 1 Jun 2007 03:46:45 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:60216
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756379AbXFAHqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 03:46:08 -0400
-Date: Fri, 1 Jun 2007 09:46:06 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: RTC_DRV_CMOS can break userspace interface
-Message-ID: <20070601074606.GA6060@dose.home.local>
-Mail-Followup-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <8pwhX-46n-3@gated-at.bofh.it> <8pCQo-5QL-7@gated-at.bofh.it> <87abvogbdp.fsf@buer.dfakt.de> <200705281406.57396.david-b@pacbell.net> <20070531043229.GA30888@dose.home.local> <20070531102603.GA16719@srcf.ucam.org>
+	Fri, 1 Jun 2007 03:46:44 -0400
+Date: Fri, 1 Jun 2007 09:48:21 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use mutex instead of semaphore in tty_io.c
+Message-ID: <20070601074821.GS14284@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+References: <20070425154934.GP6798@traven> <20070425191359.GA13241@infradead.org> <20070425194633.GA3280@traven> <20070425194550.GA18914@infradead.org> <20070531134226.GO14284@traven> <20070531153712.de2f8a68.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070531102603.GA16719@srcf.ucam.org>
+In-Reply-To: <20070531153712.de2f8a68.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 11:26:04 +0100, Matthew Garrett wrote:
-> On Thu, May 31, 2007 at 06:32:29AM +0200, Tino Keitel wrote:
+El Thu, May 31, 2007 at 03:37:12PM -0700 Andrew Morton ha dit:
+
+> On Thu, 31 May 2007 15:42:26 +0200
+> Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
 > 
-> > rtc_cmos 00:09: rtc core: registered rtc_cmos as rtc0
-> > rtc_cmos: probe of 00:09 failed with error -16
-> > drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+> > drivers/char/tty_io.c: Use spinlock instead of a (binary) semaphore
+> > 
 > 
-> Try unsetting CONFIG_RTC - you can't use the legacy driver at the same 
-> time as the new one.
+> hm.
+> 
+> > 
+> 
+> We end up with this:
+> 
+> 	/* find a device that is not in use. */
+> 	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL))
+> 		return -ENOMEM;
+> 
+> 	spin_lock(&allocated_ptys_lock);
+> 
+> 	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
+> 	if (idr_ret < 0) {
+> 		spin_unlock(&allocated_ptys_lock);
+> 		if (idr_ret == -EAGAIN)
+> 			return -ENOMEM;
+> 		return -EIO;
+> 	}
+> 	if (index >= pty_limit) {
+> 		idr_remove(&allocated_ptys, index);
+> 		spin_unlock(&allocated_ptys_lock);
+> 		return -EIO;
+> 	}
+> 	spin_unlock(&allocated_ptys_lock);
+> 
+> this leaves a small window in which another thread can come in and steal
+> away the idr tree's reserves, causing the idr_get_new() to fail.  It's
+> highly improbable, but it's real.
 
-Yes, you are right. I think this issue should be covered by Kconfig.
+i agree, thanks for pointing it out
+ 
+> Hence I think a straight semaphore->mutex conversion would be better.
 
-However:
+that leads us back to the initial patch. christoph: is that ok for
+you or do you have another proposal?
 
-$ cat wakealarm 
-cat: wakealarm: Input/output error
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-It worked with /proc/acpi/alarm before.
-
-Regards,
-Tino
+     The assumption that what currently exists must necessarily
+      exist is the acid that corrodes all visionary thinking
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
