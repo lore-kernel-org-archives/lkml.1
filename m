@@ -1,98 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764009AbXFAUPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763819AbXFAUQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764009AbXFAUPI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:15:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763593AbXFAUOy
+	id S1763819AbXFAUQX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762889AbXFAUQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:14:54 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:22611 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763512AbXFAUOx (ORCPT
+	Fri, 1 Jun 2007 16:16:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:42260 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762558AbXFAUQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:14:53 -0400
+	Fri, 1 Jun 2007 16:16:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=oE7UQx8smKBDwxOoTc4Ozf9zR/cStNGRBupLGn8G9ewYbSVzwIzSthFSHIcg87OQiRJ1D4WtIXtsZ+dho904UfCDV9imI6nYU5EpvXScLbiOEM8A/E9BXYRE8QlThdkcE+ZmsVgxQXdotATtVXJxm1MWiOmgaqazEpY3SwjdAjM=
-Message-ID: <4ac8254d0706011314g5468f02m3cf5a5281bd30018@mail.gmail.com>
-Date: Fri, 1 Jun 2007 22:14:51 +0200
-From: "Tuncer Ayaz" <tuncer.ayaz@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.22 libata spindown
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=G7YxRRBTTF2ti1lAByb7ZozPVhmFf766m1SxsXAv+c2YnW3QMVFe1asZXaNS6Jc0c9jd8NDxC6jJy2QmzAk2iQ68j/ay0j9A/GppNW6N3XberrRkM6fHcQPews1YK75GuCcklRwTrGwO8o5LVaoXbkmix/TyP0BDs/ALmrbtNtI=
+Date: Sat, 2 Jun 2007 00:19:21 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: [PATCH] Remove capability.h from mm.h
+Message-ID: <20070601201921.GA5533@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm still seeing the libata warning that disks were not spun down
-properly on the following two setups and am wondering whether I need
-a new shutdown binary or the changeset mentioned below is not meant
-to fix what I'm triggering by halt'ing.
+Hey, I forgot to remove capability.h from mm.h while removing sched.h!
+This patch remedies that, because the only inline function which was
+using CAP_something was made out of line.
 
-If it's not a bug I will try to update my shutdown utility and if
-that does not work I promise not to bother lkml about a problem
-caused by my userland. If it is a bug I hope it will be of interest
-for 2.6.22 bug tracking.
+Cross-compile tested without regressions on:
 
-Setup 1:
-SATA 1 Disks
-AMD64 3200+
-nVidia nForce 3 250 (Ultra?)
-Debian i386 Unstable
+	all powerpc defconfigs
+	all mips defconfigs
+	all m68k defconfigs
+	all arm defconfigs
+	all ia64 defconfigs
 
-Setup 2:
-SATA 2 disks
-Core 2 Duo E6600
-Intel 975X
-Debian x86_64 Unstable
+	alpha alpha-allnoconfig alpha-defconfig alpha-up
+	arm
+	i386 i386-allnoconfig i386-defconfig i386-up
+	ia64 ia64-allnoconfig ia64-defconfig ia64-up
+	m68k
+	mips
+	parisc parisc-allnoconfig parisc-defconfig parisc-up
+	powerpc powerpc-up
+	s390 s390-allnoconfig s390-defconfig s390-up
+	sparc sparc-allnoconfig sparc-defconfig sparc-up
+	sparc64 sparc64-allnoconfig sparc64-defconfig sparc64-up
+	um-x86_64
+	x86_64 x86_64-allnoconfig x86_64-defconfig x86_64-up
 
-Just to be clear what warning I'm talking about:
-DISK MIGHT NOT BE SPUN DOWN PROPERLY. UPDATE SHUTDOWN UTILITY
-For more info, visit http://linux-ata.org/shutdown.html
+as well as my two usual configs.
 
-The following is from the reply I got from Michal Piotrowski while
-I was trying to find out what happened to the regression report:
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-MICHAL>>
-I guess you meant this
+ drivers/pci/pci-sysfs.c |    2 +-
+ drivers/pci/proc.c      |    2 +-
+ fs/gfs2/eaops.c         |    1 +
+ include/linux/mm.h      |    1 -
+ kernel/time/ntp.c       |    2 +-
+ 5 files changed, 4 insertions(+), 4 deletions(-)
 
-Subject    : libata crash on halt
-References : http://marc.info/?l=linux-ide&m=117899827710565&w=2
-Submitter  : Andrew Morton <akpm@linux-foundation.org>
-Caused-By  : Tejun Heo <htejun@gmail.com>
-            commit 920a4b1038e442700a1cfac77ea7e20bd615a2c3
-Status     : problem is being debugged
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -20,7 +20,7 @@
+ #include <linux/stat.h>
+ #include <linux/topology.h>
+ #include <linux/mm.h>
+-
++#include <linux/capability.h>
+ #include "pci.h"
+ 
+ static int sysfs_initialized;	/* = 0 */
+--- a/drivers/pci/proc.c
++++ b/drivers/pci/proc.c
+@@ -11,7 +11,7 @@
+ #include <linux/module.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+-
++#include <linux/capability.h>
+ #include <asm/uaccess.h>
+ #include <asm/byteorder.h>
+ #include "pci.h"
+--- a/fs/gfs2/eaops.c
++++ b/fs/gfs2/eaops.c
+@@ -11,6 +11,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/completion.h>
+ #include <linux/buffer_head.h>
++#include <linux/capability.h>
+ #include <linux/xattr.h>
+ #include <linux/gfs2_ondisk.h>
+ #include <linux/lm_interface.h>
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2,7 +2,6 @@
+ #define _LINUX_MM_H
+ 
+ #include <linux/errno.h>
+-#include <linux/capability.h>
+ 
+ #ifdef __KERNEL__
+ 
+--- a/kernel/time/ntp.c
++++ b/kernel/time/ntp.c
+@@ -13,7 +13,7 @@
+ #include <linux/timex.h>
+ #include <linux/jiffies.h>
+ #include <linux/hrtimer.h>
+-
++#include <linux/capability.h>
+ #include <asm/div64.h>
+ #include <asm/timex.h>
+ 
 
-This bug was fixed by
-
-commit da071b42f73dabbd0daf7ea4c3ff157d53b00648
-Author: Tejun Heo <htejun@gmail.com>
-Date:   Mon May 14 17:26:18 2007 +0200
-
-   libata: fix shutdown warning message printing
-
-   Unlocking ap->lock and ssleeping don't work because SCSI commands can
-   be issued from completion path without context.  Reimplement delayed
-   completion by allowing translation functions to override
-   qc->scsidone(), storing the original completion function to
-   scmd->scsi_done() and overriding qc->scsidone() with a function which
-   schedules delayed invocation of scmd->scsi_done().
-
-   This isn't pretty at all but all the ugly parts are thankfully
-   contained in the stop translation path where the compat feature is
-   implemented.
-
-   Signed-off-by: Tejun Heo <htejun@gmail.com>
-   Signed-off-by: Jeff Garzik <jeff@garzik.org>
-
-
-
-> [  715.196000] ata3.00: DISK MIGHT NOT BE SPUN DOWN PROPERLY. UPDATE
-> SHUTDOWN UTILITY
-> [  715.196000] ata3.00: For more info, visit http://linux-ata.org/
-> shutdown.html
-                  ^^^^
-If you think about this, please send a bug report. IMHO it's ABI breakage.
-<<MICHAL
