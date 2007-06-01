@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbXFAW4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbXFAXAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759510AbXFAW4A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 18:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXFAWzw
+	id S1757805AbXFAXAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 19:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbXFAXAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 18:55:52 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:35836 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756634AbXFAWzv (ORCPT
+	Fri, 1 Jun 2007 19:00:48 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:42970 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752546AbXFAXAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 18:55:51 -0400
-Date: Fri, 1 Jun 2007 18:55:49 -0400
-From: Kyle McMartin <kyle@parisc-linux.org>
-To: Byron Stanoszek <bstanoszek@comtime.com>
-Cc: Kyle McMartin <kyle@parisc-linux.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, torvalds@linux-foundation.org,
-       Chris Zankel <chris@zankel.net>, parisc-linux@lists.parisc-linux.org
-Subject: Re: [PATCH] Introduce O_CLOEXEC (take >2)
-Message-ID: <20070601225549.GD7714@fattire.cabal.ca>
-References: <200705311809.l4VI9F9X009556@devserv.devel.redhat.com> <20070531162021.4cd4e91a.akpm@linux-foundation.org> <20070601113840.813463db.sfr@canb.auug.org.au> <20070601030754.GB14217@fattire.cabal.ca> <Pine.LNX.4.64.0706011510220.26938@winds.org>
+	Fri, 1 Jun 2007 19:00:47 -0400
+Date: Fri, 1 Jun 2007 16:00:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
+       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
+ warning
+In-Reply-To: <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.0.98.0706011554300.3957@woody.linux-foundation.org>
+References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
+ <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
+ <20070601135900.ec44b1aa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
+ <20070601151649.bb23c6f9.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com>
+ <20070601153328.1118ccaf.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706011510220.26938@winds.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 03:17:03PM -0400, Byron Stanoszek wrote:
-> These are octal values, so you really want to use 010000000 instead of
-> 08000000. :-)
+
+
+On Fri, 1 Jun 2007, Christoph Lameter wrote:
 > 
+> Right it could catch a lot of other bugs as well.
 
-Wow. I am totally a dumbass, I saw a 'x' there. Sigh.
+I'd actually prefer "malloc(0)" to _not_ return NULL, but some known 
+(non-NULL) bogus pointer.
 
-diff --git a/include/asm-parisc/fcntl.h b/include/asm-parisc/fcntl.h
-index 317851f..7089507 100644
---- a/include/asm-parisc/fcntl.h
-+++ b/include/asm-parisc/fcntl.h
-@@ -14,6 +14,7 @@
- #define O_DSYNC		01000000 /* HPUX only */
- #define O_RSYNC		02000000 /* HPUX only */
- #define O_NOATIME	04000000
-+#define O_CLOEXEC	010000000	/* set close_on_exec */
- 
- #define O_DIRECTORY	00010000 /* must be a directory */
- #define O_NOFOLLOW	00000200 /* don't follow links */
+Why?
+
+Because it's quite sane to have simple logic like
+
+	ptr = malloc(size);
+	if (!ptr)
+		return -ENOMEM;
+
+and writing it as
+
+	if (size && !ptr)
+		return -ENOMEM;
+
+is just annoying.
+
+Also, NULL is _special_. There are absolutely tons of code in the kernel 
+(and elsewhere) that just does something *different* from NULL pointers, 
+and that totally breaks the whole notion of "you can allocate a zero-sized 
+allocation, you just must not dereference it". If people special-case 
+NULL as something else, they won't even go through the normal code-path.
+
+So for *both* of the above reasons, it's actually stupid to return NULL 
+for a zero-sized allocation. It would be much better to return another 
+pointer that will trap on access. A good candidate might be to return
+
+	#define BADPTR ((void *)16)
+
+which is a portable-enough (where "portable-enough" is "against strict 
+ANSI C rules, but works in practice on all architectures") way to return 
+something that will cause the same page fault behaviour as NULL, but will 
+_not_ trigger the "NULL is special" code.
+
+(Of course, you then need to teach "kfree()" to accept it as another 
+pointer to be ignored, that's fine).
+
+I bet you'd find *more* problems that way than by returning NULL, and 
+you'd also avoid the whole problem with "if (!ptr) return -ENOMEM".
+
+		Linus
