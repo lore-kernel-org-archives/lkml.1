@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbXFAKaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXFAKeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759546AbXFAKaq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 06:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbXFAKag
+	id S1759905AbXFAKeQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 06:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757191AbXFAKeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 06:30:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47374 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755850AbXFAKaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 06:30:35 -0400
-Message-ID: <465FF539.6090506@redhat.com>
-Date: Fri, 01 Jun 2007 06:30:17 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-CC: Christoph Lameter <clameter@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, David Chinner <dgc@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Vivek Goyal <vgoyal@in.ibm.com>
-Subject: Re: BUG: sleeping function called from invalid context at kernel/fork.c:385
-References: <617E1C2C70743745A92448908E030B2A01961AFE@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A01961AFE@scsmsx411.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jun 2007 06:34:05 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:41640 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756261AbXFAKeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 06:34:04 -0400
+To: george.krajcsovits@gmail.com
+CC: linux-kernel@vger.kernel.org
+In-reply-to: <42c83d030706010019u13219322o7cec0c7aa08dd01f@mail.gmail.com>
+	(george.krajcsovits@gmail.com)
+Subject: Re: Callchain contains impossible call
+References: <42c83d030706010019u13219322o7cec0c7aa08dd01f@mail.gmail.com>
+Message-Id: <E1Hu4S6-0001LJ-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 01 Jun 2007 12:33:50 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Krajo,
 
+> this is probably RTFM (where is this manual?), but how did I get a
+> callchain on a uniprocessor
+> system where there are two functions that cannot be a part of it,
+> because they don't call anything ? (kfree_skbmem and __kmalloc). Also
+> at the end one function call is there twice.
+> 
+> Seems like stack corruption, but I did try to close others out with
+> spin_lock_bh. This part of the code is called from kernel traps and
+> softirq for ethernet RX.
 
-Luck, Tony wrote:
->> I used the sn2_defconfig in the tree :)
->>     
->
-> So there is something odd happening.  Russ complained that he
-> was still seeing several errors from the sn2_defconfig build
-> too when I posted the "last fix" to Len.  But I don't see them
-> when I build.
->
->   
+I'm not an expert, but I think you basically have two options:
 
-Adding Vivek.
+ - Turn on CONFIG_FRAME_POINTER
 
-I've solved quite a few of the section mismatch errors as well.  I'll 
-take a look to see what the problem is.
+ - Gnaw through the stack trace (from bottom to top), matching up the
+   entry points with actual function calls in the assembly.  That way
+   you'll see which of the entries are bogus, and which correspond to
+   a real call somewhere in the trace.
 
-Tony, what system are you using to compile on, OS, etc?
-
-P.
-
-> -Tony
->   
+Miklos
