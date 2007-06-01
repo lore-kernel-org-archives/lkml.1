@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762815AbXFASTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763295AbXFASU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762815AbXFASTQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761591AbXFASTE
+	id S1763295AbXFASU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761591AbXFASUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:19:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36273 "EHLO mx1.redhat.com"
+	Fri, 1 Jun 2007 14:20:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37474 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760692AbXFASTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:19:02 -0400
-Message-ID: <46606306.2060203@redhat.com>
-Date: Fri, 01 Jun 2007 14:18:46 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	id S1760990AbXFASUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 14:20:12 -0400
+Date: Fri, 1 Jun 2007 20:19:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/5] lockstat: core infrastructure
+Message-ID: <20070601181938.GA30526@elte.hu>
+References: <20070529130107.112347096@chello.nl> <1180470525.32594.71.camel@imap.mvista.com> <20070530132431.GA23947@elte.hu> <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com> <20070530134907.GA27085@elte.hu> <1180544796.32594.184.camel@imap.mvista.com> <1180545380.2958.1.camel@lappy> <1180545913.32594.194.camel@imap.mvista.com> <20070601131249.GA17059@elte.hu> <1180711606.15884.32.camel@imap.mvista.com>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       Rik van Riel <riel@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, andrew.vasquez@qlogic.com
-Subject: Re: [PATCH] quiet down swiotlb warnings
-References: <466057B1.9090309@redhat.com> <p73odjzbism.fsf@bingen.suse.de> <20070601181225.GA16460@infradead.org>
-In-Reply-To: <20070601181225.GA16460@infradead.org>
-Content-Type: multipart/mixed;
- boundary="------------020505080101000003010604"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1180711606.15884.32.camel@imap.mvista.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020505080101000003010604
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Christoph Hellwig wrote:
-> On Fri, Jun 01, 2007 at 09:01:45PM +0200, Andi Kleen wrote:
->> Bad idea imho. swiotlb mappings should always lead to printk by default
->> because it is pretty dangerous.
->>
->> One possible solution for this I could think of would be to define a
->> new pci_map_sg_couldfail() or similar that doesn't warn and use a weak
->> fallback just calling pci_map_sg on other IOMMU implementations. 
+* Daniel Walker <dwalker@mvista.com> wrote:
+
+> > > > I see sched_clock() as fast first, accurate second. Whereas the 
+> > > > clocksource thing is accurate first, fast second.
+> > > 
+> > > This is true .. However, if there is a speed different it's small.
+> > 
+> > Ugh. Have you ever compared pmtimer (or even hpet) against TSC based 
+> > sched_clock()? What you write is so wrong that it's not even funny. 
+> > You keep repeating this nonsense despite having been told multiple 
+> > times that you are dead wrong.
 > 
-> pci_map_sg is defined to be failing when running out of ressources, which
-> is perfectly fine.  We don't printk on kmalloc failures either (actually
-> in some cases which is highly annoying and leads people to stick a
-> __GFP_NOWARN into various places)
+> Yes I have, and your right there is a difference, and a big difference 
+> .. Above I was referring only to the TSC clocksource, since that's an 
+> apples to apples comparison .. I would never compare the TSC to the 
+> acpi_pm, that's no contest ..
 
-Andi, I could see your "pretty dangerous" case applying
-when do_panic is set, but not in any other circumstances.
+You still dont get it i think: in real life we end up using the TSC in 
+sched_clock() _much more often_ than we end up using the TSC for 
+clocksource! So your flawed suggestion does not fix anything, it in fact 
+introduces a really bad regression: instead of using the TSC (or 
+jiffies) we'd end up using the pmtimer or hpet for every lock operation 
+when lockstat is enabled, bringing the box to a screeching halt in 
+essence.
 
-Does the patch below look better to you?
+so what you suggest has a far worse effect on the _majority_ of systems 
+that are even interested in running lockstat, than the case you 
+mentioned that some seldom-used arch which is lazy about sched_clock() 
+falls back to jiffies granularity. It's not a big deal: the stats will 
+have the same granularity. (the op counts in lockstat will still be 
+quite useful)
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
+sched_clock() is a 'fast but occasionally inaccurate clock', while the 
+GTOD clocksource is an accurate clock (but very often slow).
 
---------------020505080101000003010604
-Content-Type: text/x-patch;
- name="2.6.21-swiotlb-quiet.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="2.6.21-swiotlb-quiet.patch"
-
---- linux-2.6.21.noarch/lib/swiotlb.c.quiet	2007-06-01 13:23:04.000000000 -0400
-+++ linux-2.6.21.noarch/lib/swiotlb.c	2007-06-01 14:18:26.000000000 -0400
-@@ -505,6 +505,7 @@ swiotlb_free_coherent(struct device *hwd
- static void
- swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
- {
-+	static int warnings = 0;
- 	/*
- 	 * Ran out of IOMMU space for this operation. This is very bad.
- 	 * Unfortunately the drivers cannot handle this operation properly.
-@@ -512,8 +513,9 @@ swiotlb_full(struct device *dev, size_t 
- 	 * When the mapping is small enough return a static buffer to limit
- 	 * the damage, or panic when the transfer is too big.
- 	 */
--	printk(KERN_ERR "DMA: Out of SW-IOMMU space for %zu bytes at "
--	       "device %s\n", size, dev ? dev->bus_id : "?");
-+	if (do_panic || ++warnings < 5)
-+		printk(KERN_ERR "DMA: Out of SW-IOMMU space for %zu bytes at "
-+		       "device %s\n", size, dev ? dev->bus_id : "?");
- 
- 	if (size > io_tlb_overflow && do_panic) {
- 		if (dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL)
-
---------------020505080101000003010604--
+	Ingo
