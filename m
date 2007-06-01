@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761602AbXFAPhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761687AbXFAPno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761602AbXFAPhP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 11:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbXFAPhE
+	id S1761687AbXFAPno (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 11:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760732AbXFAPnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 11:37:04 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:57376 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758385AbXFAPhD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 11:37:03 -0400
-Date: Fri, 1 Jun 2007 17:37:00 +0200
-From: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
-To: =?iso-8859-1?B?Uy7HYT8/bGFy?= Onur <caglar@pardus.org.tr>
-Cc: linux-kernel@vger.kernel.org
-Subject: [OT] Re: [patch] CFS scheduler, -v14
-Message-ID: <20070601153700.GA1314@rhlx01.hs-esslingen.de>
-References: <20070523120616.GA23407@elte.hu> <200705261758.26956.caglar@pardus.org.tr> <200706011635.02774.caglar@pardus.org.tr>
+	Fri, 1 Jun 2007 11:43:37 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:56665 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760479AbXFAPng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 11:43:36 -0400
+Subject: Re: [patch] Move led attributes out of device name and into sysfs
+	attributes, was Re: LED devices
+From: Richard Purdie <rpurdie@openedhand.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       "kay.sievers" <kay.sievers@vrfy.org>
+Cc: "Bryn M. Reeves" <breeves@redhat.com>, John Lenz <lenz@cs.wisc.edu>,
+       Richard Hughes <hughsient@gmail.com>
+In-Reply-To: <1180710270.3782.5.camel@localhost.localdomain>
+References: <1180710270.3782.5.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 01 Jun 2007 16:43:12 +0100
+Message-Id: <1180712592.6390.139.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200706011635.02774.caglar@pardus.org.tr>
-User-Agent: Mutt/1.4.2.2i
-X-Priority: none
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[OT, thus removed private addresses]
+On Fri, 2007-06-01 at 16:04 +0100, Richard Hughes wrote:
+> Patch attached corrects all the brokenness with the led class (encoding
+> some attributes in the device handle).
 
-Hi,
+For the benefit of LKML, there has been some discussion of this
+elsewhere. My arguments do not particularly come across in Richard's
+choice of quoting and I'm a little annoyed he's chosen to do things this
+way, particularly before any further feedback from Greg/Kay but so be
+it.
 
-On Fri, Jun 01, 2007 at 04:35:02PM +0300, S.Ça??lar Onur wrote:
-> Seems like this piece of hardware is dieing [For a while my laptop starts to 
-> poweroff suddenly without any log/error etc] and i think all these problems 
-> caused by this. Or at least/ for me/ this laptop (sony vaio fs-215b) is not a 
-> stable test bed for this kind of human involved testings.
+Greg said that the LEDs class should export any property data as a class
+attribute rather than this just being available in the device name. I
+added the patch in
+http://git.o-hand.com/?p=linux-rpurdie-leds;a=shortlog;h=for-mm to deal
+with this, without breaking the existing LED naming and documented API.
+Greg said that the only requirement on bus id naming was that it needed
+to be unique so this should therefore be compatible. HAL could then go
+ahead and ignore the device name, all the attributes are there in the
+fashion it needs which was the original complaint.
 
-Socketed CPU?
+I accept this is basically out of my hands now. Greg/Kay have the
+appropriate emails and if they'll let me know which approach they want
+to take, I'll apply an appropriate patch. I'd suggest not applying this
+patch directly as it introduces a race in the error path it alters.
 
-It *might* be an idea to reseat it, maybe it's simply insufficient seating
-of the CPU due to rougher travel handling than with a desktop.
-(CPU socket issues can easily be the case on some notebooks AFAIK,
-and it was on mine: Inspiron 8000 - bought it as completely dead until I simply
-fiddled with CPU socket...).
+Richard
 
-Andreas Mohr
+
