@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762252AbXFARH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761378AbXFARIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762252AbXFARH5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 13:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760879AbXFARHu
+	id S1761378AbXFARIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 13:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760879AbXFARIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 13:07:50 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:63869 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760833AbXFARHt (ORCPT
+	Fri, 1 Jun 2007 13:08:05 -0400
+Received: from pool-151-205-99-173.ny325.east.verizon.net ([151.205.99.173]:40328
+	"HELO gatworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1762294AbXFARIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 13:07:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=R7lN2/UsBXbI9k2wlbjptTPnzN5haZV8tJ6HE6SIewU/t2MsPZcJkwHr38abBReBh6keviJtyl3U1S53Mrn2fCRCrcaN6WuY/4g8ME0Q1E3D1FsyKY0ecxEwEyY6bjGRrNovjMpur0sPl/tWPKSeZ6gPreRs2AKT5QvYlzC90eQ=
-Message-ID: <86802c440706011007r7c9162c3w1fe0ba1952361f19@mail.gmail.com>
-Date: Fri, 1 Jun 2007 10:07:48 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: vgoyal@in.ibm.com
-Subject: Re: [PATCH] aacraid: fix shutdown handler to also disable interrupts.
-Cc: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>, linux-scsi@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070601110845.GC20714@in.ibm.com>
+	Fri, 1 Jun 2007 13:08:04 -0400
+Message-ID: <4660523B.3000206@gatworks.com>
+Date: Fri, 01 Jun 2007 13:07:07 -0400
+From: Uncle George <netbeans@gatworks.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
+To: davids@webmaster.com, linux-kernel@vger.kernel.org
+Subject: Re: SELECT() returns 1 But FIONREAD says (Input/output error)
+References: <MDEHLPKNGKAHNMBLJOLKCEBGEEAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEBGEEAC.davids@webmaster.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <AE4F746F2AECFC4DA4AADD66A1DFEF01A55010@otce2k301.adaptec.com>
-	 <AE4F746F2AECFC4DA4AADD66A1DFEF01A55087@otce2k301.adaptec.com>
-	 <20070601110845.GC20714@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/1/07, Vivek Goyal <vgoyal@in.ibm.com> wrote:
-> On Wed, May 30, 2007 at 11:59:13AM -0400, Salyzyn, Mark wrote:
-> > Moves quiesce, thread and interrupt shutdown into aacraid drivers'
-> > .shutdown handler. This fix to the aac_shutdown handler will remove the
-> > superfluous reset of the adapter during a (clean) kexec.
-> >
-> > This fix may mitigate the active investigation 'kexec and aacraid
-> > broken' but it is unlikely to affect the root cause (issue likely
-> > present in both kexec and kdump). This patch reduces the chance the
-> > problem will occur with a kexec. The fix for root cause is currently
-> > expected to be the minimum value check to the aacraid.startup_timeout
-> > driver variable after an adapter reset within aacraid_commit_reset.patch
-> > submitted on 05/22/2007 and awaiting testing by Yinghai to confirm.
-> >
-> > This attached patch is against current scsi-misc-2.6
-> >
-> > ObligatoryDisclaimer: Please accept my condolences regarding Outlook's
-> > handling of patch attachments.
-> >
-> > Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
-> >
->
-> Thanks Mark. This does fix the issue of unnecessary reset of aacraid
-> adapter over kexec on my machine.
->
-i'm little confused about that.
-this patch is some clear shutdown, so even next start will have tight
-condition will not try to reset the adapter fw. right Mark?
-Maybe the driver could be smart to find out if it need to reset adaptec fw.
+David Schwartz wrote:
+>> David Schwartz wrote:
+> 
+>>> Nope. An errored connection is always ready for read/write -- there is
+>>> nothing to wait for as far as the kernel is concerned. Your code keeps
+>>> asking the kernel if something interesting has happened, the
+>>> kernel keeps
+>>> telling it yes, and it refuses to do anything about it.
+> 
+>> The select() returns because i pulled the USB cable from hub. Seems
+>> reasonable.
+> 
+> Good. Then there is nothing further to discuss.
+> 
+>> The next select() found what? to be interesting in order to prematurely
+>> terminate the select-wait? As far as I can tell, nothing interesting has
+>> happened since the previous select(). In this case the select() is only
+>> looking at read()'s.
+> 
+> You have a very serious misunderstanding of what 'select' does. The 'select'
+> function is level triggered and state based, not edge triggered or event
+> based. The situation was the same as before, and so the same result is
+> required.
 
-YH
+The misunderstanding is from the docs.
+The select() does not report device errors.
+Select will just "more precisely, to see if a read will not block".
+
+
+
