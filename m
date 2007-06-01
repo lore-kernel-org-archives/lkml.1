@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764497AbXFAUVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764637AbXFAUVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764497AbXFAUVB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763052AbXFAUUz
+	id S1764637AbXFAUVX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764542AbXFAUVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:20:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50027 "EHLO mx1.redhat.com"
+	Fri, 1 Jun 2007 16:21:05 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53171 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762524AbXFAUUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:20:54 -0400
-Message-ID: <46607F96.7060200@redhat.com>
-Date: Fri, 01 Jun 2007 16:20:38 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] quiet down swiotlb warnings
-References: <466057B1.9090309@redhat.com> <p73odjzbism.fsf@bingen.suse.de> <20070601181225.GA16460@infradead.org> <20070601193703.GI7217@one.firstfloor.org> <466075D1.8080807@redhat.com> <20070601194734.GJ7217@one.firstfloor.org> <20070601200049.GK12143@andrew-vasquezs-computer.local> <20070601201444.GK7217@one.firstfloor.org>
-In-Reply-To: <20070601201444.GK7217@one.firstfloor.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1764536AbXFAUVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:21:03 -0400
+Date: Fri, 1 Jun 2007 22:22:02 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [RFC 1/4] CONFIG_STABLE: Define it
+Message-ID: <20070601202202.GA4232@uranus.ravnborg.org>
+References: <20070531002047.702473071@sgi.com> <20070531003012.302019683@sgi.com> <20070531141147.423ad5e3.akpm@linux-foundation.org> <20070531213046.GA27923@uranus.ravnborg.org> <20070601180200.GA7968@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070601180200.GA7968@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Fri, Jun 01, 2007 at 01:00:49PM -0700, Andrew Vasquez wrote:
->> yes, the card can support 64bit DMA transfers. but in this case the
->> 'required' DMA mask returned from dma_get_required_mask() states that a
->> 32bit mask would suffice.
+On Fri, Jun 01, 2007 at 02:02:00PM -0400, Dave Jones wrote:
+> On Thu, May 31, 2007 at 11:30:46PM +0200, Sam Ravnborg wrote:
+>  > > +	sym = sym_lookup("DEVEL_KERNEL", 0);
+>  > > +	sym->type = S_BOOLEAN;
+>  > > +	sym->flags |= SYMBOL_AUTO;
+>  > > +	p = getenv("DEVEL_KERNEL");
+>  > > +	if (p && atoi(p))
+>  > > +		sym_add_default(sym, "y");
+>  > > +	else
+>  > > +		sym_add_default(sym, "n");
+>  > > +
+>  > 
+>  > 		sym_set_tristate_value(sym, yes);
+>  > 	else
+>  > 		sym_set_tristate_value(sym, no);
+>  > 
+>  > should do the trick (untested).
 > 
-> That's a bug in the kernel then that needs to be fixed. Find out
-> why it does that and change it. Don't fix the symptoms, fix the root cause.
+> Odd. What's the third state ? Undefined?
+no, mod, yes
+Representing: no, module, yes as the three config choices.
 
-The system in question only has 2GB of memory.
-
-Why would it need to do 64 bit DMA?
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+	Sam
