@@ -1,37 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760894AbXFAABf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761057AbXFAACS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760894AbXFAABf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 20:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbXFAAB3
+	id S1761057AbXFAACS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 20:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbXFAACI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 20:01:29 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:22871 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754671AbXFAAB2 (ORCPT
+	Thu, 31 May 2007 20:02:08 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:49970 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756780AbXFAACG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 20:01:28 -0400
-Date: Thu, 31 May 2007 17:00:29 -0700
-From: Zach Brown <zach.brown@oracle.com>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH] Syslets - Fix cachemiss_thread return value
-Message-ID: <20070601000029.GN5488@mami.zabbo.net>
-References: <20070531181923.GA9904@c2.user-mode-linux.org> <20070531220716.GL5488@mami.zabbo.net> <20070531233946.GA12493@c2.user-mode-linux.org>
+	Thu, 31 May 2007 20:02:06 -0400
+Date: Thu, 31 May 2007 17:02:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/5] console: console handover to preferred console
+Message-Id: <20070531170200.3738f834.akpm@linux-foundation.org>
+In-Reply-To: <200705311358.26559.yinghai.lu@sun.com>
+References: <200705311358.26559.yinghai.lu@sun.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531233946.GA12493@c2.user-mode-linux.org>
-User-Agent: Mutt/1.4.2.1i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> the demos I sent out.  Dunno about the existing ones, but I bet they do
-> the same.
+On Thu, 31 May 2007 13:58:26 -0700
+Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-Hmm, they didn't when I ran them, but I'll give yours a try and take a
-closer look.  Thanks for taking the time to bring it up.
+> [PATCH 2/5] console: console handover to preferred console
+> 
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> 
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index 0bbdeac..7b96cae 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -985,12 +1007,15 @@ void register_console(struct console *console)
+>  	if (!(console->flags & CON_ENABLED))
+>  		return;
+>  
+> -	if (bootconsole) {
+> +	if (bootconsole && (console->flags & CON_CONSDEV)) {
+>  		printk(KERN_INFO "console handover: boot [%s%d] -> real [%s%d]\n",
+>  		       bootconsole->name, bootconsole->index,
+>  		       console->name, console->index);
+>  		unregister_console(bootconsole);
+>  		console->flags &= ~CON_PRINTBUFFER;
+> +	} else {
+> +		printk(KERN_INFO "console [%s%d] enabled\n",
+> +		       console->name, console->index);
+>  	}
+>  
+>  	/*
 
-- z
+What does this change do, and what is the reason for it??
