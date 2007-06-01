@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762640AbXFARen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbXFARfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762640AbXFARen (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 13:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761690AbXFARe3
+	id S1762242AbXFARfx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 13:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760351AbXFARfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 13:34:29 -0400
-Received: from mail-gw3.adaptec.com ([216.52.22.36]:37222 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761575AbXFARe1 convert rfc822-to-8bit (ORCPT
+	Fri, 1 Jun 2007 13:35:46 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:39997 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759939AbXFARfq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 13:34:27 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] aacraid: fix shutdown handler to also disable interrupts.
-Date: Fri, 1 Jun 2007 13:34:24 -0400
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01A5551E@otce2k301.adaptec.com>
-In-reply-to: <86802c440706011007r7c9162c3w1fe0ba1952361f19@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] aacraid: fix shutdown handler to also disable interrupts.
-Thread-Index: Acekb2NfqL3UCzO5SQGaWq9s7MuVigAADPAw
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>, <vgoyal@in.ibm.com>
-Cc: <linux-scsi@vger.kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Fri, 1 Jun 2007 13:35:46 -0400
+Date: Fri, 1 Jun 2007 10:35:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/1] document Acked-by:
+Message-Id: <20070601103543.5681eaa7.akpm@linux-foundation.org>
+In-Reply-To: <11341.1180718845@turing-police.cc.vt.edu>
+References: <200706010209.l51299kN000531@shell0.pdx.osdl.net>
+	<28278.1180675923@turing-police.cc.vt.edu>
+	<465FB862.207@zytor.com>
+	<11341.1180718845@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, this patch makes sure that the Adapter is shut down correctly, and
-thus when the kexec driver loads, it does not automatically reset the
-adapter during initialization. This regression was a result of adding
-code to the driver to detect if the adapter needed a reset as a result
-of an unclean shutdown in order to deal with an issue that came up with
-kdump. Kdump does not issue a clean shutdown. As you see, it was the
-process of making the driver smarter to find out if it needed to reset
-the adaptec fw that triggered the problem.
+On Fri, 01 Jun 2007 13:27:25 -0400
+Valdis.Kletnieks@vt.edu wrote:
 
-As noted before, please be advised to go through SUN channels. Upgrade
-your Drive(s), SES, Motherboard and Card Firmware to the latest
-versions; and make sure you are using compatible drives and drive bays
-to see if this problem dealing with the superfluous reset on your
-pre-release system goes away. You will be able to trigger this by trying
-to perform a kdump on the system, OR by reverting this patch and running
-your kexec test. The superfluous reset has yet to cause an issue with a
-released card beyond noticing a superfluous Firmware reset as Vivek has
-pointed out.
+> Do Linus/Andrew/major maintainers want Tested-By:'s for patches?
 
-Sincerely -- Mark Salyzyn
+I think it's very useful information to have.  For a start, it tells
+you who has the hardware and knows how to build a kernel.  So if you're
+making a change to a driver and want it tested, you can troll the file's
+changelog looking for people who might be able to help.
 
-From: Yinghai Lu [mailto:yhlu.kernel@gmail.com] sez:
-> On 6/1/07, Vivek Goyal <vgoyal@in.ibm.com> wrote:
-> > Thanks Mark. This does fix the issue of unnecessary reset of aacraid
-> > adapter over kexec on my machine.
-> i'm little confused about that.
-> this patch is some clear shutdown, so even next start will have tight
-> condition will not try to reset the adapter fw. right Mark?
-> Maybe the driver could be smart to find out if it need to 
-> reset adaptec fw.
-> 
-> YH 
+A similar argument would apply to Reported-by:, which we possibly also
+need.  But it's all perhaps a bit much for poor kernel developers to
+keep track of ;)
