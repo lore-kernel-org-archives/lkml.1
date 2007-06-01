@@ -1,169 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbXFAIRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXFAIXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757351AbXFAIRE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 04:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbXFAIQt
+	id S1759905AbXFAIXF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 04:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbXFAIWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 04:16:49 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:28346 "EHLO kernel.dk"
+	Fri, 1 Jun 2007 04:22:53 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:4772 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751615AbXFAIQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 04:16:48 -0400
-Date: Fri, 1 Jun 2007 10:15:36 +0200
+	id S1754188AbXFAIWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 04:22:51 -0400
+Date: Fri, 1 Jun 2007 10:21:41 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       cotte@de.ibm.com, hugh@veritas.com, neilb@suse.de, zanussi@us.ibm.com,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] sendfile removal
-Message-ID: <20070601081536.GO32105@kernel.dk>
-References: <20070531103316.GO32105@kernel.dk> <20070531105543.GA25676@infradead.org> <20070531110550.GR32105@kernel.dk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: David Chinner <dgc@sgi.com>, david@lang.hm,
+       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,  and dm/md.
+Message-ID: <20070601082140.GP32105@kernel.dk>
+References: <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <20070531070656.GK32105@kernel.dk> <465F8F71.20302@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070531110550.GR32105@kernel.dk>
+In-Reply-To: <465F8F71.20302@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31 2007, Jens Axboe wrote:
-> > This change is wrong.  loop or any existing user of ->sendfile absolutely
-> > needs to go through a file operations vector so that file-system specific
-> > actions such as locking are performed.  This is required at least for the
-> > clustered filesystems and XFS.   The right way to implement this is
-> > via do_splice_direct or something similar.
+On Fri, Jun 01 2007, Tejun Heo wrote:
+> Jens Axboe wrote:
+> > On Thu, May 31 2007, David Chinner wrote:
+> >> On Thu, May 31, 2007 at 08:26:45AM +0200, Jens Axboe wrote:
+> >>> On Thu, May 31 2007, David Chinner wrote:
+> >>>> IOWs, there are two parts to the problem:
+> >>>>
+> >>>> 	1 - guaranteeing I/O ordering
+> >>>> 	2 - guaranteeing blocks are on persistent storage.
+> >>>>
+> >>>> Right now, a single barrier I/O is used to provide both of these
+> >>>> guarantees. In most cases, all we really need to provide is 1); the
+> >>>> need for 2) is a much rarer condition but still needs to be
+> >>>> provided.
+> >>>>
+> >>>>> if I am understanding it correctly, the big win for barriers is that you 
+> >>>>> do NOT have to stop and wait until the data is on persistant media before 
+> >>>>> you can continue.
+> >>>> Yes, if we define a barrier to only guarantee 1), then yes this
+> >>>> would be a big win (esp. for XFS). But that requires all filesystems
+> >>>> to handle sync writes differently, and sync_blockdev() needs to
+> >>>> call blkdev_issue_flush() as well....
+> >>>>
+> >>>> So, what do we do here? Do we define a barrier I/O to only provide
+> >>>> ordering, or do we define it to also provide persistent storage
+> >>>> writeback? Whatever we decide, it needs to be documented....
+> >>> The block layer already has a notion of the two types of barriers, with
+> >>> a very small amount of tweaking we could expose that. There's absolutely
+> >>> zero reason we can't easily support both types of barriers.
+> >> That sounds like a good idea - we can leave the existing
+> >> WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
+> >> behaviour that only guarantees ordering. The filesystem can then
+> >> choose which to use where appropriate....
 > > 
-> > do_generic_file_read is only a library function for filesystem use
-> > and should never be called directly.
+> > Precisely. The current definition of barriers are what Chris and I came
+> > up with many years ago, when solving the problem for reiserfs
+> > originally. It is by no means the only feasible approach.
+> > 
+> > I'll add a WRITE_ORDERED command to the #barrier branch, it already
+> > contains the empty-bio barrier support I posted yesterday (well a
+> > slightly modified and cleaned up version).
 > 
-> I'll convert it to do_splice_direct(), thanks.
+> Would that be very different from issuing barrier and not waiting for
+> its completion?  For ATA and SCSI, we'll have to flush write back cache
+> anyway, so I don't see how we can get performance advantage by
+> implementing separate WRITE_ORDERED.  I think zero-length barrier
+> (haven't looked at the code yet, still recovering from jet lag :-) can
+> serve as genuine barrier without the extra write tho.
 
-So how does this look? Totally untested, will do that now. It only
-covers the read side, the write conversion to splice will happen later.
+As always, it depends :-)
 
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index 92bac14..3714e60 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -74,6 +74,7 @@
- #include <linux/highmem.h>
- #include <linux/gfp.h>
- #include <linux/kthread.h>
-+#include <linux/pipe_fs_i.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -401,58 +402,70 @@ struct lo_read_data {
- };
- 
- static int
--lo_read_actor(read_descriptor_t *desc, struct page *page,
--	      unsigned long offset, unsigned long size)
-+lo_splice_actor(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
-+		struct splice_desc *sd)
- {
--	unsigned long count = desc->count;
--	struct lo_read_data *p = desc->arg.data;
-+	struct lo_read_data *p = sd->data;
- 	struct loop_device *lo = p->lo;
-+	struct page *page = buf->page;
- 	sector_t IV;
-+	size_t size;
-+	int ret;
- 
--	IV = ((sector_t) page->index << (PAGE_CACHE_SHIFT - 9))+(offset >> 9);
-+	ret = buf->ops->pin(pipe, buf);
-+	if (unlikely(ret))
-+		return ret;
- 
--	if (size > count)
--		size = count;
-+	IV = ((sector_t) page->index << (PAGE_CACHE_SHIFT - 9))+(buf->offset >> 9);
-+	size = sd->len;
- 
--	if (lo_do_transfer(lo, READ, page, offset, p->page, p->offset, size, IV)) {
-+	if (lo_do_transfer(lo, READ, page, buf->offset, p->page, p->offset, size, IV)) {
- 		size = 0;
- 		printk(KERN_ERR "loop: transfer error block %ld\n",
- 		       page->index);
--		desc->error = -EINVAL;
-+		size = -EINVAL;
- 	}
- 
- 	flush_dcache_page(p->page);
- 
--	desc->count = count - size;
--	desc->written += size;
--	p->offset += size;
-+	if (size > 0)
-+		p->offset += size;
- 	return size;
- }
- 
- static int
-+lo_direct_splice_actor(struct pipe_inode_info *pipe, struct splice_desc *sd)
-+{
-+	return __splice_from_pipe(pipe, sd, lo_splice_actor);
-+}
-+
-+static int
- do_lo_receive(struct loop_device *lo,
- 	      struct bio_vec *bvec, int bsize, loff_t pos)
- {
- 	struct lo_read_data cookie;
-+	struct splice_desc sd;
- 	struct file *file;
--	read_descriptor_t desc;
--
--	desc.written = 0;
--	desc.count = bvec->bv_len;
--	desc.arg.data = &cookie;
--	desc.error = 0;
-+	int retval;
- 
- 	cookie.lo = lo;
- 	cookie.page = bvec->bv_page;
- 	cookie.offset = bvec->bv_offset;
- 	cookie.bsize = bsize;
-+
-+	sd.len = 0;
-+	sd.total_len = bsize;
-+	sd.flags = 0;
-+	sd.pos = pos;
-+	sd.data = &cookie;
-+
- 	file = lo->lo_backing_file;
-+	retval = splice_direct_to_actor(file, &sd, lo_direct_splice_actor);
- 
--	do_generic_file_read(file, &pos, &desc, lo_read_actor);
--	if (desc.written)
--		return 0;
-+	if (retval < 0)
-+		return retval;
- 
--	return desc.error;
-+	return 0;
- }
- 
- static int
-@@ -687,8 +700,8 @@ static int loop_change_fd(struct loop_device *lo, struct file *lo_file,
- 	if (!S_ISREG(inode->i_mode) && !S_ISBLK(inode->i_mode))
- 		goto out_putf;
- 
--	/* new backing store needs to support loop (eg readpage) */
--	if (!file->f_mapping->a_ops->readpage)
-+	/* new backing store needs to support loop (eg splice_read) */
-+	if (!inode->i_fop->splice_read)
- 		goto out_putf;
- 
- 	/* size of the new backing store needs to be the same */
-@@ -768,7 +781,7 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
- 		 * If we can't read - sorry. If we only can't write - well,
- 		 * it's going to be read-only.
- 		 */
--		if (!aops->readpage)
-+		if (!file->f_op->splice_read)
- 			goto out_putf;
- 		if (aops->prepare_write && aops->commit_write)
- 			lo_flags |= LO_FLAGS_USE_AOPS;
+If you are doing pure flush barriers, then there's no difference. Unless
+you only guarantee ordering wrt previously submitted requests, in which
+case you can eliminate the post flush.
+
+If you are doing ordered tags, then just setting the ordered bit is
+enough. That is different from the barrier in that we don't need a flush
+of FUA bit set.
+
+In reality maybe the difference isn't all that great, at least we can
+start by having WRITE_ORDERED == WRITE_BARRIER.
 
 -- 
 Jens Axboe
