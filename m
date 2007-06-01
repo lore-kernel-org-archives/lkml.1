@@ -1,78 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbXFAC1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbXFACpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbXFAC1A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 22:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbXFAC0x
+	id S1753357AbXFACpd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 22:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXFACpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 22:26:53 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:36798 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbXFAC0w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 22:26:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rbKGAgRD8Uer06ODDeBPjOuVkauKJWFV+s03zgDS9/GE5MvB6r5EsDnoXo1B1luNGFNbCTFtaQOSt18iB2rhO+NSXUSlTZGJkrXKvfDT3pEcLeIFpmcntx4tP5NUNiZsjuKftrx+z1d+LiCyer5aNddKi4rfReXPKg58GwBbwlw=
-Message-ID: <a8e1da0705311926n95c6913iea04b240812dfdfd@mail.gmail.com>
-Date: Fri, 1 Jun 2007 02:26:51 +0000
-From: "young dave" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch -mm] alsa mixer_oss kfree fix
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jaroslav Kysela" <perex@suse.cz>
-In-Reply-To: <a8e1da0705311921v8bdec77vaa918efd9910e51b@mail.gmail.com>
+	Thu, 31 May 2007 22:45:25 -0400
+Received: from ns1.suse.de ([195.135.220.2]:46850 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751107AbXFACpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 22:45:24 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Fri, 1 Jun 2007 12:44:30 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0705311853w4df1aae8k87c55fdfbfa96b10@mail.gmail.com>
-	 <20070531191005.292efbdc.akpm@linux-foundation.org>
-	 <a8e1da0705311921v8bdec77vaa918efd9910e51b@mail.gmail.com>
+Message-ID: <18015.34830.401191.916084@notabene.brown>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       cotte@de.ibm.com, hugh@veritas.com, zanussi@us.ibm.com,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] sendfile removal (nfsd update)
+In-Reply-To: message from Jens Axboe on Thursday May 31
+References: <20070531103316.GO32105@kernel.dk>
+	<20070531105543.GA25676@infradead.org>
+	<20070531110550.GR32105@kernel.dk>
+	<18014.48878.442628.260297@notabene.brown>
+	<20070531122723.GT32105@kernel.dk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Just append to my email.
 
-The reason I read mixer_oss.c is that I see oops in 2.6.22-rc1-mm1,
-seems oops in mixer_oss.c, but the oops rised only once, I found
-rc3-mm1 have no change in this file,
-so I read the source , then post this patch.
+Ok, here is a patch that makes nfsd use splice instead of sendfile.
+It appears to both compile and work.
 
-please find the oops message below:
+Some observations:
+  - __splice_from_pipe wants a "struct file*" and I wanted to pass a
+    "struct svcrqst *".  Maybe it should take a void * ?
+  - It also wants a *ppos which I had no use for.. It that really
+    need?  Cannot &file->f_pos be used?
+  - I copied do_splice_to from splice.c as it wasn't exported, and
+    then found I couldn't compile because rw_verify_area wasn't
+    exported. As nfsd doesn't need that (we never export
+    mandatory-locking files) I just remove it and some other cruft
+    that I didn't need.... Not sure if that was the best approach.
+  - I needed to export alloc_pipe_info.  Maybe there should be a 
+    get_current_pipe instead which does the alloc if needed.
+  - I would much rather have something like free_pipe_info exported
+    than open code it in do_splice_read (which is based heavily on
+    do_splice_direct).
+  
+NeilBrown
 
+-------------------------------
+Replace ->sendfile with ->splice_read
 
-BUG: unable to handle kernel NULL pointer dereference at virtual
-address 00000088
- printing eip:
-c0162bc2
-*pde = 00000000
-Oops: 0000 [#1]
-PREEMPT
-Modules linked in: snd_mixer_oss snd_hda_intel snd_pcm snd_timer
-snd_page_alloc snd soundcore ipv6 capability commoncap e100 mi
-i agpgart pcspkr psmouse
-CPU:    0
-EIP:    0060:[<c0162bc2>]    Not tainted VLI
-EFLAGS: 00010087   (2.6.22-rc1-mm1 #7)
-EIP is at kfree+0x42/0x90
-eax: 00000000   ebx: c10568e0   ecx: c2b47000   edx: c01588d2
-esi: 00000287   edi: 00000000   ebp: c2864000   esp: c2865f58
-ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-Process modprobe (pid: 2963, ti=c2864000 task=c1ede540 task.ti=c2864000)
-Stack: 00000011 f8855000 c0520cb4 00000001 00000001 c1e524a0 c1051bc0 c01588d2
-       0805c348 00000001 c2864000 f885502b f8840a00 00000000 00000001 c013caf1
-       00004b79 00000000 000b7f68 00000000 b7f44840 08065f88 0805c348 c01040bc
-Call Trace:
- [<f8855000>] alsa_mixer_oss_init+0x0/0x37 [snd_mixer_oss]
- [<c01588d2>] __vunmap+0xb2/0xe0
- [<f885502b>] alsa_mixer_oss_init+0x2b/0x37 [snd_mixer_oss]
- [<c013caf1>] sys_init_module+0xa1/0x140
- [<c01040bc>] syscall_call+0x7/0xb
- [<c0440000>] packet_seq_start+0x30/0x60
- =======================
-Code: 00 00 00 40 a1 40 6a 59 c0 c1 ea 0c c1 e2 05 01 c2 8b 02 89 d3
-25 00 40 02 00 3d 00 40 02 00 74 45 8b 7b 10 8b 54 24 1c 9
-c 5e fa <39> 9f 88 00 00 00 75 25 8b 03 a8 02 75 1f 0f b7 53 0a 8b 43 0c
-EIP: [<c0162bc2>] kfree+0x42/0x90 SS:ESP 0068:c2865f58
+Apparently ->sendfile is going away, so change nfsd to use ->splice_read
+to get pages for a file.
+
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./fs/nfsd/vfs.c |  125 ++++++++++++++++++++++++++++++++++++++++++++++++--------
+ ./fs/pipe.c     |    1 
+ 2 files changed, 109 insertions(+), 17 deletions(-)
+
+diff .prev/fs/nfsd/vfs.c ./fs/nfsd/vfs.c
+--- .prev/fs/nfsd/vfs.c	2007-06-01 10:41:27.000000000 +1000
++++ ./fs/nfsd/vfs.c	2007-06-01 12:32:51.000000000 +1000
+@@ -23,7 +23,7 @@
+ #include <linux/file.h>
+ #include <linux/mount.h>
+ #include <linux/major.h>
+-#include <linux/ext2_fs.h>
++#include <linux/pipe_fs_i.h>
+ #include <linux/proc_fs.h>
+ #include <linux/stat.h>
+ #include <linux/fcntl.h>
+@@ -801,26 +801,32 @@ found:
+ }
+ 
+ /*
+- * Grab and keep cached pages assosiated with a file in the svc_rqst
+- * so that they can be passed to the netowork sendmsg/sendpage routines
+- * directrly. They will be released after the sending has completed.
++ * Grab and keep cached pages associated with a file in the svc_rqst
++ * so that they can be passed to the network sendmsg/sendpage routines
++ * directly. They will be released after the sending has completed.
+  */
+ static int
+-nfsd_read_actor(read_descriptor_t *desc, struct page *page, unsigned long offset , unsigned long size)
++nfsd_splice_actor(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
++		  struct splice_desc *sd)
+ {
+-	unsigned long count = desc->count;
+-	struct svc_rqst *rqstp = desc->arg.data;
++	struct svc_rqst *rqstp = (struct svc_rqst *)sd->file;
+ 	struct page **pp = rqstp->rq_respages + rqstp->rq_resused;
++	struct page *page = buf->page;
++	size_t size;
++	int ret;
++
++	ret = buf->ops->pin(pipe, buf);
++	if (unlikely(ret))
++		return ret;
+ 
+-	if (size > count)
+-		size = count;
++	size = sd->len;
+ 
+ 	if (rqstp->rq_res.page_len == 0) {
+ 		get_page(page);
+ 		put_page(*pp);
+ 		*pp = page;
+ 		rqstp->rq_resused++;
+-		rqstp->rq_res.page_base = offset;
++		rqstp->rq_res.page_base = buf->offset;
+ 		rqstp->rq_res.page_len = size;
+ 	} else if (page != pp[-1]) {
+ 		get_page(page);
+@@ -832,11 +838,98 @@ nfsd_read_actor(read_descriptor_t *desc,
+ 	} else
+ 		rqstp->rq_res.page_len += size;
+ 
+-	desc->count = count - size;
+-	desc->written += size;
+ 	return size;
+ }
+ 
++static long do_splice_to(struct file *in, loff_t *ppos,
++			 struct pipe_inode_info *pipe, size_t len,
++			 unsigned int flags)
++{
++	loff_t isize, left;
++
++	isize = i_size_read(in->f_mapping->host);
++	if (unlikely(*ppos >= isize))
++		return 0;
++
++	left = isize - *ppos;
++	if (unlikely(left < len))
++		len = left;
++
++	return in->f_op->splice_read(in, ppos, pipe, len, flags);
++}
++
++static int do_splice_read(struct file *in, loff_t *ppos, size_t count,
++			  struct svc_rqst *rqstp)
++{
++	struct pipe_inode_info *pipe;
++	long ret, bytes;
++	int i;
++
++	rqstp->rq_resused = 1;
++
++	pipe = current->splice_pipe;
++	if (unlikely(!pipe)) {
++		pipe = alloc_pipe_info(NULL);
++		if (!pipe)
++			return -ENOMEM;
++
++		pipe->readers = 1;
++		current->splice_pipe = pipe;
++	}
++
++	ret = 0;
++	bytes = 0;
++
++	while (count) {
++		loff_t unused = 0;
++		size_t read_len, max_read_len;
++
++		max_read_len = min(count, (size_t)(PIPE_BUFFERS*PAGE_SIZE));
++
++		ret = do_splice_to(in, ppos, pipe, max_read_len, 0);
++		if (unlikely(ret < 0))
++			goto out_release;
++
++		read_len = ret;
++
++		ret = __splice_from_pipe(pipe, (struct file *)rqstp,
++					 &unused, read_len, 0,
++					 nfsd_splice_actor);
++		if (unlikely(ret < 0))
++			goto out_release;
++
++		bytes += ret;
++		count -= ret;
++	}
++
++	pipe->nrbufs = pipe->curbuf = 0;
++
++	return bytes;
++
++ out_release:
++	/*
++	 * If we did an incomplete transfer we must release
++	 * the pipe buffers in question:
++	 */
++	for (i = 0; i < PIPE_BUFFERS; i++) {
++		struct pipe_buffer *buf = pipe->bufs + i;
++
++		if (buf->ops) {
++			buf->ops->release(pipe, buf);
++			buf->ops = NULL;
++		}
++	}
++	pipe->nrbufs = pipe->curbuf = 0;
++
++	/*
++	 * If we transferred some data, return the number of bytes:
++	 */
++	if (bytes > 0)
++		return bytes;
++
++	return ret;
++}
++
+ static __be32
+ nfsd_vfs_read(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
+               loff_t offset, struct kvec *vec, int vlen, unsigned long *count)
+@@ -861,11 +954,9 @@ nfsd_vfs_read(struct svc_rqst *rqstp, st
+ 	if (ra && ra->p_set)
+ 		file->f_ra = ra->p_ra;
+ 
+-	if (file->f_op->sendfile && rqstp->rq_sendfile_ok) {
+-		rqstp->rq_resused = 1;
+-		host_err = file->f_op->sendfile(file, &offset, *count,
+-						 nfsd_read_actor, rqstp);
+-	} else {
++	if (file->f_op->splice_read && rqstp->rq_sendfile_ok)
++		host_err = do_splice_read(file, &offset, *count, rqstp);
++	else {
+ 		oldfs = get_fs();
+ 		set_fs(KERNEL_DS);
+ 		host_err = vfs_readv(file, (struct iovec __user *)vec, vlen, &offset);
+
+diff .prev/fs/pipe.c ./fs/pipe.c
+--- .prev/fs/pipe.c	2007-06-01 12:30:43.000000000 +1000
++++ ./fs/pipe.c	2007-06-01 12:31:58.000000000 +1000
+@@ -865,6 +865,7 @@ struct pipe_inode_info * alloc_pipe_info
+ 
+ 	return pipe;
+ }
++EXPORT_SYMBOL(alloc_pipe_info);
+ 
+ void __free_pipe_info(struct pipe_inode_info *pipe)
+ {
