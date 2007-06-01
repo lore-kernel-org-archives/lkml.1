@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761687AbXFAPno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761193AbXFAPxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761687AbXFAPno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 11:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760732AbXFAPnh
+	id S1761193AbXFAPxm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 11:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbXFAPxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 11:43:37 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:56665 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760479AbXFAPng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 11:43:36 -0400
-Subject: Re: [patch] Move led attributes out of device name and into sysfs
-	attributes, was Re: LED devices
-From: Richard Purdie <rpurdie@openedhand.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       "kay.sievers" <kay.sievers@vrfy.org>
-Cc: "Bryn M. Reeves" <breeves@redhat.com>, John Lenz <lenz@cs.wisc.edu>,
-       Richard Hughes <hughsient@gmail.com>
-In-Reply-To: <1180710270.3782.5.camel@localhost.localdomain>
-References: <1180710270.3782.5.camel@localhost.localdomain>
+	Fri, 1 Jun 2007 11:53:34 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:15030 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755411AbXFAPxd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 11:53:33 -0400
+Subject: Re: [PATCH 3/5] lockstat: core infrastructure
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1180711606.15884.32.camel@imap.mvista.com>
+References: <20070529125248.877196281@chello.nl>
+	 <20070529130107.112347096@chello.nl>
+	 <1180470525.32594.71.camel@imap.mvista.com>
+	 <20070530132431.GA23947@elte.hu>
+	 <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com>
+	 <20070530134907.GA27085@elte.hu>
+	 <1180544796.32594.184.camel@imap.mvista.com>
+	 <1180545380.2958.1.camel@lappy>
+	 <1180545913.32594.194.camel@imap.mvista.com>
+	 <20070601131249.GA17059@elte.hu>
+	 <1180711606.15884.32.camel@imap.mvista.com>
 Content-Type: text/plain
-Date: Fri, 01 Jun 2007 16:43:12 +0100
-Message-Id: <1180712592.6390.139.camel@localhost.localdomain>
+Date: Fri, 01 Jun 2007 17:52:33 +0200
+Message-Id: <1180713154.5676.4.camel@lappy>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-01 at 16:04 +0100, Richard Hughes wrote:
-> Patch attached corrects all the brokenness with the led class (encoding
-> some attributes in the device handle).
+On Fri, 2007-06-01 at 08:26 -0700, Daniel Walker wrote:
+> On Fri, 2007-06-01 at 15:12 +0200, Ingo Molnar wrote:
+> > * Daniel Walker <dwalker@mvista.com> wrote:
+> > 
+> > > On Wed, 2007-05-30 at 19:16 +0200, Peter Zijlstra wrote:
+> > 
+> > > > I think you are mistaken here; the two are similar but not 
+> > > > identical.
+> > > > 
+> > > > I see sched_clock() as fast first, accurate second. Whereas the 
+> > > > clocksource thing is accurate first, fast second.
+> > > 
+> > > This is true .. However, if there is a speed different it's small.
+> > 
+> > Ugh. Have you ever compared pmtimer (or even hpet) against TSC based 
+> > sched_clock()? What you write is so wrong that it's not even funny. You 
+> > keep repeating this nonsense despite having been told multiple times 
+> > that you are dead wrong.
+> 
+> Yes I have, and your right there is a difference, and a big
+> difference .. Above I was referring only to the TSC clocksource, since
+> that's an apples to apples comparison .. I would never compare the TSC
+> to the acpi_pm, that's no contest ..
+> 
+> The acpi_pm as sched_clock() with hackbench was about %25 slower, the
+> pit was 10x slower approximately. (I did this months ago.)
 
-For the benefit of LKML, there has been some discussion of this
-elsewhere. My arguments do not particularly come across in Richard's
-choice of quoting and I'm a little annoyed he's chosen to do things this
-way, particularly before any further feedback from Greg/Kay but so be
-it.
+The whole issue is that you don't have any control over what clocksource
+you'll end up with. If it so happens that pmtimer gets selected your
+whole box will crawl if its used liberaly, like the patch under
+discussion does.
 
-Greg said that the LEDs class should export any property data as a class
-attribute rather than this just being available in the device name. I
-added the patch in
-http://git.o-hand.com/?p=linux-rpurdie-leds;a=shortlog;h=for-mm to deal
-with this, without breaking the existing LED naming and documented API.
-Greg said that the only requirement on bus id naming was that it needed
-to be unique so this should therefore be compatible. HAL could then go
-ahead and ignore the device name, all the attributes are there in the
-fashion it needs which was the original complaint.
+So, having two interfaces, one fast and one accurate is the right answer
+IMHO.
 
-I accept this is basically out of my hands now. Greg/Kay have the
-appropriate emails and if they'll let me know which approach they want
-to take, I'll apply an appropriate patch. I'd suggest not applying this
-patch directly as it introduces a race in the error path it alters.
-
-Richard
+And I agree, that if the arch has a fast clock but doesn't use it for
+sched_clock() that would be a shortcoming of that arch.
 
 
