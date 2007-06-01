@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764998AbXFAUyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764917AbXFAU4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764998AbXFAUyk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764200AbXFAUy0
+	id S1764917AbXFAU4A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763223AbXFAUzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:54:26 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35689 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764154AbXFAUyY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:54:24 -0400
-Date: Fri, 1 Jun 2007 13:54:22 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-Message-Id: <20070601135422.eab28766.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706011340110.4323@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com>
-	<200706011620.05756.srinivasa@in.ibm.com>
-	<Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
-	<20070601121114.b165f1e8.pj@sgi.com>
-	<Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
-	<20070601124757.fe91a002.pj@sgi.com>
-	<Pine.LNX.4.64.0706011249530.3598@schroedinger.engr.sgi.com>
-	<20070601130212.7be4432a.pj@sgi.com>
-	<Pine.LNX.4.64.0706011305230.3976@schroedinger.engr.sgi.com>
-	<20070601131950.0f3a507b.pj@sgi.com>
-	<Pine.LNX.4.64.0706011340110.4323@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 1 Jun 2007 16:55:51 -0400
+Received: from gw.goop.org ([64.81.55.164]:56050 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763052AbXFAUzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:55:50 -0400
+Message-ID: <466087CF.70708@goop.org>
+Date: Fri, 01 Jun 2007 13:55:43 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Extending boot protocol & bzImage for paravirt_ops
+References: <4656FB8F.4090604@goop.org> <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph wrote:
-> Then you are deferencing an element in the pidarray that you did not 
-> allocate! This is a bug in cpuset code.
+Eric W. Biederman wrote:
+> ....
+> +Field name:	hardware_subarch
+> +Type:		write
+> +Offset/size:	0x23c/4
+> +Protocol:	2.07+
+> +
+> +  In a paravirtualized environment the hardware low level architectural 
+> +  pieces such as interrupt handling, page table handling, and
+> +  accessing process control registers needs to be done differently.
+> +
+> +  This field allows the bootloader to inform the kernel we are in one
+> +  one of those environments.
+> +
+> +  0x00000000	The default x86/PC environment
+> +  0x00000001	lguest
+> +  0x00000002	Xen
+> +
+> +Field name:	hardware_subarch_data
+> +Type:		write
+> +Offset/size:	0x23c/8
+>   
 
-Absolutely - as I described in more detail in a reply Jeremy a
-few minutes ago.  Thanks for smoking it out.
+offset = 240
 
-If, as I suggested in my previous message to which you are
-responding:
+> +Protocol:	2.07+
+> +
+> +  A pointer to data that is specific to hardware subarch
+>   
 
-> Perhaps if you moved the "if (unlikely(n == npids))" test before the
-> "pidarray[n++] = p->pid" assignment, it would be safe.
+Do we care particularly? If 8 bytes is enough for the subarch, do we
+care whether its a pointer or literal? After all, this is just a private
+channel between the bootloader and some subarch-specific piece of code
+in the kernel.
 
-then it looks safe to me, without having to add the bogus "+1" to
-the allocated size.  That is, I suspect the following patch fixes
-this long standing cpuset bug (warning - white space mangled):
-
---- kernel/cpuset.c     2006-12-10 12:27:37.000000000 -0800
-+++ kernel/cpuset.c.new 2007-06-01 13:53:00.271010074 -0700
-@@ -1661,9 +1661,9 @@ static int pid_array_load(pid_t *pidarra
-
-        do_each_thread(g, p) {
-                if (p->cpuset == cs) {
--                       pidarray[n++] = p->pid;
-                        if (unlikely(n == npids))
-                                goto array_full;
-+                       pidarray[n++] = p->pid;
-                }
-        } while_each_thread(g, p);
-
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+J
