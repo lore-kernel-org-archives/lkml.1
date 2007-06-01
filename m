@@ -1,159 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbXFAHEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbXFAHGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951AbXFAHEI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 03:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbXFAHD5
+	id S1758655AbXFAHGW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 03:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbXFAHGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 03:03:57 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:32816 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754301AbXFAHD4 (ORCPT
+	Fri, 1 Jun 2007 03:06:14 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:38150 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750719AbXFAHGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 03:03:56 -0400
-Message-ID: <465FC489.1030509@linux.vnet.ibm.com>
-Date: Fri, 01 Jun 2007 12:32:33 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Fri, 1 Jun 2007 03:06:14 -0400
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200706010705.l5175uwJ028953@turbo.physics.adelaide.edu.au>
+Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
+To: jeff@garzik.org (Jeff Garzik)
+Date: Fri, 1 Jun 2007 16:35:56 +0930 (CST)
+Cc: lsorense@csclub.uwaterloo.ca (Lennart Sorensen),
+       jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
+       davidsen@tmr.com (Bill Davidsen), linux-kernel@vger.kernel.org
+In-Reply-To: <465ED34C.2060801@garzik.org> from "Jeff Garzik" at May 31, 2007 09:53:16 AM
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Pavel Emelianov <xemul@openvz.org>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 8/8] Per-container pages reclamation
-References: <465D9739.8070209@openvz.org> <465D9B62.5050507@openvz.org> <20070530144737.56456aaf.akpm@linux-foundation.org>
-In-Reply-To: <20070530144737.56456aaf.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 30 May 2007 19:42:26 +0400
-> Pavel Emelianov <xemul@openvz.org> wrote:
+Jeff Garzik wrote:
+> Lennart Sorensen wrote:
+> > On Thu, May 31, 2007 at 10:21:57AM +0930, Jonathan Woithe wrote:
+> >> I don't think so but I could be wrong.  When "Configure SATA as" was set to
+> >> "IDE" the HDD was being detected as a SATA drive and showed up as /dev/sda. 
+> >> The only visible difference the change to "AHCI" made was that instead of
+> >> the drive being handled by the ata_piix it now utilises the ahci driver
+> >> (which is a much better driver).  The other interesting thing is that the
+> >> probe for the Marvell PATA device occured before the initialisation of the
+> >> ata_piix driver (or ahci for that matter), so as far as I can tell ata_piix
+> >> had no chance to grab any ports before the marvell driver initialised.
+> > 
+> > Linux can still detect the chip and drive it natively even if the bios
+> > is emulating IDE/PATA on the chip.  And libata will make both PATA and
+> > SATA show up as /dev/sda now if you use libata for both.  On the other
+> > hand if the bios has configured the intel chip to use the standard ide
+> > registers, then it can't have configured the marvell to do so I would
+> > guess, which could make it difficult to talk to.
 > 
->> Implement try_to_free_pages_in_container() to free the
->> pages in container that has run out of memory.
->>
->> The scan_control->isolate_pages() function is set to
->> isolate_pages_in_container() that isolates the container
->> pages only. The exported __isolate_lru_page() call
->> makes things look simpler than in the previous version.
->>
->> Includes fix from Balbir Singh <balbir@in.ibm.com>
->>
->>  }
->>  
->> +void container_rss_move_lists(struct page *pg, bool active)
->> +{
->> +	struct rss_container *rss;
->> +	struct page_container *pc;
->> +
->> +	if (!page_mapped(pg))
->> +		return;
->> +
->> +	pc = page_container(pg);
->> +	if (pc == NULL)
->> +		return;
->> +
->> +	rss = pc->cnt;
->> +
->> +	spin_lock(&rss->res.lock);
->> +	if (active)
->> +		list_move(&pc->list, &rss->active_list);
->> +	else
->> +		list_move(&pc->list, &rss->inactive_list);
->> +	spin_unlock(&rss->res.lock);
->> +}
+> Mostly true...  "standard IDE" can be configured in two modes, legacy 
+> mode and native mode.  Legacy mode has fixed addresses originating from 
+> the ISA days (0x170, 0x1f0, irqs 14 & 15), and (as you implied) you 
+> cannot bind two IDE controllers to the same ISA addresses.
 > 
-> This is an interesting-looking function.  Please document it?
-> 
+> OTOH, an unlimited number of IDE controllers can be configured into 
+> native mode, where all addresses and irq are allocated using standard 
+> means accorded all PCI devices.
 
-Will do. This function is called when we want to move a page in
-the LRU list. This could happen when a page is activated or when
-reclaim finds that a particular page cannot be reclaimed right now.
+In the situation being discussed, "ATA/IDE Mode" was set to "Native" in the
+BIOS (the other option for this item was "Legacy").  The BIOS had a separate
+"Configure SATA as" item with the options RAID, IDE and AHCI and it is this
+one which, when set to IDE, prevented Linux from finding the Marvell PATA
+chip - even though "ATA/IDE Mode" was set to "native".
 
-> I'm inferring that the rss container has an active and inactive list and
-> that this basically follows the same operation as the traditional per-zone
-> lists?
-> 
+The legacy/native issue Jeff discusses sounds like it relates to the
+"ATA/IDE Mode" BIOS setting.  Since this was always "Native" during the
+tests and given what Jeff wrote, I would have thought the BIOS would not be
+using the legacy ISA-era settings and therefore they were not the reason for
+Linux not finding the Marvell PATA controller.
 
-Yes, correct.
-
-> Would I be correct in guessing that pages which are on the
-> per-rss-container lists are also eligible for reclaim off the traditional
-> page LRUs?  If so, how does that work?  When a page gets freed off the
-> per-zone LRUs does it also get removed from the per-rss_container LRU?  But
-> how can this be right?  Pages can get taken off the LRU and freed at
-> interrupt time, and this code isn't interrupt-safe.
-> 
-
-Yes, before a page is reclaimed from the global LRU list, we go through
-page_remove_rmap() in try_to_unmap(). Pages are removed from the container
-LRU before they are reclaimed. 
-
-> I note that this lock is not irq-safe, whereas the lru locks are irq-safe. 
-> So we don't perform the rotate_reclaimable_page() operation within the RSS
-> container?  I think we could do so.  I wonder if this was considered.
-> 
-
-The lock needs to be interrupt safe.
-
-> A description of how all this code works would help a lot.
-> 
->> +static unsigned long isolate_container_pages(unsigned long nr_to_scan,
->> +		struct list_head *src, struct list_head *dst,
->> +		unsigned long *scanned, struct zone *zone, int mode)
->> +{
->> +	unsigned long nr_taken = 0;
->> +	struct page *page;
->> +	struct page_container *pc;
->> +	unsigned long scan;
->> +	LIST_HEAD(pc_list);
->> +
->> +	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
->> +		pc = list_entry(src->prev, struct page_container, list);
->> +		page = pc->page;
->> +		if (page_zone(page) != zone)
->> +			continue;
-> 
-> That page_zone() check is interesting.  What's going on here?
-> 
-> I'm suspecting that we have a problem here: if there are a lot of pages on
-> *src which are in the wrong zone, we can suffer reclaim distress leading to
-> omm-killings, or excessive CPU consumption?
-> 
-
-We discussed this on lkml. Basically, now for every zone we try to reclaim
-pages from the container, it increases CPU utilization if we choose the wrong
-zone to reclaim from, but it provides the following benefit
-
-Code reuse (shrink_zone* is reused along with helper functions). I am not sure
-if Pavel had any other benefits in mind like benefits on a NUMA box.
-
-
->> +	for_each_online_node(node) {
->> +#ifdef CONFIG_HIGHMEM
->> +		zones = NODE_DATA(node)->node_zonelists[ZONE_HIGHMEM].zones;
->> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
->> +			return 1;
->> +#endif
->> +		zones = NODE_DATA(node)->node_zonelists[ZONE_NORMAL].zones;
->> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
->> +			return 1;
->> +	}
-> 
-> Definitely need to handle ZONE_DMA32 and ZONE_DMA (some architectures put
-> all memory into ZONE_DMA (or they used to))
-> 
-
-node_zonelists[ZONE_NORMAL].zones should contain ZONE_DMA and ZONE_DMA32 right?
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Regards
+  jonathan
