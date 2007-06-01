@@ -1,81 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763755AbXFAUKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763566AbXFAUOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763755AbXFAUKX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762577AbXFAUKN
+	id S1763566AbXFAUOx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762790AbXFAUOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:10:13 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51721 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762271AbXFAUKL (ORCPT
+	Fri, 1 Jun 2007 16:14:46 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60599 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762294AbXFAUOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:10:11 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH/WIP] Remove 'irq' argument from all IRQ handlers
-References: <464E9739.40909@garzik.org>
-Date: Fri, 01 Jun 2007 14:08:55 -0600
-In-Reply-To: <464E9739.40909@garzik.org> (Jeff Garzik's message of "Sat, 19
-	May 2007 02:20:41 -0400")
-Message-ID: <m18xb3zbc8.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Fri, 1 Jun 2007 16:14:46 -0400
+Date: Fri, 1 Jun 2007 22:14:44 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] quiet down swiotlb warnings
+Message-ID: <20070601201444.GK7217@one.firstfloor.org>
+References: <466057B1.9090309@redhat.com> <p73odjzbism.fsf@bingen.suse.de> <20070601181225.GA16460@infradead.org> <20070601193703.GI7217@one.firstfloor.org> <466075D1.8080807@redhat.com> <20070601194734.GJ7217@one.firstfloor.org> <20070601200049.GK12143@andrew-vasquezs-computer.local>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070601200049.GK12143@andrew-vasquezs-computer.local>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
+On Fri, Jun 01, 2007 at 01:00:49PM -0700, Andrew Vasquez wrote:
+> yes, the card can support 64bit DMA transfers. but in this case the
+> 'required' DMA mask returned from dma_get_required_mask() states that a
+> 32bit mask would suffice.
 
-> Attached is the patch and description that represents a current
-> work-in-progress, removal of the 'irq' argument passed to all driver IRQ
-> handlers.
->
-> As this patch demonstrates, the 'irq' argument is useless and practically
-> unused.  The vast majority of drivers have this information elsewhere (struct
-> pci_dev or private struct).  The cases where it is actually used are as follows:
->
-> * a couple Mac drivers have multiple IRQs, and use the irq argument for
-> disambiguation purposes.  This can easily be remedied by moving that information
-> into the info passed in the normal void* pointer.
->
-> * Several ancient ISA drivers, which mainly use it for printk-in-irq-handler
-> purposes.  A couple use the irq argument as an index into a structure, which is
-> a buggy approach.  I fixed up these.
->
-> This can be found in the 'hacking-irq-remove' branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
->
->
-> Before I will even consider submitting this upstream, this patchset needs
->
-> * non-x86[-64] build fixes, and testing
-> * update the Mac drivers
-> * one more review pass, to make sure everything is kosher
->
-> so IOW, not anytime soon :)
->
-> Jeff Garzik (12):
->       [irq-remove] Update core irq handling code to omit 'irq' parameter
->       [irq-remove] update sound drivers for new irq handler function sig
->       [irq-remove] update SCSI, ATA, IDE drivers for new irq handler function
-> sig
->       [irq-remove] update net drivers for new irq handler function sig
->       driver irq handler arg removal: acorn, atm, block, bluetooth, cdrom
->       driver irq handler arg removal: arch-specific code
->       driver irq handler arg removal: acpi, char, dma, fc4
->       driver irq handler arg removal: i2c, ieee1394, infiniband, input, isdn
->       driver irq handler arg removal: macintosh, media, message, mfd, misc, mmc
->       driver irq handler arg removal: serial, video
->       driver irq handler arg removal: the rest
->       irq-remove: build and warning fixes for 2.6.21
+That's a bug in the kernel then that needs to be fixed. Find out
+why it does that and change it. Don't fix the symptoms, fix the root cause.
 
-Looks reasonable to me.  In my nefarious plans to make everything use
-a struct irq pointer this would certainly help.
-
-The get_irqfunc_irq() function to get the irq for the functions that
-still need it looks like a very useful migration path.
-
-Eric
+-Andi
