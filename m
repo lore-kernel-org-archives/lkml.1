@@ -1,69 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbXFAIiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbXFAIjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbXFAIiG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 04:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbXFAIhz
+	id S1758636AbXFAIjs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 04:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXFAIjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 04:37:55 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:41026 "EHLO smtp.ocgnet.org"
+	Fri, 1 Jun 2007 04:39:41 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:37532 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751615AbXFAIhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 04:37:54 -0400
-Date: Fri, 1 Jun 2007 17:36:48 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] smc91x: sh solution engine fixes.
-Message-ID: <20070601083648.GA11035@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Jeff Garzik <jeff@garzik.org>,
-	Nobuhiro Iwamatsu <iwamatsu@nigauri.org>,
-	linux-kernel@vger.kernel.org
+	id S1752698AbXFAIjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 04:39:40 -0400
+Date: Fri, 1 Jun 2007 10:38:51 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Anand Jahagirdar <anandjigar@gmail.com>
+cc: Jens Axboe <jens.axboe@oracle.com>, security@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Patch related with Fork Bombing Atack
+In-Reply-To: <25ae38200705312348r3cd02c90h5080617fa1f0a987@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706011032490.29896@twin.jikos.cz>
+References: <25ae38200705310645n5e913a91weaa14521908f7989@mail.gmail.com> 
+ <20070531134611.GZ32105@kernel.dk> <25ae38200705312348r3cd02c90h5080617fa1f0a987@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current smc91x I/O routines ifdef the solution engine subtypes
-individually, which is rather bogus, as they can simply use
-CONFIG_SOLUTION_ENGINE instead. This fixes it for some of the other
-solution engines that weren't included in the ifdef list (SH7206
-specifically).
+On Fri, 1 Jun 2007, Anand Jahagirdar wrote:
 
-There are also inb/outb definitions which are totally bogus (missing
-brackets in _both_ cases, SMC_CAN_USE_8BIT == 0, and even better, they
-try to use a 16-bit access to fake 8-bit access). Kill that nonsense off
-completely.
+>     when they try to flood the syslog using fork bombing attack, their 
+> messge will be printed only once in syslog and it will show how many 
+> times it has repeated. due to this he will not able to flood the 
+> syslog.and i am using only one single variable in my printk messge so it 
+> is quite not possible to flood the syslog.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Your argument is flawed - if the kernel provides more than one possibility 
+to flood the syslogd, the is free to invoke the events interleaved. This 
+trivially prevents syslogd from grouping identical reports together.
 
---
-
- drivers/net/smc91x.h |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
-index 111f23d..506bffc 100644
---- a/drivers/net/smc91x.h
-+++ b/drivers/net/smc91x.h
-@@ -281,17 +281,14 @@ SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- 
- #elif   defined(CONFIG_SUPERH)
- 
--#if defined(CONFIG_SH_7780_SOLUTION_ENGINE) || defined(CONFIG_SH_7722_SOLUTION_ENGINE)
-+#ifdef CONFIG_SOLUTION_ENGINE
- #define SMC_CAN_USE_8BIT       0
- #define SMC_CAN_USE_16BIT      1
- #define SMC_CAN_USE_32BIT      0
- #define SMC_IO_SHIFT           0
- #define SMC_NOWAIT             1
- 
--#define SMC_inb(a, r)          (inw((a) + ((r)&~1)) >> (8*(r%2)))&0xff
- #define SMC_inw(a, r)          inw((a) + (r))
--#define SMC_outb(v, a, r)      outw(((inw((a)+((r)&~1))*(0xff<<8*(r%2)))) | ((v)<<(8*(r&2)))), (a) + ((r)&~1))
--
- #define SMC_outw(v, a, r)      outw(v, (a) + (r))
- #define SMC_insw(a, r, p, l)   insw((a) + (r), p, l)
- #define SMC_outsw(a, r, p, l)  outsw((a) + (r), p, l)
+-- 
+Jiri Kosina
