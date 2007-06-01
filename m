@@ -1,112 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760525AbXFAOFK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbXFAOKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760525AbXFAOFK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 10:05:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758096AbXFAOE6
+	id S1760743AbXFAOKf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 10:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758223AbXFAOK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 10:04:58 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:49627 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757917AbXFAOE4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 10:04:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XXOVglhpohIEFqFZZnVvgo42ysaSMvK2SDZY/PoAOhRDPbiv15s1TbwkU1pfDG8N5w9ujqI5Ma/Noy+7twSdLUhduHkuNiiZzdFooTHTxqLNOifeIUr9QegKjGxL4jQjEpf+90/a2s/i0QNf/spLcP6mx/c40t62YZ+RSsqqMUM=
-Message-ID: <d120d5000706010704h71c817a9p55e0bba5d54efd3f@mail.gmail.com>
-Date: Fri, 1 Jun 2007 10:04:56 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Matthew Garrett" <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] Input: document the proper usage of EV_KEY and KEY_UNKNOWN
-Cc: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Richard Hughes" <hughsient@gmail.com>, linux-acpi@vger.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-In-Reply-To: <20070601131324.GB12204@srcf.ucam.org>
+	Fri, 1 Jun 2007 10:10:27 -0400
+Received: from mx2.compro.net ([216.54.166.4]:39985 "EHLO mx2.compro.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758121AbXFAOK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 10:10:26 -0400
+X-IronPort-AV: E=Sophos;i="4.16,373,1175486400"; 
+   d="scan'208";a="404064"
+Message-ID: <466028DB.3060509@compro.net>
+Date: Fri, 01 Jun 2007 10:10:35 -0400
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: floppy.c soft lockup
+References: <465C6359.1020106@compro.net> <20070530224650.04b33117.akpm@linux-foundation.org> <465EDB97.5070908@compro.net> <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net> <20070531192256.GA88@tv-sign.ru> <465F2D96.9060502@compro.net> <20070601110058.GA83@tv-sign.ru>
+In-Reply-To: <20070601110058.GA83@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11802004861625-git-send-email-hmh@hmh.eng.br>
-	 <200705312333.11477.dtor@insightbb.com>
-	 <20070601040824.GA5042@srcf.ucam.org>
-	 <200706010037.59496.dtor@insightbb.com>
-	 <20070601131324.GB12204@srcf.ucam.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/1/07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Fri, Jun 01, 2007 at 12:37:58AM -0400, Dmitry Torokhov wrote:
-> > On Friday 01 June 2007 00:08, Matthew Garrett wrote:
-> > > If you let users alter the kernel keymap, then you need to implement
-> > > support for resetting the kernel keymap on exit. Otherwise it's a
-> > > trivial DoS.
-> > >
-> >
-> > You already do - do you let your users play games with force-feedback
-> > joysticks? To load force feedback effect you need write permissions for
-> > corresponding event device.
->
-> That's much less of a problem, especially since (realistically) any
-> force feedback-aware application will reset the values on first use.
-> That's not the case for the keymap.
->
+Oleg Nesterov wrote:
+> I hope Ingo will correct me if I am wrong,
+> 
+> On 05/31, Mark Hounschell wrote:
+>> Oleg Nesterov wrote:
+>>> So, the main question is: is it possible that one of RT processes/threads pins itself
+>>> to some CPU and eats 100% cpu power?
+>>>
+>> The main process is pinned to a processor(2) with all _non-kernel_  processes/threads forced over to processor 1.
+>> Any already affinitized processes or kernel threads are left as is. Only user land stuff is moved. The main process
+>> is for sure _not_ relinquishing it's processor(2) intentionally.
+> 
+> This means that a non-rt kernel thread bound to CPU 2 can't run. In particular,
+> events/2. This means that the problem is not directly connected to floppy.c,
+> any flush_scheduled_work() (or schedule_on_each_cpu()) can't succeed.
+> 
 
-What I am trying to say - there already EVIOCSKEYCODE ioctl in the
-kernel. And for force feedback devices to work you need to nable
-writing to corresponding /dev/input/eventX thus opening possibility to
-alter the keymap table. I guess you coudl analyze capabilities of a
-device and only relax permissions for devices that have FF...
+Well, I have multiple I/O threads for many other types of I/O that don't have any problems. 
+And until these changes in 2.6.18 I didn't have any problems with the floppy. I have multiple
+ethernet threads, multiple scsi (SG) device threads, multiple rs232 device threads, parallel port, 
+and others, no problem??
 
-Anyway, I think that we don't want ordinary users to alter hardware
-keymapping, it should indeed be priveleged operation done by box's
-administrator. Hopefully the infrastructure (hal/udev/whatever) will
-be able to load proper keymap at boot time so even that is not needed.
 
-Why I think using kernel remapping_in addition_ to X remapping is better:
+> You can change irq/X/smp_affinity, but smp_apic_timer_interrupt() still can
+> queue work_struct on CPU 2 (for example, mm/slab.c uses per-cpu reap_work).
+> Since events/2 is blocked by the main RT thread, such a work_struct can't be
+> executed, and so flush_scheduled_work() hangs.
+> 
 
-- X remapping only works in X. Even if you say that major
-distributions presently moved all logic in X but I don't think it is
-the only true way (in fact I think that some of it should run as
-standalone daemons; if I press power button I want my box to shut down
-even if I happen to be at text console. Same goes for sleep).
+I don't mean to sound stupid but why would a process running on processor 1 require anything
+from events/2 when there is an events/1? Forgive my ignorance please.
 
-- KEY_PROG* are assigned somewhat randomly across devices, with
-KEY_PROG1 matching FN-F1 on laptop multimedia key and also on one of
-the buttons on that remote control that manufacturers tend to supply
-with those "desktop replacement" laptops. Remapping them in X will not
-satisfy user. However remappig into actions (like KEY_EJECTCD) on
-kernel level solves this. From user perspective there isn't really any
-difference - he assigns an action to a key.
+>> All the I/O threads, floppy included, are running
+>> on the other processor(1). During this failure only 1 or 2 of the I/O threads are actually doing anything.
+>> I assume that what ever is going on in the kernel/floppy driver on behalf of the floppy thread is being done on processor 1? 
+>> Processor 1 has lots of CPU time available.
+> 
+> Yes, but see above. flush_scheduled_work() needs a cooperation from events/2
+> which is bound to CPU 2.
+> 
 
-- Having devices generate KEY_UNKNOWN with a nice dialog box
-explaining what had happened will alert users of existance of events
-generated by such (esp. if they are unlabeled and hit by accident).
-For labeled keys we may ask user to submit necessary data to one of
-the projects (HAL?) to add to the database of devices/models/keymaps.
-If we were generating KEY_PROG1 more sophisticated users would simply
-remap the keys and move on without telling anybody.
+Again I don't understand why flush_scheduled_work() running on behalf of a process
+affinitized to processor-1 requires cooperation from events/2 (affinitized to processor-2)
+when there is an events/1 already affinitized to processor 1? Again though, Forgive my 
+ignorance please.
 
-- If using X remapping alone every user will have to repeat the task
-of mapping keycodes. In case when there are labels on the keyboard
-(but the kernel does not know what it is) that setup is likely to be
-identical for most users on the box. I venture to say that even with
-unlabeled keys the setup will be identical - first user will influence
-the rest.
+> If you changed irq/X/smp_affinity, the patch I sent should help, because
+> floppy_work can't be scheduled on CPU 2, but still I don't think it is right
+> to run 100% cpu-bound RT-process.
+> 
+> Oleg.
+> 
 
-The biggest cons for KEY_UNKNOWN + scancode is that presently we do
-not have the code to iteract with user.
+The patch you sent helps with no other intervention from me. But then so does 
+the patch mentioned in the original post.  I am able to bang on the floppies pretty
+hard doing all kinds of things with no trouble using either. 
 
-> > > The standard setup in an office environment is likely to be
-> > > multiuser.
-> >
-> > Huh? In my limited experience everyone in the office gets its own box.
-> > And I am not talking about software shop.
->
-> Standard is that everyone gets their own machine, but usually everyone
-> has an account on all of them.
+As far as a 100% cpu-bound RT-process goes, well I say I don't intentionally relinquish
+the processor but it's not really 100% cpu-bound. Running xosview I see some spare time. 
 
-Which is never used (except remotely)...
+Thanks
+Mark
 
--- 
-Dmitry
