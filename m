@@ -1,124 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbXFANcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760732AbXFANgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760587AbXFANcu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 09:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757184AbXFANcn
+	id S1760732AbXFANgQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 09:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbXFANgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 09:32:43 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:49796 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757066AbXFANcm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 09:32:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m56Oa6yIODTq7yrLYR7ZDSewRjeqO/uFwO4CaPFPo3h5ptyArs2x23bm08UcpHd30eUmnxuTgrqhgah8LnKCU6rsKddaJKC+1nEfjzOfQtjpCPc6tNbNA6f9UIz5Op62lc4akJyHUfkHVNmuGz1JvG3lzOXKVpqQlGC8pUVRrqU=
-Message-ID: <d9def9db0706010632n2efd3de3iff31eef3b3344e3b@mail.gmail.com>
-Date: Fri, 1 Jun 2007 15:32:40 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Bill Eldridge" <dcbill@volny.cz>
-Subject: Re: [linux-dvb] dst customization patchset
-Cc: "Uwe Bugla" <uwe.bugla@gmx.de>, akpm@linux-foundation.org,
-       linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org
-In-Reply-To: <465FCBD5.3040908@volny.cz>
+	Fri, 1 Jun 2007 09:36:05 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:49332 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757066AbXFANgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 09:36:04 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v14
+Date: Fri, 1 Jun 2007 16:35:02 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, pranith-kumar_d@mentorg.com
+References: <20070523120616.GA23407@elte.hu> <200705261758.26956.caglar@pardus.org.tr>
+In-Reply-To: <200705261758.26956.caglar@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart2768931.ufvtY1Ksb2";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070530211826.276640@gmx.net>
-	 <e0b07cc80705301808j697b816bibbbc0ed5742a69b8@mail.gmail.com>
-	 <465E56AB.1000905@volny.cz> <200705311541.41710.uwe.bugla@gmx.de>
-	 <d9def9db0705311503i3531b775p9cc226b81a547499@mail.gmail.com>
-	 <465FCBD5.3040908@volny.cz>
+Message-Id: <200706011635.02774.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/1/07, Bill Eldridge <dcbill@volny.cz> wrote:
->
-> Sounds good, Markus - do you have a list of known bugs that need to be
-> handled?
+--nextPart2768931.ufvtY1Ksb2
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yes, I put together a few things that came into mind:
-http://mcentral.de/wiki/index.php/Bugtracker
+Hi;
 
-> Is this something that can go up on the Wiki, or are there enough that a
-> bug tracking
-> system is required?
+26 May 2007 Cts tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 yazm=
+=C4=B1=C5=9Ft=C4=B1:=20
+> Under load (compiling any Qt app. or kernel with -j1 or -j2) audio always
+> goes sync with time (and i'm sure it never skips) but video starts slowdo=
+wn
+> and loses its sync with audio (like for the 10th sec. of a movie, audio is
+> at 10th sec. also, but the shown video is from 7th sec.).
 >
+> After some time video suddenly wants to sync with audio and starts to play
+> really fast (like fast-forward) and syncs with audio. But it will lose its
+> audio/video sync after a while and loop continues like that.
 
-Wiki/ML should be fine, people use to avoid the bugzilla on kernel.org
-although I'd be fine with it (at least for the em28xx project) but
-people prefer to add bugreports to the wiki or send mails.
+After a lots of private mail traffic and debuggin efforts with Ingo, yester=
+day=20
+i simply requested to ignore that problem (at least until i can reproduce=20
+same with different machines).=20
 
-> While timelines won't be enforceable for people doing things in their
-> spare time, it's
-> still useful to put up time goals and priority lists on projects, both
-> new development and
-> bug fixes, to keep momentum going and gauge progress, including seeing
-> that something
-> that should have been fixed isn't getting handled.
->
-> Can people accept Markus as a reasonable, informed arbiter of what will
-> go into the main tree
-> even if there are disagreements? It also sounds like new programmers
-> here  need more startup
-> instructions/assistance/advice and ground rules than on many open source
-> projects.
->
+Yesterday i turn back to vanilla 2.6.18.8 to see the situation with it and =
+i=20
+reproduce the problem even with lower loads.
 
-I would appreciate to get more people involved with that project,
-VDR/mythTV/mplayer/ffmpeg etc. projects use the outcoming work.
-While the v4l and dvb project is doing really hard at the moment and
-improvements are handled in a snail speed (if ever handled) this
-should really change.
+Seems like this piece of hardware is dieing [For a while my laptop starts t=
+o=20
+poweroff suddenly without any log/error etc] and i think all these problems=
+=20
+caused by this. Or at least/ for me/ this laptop (sony vaio fs-215b) is not=
+ a=20
+stable test bed for this kind of human involved testings.
 
-cheers,
-Markus
+Ingo cannot reproduce same audio/video out-of-sync problems with his setups=
+,=20
+and currently i'm the only person deals with that problem.=20
 
-> Regards,
-> Bill
->
-> Markus Rechberger wrote:
-> >
-> > Some developers are also sick of contributing since the whole
-> > community is flawed at the moment. I propose a few ways to go
-> >
-> > * stopping that signed off by madness that every driver developer has
-> > to sign off changes which happened at the core which will definitelly
-> > never happen because people _do not like each other_.
-> >
-> > * change the maintainership and push it over to me, even if it sounds
-> > selfish at the moment _every_ code which provides additional features
-> > and where noone expects further improvements within the next few weeks
-> > (without throwing away alot of work or generating useless extra work
-> > by telling someone to rewrite the core of his work); everyone still
-> > can try to write better code - but then he _has to do it completly_
-> > and get in peace with the projects by supporting them to get further.
-> >
-> > The problem I have with this project is that many more things are
-> > upcoming at the moment (including bug fixing) but there are certain
-> > developers which first weren't experienced enough, afterwards started
-> > to think about the issues which were tried to discuss at the beginning
-> > already and who don't have an overview about the requirements, neither
-> > do they want to discuss the requirements.
-> > I can name numerous of bugs of this project which can be solved but
-> > which just get ignored. Some known bugs dont even get explained to
-> > people who are interested in fixing them, so this is what I consider
-> > that it's a major problem.
-> >
-> > I'm looking for a serious discussion about it, if anyone wants to know
-> > about the history I can point out to many logfiles/older emails which
-> > deeply explain the whole video4linux/dvb issues - the project should
-> > turn back to a real community.
-> >
-> > Markus
-> >
->
->
->
->
+And for some boots kernel reports wrong frequency for my cpu (and notice th=
+e=20
+timing difference), [this maybe a overheat problem but aslo i'll try=20
+disabling CONFIG_NO_HZ as Ingo suggested]
 
+=2E..
+[    0.000000] Initializing CPU#0
+[    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
+[    0.000000] Detected 897.591 MHz processor.
+[   13.142654] Console: colour dummy device 80x25
+[   13.143609] Dentry cache hash table entries: 131072 (order: 7, 524288=20
+ bytes)
+[   13.144530] Inode-cache hash table entries: 65536 (order: 6, 262144 byte=
+s)
+=2E..
 
--- 
-Markus Rechberger
+=2E..
+[    0.000000] Initializing CPU#0
+[    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
+[    0.000000] Detected 1729.292 MHz processor.
+[    8.286228] Console: colour dummy device 80x25
+[    8.286650] Dentry cache hash table entries: 131072 (order: 7, 524288=20
+bytes)
+[    8.287058] Inode-cache hash table entries: 65536 (order: 6, 262144 byte=
+s)
+=2E..
+
+As a result, please ignore this problem until i can reproduce on different=
+=20
+machines or someone else reports the same problem :)
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart2768931.ufvtY1Ksb2
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGYCCGy7E6i0LKo6YRAgxsAJ0aALgq0OKCivH1vJvX5vk7f52RxACgm4ra
+hjDLeyjNjMeNJyRv14rxnis=
+=tJPG
+-----END PGP SIGNATURE-----
+
+--nextPart2768931.ufvtY1Ksb2--
