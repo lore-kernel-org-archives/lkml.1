@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbXFAI7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbXFAJWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758591AbXFAI7o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 04:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbXFAI7e
+	id S1758555AbXFAJWr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 05:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbXFAJWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 04:59:34 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:35248 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbXFAI7c convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 04:59:32 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070516170110.GC8113@lazybastard.org>
-References: <20070516170110.GC8113@lazybastard.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <B2D11B52-B25C-4063-BC4F-4066F78E286C@cam.ac.uk>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       David Chinner <dgc@sgi.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>
-Content-Transfer-Encoding: 8BIT
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [PATCH resend] introduce I_SYNC
-Date: Fri, 1 Jun 2007 09:59:17 +0100
-To: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>
-X-Mailer: Apple Mail (2.752.3)
+	Fri, 1 Jun 2007 05:22:39 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:1346 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755489AbXFAJWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 05:22:38 -0400
+Message-ID: <465FE67C.2040206@openvz.org>
+Date: Fri, 01 Jun 2007 13:27:24 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 8/8] Per-container pages reclamation
+References: <465D9739.8070209@openvz.org> <465D9B62.5050507@openvz.org> <20070530144737.56456aaf.akpm@linux-foundation.org> <465E85B5.2030106@linux.vnet.ibm.com> <465E93D7.2020506@linux.vnet.ibm.com>
+In-Reply-To: <465E93D7.2020506@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Balbir Singh wrote:
 
-On 16 May 2007, at 18:01, Jörn Engel wrote:
-> Patches fixes a deadlock problem well enough for LogFS to survive.   
-> The
-> problem itself is generic and seems to be ancient.  Shaggy has code in
-> JFS from about 2.4.20 that seems to work around the deadlock.  Dave
-> Chinner indicated that this could cause latency problems (not a
-> deadlock) on the NFS server side.
+[snip]
 
-I agree that your patch is a good idea.  I reviewed the latest  
-incarnation and it makes sense to me.  And your comment concerning  
-the flags is a very welcome addition.  Probably ought to find its way  
-into Documentation/filesystems/Locking or vfs.txt or somewhere like  
-that also.
-
-Note that once your patch is applied I think it would make sense to  
-follow up with a second patch to remove the I_LOCK flag completely.   
-The only remaining uses are either together with I_NEW in which case  
-I_LOCK can be removed altogether or can be substituted with I_NEW  
-when only I_LOCK is used.  This is because no places remain where we  
-set I_LOCK by itself any more with your patch.  The only place where  
-we set it is the place where a new inode gets created in memory and  
-in that place we also set I_NEW at the same time as I_LOCK.   
-wait_on_inode() can then be changed to wait on I_NEW instead of on  
-I_LOCKED.  That way we have one less confusing flag to worry about  
-and things are much easier to understand.
-
-> I still suspect that NTFS has hit the same deadlock and its current  
-> "fix" will cause data corruption instead.
-
-The NTFS "fix" will not cause data corruption at all.  The usage in  
-NTFS is very different...  I am afraid your patch does not address  
-the deadlock with NTFS or rather it only addresses the inode write  
-deadlock and does not address the get_new_inode() deadlock that  
-exists with ilookup5() and is avoided by ilookup5_nowait().  This  
-deadlock is inherent to what NTFS does so you don't need to worry  
-about it.  (If you want I am happy to explain it but I would rather  
-not waste my time explaining if no-one except me cares about it...)
-
-Best regards,
-
-	Anton
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+>>>> +	for_each_online_node(node) {
+>>>> +#ifdef CONFIG_HIGHMEM
+>>>> +		zones = NODE_DATA(node)->node_zonelists[ZONE_HIGHMEM].zones;
+>>>> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
+>>>> +			return 1;
+>>>> +#endif
+>>>> +		zones = NODE_DATA(node)->node_zonelists[ZONE_NORMAL].zones;
+>>>> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
+>>>> +			return 1;
+>>>> +	}
+>>> Definitely need to handle ZONE_DMA32 and ZONE_DMA (some architectures put
+>>> all memory into ZONE_DMA (or they used to))
+> 
+> Won't the node_zonelists[ZONE_NORMAL].zones contain all lower zones (including
+> ZONE_DMA and ZONE_DMA32) from various nodes organized by cost?
+> 
+> I need to go lookup the node_zonelists creation.
 
 
+OK, I've got it. The node's zonelist indexed with ZONE_XXX contains
+the zone specified and all the zones beyond it. Thus shrinking from
+ZONE_HIGHMEM (ZONE_NORMAL if the latter does not exist) is enough.
+
+Thanks,
+Pavel
