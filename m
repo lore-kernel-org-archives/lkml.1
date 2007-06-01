@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbXFAUiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764363AbXFAUit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763664AbXFAUiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762503AbXFAUiG
+	id S1764363AbXFAUit (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762503AbXFAUim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:38:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55709 "EHLO mail.dvmed.net"
+	Fri, 1 Jun 2007 16:38:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57505 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762365AbXFAUiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:38:03 -0400
-Message-ID: <466083A5.2080404@garzik.org>
-Date: Fri, 01 Jun 2007 16:37:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1762898AbXFAUil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:38:41 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+Date: Fri, 1 Jun 2007 22:44:38 +0200
+User-Agent: KMail/1.9.5
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+References: <fa.tUMR7tAB+jMgtfyl/LJ7U9QMgBs@ifi.uio.no> <200706012206.15794.rjw@sisk.pl> <m14plrzadk.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m14plrzadk.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-To: Brice Goglin <brice@myri.com>
-CC: Christoph Hellwig <hch@infradead.org>,
-       Steve Wise <swise@opengridcomputing.com>, divy@chelsio.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] cxgb3 - Add SW LRO support
-References: <20070225004423.20903.17036.stgit@localhost.localdomain>	 <20070226051304.GA13626@infradead.org>	 <1172585835.11870.13.camel@stevo-desktop>  <45E445D2.2090900@garzik.org> <1172588246.11870.24.camel@stevo-desktop> <45E45C6E.3000504@myri.com>
-In-Reply-To: <45E45C6E.3000504@myri.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200706012244.39019.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brice Goglin wrote:
-> Steve Wise wrote:
->> You're right.  But cxgb3 has it now in the driver (tested and working).
->> Shouldn't it be pulled in?  When the network stack design gets done
->> (which could take a few releases to finalize), all the drivers can be
->> updated to use it.  It doesn't seem reasonable to allow some drivers to
->> support LRO and others to not support it...
->>   
+[Removed the Zwane's address from the CC list, because I get rejects from it]
+
+On Friday, 1 June 2007 22:29, Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> I have to agree with Steve here. We have been requesting the inclusion
-> of myri10ge LRO for 5 months now (before 2.6.19). I could understand
-> that duplicating LRO code between s2io and myri10ge was not a good idea
-> at this point. But, I now see that Netxen got merged way later (in
-> 2.6.20) but it got its LRO merged immediately. I guess the LRO is
-> already duplicated between s2io and netxen then. It does not look fair
-> to me at all.
+> > Very well, but could you _please_ give us some time to do this?
+> >
+> > We know of the problem now and will work to fix it, but it's not _that_ easy.
+> >
+> > In fact, we also rely on the CPU hotplug's code that takes tasks away from the
+> > offlined CPUs (and does the opposite with respect to the onlined CPUs), so
+> > we just can't get rid of the CPU hotplug _right_ _now_.
+> 
+> Sure.  My primary point was to document this, and get things moving if
+> possible to fix it.  This patch is 2.6.23 at the earliest, so there is
+> some time to work on it even on the most optimistic merge schedule.
+> 
+> I just don't want to be complacent and let this problem sit undetected
+> in back corner any more.
 
-It was an error on my part, that should not be compounded.  Three wrongs 
-don't make a right, etc., etc.
+So, can you advise what we can do to get the "nonboot" CPUs out of the picture
+during a suspend/hibernation?
 
-The normal way this stuff works in Linux is that people work together to 
-create common code that everybody uses.  I would gladly accept patches 
-to rip out the code from NetXen.
+Greetings,
+Rafael
+ 
 
-	Jeff
-
-
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
