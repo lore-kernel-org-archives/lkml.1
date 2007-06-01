@@ -1,89 +1,416 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbXFAUvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764869AbXFAUv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932190AbXFAUvQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762971AbXFAUvE
+	id S1764869AbXFAUv6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763342AbXFAUvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:51:04 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4264 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762963AbXFAUvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:51:01 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+	Fri, 1 Jun 2007 16:51:51 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:58539 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762971AbXFAUvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:51:50 -0400
+Date: Fri, 1 Jun 2007 22:49:12 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.22-rc3-mm1
-Date: Fri, 1 Jun 2007 22:50:58 +0200
-User-Agent: KMail/1.9.5
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-       Arnd Bergmann <arndb@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org> <200705312243.18724.m.kozlowski@tuxland.pl> <20070531141943.5c4d587c.akpm@linux-foundation.org>
-In-Reply-To: <20070531141943.5c4d587c.akpm@linux-foundation.org>
+cc: Linux-kernel <linux-kernel@vger.kernel.org>, DervishD <lkml@dervishd.net>,
+       "Alexander E. Patrakov" <patrakov@ums.usu.ru>,
+       Antonino Daplas <adaplas@gmail.com>
+Subject: [PATCH] Kernel utf-8 handling
+In-Reply-To: <20070601142058.GA2587@DervishD>
+Message-ID: <Pine.LNX.4.61.0706012122010.11140@yvahk01.tjqt.qr>
+References: <20070601142058.GA2587@DervishD>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706012250.58962.m.kozlowski@tuxland.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 	This is from iMac G3. The spufs_mem_mmap_fault() code looks bad
-> > in arch/powerpc/platforms/cell/spufs/file.c but somehow I'm unable to find
-> > the patch to blame hmm.
-> > 
-> > arch/powerpc/platforms/cell/spufs/file.c: In function 'spufs_mem_mmap_fault':
-> > arch/powerpc/platforms/cell/spufs/file.c:122: error: 'address' undeclared (first use in this function)
-> > arch/powerpc/platforms/cell/spufs/file.c:122: error: (Each undeclared identifier is reported only once
-> > arch/powerpc/platforms/cell/spufs/file.c:122: error: for each function it appears in.)
-> > arch/powerpc/platforms/cell/spufs/file.c:141: error: expected ';' before 'if'
-> > arch/powerpc/platforms/cell/spufs/file.c:122: warning: unused variable 'addr0'
-> > make[3]: *** [arch/powerpc/platforms/cell/spufs/file.o] Blad 1
-> > make[2]: *** [arch/powerpc/platforms/cell/spufs] Blad 2
-> > make[1]: *** [arch/powerpc/platforms/cell] Blad 2
-> > 
-> 
-> Yeah, that's the fix-fault-vs-invalidate-race patches, or my poor attempt
-> to fix them when spufs changed.  I suppose I'll have a poke at it next time
-> I get the powerpc machine fired up.
+Hello to all,
 
-I #if 0'ed that piece of code inside spufs_mem_mmap_fault() and run make again.
-This is 'make allmodconfig && make' result:
 
-ERROR: ".ps3av_set_hdr" [drivers/ps3/ps3av_cmd.ko] undefined!
-ERROR: ".ps3av_do_pkt" [drivers/ps3/ps3av_cmd.ko] undefined!
-ERROR: ".ps3_vuart_write" [drivers/ps3/ps3av_cmd.ko] undefined!
-ERROR: ".ps3_vuart_read" [drivers/ps3/ps3av_cmd.ko] undefined!
-ERROR: ".ps3av_cmd_fin" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_av_video_disable_sig" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_set_video_mode" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_video_get_monitor_info" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_audio_active" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_set_audio_mode" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_set_av_audio_param" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_vuart_read" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_av_get_hw_conf" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_av_video_mute" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_av_tv_mute" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_audio_mode" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_av_hdmi_mode" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_set_av_video_cs" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_vuart_write" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_audio_mute" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_avb_param" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_init" [drivers/ps3/ps3av.ko] undefined!
-ERROR: ".ps3av_cmd_av_audio_mute" [drivers/ps3/ps3av.ko] undefined!
-ERROR: "pmu_batteries" [drivers/power/pmu_battery.ko] undefined!
-ERROR: "pmu_battery_count" [drivers/power/pmu_battery.ko] undefined!
-ERROR: "pmu_power_flags" [drivers/power/pmu_battery.ko] undefined!
-ERROR: "irq_map" [drivers/net/pasemi_mac.ko] undefined!
-ERROR: "pmu_batteries" [drivers/macintosh/apm_emu.ko] undefined!
-ERROR: "pmu_battery_count" [drivers/macintosh/apm_emu.ko] undefined!
-ERROR: "pmu_power_flags" [drivers/macintosh/apm_emu.ko] undefined!
-ERROR: ".cpufreq_set_policy" [arch/powerpc/platforms/cell/cbe_cpufreq.ko] undefined!
-make[1]: *** [__modpost] Blad 1
-make: *** [modules] Blad 2
+the following patch still lingers in my tree, can we have it merged?
 
-Regards,
 
-	Mariusz
+This patch fixes dead keys and copy/paste of non-ASCII characters
+in UTF-8 mode on Linux console. See more details about the
+original patch at: http://chris.heathens.co.nz/linux/utf8.html
+
+Already posted on
+	(Oldest) http://lkml.org/lkml/2003/5/31/148
+	         http://lkml.org/lkml/2005/12/24/69
+	(Recent) http://lkml.org/lkml/2006/8/7/75
+
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+Cc: Alexander E. Patrakov <patrakov@ums.usu.ru>
+
+---
+ drivers/char/consolemap.c  |   78 +++++++++++++++++++++++++++++++++++++++++----
+ drivers/char/keyboard.c    |   26 ++++++++++-----
+ drivers/char/selection.c   |   48 +++++++++++++++++++++++----
+ include/linux/consolemap.h |    5 ++
+ 4 files changed, 134 insertions(+), 23 deletions(-)
+
+Index: linux-2.6.22-rc3-git6/drivers/char/consolemap.c
+===================================================================
+--- linux-2.6.22-rc3-git6.orig/drivers/char/consolemap.c
++++ linux-2.6.22-rc3-git6/drivers/char/consolemap.c
+@@ -177,6 +177,7 @@ struct uni_pagedir {
+ 	unsigned long	refcount;
+ 	unsigned long	sum;
+ 	unsigned char	*inverse_translations[4];
++	u16		*inverse_trans_unicode;
+ 	int		readonly;
+ };
+ 
+@@ -207,6 +208,41 @@ static void set_inverse_transl(struct vc
+ 	}
+ }
+ 
++static void set_inverse_trans_unicode(struct vc_data *conp,
++				      struct uni_pagedir *p)
++{
++	int i, j, k, glyph;
++	u16 **p1, *p2;
++	u16 *q;
++
++	if (!p) return;
++	q = p->inverse_trans_unicode;
++	if (!q) {
++		q = p->inverse_trans_unicode =
++			kmalloc(MAX_GLYPH * sizeof(u16), GFP_KERNEL);
++		if (!q)
++			return;
++	}
++	memset(q, 0, MAX_GLYPH * sizeof(u16));
++
++	for (i = 0; i < 32; i++) {
++		p1 = p->uni_pgdir[i];
++		if (!p1)
++			continue;
++		for (j = 0; j < 32; j++) {
++			p2 = p1[j];
++			if (!p2)
++				continue;
++			for (k = 0; k < 64; k++) {
++				glyph = p2[k];
++				if (glyph >= 0 && glyph < MAX_GLYPH
++					       && q[glyph] < 32)
++		  			q[glyph] = (i << 11) + (j << 6) + k;
++			}
++		}
++	}
++}
++
+ unsigned short *set_translate(int m, struct vc_data *vc)
+ {
+ 	inv_translate[vc->vc_num] = m;
+@@ -217,19 +253,29 @@ unsigned short *set_translate(int m, str
+  * Inverse translation is impossible for several reasons:
+  * 1. The font<->character maps are not 1-1.
+  * 2. The text may have been written while a different translation map
+- *    was active, or using Unicode.
++ *    was active.
+  * Still, it is now possible to a certain extent to cut and paste non-ASCII.
+  */
+-unsigned char inverse_translate(struct vc_data *conp, int glyph)
++u16 inverse_translate(struct vc_data *conp, int glyph, int use_unicode)
+ {
+ 	struct uni_pagedir *p;
++	int m;
+ 	if (glyph < 0 || glyph >= MAX_GLYPH)
+ 		return 0;
+-	else if (!(p = (struct uni_pagedir *)*conp->vc_uni_pagedir_loc) ||
+-		 !p->inverse_translations[inv_translate[conp->vc_num]])
++	else if (!(p = (struct uni_pagedir *)*conp->vc_uni_pagedir_loc))
+ 		return glyph;
+-	else
+-		return p->inverse_translations[inv_translate[conp->vc_num]][glyph];
++	else if (use_unicode) {
++		if (!p->inverse_trans_unicode)
++			return glyph;
++		else
++			return p->inverse_trans_unicode[glyph];
++	} else {
++		m = inv_translate[conp->vc_num];
++		if (!p->inverse_translations[m])
++			return glyph;
++		else
++			return p->inverse_translations[m][glyph];
++	}
+ }
+ 
+ static void update_user_maps(void)
+@@ -243,6 +289,7 @@ static void update_user_maps(void)
+ 		p = (struct uni_pagedir *)*vc_cons[i].d->vc_uni_pagedir_loc;
+ 		if (p && p != q) {
+ 			set_inverse_transl(vc_cons[i].d, p, USER_MAP);
++			set_inverse_trans_unicode(vc_cons[i].d, p);
+ 			q = p;
+ 		}
+ 	}
+@@ -353,6 +400,10 @@ static void con_release_unimap(struct un
+ 		kfree(p->inverse_translations[i]);
+ 		p->inverse_translations[i] = NULL;
+ 	}
++	if (p->inverse_trans_unicode) {
++		kfree(p->inverse_trans_unicode);
++		p->inverse_trans_unicode = NULL;
++	}
+ }
+ 
+ void con_free_unimap(struct vc_data *vc)
+@@ -511,6 +562,7 @@ int con_set_unimap(struct vc_data *vc, u
+ 
+ 	for (i = 0; i <= 3; i++)
+ 		set_inverse_transl(vc, p, i); /* Update all inverse translations */
++	set_inverse_trans_unicode(vc, p);
+   
+ 	return err;
+ }
+@@ -561,6 +613,7 @@ int con_set_default_unimap(struct vc_dat
+ 
+ 	for (i = 0; i <= 3; i++)
+ 		set_inverse_transl(vc, p, i);	/* Update all inverse translations */
++	set_inverse_trans_unicode(vc, p);
+ 	dflt = p;
+ 	return err;
+ }
+@@ -617,6 +670,19 @@ void con_protect_unimap(struct vc_data *
+ 		p->readonly = rdonly;
+ }
+ 
++/* may be called during an interrupt */
++u32 conv_8bit_to_uni(unsigned char c)
++{
++	/*
++	 * Always use USER_MAP. This function is used by the keyboard,
++	 * which shouldn't be affected by G0/G1 switching, etc.
++	 * If the user map still contains default values, i.e. the
++	 * direct-to-font mapping, then assume user is using Latin1.
++	 */
++	unsigned short uni = translations[USER_MAP][c];
++	return uni == (0xf000 | c) ? c : uni;
++}
++
+ int
+ conv_uni_to_pc(struct vc_data *conp, long ucs) 
+ {
+Index: linux-2.6.22-rc3-git6/drivers/char/keyboard.c
+===================================================================
+--- linux-2.6.22-rc3-git6.orig/drivers/char/keyboard.c
++++ linux-2.6.22-rc3-git6/drivers/char/keyboard.c
+@@ -24,6 +24,7 @@
+  * 21-08-02: Converted to input API, major cleanup. (Vojtech Pavlik)
+  */
+ 
++#include <linux/consolemap.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/tty.h>
+@@ -308,10 +309,9 @@ static void applkey(struct vc_data *vc, 
+  * Many other routines do put_queue, but I think either
+  * they produce ASCII, or they produce some user-assigned
+  * string, and in both cases we might assume that it is
+- * in utf-8 already. UTF-8 is defined for words of up to 31 bits,
+- * but we need only 16 bits here
++ * in utf-8 already.
+  */
+-static void to_utf8(struct vc_data *vc, ushort c)
++static void to_utf8(struct vc_data *vc, uint c)
+ {
+ 	if (c < 0x80)
+ 		/*  0******* */
+@@ -320,11 +320,21 @@ static void to_utf8(struct vc_data *vc, 
+ 		/* 110***** 10****** */
+ 		put_queue(vc, 0xc0 | (c >> 6));
+ 		put_queue(vc, 0x80 | (c & 0x3f));
+-	} else {
++    	} else if (c < 0x10000) {
++	       	if (c >= 0xD800 && c < 0xE000)
++			return;
++		if (c == 0xFFFF)
++			return;
+ 		/* 1110**** 10****** 10****** */
+ 		put_queue(vc, 0xe0 | (c >> 12));
+ 		put_queue(vc, 0x80 | ((c >> 6) & 0x3f));
+ 		put_queue(vc, 0x80 | (c & 0x3f));
++    	} else if (c < 0x110000) {
++		/* 11110*** 10****** 10****** 10****** */
++		put_queue(vc, 0xf0 | (c >> 18));
++		put_queue(vc, 0x80 | ((c >> 12) & 0x3f));
++		put_queue(vc, 0x80 | ((c >> 6) & 0x3f));
++		put_queue(vc, 0x80 | (c & 0x3f));
+ 	}
+ }
+ 
+@@ -393,7 +403,7 @@ static unsigned int handle_diacr(struct 
+ 		return d;
+ 
+ 	if (kbd->kbdmode == VC_UNICODE)
+-		to_utf8(vc, d);
++		to_utf8(vc, conv_8bit_to_uni(d));
+ 	else if (d < 0x100)
+ 		put_queue(vc, d);
+ 
+@@ -407,7 +417,7 @@ static void fn_enter(struct vc_data *vc)
+ {
+ 	if (diacr) {
+ 		if (kbd->kbdmode == VC_UNICODE)
+-			to_utf8(vc, diacr);
++			to_utf8(vc, conv_8bit_to_uni(diacr));
+ 		else if (diacr < 0x100)
+ 			put_queue(vc, diacr);
+ 		diacr = 0;
+@@ -617,7 +627,7 @@ static void k_unicode(struct vc_data *vc
+ 		return;
+ 	}
+ 	if (kbd->kbdmode == VC_UNICODE)
+-		to_utf8(vc, value);
++		to_utf8(vc, conv_8bit_to_uni(value));
+ 	else if (value < 0x100)
+ 		put_queue(vc, value);
+ }
+@@ -775,7 +785,7 @@ static void k_shift(struct vc_data *vc, 
+ 	/* kludge */
+ 	if (up_flag && shift_state != old_state && npadch != -1) {
+ 		if (kbd->kbdmode == VC_UNICODE)
+-			to_utf8(vc, npadch & 0xffff);
++			to_utf8(vc, npadch);
+ 		else
+ 			put_queue(vc, npadch & 0xff);
+ 		npadch = -1;
+Index: linux-2.6.22-rc3-git6/drivers/char/selection.c
+===================================================================
+--- linux-2.6.22-rc3-git6.orig/drivers/char/selection.c
++++ linux-2.6.22-rc3-git6/drivers/char/selection.c
+@@ -20,6 +20,7 @@
+ 
+ #include <asm/uaccess.h>
+ 
++#include <linux/kbd_kern.h>
+ #include <linux/vt_kern.h>
+ #include <linux/consolemap.h>
+ #include <linux/selection.h>
+@@ -34,6 +35,7 @@ extern void poke_blanked_console(void);
+ /* Variables for selection control. */
+ /* Use a dynamic buffer, instead of static (Dec 1994) */
+ struct vc_data *sel_cons;		/* must not be deallocated */
++static int use_unicode;
+ static volatile int sel_start = -1; 	/* cleared by clear_selection */
+ static int sel_end;
+ static int sel_buffer_lth;
+@@ -54,10 +56,11 @@ static inline void highlight_pointer(con
+ 	complement_pos(sel_cons, where);
+ }
+ 
+-static unsigned char
++static u16
+ sel_pos(int n)
+ {
+-	return inverse_translate(sel_cons, screen_glyph(sel_cons, n));
++	return inverse_translate(sel_cons, screen_glyph(sel_cons, n),
++				use_unicode);
+ }
+ 
+ /* remove the current selection highlight, if any,
+@@ -86,8 +89,8 @@ static u32 inwordLut[8]={
+   0xFF7FFFFF  /* latin-1 accented letters, not division sign */
+ };
+ 
+-static inline int inword(const unsigned char c) {
+-	return ( inwordLut[c>>5] >> (c & 0x1F) ) & 1;
++static inline int inword(const u16 c) {
++	return c > 0xff || (( inwordLut[c>>5] >> (c & 0x1F) ) & 1);
+ }
+ 
+ /* set inwordLut contents. Invoked by ioctl(). */
+@@ -108,13 +111,36 @@ static inline unsigned short limit(const
+ 	return (v > u) ? u : v;
+ }
+ 
++/* stores the char in UTF8 and returns the number of bytes used (1-3) */
++int store_utf8(u16 c, char *p)
++{
++	if (c < 0x80) {
++		/*  0******* */
++		p[0] = c;
++		return 1;
++	} else if (c < 0x800) {
++		/* 110***** 10****** */
++		p[0] = 0xc0 | (c >> 6);
++		p[1] = 0x80 | (c & 0x3f);
++		return 2;
++    	} else {
++		/* 1110**** 10****** 10****** */
++		p[0] = 0xe0 | (c >> 12);
++		p[1] = 0x80 | ((c >> 6) & 0x3f);
++		p[2] = 0x80 | (c & 0x3f);
++		return 3;
++    	}
++}
++
+ /* set the current selection. Invoked by ioctl() or by kernel code. */
+ int set_selection(const struct tiocl_selection __user *sel, struct tty_struct *tty)
+ {
+ 	struct vc_data *vc = vc_cons[fg_console].d;
+ 	int sel_mode, new_sel_start, new_sel_end, spc;
+ 	char *bp, *obp;
+-	int i, ps, pe;
++	int i, ps, pe, multiplier;
++	u16 c;
++	struct kbd_struct *kbd = kbd_table + fg_console;
+ 
+ 	poke_blanked_console();
+ 
+@@ -158,6 +184,7 @@ int set_selection(const struct tiocl_sel
+ 		clear_selection();
+ 		sel_cons = vc_cons[fg_console].d;
+ 	}
++	use_unicode = kbd && kbd->kbdmode == VC_UNICODE;
+ 
+ 	switch (sel_mode)
+ 	{
+@@ -240,7 +267,8 @@ int set_selection(const struct tiocl_sel
+ 	sel_end = new_sel_end;
+ 
+ 	/* Allocate a new buffer before freeing the old one ... */
+-	bp = kmalloc((sel_end-sel_start)/2+1, GFP_KERNEL);
++	multiplier = use_unicode ? 3 : 1;  /* chars can take up to 3 bytes */
++	bp = kmalloc((sel_end-sel_start)/2*multiplier+1, GFP_KERNEL);
+ 	if (!bp) {
+ 		printk(KERN_WARNING "selection: kmalloc() failed\n");
+ 		clear_selection();
+@@ -251,8 +279,12 @@ int set_selection(const struct tiocl_sel
+ 
+ 	obp = bp;
+ 	for (i = sel_start; i <= sel_end; i += 2) {
+-		*bp = sel_pos(i);
+-		if (!isspace(*bp++))
++		c = sel_pos(i);
++		if (use_unicode)
++			bp += store_utf8(c, bp);
++		else
++			*bp++ = c;
++		if (!isspace(c))
+ 			obp = bp;
+ 		if (! ((i + 2) % vc->vc_size_row)) {
+ 			/* strip trailing blanks from line and add newline,
+Index: linux-2.6.22-rc3-git6/include/linux/consolemap.h
+===================================================================
+--- linux-2.6.22-rc3-git6.orig/include/linux/consolemap.h
++++ linux-2.6.22-rc3-git6/include/linux/consolemap.h
+@@ -8,9 +8,12 @@
+ #define IBMPC_MAP 2
+ #define USER_MAP 3
+ 
++#include <linux/types.h>
++
+ struct vc_data;
+ 
+-extern unsigned char inverse_translate(struct vc_data *conp, int glyph);
++extern u16 inverse_translate(struct vc_data *conp, int glyph, int use_unicode);
+ extern unsigned short *set_translate(int m, struct vc_data *vc);
+ extern int conv_uni_to_pc(struct vc_data *conp, long ucs);
++extern u32 conv_8bit_to_uni(unsigned char c);
+ void console_map_init(void);
