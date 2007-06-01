@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761193AbXFAPxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbXFAPyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761193AbXFAPxm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 11:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbXFAPxe
+	id S1761580AbXFAPyZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 11:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757593AbXFAPyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 11:53:34 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:15030 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755411AbXFAPxd (ORCPT
+	Fri, 1 Jun 2007 11:54:18 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:60450 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756299AbXFAPyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 11:53:33 -0400
-Subject: Re: [PATCH 3/5] lockstat: core infrastructure
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1180711606.15884.32.camel@imap.mvista.com>
-References: <20070529125248.877196281@chello.nl>
-	 <20070529130107.112347096@chello.nl>
-	 <1180470525.32594.71.camel@imap.mvista.com>
-	 <20070530132431.GA23947@elte.hu>
-	 <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com>
-	 <20070530134907.GA27085@elte.hu>
-	 <1180544796.32594.184.camel@imap.mvista.com>
-	 <1180545380.2958.1.camel@lappy>
-	 <1180545913.32594.194.camel@imap.mvista.com>
-	 <20070601131249.GA17059@elte.hu>
-	 <1180711606.15884.32.camel@imap.mvista.com>
-Content-Type: text/plain
-Date: Fri, 01 Jun 2007 17:52:33 +0200
-Message-Id: <1180713154.5676.4.camel@lappy>
+	Fri, 1 Jun 2007 11:54:17 -0400
+Date: Fri, 1 Jun 2007 11:54:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 9/9] Scheduler profiling - Use conditional calls
+Message-ID: <20070601155413.GA1216@Krystal>
+References: <20070530140025.917261793@polymtl.ca> <20070530140229.811672406@polymtl.ca> <20070530133407.4f5789a0.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070530133407.4f5789a0.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:39:49 up 4 days, 18 min,  2 users,  load average: 0.41, 0.43, 0.35
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-01 at 08:26 -0700, Daniel Walker wrote:
-> On Fri, 2007-06-01 at 15:12 +0200, Ingo Molnar wrote:
-> > * Daniel Walker <dwalker@mvista.com> wrote:
-> > 
-> > > On Wed, 2007-05-30 at 19:16 +0200, Peter Zijlstra wrote:
-> > 
-> > > > I think you are mistaken here; the two are similar but not 
-> > > > identical.
-> > > > 
-> > > > I see sched_clock() as fast first, accurate second. Whereas the 
-> > > > clocksource thing is accurate first, fast second.
-> > > 
-> > > This is true .. However, if there is a speed different it's small.
-> > 
-> > Ugh. Have you ever compared pmtimer (or even hpet) against TSC based 
-> > sched_clock()? What you write is so wrong that it's not even funny. You 
-> > keep repeating this nonsense despite having been told multiple times 
-> > that you are dead wrong.
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Wed, 30 May 2007 10:00:34 -0400
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> Yes I have, and your right there is a difference, and a big
-> difference .. Above I was referring only to the TSC clocksource, since
-> that's an apples to apples comparison .. I would never compare the TSC
-> to the acpi_pm, that's no contest ..
+> > @@ -2990,7 +2991,8 @@
+> >  			print_irqtrace_events(prev);
+> >  		dump_stack();
+> >  	}
+> > -	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
+> > +	cond_call(profile_on,
+> > +		profile_hit(SCHED_PROFILING, __builtin_return_address(0)));
+> >  
 > 
-> The acpi_pm as sched_clock() with hackbench was about %25 slower, the
-> pit was 10x slower approximately. (I did this months ago.)
+> That's looking pretty neat.  Do you have any before-and-after performance
+> figures for i386 and for a non-optimised architecture?
 
-The whole issue is that you don't have any control over what clocksource
-you'll end up with. If it so happens that pmtimer gets selected your
-whole box will crawl if its used liberaly, like the patch under
-discussion does.
+Sure, here is the result of a small test comparing:
+1 - Branch depending on a cache miss (has to fetch in memory, caused by a 128
+    bytes stride)). This is the test that is likely to look like what
+    side-effect the original profile_hit code was causing, under the
+    assumption that the kernel is already using L1 and L2 caches at
+    their full capacity and that a supplementary data load would cause
+    cache trashing.
+2 - Branch depending on L1 cache hit. Just for comparison.
+3 - Branch depending on a load immediate in the instruction stream.
 
-So, having two interfaces, one fast and one accurate is the right answer
-IMHO.
+It has been compiled with gcc -O2. Tests done on a 3GHz P4.
 
-And I agree, that if the arch has a fast clock but doesn't use it for
-sched_clock() that would be a shortcoming of that arch.
+In the first test series, the branch is not taken:
+
+number of tests : 1000
+number of branches per test : 81920
+memory hit cycles per iteration (mean) : 48.252
+L1 cache hit cycles per iteration (mean) : 16.1693
+instruction stream based test, cycles per iteration (mean) : 16.0432
 
 
+In the second test series, the branch is taken and an integer is
+incremented within the block:
+
+number of tests : 1000
+number of branches per test : 81920
+memory hit cycles per iteration (mean) : 48.2691
+L1 cache hit cycles per iteration (mean) : 16.396
+instruction stream based test, cycles per iteration (mean) : 16.0441
+
+Therefore, the memory fetch based test seems to be 200% slower than the
+load immediate based test.
+
+(I am adding these results to the documentation)
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
