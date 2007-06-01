@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbXFAVY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762866AbXFAVbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763695AbXFAVY6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760935AbXFAVYu
+	id S1762866AbXFAVbs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759910AbXFAVbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:24:50 -0400
-Received: from homer.mvista.com ([63.81.120.155]:52667 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760918AbXFAVYt (ORCPT
+	Fri, 1 Jun 2007 17:31:41 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3248 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759162AbXFAVbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:24:49 -0400
-Message-ID: <46608EFE.1030202@ru.mvista.com>
-Date: Sat, 02 Jun 2007 01:26:22 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Geller Sandor <wildy@petra.hos.u-szeged.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: HPT374 IDE problem with 2.6.21.* kernels
-References: <Pine.LNX.4.62.0705301112170.1260@petra.hos.u-szeged.hu> <20070601134607.ce4a37bd.akpm@linux-foundation.org> <46608764.5060807@ru.mvista.com> <Pine.LNX.4.62.0706012311320.16639@petra.hos.u-szeged.hu>
-In-Reply-To: <Pine.LNX.4.62.0706012311320.16639@petra.hos.u-szeged.hu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jun 2007 17:31:40 -0400
+Date: Fri, 1 Jun 2007 22:31:30 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Maximus <john.maximus@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: dma_alloc_coherent fails
+Message-ID: <20070601213129.GC5400@flint.arm.linux.org.uk>
+Mail-Followup-To: Maximus <john.maximus@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <3634de740706010946iabd6c51rf7e9a36463e3fca3@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3634de740706010946iabd6c51rf7e9a36463e3fca3@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Fri, Jun 01, 2007 at 10:16:41PM +0530, Maximus wrote:
+> Hi,
+> Am using a linux 2.6.19 kernel for arm. the dma_alloc_coherent
+> function call in the kernel for 38400 bytes fails.
+> 
+> Has anyone faced this problem before?.
+> 
+> What could be make dma_alloc_coherent to success sometimes and fail 
+> sometimes?.
 
-Geller Sandor wrote:
+Memory fragmentation.  Large allocations (> 1 page) are always unreliable.
 
->>>> I saw a similar report yesterday with '2.6.21.1 - 97% wait time on 
->>>> IDE operations' subject.
-
->>>> After upgrading from 2.6.20.7 kernel to 2.6.21.1 my system started 
->>>> to reset infrequenly the IDE bus. In the syslog DMA timeout, 
->>>> resetting IDE bus messages appeared. I've changed the two disks 
->>>> attached to the HPT374 controller, and always the first disk had 
->>>> problems. I've replaced cables, plugged the disks into other IDE 
->>>> ports, but it was only a matter of time to experience an IDE reset. 
->>>> When I upgraded to 2.6.21.3 the resets became much more frequent, 
->>>> this time even DMA was disabled too on the first disk. I turned DMA 
->>>> back Manually with hdparm, and a few seconds of intense IO activity 
->>>> resulted in another IDE reset.
->>
->>
->>>> Reverting back to 2.6.20.12 the problem seems to be gone. BTW I'm 
->>>> using the PATA driver for the HTP374, not the libata one.
->>
->>
->>>> Is this a known problem/ is there a way I can help locating the 
->>>> cause of the problem?
-
->>   Yes, please post the boot log and the IDE reset log too for starters...
-
->>> (cc's added)
-
-> The log of a typical IDE reset is available here:
-
-> http://petra.hos.u-szeged.hu/~wildy/syslog.gz
-
-> This was the worst case: the IDE bus was resetted during the system boot.
-
-    Could you try setting HPT374_ALLOW_ATA133_6 to 0 in 
-drivers/ide/pci/hpt366.c and rebuild/reboot the kernel?
-
-MBR, Sergei
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
