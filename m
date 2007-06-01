@@ -1,102 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbXFAE02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbXFAEag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbXFAE02 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 00:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbXFAE0U
+	id S1755593AbXFAEag (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 00:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbXFAEa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 00:26:20 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:60575 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751652AbXFAE0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 00:26:20 -0400
-Date: Fri, 1 Jun 2007 13:25:15 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] sparsemem: Shut up unused symbol compiler warnings.
-Message-ID: <20070601042515.GA8628@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 1 Jun 2007 00:30:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35638
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751884AbXFAEa3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 00:30:29 -0400
+Date: Thu, 31 May 2007 21:30:42 -0700 (PDT)
+Message-Id: <20070531.213042.76771817.davem@davemloft.net>
+To: venkatesh.pallipadi@intel.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070529180112.GC5411@linux-os.sc.intel.com>
+References: <20070529180112.GC5411@linux-os.sc.intel.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__kmalloc_section_memmap()/__kfree_section_memmap() and friends are only
-used by the memory hotplug code. Move these in to the existing
-CONFIG_MEMORY_HOTPLUG block.
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Date: Tue, 29 May 2007 11:01:13 -0700
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> 
+> round_jiffies for net dev watchdog timer.
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
---
-
- mm/sparse.c |   42 +++++++++++++++++++++---------------------
- 1 file changed, 21 insertions(+), 21 deletions(-)
-
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 1302f83..35f739a 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -229,6 +229,7 @@ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
- 	return NULL;
- }
- 
-+#ifdef CONFIG_MEMORY_HOTPLUG
- static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
- {
- 	struct page *page, *ret;
-@@ -269,27 +270,6 @@ static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
- }
- 
- /*
-- * Allocate the accumulated non-linear sections, allocate a mem_map
-- * for each and record the physical to section mapping.
-- */
--void __init sparse_init(void)
--{
--	unsigned long pnum;
--	struct page *map;
--
--	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
--		if (!valid_section_nr(pnum))
--			continue;
--
--		map = sparse_early_mem_map_alloc(pnum);
--		if (!map)
--			continue;
--		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
--	}
--}
--
--#ifdef CONFIG_MEMORY_HOTPLUG
--/*
-  * returns the number of sections whose mem_maps were properly
-  * set.  If this is <=0, then that means that the passed-in
-  * map was not consumed and must be freed.
-@@ -329,3 +309,23 @@ out:
- 	return ret;
- }
- #endif
-+
-+/*
-+ * Allocate the accumulated non-linear sections, allocate a mem_map
-+ * for each and record the physical to section mapping.
-+ */
-+void __init sparse_init(void)
-+{
-+	unsigned long pnum;
-+	struct page *map;
-+
-+	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
-+		if (!valid_section_nr(pnum))
-+			continue;
-+
-+		map = sparse_early_mem_map_alloc(pnum);
-+		if (!map)
-+			continue;
-+		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
-+	}
-+}
+Patch applied, thanks.
