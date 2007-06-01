@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbXFATvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764093AbXFATw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764001AbXFATvm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 15:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762367AbXFATvg
+	id S1764093AbXFATw5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 15:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761787AbXFATwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 15:51:36 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60833 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762078AbXFATvf (ORCPT
+	Fri, 1 Jun 2007 15:52:51 -0400
+Received: from ms-smtp-01.tampabay.rr.com ([65.32.5.131]:52881 "EHLO
+	ms-smtp-01.tampabay.rr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761963AbXFATwv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 15:51:35 -0400
-Date: Fri, 1 Jun 2007 12:51:33 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Jackson <pj@sgi.com>
-cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-In-Reply-To: <20070601124757.fe91a002.pj@sgi.com>
-Message-ID: <Pine.LNX.4.64.0706011249530.3598@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
- <Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
- <20070601121114.b165f1e8.pj@sgi.com> <Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
- <20070601124757.fe91a002.pj@sgi.com>
+	Fri, 1 Jun 2007 15:52:51 -0400
+Message-ID: <466078FF.2080508@cfl.rr.com>
+Date: Fri, 01 Jun 2007 15:52:31 -0400
+From: Mark Hounschell <dmarkh@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Mark Hounschell <markh@compro.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: floppy.c soft lockup
+References: <20070530224650.04b33117.akpm@linux-foundation.org> <465EDB97.5070908@compro.net> <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net> <20070531192256.GA88@tv-sign.ru> <465F2D96.9060502@compro.net> <20070601110058.GA83@tv-sign.ru> <466028DB.3060509@compro.net> <20070601151605.GA108@tv-sign.ru> <4660534E.6050903@cfl.rr.com> <20070601183642.GA92@tv-sign.ru>
+In-Reply-To: <20070601183642.GA92@tv-sign.ru>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007, Paul Jackson wrote:
-
-> > The allocated array has 0 bytes. Any dereference is an error.
+Oleg Nesterov wrote:
+> On 06/01, Mark Hounschell wrote:
+>> Oleg Nesterov wrote:
+>>> Could you apply the trivial patch below, and change the i/o thread to do
+>>>
+>>> 		prctl(1234);				// hangs ???
+>>> 		printf(something);
+>>> 		ioctl(Q->DevSpec1, FDSETPRM, &medprm);	// this hangs
+>>>
+>>> to see if prctl() hangs or not? This way we can narrow the problem.
+>>> (of course, you can just kill the above ioctl() if this is possible).
+>>>
+>>> Thanks!
+>>>
+>>> Oleg.
+>>>
+>>> --- OLD/kernel/sys.c~	2007-04-03 13:05:02.000000000 +0400
+>>> +++ OLD/kernel/sys.c	2007-06-01 18:56:22.000000000 +0400
+>>> @@ -2147,6 +2147,11 @@ asmlinkage long sys_prctl(int option, un
+>>>  {
+>>>  	long error;
+>>>  
+>>> +	if (option == 1234) {
+>>> +		flush_scheduled_work();
+>>> +		return 0;
+>>> +	}
+>>> +
+>>>  	error = security_task_prctl(option, arg2, arg3, arg4, arg5);
+>>>  	if (error)
+>>>  		return error;
+>>>
+>>> -
+>>
+>> Ok the prctl never returned. I just replaced the ioctl with it and added
+>> a printf before and after. I only get the one before. The thread is hung
+>> at this point just as if I'd done the ioctl?
 > 
-> Well, then, that doesn't work either.
+> Thanks. So we can rule out floppy.c. flush_scheduled_work/flush_workqueue
+> is broken by this RT application. Imho, this is not the kernel problem.
 > 
-> We -agree- we can't have this failing. You suggested (if I understood
-> correctly, which I doubt) that we set the pointer to NULL, and noted
-> that derefencing a NULL pointer would fail.  I agree such derefences
-> would fail, and tried to point out that this would be bad.  We can't
-> have pointer dereferences failing in the kernel ... duh.
+> Now I am very sure that the initial suspect was correct: cpu starvation.
+> I can cook a debug patch to be 100% sure tomorrow, which kernel version is
+> most convenient to you?
 > 
-> Your reply seems like a non sequiter to me, pointing out that having
-> a pointer to an array of 0 bytes fails as well.  Ok - that's bad too.
 
-Think about it some more...
- 
-> So we cannot have a NULL pointer, used unchecked, and we cannot have
-> a non-NULL pointer to a zero byte array, used unchecked.
+2.6.22-rc3 is fine thanks.
 
-We must have a NULL pointer exactly because it cannot be dereferenced. It 
-is a safety precaution that the following code will not deference the 
-pointer to the array of zero size. Because attempting to access an object 
-in an array with zero object in them is an error.
+Regards
+Mark
+
