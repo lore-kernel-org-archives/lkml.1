@@ -1,95 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXFAIXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbXFAIiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759905AbXFAIXF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 04:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbXFAIWx
+	id S1758044AbXFAIiG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 04:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbXFAIhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 04:22:53 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:4772 "EHLO kernel.dk"
+	Fri, 1 Jun 2007 04:37:55 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:41026 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754188AbXFAIWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 04:22:51 -0400
-Date: Fri, 1 Jun 2007 10:21:41 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: David Chinner <dgc@sgi.com>, david@lang.hm,
-       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,  and dm/md.
-Message-ID: <20070601082140.GP32105@kernel.dk>
-References: <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <20070531070656.GK32105@kernel.dk> <465F8F71.20302@gmail.com>
-Mime-Version: 1.0
+	id S1751615AbXFAIhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 04:37:54 -0400
+Date: Fri, 1 Jun 2007 17:36:48 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] smc91x: sh solution engine fixes.
+Message-ID: <20070601083648.GA11035@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jeff Garzik <jeff@garzik.org>,
+	Nobuhiro Iwamatsu <iwamatsu@nigauri.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <465F8F71.20302@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01 2007, Tejun Heo wrote:
-> Jens Axboe wrote:
-> > On Thu, May 31 2007, David Chinner wrote:
-> >> On Thu, May 31, 2007 at 08:26:45AM +0200, Jens Axboe wrote:
-> >>> On Thu, May 31 2007, David Chinner wrote:
-> >>>> IOWs, there are two parts to the problem:
-> >>>>
-> >>>> 	1 - guaranteeing I/O ordering
-> >>>> 	2 - guaranteeing blocks are on persistent storage.
-> >>>>
-> >>>> Right now, a single barrier I/O is used to provide both of these
-> >>>> guarantees. In most cases, all we really need to provide is 1); the
-> >>>> need for 2) is a much rarer condition but still needs to be
-> >>>> provided.
-> >>>>
-> >>>>> if I am understanding it correctly, the big win for barriers is that you 
-> >>>>> do NOT have to stop and wait until the data is on persistant media before 
-> >>>>> you can continue.
-> >>>> Yes, if we define a barrier to only guarantee 1), then yes this
-> >>>> would be a big win (esp. for XFS). But that requires all filesystems
-> >>>> to handle sync writes differently, and sync_blockdev() needs to
-> >>>> call blkdev_issue_flush() as well....
-> >>>>
-> >>>> So, what do we do here? Do we define a barrier I/O to only provide
-> >>>> ordering, or do we define it to also provide persistent storage
-> >>>> writeback? Whatever we decide, it needs to be documented....
-> >>> The block layer already has a notion of the two types of barriers, with
-> >>> a very small amount of tweaking we could expose that. There's absolutely
-> >>> zero reason we can't easily support both types of barriers.
-> >> That sounds like a good idea - we can leave the existing
-> >> WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
-> >> behaviour that only guarantees ordering. The filesystem can then
-> >> choose which to use where appropriate....
-> > 
-> > Precisely. The current definition of barriers are what Chris and I came
-> > up with many years ago, when solving the problem for reiserfs
-> > originally. It is by no means the only feasible approach.
-> > 
-> > I'll add a WRITE_ORDERED command to the #barrier branch, it already
-> > contains the empty-bio barrier support I posted yesterday (well a
-> > slightly modified and cleaned up version).
-> 
-> Would that be very different from issuing barrier and not waiting for
-> its completion?  For ATA and SCSI, we'll have to flush write back cache
-> anyway, so I don't see how we can get performance advantage by
-> implementing separate WRITE_ORDERED.  I think zero-length barrier
-> (haven't looked at the code yet, still recovering from jet lag :-) can
-> serve as genuine barrier without the extra write tho.
+The current smc91x I/O routines ifdef the solution engine subtypes
+individually, which is rather bogus, as they can simply use
+CONFIG_SOLUTION_ENGINE instead. This fixes it for some of the other
+solution engines that weren't included in the ifdef list (SH7206
+specifically).
 
-As always, it depends :-)
+There are also inb/outb definitions which are totally bogus (missing
+brackets in _both_ cases, SMC_CAN_USE_8BIT == 0, and even better, they
+try to use a 16-bit access to fake 8-bit access). Kill that nonsense off
+completely.
 
-If you are doing pure flush barriers, then there's no difference. Unless
-you only guarantee ordering wrt previously submitted requests, in which
-case you can eliminate the post flush.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-If you are doing ordered tags, then just setting the ordered bit is
-enough. That is different from the barrier in that we don't need a flush
-of FUA bit set.
+--
 
-In reality maybe the difference isn't all that great, at least we can
-start by having WRITE_ORDERED == WRITE_BARRIER.
+ drivers/net/smc91x.h |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
--- 
-Jens Axboe
-
+diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
+index 111f23d..506bffc 100644
+--- a/drivers/net/smc91x.h
++++ b/drivers/net/smc91x.h
+@@ -281,17 +281,14 @@ SMC_outw(u16 val, void __iomem *ioaddr, int reg)
+ 
+ #elif   defined(CONFIG_SUPERH)
+ 
+-#if defined(CONFIG_SH_7780_SOLUTION_ENGINE) || defined(CONFIG_SH_7722_SOLUTION_ENGINE)
++#ifdef CONFIG_SOLUTION_ENGINE
+ #define SMC_CAN_USE_8BIT       0
+ #define SMC_CAN_USE_16BIT      1
+ #define SMC_CAN_USE_32BIT      0
+ #define SMC_IO_SHIFT           0
+ #define SMC_NOWAIT             1
+ 
+-#define SMC_inb(a, r)          (inw((a) + ((r)&~1)) >> (8*(r%2)))&0xff
+ #define SMC_inw(a, r)          inw((a) + (r))
+-#define SMC_outb(v, a, r)      outw(((inw((a)+((r)&~1))*(0xff<<8*(r%2)))) | ((v)<<(8*(r&2)))), (a) + ((r)&~1))
+-
+ #define SMC_outw(v, a, r)      outw(v, (a) + (r))
+ #define SMC_insw(a, r, p, l)   insw((a) + (r), p, l)
+ #define SMC_outsw(a, r, p, l)  outsw((a) + (r), p, l)
