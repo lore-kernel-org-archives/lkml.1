@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761288AbXFAQXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761715AbXFAQYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761288AbXFAQXp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 12:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758906AbXFAQXj
+	id S1761715AbXFAQYx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 12:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758906AbXFAQYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 12:23:39 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:57694 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753781AbXFAQXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 12:23:38 -0400
-Subject: Re: [patch] Move led attributes out of device name and into sysfs
-	attributes, was Re: LED devices
-From: Richard Purdie <rpurdie@openedhand.com>
-To: Richard Hughes <hughsient@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       "kay.sievers" <kay.sievers@vrfy.org>,
-       "Bryn M. Reeves" <breeves@redhat.com>, John Lenz <lenz@cs.wisc.edu>
-In-Reply-To: <1180713579.12843.8.camel@localhost.localdomain>
-References: <1180710270.3782.5.camel@localhost.localdomain>
-	 <1180712592.6390.139.camel@localhost.localdomain>
-	 <1180713579.12843.8.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 01 Jun 2007 17:23:24 +0100
-Message-Id: <1180715004.6390.169.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jun 2007 12:24:47 -0400
+Received: from [195.83.212.5] ([195.83.212.5]:56768 "EHLO
+	vulpecula.futurs.inria.fr" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758881AbXFAQYq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 12:24:46 -0400
+X-Greylist: delayed 1984 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Jun 2007 12:24:46 EDT
+Message-ID: <46604064.7070100@tremplin-utc.net>
+Date: Fri, 01 Jun 2007 17:51:00 +0200
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <Eric.Piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070423 Mandriva/2.0.0.0-1mdv2008.0 (2008.0) Thunderbird/2.0.0.0 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: lkml@dervishd.net
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Kernel utf-8 handling
+References: <20070601142058.GA2587@DervishD>
+In-Reply-To: <20070601142058.GA2587@DervishD>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-01 at 16:59 +0100, Richard Hughes wrote:
-> On Fri, 2007-06-01 at 16:43 +0100, Richard Purdie wrote:
-> > I accept this is basically out of my hands now. Greg/Kay have the
-> > appropriate emails and if they'll let me know which approach they want
-> > to take, I'll apply an appropriate patch. I'd suggest not applying this
-> > patch directly as it introduces a race in the error path it alters.
+06/01/2007 04:20 PM, DervishD wrote/a écrit:
+>     Hi all :)
+Hi!
+
 > 
-> Sure, I really wanted to convert the class to struct device (which I'm
-> more familiar with) but just tried to do minimal changes. What changes
-> need to be made to avoid a race? Thanks.
+>     Will the console work as it works now if I can live with latin1
+> accented characters only?
+Just tested here, it _seems_ to work right on the console with Spanish 
+and French accentuated characters.
 
-It has nothing to do with the struct device vs. class devices, you need
-to think more carefully about the placement of the list_del().
+> Is there any terminal emulator *for the
+> console*, not for X, that handles utf8?
+fbiterm, I never dared to try though...
 
-My other concerns with this patch are that it exports incorrect
-information on spitz (which I had warned about and I will get bug
-reports about) and that "description" is not really a suitable name for
-a sysfs attribute, "function" might give a better idea of what it
-represents to developers.
-
-I still question whether either colour or function properties are
-actually particularly useful to userspace other than for naming purposes
-which is why they were part of the device name.
-
-Anyhow, I'm trying not to say too much more as it will just go in
-circles. I'll await a reply from Greg.
-
-Regards,
-
-Richard
-
-
+See you,
+Eric
