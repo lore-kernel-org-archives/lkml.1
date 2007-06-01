@@ -1,146 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761217AbXFABNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761369AbXFABOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761217AbXFABNe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 21:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760009AbXFABNU
+	id S1761369AbXFABOT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 21:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbXFABOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 21:13:20 -0400
-Received: from mylar.outflux.net ([69.93.193.226]:59840 "EHLO
-	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759600AbXFABNT (ORCPT
+	Thu, 31 May 2007 21:14:10 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:39377 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757353AbXFABOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 21:13:19 -0400
-X-Greylist: delayed 1543 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 May 2007 21:13:19 EDT
-Date: Thu, 31 May 2007 18:13:01 -0700
-From: Kees Cook <kees@outflux.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Documentation: /proc/$pid/stat files
-Message-ID: <20070601011301.GU14736@outflux.net>
-References: <20070601004729.GR14736@outflux.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070601004729.GR14736@outflux.net>
-Organization: Outflux
-X-HELO: gorgon.outflux.net
+	Thu, 31 May 2007 21:14:08 -0400
+Subject: Re: [RFC][PATCH] Replacing the /proc/<pid|self>/exe symlink code
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070531060148.GE3390@sequoia.sous-sol.org>
+References: <1180486369.11715.69.camel@localhost.localdomain>
+	 <20070530180923.GA22345@vino.hallyn.com>
+	 <20070531060148.GE3390@sequoia.sous-sol.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Thu, 31 May 2007 18:13:46 -0700
+Message-Id: <1180660426.18419.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentation for the /proc/$pid/stat file.
+On Wed, 2007-05-30 at 23:01 -0700, Chris Wright wrote:
+> * Serge E. Hallyn (serge@hallyn.com) wrote:
+> > > ===================================================================
+> > > --- linux-2.6.22-rc2-mm1.orig/kernel/exit.c
+> > > +++ linux-2.6.22-rc2-mm1/kernel/exit.c
+> > > @@ -924,10 +924,12 @@ fastcall void do_exit(long code)
+> > >  	if (unlikely(tsk->audit_context))
+> > >  		audit_free(tsk);
+> > >  
+> > >  	taskstats_exit(tsk, group_dead);
+> > >  
+> > > +	if (tsk->exe_file)
+> > > +		fput(tsk->exe_file);
+> > 
+> > just taking a cursory look so I may be missing something, but doesn't
+> > this leave the possibility that right here, with tsk->exe_file being
+> > put, another task would try to look at tsk's /proc/tsk->pid/exe?
+> 
+> And I hit this one, so there's at least one issue.
+> 
+> [  110.296952] Unable to handle kernel NULL pointer dereference at 0000000000000088 RIP: 
+> [  110.299053]  [<ffffffff80293fca>] d_path+0x1a/0x117
+> [  110.301861] PGD 6d35a067 PUD 6d35e067 PMD 0 
+> [  110.303509] Oops: 0000 [1] SMP 
+> [  110.304719] CPU 1 
+> [  110.305493] Modules linked in: oprofile
+> [  110.306969] Pid: 3983, comm: pidof Not tainted 2.6.22-rc3-g7f397dcd-dirty #183
+> [  110.309733] RIP: 0010:[<ffffffff80293fca>]  [<ffffffff80293fca>] d_path+0x1a/0x117
+> [  110.312635] RSP: 0018:ffff810142335e38  EFLAGS: 00010292
+> [  110.314667] RAX: ffff81006d58a000 RBX: 0000000000000000 RCX: 0000000000001000
+> [  110.317397] RDX: ffff81006d58a000 RSI: 0000000000000000 RDI: 0000000000000000
+> [  110.320127] RBP: ffff81006d58a000 R08: 00000000fffffff3 R09: 000000000006be8b
+> [  110.322857] R10: 0000000000000000 R11: 0000000000000001 R12: 0000000000000000
+> [  110.325588] R13: 0000000000001000 R14: ffff81006d58a000 R15: 00000000000000000
+> [  110.328319] FS:  00002b033d578260(0000) GS:ffff81000106e480(0000) knlGS:0000000000000000
+> [  110.331415] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [  110.333613] CR2: 0000000000000088 CR3: 000000006cf54000 CR4: 00000000000006e0
+> [  110.336344] Process pidof (pid: 3983, threadinfo ffff810142334000, task ffff8101421186c0)
+> [  110.339472] Stack:  ffff8101422a7268 0000000000000000 ffff81006d58a000 00000000fffffff4
+> [  110.342556]  0000000000000000 0000000000001000 0000000000678820 ffffffff802b7a54
+> [  110.345404]  0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> [  110.348180] Call Trace:
+> [  110.349188]  [<ffffffff802b7a54>] proc_pid_readlink+0x89/0xff
+> [  110.351387]  [<ffffffff80285e55>] sys_readlinkat+0x87/0xa9
+> [  110.353487]  [<ffffffff8026d4dc>] remove_vma+0x5d/0x64
+> [  110.355455]  [<ffffffff80596acd>] error_exit+0x0/0x84
+> [  110.357389]  [<ffffffff8020935e>] system_call+0x7e/0x83
+> [  110.359388] 
+> [  110.359958] 
+> [  110.359958] Code: 48 8b 87 88 00 00 00 48 85 c0 74 20 48 8b 40 30 48 85 c0 74 
+> [  110.363381] RIP  [<ffffffff80293fca>] d_path+0x1a/0x117
+> [  110.365386]  RSP <ffff810142335e38>
+> [  110.366720] CR2: 0000000000000088
 
-Signed-off-by: Kees Cook <kees@outflux.net>
----
- proc.txt |   65 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 58 insertions(+), 7 deletions(-)
---- linux-2.6.22-rc3-git4/Documentation/filesystems/proc.txt.pre	2007-05-31 17:17:20.000000000 -0700
-+++ linux-2.6.22-rc3-git4/Documentation/filesystems/proc.txt	2007-05-31 18:10:27.000000000 -0700
-@@ -171,7 +171,9 @@ read the file /proc/PID/status:
- This shows you nearly the same information you would get if you viewed it with
- the ps  command.  In  fact,  ps  uses  the  proc  file  system  to  obtain its
- information. The  statm  file  contains  more  detailed  information about the
--process memory usage. Its seven fields are explained in Table 1-2.
-+process memory usage. Its seven fields are explained in Table 1-2.  The stat
-+file contains details information about the process itself.  Its fields are
-+explained in Table 1-3.
- 
- 
- Table 1-2: Contents of the statm files (as of 2.6.8-rc3)
-@@ -188,16 +190,65 @@ Table 1-2: Contents of the statm files (
-  dt       number of dirty pages			(always 0 on 2.6)
- ..............................................................................
- 
-+
-+Table 1-3: Contents of the stat files (as of 2.6.22-rc3)
-+..............................................................................
-+ Field          Content
-+  pid           process id
-+  tcomm         filename of the executable
-+  state         state (R is running, S is sleeping, D is sleeping in an
-+                uninterruptible wait, Z is zombie, T is traced or stopped)
-+  ppid          process id of the parent process
-+  pgrp          pgrp of the process
-+  sid           session id
-+  tty_nr        tty the process uses
-+  tty_pgrp      pgrp of the tty
-+  flags         task flags
-+  min_flt       number of minor faults
-+  cmin_flt      number of minor faults with child's
-+  maj_flt       number of major faults
-+  cmaj_flt      number of major faults with child's
-+  utime         user mode jiffies
-+  stime         kernel mode jiffies
-+  cutime        user mode jiffies with child's
-+  cstime        kernel mode jiffies with child's
-+  priority      priority level
-+  nice          nice level
-+  num_threads   number of threads
-+  start_time    time the process started after system boot
-+  vsize         virtual memory size
-+  rss           resident set memory size
-+  rsslim        current limit in bytes on the rss
-+  start_code    address above which program text can run
-+  end_code      address below which program text can run 
-+  start_stack   address of the start of the stack 
-+  esp           current value of ESP
-+  eip           current value of EIP
-+  pending       bitmap of pending signals (obsolete)
-+  blocked       bitmap of blocked signals (obsolete)
-+  sigign        bitmap of ignored signals (obsolete)
-+  sigcatch      bitmap of catched signals (obsolete)
-+  wchan         address where process went to sleep
-+  0             (place holder)
-+  0             (place holder)
-+  exit_signal   signal to send to parent thread on exit
-+  task_cpu      which CPU the task is scheduled on
-+  rt_priority   realtime priority
-+  policy        scheduling policy (man sched_setscheduler)
-+  blkio_ticks   time spent waiting for block IO
-+..............................................................................
-+
-+
- 1.2 Kernel data
- ---------------
- 
- Similar to  the  process entries, the kernel data files give information about
- the running kernel. The files used to obtain this information are contained in
--/proc and  are  listed  in Table 1-3. Not all of these will be present in your
-+/proc and  are  listed  in Table 1-4. Not all of these will be present in your
- system. It  depends  on the kernel configuration and the loaded modules, which
- files are there, and which are missing.
- 
--Table 1-3: Kernel info in /proc 
-+Table 1-4: Kernel info in /proc 
- ..............................................................................
-  File        Content                                           
-  apm         Advanced power management info                    
-@@ -473,10 +524,10 @@ IDE devices:
- 
- More detailed  information  can  be  found  in  the  controller  specific
- subdirectories. These  are  named  ide0,  ide1  and  so  on.  Each  of  these
--directories contains the files shown in table 1-4.
-+directories contains the files shown in table 1-5.
- 
- 
--Table 1-4: IDE controller info in  /proc/ide/ide? 
-+Table 1-5: IDE controller info in  /proc/ide/ide? 
- ..............................................................................
-  File    Content                                 
-  channel IDE channel (0 or 1)                    
-@@ -486,11 +537,11 @@ Table 1-4: IDE controller info in  /proc
- ..............................................................................
- 
- Each device  connected  to  a  controller  has  a separate subdirectory in the
--controllers directory.  The  files  listed in table 1-5 are contained in these
-+controllers directory.  The  files  listed in table 1-6 are contained in these
- directories.
- 
- 
--Table 1-5: IDE device information 
-+Table 1-6: IDE device information 
- ..............................................................................
-  File             Content                                    
-  cache            The cache                                  
----
+Hmm, at first blush this does appear to be related to the bug Serge
+pointed out. I'm not certain though, so I'll see if I can spot/produce
+any other problems that could explain this.
 
--- 
-Kees Cook                                            @outflux.net
+Thanks for testing my patch!
+
+Cheers,
+	-Matt Helsley
+
