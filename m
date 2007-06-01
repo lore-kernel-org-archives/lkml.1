@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763295AbXFASU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763407AbXFASVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763295AbXFASU0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761591AbXFASUO
+	id S1763407AbXFASVS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762086AbXFASVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:20:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37474 "EHLO mx2.mail.elte.hu"
+	Fri, 1 Jun 2007 14:21:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36876 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760990AbXFASUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:20:12 -0400
-Date: Fri, 1 Jun 2007 20:19:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/5] lockstat: core infrastructure
-Message-ID: <20070601181938.GA30526@elte.hu>
-References: <20070529130107.112347096@chello.nl> <1180470525.32594.71.camel@imap.mvista.com> <20070530132431.GA23947@elte.hu> <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com> <20070530134907.GA27085@elte.hu> <1180544796.32594.184.camel@imap.mvista.com> <1180545380.2958.1.camel@lappy> <1180545913.32594.194.camel@imap.mvista.com> <20070601131249.GA17059@elte.hu> <1180711606.15884.32.camel@imap.mvista.com>
+	id S1761090AbXFASVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 14:21:08 -0400
+Date: Fri, 1 Jun 2007 14:20:56 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
+       Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux v2.6.22-rc3
+Message-ID: <20070601182056.GA11716@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
+	Gregor Jasny <gjasny@googlemail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com> <465BF244.5080200@gmail.com> <alpine.LFD.0.98.0705290924350.26602@woody.linux-foundation.org> <465F6F48.8080804@gmail.com> <alpine.LFD.0.98.0705311830360.26602@woody.linux-foundation.org> <465F8230.2040105@gmail.com> <46604E62.1000105@pobox.com> <alpine.LFD.0.98.0706010955390.3957@woody.linux-foundation.org> <466058F8.4050107@pobox.com> <alpine.LFD.0.98.0706011047000.3957@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1180711606.15884.32.camel@imap.mvista.com>
+In-Reply-To: <alpine.LFD.0.98.0706011047000.3957@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 01, 2007 at 10:59:51AM -0700, Linus Torvalds wrote:
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+ > > I'm mainly interested in hearing feedback from Fedora 7 damage, before making
+ > > a major decision about the probing code.  If this is a single dain bramaged
+ > > device, we should avoid punishing the majority.  But if this is a trend, it
+ > > warrants careful reconsideration.
+ > 
+ > I thought the default in Fedora was to use the PATA driver first? If so, 
+ > you're going to miss a lot of cases that "just work", because they use the 
+ > old driver.
 
-> > > > I see sched_clock() as fast first, accurate second. Whereas the 
-> > > > clocksource thing is accurate first, fast second.
-> > > 
-> > > This is true .. However, if there is a speed different it's small.
-> > 
-> > Ugh. Have you ever compared pmtimer (or even hpet) against TSC based 
-> > sched_clock()? What you write is so wrong that it's not even funny. 
-> > You keep repeating this nonsense despite having been told multiple 
-> > times that you are dead wrong.
-> 
-> Yes I have, and your right there is a difference, and a big difference 
-> .. Above I was referring only to the TSC clocksource, since that's an 
-> apples to apples comparison .. I would never compare the TSC to the 
-> acpi_pm, that's no contest ..
+There are no old drivers in F7 and beyond.
 
-You still dont get it i think: in real life we end up using the TSC in 
-sched_clock() _much more often_ than we end up using the TSC for 
-clocksource! So your flawed suggestion does not fix anything, it in fact 
-introduces a really bad regression: instead of using the TSC (or 
-jiffies) we'd end up using the pmtimer or hpet for every lock operation 
-when lockstat is enabled, bringing the box to a screeching halt in 
-essence.
+# CONFIG_IDE is not set
 
-so what you suggest has a far worse effect on the _majority_ of systems 
-that are even interested in running lockstat, than the case you 
-mentioned that some seldom-used arch which is lazy about sched_clock() 
-falls back to jiffies granularity. It's not a big deal: the stats will 
-have the same granularity. (the op counts in lockstat will still be 
-quite useful)
+	Dave
 
-sched_clock() is a 'fast but occasionally inaccurate clock', while the 
-GTOD clocksource is an accurate clock (but very often slow).
-
-	Ingo
+-- 
+http://www.codemonkey.org.uk
