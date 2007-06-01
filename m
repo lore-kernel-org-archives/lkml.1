@@ -1,47 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbXFAWRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbXFAWUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbXFAWRv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 18:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbXFAWRd
+	id S1754918AbXFAWUS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 18:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbXFAWUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 18:17:33 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:32865 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755529AbXFAWRc (ORCPT
+	Fri, 1 Jun 2007 18:20:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:12614 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752116AbXFAWUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 18:17:32 -0400
-Message-ID: <46609AEC.4070603@zytor.com>
-Date: Fri, 01 Jun 2007 15:17:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 1 Jun 2007 18:20:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=cfsKOCTn7O+lau3yK30YhTv3xllYJI25FD6Cp1lIIc0qPC7Z/Jth0ZHy6o/tJEvLWRgVJG7pJTQ9UcZAL+9ZYYGXZSs8gX64dWvyswsXdldYrG7GvH5iSTxMpAourepu6BRfx37x7xtSwxXOcd+1tOQBJ55SPTTMwVmxdP5rumk=
+Message-ID: <e38d12ff0706011520n4d6f00cdt80a4ead3d939c849@mail.gmail.com>
+Date: Fri, 1 Jun 2007 18:20:02 -0400
+From: "Andrey Vul" <andrey.vul@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: tickless timer support on non-x86
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Scott Preece <sepreece@gmail.com>,
-       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>, Valdis.Kletnieks@vt.edu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/1] document Acked-by:
-References: <200706010209.l51299kN000531@shell0.pdx.osdl.net>	<28278.1180675923@turing-police.cc.vt.edu> <465FB862.207@zytor.com>	<alpine.DEB.0.99.0706010648030.9768@sigma.j-a-k-j.com>	<m3sl9b5vcm.fsf@maximus.localdomain>	<7b69d1470706011237j50f29e4ch73f86acdc294fecd@mail.gmail.com> <m3fy5b5nrt.fsf@maximus.localdomain>
-In-Reply-To: <m3fy5b5nrt.fsf@maximus.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> "Scott Preece" <sepreece@gmail.com> writes:
-> 
->> This is a question worth answering - is it rude to ack/nak a patch if
->> you're not a maintainer or otherwise known-to-be-trusted, or is it OK
->> for anyone to express an opinion? Andrew's patch text seems to imply
->> that it's generally OK.
-> 
-> Every pair of eyes (or a single one) looking at the patch in question
-> is a good thing. I can't imagine why would one want to look at the
-> code if he/she can't ack or nak or otherwise comment it.
+I want to use the tickless timer features in 2.6.21, but
+unfortunately, the dependency for tickless timers is
+GENERIC_CLOCKEVENTS (and tickless is only in arch/i386).
 
-I think the comment had to do with the concept that ACK/NAK implies
-authority.  If you're not the maintainer, it's rude to imply that you
-are.  Obvious, test reports (good or bad!) are always welcome.
+Any workarounds or solutions for non-x86 people?
 
-	-hpa
+My CPU is AMD Turion ML-34.
