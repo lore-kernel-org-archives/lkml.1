@@ -1,54 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764816AbXFAVTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761951AbXFAVV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764816AbXFAVTy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764521AbXFAVTp
+	id S1761951AbXFAVV0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759037AbXFAVVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:19:45 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38635 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764514AbXFAVTo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:19:44 -0400
-Date: Fri, 1 Jun 2007 23:19:43 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Justin Piszcz <jpiszcz@lucidpixels.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
-Message-ID: <20070601211943.GO7217@one.firstfloor.org>
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <200706011210.15808.jbarnes@virtuousgeek.org> <p73k5unbcnq.fsf@bingen.suse.de> <200706011407.51779.jbarnes@virtuousgeek.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 1 Jun 2007 17:21:18 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1875 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758505AbXFAVVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 17:21:17 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.22-rc3-mm1
+Date: Fri, 1 Jun 2007 23:21:15 +0200
+User-Agent: KMail/1.9.5
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+       Arnd Bergmann <arndb@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org> <200706012250.58962.m.kozlowski@tuxland.pl> <20070601140211.81e5c301.akpm@linux-foundation.org>
+In-Reply-To: <20070601140211.81e5c301.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200706011407.51779.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200706012321.16239.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 02:07:51PM -0700, Jesse Barnes wrote:
-> On Friday, June 1, 2007 2:14:17 Andi Kleen wrote:
-> > Jesse Barnes <jbarnes@virtuousgeek.org> writes:
-> > > (or we get proper PAT support, which I think would make this problem
-> > > go away as well).
-> >
-> > No it won't. If the basic MTRRs for memory are wrong just having PAT
-> > support in drivers (which already exist in a limited form already, just for
-> > UC only) won't change anything.
+> > > > 	This is from iMac G3. The spufs_mem_mmap_fault() code looks bad
+> > > > in arch/powerpc/platforms/cell/spufs/file.c but somehow I'm unable to find
+> > > > the patch to blame hmm.
+> > > > 
+> > > > arch/powerpc/platforms/cell/spufs/file.c: In function 'spufs_mem_mmap_fault':
+> > > > arch/powerpc/platforms/cell/spufs/file.c:122: error: 'address' undeclared (first use in this function)
+> > > > arch/powerpc/platforms/cell/spufs/file.c:122: error: (Each undeclared identifier is reported only once
+> > > > arch/powerpc/platforms/cell/spufs/file.c:122: error: for each function it appears in.)
+> > > > arch/powerpc/platforms/cell/spufs/file.c:141: error: expected ';' before 'if'
+> > > > arch/powerpc/platforms/cell/spufs/file.c:122: warning: unused variable 'addr0'
+> > > > make[3]: *** [arch/powerpc/platforms/cell/spufs/file.o] Blad 1
+> > > > make[2]: *** [arch/powerpc/platforms/cell/spufs] Blad 2
+> > > > make[1]: *** [arch/powerpc/platforms/cell] Blad 2
+> > > > 
+> > > 
+> > > Yeah, that's the fix-fault-vs-invalidate-race patches, or my poor attempt
+> > > to fix them when spufs changed.  I suppose I'll have a poke at it next time
+> > > I get the powerpc machine fired up.
+> > 
+> > I #if 0'ed that piece of code inside spufs_mem_mmap_fault() and run make again.
+> > This is 'make allmodconfig && make' result:
+> > 
+> > ERROR: ".ps3av_set_hdr" [drivers/ps3/ps3av_cmd.ko] undefined!
+> > ERROR: ".ps3av_do_pkt" [drivers/ps3/ps3av_cmd.ko] undefined!
+> > ERROR: ".ps3_vuart_write" [drivers/ps3/ps3av_cmd.ko] undefined!
+> > ERROR: ".ps3_vuart_read" [drivers/ps3/ps3av_cmd.ko] undefined!
+> > ERROR: ".ps3av_cmd_fin" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_av_video_disable_sig" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_set_video_mode" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_video_get_monitor_info" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_audio_active" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_set_audio_mode" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_set_av_audio_param" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_vuart_read" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_av_get_hw_conf" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_av_video_mute" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_av_tv_mute" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_audio_mode" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_av_hdmi_mode" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_set_av_video_cs" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_vuart_write" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_audio_mute" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_avb_param" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_init" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: ".ps3av_cmd_av_audio_mute" [drivers/ps3/ps3av.ko] undefined!
+> > ERROR: "pmu_batteries" [drivers/power/pmu_battery.ko] undefined!
+> > ERROR: "pmu_battery_count" [drivers/power/pmu_battery.ko] undefined!
+> > ERROR: "pmu_power_flags" [drivers/power/pmu_battery.ko] undefined!
+> > ERROR: "irq_map" [drivers/net/pasemi_mac.ko] undefined!
+> > ERROR: "pmu_batteries" [drivers/macintosh/apm_emu.ko] undefined!
+> > ERROR: "pmu_battery_count" [drivers/macintosh/apm_emu.ko] undefined!
+> > ERROR: "pmu_power_flags" [drivers/macintosh/apm_emu.ko] undefined!
+> > ERROR: ".cpufreq_set_policy" [arch/powerpc/platforms/cell/cbe_cpufreq.ko] undefined!
+> > make[1]: *** [__modpost] Blad 1
+> > make: *** [modules] Blad 2
+> > 
 > 
-> No obviously just using PAT for drivers wouldn't help, I was thinking more of 
-> having one PAT type be WB memory, and using it by default for most PTEs 
+> Yeah, allmodconfig tends to fall over in a heap on a lot of the
+> less-lavishly-maintained architectures.  If any of these are specific to
+> -mm then I guess we should fix them up, prevent the kernel from actually
+> going backwards.
 
-Then the BIOS couldn't override it anymore in case it is needed somewhere.
-e.g. normally we just use normal 2MB direct mappings for the hole 
-if there is memory beyond it and the hole doesn't need to be 2MB aligned.
-Just assuming UC for all reserved pages would be also pretty drastic
-and likely result in many 2MB pages being split and using a lot more 
-TLB.
+I recall compiling earlier versions of -mm on this iMac just fine a few months ago.
+Now it looks like a bunch of new warnings appeared and if fails to compile for various
+reasons in different places. I'm thinking of running -mm in next few days so maybe
+something interesting will come up :-)
 
-> covering normal memory.  If that's not possible, then it seems sensible to 
+BTW. This is 'make allnoconfig && make' result:
 
-And normally the MTRRs win, don't they (if I remember the table correctly) 
-So if the MTRR says UC and PAT disagrees it might not actually help
-
--Andi
+  MODPOST vmlinux
+ln: accessing `arch/powerpc/boot/zImage': No such file or directory
+make[1]: *** [arch/powerpc/boot/zImage] Error 1
+make: *** [zImage] Error 2
