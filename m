@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764475AbXFAUUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764497AbXFAUVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764475AbXFAUUF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762851AbXFAUTz
+	id S1764497AbXFAUVB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763052AbXFAUUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:19:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48571 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762537AbXFAUTx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:19:53 -0400
-Date: Fri, 1 Jun 2007 13:19:50 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: srinivasa@in.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vatsa@in.ibm.com, dino@in.ibm.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-Message-Id: <20070601131950.0f3a507b.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706011305230.3976@schroedinger.engr.sgi.com>
-References: <465FCA79.70207@in.ibm.com>
-	<200706011620.05756.srinivasa@in.ibm.com>
-	<Pine.LNX.4.64.0706011107540.2284@schroedinger.engr.sgi.com>
-	<20070601121114.b165f1e8.pj@sgi.com>
-	<Pine.LNX.4.64.0706011217510.3406@schroedinger.engr.sgi.com>
-	<20070601124757.fe91a002.pj@sgi.com>
-	<Pine.LNX.4.64.0706011249530.3598@schroedinger.engr.sgi.com>
-	<20070601130212.7be4432a.pj@sgi.com>
-	<Pine.LNX.4.64.0706011305230.3976@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 1 Jun 2007 16:20:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50027 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762524AbXFAUUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:20:54 -0400
+Message-ID: <46607F96.7060200@redhat.com>
+Date: Fri, 01 Jun 2007 16:20:38 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] quiet down swiotlb warnings
+References: <466057B1.9090309@redhat.com> <p73odjzbism.fsf@bingen.suse.de> <20070601181225.GA16460@infradead.org> <20070601193703.GI7217@one.firstfloor.org> <466075D1.8080807@redhat.com> <20070601194734.GJ7217@one.firstfloor.org> <20070601200049.GK12143@andrew-vasquezs-computer.local> <20070601201444.GK7217@one.firstfloor.org>
+In-Reply-To: <20070601201444.GK7217@one.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There are no checks necessary. Your function worked fine so far for 
-> the case of zero objects with the pointer returned by kmalloc. If the 
-> code is correct then it will not dereference the pointer to the zero 
-> sized array. If not then we may find a bug and fix it.
+Andi Kleen wrote:
+> On Fri, Jun 01, 2007 at 01:00:49PM -0700, Andrew Vasquez wrote:
+>> yes, the card can support 64bit DMA transfers. but in this case the
+>> 'required' DMA mask returned from dma_get_required_mask() states that a
+>> 32bit mask would suffice.
+> 
+> That's a bug in the kernel then that needs to be fixed. Find out
+> why it does that and change it. Don't fix the symptoms, fix the root cause.
 
-I suspect you got lucky.  The check for a full pidarray[] in the routine
-pid_array_load() occurs -after- a pid is put in the array.  If a task
-showed up in this cpuset at the wrong time, we would fall over and die
-in the code:
+The system in question only has 2GB of memory.
 
-static int pid_array_load(pid_t *pidarray, int npids, struct cpuset *cs)
-{
-        int n = 0;
-        struct task_struct *g, *p;
-
-        read_lock(&tasklist_lock);
-
-        do_each_thread(g, p) {
-                if (p->cpuset == cs) {
-                        pidarray[n++] = p->pid;		/* Death if pidarray == NULL */
-                        if (unlikely(n == npids))
-                                goto array_full;
-                }
-
-        } while_each_thread(g, p);
-
-Perhaps if you moved the "if (unlikely(n == npids))" test before the
-"pidarray[n++] = p->pid" assignment, it would be safe.
-
-And does the next line of code, the call to sort() after the call of
-pid_array_load(), work with pidarray == NULL and npids == 0:
-
-        npids = pid_array_load(pidarray, npids, cs);
-        sort(pidarray, npids, sizeof(pid_t), cmppid, NULL);	/* <== ?? */
-
-Off hand, I didn't know.  I guess it must, or you would have already
-tripped over it.
+Why would it need to do 64 bit DMA?
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
