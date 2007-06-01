@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759591AbXFALI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760597AbXFALJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759591AbXFALI4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 07:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXFALIs
+	id S1760597AbXFALJW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 07:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758861AbXFALJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 07:08:48 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:43135 "EHLO snapgear.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750719AbXFALIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 07:08:47 -0400
-Date: Fri, 1 Jun 2007 21:07:31 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200706011107.l51B7VQl023531@goober>
-To: torvalds@linux-foundation.org
-Subject: [PATCH] m68knommu: fix ColdFire timer off by 1
-Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
+	Fri, 1 Jun 2007 07:09:07 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:37032 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752136AbXFALJF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 07:09:05 -0400
+Date: Fri, 1 Jun 2007 16:38:45 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+Cc: linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] aacraid: fix shutdown handler to also disable interrupts.
+Message-ID: <20070601110845.GC20714@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <AE4F746F2AECFC4DA4AADD66A1DFEF01A55010@otce2k301.adaptec.com> <AE4F746F2AECFC4DA4AADD66A1DFEF01A55087@otce2k301.adaptec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01A55087@otce2k301.adaptec.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The coldfire timer runs from 0 to TRR included, then 0 again and so on.
-It counts thus actually TRR + 1 steps for 1 tick, not TRR.  Fix that.
+On Wed, May 30, 2007 at 11:59:13AM -0400, Salyzyn, Mark wrote:
+> Moves quiesce, thread and interrupt shutdown into aacraid drivers'
+> .shutdown handler. This fix to the aac_shutdown handler will remove the
+> superfluous reset of the adapter during a (clean) kexec.
+> 
+> This fix may mitigate the active investigation 'kexec and aacraid
+> broken' but it is unlikely to affect the root cause (issue likely
+> present in both kexec and kdump). This patch reduces the chance the
+> problem will occur with a kexec. The fix for root cause is currently
+> expected to be the minimum value check to the aacraid.startup_timeout
+> driver variable after an adapter reset within aacraid_commit_reset.patch
+> submitted on 05/22/2007 and awaiting testing by Yinghai to confirm.
+> 
+> This attached patch is against current scsi-misc-2.6
+> 
+> ObligatoryDisclaimer: Please accept my condolences regarding Outlook's
+> handling of patch attachments.
+> 
+> Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
+> 
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
----
+Thanks Mark. This does fix the issue of unnecessary reset of aacraid
+adapter over kexec on my machine.
 
-
-diff -Naur linux-2.6.21/arch/m68knommu/platform/5307/timers.c linux-2.6.21-uc0/arch/m68knommu/platform/5307/timers.c
---- linux-2.6.21/arch/m68knommu/platform/5307/timers.c	2007-05-01 17:12:41.000000000 +1000
-+++ linux-2.6.21-uc0/arch/m68knommu/platform/5307/timers.c	2007-05-01 17:16:11.000000000 +1000
-@@ -62,10 +62,13 @@
- 
- /***************************************************************************/
- 
-+static int ticks_per_intr;
-+
- void coldfire_timer_init(irq_handler_t handler)
- {
- 	__raw_writew(MCFTIMER_TMR_DISABLE, TA(MCFTIMER_TMR));
--	__raw_writetrr(((MCF_BUSCLK / 16) / HZ), TA(MCFTIMER_TRR));
-+	ticks_per_intr = (MCF_BUSCLK / 16) / HZ;
-+	__raw_writetrr(ticks_per_intr - 1, TA(MCFTIMER_TRR));
- 	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
- 		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, TA(MCFTIMER_TMR));
- 
-@@ -81,11 +84,10 @@
- 
- unsigned long coldfire_timer_offset(void)
- {
--	unsigned long trr, tcn, offset;
-+	unsigned long tcn, offset;
- 
- 	tcn = __raw_readw(TA(MCFTIMER_TCN));
--	trr = __raw_readtrr(TA(MCFTIMER_TRR));
--	offset = (tcn * (1000000 / HZ)) / trr;
-+	offset = ((tcn + 1) * (1000000 / HZ)) / ticks_per_intr;
- 
- 	/* Check if we just wrapped the counters and maybe missed a tick */
- 	if ((offset < (1000000 / HZ / 2)) && mcf_timerirqpending(1))
+Thanks
+Vivek
