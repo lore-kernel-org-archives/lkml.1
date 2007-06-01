@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbXFAARQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbXFAAY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760780AbXFAARQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 20:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbXFAARF
+	id S1759642AbXFAAY5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 20:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbXFAAYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 20:17:05 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.133]:52356 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbXFAARE (ORCPT
+	Thu, 31 May 2007 20:24:48 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:60788 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753151AbXFAAYr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 20:17:04 -0400
-Date: Thu, 31 May 2007 17:16:35 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH 2/5] console: console handover to preferred console
-In-reply-to: <20070531170200.3738f834.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <465F6563.7060804@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-References: <200705311358.26559.yinghai.lu@sun.com>
- <20070531170200.3738f834.akpm@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 31 May 2007 20:24:47 -0400
+Date: Fri, 1 Jun 2007 01:24:35 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, Richard Hughes <hughsient@gmail.com>,
+       linux-acpi@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Message-ID: <20070601002435.GA2621@srcf.ucam.org>
+References: <11802004861625-git-send-email-hmh@hmh.eng.br> <d120d5000705301325yf76d062vefbc79873d23e602@mail.gmail.com> <20070531005305.GC6883@khazad-dum.debian.net> <200705310033.51230.dtor@insightbb.com> <20070531222814.GB4076@khazad-dum.debian.net> <20070531233326.GA1947@srcf.ucam.org> <20070601001304.GB5407@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070601001304.GB5407@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Input: document the proper usage of EV_KEY and KEY_UNKNOWN
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 31 May 2007 13:58:26 -0700
-> Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-> 
->> [PATCH 2/5] console: console handover to preferred console
->>
->> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
->>
->> diff --git a/kernel/printk.c b/kernel/printk.c
->> index 0bbdeac..7b96cae 100644
->> --- a/kernel/printk.c
->> +++ b/kernel/printk.c
->> @@ -985,12 +1007,15 @@ void register_console(struct console *console)
->>  	if (!(console->flags & CON_ENABLED))
->>  		return;
->>  
->> -	if (bootconsole) {
->> +	if (bootconsole && (console->flags & CON_CONSDEV)) {
->>  		printk(KERN_INFO "console handover: boot [%s%d] -> real [%s%d]\n",
->>  		       bootconsole->name, bootconsole->index,
->>  		       console->name, console->index);
->>  		unregister_console(bootconsole);
->>  		console->flags &= ~CON_PRINTBUFFER;
->> +	} else {
->> +		printk(KERN_INFO "console [%s%d] enabled\n",
->> +		       console->name, console->index);
->>  	}
->>  
->>  	/*
-> 
-> What does this change do, and what is the reason for it??
+On Thu, May 31, 2007 at 09:13:04PM -0300, Henrique de Moraes Holschuh wrote:
 
-for earlyprintk=ttyS0,9600 console=tty0 console=ttyS0,9600n8
+> Well, we already produce KEY_UNKNOWN anyway, and the stuff you quoted above
+> just makes KEY_UNKNOWN useful for something instead of keeping it as an
+> useless notice to the user that some key (which one? who knows!) was
+> pressed.
 
-the handover will happen from earlyser0 to tty0. but what we want is to ttyS0.
+Given existing userspace, it's never useful to generate KEY_UNKNOWN. 
+Adding extra information to the event doesn't alter that.
 
-later with patch4,
-console=tty0 console=uart8250,io,0x3f8,9600n8
-will handover to ttyS0 instead of tty0.
+> Perhaps what you dislike re. KEY_UNKNOWN is the part where KEY_UNKNOWN+scan
+> code is declared to be the prefered way to report keys that do not have a
+> specific function?  Your reply seems to indicate this, but I am not sure I
+> really understood what you meant.
 
-Maybe can put above lines into commit log.
+Yes.
 
-YH
+> I am not exactly in love with the idea of using KEY_UNKNOWN in place of
+> stuff like KEY_FN_F1 either (I'd prefer to just bump up KEY_MAX and have
+> more posicional keycodes), but Dmitry is being quite clear that he does not
+> want to increase KEY_MAX to add more positional keycodes.
 
+I think using positional keycodes would also be a mistake. We just need 
+a slightly larger set of keycodes representing user-definable keys. 
+There's 4 of them already - I really can't imagine there being many 
+keyboards with a significantly larger set of unlabelled keys.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
