@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764740AbXFAUaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764702AbXFAUbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764740AbXFAUaw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 16:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764037AbXFAUaj
+	id S1764702AbXFAUbe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 16:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762477AbXFAUbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 16:30:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52891 "EHLO mx1.redhat.com"
+	Fri, 1 Jun 2007 16:31:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57475 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763490AbXFAUai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 16:30:38 -0400
-Date: Fri, 1 Jun 2007 16:30:06 -0400
-From: Dave Jones <davej@redhat.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [RFC 1/4] CONFIG_STABLE: Define it
-Message-ID: <20070601203006.GB865@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	Roman Zippel <zippel@linux-m68k.org>
-References: <20070531002047.702473071@sgi.com> <20070531003012.302019683@sgi.com> <20070531141147.423ad5e3.akpm@linux-foundation.org> <20070531213046.GA27923@uranus.ravnborg.org> <20070601180200.GA7968@redhat.com> <20070601202202.GA4232@uranus.ravnborg.org>
+	id S1762200AbXFAUbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 16:31:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+Date: Fri, 1 Jun 2007 22:37:16 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <878xb35sje.fsf@goat.bogus.local>
+In-Reply-To: <878xb35sje.fsf@goat.bogus.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070601202202.GA4232@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200706012237.17375.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 10:22:02PM +0200, Sam Ravnborg wrote:
- > On Fri, Jun 01, 2007 at 02:02:00PM -0400, Dave Jones wrote:
- > > On Thu, May 31, 2007 at 11:30:46PM +0200, Sam Ravnborg wrote:
- > >  > > +	sym = sym_lookup("DEVEL_KERNEL", 0);
- > >  > > +	sym->type = S_BOOLEAN;
- > >  > > +	sym->flags |= SYMBOL_AUTO;
- > >  > > +	p = getenv("DEVEL_KERNEL");
- > >  > > +	if (p && atoi(p))
- > >  > > +		sym_add_default(sym, "y");
- > >  > > +	else
- > >  > > +		sym_add_default(sym, "n");
- > >  > > +
- > >  > 
- > >  > 		sym_set_tristate_value(sym, yes);
- > >  > 	else
- > >  > 		sym_set_tristate_value(sym, no);
- > >  > 
- > >  > should do the trick (untested).
- > > 
- > > Odd. What's the third state ? Undefined?
- > no, mod, yes
- > Representing: no, module, yes as the three config choices.
+On Friday, 1 June 2007 22:27, Olaf Dietsche wrote:
+> Hi,
+> 
+> resume from suspend to ram doesn't work for my laptop and never
+> has. So, this is not a regression.
+> 
+> Hibernate (aka suspend to disk) works, however.
+> 
+> When I resume, everything seems to come up (fan becomes busy, disk and
+> dvd spin up for a short time),
 
-Now I'm even more puzzled.  Why would 'DEVEL_KERNEL' need
-to be modular ?
+Hmm, what about the screen?
 
-		Dave
+Rafael
+
 
 -- 
-http://www.codemonkey.org.uk
+"Premature optimization is the root of all evil." - Donald Knuth
