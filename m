@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762985AbXFASs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763518AbXFAStp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762985AbXFASs6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762103AbXFASsv
+	id S1763518AbXFAStp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762137AbXFAStj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:48:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54691 "EHLO mail.dvmed.net"
+	Fri, 1 Jun 2007 14:49:39 -0400
+Received: from waste.org ([66.93.16.53]:42917 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761941AbXFASsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:48:50 -0400
-Message-ID: <46606A0D.2040002@garzik.org>
-Date: Fri, 01 Jun 2007 14:48:45 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1762122AbXFASti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 14:49:38 -0400
+Date: Fri, 1 Jun 2007 13:49:13 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/9] Conditional Calls - Hash Table
+Message-ID: <20070601184913.GB11115@waste.org>
+References: <20070530140025.917261793@polymtl.ca> <20070530140227.398040643@polymtl.ca> <p731wgxds85.fsf@bingen.suse.de> <20070601160802.GL11166@waste.org> <20070601164623.GB4112@Krystal> <20070601170739.GA11115@waste.org> <20070601174510.GG7217@one.firstfloor.org> <20070601180654.GB7641@Krystal>
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <htejun@gmail.com>, Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux v2.6.22-rc3
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org> <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>  <46599E6B.1000209@pobox.com>  <9d2cd630705270907y4722653cpf79f073fa8f12f08@mail.gmail.com> <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org>  <9d2cd630705271315x7030c91ew2f175c921c022880@mail.gmail.com>  <465AA536.6080608@gmail.com> <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com> <465BF244.5080200@gmail.com> <alpine.LFD.0.98.0705290924350.26602@woody.linux-foundation.org> <465F6F48.8080804@gmail.com> <alpine.LFD.0.98.0705311830360.26602@woody.linux-foundation.org> <465F8230.2040105@gmail.com> <46604E62.1000105@pobox.com> <alpine.LFD.0.98.0706010955390.3957@woody.linux-foundation.org> <466058F8.4050107@pobox.com> <alpine.LFD.0.98.0706011047000.3957@woody.linux-foundation.org> <46606851.3060905@pobox.com>
-In-Reply-To: <46606851.3060905@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070601180654.GB7641@Krystal>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Upon quick review, it appears it should be 110ms.  And actually the spec 
-> says 3ms.  But to answer your question anyway... :)
+On Fri, Jun 01, 2007 at 02:06:54PM -0400, Mathieu Desnoyers wrote:
+> * Andi Kleen (andi@firstfloor.org) wrote:
+> > > It's not clear to me why either of those things are necessary. An
+> > > example please?
+> > 
+> > It's certainly possible that a global flag would need to be tested
+> > more than once.
+> > 
+> > I guess it would work if a symbol is associated with a single
+> > definition. e.g. if there is a DEFINE_COND_CALL() somewhere
+> > and the individual cond calls reference it.
+> 
+> Yes, but as you have probably understood, I want to have everything
+> embedded at the cond_call() site rather than polluting the rest of the
+> code with declarations.
 
+And you do so at the expensive of the ability to have compile-time
+checks and the need to jump through a hash table at run-time. This
+doesn't seem like a good trade-off.
 
-Actually the 3ms is the DRQ assertion delay.
+Even if we -don't- do something like DEFINE_COND_CALL, it's still
+probably a good idea to not use raw strings inline and to instead use
+#defines. Raw strings are only slightly better than magic numbers.
 
-	Jeff
+> Also, if we have the same cond_calls in different modules, in which
+> module shall it be defined ?
 
+This isn't a new problem. It exists for every other type of object in
+the kernel.
 
+-- 
+Mathematics is the supreme nostalgia of our time.
