@@ -1,40 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbXFAIjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbXFAInR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758636AbXFAIjs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 04:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXFAIjl
+	id S1759161AbXFAInR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 04:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbXFAInH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 04:39:41 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:37532 "EHLO twin.jikos.cz"
+	Fri, 1 Jun 2007 04:43:07 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:37656 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752698AbXFAIjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 04:39:40 -0400
-Date: Fri, 1 Jun 2007 10:38:51 +0200 (CEST)
+	id S1753047AbXFAInG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 04:43:06 -0400
+Date: Fri, 1 Jun 2007 10:42:54 +0200 (CEST)
 From: Jiri Kosina <jikos@jikos.cz>
-To: Anand Jahagirdar <anandjigar@gmail.com>
-cc: Jens Axboe <jens.axboe@oracle.com>, security@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Patch related with Fork Bombing Atack
-In-Reply-To: <25ae38200705312348r3cd02c90h5080617fa1f0a987@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706011032490.29896@twin.jikos.cz>
-References: <25ae38200705310645n5e913a91weaa14521908f7989@mail.gmail.com> 
- <20070531134611.GZ32105@kernel.dk> <25ae38200705312348r3cd02c90h5080617fa1f0a987@mail.gmail.com>
+To: gshan <gshan@alcatel-lucent.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: How to access kdb explicitly
+In-Reply-To: <465FC9FD.7060202@alcatel-lucent.com>
+Message-ID: <Pine.LNX.4.64.0706011042320.29896@twin.jikos.cz>
+References: <42c83d030706010019u13219322o7cec0c7aa08dd01f@mail.gmail.com>
+ <465FC9FD.7060202@alcatel-lucent.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007, Anand Jahagirdar wrote:
+On Fri, 1 Jun 2007, gshan wrote:
 
->     when they try to flood the syslog using fork bombing attack, their 
-> messge will be printed only once in syslog and it will show how many 
-> times it has repeated. due to this he will not able to flood the 
-> syslog.and i am using only one single variable in my printk messge so it 
-> is quite not possible to flood the syslog.
+> I want to access kdb explicitly. For example, I could recognize the 
+> special characters inside console driver. If the the special characters 
+> are detected , then drop to kdb immediately. However, I don't know what 
+> should I to do after the special characters received.
 
-Your argument is flawed - if the kernel provides more than one possibility 
-to flood the syslogd, the is free to invoke the events interleaved. This 
-trivially prevents syslogd from grouping identical reports together.
+See http://www.ibm.com/developerworks/linux/library/l-kdbug/ - section 
+"Activating KDB".
 
 -- 
 Jiri Kosina
