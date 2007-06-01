@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763867AbXFAVg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXFAVkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763867AbXFAVg4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 17:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760921AbXFAVgs
+	id S932089AbXFAVkn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 17:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760389AbXFAVkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 17:36:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57729 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751157AbXFAVgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 17:36:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Greaves <david@dgreaves.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) disables skge wol
-Date: Fri, 1 Jun 2007 23:42:45 +0200
-User-Agent: KMail/1.9.5
-Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       netdev@oss.sgi.com, "linux-pm" <linux-pm@lists.osdl.org>
-References: <46608E3F.4060201@dgreaves.com>
-In-Reply-To: <46608E3F.4060201@dgreaves.com>
+	Fri, 1 Jun 2007 17:40:37 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:51039 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759665AbXFAVkh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 17:40:37 -0400
+Message-ID: <4660924A.2070009@zytor.com>
+Date: Fri, 01 Jun 2007 14:40:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Extending boot protocol & bzImage for paravirt_ops
+References: <4656FB8F.4090604@goop.org> <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <466087CF.70708@goop.org>
+In-Reply-To: <466087CF.70708@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706012342.45657.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 1 June 2007 23:23, David Greaves wrote:
-> Not a regression though, it does it in 2.6.21
+Jeremy Fitzhardinge wrote:
 > 
-> If I cause the system to save state to disk then whilst off it no longer
-> responds to g-wol.
+>> +Protocol:	2.07+
+>> +
+>> +  A pointer to data that is specific to hardware subarch
+>>   
+> 
+> Do we care particularly? If 8 bytes is enough for the subarch, do we
+> care whether its a pointer or literal? After all, this is just a private
+> channel between the bootloader and some subarch-specific piece of code
+> in the kernel.
+> 
 
-Can you please try with the hibernation and suspend patch series from
+I see two options: either we make it a pointer *and a length* so that a
+loader can reshuffle it at will (that also implies no absolute pointers
+within the data), or it's an opaque cookie anyway.
 
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/
-
-applied?
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+	-hpa
