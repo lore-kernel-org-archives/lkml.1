@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762815AbXFASml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763114AbXFASoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762815AbXFASml (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761915AbXFASmd
+	id S1763114AbXFASoo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761787AbXFASoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:42:33 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44497 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761815AbXFASmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:42:32 -0400
-Date: Fri, 1 Jun 2007 11:43:42 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Dependent CPU core speed reporting not updated with CPUFREQ_SHARED_TYPE_HW?
-Message-ID: <20070601184342.GA13751@tree.beaverton.ibm.com>
-References: <460C5D24.608@us.ibm.com> <653FFBB4508B9042B5D43DC9E18836F52DF4D8@scsmsx415.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
-Content-Disposition: inline
-In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F52DF4D8@scsmsx415.amr.corp.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 1 Jun 2007 14:44:38 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:59196 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761617AbXFASoh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 14:44:37 -0400
+Subject: Re: [PATCH 3/5] lockstat: core infrastructure
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1180714263.15884.52.camel@imap.mvista.com>
+References: <20070529125248.877196281@chello.nl>
+	 <20070529130107.112347096@chello.nl>
+	 <1180470525.32594.71.camel@imap.mvista.com>
+	 <20070530132431.GA23947@elte.hu>
+	 <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com>
+	 <20070530134907.GA27085@elte.hu>
+	 <1180544796.32594.184.camel@imap.mvista.com>
+	 <1180545380.2958.1.camel@lappy>
+	 <1180545913.32594.194.camel@imap.mvista.com>
+	 <20070601131249.GA17059@elte.hu>
+	 <1180711606.15884.32.camel@imap.mvista.com> <1180713154.5676.4.camel@lappy>
+	 <1180714263.15884.52.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Fri, 01 Jun 2007 20:43:40 +0200
+Message-Id: <1180723421.5676.8.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-06-01 at 09:11 -0700, Daniel Walker wrote:
+> On Fri, 2007-06-01 at 17:52 +0200, Peter Zijlstra wrote:
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> > The whole issue is that you don't have any control over what clocksource
+> > you'll end up with. If it so happens that pmtimer gets selected your
+> > whole box will crawl if its used liberaly, like the patch under
+> > discussion does.
+> 
+> You can have control over it, which I think the whole point of this
+> discussion ..
 
-On Thu, Mar 29, 2007 at 06:06:22PM -0700, Pallipadi, Venkatesh wrote:
-> thought of
-> making affected CPUs show the dependency in case of hw coord, but
-> retaining the percpu
-> control. But, it seemed complicated change for something that is
-> cosmetic.
+No you don't, clocksource will gladly discard the TSC when its not found
+stable enough (the majority of the systems today). While it would be
+good enough for sched_clock().
 
-Actually, it's not so cosmetic any more.  Our newest servers have a
-power meter that measures power consumption, and I'm writing a program
-to measure the power cost of various cpufreq transitions in order to
-enforce a power cap.  Due to the under-reporting in affected_cpus, the
-app thinks that (taking your example above) CPUs 0 and 2 can be
-controlled independently.  Thus, a p-state transition of (x, x) ->
-(x, x-1) yields no energy saving at all, while (x, x-1) -> (x-1, x-1)
-does.  My program considers the effects of a single CPU's transition
-independently of which CPU it is and without considering what
-frequencies the other CPUs are operating at, which means that it will
-conclude that the cost of increasing speed (or the reward for decreasing
-it) is half of what it is ... sort of.  It's mildly broken as a result,
-though amusingly enough it still seems to work ok.  I suspect that it
-might flail around trying to hit a cap a bit more than it would if
-affected_cpus were more accurate.
 
---D
 
---rwEMma7ioTxnRzrJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGYGjea6vRYYgWQuURAjC0AKCwOqKYqrWFTYb4ECe9TGYwpt/9owCghm35
-qXrxjzFqJiZYxZ50auZt740=
-=mOaP
------END PGP SIGNATURE-----
-
---rwEMma7ioTxnRzrJ--
