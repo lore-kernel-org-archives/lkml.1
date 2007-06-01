@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbXFAHGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbXFAHKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbXFAHGW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 03:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbXFAHGO
+	id S1758961AbXFAHKP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 03:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbXFAHKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 03:06:14 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:38150 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750719AbXFAHGO (ORCPT
+	Fri, 1 Jun 2007 03:10:00 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:1863 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756777AbXFAHJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 03:06:14 -0400
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200706010705.l5175uwJ028953@turbo.physics.adelaide.edu.au>
-Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
-To: jeff@garzik.org (Jeff Garzik)
-Date: Fri, 1 Jun 2007 16:35:56 +0930 (CST)
-Cc: lsorense@csclub.uwaterloo.ca (Lennart Sorensen),
-       jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       davidsen@tmr.com (Bill Davidsen), linux-kernel@vger.kernel.org
-In-Reply-To: <465ED34C.2060801@garzik.org> from "Jeff Garzik" at May 31, 2007 09:53:16 AM
-X-Mailer: ELM [version 2.5 PL6]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 1 Jun 2007 03:09:59 -0400
+Date: Fri, 1 Jun 2007 09:09:55 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: 2.6.22-rc3-mm1
+Message-ID: <20070601090955.272806d8@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070531151005.5c5db8af.akpm@linux-foundation.org>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+	<20070531140922.2e55aefb@gondolin.boeblingen.de.ibm.com>
+	<20070531121557.GQ23968@parisc-linux.org>
+	<20070531142048.05edf133@gondolin.boeblingen.de.ibm.com>
+	<465EC101.7010105@garzik.org>
+	<20070531151338.GA759@infradead.org>
+	<20070531151005.5c5db8af.akpm@linux-foundation.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Lennart Sorensen wrote:
-> > On Thu, May 31, 2007 at 10:21:57AM +0930, Jonathan Woithe wrote:
-> >> I don't think so but I could be wrong.  When "Configure SATA as" was set to
-> >> "IDE" the HDD was being detected as a SATA drive and showed up as /dev/sda. 
-> >> The only visible difference the change to "AHCI" made was that instead of
-> >> the drive being handled by the ata_piix it now utilises the ahci driver
-> >> (which is a much better driver).  The other interesting thing is that the
-> >> probe for the Marvell PATA device occured before the initialisation of the
-> >> ata_piix driver (or ahci for that matter), so as far as I can tell ata_piix
-> >> had no chance to grab any ports before the marvell driver initialised.
-> > 
-> > Linux can still detect the chip and drive it natively even if the bios
-> > is emulating IDE/PATA on the chip.  And libata will make both PATA and
-> > SATA show up as /dev/sda now if you use libata for both.  On the other
-> > hand if the bios has configured the intel chip to use the standard ide
-> > registers, then it can't have configured the marvell to do so I would
-> > guess, which could make it difficult to talk to.
+On Thu, 31 May 2007 15:10:05 -0700,
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> Cornelia, afaict your patch has no actual delendency upon Dan's
+> dma-mapping-prevent-dma-dependent-code-from-linking-on.patch, correct?  If
+> so, I can merge it via James and then merge Dan's patch once James has
+> merged.
+
+AFAICS there's no dependency in that direction.
+
+> diff -puN include/scsi/scsi_cmnd.h~scsi-dont-build-scsi_dma_mapunmap-for-has_dma include/scsi/scsi_cmnd.h
+> --- a/include/scsi/scsi_cmnd.h~scsi-dont-build-scsi_dma_mapunmap-for-has_dma
+> +++ a/include/scsi/scsi_cmnd.h
+> @@ -135,8 +135,10 @@ extern void scsi_kunmap_atomic_sg(void *
+>  extern struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *, gfp_t);
+>  extern void scsi_free_sgtable(struct scatterlist *, int);
 > 
-> Mostly true...  "standard IDE" can be configured in two modes, legacy 
-> mode and native mode.  Legacy mode has fixed addresses originating from 
-> the ISA days (0x170, 0x1f0, irqs 14 & 15), and (as you implied) you 
-> cannot bind two IDE controllers to the same ISA addresses.
+> +#ifdef CONFIG_SCSI_DMA
+>  extern int scsi_dma_map(struct scsi_cmnd *cmd);
+>  extern void scsi_dma_unmap(struct scsi_cmnd *cmd);
+> +#endif
 > 
-> OTOH, an unlimited number of IDE controllers can be configured into 
-> native mode, where all addresses and irq are allocated using standard 
-> means accorded all PCI devices.
+>  #define scsi_sg_count(cmd) ((cmd)->use_sg)
+>  #define scsi_sglist(cmd) ((struct scatterlist *)(cmd)->request_buffer)
+> 
+> We don't really need the ifdefs here.  If someone incorrectly calls these
+> functions then they'll get a link-time failure anyway.  The downside of
+> removing these ifdefs is that they won't get a compile-time warning, but I
+> tend to think that this small cost is worth it.
 
-In the situation being discussed, "ATA/IDE Mode" was set to "Native" in the
-BIOS (the other option for this item was "Legacy").  The BIOS had a separate
-"Configure SATA as" item with the options RAID, IDE and AHCI and it is this
-one which, when set to IDE, prevented Linux from finding the Marvell PATA
-chip - even though "ATA/IDE Mode" was set to "native".
-
-The legacy/native issue Jeff discusses sounds like it relates to the
-"ATA/IDE Mode" BIOS setting.  Since this was always "Native" during the
-tests and given what Jeff wrote, I would have thought the BIOS would not be
-using the legacy ISA-era settings and therefore they were not the reason for
-Linux not finding the Marvell PATA controller.
-
-Regards
-  jonathan
+OK, fine with me.
