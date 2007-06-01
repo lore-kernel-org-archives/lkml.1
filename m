@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbXFACqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbXFACs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbXFACqj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 22:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbXFACqb
+	id S1754232AbXFACs5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 22:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbXFACsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 22:46:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51921 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751107AbXFACqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 22:46:30 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-Date: Thu, 31 May 2007 22:46:11 -0400
-User-Agent: KMail/1.9.5
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705171842.44134.lenb@kernel.org> <20070521121139.GB8332@elf.ucw.cz>
-In-Reply-To: <20070521121139.GB8332@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705312246.11576.lenb@kernel.org>
+	Thu, 31 May 2007 22:48:50 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:64476 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbXFACst (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 May 2007 22:48:49 -0400
+Date: Thu, 31 May 2007 20:48:59 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SELECT() returns 1 But FIONREAD says (Input/output error)
+In-reply-to: <fa.pq45zUHWQMSHoRGL/M4uTPfFWHg@ifi.uio.no>
+To: Uncle George <netbeans@gatworks.com>
+Cc: davids@webmaster.com, linux-kernel@vger.kernel.org
+Message-id: <465F891B.1080103@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.qaWJQn9l1jDV+N9wFv9WqATf44U@ifi.uio.no>
+ <fa.pq45zUHWQMSHoRGL/M4uTPfFWHg@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 May 2007 08:11, Pavel Machek wrote:
-> On Thu 2007-05-17 18:42:43, Len Brown wrote:
-> > > Something similar happened to me on XE3, yes.
-> > > 
-> > > (Actual values were different; BIOS specified critical temperature at
-> > > cca 95C, but hw killed the power at cca 83C. Setting critical trip
-> > > point at 80C made the problem go away.)
-> > 
-> > Great, please file a bug and include the acpidump from the XE3
-> > and we'll fix it, rather than supporting a bogus (manual) workaround for it.
+Uncle George wrote:
+> David Schwartz wrote:
 > 
-> It is few years since I do not have that XE3 machine.
+>> Nope. An errored connection is always ready for read/write -- there is
+>> nothing to wait for as far as the kernel is concerned. Your code keeps
+>> asking the kernel if something interesting has happened, the kernel keeps
+>> telling it yes, and it refuses to do anything about it.
+>>
+> The select() returns because i pulled the USB cable from hub. Seems 
+> reasonable.
 > 
-> > Of course if your system is running at 80*C and the hardware shuts
-> > off at 83*C, you may have a broken fan, or one clogged with dust...
-> 
-> It _did_ have broken fan. It also had broken trip points.
+> The next select() found what? to be interesting in order to prematurely 
+> terminate the select-wait? As far as I can tell, nothing interesting has 
+> happened since the previous select(). In this case the select() is only 
+> looking at read()'s.
 
-Thanks for clarifying this, Pavel.
-If you come upon an XE3 where Linux-2.6.22 doesn't work as well
-as Windows, please let me know.
+It's because you haven't done anything to handle the error which is 
+still persisting. Likely the only thing sane you can do in this case is 
+close the fd and try to reopen it later.
 
-Given that the justification for this ill-conceived workaround
-seems to have diminished to the memory of broken hardware,
-it is clear that we should stay the course of removing it
-so that it doesn't further confuse future users.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-If SuSE violently disagrees with me, you are certainly empowered
-to restore the workaround in your distribution staring at 2.6.22
-as part of your value add.  However, given its history of confusing
-users, it seems that it might increase your support burden rather
-than decrease it.
-
--Len
