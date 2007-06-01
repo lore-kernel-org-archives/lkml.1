@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbXFAW0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbXFAW2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbXFAW0F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 18:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbXFAWZq
+	id S1757459AbXFAW2O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 18:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbXFAW17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 18:25:46 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:45912 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757600AbXFAWZp (ORCPT
+	Fri, 1 Jun 2007 18:27:59 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:12569 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbXFAW16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 18:25:45 -0400
-Date: Fri, 1 Jun 2007 15:25:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc3-mm1 - page_mkwrite() breakage
-Message-Id: <20070601152537.a04209ff.akpm@linux-foundation.org>
-In-Reply-To: <20070601220117.GW20632@ca-server1.us.oracle.com>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
-	<20070531231354.GR20632@ca-server1.us.oracle.com>
-	<20070601010129.GA15878@wotan.suse.de>
-	<20070601012440.GS20632@ca-server1.us.oracle.com>
-	<20070601013402.GB28585@wotan.suse.de>
-	<20070601014517.GT20632@ca-server1.us.oracle.com>
-	<20070601015349.GC28585@wotan.suse.de>
-	<20070601052039.GU20632@ca-server1.us.oracle.com>
-	<20070601220117.GW20632@ca-server1.us.oracle.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 1 Jun 2007 18:27:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mv+QEbFTkdwCJz3uXhACMKXgwu1xlh59o0/y72ELMNxYAjkg0lIJHYYCEifMUAfJSAWjXJFkqjY7rmyzKUeEHAVUWqeVuqfbBk01IN+fB4qOapqCr/dnP7jyGR1jeYoG68BsHY6Kby4qqBNewJkTQ+10orrjFKIAYbvFj90fxzE=
+Message-ID: <86802c440706011527u4503253fv2edbbf7dbe642f76@mail.gmail.com>
+Date: Fri, 1 Jun 2007 15:27:58 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 2/3]i386: early init pgt for fix virtual addr in head.S
+Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Greg KH" <gregkh@suse.de>, "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440706011456x24217d36t644497e5ab57bb15@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440705202219o21d11023od1018d253364bf5c@mail.gmail.com>
+	 <m1ps4fzdq0.fsf@ebiederm.dsl.xmission.com>
+	 <86802c440706011246n795ecabfke0dfd1a695ba5e5f@mail.gmail.com>
+	 <m1wsynxvlb.fsf@ebiederm.dsl.xmission.com>
+	 <86802c440706011456x24217d36t644497e5ab57bb15@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007 15:01:18 -0700
-Mark Fasheh <mark.fasheh@oracle.com> wrote:
+your 4/30 patch set, 4/5/6 is in mainline already.
 
-> On Thu, May 31, 2007 at 10:20:39PM -0700, Mark Fasheh wrote:
-> > Ok. So how about the attached patch? It's a bit different than discussed,
-> > but I think it's much cleaner because it preserves the current behavior of
-> > the callback and keeps that bit of page locking inside core code. Not tested
-> > as of yet, but I can run it tommorrow.
-> 
-> Ok - this patch seems to check out fine in testing - no more deadlocking.
-> 
-> Andrew, if this is ok with you I'd really like to see that fix in -mm. Ocfs2
-> shared write mmap will instantly deadlock without it.
-
-ug, OK.  I get a ginormous reject when merging ocfs2 on Nick's stuff which
-I've been largely ignoring thus far.
-
-Perhaps I need to go back to staging Nick's stuff after the git trees.  I'll
-take a look.
+YH
