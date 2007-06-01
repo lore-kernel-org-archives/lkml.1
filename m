@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbXFAWxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758583AbXFAWza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbXFAWxe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 18:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXFAWx2
+	id S1758583AbXFAWza (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 18:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXFAWzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 18:53:28 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:15291 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752796AbXFAWx1 (ORCPT
+	Fri, 1 Jun 2007 18:55:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:42176 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752862AbXFAWzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 18:53:27 -0400
-Date: Fri, 1 Jun 2007 15:53:15 -0700
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc3-mm1 - page_mkwrite() breakage
-Message-ID: <20070601225315.GZ20632@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <20070601010129.GA15878@wotan.suse.de> <20070601012440.GS20632@ca-server1.us.oracle.com> <20070601013402.GB28585@wotan.suse.de> <20070601014517.GT20632@ca-server1.us.oracle.com> <20070601015349.GC28585@wotan.suse.de> <20070601052039.GU20632@ca-server1.us.oracle.com> <20070601220117.GW20632@ca-server1.us.oracle.com> <20070601152537.a04209ff.akpm@linux-foundation.org> <20070601223302.GY20632@ca-server1.us.oracle.com> <20070601154735.197b663f.akpm@linux-foundation.org>
+	Fri, 1 Jun 2007 18:55:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=csLoTqeKmkV9i4LUJCkg421KW5Eft/uPdTQ4JD7Z+HqFc9U4YkvJqFUHOlIJCAKUqXSSmBMAeV+AbMQ09F1GOM02EoQQQnAoYsp3SPbToOMXRvPhU9a/WMi4xRgbjD5gfJPSLb72SJgoe4HffL/aCAR+g1AShyvjd2h8jPTkCYY=
+Message-ID: <b00ca3bd0706011555p1b1377b4p907947c9d94ee625@mail.gmail.com>
+Date: Sat, 2 Jun 2007 06:55:21 +0800
+From: "Antonino Daplas" <adaplas@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [3/3] 2.6.22-rc3: known regressions with patches v2
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Tero Roponen" <teanropo@jyu.fi>,
+       "Satoru Takeuchi" <takeuchi_satoru@jp.fujitsu.com>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>, zach@vmware.com,
+       "=?ISO-8859-1?Q?Toralf_F=F6rster?=" <toralf.foerster@gmx.de>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>, "Andi Kleen" <ak@suse.de>,
+       discuss@x86-64.org, "Jeff Garzik" <jeff@garzik.org>,
+       "Ben Collins" <ben.collins@ubuntu.com>
+In-Reply-To: <46600F6B.3060601@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070601154735.197b663f.akpm@linux-foundation.org>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+References: <46600D36.7060405@googlemail.com> <46600F6B.3060601@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 03:47:35PM -0700, Andrew Morton wrote:
-> Right.  I did a lot of tricksy work for rc3-mm1 to merge git-ocfs2 on top
-> of Nick's stuff.  Then I repulled your tree and lost it all.  This is
-> because I was dumb and I fixed rc3-mm1's git-ocfs.patch rather than doing a
-> separate fix-rejects-in-git-ocfs2.patch.
-> 
-> This is all unique-to-akpm stuff which you don't need to worry about ;)
+On 6/1/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> Hi all,
+>
+> Subject    : tty-related oops in latest kernel(s)
+> References : http://lkml.org/lkml/2007/5/27/104
+> Submitter  : Tero Roponen <teanropo@jyu.fi>
+> Handled-By : Antonino A. Daplas <adaplas@gmail.com>
+> Patch      : http://lkml.org/lkml/2007/5/31/35
+> Status     : patch available
+>
+It's not actually a regression, but a long-standing, undetected bug
+exposed by slub.
 
-Ok, I am no longer concerned! :)
+Anyway, the patch is already in Linus' tree.  You can remove this from
+your list.
 
-
-> > So, which of Nick's patches are we talking about here?
-> > 
-> > Btw, I know you tend to handle rejects yourself, but if it's a major PITA
-> > I'd be happy to help out. Boy, I'm hoping I didn't just ask for a load of
-> > trouble there :)
-> 
-> Is OK - I'll move Nick's patches back to behind the git trees and it'll all come
-> good.
-
-Phew ok. Once again, thanks for all the work you do getting the ocfs2 git
-patches into -mm.
-	--Mark
-
---
-Mark Fasheh
-Senior Software Developer, Oracle
-mark.fasheh@oracle.com
+Tony
