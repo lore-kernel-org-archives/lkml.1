@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762577AbXFASbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763353AbXFAScV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762577AbXFASbm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 14:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760990AbXFASbf
+	id S1763353AbXFAScV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 14:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761396AbXFAScN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 14:31:35 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:37163 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759665AbXFASbe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 14:31:34 -0400
-Date: Fri, 1 Jun 2007 11:30:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Jones <davej@redhat.com>
-cc: Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
-       Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Linux v2.6.22-rc3
-In-Reply-To: <20070601182056.GA11716@redhat.com>
-Message-ID: <alpine.LFD.0.98.0706011127500.3957@woody.linux-foundation.org>
-References: <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com>
- <465BF244.5080200@gmail.com> <alpine.LFD.0.98.0705290924350.26602@woody.linux-foundation.org>
- <465F6F48.8080804@gmail.com> <alpine.LFD.0.98.0705311830360.26602@woody.linux-foundation.org>
- <465F8230.2040105@gmail.com> <46604E62.1000105@pobox.com>
- <alpine.LFD.0.98.0706010955390.3957@woody.linux-foundation.org>
- <466058F8.4050107@pobox.com> <alpine.LFD.0.98.0706011047000.3957@woody.linux-foundation.org>
- <20070601182056.GA11716@redhat.com>
+	Fri, 1 Jun 2007 14:32:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51333 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761178AbXFAScM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 14:32:12 -0400
+Date: Fri, 1 Jun 2007 20:30:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jason Baron <jbaron@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/5] lockstat: core infrastructure
+Message-ID: <20070601183053.GA30072@elte.hu>
+References: <20070530132431.GA23947@elte.hu> <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com> <20070530134907.GA27085@elte.hu> <1180544796.32594.184.camel@imap.mvista.com> <1180545380.2958.1.camel@lappy> <1180545913.32594.194.camel@imap.mvista.com> <20070601131249.GA17059@elte.hu> <1180711606.15884.32.camel@imap.mvista.com> <1180713154.5676.4.camel@lappy> <1180714263.15884.52.camel@imap.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1180714263.15884.52.camel@imap.mvista.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-On Fri, 1 Jun 2007, Dave Jones wrote:
+> > So, having two interfaces, one fast and one accurate is the right 
+> > answer IMHO.
 > 
-> There are no old drivers in F7 and beyond.
-> 
-> # CONFIG_IDE is not set
+> In the case of lockstat you have two cases fast and functional, and 
+> non-functional .. Right now your patch has no slow and functional 
+> state.
 
-Ahh, that's certainly going to root out the issues. Now let's hope that 
-people install it..
+let me explain it to you:
 
-(Fedora seems to make it hard on purpose to upgrade between major 
-revisions, but maybe that's just me not reading the docs as usual ;)
+1) there is absolutely no problem here to begin with. If a rare 
+architecture is lazy enough to not bother implementing a finegrained 
+sched_clock() then it certainly does not care about the granularity of 
+lockstat fields either. If it does, it can improve scheduling and get 
+more finegrained lockstat by implementing a proper sched_clock() 
+function - all for the same price! ;-)
 
-		Linus
+2) the 'solution' you suggested for this non-problem is _far worse_ than 
+the granularity non-problem, on the _majority_ of server systems today! 
+Think about it! Your suggestion would make lockstat _totally unusable_. 
+Not "slow and functional" like you claim but "dead-slow and unusable".
+
+in light of all this it is puzzling to me how you can still call Peter's 
+code "non-functional" with a straight face. I have just tried lockstat 
+with jiffies granular sched_clock() and it was still fully functional. 
+So if you want to report some bug then please do it in a proper form.
+
+> As I said before there is no reason why and architectures should be 
+> forced to implement sched_clock() .. Is there some specific reason why 
+> you think it should be mandatory?
+
+Easy: it's not mandatory, but it's certainly "nice" even today, even 
+without lockstat. It will get you:
+
+ - better scheduling
+ - better printk timestamps
+ - higher-quality blktrace timestamps
+
+With lockstat, append "more finegrained lockstat output" to that list of 
+benefits too. That's why every sane server architecture has a 
+sched_clock() implementation - go check the kernel source. Now i wouldnt 
+mind to clean the API up and call it get_stat_clock() or whatever - but 
+that was not your suggestion at all - your suggestion was flawed: to 
+implement sched_clock() via the GTOD clocksource.
+
+	Ingo
