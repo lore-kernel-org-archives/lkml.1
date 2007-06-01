@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbXFAQnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762433AbXFAQnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbXFAQnS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 12:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbXFAQnJ
+	id S1762433AbXFAQnh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 12:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761119AbXFAQn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 12:43:09 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:28357 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757945AbXFAQnH (ORCPT
+	Fri, 1 Jun 2007 12:43:29 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2106 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761066AbXFAQn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 12:43:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Zilxsbg+YshKGqzSiy2wW7Kjdg/WpJJBQVJjqjK8J0n3PpcxDwAkrnXf0CPRuCIwR1Tij1dVjzFjaxAc1jE4bavivd/RjEj4W0wayphwni2sIhwsrvWpTeKSPHFcObLLLbVx1TeEz6jHEzBNcfqPSwyNm1K3D8ZYfSDmOxKuHLU=
-Message-ID: <b6a2187b0706010943w370f2d5ft4f16a49cc4161012@mail.gmail.com>
-Date: Sat, 2 Jun 2007 00:43:06 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [1/3] 2.6.22-rc3: known regressions v2
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton LKML" <linux-kernel@vger.kernel.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-In-Reply-To: <6bffcb0e0706010923y5a2bc729x7388b60cc73d94f7@mail.gmail.com>
+	Fri, 1 Jun 2007 12:43:28 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <netbeans@gatworks.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: RE: SELECT() returns 1 But FIONREAD says (Input/output error)
+Date: Fri, 1 Jun 2007 09:43:04 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKCEBGEEAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46600F1C.5000302@googlemail.com>
-	 <b6a2187b0706010628m3d9ffad5y9a76e22719f439b7@mail.gmail.com>
-	 <6bffcb0e0706010923y5a2bc729x7388b60cc73d94f7@mail.gmail.com>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <465F7C2A.5020702@gatworks.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Fri, 01 Jun 2007 10:43:31 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Fri, 01 Jun 2007 10:43:31 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/2/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-> I think that Sam is working on this.
+> David Schwartz wrote:
 
-I'm a bit lost looking at those patches and don't know which ones are
-the appropriate ones I should I apply?
+> > Nope. An errored connection is always ready for read/write -- there is
+> > nothing to wait for as far as the kernel is concerned. Your code keeps
+> > asking the kernel if something interesting has happened, the
+> > kernel keeps
+> > telling it yes, and it refuses to do anything about it.
 
-Thanks,
-Jeff.
+> The select() returns because i pulled the USB cable from hub. Seems
+> reasonable.
+
+Good. Then there is nothing further to discuss.
+
+> The next select() found what? to be interesting in order to prematurely
+> terminate the select-wait? As far as I can tell, nothing interesting has
+> happened since the previous select(). In this case the select() is only
+> looking at read()'s.
+
+You have a very serious misunderstanding of what 'select' does. The 'select'
+function is level triggered and state based, not edge triggered or event
+based. The situation was the same as before, and so the same result is
+required.
+
+The kernel assumes that either you handled the error condition or you aren't
+going to handle the error condition. In either case, the correct thing to do
+is to again inform you of the error.
+
+Suppose the first 'select' comes from code that is just curious how many
+sockets are ready but has no intention of handling the events. Not reporting
+the error on the next call to 'select' would be disastrous.
+
+DS
+
+
+
