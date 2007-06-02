@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760193AbXFBCVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbXFBCYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760193AbXFBCVu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 22:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbXFBCVn
+	id S1761346AbXFBCYd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 22:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbXFBCY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 22:21:43 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:42524 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786AbXFBCVn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 22:21:43 -0400
-Date: Fri, 1 Jun 2007 22:21:34 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Christoph Lameter <clameter@sgi.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-In-Reply-To: <Pine.LNX.4.64.0706011914240.11011@schroedinger.engr.sgi.com>
-Message-ID: <alpine.DEB.0.99.0706012220140.1820@sigma.j-a-k-j.com>
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
- <alpine.DEB.0.99.0706012205080.1305@sigma.j-a-k-j.com>
- <Pine.LNX.4.64.0706011914240.11011@schroedinger.engr.sgi.com>
+	Fri, 1 Jun 2007 22:24:27 -0400
+Received: from ns2.suse.de ([195.135.220.15]:37337 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751933AbXFBCY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 22:24:26 -0400
+From: Neil Brown <neilb@suse.de>
+To: Brad Langhorst <brad@langhorst.com>
+Date: Sat, 2 Jun 2007 12:24:02 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18016.54466.838932.490284@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: first one disk drops our of raid, then the other - I/O error on
+	same sector. raid bug?
+In-Reply-To: message from Brad Langhorst on Friday June 1
+References: <1180744988.6830.183.camel@upup>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > +	 * The behavior for zero sized allocs changes. We no longer
-> > > +	 * allocate memory but return ZERO_SIZE_PTR.
-> > > +	 * WARN so that people can review and fix their code.
-> > 
-> > I don't see why people have so much opposition to zero-size memory 
-> > allocations. There's all sorts of situations where you want a resizeable 
-> > array that may have zero objects, especially in these days of 
-> > hotpluggability.
+On Friday June 1, brad@langhorst.com wrote:
+> This is a debian stable system in production. Kernel 2.6.18.
+> I upgraded the kernel from 2.6.8 to 2.6.18 about 2 weeks ago and saw no
+> problems until today.
 > 
-> In case you have not read the description to the end: This patch does 
-> exactly what you want and legitimizes zero size object use. The warning 
-> will be remove before 2.6.22 is released.
+> 
+> May 30 12:58:00 bitc kernel: (scsi0:A:1:0): Unexpected busfree in
+> Command phase
 
-Ah, sorry then. I just saw this, and remembered a rather contrary 
-discussion about it quite a time ago. Excellent then.
+This error is not indicative of drive problems, but rather of
+buss/controller problems.
+
+The fact that identical problems hit both devices support this.  I
+would suggest that you check all cable connections and re-seat the
+SCSI card (if it is a separate card).  If the problem persists, look
+at replacing hardware.
+
+NeilBrown
