@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbXFBCQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbXFBCSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759345AbXFBCQB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 22:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbXFBCPy
+	id S1759508AbXFBCSB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 22:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbXFBCRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 22:15:54 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47031 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751786AbXFBCPy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 22:15:54 -0400
-Date: Fri, 1 Jun 2007 19:15:53 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-In-Reply-To: <alpine.DEB.0.99.0706012205080.1305@sigma.j-a-k-j.com>
-Message-ID: <Pine.LNX.4.64.0706011914240.11011@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
- <alpine.DEB.0.99.0706012205080.1305@sigma.j-a-k-j.com>
+	Fri, 1 Jun 2007 22:17:55 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:56145 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751933AbXFBCRy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 22:17:54 -0400
+Date: Fri, 1 Jun 2007 19:19:07 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Emmanuel Fust? <emmanuel.fuste@laposte.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
+Message-ID: <20070602021906.GC13751@tree.beaverton.ibm.com>
+References: <JIZ905$469B6EF277FE655A66C9ACE2321FC036@laposte.net> <m1sl9bxl7r.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1sl9bxl7r.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007, John Anthony Kazos Jr. wrote:
+On Fri, Jun 01, 2007 at 06:18:32PM -0600, Eric W. Biederman wrote:
 
-> > +	 * The behavior for zero sized allocs changes. We no longer
-> > +	 * allocate memory but return ZERO_SIZE_PTR.
-> > +	 * WARN so that people can review and fix their code.
+> I doubt it.  The practical problem is that cpu_down does not
+> and by design can not call the irq balancing part properly
+> and I haven't yet seen anything to suggest that we don't migrate
+> irq properly.
 > 
-> I don't see why people have so much opposition to zero-size memory 
-> allocations. There's all sorts of situations where you want a resizeable 
-> array that may have zero objects, especially in these days of 
-> hotpluggability.
+> So I'm guessing it was the decision part.
 
-In case you have not read the description to the end: This patch does 
-exactly what you want and legitimizes zero size object use. The warning 
-will be remove before 2.6.22 is released.
+I'm not using any IRQ balancer, afaik.  As I recall, CONFIG_IRQBALANCE
+is i386-only, and I'm not running the userland irqbalance program
+either.  Just messing around with /proc/irq/*/smp_affinity by hand. :)
 
+--D
