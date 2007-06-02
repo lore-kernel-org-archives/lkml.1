@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761833AbXFBQkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761833AbXFBQrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761833AbXFBQkS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 12:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759718AbXFBQkI
+	id S1761833AbXFBQrS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 12:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbXFBQrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 12:40:08 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:56301 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758574AbXFBQkG (ORCPT
+	Sat, 2 Jun 2007 12:47:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39027 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757542AbXFBQrH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 12:40:06 -0400
-Date: Sat, 2 Jun 2007 09:39:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Tear <tarrqt@yahoo.com>
-cc: mingo@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] IO-APIC blacklist
-In-Reply-To: <477357.96605.qm@web63602.mail.re1.yahoo.com>
-Message-ID: <alpine.LFD.0.98.0706020938490.23741@woody.linux-foundation.org>
-References: <477357.96605.qm@web63602.mail.re1.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sat, 2 Jun 2007 12:47:07 -0400
+Date: Sat, 2 Jun 2007 18:47:04 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] quiet down swiotlb warnings
+Message-ID: <20070602164704.GQ7217@one.firstfloor.org>
+References: <p73odjzbism.fsf@bingen.suse.de> <20070601181225.GA16460@infradead.org> <20070601193703.GI7217@one.firstfloor.org> <466075D1.8080807@redhat.com> <20070601194734.GJ7217@one.firstfloor.org> <20070601200049.GK12143@andrew-vasquezs-computer.local> <20070601201444.GK7217@one.firstfloor.org> <46607F96.7060200@redhat.com> <20070601202601.GM7217@one.firstfloor.org> <20070602152146.GE4342@rhun.haifa.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070602152146.GE4342@rhun.haifa.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 2 Jun 2007, Tear wrote:
+On Sat, Jun 02, 2007 at 06:21:46PM +0300, Muli Ben-Yehuda wrote:
+> On Fri, Jun 01, 2007 at 10:26:01PM +0200, Andi Kleen wrote:
 > 
-> I own a Dell OptiPlex GX240 which, when ACPI is disabled
-> but IO-APIC is enabled, shows very slow USB performance.
-> I thought that this could be related to IO-APIC and
-> tried to boot with "noapic" appended to the kernel
-> command line. This way the USB transfer speed returned
-> to normal values.
+> > Normally swiotlb doesn't even try to bounce when dma mask is <=
+> > end_pfn so something must be very wrong in your kernel. It
+> > definitely isn't a mainline kernel. If this happens in Xen then Xen
+> > just needs fixing -- it should not try to bounce when the normal
+> > kernel wouldn't.
+> 
+> Xen needs to bounce when the requested buffer is not contiguous in
+> machine memory (and indeed uses swiotlb for that).
 
-Well, it's almost certainly not the IO-APIC per se.
+Then it should just restrict the sg list merging at the block layer
+to never merge into anything larger than a page. Then this cannot
+happen or only very rarely.
 
-It's more likely to be some irq routing issue, where ACPI fixes up 
-something.  Do you have diffs of 'dmesg' with and without ACPI?
-
-		Linus
+-Andi
