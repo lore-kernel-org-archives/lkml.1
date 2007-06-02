@@ -1,53 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762512AbXFBAnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763073AbXFBAnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762512AbXFBAnU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 20:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbXFBAnN
+	id S1763073AbXFBAnj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 20:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761632AbXFBAnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 20:43:13 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:53324 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbXFBAnN (ORCPT
+	Fri, 1 Jun 2007 20:43:31 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:41033 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755277AbXFBAna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 20:43:13 -0400
-Message-ID: <4660BCF8.7000208@zytor.com>
-Date: Fri, 01 Jun 2007 17:42:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Extending boot protocol & bzImage for paravirt_ops
-References: <4656FB8F.4090604@goop.org> <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <466087CF.70708@goop.org> <4660924A.2070009@zytor.com> <466093E3.4010701@goop.org> <46609636.4050208@zytor.com> <4660BBDF.1040007@goop.org>
-In-Reply-To: <4660BBDF.1040007@goop.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 1 Jun 2007 20:43:30 -0400
+Subject: Re: [RFC][PATCH] Replacing the /proc/<pid|self>/exe symlink code
+From: Matt Helsley <matthltc@us.ibm.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070601223156.GA22754@vino.hallyn.com>
+References: <1180486369.11715.69.camel@localhost.localdomain>
+	 <20070530180923.GA22345@vino.hallyn.com>
+	 <1180634174.4738.48.camel@localhost.localdomain>
+	 <20070601223156.GA22754@vino.hallyn.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 01 Jun 2007 17:42:49 -0700
+Message-Id: <1180744969.6104.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+On Fri, 2007-06-01 at 17:31 -0500, Serge E. Hallyn wrote:
+> Quoting Matt Helsley (matthltc@us.ibm.com):
+> > On Wed, 2007-05-30 at 13:09 -0500, Serge E. Hallyn wrote:
+> > > Quoting Matt Helsley (matthltc@us.ibm.com):
+> > > > This patch avoids holding the mmap semaphore while walking VMAs in response to
+> > > > programs which read or follow the /proc/<pid|self>/exe symlink. This also allows us
+> > > > to merge mmu and nommu proc_exe_link() functions. The costs are holding a separate
+> > > > reference to the executable file stored in the task struct and increased code in
+> > > > fork, exec, and exit paths.
+> > > > 
+> > > > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> > > > ---
+> > > > 
+> > > > Compiled and passed simple tests for regressions when patched against a 2.6.20
+> > > > and 2.6.22-rc2-mm1 kernel.
+> > > > 
+> > > >  fs/exec.c             |    5 +++--
+> > > >  fs/proc/base.c        |   20 ++++++++++++++++++++
+> > > >  fs/proc/internal.h    |    1 -
+> > > >  fs/proc/task_mmu.c    |   34 ----------------------------------
+> > > >  fs/proc/task_nommu.c  |   34 ----------------------------------
+> > > >  include/linux/sched.h |    1 +
+> > > >  kernel/exit.c         |    2 ++
+> > > >  kernel/fork.c         |   10 +++++++++-
+> > > >  8 files changed, 35 insertions(+), 72 deletions(-)
+> > 
+> > <snip>
+> > 
+> > > > Index: linux-2.6.22-rc2-mm1/kernel/exit.c
+> > > > ===================================================================
+> > > > --- linux-2.6.22-rc2-mm1.orig/kernel/exit.c
+> > > > +++ linux-2.6.22-rc2-mm1/kernel/exit.c
+> > > > @@ -924,10 +924,12 @@ fastcall void do_exit(long code)
+> > > >  	if (unlikely(tsk->audit_context))
+> > > >  		audit_free(tsk);
+> > > >  
+> > > >  	taskstats_exit(tsk, group_dead);
+> > > >  
+> > > > +	if (tsk->exe_file)
+> > > > +		fput(tsk->exe_file);
+> > > 
+> > > Hi,
+> > > 
+> > > just taking a cursory look so I may be missing something, but doesn't
+> > > this leave the possibility that right here, with tsk->exe_file being
+> > > put, another task would try to look at tsk's /proc/tsk->pid/exe?
+> > > 
+> > > thanks,
+> > > -serge
+> > >
+> > >       exit_mm(tsk);
+> > >
+> >   
+> > <snip>
+> > 
+> > Good question. To be precise, I think the problem doesn't exist here but
+> > after the exit_mm() because there's a VMA that holds a reference to the
+> > same file.
+> > 
+> > The existing code appears to solve the race between
+> > reading/following /proc/tsk->pid/exe and exit_mm() in the exit path by
+> > returning -ENOENT for the case where there is no executable VMA with a
+> > reference to the file backing it.
+> > 
+> > So I need to put NULL in the exe_file field and adjust the return value
+> > to be -ENOENT instead of -ENOSYS.
+> > 
+> > Thanks for the review!
 > 
-> Well, I think we can safely say that its something that's only
-> meaningful in 32/64-bit mode, so we aren't constrained by the real-mode
-> address space.
-> 
-> One of my goals in this project is to make the boot image, in some way,
-> completely define which memory it needs it get started.  That means that
-> the boot loader can either place things knowing they'll avoid the boot
-> image and/or definitively know that the image is unloadable.
-> 
-> So I don't think its strictly necessary to pre-define what memory this
-> object can use, since I think it can be safely determined dynamically.
-> 
+> Ok, I had to think about this a bit, but so you're saying you set it to
+> NULL in do_exit(), and anyone who has just dereferenced tsk->exe_file
+> before the fput in do_exit() should be ok because the vma hasn't yet
+> been put?
 
-That's a method of defining the memory space.
+Yes
 
-I think the current definition is suitable for entering at the 16-bit
-entry point.
+> Should the 
+> 	if (!task->exe_file)
+> 		goto out;
+> 	*mnt = mntget(task->exe_file->f_path.mnt);
+> 	*dentry = dget(task->exe_file->f_path.dentry);
+> 
+> also go inside an preempt_disable to prevent sleeping and maybe become
 
-	-hpa
+It needs some form of protection from concurrent access between write
+and read. write happens during exec, fork, and exit. In the fork case
+however it's not necessary because the new task isn't visible in /proc
+yet and the value of current doesn't change anyway.
+
+> 	exef = task->exe_file;  /* to prevent task->exe_file being set
+> 			to NULL before we've grabbed the path */
+> 	if (!exef)
+> 		goto out;
+> 	get_file(exef);  /* to prevent the mm somehow being put before
+> 				we've grabbed the path? */
+> 	*mnt = mntget(task->exe_file->f_path.mnt);
+> 	*dentry = dget(task->exe_file->f_path.dentry);
+> 	put_file(exef);  /* ? */
+> 
+> ?
+> 
+> Or am I being overly paranoid?
+
+No, you're right. In fact, because readlink() can be initiated by
+another task I think disabling preemption really only fixes the problem
+on uniprocessor systems. So I was thinking of using task_lock() to
+protect exe_file.
+
+Cheers,
+	-Matt Helsley
+
