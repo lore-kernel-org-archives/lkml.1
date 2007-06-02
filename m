@@ -1,43 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762594AbXFBV7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbXFBWGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762594AbXFBV7Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 17:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757053AbXFBV7I
+	id S1762662AbXFBWGR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 18:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757053AbXFBWGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 17:59:08 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:50038 "EHLO mail.g-house.de"
+	Sat, 2 Jun 2007 18:06:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:32798 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756671AbXFBV7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 17:59:07 -0400
-Date: Sat, 2 Jun 2007 22:59:01 +0100 (BST)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.22-rc3 safe to migrate to?
-In-Reply-To: <Pine.LNX.4.64.0706021723480.22318@p34.internal.lan>
-Message-ID: <alpine.DEB.0.99.0706022253130.16496@sheep.housecafe.de>
-References: <Pine.LNX.4.64.0706021723480.22318@p34.internal.lan>
+	id S1756671AbXFBWGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 18:06:02 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ACPI: preserve the ebx value in acpi_copy_wakeup_routine
+Date: Sun, 3 Jun 2007 00:11:42 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+       Tian Kevin <kevin.tian@intel.com>, Zhang Rui <rui.zhang@intel.com>,
+       Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706030011.43733.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Jun 2007, Justin Piszcz wrote:
-> Wondering as their were a lot of XFS related issues early on in 
-> development..?  The 2.6.22-rc3 kernel has the core 2 duo coretemp patch by 
-> ruik which I want be running as long as 2.6.22-rc3 does not have any severe 
-> XFS issues?
+From: Tian Kevin <kevin.tian@intel.com>
 
-Tracking -rc and running 2.6.22-rc3 for a couple of days now, no 
-problems with xfs since this infamous 2.6.17 thingy[0]. But that's 
-pretty useless information I guess, since your setup will be different 
-from mine. Did you have anything "special" in mind when asking this?
+Register %ebx serves as the "global offset table base register"
+for position-independent code. For absolute code, %ebx serves
+as a local register and has no specified role in the function
+calling sequence. In either case, a function must preserve the
+register value for the caller.
 
-C.
+acpi_copy_wakeup_routine overrides %ebx without saving it,
+this may corrupt the called data.
 
-[0] http://oss.sgi.com/projects/xfs/faq.html#dir2
--- 
-BOFH excuse #339:
+Kevin found that most time the value of Sx is saved in %esi,
+however sometimes compiler also uses %ebx. When this happens,
+suspends fails since sleep value in ebx is changed by
+acpi_copy_wakeup_routine.
 
-manager in the cable duct
+The same funtion in X86_64 doesn't have this problem.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Looks-okay-to: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/i386/kernel/acpi/wakeup.S |    2 ++
+ 1 files changed, 2 insertions(+)
+
+Index: linux-2.6.22-rc3/arch/i386/kernel/acpi/wakeup.S
+===================================================================
+--- linux-2.6.22-rc3.orig/arch/i386/kernel/acpi/wakeup.S	2007-05-31 17:23:56.000000000 +0800
++++ linux-2.6.22-rc3/arch/i386/kernel/acpi/wakeup.S	2007-05-31 17:24:08.000000000 +0800
+@@ -230,6 +230,7 @@ bogus_magic:
+ #
+ ENTRY(acpi_copy_wakeup_routine)
+ 
++	pushl	%ebx
+ 	sgdt	saved_gdt
+ 	sidt	saved_idt
+ 	sldt	saved_ldt
+@@ -263,6 +264,7 @@ ENTRY(acpi_copy_wakeup_routine)
+ 	movl	%edx, video_flags - wakeup_start (%eax)
+ 	movl	$0x12345678, real_magic - wakeup_start (%eax)
+ 	movl	$0x12345678, saved_magic
++	popl	%ebx
+ 	ret
+ 
+ save_registers:
+-
