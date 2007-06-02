@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbXFDMnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXFDMr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbXFDMnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 08:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXFDMnK
+	id S1753882AbXFDMr7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 08:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbXFDMru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 08:43:10 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:22264 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754498AbXFDMnH (ORCPT
+	Mon, 4 Jun 2007 08:47:50 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38844 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751192AbXFDMrt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 08:43:07 -0400
-In-Reply-To: <20070531134118.GA30501@infradead.org>
-Subject: Re: [PATCH 2/2] ehea: Receive SKB Aggregation
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>,
-       Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-       ossthema@linux.vnet.ibm.com, Thomas Q Klein <tklein@de.ibm.com>,
-       tklein@linux.ibm.com
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF7723C01B.9DD0E9DC-ONC12572F0.0040CA22-C12572F0.0042AC08@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Mon, 4 Jun 2007 14:09:47 +0200
-X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 04/06/2007 14:43:03
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	Mon, 4 Jun 2007 08:47:49 -0400
+Date: Sat, 2 Jun 2007 23:22:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: 7eggert@gmx.de
+Cc: Tejun Heo <htejun@gmail.com>, David Greaves <david@dgreaves.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       IDE Linux <linux-ide@vger.kernel.org>, ballen@gravity.phys.uwm.edu
+Subject: Re: 2.6.22-rc3 hibernate(?) disables SMART on ide
+Message-ID: <20070602232223.463932da@the-village.bc.nu>
+In-Reply-To: <E1Hub8O-0000rF-Hb@be1.lrz>
+References: <8rnax-6XX-11@gated-at.bofh.it>
+	<8rA7H-1B4-1@gated-at.bofh.it>
+	<E1Hub8O-0000rF-Hb@be1.lrz>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> 3) There should be no bad effect from enabling smart, except if the BIOS
+>    insists on not booting because of a bad RAID disk. (That's why I like
+>    to disable it in the BIOS)
 
-Christoph Hellwig wrote on 31.05.2007 15:41:18:
+With a couple of exceptions unfortunately. Belongs in udev and smartd so
+its controllable and flexible (and also swappable).
 
-> I'm still very unhappy with having all this in various drivers.  There's
-> a lot of code that can be turned into generic library functions, and even
-> more code that could be made generic with some amount of refactoring.
-
-Yes, we'd also prefer to use a generic function, but we first would want to
-get
-some "real world" experience how our driver behaves with LRO to be even
-able to
-define requirements for such a generic function. A lot of this is tied into
-pathlengths,
-caching, and why does that help compared to a different TCP receive side
-processing?
-In a perfect world we shouldn't see a diffference if this is enabled or
-not,
-but measurements indicate something completely different at 10gbit.
-
-Gruss / Regards
-Christoph Raisch
-
-
+Alan
