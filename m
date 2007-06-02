@@ -1,103 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbXFBTJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763452AbXFBTLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763940AbXFBTJu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 15:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761658AbXFBTJk
+	id S1763452AbXFBTLb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 15:11:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760687AbXFBTLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 15:09:40 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:51900 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761604AbXFBTJj (ORCPT
+	Sat, 2 Jun 2007 15:11:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:1821 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760653AbXFBTLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 15:09:39 -0400
-Date: Sat, 2 Jun 2007 21:09:42 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Mattia Dongili <malattia@linux.it>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove sonypi_camera_command()
-Message-ID: <20070602190942.GM5500@stusta.de>
+	Sat, 2 Jun 2007 15:11:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=M74GEBzHVHem2r5zlhfzsz8ykR3CzsKxzRMASn+Dp01L+9BQl2SFBhNGK8kSZo/frHsa8c0scLdetlDZx8gtecxupvPuoS0sRC53nHpN8ZxQszIqD2PULnD0XcICOl2A/T0XYi2aYXvF0XHBVYKvJf7PpwxGkxXqUi2jvY/Bx1Y=
+Message-ID: <4661C0DA.7040308@gmail.com>
+Date: Sat, 02 Jun 2007 13:11:22 -0600
+From: "Berck E. Nash" <flyboy@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070520)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       reiserfs-dev@namesys.com
+Subject: 2.6.22-rc3-mm1 reiser4 bug
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the no longer used sonypi_camera_command().
+All appears to work fine, until I try to boot a kernel with a Reiser4 /
+partition.  Then I get endless errors of the sort:
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+[  206.349450] sd 1:0:0:0: [sdc] Result: hostbyte=DID_BAD_TARGET
+driverbyte=DRIVER_OK,SUGGEST_OK
 
----
+(See attached dmesg for more, I only sent the first 1,000 lines, it goes
+on until a hard reboot.)
 
- drivers/char/sonypi.c  |   47 -----------------------------------------
- include/linux/sonypi.h |    2 -
- 2 files changed, 49 deletions(-)
-
---- linux-2.6.22-rc3-mm1/include/linux/sonypi.h.old	2007-06-02 20:35:45.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/include/linux/sonypi.h	2007-06-02 20:35:51.000000000 +0200
-@@ -153,8 +153,6 @@
- #define SONYPI_COMMAND_GETCAMERAROMVERSION	18	/* obsolete */
- #define SONYPI_COMMAND_GETCAMERAREVISION	19	/* obsolete */
- 
--int sonypi_camera_command(int command, u8 value);
--
- #endif				/* __KERNEL__ */
- 
- #endif				/* _SONYPI_H_ */
---- linux-2.6.22-rc3-mm1/drivers/char/sonypi.c.old	2007-06-02 20:35:58.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/char/sonypi.c	2007-06-02 20:36:16.000000000 +0200
-@@ -885,53 +885,6 @@
- 	return IRQ_HANDLED;
- }
- 
--/* External camera command (exported to the motion eye v4l driver) */
--int sonypi_camera_command(int command, u8 value)
--{
--	if (!camera)
--		return -EIO;
--
--	mutex_lock(&sonypi_device.lock);
--
--	switch (command) {
--	case SONYPI_COMMAND_SETCAMERA:
--		if (value)
--			sonypi_camera_on();
--		else
--			sonypi_camera_off();
--		break;
--	case SONYPI_COMMAND_SETCAMERABRIGHTNESS:
--		sonypi_set(SONYPI_CAMERA_BRIGHTNESS, value);
--		break;
--	case SONYPI_COMMAND_SETCAMERACONTRAST:
--		sonypi_set(SONYPI_CAMERA_CONTRAST, value);
--		break;
--	case SONYPI_COMMAND_SETCAMERAHUE:
--		sonypi_set(SONYPI_CAMERA_HUE, value);
--		break;
--	case SONYPI_COMMAND_SETCAMERACOLOR:
--		sonypi_set(SONYPI_CAMERA_COLOR, value);
--		break;
--	case SONYPI_COMMAND_SETCAMERASHARPNESS:
--		sonypi_set(SONYPI_CAMERA_SHARPNESS, value);
--		break;
--	case SONYPI_COMMAND_SETCAMERAPICTURE:
--		sonypi_set(SONYPI_CAMERA_PICTURE, value);
--		break;
--	case SONYPI_COMMAND_SETCAMERAAGC:
--		sonypi_set(SONYPI_CAMERA_AGC, value);
--		break;
--	default:
--		printk(KERN_ERR "sonypi: sonypi_camera_command invalid: %d\n",
--		       command);
--		break;
--	}
--	mutex_unlock(&sonypi_device.lock);
--	return 0;
--}
--
--EXPORT_SYMBOL(sonypi_camera_command);
--
- static int sonypi_misc_fasync(int fd, struct file *filp, int on)
- {
- 	int retval;
-
+The same partition and the same kernel work great as long as that
+partition isn't the current system root.  The same kernel and the same
+hard drive works fine as long as the partition is formatted ReiserFS.
