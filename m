@@ -1,288 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbXFBWoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763656AbXFBWox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762801AbXFBWoI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 18:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760793AbXFBWn4
+	id S1763656AbXFBWox (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 18:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761525AbXFBWor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 18:43:56 -0400
-Received: from lucidpixels.com ([75.144.35.66]:52762 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760729AbXFBWnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 18:43:55 -0400
-Date: Sat, 2 Jun 2007 18:43:52 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: linux-kernel@vger.kernel.org
-Subject: Kernel 2.6.22-rc3 breaks USB: Unable to get HID descriptor (error
- sending control message: Operation not permitted)
-Message-ID: <Pine.LNX.4.64.0706021841520.3376@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1428192669-1180824232=:3376"
+	Sat, 2 Jun 2007 18:44:47 -0400
+Received: from enterprise.noxa.de ([212.60.197.71]:42027 "EHLO
+	enterprise.noxa.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760793AbXFBWoq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 18:44:46 -0400
+Date: Sun, 3 Jun 2007 00:43:53 +0200
+From: Jonathan Schleifer <js@h3c.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: aeb@cwi.nl, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Ignore partition table on device
+Message-ID: <20070603004353.3330f35d@localhost>
+In-Reply-To: <4661ED70.5000208@zytor.com>
+References: <20070602205513.0312ebe0@localhost>
+	<4661D32B.2040706@zytor.com>
+	<20070602233435.4c432bc5@localhost>
+	<4661ED70.5000208@zytor.com>
+X-Mailer: Sylpheed-Claws 2.5.2 (GTK+ 2.10.12; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
----1463747160-1428192669-1180824232=:3376
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+> Partition tables aren't just read at bootup.  We also adjust partition
+> tables at runtime.  Since this is dynamic, ignoring partition tables
+> should be, too.
 
-I use nut-2.0.4-4 with a UPS attached via USB and from 2.6.21.3 -> 
-2.6.22-rc3 it stops working, see below.  My .config is attached.
+So this is something that should be done with a sysctl? Anyway, it
+should also be possible to disable it already at bootup.
 
-2.6.21.3:
-
-p34:~# /lib/nut/newhidups -u nut -DDDDDD auto
-Checking device (050D/0912) (005/002)
-- VendorID: 050d
-- ProductID: 0912
-- Manufacturer:
-- Product: UPS
-- Serial Number: unknown
-- Bus: 005
-Trying to match device
-Device matches
-HID descriptor retrieved (Reportlen = 820)
-Size read for the report descriptor: 820
-Report descriptor retrieved (Reportlen = 820)
-Found HID device
-Network UPS Tools: New USB/HID UPS driver 0.28 (2.0.4)
-
-Report Descriptor size = 820
-Report Descriptor: (200 bytes) => 05 84 09 04 A1 01 05 86 09 26 A1 02 85 01 75 08
-Detected a UPS:        /UPS
-Using subdriver: Belkin HID 0.1
-Looking up 00840004
-Looking up 00860026
-Looking up 00860040
-entering string_to_path()
-parsing UPS
-Looking up UPS
-hid_lookup_usage: found 840004
-parsing BELKINConfig
-Looking up BELKINConfig
-hid_lookup_usage: found 860026
-parsing BELKINConfigVoltage
-Looking up BELKINConfigVoltage
-hid_lookup_usage: found 860040
-Path depth = 3
-0: UPage(84), Usage(4)
-1: UPage(86), Usage(26)
-2: UPage(86), Usage(40)
-Entering libusb_get_report
-=>> Before exponent: 120, 0/0)
-=>> After conversion: 120.000000 (120), 0/0)
-Report : (8 bytes) => 01 78 80 00 00 00 00 00
-Path: UPS.BELKINConfig.BELKINConfigVoltage, Type: Feature, Value: 120.000000
-Looking up 00840004
-Looking up 00860026
-Looking up 00860042
-
-(works fine)
-
-2.6.22-rc3:
-
-p34:~# /lib/nut/newhidups -u nut -DDDDDD auto
-Checking device (050D/0912) (005/002)
-- VendorID: 050d
-- ProductID: 0912
-- Manufacturer: unknown
-- Product: unknown
-- Serial Number: unknown
-- Bus: 005
-Trying to match device
-Device matches
-failed to claim USB device, trying 2 more time(s)...
-detaching kernel driver from USB device...
-failed to detach kernel driver from USB device...
-trying again to claim USB device...
-failed to claim USB device, trying 1 more time(s)...
-detaching kernel driver from USB device...
-failed to detach kernel driver from USB device...
-trying again to claim USB device...
-failed to claim USB device, trying 0 more time(s)...
-detaching kernel driver from USB device...
-failed to detach kernel driver from USB device...
-trying again to claim USB device...
-Unable to get HID descriptor (error sending control message: Operation not permitted)
-
----1463747160-1428192669-1180824232=:3376
-Content-Type: APPLICATION/octet-stream; name=config-2.6.22-rc3.bz2
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.64.0706021843521.3376@p34.internal.lan>
-Content-Description: 
-Content-Disposition: attachment; filename=config-2.6.22-rc3.bz2
-
-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
-ChIMvforgA==
-
----1463747160-1428192669-1180824232=:3376--
+-- 
+Jonathan
