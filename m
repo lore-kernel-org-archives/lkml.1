@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbXFBAHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbXFBAMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760659AbXFBAHq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 20:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXFBAHk
+	id S1760773AbXFBAMw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 20:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757142AbXFBAMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 20:07:40 -0400
-Received: from neon.samage.net ([85.17.153.66]:44319 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754026AbXFBAHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 20:07:39 -0400
-Message-ID: <3499.81.207.0.53.1180742856.squirrel@secure.samage.net>
-In-Reply-To: <87hcpr2ubl.fsf@goat.bogus.local>
-References: <878xb35sje.fsf@goat.bogus.local>
-    <200706012237.17375.rjw@sisk.pl> <87k5un4bwk.fsf@goat.bogus.local>
-    <200706012340.54394.rjw@sisk.pl> <87hcpr2ubl.fsf@goat.bogus.local>
-Date: Sat, 2 Jun 2007 02:07:36 +0200 (CEST)
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Olaf Dietsche" <olaf+list.linux-acpi@olafdietsche.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "pm list" <linux-pm@lists.linux-foundation.org>
-User-Agent: SquirrelMail/1.4.8
+	Fri, 1 Jun 2007 20:12:46 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43830 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756211AbXFBAMp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 20:12:45 -0400
+Date: Fri, 1 Jun 2007 17:12:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
+       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
+ warning
+In-Reply-To: <alpine.LFD.0.98.0706011653290.3957@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706011659170.10164@schroedinger.engr.sgi.com>
+References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
+ <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
+ <20070601135900.ec44b1aa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
+ <20070601151649.bb23c6f9.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com>
+ <20070601153328.1118ccaf.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0706011554300.3957@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706011617330.9781@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0706011638360.3957@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706011642530.9992@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0706011653290.3957@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 63767ed6f001c63471f2cde26909bd9c
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, June 2, 2007 00:17, Olaf Dietsche wrote:
-> It doesn't work. I tried all options "s2ram -f (-s, -p, -m, -r, -a 1, -a 2,
-> -a 3)" one after the other.
->
-> Since the screen (or any other device) works without problems, when I
-> skip acpi_enter_sleep_state(), I don't think it's screen related.
+On Fri, 1 Jun 2007, Linus Torvalds wrote:
 
-I use "s2ram -f -p -s -a 3", maybe you need some exotic combination too.
+> > A too large alloc is >32MB or MAX_ORDER << PAGE_SIZE. A BUG_ON in 
+> > kmalloc_slab() will trigger.
+> 
+> Did we use to BUG_ON()? I think that's wrong. There are ways for users to 
+> potentially ask the kernel to do big allocations, and the correct response 
+> is to say "no can do", not to crash!
 
-Greetings,
+There is no way to distinguish that from out of memory. Failing on large 
+allocs is what we have always done for kmalloc(). Before 2.6.22 we used to 
+fail for allocs > 256k which was a big nuisance for NUMAs large allocs.
 
-Indan
-
+The patches in 2.6.22 allow us for the first time to allocate arbitrary 
+sized objects up to MAX_ORDER. So we no longer have troubles with large 
+NUMA objects.
 
