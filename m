@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762272AbXFBBnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763512AbXFBBoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762272AbXFBBnY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 21:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbXFBBnR
+	id S1763512AbXFBBoI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 21:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759540AbXFBBn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 21:43:17 -0400
-Received: from main.gmane.org ([80.91.229.2]:49482 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758814AbXFBBnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 21:43:17 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [RFC] tablet buttons driver for fujitsu siemens laptops
-Date: Fri, 1 Jun 2007 18:30:54 -0700
-Organization: Linux Foundation
-Message-ID: <20070601183054.44c09935@freepuppy>
-References: <200706020259.34033.khnz@gmx.de>
+	Fri, 1 Jun 2007 21:43:57 -0400
+Received: from h80ad2262.async.vt.edu ([128.173.34.98]:44685 "EHLO
+	h80ad2262.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758131AbXFBBn4 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 21:43:56 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrey Vul <andrey.vul@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: tickless timer support on non-x86
+In-Reply-To: Your message of "Fri, 01 Jun 2007 18:20:02 EDT."
+             <e38d12ff0706011520n4d6f00cdt80a4ead3d939c849@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <e38d12ff0706011520n4d6f00cdt80a4ead3d939c849@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1180748634_4213P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
-In-Reply-To: <200706020259.34033.khnz@gmx.de>
-X-Newsreader: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
-X-Face: 
+Date: Fri, 01 Jun 2007 21:43:54 -0400
+Message-ID: <8461.1180748634@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Jun 2007 02:59:33 +0200
-Robert Gerlach <khnz@gmx.de> wrote:
+--==_Exmh_1180748634_4213P
+Content-Type: text/plain; charset=us-ascii
 
-> Hi,
+On Fri, 01 Jun 2007 18:20:02 EDT, Andrey Vul said:
+> I want to use the tickless timer features in 2.6.21, but
+> unfortunately, the dependency for tickless timers is
+> GENERIC_CLOCKEVENTS (and tickless is only in arch/i386).
 > 
-> I have written a driver for the tablet buttons of (some?) Fujitsu Siemens 
-> tablet notebook. Can someone please review this (I'm a newbie here).
+> Any workarounds or solutions for non-x86 people?
 > 
-> Other questions, where should the modification button (fn) handled (kernel- or 
-> userspace)? This button should work like stickykey's in gnome (for 
-> one-finger-use). Currently, I have a small userspace daemon for this.
-> 
-> Some models doesn't have a brightness up and down, only a backlight on and off 
-> button. What event should reported there.
-> 
-> Thanks,
-> Robert
-> 
-> 
-> #ifdef DEBUG
-> #  define debug(m, a...)	printk( KERN_DEBUG   MODULENAME ": " m "\n", ##a)
-> #else
-> #  define debug(m, a...)	do {} while(0)
-> #endif
-> 
-> #define info(m, a...)	printk( KERN_INFO    MODULENAME ": " m "\n", ##a)
-> #define warn(m, a...)	printk( KERN_WARNING MODULENAME ": " m "\n", ##a)
-> #define error(m, a...)	printk( KERN_ERR     MODULENAME ": " m "\n", ##a)
->
->
+> My CPU is AMD Turion ML-34.
 
-Please don't reinvent
-	pr_debug
-	pr_info
-	pr_warn,...
+If that AMD is running a 32-bit kernel, the code already in the kernel
+should work just fine (barring hardware issues like busticated HPET/timer
+and so on).  If it doesn't work, we should debug that issue.
 
+If you're running a 64-bit kernel, you might want to check here:
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+http://www.tglx.de/projects/hrtimers/
 
+The 2.6.22-rc3-hrt2 patch series can be 'quilt'ed onto a -rc3-mmm1 tree
+with about 20 minutes of work fixing a few trivial rejects (2 or 3 patches
+already in -mm, and another 2 or 3 trivial rejectts...)
+
+--==_Exmh_1180748634_4213P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGYMtacC3lWbTT17ARAttwAKCKLpgHDLhV7B3V21GEvJ7de1Km2wCfamVK
+owVV36zydFkjynnevC/5Z/A=
+=6sbZ
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1180748634_4213P--
