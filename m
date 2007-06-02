@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbXFBEbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbXFBEhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755283AbXFBEbn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 00:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbXFBEbf
+	id S1755927AbXFBEhS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 00:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXFBEhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 00:31:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51138 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751153AbXFBEbe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 00:31:34 -0400
-Date: Fri, 1 Jun 2007 21:31:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       jeremy@goop.org
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-Message-Id: <20070601213117.1178e8e0.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
-	<20070601204141.f84ad72f.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Jun 2007 00:37:07 -0400
+Received: from chen.mtu.ru ([195.34.34.232]:3236 "EHLO chen.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751570AbXFBEhG (ORCPT <rfc822; linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 00:37:06 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+To: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>,
+       linux-kernel@vger.kernel.org
+Date: Sat, 02 Jun 2007 08:36:03 +0400
+References: <878xb35sje.fsf@goat.bogus.local>
+User-Agent: KNode/0.10.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <20070602043604.5887E558E6B@chen.mtu.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007 21:01:09 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+Olaf Dietsche wrote:
 
-> On Fri, 1 Jun 2007, Andrew Morton wrote:
+> resume from suspend to ram doesn't work for my laptop and never
+> has. So, this is not a regression.
 > 
-> > > On Fri, 1 Jun 2007 18:37:46 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
-> > >
-> > > +#define ZERO_SIZE_PTR ((void *)16)
-> > 
-> > Jeremy's point was a good one.  The kernel _does_ use address-comparison
-> > to determine object-inequality in an unknown but non-zero number of places.
-> > 
-> > It is of course unlikely that this will occur in conjunction with zero-sized
-> > objects, but who knows?
+> Hibernate (aka suspend to disk) works, however.
 > 
-> The zero sized objects are always the same and have the same content of 
-> nothingness. So the kernel would find that they are the same which they 
-> indeed are. Why could this be a problem?
+> When I resume, everything seems to come up (fan becomes busy, disk and
+> dvd spin up for a short time), but the machine is not responding to
+> anything - neither keyboard, mouse nor ping from another machine. The
+> laptop is effectively dead and only a power cycle helps.
+> 
 
-They are different instances which happen to have the same length (zero).
+I understand that every case of failed resume is different, but this looks
+quite similar to the problem I have:
+http://bugzilla.kernel.org/show_bug.cgi?id=7499, at least symptoms :)
 
-But the code will incorrectly decide that they are the same instance.  It
-might cause refcounting or accounting errors, for example.  I don't know - the
-kernel's a big place.
+> I've tried a minimal config and init=/bin/bash as well, but the result
+> is the same.
+> 
 
-I agree the risk is low, but if something _does_ blow up, it will do so subtly.
+One more similarity :) And BTW s2ram does not work either.
+
+-andrey
 
