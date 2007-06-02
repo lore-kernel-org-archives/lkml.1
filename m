@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763748AbXFBXeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbXFBXls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763748AbXFBXeK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 19:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbXFBXd6
+	id S1763648AbXFBXls (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 19:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760064AbXFBXll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 19:33:58 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47801 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbXFBXd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 19:33:57 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC][PATCH] IO-APIC blacklist
-Date: Sat, 2 Jun 2007 19:33:40 -0400
-User-Agent: KMail/1.9.5
-Cc: Tear <tarrqt@yahoo.com>, mingo@redhat.com, akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>
-References: <105227.2990.qm@web63604.mail.re1.yahoo.com> <alpine.LFD.0.98.0706021400330.23741@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706021400330.23741@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706021933.40583.lenb@kernel.org>
+	Sat, 2 Jun 2007 19:41:41 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:11616 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754420AbXFBXlk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 19:41:40 -0400
+Date: Sat, 2 Jun 2007 16:40:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.22-rc3-g184b812f build #294 failed in: undefined
+ reference to `enable_apic_mode'
+Message-Id: <20070602164052.6a36377f.randy.dunlap@oracle.com>
+In-Reply-To: <200706012319.23761.toralf.foerster@gmx.de>
+References: <200706012319.23761.toralf.foerster@gmx.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->   -uhci_hcd 0000:00:1f.2: irq 19, io base 0x0000ff80	 # slow
->   +uhci_hcd 0000:00:1f.2: irq 17, io base 0x0000ff80	 # fine
+On Fri, 1 Jun 2007 23:19:17 +0200 Toralf Förster wrote:
 
-nope, this function is on on hardware IRQ 19 in both cases.
+> Hello,
+> 
+> the build with the attached .config failed, make ends with:
+> ...
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> arch/i386/kernel/built-in.o: In function `get_smp_config':
+> : undefined reference to `mps_oem_check'
+> arch/i386/kernel/built-in.o: In function `connect_bsp_APIC':
+> : undefined reference to `enable_apic_mode'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> This .config was made in this way :
+> make mrproper && make rndconfig && <tweak it to ThinkPad T41> && make oldconfig && make
 
-it just looks like IRQ 17 in the ACPI case due to this:
+This sort-of-randconfig is still for Unisys ES7000 sub-architecture,
+so tweaking it to Thinkpad T41 doesn't get you much of anything that
+is useful.  I think you can drop that step.
 
-ACPI: PCI Interrupt 0000:00:1f.2[D] -> GSI 19 (level, low) -> IRQ 17
+If you tweak it like this:
+115c115
+< # CONFIG_X86_PC is not set
+---
+> CONFIG_X86_PC=y
+123c123
+< CONFIG_X86_ES7000=y
+---
+> # CONFIG_X86_ES7000 is not set
 
-Totally bogus?  Yes.
-google "Kill IRQ compression"
-But while I truly hate this particular hack and I've wanted it gone for a long time,
-it doesn't appear to be related to the failure at hand -- it just makes
-it more irritating to debug.
+and run 'make oldconfig', it will build.
 
--Len
+I don't find this particular randconfig (#294) interesting, but
+sometimes they can be, so don't stop trying them, please.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
