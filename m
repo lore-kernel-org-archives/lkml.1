@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760268AbXFBBQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761669AbXFBBTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760268AbXFBBQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 21:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbXFBBQI
+	id S1761669AbXFBBTA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 21:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbXFBBSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 21:16:08 -0400
-Received: from outbound-mail-65.bluehost.com ([69.89.21.25]:43645 "HELO
-	outbound-mail-65.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752268AbXFBBQH (ORCPT
+	Fri, 1 Jun 2007 21:18:54 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35741 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752268AbXFBBSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 21:16:07 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
-Date: Fri, 1 Jun 2007 18:15:52 -0700
-User-Agent: KMail/1.9.6
-Cc: Andi Kleen <andi@firstfloor.org>, Justin Piszcz <jpiszcz@lucidpixels.com>,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <200706011441.57149.jbarnes@virtuousgeek.org> <20070602010539.GA13512@linux-os.sc.intel.com>
-In-Reply-To: <20070602010539.GA13512@linux-os.sc.intel.com>
+	Fri, 1 Jun 2007 21:18:53 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Extending boot protocol & bzImage for paravirt_ops
+References: <4656FB8F.4090604@goop.org>
+	<m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <466087CF.70708@goop.org>
+	<4660924A.2070009@zytor.com> <466093E3.4010701@goop.org>
+	<46609636.4050208@zytor.com> <4660BBDF.1040007@goop.org>
+	<4660BCF8.7000208@zytor.com> <4660C0CD.5060606@goop.org>
+	<4660C194.4010003@zytor.com> <4660C2F6.6070005@goop.org>
+Date: Fri, 01 Jun 2007 19:17:48 -0600
+In-Reply-To: <4660C2F6.6070005@goop.org> (Jeremy Fitzhardinge's message of
+	"Fri, 01 Jun 2007 18:08:06 -0700")
+Message-ID: <m1odjzxigz.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706011815.53065.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, June 1, 2007 6:05:39 Venki Pallipadi wrote:
-> On Fri, Jun 01, 2007 at 02:41:57PM -0700, Jesse Barnes wrote:
-> > On Friday, June 1, 2007 2:19:43 Andi Kleen wrote:
-> > > And normally the MTRRs win, don't they (if I remember the table
-> > > correctly) So if the MTRR says UC and PAT disagrees it might not
-> > > actually help
-> >
-> > I just checked, yes the MTRRs win for UC types.  But it sounds like the
-> > cases we're talking about are actually situations where there's no MTRR
-> > coverage, so the default type is used.  The manual doesn't specifically
-> > call out how memory using the default type interacts with PAT, but it may
-> > well be that it stays uncached if the default type is uncached.  Again
-> > that argues for fixing the MTRR mapping problem in some way.
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
+
+> H. Peter Anvin wrote:
+>> It would have to, because of the way code32_start is defined to work.
+>> We don't get control again after its use as a hook.
+>>   
 >
-> I feel, having a silent/transparent workaround is not a good idea. With
-> that chances are BIOS bug will go unnoticed (having an error message in
-> dmesg may not get noticed either). Probably we should just panic at boot
-> with a
-> detailed message about the e820 mtrr discrepancy (which can be logged as
-> a BUG to BIOS provider) and suggest a temporary workaround of "mem=___".
+> Who uses that hook?  The impression I get is that the execution
+> environment for jumping to that pointer is not very well defined at present.
 
-That might be best, short of actually fixing the MTRRs...
+loadlin.
 
-Jesse
-
-
+Eric
