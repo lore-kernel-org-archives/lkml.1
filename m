@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758172AbXFAX5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbXFBAC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758172AbXFAX5o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 19:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbXFAX5i
+	id S1760170AbXFBAC3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 20:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbXFBACW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 19:57:38 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:56610 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757171AbXFAX5h (ORCPT
+	Fri, 1 Jun 2007 20:02:22 -0400
+Received: from pool-151-205-99-173.ny325.east.verizon.net ([151.205.99.173]:54813
+	"HELO gatworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753968AbXFBACV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 19:57:37 -0400
-Date: Fri, 1 Jun 2007 16:57:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-In-Reply-To: <Pine.LNX.4.64.0706011642530.9992@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.0.98.0706011653290.3957@woody.linux-foundation.org>
-References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
- <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
- <20070601135900.ec44b1aa.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
- <20070601151649.bb23c6f9.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com>
- <20070601153328.1118ccaf.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
- <alpine.LFD.0.98.0706011554300.3957@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706011617330.9781@schroedinger.engr.sgi.com>
- <alpine.LFD.0.98.0706011638360.3957@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706011642530.9992@schroedinger.engr.sgi.com>
+	Fri, 1 Jun 2007 20:02:21 -0400
+Message-ID: <4660B38A.3040908@gatworks.com>
+Date: Fri, 01 Jun 2007 20:02:18 -0400
+From: Uncle George <netbeans@gatworks.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+CC: linux-kernel@vger.kernel.org
+Subject: Re: SELECT() returns 1 But FIONREAD says (Input/output error)
+References: <fa.qaWJQn9l1jDV+N9wFv9WqATf44U@ifi.uio.no> <fa.pq45zUHWQMSHoRGL/M4uTPfFWHg@ifi.uio.no> <465F891B.1080103@shaw.ca>
+In-Reply-To: <465F891B.1080103@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Robert Hancock wrote:
 
-
-On Fri, 1 Jun 2007, Christoph Lameter wrote:
+> It's because you haven't done anything to handle the error which is 
+> still persisting. Likely the only thing sane you can do in this case is 
+> close the fd and try to reopen it later.
 > 
-> A too large alloc is >32MB or MAX_ORDER << PAGE_SIZE. A BUG_ON in 
-> kmalloc_slab() will trigger.
+This seems to be true, but not for what you might think.
 
-Did we use to BUG_ON()? I think that's wrong. There are ways for users to 
-potentially ask the kernel to do big allocations, and the correct response 
-is to say "no can do", not to crash!
+It appears that if u plug the USB/serial device back into the usb-hub, 
+the code creates a /dev/ttyUSB1 ( if you have not yet closed the 
+disconnected /dev/ttyUSB0. ) When you do close /dev/ttyUSB0, then the 
+device is erased from the /dev directory.
 
-> Here is the updated patch. It works fine here:
-> 
-> SLUB: Return BADPTR instead of warning for kmalloc(0)
+Now /dev/ttyUSB1 is the device. And /dev/ttyUSB0 disappeared. This does 
+not seem proper. As now the program has no idea or capability to re-open 
+the GPS device.
 
-Looks fine to me. My only comment is that
-
-> -	if (!x)
-> +	if (!x || x == BADPTR)
->  		return;
-
-This could be micro-optimized (again, non-standard, but it should be 
-"practically portable") to have just a single test using something like
-
-	if ((unsigned long)x <= 16)
-		return;
-
-but I guess it doesn't really matter much.
-
-I think this is better than what we have now, but I also suspect it's 
-*not* something we should try this late in the -rc sequence ;)
-
-Andrew, want to take this patch to -mm to see if it triggers anything?
-
-		Linus
+I have been informed that this was an approved kernel feature. Is this 
+suppose to happen? Or was it an unintended consequence?
