@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762498AbXFBVrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763100AbXFBVsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762498AbXFBVrl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 17:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757053AbXFBVrd
+	id S1763100AbXFBVsq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 17:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758876AbXFBVsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 17:47:33 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:39745 "EHLO mailer.gwdg.de"
+	Sat, 2 Jun 2007 17:48:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39934 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756671AbXFBVrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 17:47:32 -0400
-Date: Sat, 2 Jun 2007 23:46:46 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Netfilter Mailing List <netfilter@lists.netfilter.org>,
-       Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/2] xt_u32 - match arbitrary bits and bytes of a packet
-Message-ID: <Pine.LNX.4.61.0706022322340.28357@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S1757053AbXFBVsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 17:48:37 -0400
+Date: Sat, 2 Jun 2007 17:48:31 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200706022148.l52LmVRx023291@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] V2: O_CLOEXEC for SCM_RIGHTS
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Take two: I forgot to change the compat code.  This has now happened.  Only one
+additional line changed.
+
+Everything else from the first patch remains the same.  I try to avoid clogging
+the list unnecessarily by not resending the test program.
 
 
-along comes xt_u32, a revamped ipt_u32,
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-    *	added ipv6 support since that seemed dead simple, given u32's 
-	task. I would have even liked to unlock u32 for _all_ protocols, 
-	but .family = AF_UNSPEC does not do the right thing right now, 
-	but that's not so much a showstopper.
-
-	And arptables seems miles away from using iptables modules. So
-	AF_INET and AF_INET6 it is for now.
-
-    *	Reduced the buffer size to 17 KB. I think that is quite ok since 
-	I added an overflow check,  SHOULD THERE BE ANY device with an 
-	MTU larger than our loopback masterpiece (16436 bytes).
-
-	Are there such devices that support Megasuperjumboframes?
-	The previous buffer size of 64 KB was probably the cutting edge,
-	as a single IPv4 fragment/packet does not support more than that 
-	anyway.
-
-
-Questions, comments, blame, praise, please.
-I'd like to get this merged so I do not have to maintain it out-of-tree.
-
-
-	Jan
--- 
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -855,7 +855,7 @@
+ /*
+  * Find an empty file descriptor entry, and mark it busy.
+  */
+-static int get_unused_fd_flags(int flags)
++int get_unused_fd_flags(int flags)
+ {
+ 	struct files_struct * files = current->files;
+ 	int fd, error;
+--- a/include/linux/file.h
++++ b/include/linux/file.h
+@@ -73,6 +73,7 @@ extern struct file * FASTCALL(fget_light(unsigned int fd, int *fput_needed));
+ extern void FASTCALL(set_close_on_exec(unsigned int fd, int flag));
+ extern void put_filp(struct file *);
+ extern int get_unused_fd(void);
++extern int FASTCALL(get_unused_fd_flags(int flags));
+ extern void FASTCALL(put_unused_fd(unsigned int fd));
+ struct kmem_cache;
+ 
+--- a/include/linux/socket.h
++++ b/include/linux/socket.h
+@@ -253,6 +253,9 @@ struct ucred {
+ 
+ #define MSG_EOF         MSG_FIN
+ 
++#define MSG_CMSG_CLOEXEC 0x40000000	/* Set close_on_exit for file
++					   descriptor received through
++					   SCM_RIGHTS */
+ #if defined(CONFIG_COMPAT)
+ #define MSG_CMSG_COMPAT	0x80000000	/* This message needs 32 bit fixups */
+ #else
+--- a/net/compat.c
++++ b/net/compat.c
+@@ -276,7 +276,8 @@ void scm_detach_fds_compat(struct msghdr *kmsg, struct scm_cookie *scm)
+ 		err = security_file_receive(fp[i]);
+ 		if (err)
+ 			break;
+-		err = get_unused_fd();
++		err = get_unused_fd_flags(MSG_CMSG_CLOEXEC & msg->msg_flags
++					  ? O_CLOEXEC : 0);
+ 		if (err < 0)
+ 			break;
+ 		new_fd = err;
+--- a/net/core/scm.c
++++ b/net/core/scm.c
+@@ -228,7 +228,8 @@ void scm_detach_fds(struct msghdr *msg, struct scm_cookie *scm)
+ 		err = security_file_receive(fp[i]);
+ 		if (err)
+ 			break;
+-		err = get_unused_fd();
++		err = get_unused_fd_flags(MSG_CMSG_CLOEXEC & msg->msg_flags
++					  ? O_CLOEXEC : 0);
+ 		if (err < 0)
+ 			break;
+ 		new_fd = err;
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1939,9 +1939,7 @@ asmlinkage long sys_recvmsg(int fd, struct msghdr __user *msg,
+ 	total_len = err;
+ 
+ 	cmsg_ptr = (unsigned long)msg_sys.msg_control;
+-	msg_sys.msg_flags = 0;
+-	if (MSG_CMSG_COMPAT & flags)
+-		msg_sys.msg_flags = MSG_CMSG_COMPAT;
++	msg_sys.msg_flags = flags & (MSG_CMSG_CLOEXEC|MSG_CMSG_COMPAT);
+ 
+ 	if (sock->file->f_flags & O_NONBLOCK)
+ 		flags |= MSG_DONTWAIT;
