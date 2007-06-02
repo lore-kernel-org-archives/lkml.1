@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763458AbXFBWVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763240AbXFBW1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763458AbXFBWVu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 18:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759280AbXFBWVn
+	id S1763240AbXFBW1Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 18:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbXFBW1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 18:21:43 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:43997 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756671AbXFBWVn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 18:21:43 -0400
-Message-ID: <4661ED70.5000208@zytor.com>
-Date: Sat, 02 Jun 2007 15:21:36 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sat, 2 Jun 2007 18:27:09 -0400
+Received: from lucidpixels.com ([75.144.35.66]:49149 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751290AbXFBW1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 18:27:08 -0400
+Date: Sat, 2 Jun 2007 18:27:05 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Christian Kujau <lists@nerdbynature.de>
+cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.22-rc3 safe to migrate to?
+In-Reply-To: <alpine.DEB.0.99.0706022253130.16496@sheep.housecafe.de>
+Message-ID: <Pine.LNX.4.64.0706021826470.4161@p34.internal.lan>
+References: <Pine.LNX.4.64.0706021723480.22318@p34.internal.lan>
+ <alpine.DEB.0.99.0706022253130.16496@sheep.housecafe.de>
 MIME-Version: 1.0
-To: Jonathan Schleifer <js@h3c.de>
-CC: aeb@cwi.nl, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Ignore partition table on device
-References: <20070602205513.0312ebe0@localhost>	<4661D32B.2040706@zytor.com> <20070602233435.4c432bc5@localhost>
-In-Reply-To: <20070602233435.4c432bc5@localhost>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Schleifer wrote:
-> "H. Peter Anvin" <hpa@zytor.com> wrote:
-> 
->> This seems broken.  If nothing else, there should be ways to enable or
->> disable this at runtime.
-> 
-> What exactly do you consider broken?
-> I don't really see a way to change that at runtime since hard disk
-> partition tables are read at bootup. Or did you mean to change the
-> device where the partition table should be ignored at runtime, so one
-> could enable/disable it and reattach the device under the condition
-> that it's a removable device?
+Jun  2 18:23:23 p34 upsd[2225]: Can't connect to UPS [belkin] 
+(newhidups-auto): No such file or directory
+Jun  2 18:24:23 p34 upsmon[2228]: Poll UPS [belkin@localhost] failed - 
+Driver not connected
 
-Partition tables aren't just read at bootup.  We also adjust partition
-tables at runtime.  Since this is dynamic, ignoring partition tables
-should be, too.
+Hmm, something changes with USB in 2.6.22-rc3 form 2.6.21..
 
-	-hpa
+On Sat, 2 Jun 2007, Christian Kujau wrote:
+
+> On Sat, 2 Jun 2007, Justin Piszcz wrote:
+>> Wondering as their were a lot of XFS related issues early on in 
+>> development..?  The 2.6.22-rc3 kernel has the core 2 duo coretemp patch by 
+>> ruik which I want be running as long as 2.6.22-rc3 does not have any severe 
+>> XFS issues?
+>
+> Tracking -rc and running 2.6.22-rc3 for a couple of days now, no problems 
+> with xfs since this infamous 2.6.17 thingy[0]. But that's pretty useless 
+> information I guess, since your setup will be different from mine. Did you 
+> have anything "special" in mind when asking this?
+>
+> C.
+>
+> [0] http://oss.sgi.com/projects/xfs/faq.html#dir2
+> -- 
+> BOFH excuse #339:
+>
+> manager in the cable duct
+>
+>
