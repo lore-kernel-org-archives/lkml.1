@@ -1,172 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbXFBMar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbXFBMk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758002AbXFBMar (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 08:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbXFBMaj
+	id S1757243AbXFBMk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 08:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbXFBMkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 08:30:39 -0400
-Received: from mail.screens.ru ([213.234.233.54]:48420 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166AbXFBMai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 08:30:38 -0400
-Date: Sat, 2 Jun 2007 16:30:30 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Mark Hounschell <dmarkh@cfl.rr.com>
-Cc: Mark Hounschell <markh@compro.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: floppy.c soft lockup
-Message-ID: <20070602123030.GA719@tv-sign.ru>
-References: <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net> <20070531192256.GA88@tv-sign.ru> <465F2D96.9060502@compro.net> <20070601110058.GA83@tv-sign.ru> <466028DB.3060509@compro.net> <20070601151605.GA108@tv-sign.ru> <4660534E.6050903@cfl.rr.com> <20070601183642.GA92@tv-sign.ru> <466078FF.2080508@cfl.rr.com>
-Mime-Version: 1.0
+	Sat, 2 Jun 2007 08:40:16 -0400
+Received: from hansmi.home.forkbomb.ch ([213.144.146.165]:7494 "EHLO
+	hansmi.home.forkbomb.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753200AbXFBMkO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 08:40:14 -0400
+Date: Sat, 2 Jun 2007 14:40:09 +0200
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@killerfox.forkbomb.ch
+Subject: Re: [linux-usb-devel] [PATCH] Fix NEC OHCI chip silicon bug
+Message-ID: <20070602124009.GA6991@hansmi.ch>
+References: <20070531213427.GA25154@hansmi.ch> <Pine.LNX.4.44L0.0706011017370.3185-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <466078FF.2080508@cfl.rr.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.LNX.4.44L0.0706011017370.3185-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/01, Mark Hounschell wrote:
->
-> Oleg Nesterov wrote:
-> > On 06/01, Mark Hounschell wrote:
-> >>
-> >> Ok the prctl never returned. I just replaced the ioctl with it and added
-> >> a printf before and after. I only get the one before. The thread is hung
-> >> at this point just as if I'd done the ioctl?
-> > 
-> > Thanks. So we can rule out floppy.c. flush_scheduled_work/flush_workqueue
-> > is broken by this RT application. Imho, this is not the kernel problem.
-> > 
-> > Now I am very sure that the initial suspect was correct: cpu starvation.
-> > I can cook a debug patch to be 100% sure tomorrow, which kernel version is
-> > most convenient to you?
-> > 
-> 
-> 2.6.22-rc3 is fine thanks.
+On Fri, Jun 01, 2007 at 10:19:30AM -0400, Alan Stern wrote:
+> > @@ -779,7 +790,11 @@ static int ohci_restart (struct ohci_hcd
+> >  	 */
+> >  	spin_lock_irq(&ohci->lock);
+> >  	disable (ohci);
+> > +
+> > +#ifdef CONFIG_PM
+> >  	usb_root_hub_lost_power(ohci_to_hcd(ohci)->self.root_hub);
+> > +#endif
+> > +
 
-Please try this patch, it should dump some debug info when flush_workqueue()
-hangs (after 30 seconds). You can use it with or without the previous patch
-I sent. Please wait for a couple of minutes to collect more info.
+> Suppose CONFIG_PM isn't defined.  How are you going to let usbcore 
+> know about all the old connections which no longer exist?
 
-Oleg.
+You're right, something is wrong there. The patch below uses
+usb_root_hub_lost_power again but disables CONFIG_PM specific code in it
+when CONFIG_PM isn't defined. It seems to work for me with and without
+CONFIG_PM, but I have to confess I might not know enough about Linux'
+USB core. Is it better now?
 
---- OLD/kernel/sched.c~TST	2007-04-05 12:20:35.000000000 +0400
-+++ OLD/kernel/sched.c	2007-06-02 15:41:53.000000000 +0400
-@@ -4177,6 +4177,20 @@ struct task_struct *idle_task(int cpu)
- 	return cpu_rq(cpu)->idle;
+Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+
+---
+diff -Nurp --exclude-from=linux-exclude-from linux-2.6.22-rc3.orig/drivers/usb/core/hub.c linux-2.6.22-rc3/drivers/usb/core/hub.c
+--- linux-2.6.22-rc3.orig/drivers/usb/core/hub.c	2007-05-31 22:53:54.000000000 +0200
++++ linux-2.6.22-rc3/drivers/usb/core/hub.c	2007-06-02 14:34:13.000000000 +0200
+@@ -1089,9 +1089,6 @@ void usb_set_device_state(struct usb_dev
+ 	spin_unlock_irqrestore(&device_state_lock, flags);
  }
  
-+struct task_struct *get_cpu_curr(int cpu)
-+{
-+	unsigned long flags;
-+	struct task_struct *curr;
-+	struct rq *rq = cpu_rq(cpu);
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	curr = rq->curr;
-+	get_task_struct(curr);
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+
-+	return curr;
-+}
-+
+-
+-#ifdef	CONFIG_PM
+-
  /**
-  * find_process_by_pid - find a process with a matching PID value.
-  * @pid: the pid in question.
---- OLD/kernel/workqueue.c~TST	2007-06-02 13:34:57.000000000 +0400
-+++ OLD/kernel/workqueue.c	2007-06-02 16:18:02.000000000 +0400
-@@ -49,6 +49,7 @@ struct cpu_workqueue_struct {
- 	struct task_struct *thread;
+  * usb_root_hub_lost_power - called by HCD if the root hub lost Vbus power
+  * @rhdev: struct usb_device for the root hub
+@@ -1109,10 +1106,12 @@ void usb_root_hub_lost_power(struct usb_
  
- 	int run_depth;		/* Detect run_workqueue() recursion depth */
-+	int jobs;
- } ____cacheline_aligned;
+ 	dev_warn(&rhdev->dev, "root hub lost power or was reset\n");
  
- /*
-@@ -253,6 +254,7 @@ static void run_workqueue(struct cpu_wor
++#ifdef CONFIG_PM
+ 	/* Make sure no potential wakeup events get lost,
+ 	 * by forcing the root hub to be resumed.
+ 	 */
+ 	rhdev->dev.power.prev_state.event = PM_EVENT_ON;
++#endif /* CONFIG_PM */
  
- 		cwq->current_work = work;
- 		list_del_init(cwq->worklist.next);
-+		cwq->jobs++;
- 		spin_unlock_irq(&cwq->lock);
- 
- 		BUG_ON(get_wq_data(work) != cwq);
-@@ -328,7 +330,48 @@ static void insert_wq_barrier(struct cpu
- 	insert_work(cwq, &barr->work, tail);
+ 	spin_lock_irqsave(&device_state_lock, flags);
+ 	hub = hdev_to_hub(rhdev);
+@@ -1127,8 +1126,6 @@ void usb_root_hub_lost_power(struct usb_
  }
+ EXPORT_SYMBOL_GPL(usb_root_hub_lost_power);
  
--static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
-+extern struct task_struct *get_cpu_curr(int cpu);
-+
-+static void flush_wait(struct cpu_workqueue_struct *cwq, int cpu, struct completion *done)
-+{
-+	struct task_struct *curr;
-+	struct work_struct *work;
-+	int old_pid, jobs;
-+
-+	if (is_single_threaded(cwq->wq))
-+		cpu = raw_smp_processor_id();
-+
-+again:
-+	work = cwq->current_work;
-+	jobs = cwq->jobs;
-+
-+	curr = get_cpu_curr(cpu);
-+	old_pid = curr->pid;
-+	put_task_struct(curr);
-+
-+	if (wait_for_completion_timeout(done, HZ * 30))
-+		return;
-+
-+	printk(KERN_ERR "ERR!! %s flush hang: %p %p %d %d\n", cwq->thread->comm,
-+			work, cwq->current_work, jobs, cwq->jobs);
-+
-+	curr = get_cpu_curr(cpu);
-+	printk(KERN_ERR "CURR: %d %d %s %ld %ld\n", old_pid, curr->pid,
-+			curr->comm, curr->nivcsw, curr->nvcsw);
-+	put_task_struct(curr);
-+
-+	spin_lock_irq(&cwq->lock);
-+	list_for_each_entry(work, &cwq->worklist, entry)
-+		print_symbol("    %s\n", (unsigned long) work->func);
-+	printk("    ----\n");
-+	if (cwq->current_work)
-+		print_symbol("    %s\n", (unsigned long) cwq->current_work->func);
-+	spin_unlock_irq(&cwq->lock);
-+
-+	goto again;
-+}
-+
-+static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq, int cpu)
+-#endif	/* CONFIG_PM */
+-
+ static void choose_address(struct usb_device *udev)
  {
- 	int active;
+ 	int		devnum;
+diff -Nurp --exclude-from=linux-exclude-from linux-2.6.22-rc3.orig/drivers/usb/host/ohci.h linux-2.6.22-rc3/drivers/usb/host/ohci.h
+--- linux-2.6.22-rc3.orig/drivers/usb/host/ohci.h	2007-05-31 22:53:54.000000000 +0200
++++ linux-2.6.22-rc3/drivers/usb/host/ohci.h	2007-05-31 22:54:27.000000000 +0200
+@@ -397,8 +397,10 @@ struct ohci_hcd {
+ #define	OHCI_QUIRK_BE_DESC	0x08			/* BE descriptors */
+ #define	OHCI_QUIRK_BE_MMIO	0x10			/* BE registers */
+ #define	OHCI_QUIRK_ZFMICRO	0x20			/* Compaq ZFMicro chipset*/
++#define	OHCI_QUIRK_NEC		0x40			/* lost interrupts */
+ 	// there are also chip quirks/bugs in init logic
  
-@@ -351,7 +394,7 @@ static int flush_cpu_workqueue(struct cp
- 		spin_unlock_irq(&cwq->lock);
++	struct work_struct	nec_work;	/* Worker for NEC quirk */
+ };
  
- 		if (active)
--			wait_for_completion(&barr.done);
-+			flush_wait(cwq, cpu, &barr.done);
+ /* convert between an hcd pointer and the corresponding ohci_hcd */
+diff -Nurp --exclude-from=linux-exclude-from linux-2.6.22-rc3.orig/drivers/usb/host/ohci-hcd.c linux-2.6.22-rc3/drivers/usb/host/ohci-hcd.c
+--- linux-2.6.22-rc3.orig/drivers/usb/host/ohci-hcd.c	2007-05-31 22:53:54.000000000 +0200
++++ linux-2.6.22-rc3/drivers/usb/host/ohci-hcd.c	2007-06-02 14:35:18.000000000 +0200
+@@ -35,6 +35,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/dmapool.h>
+ #include <linux/reboot.h>
++#include <linux/workqueue.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -82,6 +83,8 @@ static const char	hcd_name [] = "ohci_hc
+ static void ohci_dump (struct ohci_hcd *ohci, int verbose);
+ static int ohci_init (struct ohci_hcd *ohci);
+ static void ohci_stop (struct usb_hcd *hcd);
++static int ohci_restart (struct ohci_hcd *ohci);
++static void ohci_quirk_nec_worker (struct work_struct *work);
+ 
+ #include "ohci-hub.c"
+ #include "ohci-dbg.c"
+@@ -659,9 +662,20 @@ static irqreturn_t ohci_irq (struct usb_
  	}
  
- 	return active;
-@@ -377,7 +420,7 @@ void fastcall flush_workqueue(struct wor
+ 	if (ints & OHCI_INTR_UE) {
+-		disable (ohci);
+-		ohci_err (ohci, "OHCI Unrecoverable Error, disabled\n");
+ 		// e.g. due to PCI Master/Target Abort
++		if (ohci->flags & OHCI_QUIRK_NEC) {
++			/* Workaround for a silicon bug in some NEC chips used
++			 * in Apple's PowerBooks. Adapted from Darwin code.
++			 */
++			ohci_err (ohci, "OHCI Unrecoverable Error, scheduling NEC chip restart\n");
++
++			ohci_writel (ohci, OHCI_INTR_UE, &regs->intrdisable);
++
++			schedule_work (&ohci->nec_work);
++		} else {
++			disable (ohci);
++			ohci_err (ohci, "OHCI Unrecoverable Error, disabled\n");
++		}
  
- 	might_sleep();
- 	for_each_cpu_mask(cpu, *cpu_map)
--		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
-+		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu), cpu);
+ 		ohci_dump (ohci, 1);
+ 		ohci_usb_reset (ohci);
+@@ -763,9 +777,6 @@ static void ohci_stop (struct usb_hcd *h
+ /*-------------------------------------------------------------------------*/
+ 
+ /* must not be called from interrupt context */
+-
+-#ifdef	CONFIG_PM
+-
+ static int ohci_restart (struct ohci_hcd *ohci)
+ {
+ 	int temp;
+@@ -839,7 +850,27 @@ static int ohci_restart (struct ohci_hcd
+ 	}
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(flush_workqueue);
+-#endif
++
++/*-------------------------------------------------------------------------*/
++
++/* NEC workaround */
++static void ohci_quirk_nec_worker(struct work_struct *work)
++{
++	struct ohci_hcd *ohci = container_of(work, struct ohci_hcd, nec_work);
++	int status;
++
++	status = ohci_init(ohci);
++	if (status != 0) {
++		ohci_err(ohci, "Restarting NEC controller failed "
++			 "in ohci_init, %d\n", status);
++		return;
++	}
++
++	status = ohci_restart(ohci);
++	if (status != 0)
++		ohci_err(ohci, "Restarting NEC controller failed "
++			 "in ohci_restart, %d\n", status);
++}
  
-@@ -748,7 +791,7 @@ static void cleanup_workqueue_thread(str
- 	 * checks list_empty(), and a "normal" queue_work() can't use
- 	 * a dead CPU.
- 	 */
--	while (flush_cpu_workqueue(cwq))
-+	while (flush_cpu_workqueue(cwq, cpu))
- 		;
+ /*-------------------------------------------------------------------------*/
  
- 	kthread_stop(cwq->thread);
-
+diff -Nurp --exclude-from=linux-exclude-from linux-2.6.22-rc3.orig/drivers/usb/host/ohci-hub.c linux-2.6.22-rc3/drivers/usb/host/ohci-hub.c
+--- linux-2.6.22-rc3.orig/drivers/usb/host/ohci-hub.c	2007-05-31 22:53:54.000000000 +0200
++++ linux-2.6.22-rc3/drivers/usb/host/ohci-hub.c	2007-05-31 22:54:27.000000000 +0200
+@@ -55,8 +55,6 @@ static void dl_done_list (struct ohci_hc
+ static void finish_unlinks (struct ohci_hcd *, u16);
+ 
+ #ifdef	CONFIG_PM
+-static int ohci_restart(struct ohci_hcd *ohci);
+-
+ static int ohci_rh_suspend (struct ohci_hcd *ohci, int autostop)
+ __releases(ohci->lock)
+ __acquires(ohci->lock)
+diff -Nurp --exclude-from=linux-exclude-from linux-2.6.22-rc3.orig/drivers/usb/host/ohci-mem.c linux-2.6.22-rc3/drivers/usb/host/ohci-mem.c
+--- linux-2.6.22-rc3.orig/drivers/usb/host/ohci-mem.c	2007-05-31 22:53:54.000000000 +0200
++++ linux-2.6.22-rc3/drivers/usb/host/ohci-mem.c	2007-05-31 23:24:43.000000000 +0200
+@@ -28,6 +28,7 @@ static void ohci_hcd_init (struct ohci_h
+ 	ohci->next_statechange = jiffies;
+ 	spin_lock_init (&ohci->lock);
+ 	INIT_LIST_HEAD (&ohci->pending);
++	INIT_WORK (&ohci->nec_work, ohci_quirk_nec_worker);
+ }
+ 
+ /*-------------------------------------------------------------------------*/
+diff -Nurp --exclude-from=linux-exclude-from linux-2.6.22-rc3.orig/drivers/usb/host/ohci-pci.c linux-2.6.22-rc3/drivers/usb/host/ohci-pci.c
+--- linux-2.6.22-rc3.orig/drivers/usb/host/ohci-pci.c	2007-05-31 22:53:54.000000000 +0200
++++ linux-2.6.22-rc3/drivers/usb/host/ohci-pci.c	2007-05-31 22:54:27.000000000 +0200
+@@ -111,6 +111,18 @@ static int ohci_quirk_toshiba_scc(struct
+ #endif
+ }
+ 
++/* Check for NEC chip and apply quirk for allegedly lost interrupts.
++ */
++static int ohci_quirk_nec(struct usb_hcd *hcd)
++{
++	struct ohci_hcd	*ohci = hcd_to_ohci (hcd);
++
++	ohci->flags |= OHCI_QUIRK_NEC;
++	ohci_dbg (ohci, "enabled NEC chipset lost interrupt quirk\n");
++
++	return 0;
++}
++
+ /* List of quirks for OHCI */
+ static const struct pci_device_id ohci_pci_quirks[] = {
+ 	{
+@@ -134,6 +146,10 @@ static const struct pci_device_id ohci_p
+ 		.driver_data = (unsigned long)ohci_quirk_toshiba_scc,
+ 	},
+ 	{
++		PCI_DEVICE(PCI_VENDOR_ID_NEC, PCI_DEVICE_ID_NEC_USB),
++		.driver_data = (unsigned long)ohci_quirk_nec,
++	},
++	{
+ 		/* Toshiba portege 4000 */
+ 		.vendor		= PCI_VENDOR_ID_AL,
+ 		.device		= 0x5237,
