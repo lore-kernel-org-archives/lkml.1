@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761669AbXFBBTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761613AbXFBBZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761669AbXFBBTA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 21:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbXFBBSy
+	id S1761613AbXFBBZE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 21:25:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbXFBBYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 21:18:54 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35741 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752268AbXFBBSx (ORCPT
+	Fri, 1 Jun 2007 21:24:55 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60355 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757900AbXFBBYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 21:18:53 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Extending boot protocol & bzImage for paravirt_ops
-References: <4656FB8F.4090604@goop.org>
-	<m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <466087CF.70708@goop.org>
-	<4660924A.2070009@zytor.com> <466093E3.4010701@goop.org>
-	<46609636.4050208@zytor.com> <4660BBDF.1040007@goop.org>
-	<4660BCF8.7000208@zytor.com> <4660C0CD.5060606@goop.org>
-	<4660C194.4010003@zytor.com> <4660C2F6.6070005@goop.org>
-Date: Fri, 01 Jun 2007 19:17:48 -0600
-In-Reply-To: <4660C2F6.6070005@goop.org> (Jeremy Fitzhardinge's message of
-	"Fri, 01 Jun 2007 18:08:06 -0700")
-Message-ID: <m1odjzxigz.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 1 Jun 2007 21:24:54 -0400
+Date: Fri, 1 Jun 2007 18:24:53 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Valdis.Kletnieks@vt.edu
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
+       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
+ warning
+In-Reply-To: <6985.1180746300@turing-police.cc.vt.edu>
+Message-ID: <Pine.LNX.4.64.0706011823470.10720@schroedinger.engr.sgi.com>
+References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
+ <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
+ <20070601135900.ec44b1aa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
+ <20070601151649.bb23c6f9.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com>
+ <20070601153328.1118ccaf.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>           
+ <alpine.LFD.0.98.0706011554300.3957@woody.linux-foundation.org>
+ <6985.1180746300@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+On Fri, 1 Jun 2007, Valdis.Kletnieks@vt.edu wrote:
 
-> H. Peter Anvin wrote:
->> It would have to, because of the way code32_start is defined to work.
->> We don't get control again after its use as a hook.
->>   
->
-> Who uses that hook?  The impression I get is that the execution
-> environment for jumping to that pointer is not very well defined at present.
+> On Fri, 01 Jun 2007 16:00:30 PDT, Linus Torvalds said:
+> 
+> > 	#define BADPTR ((void *)16)
+> 
+> > I bet you'd find *more* problems that way than by returning NULL, and 
+> > you'd also avoid the whole problem with "if (!ptr) return -ENOMEM".
+> 
+> Hmm.. this looks like a good contender for "first usage of #ifndef CONFIG_STABLE"
 
-loadlin.
+The warning? Sure but the BADPTR (or ZERO_SIZE_PTR now) will stay. 
+It is definitely an error to deference an object that has no size.
 
-Eric
