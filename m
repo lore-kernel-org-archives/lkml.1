@@ -1,45 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762660AbXFBCKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762906AbXFBCOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762660AbXFBCKi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 22:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759276AbXFBCKb
+	id S1762906AbXFBCOQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 22:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbXFBCOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 22:10:31 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:55686 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758877AbXFBCKa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 22:10:30 -0400
-Date: Fri, 1 Jun 2007 22:09:35 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Christoph Lameter <clameter@sgi.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-In-Reply-To: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
-Message-ID: <alpine.DEB.0.99.0706012205080.1305@sigma.j-a-k-j.com>
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 1 Jun 2007 22:14:04 -0400
+Received: from pan.gwi.net ([207.5.128.165]:1383 "EHLO pan.gwi.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759709AbXFBCOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 22:14:03 -0400
+X-Greylist: delayed 5424 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Jun 2007 22:14:03 EDT
+Subject: first one disk drops our of raid, then the other - I/O error on
+	same sector. raid bug?
+From: Brad Langhorst <brad@langhorst.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 01 Jun 2007 20:43:08 -0400
+Message-Id: <1180744988.6830.183.camel@upup>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	 * The behavior for zero sized allocs changes. We no longer
-> +	 * allocate memory but return ZERO_SIZE_PTR.
-> +	 * WARN so that people can review and fix their code.
+This is a debian stable system in production. Kernel 2.6.18.
+I upgraded the kernel from 2.6.8 to 2.6.18 about 2 weeks ago and saw no
+problems until today.
 
-I don't see why people have so much opposition to zero-size memory 
-allocations. There's all sorts of situations where you want a resizeable 
-array that may have zero objects, especially in these days of 
-hotpluggability.
 
-Not only is it simpler (and therefore less likely to be buggy) to write 
-code to simply resize to current number of objects, but not having to make 
-additional code for checking the special case of count==0 leading to 
-different function calls (instead of always reallocating, you might have 
-to allocate instead, and instead of reallocating to zero you might have to 
-free instead) will very slightly increase the object-text size.
+May 30 12:58:00 bitc kernel: (scsi0:A:1:0): Unexpected busfree in
+Command phase
+May 30 12:58:00 bitc kernel: SEQADDR == 0x16c
+May 30 12:58:00 bitc kernel: sd 0:0:1:0: SCSI error: return code =
+0x00010000
+May 30 12:58:00 bitc kernel: end_request: I/O error, dev sdb, sector
+287322317
+May 30 12:58:00 bitc kernel: raid1: Disk failure on sdb2, disabling
+device. 
+May 30 12:58:00 bitc kernel: ^IOperation continuing on 1 devices
+May 30 12:58:01 bitc kernel: sd 0:0:1:0: SCSI error: return code =
+0x00010000
+May 30 12:58:01 bitc kernel: end_request: I/O error, dev sdb, sector
+284758725
+May 30 12:58:01 bitc kernel: RAID1 conf printout:
+May 30 12:58:01 bitc kernel:  --- wd:1 rd:2
+May 30 12:58:01 bitc kernel:  disk 0, wo:0, o:1, dev:sda2
+May 30 12:58:01 bitc kernel:  disk 1, wo:1, o:0, dev:sdb2
+May 30 12:58:01 bitc kernel: RAID1 conf printout:
+May 30 12:58:01 bitc kernel:  --- wd:1 rd:2
+May 30 12:58:01 bitc kernel:  disk 0, wo:0, o:1, dev:sda2
 
-The standard-C behavior of valid zero-size allocation has a very good 
-reason.
+I can add /dev/sdb back
+
+May 30 17:14:17 bitc kernel: md: md1: sync done.
+May 30 17:14:17 bitc kernel: RAID1 conf printout:
+May 30 17:14:17 bitc kernel:  --- wd:2 rd:2
+May 30 17:14:17 bitc kernel:  disk 0, wo:0, o:1, dev:sda2
+May 30 17:14:17 bitc kernel:  disk 1, wo:0, o:1, dev:sdb2
+
+thenk /dev/sda fell out!
+
+May 31 02:37:06 bitc kernel: (scsi0:A:0:0): Unexpected busfree in
+Command phase
+May 31 02:37:06 bitc kernel: SEQADDR == 0x16c
+May 31 02:37:06 bitc kernel: sd 0:0:0:0: SCSI error: return code =
+0x00010000
+May 31 02:37:06 bitc kernel: end_request: I/O error, dev sda, sector
+287322317
+May 31 02:37:06 bitc kernel: raid1: Disk failure on sda2, disabling
+device. 
+May 31 02:37:06 bitc kernel: ^IOperation continuing on 1 devices
+May 31 02:37:06 bitc kernel: sd 0:0:0:0: SCSI error: return code =
+0x00010000
+May 31 02:37:06 bitc kernel: end_request: I/O error, dev sda, sector
+276325445
+May 31 02:37:06 bitc kernel: RAID1 conf printout:
+May 31 02:37:06 bitc kernel:  --- wd:1 rd:2
+May 31 02:37:06 bitc kernel:  disk 0, wo:1, o:0, dev:sda2
+May 31 02:37:06 bitc kernel:  disk 1, wo:0, o:1, dev:sdb2
+May 31 02:37:06 bitc kernel: RAID1 conf printout:
+May 31 02:37:06 bitc kernel:  --- wd:1 rd:2
+May 31 02:37:06 bitc kernel:  disk 1, wo:0, o:1, dev:sdb2
+
+Note that the first error is at the same sector for both disks
+287322317(sda) = 287322317(sdb)
+but the second one is at a different spot 
+276325445(sda) != 284758725(sbd)
+
+it seems unlikely that both disks have exactly the same bad sector 
+
+Maybe a disk is failing, but smart doesn't show a big difference in ECC
+errors between the two disks.  Seems wrong that the kernel raid should
+first drop one disk, then the other if one disk is really failing.
+
+Is this a bug?
+
+Brad
+
+
+
