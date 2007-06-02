@@ -1,75 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759099AbXFBLIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbXFBLjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759099AbXFBLIa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 07:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbXFBLIU
+	id S1759123AbXFBLjb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 07:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbXFBLjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 07:08:20 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:2458 "EHLO
+	Sat, 2 Jun 2007 07:39:22 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:35892 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754710AbXFBLIT (ORCPT
+	with ESMTP id S1752166AbXFBLjV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 07:08:19 -0400
+	Sat, 2 Jun 2007 07:39:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=GB3DYmgRzwrZePKZrcn7VxkYU2IoEdlze1PeICEztr89VL3bWCvkJ1mY70Zdu80z/KqlBOPMHbBQLQgJaBXXKPFLCPgmNExBFXx6dP2y7KUwAed9UtgRS0WqNhhPx3G9ODz4eiTaZ7Vx7iwKhnEhPKWIDpALaCJW9SXh9xz/yn4=
-Message-ID: <8956d4ca0706020408y4ddcea6ap35c8b7dee3fcbe32@mail.gmail.com>
-Date: Sat, 2 Jun 2007 21:08:18 +1000
-From: "Mitch Davis" <mjd-kernel@afork.com>
-To: "Olaf Dietsche" <olaf+list.linux-acpi@olafdietsche.de>
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "pm list" <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <200706020037.16615.rjw@sisk.pl>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=sErNIIbJ9N0nsnP0FvuwV+d6gEhyR6OoIyfdrhxSmooXYmJpPyZPp588dV4FIKbOhlZCR5A9cb2cNEWZejlbsIizONtb9ZHSPwtNmF9YKiHzPOGg4C9wO+/Ce8fUcxl81WJSIdKMlXv/kMoHsQco0lAPAniZJLv5MWpZoTmpUI4=
+Message-ID: <46612152.8040203@gmail.com>
+Date: Sat, 02 Jun 2007 16:50:42 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux v2.6.22-rc3
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org> <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>  <46599E6B.1000209@pobox.com>  <9d2cd630705270907y4722653cpf79f073fa8f12f08@mail.gmail.com> <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org>  <9d2cd630705271315x7030c91ew2f175c921c022880@mail.gmail.com>  <465AA536.6080608@gmail.com> <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com> <465BF244.5080200@gmail.com> <alpine.LFD.0.98.0705290924350.26602@woody.linux-foundation.org> <465F6F48.8080804@gmail.com> <alpine.LFD.0.98.0705311830360.26602@woody.linux-foundation.org> <465F8230.2040105@gmail.com> <46604E62.1000105@pobox.com> <alpine.LFD.0.98.0706010955390.3957@woody.linux-foundation.org> <466058F8.4050107@pobox.com> <alpine.LFD.0.98.0706011047000.3957@woody.linux-foundation.org> <46606851.3060905@pobox.com>
+In-Reply-To: <46606851.3060905@pobox.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <878xb35sje.fsf@goat.bogus.local> <200706012340.54394.rjw@sisk.pl>
-	 <87hcpr2ubl.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl>
-X-Google-Sender-Auth: 19a2f8fd11cad930
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Olaf,
+Hello, Jeff, Linus.
 
-I'm also having troubles with the resume part of STR, although since
-your hardware is significantly different to mine, the cause is likely
-to be different.
+Jeff Garzik wrote:
+> Linus Torvalds wrote:
+>>
+>> On Fri, 1 Jun 2007, Jeff Garzik wrote:
+>>> With these old PATA devices, device reset is "six of one, half-dozen
+>>> of the
+>>> other."  Using SRST is the only way to kick some ATAPI devices into
+>>> working:
+>>> http://suif.stanford.edu/~csapuntz/blackmagic.html#reset
+>>
+>> Well, wouldn't it be a good thing to
+>>  1) if BUSY/DRQ is set even before you try the problem, obviously skip
+>> the     two polite cases, and go to #4
+>>  2) try to just do an IDENTIFY  3) if that doesn't work, do a HOST
+>> RESET and then try again
+>>  4) if that doesn't work, do the full SRST
+>>
+>> (or some variation of the above).
+> 
+> Skipping reset means it doesn't get the device away from a state that
+> the previous boot may have configured itself to... standard "I didn't do
+> reset" problems you see with any hardware.  Transfer modes and
+> removeable media status notification are the most notable that are left
+> in a semi-random state, but there are many other minor feature bits that
+> fall into this category as well.
 
-On 6/2/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > >>
-> > >> > On Friday, 1 June 2007 22:27, Olaf Dietsche wrote:
-> > >> >> When I resume, everything seems to come up (fan becomes busy, disk and
-> > >> >> dvd spin up for a short time),
->
-> First, you can check if the patch
->
-> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/20-ACPI-preserve-the-ebx-value-in-acpi_copy_wakeup_routine.patch
->
-> helps, by chance.
+libata configures most of the stuff, so I don't think we'll see big
+surprises even if we skip SRST during probing but I agree that it's nice
+to give good kicks in the devices' asses during probing.
 
-(Rafael's suggestion may help you but it didn't help me)
+We can try IDENTIFY/IDENTIFY_PACKET with short timeout first and then
+issue reset if the device isn't in reset blacklist, but it would make
+probe sequence....
 
-> Second, you can use PM_TRACE (Documentation/power/s2ram.txt) to find the
-> place where it really fails.
+ IDENTIFY -> reset -> IDENTIFY -> configure -> IDENTIFY for reval
 
-I modified my kernel source so it uses PM_TRACE to trace both the
-suspend, and whether the BIOS ever jumps back into the kernel on
-resume.  (In my case, I don't think the BIOS is doing the jump).
+Which doesn't seem too attractive.  We can use the result from the first
+IDENTIFY for configuration but it's probably a good idea to re-read
+IDENTIFY page after reset.
 
-I also compiled with only the bare minimum of options turned on, and
-use an initramfs to rule out device interactions.
+It would be best if we can handle these braindead SRST-impaired devices
+in the common code, if that's not feasible, we should at least provide
+some option to allow correct (without timeout) detection of these devices.
 
-If what I did is useful to you, you can find it here:
+Thanks.
 
-  http://bugzilla.kernel.org/show_bug.cgi?id=7988
+-- 
+tejun
 
-And if you haven't already (and your problem occurs with a stock
-kernel), you might want to log this as a bug like I did.
-
-Hope this helps.
-
-Mitch.
