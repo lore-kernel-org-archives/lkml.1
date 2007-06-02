@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbXFBFKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbXFBFSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbXFBFKd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 01:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbXFBFKV
+	id S1757269AbXFBFSJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 01:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbXFBFR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 01:10:21 -0400
-Received: from 1wt.eu ([62.212.114.60]:2807 "EHLO 1wt.eu"
+	Sat, 2 Jun 2007 01:17:57 -0400
+Received: from sandeen.net ([209.173.210.139]:16378 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751570AbXFBFKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 01:10:20 -0400
-Date: Sat, 2 Jun 2007 07:10:06 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Mark Lord <liml@rtr.ca>
-Cc: Jeff Garzik <jeff@garzik.org>, Daniel J Blueman <daniel.blueman@gmail.com>,
-       bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Compact Flash performance...
-Message-ID: <20070602051005.GQ943@1wt.eu>
-References: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com> <465E3FF0.9010709@rtr.ca> <6278d2220705310222rde9ad28ndfd8feced84a3c6f@mail.gmail.com> <465EBE20.6090803@rtr.ca> <6278d2220705311025q6ee030e2kd44b7302a50ac902@mail.gmail.com> <465F360D.6020603@rtr.ca> <6278d2220705311439x40f7b1c1l7cef54acd2e8fcea@mail.gmail.com> <465F4D4E.6050305@rtr.ca> <465F4E20.5080503@garzik.org> <465F4FA2.8030200@rtr.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <465F4FA2.8030200@rtr.ca>
-User-Agent: Mutt/1.5.11
+	id S1754113AbXFBFR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 01:17:56 -0400
+Message-ID: <4660FD7F.4090302@sandeen.net>
+Date: Sat, 02 Jun 2007 00:17:51 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
+References: <20070524165935.GB19709@duck.suse.cz>	<20070524170554.GC19709@duck.suse.cz>	<20070524203653.GA7693@duck.suse.cz>	<465DF0B4.2050203@sandeen.net>	<20070601211036.GA23975@duck.suse.cz>	<46609FBD.5040407@sandeen.net> <20070601154834.53558d1b.akpm@linux-foundation.org>
+In-Reply-To: <20070601154834.53558d1b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 06:43:46PM -0400, Mark Lord wrote:
-> Jeff Garzik wrote:
-> >Mark Lord wrote:
-> >>Some cards may perform better when their "memory" interface is used
-> >>instead of the "I/O" interface, or vice-versa.  I'm not sure which
-> >>of the two methods was selected by libata (probably the "memory" 
-> >>interface).
-> >
-> >I am very CF-ignorant.  How does libata select a memory or I/O interface 
-> >on a CF device?
+Andrew Morton wrote:
+> On Fri, 01 Jun 2007 17:37:49 -0500
+> Eric Sandeen <sandeen@sandeen.net> wrote:
+
+>> going for the inode_lock twice?
+>>
 > 
-> Right.  Usually we cannot select them, as it's the wires between
-> the ATA chipset (motherboard) and the CFCARD that determine this.
+> lockdep should catch that.
+> 
 
-CF cards support 3 modes (MEM, I/O and True IDE), and neither MEM nor I/O
-modes can talk IDE. Most often, the PIN 9 is simply shorted to the ground
-at the connector to set the card in True IDE mode, which makes it emulate
-a standard IDE disk.
+hey that's a good idea...!  *sigh* sometimes I worry about myself... but 
+hey at least I got it right. :)
 
-Cheers,
-Willy
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.22-rc3 #8
+---------------------------------------------
+lt-fsstress/3285 is trying to acquire lock:
+  (inode_lock){--..}, at: [<ffffffff802b0de9>] __mark_inode_dirty+0xe2/0x16c
 
+but task is already holding lock:
+  (inode_lock){--..}, at: [<ffffffff80316cc9>] 
+_atomic_dec_and_lock+0x39/0x58
+
+other info that might help us debug this:
+3 locks held by lt-fsstress/3285:
+  #0:  (&inode->i_mutex/1){--..}, at: [<ffffffff8029f262>] 
+do_rmdir+0x7c/0xe3
+  #1:  (&inode->i_mutex){--..}, at: [<ffffffff80462809>] 
+mutex_lock+0x22/0x24
+  #2:  (inode_lock){--..}, at: [<ffffffff80316cc9>] 
+_atomic_dec_and_lock+0x39/0x58
+
+stack backtrace:
+
+Call Trace:
+  [<ffffffff8024e1fc>] __lock_acquire+0x155/0xbaa
+  [<ffffffff802b0de9>] __mark_inode_dirty+0xe2/0x16c
+  [<ffffffff8024eccc>] lock_acquire+0x7b/0x9f
+  [<ffffffff802b0de9>] __mark_inode_dirty+0xe2/0x16c
+  [<ffffffff80463bc9>] _spin_lock+0x1e/0x28
+  [<ffffffff802b0de9>] __mark_inode_dirty+0xe2/0x16c
+  [<ffffffff882dc7cc>] :udf:udf_write_aext+0x101/0x11b
+  [<ffffffff882e5992>] :udf:extent_trunc+0xd6/0x123
+  [<ffffffff882e5ab9>] :udf:udf_truncate_tail_extent+0xda/0x171
+  [<ffffffff882dfc5e>] :udf:udf_drop_inode+0x26/0x35
+  [<ffffffff802a726d>] iput+0x74/0x76
+  [<ffffffff802a4e9b>] dentry_iput+0xa0/0xb8
+  [<ffffffff802a612a>] prune_dcache+0xa2/0x174
+  [<ffffffff802a4f3c>] d_kill+0x21/0x43
+  [<ffffffff802a5eef>] prune_one_dentry+0x3a/0xef
+  [<ffffffff802a6175>] prune_dcache+0xed/0x174
+  [<ffffffff802a6253>] shrink_dcache_parent+0x21/0x10e
+  [<ffffffff8029becd>] dentry_unhash+0x26/0x84
+  [<ffffffff8029d23c>] vfs_rmdir+0x88/0x117
+  [<ffffffff8029f287>] do_rmdir+0xa1/0xe3
+  [<ffffffff8020cf4b>] syscall_trace_enter+0x8d/0x8f
+  [<ffffffff8029f300>] sys_rmdir+0x11/0x13
+  [<ffffffff80209da5>] tracesys+0xdc/0xe1
+
+-Eric
