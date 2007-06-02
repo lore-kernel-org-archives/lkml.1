@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761498AbXFBPVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761925AbXFBPXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761498AbXFBPVz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 11:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760246AbXFBPVs
+	id S1761925AbXFBPXX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 11:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760379AbXFBPXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 11:21:48 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:11826 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756601AbXFBPVr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 11:21:47 -0400
-Date: Sat, 2 Jun 2007 18:21:46 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Rik van Riel <riel@redhat.com>, Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] quiet down swiotlb warnings
-Message-ID: <20070602152146.GE4342@rhun.haifa.ibm.com>
-References: <466057B1.9090309@redhat.com> <p73odjzbism.fsf@bingen.suse.de> <20070601181225.GA16460@infradead.org> <20070601193703.GI7217@one.firstfloor.org> <466075D1.8080807@redhat.com> <20070601194734.GJ7217@one.firstfloor.org> <20070601200049.GK12143@andrew-vasquezs-computer.local> <20070601201444.GK7217@one.firstfloor.org> <46607F96.7060200@redhat.com> <20070601202601.GM7217@one.firstfloor.org>
+	Sat, 2 Jun 2007 11:23:16 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:60377 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760251AbXFBPXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 11:23:15 -0400
+Subject: Re: [RFC 0/4] CONFIG_STABLE to switch off development checks
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, akpm@linux-foundation.org
+In-Reply-To: <46606C71.9010008@goop.org>
+References: <20070531002047.702473071@sgi.com> <46603371.50808@goop.org>
+	 <Pine.LNX.4.64.0706011126030.2284@schroedinger.engr.sgi.com>
+	 <46606C71.9010008@goop.org>
+Content-Type: text/plain
+Date: Sat, 02 Jun 2007 10:23:10 -0500
+Message-Id: <1180797790.18535.6.camel@kleikamp.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070601202601.GM7217@one.firstfloor.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 10:26:01PM +0200, Andi Kleen wrote:
+On Fri, 2007-06-01 at 11:58 -0700, Jeremy Fitzhardinge wrote:
+> Christoph Lameter wrote:
+> > Hmmm... We got there because SLUB initially return NULL for kmalloc(0). 
+> > Rationale: The user did not request any memory so we wont give him 
+> > any.
+> >
+> > That (to my surprise) caused some strange behavior of code and so we then 
+> > decided to keep SLAB behavior and return the smallest available object 
+> > size and put a warning in there. At some later point we plan to switch
+> > to returning NULL for kmalloc(0).
+> >   
+> 
+> Unfortunately, returning NULL is indistinguishable from ENOMEM, so the
+> caller would have to check to see how much it asked for before deciding
+> to really fail, which doesn't help things much.
+> 
+> Or does it (should it) return ERRPTR(-ENOMEM)?  Bit of a major API
+> change if not.
 
-> Normally swiotlb doesn't even try to bounce when dma mask is <=
-> end_pfn so something must be very wrong in your kernel. It
-> definitely isn't a mainline kernel. If this happens in Xen then Xen
-> just needs fixing -- it should not try to bounce when the normal
-> kernel wouldn't.
+I'm on Christoph's side here.  I don't think it makes sense for any code
+to ask to allocate zero bytes of memory and expect valid memory to be
+returned.
 
-Xen needs to bounce when the requested buffer is not contiguous in
-machine memory (and indeed uses swiotlb for that).
+Would a compromise be to return a pointer to some known invalid region?
+This way the kmalloc(0) call would appear successful to the caller, but
+any access to the memory would result in an exception.
 
-Cheers,
-Muli
+Just my 2 cents,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
