@@ -1,108 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbXFCTRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751497AbXFCTXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751528AbXFCTRz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 15:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbXFCTRs
+	id S1751497AbXFCTXv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 15:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbXFCTXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 15:17:48 -0400
-Received: from lug-owl.de ([195.71.106.12]:35889 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750836AbXFCTRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 15:17:47 -0400
-Date: Sun, 3 Jun 2007 21:17:44 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Jamie Lokier <jamie@shareable.org>,
-       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
-       Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Albert Cahalan <acahalan@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Roland Dreier <rdreier@cisco.com>,
-       Ondrej Zajicek <santiago@crfreenet.org>,
-       Ulisses Furquim <ulissesf@gmail.com>
-Subject: Re: LogFS take four
-Message-ID: <20070603191744.GU2649@lug-owl.de>
-Mail-Followup-To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-mtd@lists.infradead.org, akpm@osdl.org,
-	Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Jamie Lokier <jamie@shareable.org>,
-	Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
-	Jan Engelhardt <jengelh@linux01.gwdg.de>,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
-	Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
-	Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-	Bill Davidsen <davidsen@tmr.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Albert Cahalan <acahalan@gmail.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	Roland Dreier <rdreier@cisco.com>,
-	Ondrej Zajicek <santiago@crfreenet.org>,
-	Ulisses Furquim <ulissesf@gmail.com>
-References: <20070603183845.GA8952@lazybastard.org>
+	Sun, 3 Jun 2007 15:23:44 -0400
+Received: from keetweej.vanheusden.com ([213.84.46.114]:39628 "EHLO
+	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbXFCTXn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 15:23:43 -0400
+Date: Sun, 3 Jun 2007 00:50:47 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: power@bughost.org
+Subject: which is the cause of interrupts
+Message-ID: <20070602225047.GL30199@vanheusden.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="R10gueRtU1pFqy+X"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070603183845.GA8952@lazybastard.org>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Fri Jun  1 23:33:08 CEST 2007
+X-Message-Flag: PGP key-id: 0x1f28d8ae - consider encrypting your e-mail to
+	me with PGP!
+User-Agent: Mutt/1.5.15+20070515 (2007-05-02)
+X-Original-Status: RO
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---R10gueRtU1pFqy+X
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Powertop 1.5 tells me:
 
-On Sun, 2007-06-03 20:38:46 +0200, J=C3=B6rn Engel <joern@lazybastard.org> =
-wrote:
-> This round the patch is split into file-sized hunks.  There actually
-> seem to be kernel developers not manly enough to digest 6000+ lines of
-> code at once.  An I thought I was the only wimp around.
+Wakeups-from-idle per second : 1161.0
+no ACPI power usage estimate available
 
-Though it would be nice to have them as a pile of patches so that
-after applying them one-by-one, the kernel still compiles.
+Top causes for wakeups:
+  49.3% (898.0)       <interrupt> : ehci_hcd:usb1, uhci_hcd:usb8, wcfxo
+  20.1% (366.4)       <interrupt> : ide0
+   7.4% (135.0)               bot : schedule_timeout (process_timeout)
 
-Eg. if the first patches wire up the new feature into the build
-system, but the actual .c file aren't yet there, that won't compile
-and thus make git-bisect'ing harder...
+Now how can I find which device is triggering those "ehci_hcd:usb1,
+uhci_hcd:usb8, wcfxo" interrupts? 
 
-MfG, JBG
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-Signature of:         Alles wird gut! ...und heute wirds schon ein bi=C3=9F=
-chen besser.
-the second  :
+Folkert van Heusden
 
---R10gueRtU1pFqy+X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGYxPYHb1edYOZ4bsRAuYEAJ4wyb55K7xjMA756Zgks2UoX7uoBgCeJ1O8
-CbO2o3g+2MscPNvsEeteFwQ=
-=O4MV
------END PGP SIGNATURE-----
-
---R10gueRtU1pFqy+X--
+-- 
+MultiTail ist eine flexible Applikation um Logfiles und Kommando
+Eingaben zu überprüfen. Inkl. Filter, Farben, Zusammenführen,
+Ansichten etc. http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
