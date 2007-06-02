@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761925AbXFBPXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbXFBPlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761925AbXFBPXX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 11:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760379AbXFBPXQ
+	id S1761341AbXFBPlg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 11:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760330AbXFBPl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 11:23:16 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:60377 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760251AbXFBPXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 11:23:15 -0400
-Subject: Re: [RFC 0/4] CONFIG_STABLE to switch off development checks
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org
-In-Reply-To: <46606C71.9010008@goop.org>
-References: <20070531002047.702473071@sgi.com> <46603371.50808@goop.org>
-	 <Pine.LNX.4.64.0706011126030.2284@schroedinger.engr.sgi.com>
-	 <46606C71.9010008@goop.org>
-Content-Type: text/plain
-Date: Sat, 02 Jun 2007 10:23:10 -0500
-Message-Id: <1180797790.18535.6.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Jun 2007 11:41:28 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:46496 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760029AbXFBPl2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 11:41:28 -0400
+Date: Sat, 2 Jun 2007 08:40:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org, cotte@de.ibm.com, hugh@veritas.com,
+       neilb@suse.de, zanussi@us.ibm.com, hch@infradead.org
+Subject: Re: [PATCH] sendfile removal
+In-Reply-To: <20070602150104.GH32105@kernel.dk>
+Message-ID: <alpine.LFD.0.98.0706020836360.23741@woody.linux-foundation.org>
+References: <20070531103316.GO32105@kernel.dk> <20070531124753.a99f713c.dada1@cosmosbay.com>
+ <20070531105321.GQ32105@kernel.dk> <465F9BEF.20504@zytor.com>
+ <20070601054120.GI32105@kernel.dk> <465FB3AD.5030807@zytor.com>
+ <465FC92C.50608@cosmosbay.com> <466040C1.6030004@zytor.com>
+ <alpine.LFD.0.98.0706010904110.3957@woody.linux-foundation.org>
+ <20070602150104.GH32105@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-01 at 11:58 -0700, Jeremy Fitzhardinge wrote:
-> Christoph Lameter wrote:
-> > Hmmm... We got there because SLUB initially return NULL for kmalloc(0). 
-> > Rationale: The user did not request any memory so we wont give him 
-> > any.
-> >
-> > That (to my surprise) caused some strange behavior of code and so we then 
-> > decided to keep SLAB behavior and return the smallest available object 
-> > size and put a warning in there. At some later point we plan to switch
-> > to returning NULL for kmalloc(0).
-> >   
+
+
+On Sat, 2 Jun 2007, Jens Axboe wrote:
+>
+> splice() WILL return EAGAIN, but in that case it should have triggered
+> the read-ahead and thus started some IO.
+
+That's not enough.
+
+If the IO has already been started, splice needs to wait.
+
+> For the from-file case, see __generic_file_splice_read(). splice does:
 > 
-> Unfortunately, returning NULL is indistinguishable from ENOMEM, so the
-> caller would have to check to see how much it asked for before deciding
-> to really fail, which doesn't help things much.
+>        if (!PageUptodate(page)) {
+>                /*
+>                 * If in nonblock mode then dont block on
+>                 * waiting
+>                 * for an in-flight io page
+>                 */
+>                if (flags & SPLICE_F_NONBLOCK) {
+>                        if (TestSetPageLocked(page))
+>                                break;
+>                } else
+>                        lock_page(page);
+
+Yeah, that's just wrong.
+
+Your suggested:
+
+>       if ((flags & SPLICE_F_NONBLOCK) && spd.nr_pages) {
+>               if (TestSetPageLocked(page))
+>                       break;
+>       } else
+>               lock_page(page);
 > 
-> Or does it (should it) return ERRPTR(-ENOMEM)?  Bit of a major API
-> change if not.
+> should do that - always block for the first page and potentially return
+> a partial results for the remaining pages that read-ahead kicked into
+> gear.
 
-I'm on Christoph's side here.  I don't think it makes sense for any code
-to ask to allocate zero bytes of memory and expect valid memory to be
-returned.
+would work, but I suspect that for a server, returning EAGAIN once is 
+actually the best option - if it has a select() loop, and something else 
+is running, the "return EAGAIN once" actually makes tons of sense (it 
+would basically boil down to the kernel effectively saying "ok, try 
+anything else you might have pending in your queues first, if you get back 
+to me, I'll block then").
 
-Would a compromise be to return a pointer to some known invalid region?
-This way the kmalloc(0) call would appear successful to the caller, but
-any access to the memory would result in an exception.
-
-Just my 2 cents,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+		Linus
