@@ -1,219 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762455AbXFBQ6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbXFBRHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762455AbXFBQ6U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 12:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761716AbXFBQ6I
+	id S1762261AbXFBRHH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 13:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760273AbXFBRG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 12:58:08 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:51577 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760556AbXFBQ6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 12:58:06 -0400
-Date: Sat, 2 Jun 2007 18:57:14 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Amin Azez <azez@ufomechanic.net>
-cc: Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xt_gateway match (iptables)
-In-Reply-To: <Pine.LNX.4.61.0706021337370.21057@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0706021856590.5076@yvahk01.tjqt.qr>
-References: <46604D8B.7030507@ufomechanic.net> <Pine.LNX.4.61.0706021337370.21057@yvahk01.tjqt.qr>
+	Sat, 2 Jun 2007 13:06:56 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:51822 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759206AbXFBRGz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 13:06:55 -0400
+Date: Sat, 2 Jun 2007 19:06:57 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, jeremy@xensource.com,
+       chrisw@sous-sol.org
+Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
+Subject: [-mm patch] fix XEN_BLKDEV_FRONTEND Makefile entry
+Message-ID: <20070602170657.GF5500@stusta.de>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- extensions/.gateway-test      |    3 
- extensions/libipt_gateway.c   |  157 ++++++++++++++++++++++++++++++++++++++++++
- extensions/libipt_gateway.man |    9 ++
- 3 files changed, 169 insertions(+)
+CONFIG_XEN_BLKDEV_FRONTEND shouldn't silently prevent the compilation of 
+most other block drivers.
 
-Index: iptables/extensions/.gateway-test
-===================================================================
---- /dev/null
-+++ iptables/extensions/.gateway-test
-@@ -0,0 +1,3 @@
-+#!/bin/sh
-+# True if gateway match patch is applied.
-+[ -f "$KERNEL_DIR/include/linux/netfilter/xt_gateway.h" ] && echo gateway
-Index: iptables/extensions/libipt_gateway.c
-===================================================================
---- /dev/null
-+++ iptables/extensions/libipt_gateway.c
-@@ -0,0 +1,157 @@
-+/*
-+ * Shared library add-on to iptables to add gateway IP address matching support.
-+ * Based on iprange
-+ * (C) UFO Mechanic <azez@ufomechanic.net>
-+ * © Jan Engelhardt <jengelh@gmx.de>, 2007
-+ */
-+#include <stdio.h>
-+#include <netdb.h>
-+#include <string.h>
-+#include <stdlib.h>
-+#include <getopt.h>
-+
-+#include <iptables.h>
-+#include <linux/netfilter/xt_gateway.h>
-+
-+/* Function which prints out usage message. */
-+static void help(void)
-+{
-+	printf(
-+"gateway match v%s options:\n"
-+"[!] --gateway ip        Match IP address of routed gateway\n"
-+"[!] --nexthop ip        Match IP address of next hop\n"
-+"\n",
-+IPTABLES_VERSION);
-+}
-+
-+static struct option opts[] = {
-+	{"gateway", 1, NULL, '1'},
-+	{"nexthop", 1, NULL, '2'},
-+	{NULL},
-+};
-+
-+/*
-+ * Function which parses command options;
-+ * returns true if it ate an option.
-+ */
-+static int parse(int c, char **argv, int invert, unsigned int *flags,
-+		 const struct ipt_entry *entry, unsigned int *nfcache,
-+		 struct ipt_entry_match **match)
-+{
-+	struct xt_gateway_info *info = (void *)(*match)->data;
-+	struct in_addr *ip;
-+
-+	switch (c) {
-+	case '1':
-+		if (*flags)
-+			exit_error(PARAMETER_PROBLEM, "gateway match: You "
-+				"cannot specify both \"--gateway\" and "
-+				"\"--nexthop\"");
-+
-+		check_inverse(optarg, &invert, &optind, 0);
-+		if (invert)
-+			info->flags |= XT_GATEWAY_INV;
-+
-+		ip = dotted_to_addr(optarg);
-+		if (!ip)
-+			exit_error(PARAMETER_PROBLEM, "gateway match: Bad IP "
-+				"address \"%s\"\n", optarg);
-+
-+		info->gateway = ip->s_addr;
-+		info->flags  |= XT_GATEWAY_ROUTE;
-+		*flags = 1;
-+		break;
-+
-+	case '2':
-+		if (*flags)
-+			exit_error(PARAMETER_PROBLEM, "gateway match: You "
-+				"cannot specify both \"--gateway\" and "
-+				"\"--nexthop\"");
-+
-+		check_inverse(optarg, &invert, &optind, 0);
-+		if (invert)
-+			info->flags |= XT_GATEWAY_INV;
-+
-+		ip = dotted_to_addr(optarg);
-+		if (!ip)
-+			exit_error(PARAMETER_PROBLEM,
-+				"gateway match: Bad IP address `%s'\n", optarg);
-+
-+		info->gateway = ip->s_addr;
-+		info->flags  &= XT_GATEWAY_ROUTE;
-+		*flags = 1;
-+		break;
-+
-+	default:
-+		return 0;
-+	}
-+
-+	return 1;
-+}
-+
-+/* Final check; must have specified --gateway */
-+static void final_check(unsigned int flags)
-+{
-+	if (!flags)
-+		exit_error(PARAMETER_PROBLEM,
-+			"gateway match: You must specify `--gateway' "
-+			"or `--nexthop'");
-+}
-+
-+/* Prints out the info. */
-+static void print(const struct ipt_ip *ip, const struct ipt_entry_match *match,
-+		  int numeric)
-+{
-+	const struct xt_gateway_info *info = (const void *)match->data;
-+	struct in_addr a;
-+
-+	a.s_addr = info->gateway;
-+
-+	if (info->flags & XT_GATEWAY_ROUTE)
-+		printf("gateway ");
-+	else
-+		printf("nexthop ");
-+
-+	if (info->flags & XT_GATEWAY_INV)
-+		printf("! ");
-+
-+	printf("%s", addr_to_dotted(&a));
-+}
-+
-+/* Saves the union ipt_info in parsable form to stdout. */
-+static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match)
-+{
-+	const struct xt_gateway_info *info = (const void *)match->data;
-+	struct in_addr a;
-+
-+	a.s_addr = info->gateway;
-+
-+	if (info->flags & XT_GATEWAY_INV)
-+		printf("! ");
-+
-+	if (info->flags & XT_GATEWAY_ROUTE)
-+		printf("--gateway ");
-+	else
-+		printf("--nexthop ");
-+
-+	printf("%s ", addr_to_dotted(&a));
-+}
-+
-+static struct iptables_match gateway = {
-+	.next		= NULL,
-+	.name		= "gateway",
-+	.version	= IPTABLES_VERSION,
-+	.size		= IPT_ALIGN(sizeof(struct xt_gateway_info)),
-+	.userspacesize	= IPT_ALIGN(sizeof(struct xt_gateway_info)),
-+	.help		= &help,
-+	.parse		= &parse,
-+	.final_check	= &final_check,
-+	.print		= &print,
-+	.save		= &save,
-+	.extra_opts	= opts
-+};
-+
-+static __attribute__((constructor)) void libipt_gateway_init(void)
-+{
-+	register_match(&gateway);
-+}
-Index: iptables/extensions/libipt_gateway.man
-===================================================================
---- /dev/null
-+++ iptables/extensions/libipt_gateway.man
-@@ -0,0 +1,9 @@
-+This matches the gateway by IP address on routed packets.
-+It does not mach packets that are not routed, or which
-+are directly addresses to the gateway.
-+.TP
-+.BI "[!]" "--gateway " "ip"
-+Check that the packet is routed to a gateway with the specified ip address.
-+.BI "[!]" "--nexthop " "ip"
-+Check if the packet is being directed to the specified ip address
-+either directly or as a route.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+--- linux-2.6.22-rc3-mm1/drivers/block/Makefile.old	2007-06-02 18:21:12.000000000 +0200
++++ linux-2.6.22-rc3-mm1/drivers/block/Makefile	2007-06-02 18:21:53.000000000 +0200
+@@ -28,7 +28,7 @@
+ obj-$(CONFIG_VIODASD)		+= viodasd.o
+ obj-$(CONFIG_BLK_DEV_SX8)	+= sx8.o
+ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
+-obj-$(CONFIG_XEN_BLKDEV_FRONTEND) := xen-blkfront.o
++obj-$(CONFIG_XEN_BLKDEV_FRONTEND) += xen-blkfront.o
+ obj-$(CONFIG_XILINX_SYSACE)	+= xsysace.o
+ obj-$(CONFIG_LGUEST_GUEST)	+= lguest_blk.o
+ 
+
