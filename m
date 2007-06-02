@@ -1,73 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbXFBBg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762313AbXFBBhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760968AbXFBBg2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 21:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbXFBBgU
+	id S1762313AbXFBBhy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 21:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbXFBBhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 21:36:20 -0400
-Received: from h80ad2262.async.vt.edu ([128.173.34.98]:53714 "EHLO
-	h80ad2262.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756559AbXFBBgU (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 21:36:20 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Scott Preece <sepreece@gmail.com>,
-       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/1] document Acked-by:
-In-Reply-To: Your message of "Sat, 02 Jun 2007 00:10:46 +0200."
-             <m3fy5b5nrt.fsf@maximus.localdomain>
-From: Valdis.Kletnieks@vt.edu
-References: <200706010209.l51299kN000531@shell0.pdx.osdl.net> <28278.1180675923@turing-police.cc.vt.edu> <465FB862.207@zytor.com> <alpine.DEB.0.99.0706010648030.9768@sigma.j-a-k-j.com> <m3sl9b5vcm.fsf@maximus.localdomain> <7b69d1470706011237j50f29e4ch73f86acdc294fecd@mail.gmail.com>
-            <m3fy5b5nrt.fsf@maximus.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1180748167_4213P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 01 Jun 2007 21:36:07 -0400
-Message-ID: <8127.1180748167@turing-police.cc.vt.edu>
+	Fri, 1 Jun 2007 21:37:48 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60699 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757307AbXFBBhs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 21:37:48 -0400
+Date: Fri, 1 Jun 2007 18:37:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
+Message-ID: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1180748167_4213P
-Content-Type: text/plain; charset=us-ascii
+Instead of returning the smallest available object return ZERO_SIZE_PTR.
 
-On Sat, 02 Jun 2007 00:10:46 +0200, Krzysztof Halasa said:
-> "Scott Preece" <sepreece@gmail.com> writes:
-> 
-> > This is a question worth answering - is it rude to ack/nak a patch if
-> > you're not a maintainer or otherwise known-to-be-trusted, or is it OK
-> > for anyone to express an opinion? Andrew's patch text seems to imply
-> > that it's generally OK.
-> 
-> Every pair of eyes (or a single one) looking at the patch in question
-> is a good thing. I can't imagine why would one want to look at the
-> code if he/she can't ack or nak or otherwise comment it.
+A ZERO_SIZE_PTR can be legitimately used as an object pointer as long
+as it is not deferenced. The dereference of ZERO_SIZE_PTR causes a
+distinctive fault. kfree will handle a ZERO_SIZE_PTR in the same way as 
+NULL.
 
-I'd be the *first* to admit that my kernel-foo isn't perfect, and sometimes I'm
-right and sometimes I'm wrong when I review somebody else's code.  I certainly
-*hope* that nobody's taking my review as anything more authoritative than "an
-actual maintainer might want to look at this".
+This enables functions to transparently use zero sized object. F.e.
+if n = number of objects then the following code snippet will work
+wether n = 0 or larger.
 
-On the other hand, we don't need a Foo-By: tag for "or otherwise comment".
+	objects = kmalloc(n * sizeof(object), GFP_KERNEL);
 
-Phrased differently, if I haven't stuck a "Signed-off-by:" or "Tested-By:"
-on it, I'm by default only commenting.  The code submitter can decide I'm right
-and fix and resubmit, the maintainer can decide I'm right and toss a NAK. Or
-they can both decide I'm full of it and hit the Delete key..
+	for (i = 0; i < n; i++)
+		objects[i].x = y;
 
---==_Exmh_1180748167_4213P
-Content-Type: application/pgp-signature
+	kfree(objects);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+In addition to the warning for kmalloc(0) that is already there this patch 
+will cause a failure if there is an attempt to access objects in the zero 
+sized array.
 
-iD8DBQFGYMmHcC3lWbTT17ARAnT5AJ9vSkFSYQM1qpi7NMEHoC3OfpjaawCg7xOj
-nec/fGYmsNO1+7PGiF8op4Y=
-=v5jG
------END PGP SIGNATURE-----
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
---==_Exmh_1180748167_4213P--
+---
+ include/linux/slub_def.h |   29 ++++++++++++++++++++++-------
+ mm/slub.c                |   10 +++++-----
+ 2 files changed, 27 insertions(+), 12 deletions(-)
+
+Index: slub/include/linux/slub_def.h
+===================================================================
+--- slub.orig/include/linux/slub_def.h	2007-06-01 18:08:32.000000000 -0700
++++ slub/include/linux/slub_def.h	2007-06-01 18:22:56.000000000 -0700
+@@ -74,14 +74,17 @@ extern struct kmem_cache kmalloc_caches[
+  */
+ static inline int kmalloc_index(size_t size)
+ {
++
+ 	/*
+-	 * We should return 0 if size == 0 (which would result in the
+-	 * kmalloc caller to get NULL) but we use the smallest object
+-	 * here for legacy reasons. Just issue a warning so that
+-	 * we can discover locations where we do 0 sized allocations.
++	 * The behavior for zero sized allocs changes. We no longer
++	 * allocate memory but return ZERO_SIZE_PTR.
++	 * WARN so that people can review and fix their code.
+ 	 */
+ 	WARN_ON_ONCE(size == 0);
+ 
++	if (!size)
++		return 0;
++
+ 	if (size > KMALLOC_MAX_SIZE)
+ 		return -1;
+ 
+@@ -127,13 +130,25 @@ static inline struct kmem_cache *kmalloc
+ #define SLUB_DMA 0
+ #endif
+ 
++
++/*
++ * ZERO_SIZE_PTR will be returned for zero sized kmalloc requests.
++ *
++ * Dereferencing ZERO_SIZE_PTR will lead to a distinct access fault.
++ *
++ * ZERO_SIZE_PTR can be passed to kfree() in the same way that NULL can.
++ * Both make kfree() a no-op.
++ */
++#define ZERO_SIZE_PTR ((void *)16)
++
++
+ static inline void *kmalloc(size_t size, gfp_t flags)
+ {
+ 	if (__builtin_constant_p(size) && !(flags & SLUB_DMA)) {
+ 		struct kmem_cache *s = kmalloc_slab(size);
+ 
+ 		if (!s)
+-			return NULL;
++			return ZERO_SIZE_PTR;
+ 
+ 		return kmem_cache_alloc(s, flags);
+ 	} else
+@@ -146,7 +161,7 @@ static inline void *kzalloc(size_t size,
+ 		struct kmem_cache *s = kmalloc_slab(size);
+ 
+ 		if (!s)
+-			return NULL;
++			return ZERO_SIZE_PTR;
+ 
+ 		return kmem_cache_zalloc(s, flags);
+ 	} else
+@@ -162,7 +177,7 @@ static inline void *kmalloc_node(size_t 
+ 		struct kmem_cache *s = kmalloc_slab(size);
+ 
+ 		if (!s)
+-			return NULL;
++			return ZERO_SIZE_PTR;
+ 
+ 		return kmem_cache_alloc_node(s, flags, node);
+ 	} else
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-06-01 18:08:32.000000000 -0700
++++ slub/mm/slub.c	2007-06-01 18:22:56.000000000 -0700
+@@ -2286,7 +2286,7 @@ void *__kmalloc(size_t size, gfp_t flags
+ 
+ 	if (s)
+ 		return slab_alloc(s, flags, -1, __builtin_return_address(0));
+-	return NULL;
++	return ZERO_SIZE_PTR;
+ }
+ EXPORT_SYMBOL(__kmalloc);
+ 
+@@ -2297,7 +2297,7 @@ void *__kmalloc_node(size_t size, gfp_t 
+ 
+ 	if (s)
+ 		return slab_alloc(s, flags, node, __builtin_return_address(0));
+-	return NULL;
++	return ZERO_SIZE_PTR;
+ }
+ EXPORT_SYMBOL(__kmalloc_node);
+ #endif
+@@ -2338,7 +2338,7 @@ void kfree(const void *x)
+ 	struct kmem_cache *s;
+ 	struct page *page;
+ 
+-	if (!x)
++	if (x <= ZERO_SIZE_PTR)
+ 		return;
+ 
+ 	page = virt_to_head_page(x);
+@@ -2707,7 +2707,7 @@ void *__kmalloc_track_caller(size_t size
+ 	struct kmem_cache *s = get_slab(size, gfpflags);
+ 
+ 	if (!s)
+-		return NULL;
++		return ZERO_SIZE_PTR;
+ 
+ 	return slab_alloc(s, gfpflags, -1, caller);
+ }
+@@ -2718,7 +2718,7 @@ void *__kmalloc_node_track_caller(size_t
+ 	struct kmem_cache *s = get_slab(size, gfpflags);
+ 
+ 	if (!s)
+-		return NULL;
++		return ZERO_SIZE_PTR;
+ 
+ 	return slab_alloc(s, gfpflags, node, caller);
+ }
