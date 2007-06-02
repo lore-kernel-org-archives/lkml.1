@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763458AbXFBWPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763458AbXFBWSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763458AbXFBWPb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 18:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760922AbXFBWPP
+	id S1763458AbXFBWSo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 18:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760064AbXFBWSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 18:15:15 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:50844
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759659AbXFBWPN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 18:15:13 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH] V2: O_CLOEXEC for SCM_RIGHTS
-Date: Sun, 3 Jun 2007 00:14:50 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-References: <200706022148.l52LmVRx023291@devserv.devel.redhat.com>
-In-Reply-To: <200706022148.l52LmVRx023291@devserv.devel.redhat.com>
+	Sat, 2 Jun 2007 18:18:37 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34588 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757767AbXFBWSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 18:18:36 -0400
+Message-ID: <4661ECB4.7020902@garzik.org>
+Date: Sat, 02 Jun 2007 18:18:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: 7eggert@gmx.de
+CC: Tejun Heo <htejun@gmail.com>, David Greaves <david@dgreaves.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       IDE Linux <linux-ide@vger.kernel.org>, ballen@gravity.phys.uwm.edu
+Subject: Re: 2.6.22-rc3 hibernate(?) disables SMART on ide
+References: <8rnax-6XX-11@gated-at.bofh.it> <8rA7H-1B4-1@gated-at.bofh.it> <E1Hub8O-0000rF-Hb@be1.lrz>
+In-Reply-To: <E1Hub8O-0000rF-Hb@be1.lrz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706030014.50305.mb@bu3sch.de>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 June 2007 23:48:31 Ulrich Drepper wrote:
-> Take two: I forgot to change the compat code.  This has now happened.  Only one
-> additional line changed.
-> 
-> Everything else from the first patch remains the same.  I try to avoid clogging
-> the list unnecessarily by not resending the test program.
-> 
-> 
-> Signed-off-by: Ulrich Drepper <drepper@redhat.com>
-> 
-> --- a/fs/open.c
-> +++ b/fs/open.c
-> @@ -855,7 +855,7 @@
->  /*
->   * Find an empty file descriptor entry, and mark it busy.
->   */
-> -static int get_unused_fd_flags(int flags)
-> +int get_unused_fd_flags(int flags)
->  {
->  	struct files_struct * files = current->files;
->  	int fd, error;
-> --- a/include/linux/file.h
-> +++ b/include/linux/file.h
-> @@ -73,6 +73,7 @@ extern struct file * FASTCALL(fget_light(unsigned int fd, int *fput_needed));
->  extern void FASTCALL(set_close_on_exec(unsigned int fd, int flag));
->  extern void put_filp(struct file *);
->  extern int get_unused_fd(void);
-> +extern int FASTCALL(get_unused_fd_flags(int flags));
+Bodo Eggert wrote:
+> Therefore I suggest setting the smart-enabled-bit in the kernel, in spite of
+> not being the kernel's duty. It would be a 99,99% DTRT.
 
-If you use FASTCALL macro here, you must use fastcall macro at
-the definition above, too.
+NAK.  That's hardcoding policy in the kernel.
 
--- 
-Greetings Michael.
+	Jeff
+
+
