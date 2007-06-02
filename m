@@ -1,67 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759615AbXFBLtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbXFBMar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759615AbXFBLtn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 07:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbXFBLta
+	id S1758002AbXFBMar (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 08:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbXFBMaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 07:49:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:46966 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755465AbXFBLt3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 07:49:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=jHjs4w/v5oR4j67Zyn9BtN714avkPSopDSXbQejoea3zZZthaGpQMD+6RmmdE+pFgitMEbWAcywMgUNlUhOkkJKD8MkyORd2FjnM6ucVhe01PuhEcq69z707jDaVogmIM0hGPQYLqwfZDMuLmYFZEejQGB9SfKBDLD38gr2MDUQ=
-Message-ID: <46613666.7010800@gmail.com>
-Date: Sat, 02 Jun 2007 18:20:38 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: David Chinner <dgc@sgi.com>, david@lang.hm,
-       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
-  and dm/md.
-References: <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <20070531070656.GK32105@kernel.dk> <465F8F71.20302@gmail.com> <20070601082140.GP32105@kernel.dk>
-In-Reply-To: <20070601082140.GP32105@kernel.dk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Jun 2007 08:30:39 -0400
+Received: from mail.screens.ru ([213.234.233.54]:48420 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752166AbXFBMai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 08:30:38 -0400
+Date: Sat, 2 Jun 2007 16:30:30 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Mark Hounschell <dmarkh@cfl.rr.com>
+Cc: Mark Hounschell <markh@compro.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: floppy.c soft lockup
+Message-ID: <20070602123030.GA719@tv-sign.ru>
+References: <20070531170604.GA79@tv-sign.ru> <465F179D.6080203@compro.net> <20070531192256.GA88@tv-sign.ru> <465F2D96.9060502@compro.net> <20070601110058.GA83@tv-sign.ru> <466028DB.3060509@compro.net> <20070601151605.GA108@tv-sign.ru> <4660534E.6050903@cfl.rr.com> <20070601183642.GA92@tv-sign.ru> <466078FF.2080508@cfl.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466078FF.2080508@cfl.rr.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Jens Axboe wrote:
->> Would that be very different from issuing barrier and not waiting for
->> its completion?  For ATA and SCSI, we'll have to flush write back cache
->> anyway, so I don't see how we can get performance advantage by
->> implementing separate WRITE_ORDERED.  I think zero-length barrier
->> (haven't looked at the code yet, still recovering from jet lag :-) can
->> serve as genuine barrier without the extra write tho.
+On 06/01, Mark Hounschell wrote:
+>
+> Oleg Nesterov wrote:
+> > On 06/01, Mark Hounschell wrote:
+> >>
+> >> Ok the prctl never returned. I just replaced the ioctl with it and added
+> >> a printf before and after. I only get the one before. The thread is hung
+> >> at this point just as if I'd done the ioctl?
+> > 
+> > Thanks. So we can rule out floppy.c. flush_scheduled_work/flush_workqueue
+> > is broken by this RT application. Imho, this is not the kernel problem.
+> > 
+> > Now I am very sure that the initial suspect was correct: cpu starvation.
+> > I can cook a debug patch to be 100% sure tomorrow, which kernel version is
+> > most convenient to you?
+> > 
 > 
-> As always, it depends :-)
-> 
-> If you are doing pure flush barriers, then there's no difference. Unless
-> you only guarantee ordering wrt previously submitted requests, in which
-> case you can eliminate the post flush.
-> 
-> If you are doing ordered tags, then just setting the ordered bit is
-> enough. That is different from the barrier in that we don't need a flush
-> of FUA bit set.
+> 2.6.22-rc3 is fine thanks.
 
-Hmmm... I'm feeling dense.  Zero-length barrier also requires only one
-flush to separate requests before and after it (haven't looked at the
-code yet, will soon).  Can you enlighten me?
+Please try this patch, it should dump some debug info when flush_workqueue()
+hangs (after 30 seconds). You can use it with or without the previous patch
+I sent. Please wait for a couple of minutes to collect more info.
 
-Thanks.
+Oleg.
 
--- 
-tejun
+--- OLD/kernel/sched.c~TST	2007-04-05 12:20:35.000000000 +0400
++++ OLD/kernel/sched.c	2007-06-02 15:41:53.000000000 +0400
+@@ -4177,6 +4177,20 @@ struct task_struct *idle_task(int cpu)
+ 	return cpu_rq(cpu)->idle;
+ }
+ 
++struct task_struct *get_cpu_curr(int cpu)
++{
++	unsigned long flags;
++	struct task_struct *curr;
++	struct rq *rq = cpu_rq(cpu);
++
++	spin_lock_irqsave(&rq->lock, flags);
++	curr = rq->curr;
++	get_task_struct(curr);
++	spin_unlock_irqrestore(&rq->lock, flags);
++
++	return curr;
++}
++
+ /**
+  * find_process_by_pid - find a process with a matching PID value.
+  * @pid: the pid in question.
+--- OLD/kernel/workqueue.c~TST	2007-06-02 13:34:57.000000000 +0400
++++ OLD/kernel/workqueue.c	2007-06-02 16:18:02.000000000 +0400
+@@ -49,6 +49,7 @@ struct cpu_workqueue_struct {
+ 	struct task_struct *thread;
+ 
+ 	int run_depth;		/* Detect run_workqueue() recursion depth */
++	int jobs;
+ } ____cacheline_aligned;
+ 
+ /*
+@@ -253,6 +254,7 @@ static void run_workqueue(struct cpu_wor
+ 
+ 		cwq->current_work = work;
+ 		list_del_init(cwq->worklist.next);
++		cwq->jobs++;
+ 		spin_unlock_irq(&cwq->lock);
+ 
+ 		BUG_ON(get_wq_data(work) != cwq);
+@@ -328,7 +330,48 @@ static void insert_wq_barrier(struct cpu
+ 	insert_work(cwq, &barr->work, tail);
+ }
+ 
+-static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
++extern struct task_struct *get_cpu_curr(int cpu);
++
++static void flush_wait(struct cpu_workqueue_struct *cwq, int cpu, struct completion *done)
++{
++	struct task_struct *curr;
++	struct work_struct *work;
++	int old_pid, jobs;
++
++	if (is_single_threaded(cwq->wq))
++		cpu = raw_smp_processor_id();
++
++again:
++	work = cwq->current_work;
++	jobs = cwq->jobs;
++
++	curr = get_cpu_curr(cpu);
++	old_pid = curr->pid;
++	put_task_struct(curr);
++
++	if (wait_for_completion_timeout(done, HZ * 30))
++		return;
++
++	printk(KERN_ERR "ERR!! %s flush hang: %p %p %d %d\n", cwq->thread->comm,
++			work, cwq->current_work, jobs, cwq->jobs);
++
++	curr = get_cpu_curr(cpu);
++	printk(KERN_ERR "CURR: %d %d %s %ld %ld\n", old_pid, curr->pid,
++			curr->comm, curr->nivcsw, curr->nvcsw);
++	put_task_struct(curr);
++
++	spin_lock_irq(&cwq->lock);
++	list_for_each_entry(work, &cwq->worklist, entry)
++		print_symbol("    %s\n", (unsigned long) work->func);
++	printk("    ----\n");
++	if (cwq->current_work)
++		print_symbol("    %s\n", (unsigned long) cwq->current_work->func);
++	spin_unlock_irq(&cwq->lock);
++
++	goto again;
++}
++
++static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq, int cpu)
+ {
+ 	int active;
+ 
+@@ -351,7 +394,7 @@ static int flush_cpu_workqueue(struct cp
+ 		spin_unlock_irq(&cwq->lock);
+ 
+ 		if (active)
+-			wait_for_completion(&barr.done);
++			flush_wait(cwq, cpu, &barr.done);
+ 	}
+ 
+ 	return active;
+@@ -377,7 +420,7 @@ void fastcall flush_workqueue(struct wor
+ 
+ 	might_sleep();
+ 	for_each_cpu_mask(cpu, *cpu_map)
+-		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
++		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu), cpu);
+ }
+ EXPORT_SYMBOL_GPL(flush_workqueue);
+ 
+@@ -748,7 +791,7 @@ static void cleanup_workqueue_thread(str
+ 	 * checks list_empty(), and a "normal" queue_work() can't use
+ 	 * a dead CPU.
+ 	 */
+-	while (flush_cpu_workqueue(cwq))
++	while (flush_cpu_workqueue(cwq, cpu))
+ 		;
+ 
+ 	kthread_stop(cwq->thread);
 
