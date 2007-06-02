@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbXFBOX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbXFBO0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760610AbXFBOX6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 10:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758343AbXFBOXu
+	id S1760773AbXFBO0X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 10:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758343AbXFBO0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 10:23:50 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:38977 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758146AbXFBOXs (ORCPT
+	Sat, 2 Jun 2007 10:26:16 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:39105
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758146AbXFBO0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 10:23:48 -0400
-Date: Sat, 2 Jun 2007 15:23:33 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Richard Hughes <hughsient@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Bastien Nocera <hadess@hadess.net>, John Belmonte <john@neggie.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-Message-ID: <20070602142333.GA3452@srcf.ucam.org>
-References: <1180614979.2693.26.camel@localhost.localdomain> <1180615994.3030.166.camel@cookie.hadess.net> <1180619002.2693.35.camel@localhost.localdomain> <1180626416.3469.7.camel@localhost.localdomain> <d120d5000706010945w4de3e8d9i4d43d2ae686e4d0a@mail.gmail.com> <1180788652.2355.27.camel@localhost.localdomain>
+	Sat, 2 Jun 2007 10:26:16 -0400
+Date: Sat, 2 Jun 2007 07:27:13 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Valdis.Kletnieks@vt.edu
+cc: David Wagner <daw-usenet@taverner.cs.berkeley.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM
+ hook
+In-Reply-To: <14604.1180770021@turing-police.cc.vt.edu>
+Message-ID: <Pine.LNX.4.64.0706020723030.954@asgard.lang.hm>
+References: <653438.15244.qm@web36612.mail.mud.yahoo.com>
+ <f3il25$pcp$1@taverner.cs.berkeley.edu> <20070524144726.GB3920@ucw.cz>
+ <12508.1180719875@turing-police.cc.vt.edu>            <f3qrp6$ftn$1@taverner.cs.berkeley.edu>
+ <14604.1180770021@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1180788652.2355.27.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: Add INPUT support to toshiba_acpi
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 02, 2007 at 01:50:52PM +0100, Richard Hughes wrote:
-> > KEY_SCREENLOCK? KEY_SCREENSAVER?
-> 
-> Either of these keys would be good to add.
+On Sat, 2 Jun 2007, Valdis.Kletnieks@vt.edu wrote:
 
-We've been interpreting "KEY_COFFEE" as screenlock (as in "I've gone for 
-a coffee break, lock the screen").
+> On Sat, 02 Jun 2007 04:30:30 -0000, David Wagner said:
+>> I don't find the Windows stuff too relevant here.
+>
+> I'm surprised.  The only Windows-specific thing in the whole paragraph is that
+> the attack described is currently wildly successful. And there *have* been
+> known exploitable bugs in the Linux version of Firefox. In other words, all the
+> pieces are in place for exactly the same thing to work on Linux.
+>
+> The type of hardening that AppArmor can provide network-facing daemons is only
+> protecting the system against attacks that aren't even a large part of the
+> threat model.   Exploiting a broken PHP script? Happens all the time, and
+> AppArmor can't do much for it.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+actually, this is _exactly_ where AppArmor is the most useful. if the PHP 
+script is restricted by AppArmor it won't be able to go out and touch 
+things that it's not supposed to.
+
+> SQL injection? Happens all the time, and it
+> can't help much there either.  Systems getting pwned because the sysadmin's
+> laptop got hacked? Pretty common, and another thing that AppArmor won't slow
+> down. But yes, I *will* grant that the next time there's a buffer overflow in
+> Apache, AppArmor will be able to help *that*....
+>
+>>                                                    As I understand it,
+>> AppArmor isn't aimed at defending Windows desktop users; it is aimed at
+>> defending Linux servers.  A pretty different environment, I'd say.
+>
+> The only reason you're not seeing the same exact threat model against Linux
+> servers is because it's still a minority.  It's *always* been true that one of
+> the most productive attacks on a server has been to find a desktop that you can
+> attack, and then abuse a trust relationship from the desktop to the server (and
+> has been, ever since the server was a IBM mainframe and the desktop was an RJE
+> station.  Amazing how trusting OS/360 was of a card deck tossed into a remote
+> card reader... :)
+
+if you are targeting one specific company or one specific server then you 
+are correct, however most attacks are not that targeted, they do things 
+like useing google to find random servers that are running vunerable 
+software and attack that (or just try the attack against random IP 
+addresses in case it happens to be running the vunerable software)
+
+David Lang
