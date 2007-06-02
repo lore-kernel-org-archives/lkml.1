@@ -1,55 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763923AbXFBW5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764153AbXFBW6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763923AbXFBW5v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 18:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762094AbXFBW5p
+	id S1764153AbXFBW6W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 18:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763841AbXFBW6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 18:57:45 -0400
-Received: from mo-p07-ob.rzone.de ([81.169.146.188]:54505 "EHLO
-	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761670AbXFBW5o (ORCPT
+	Sat, 2 Jun 2007 18:58:07 -0400
+Received: from sccrmhc14.comcast.net ([204.127.200.84]:62138 "EHLO
+	sccrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762094AbXFBW6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 18:57:44 -0400
-Date: Sun, 3 Jun 2007 00:57:41 +0200
-From: Alex Riesen <raa.lkml@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: OOPS (NULL pointer dereference) in v2.6.22-rc3
-Message-ID: <20070602225741.GA25254@steel.home>
-Reply-To: Alex Riesen <raa.lkml@gmail.com>
-Mail-Followup-To: Alex Riesen <raa.lkml@gmail.com>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20070601221515.GA6673@steel.home> <20070602013502.a20ad424.akpm@linux-foundation.org> <20070602095009.32d85075.randy.dunlap@oracle.com>
+	Sat, 2 Jun 2007 18:58:05 -0400
+Message-Id: <200706022257.l52MvGc06632@www.watkins-home.com>
+From: "Guy Watkins" <linux-raid@watkins-home.com>
+To: "'Jens Axboe'" <jens.axboe@oracle.com>, "'Tejun Heo'" <htejun@gmail.com>
+Cc: "'David Chinner'" <dgc@sgi.com>, <david@lang.hm>,
+       "'Phillip Susi'" <psusi@cfl.rr.com>, "'Neil Brown'" <neilb@suse.de>,
+       <linux-fsdevel@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <dm-devel@redhat.com>, <linux-raid@vger.kernel.org>,
+       "'Stefan Bader'" <Stefan.Bader@de.ibm.com>,
+       "'Andreas Dilger'" <adilger@clusterfs.com>
+Subject: RE: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,   and dm/md.
+Date: Sat, 2 Jun 2007 18:57:11 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070602095009.32d85075.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-RZG-AUTH: z4gQVF2k5XWuW3CculzyClFkd9w=
-X-RZG-CLASS-ID: mo07
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook, Build 11.0.6353
+In-Reply-To: <20070602143438.GB32105@kernel.dk>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+thread-index: AcelI4LJtgDLPTC/TnuufbOdBalelgAJe+3Q
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap, Sat, Jun 02, 2007 18:50:09 +0200:
-> > > kernel:  [show_trace_log_lvl+26/47] show_trace_log_lvl+0x1a/0x2f
-> > > kernel:  [show_stack_log_lvl+157/165] show_stack_log_lvl+0x9d/0xa5
-> > > kernel:  [show_registers+441/651] show_registers+0x1b9/0x28b
-> > > kernel:  [die+273/530] die+0x111/0x212
-> > > kernel:  [do_page_fault+1060/1266] do_page_fault+0x424/0x4f2
-> > > kernel:  [error_code+114/120] error_code+0x72/0x78
-> > > kernel:  [vfs_ioctl+562/581] vfs_ioctl+0x232/0x245
-> > > kernel:  [sys_ioctl+49/72] sys_ioctl+0x31/0x48
-> > > kernel:  [sysenter_past_esp+95/133] sysenter_past_esp+0x5f/0x85
-> > 
-> > I think we've seen a report of that before.  Do you recall what the system
-> > was doing at the time?
-> 
-> That's http://bugzilla.kernel.org/show_bug.cgi?id=8473
-> 
+} -----Original Message-----
+} From: linux-raid-owner@vger.kernel.org [mailto:linux-raid-
+} owner@vger.kernel.org] On Behalf Of Jens Axboe
+} Sent: Saturday, June 02, 2007 10:35 AM
+} To: Tejun Heo
+} Cc: David Chinner; david@lang.hm; Phillip Susi; Neil Brown; linux-
+} fsdevel@vger.kernel.org; linux-kernel@vger.kernel.org; dm-
+} devel@redhat.com; linux-raid@vger.kernel.org; Stefan Bader; Andreas Dilger
+} Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices,
+} filesystems, and dm/md.
+} 
+} On Sat, Jun 02 2007, Tejun Heo wrote:
+} > Hello,
+} >
+} > Jens Axboe wrote:
+} > >> Would that be very different from issuing barrier and not waiting for
+} > >> its completion?  For ATA and SCSI, we'll have to flush write back
+} cache
+} > >> anyway, so I don't see how we can get performance advantage by
+} > >> implementing separate WRITE_ORDERED.  I think zero-length barrier
+} > >> (haven't looked at the code yet, still recovering from jet lag :-)
+} can
+} > >> serve as genuine barrier without the extra write tho.
+} > >
+} > > As always, it depends :-)
+} > >
+} > > If you are doing pure flush barriers, then there's no difference.
+} Unless
+} > > you only guarantee ordering wrt previously submitted requests, in
+} which
+} > > case you can eliminate the post flush.
+} > >
+} > > If you are doing ordered tags, then just setting the ordered bit is
+} > > enough. That is different from the barrier in that we don't need a
+} flush
+} > > of FUA bit set.
+} >
+} > Hmmm... I'm feeling dense.  Zero-length barrier also requires only one
+} > flush to separate requests before and after it (haven't looked at the
+} > code yet, will soon).  Can you enlighten me?
+} 
+} Yeah, that's what the zero-length barrier implementation I posted does.
+} Not sure if you have a question beyond that, if so fire away :-)
+} 
+} --
+} Jens Axboe
 
-The backtraces look a bit different there, or is it something specific
-to -mm kernels? (I haven't run them for a good while)
+I must admit I have only read some of the barrier related posts, so this
+issue may have been covered.  If so, sorry.
 
+What I have read seems to be related to a single disk.  What if a logical
+disk is used (md, LVM, ...)?  If a barrier is issued to a logical disk and
+that driver issues barriers to all related devices (logical or physical),
+all the devices MUST honor the barrier together.  If 1 device crosses the
+barrier before another reaches the barrier, corruption should be assumed.
+It seems to me each block device that represents more than 2 other devices
+must do a flush at a barrier so that all devices will cross the barrier at
+the same time.
+
+Guy
 
