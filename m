@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762332AbXFBAl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762512AbXFBAnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762332AbXFBAl6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 20:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbXFBAlw
+	id S1762512AbXFBAnU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 20:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbXFBAnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 20:41:52 -0400
-Received: from gw.goop.org ([64.81.55.164]:37241 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755277AbXFBAlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 20:41:52 -0400
-Message-ID: <4660BCCC.205@goop.org>
-Date: Fri, 01 Jun 2007 17:41:48 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 1 Jun 2007 20:43:13 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:53324 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753891AbXFBAnN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 20:43:13 -0400
+Message-ID: <4660BCF8.7000208@zytor.com>
+Date: Fri, 01 Jun 2007 17:42:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
-       clameter@cthulhu.engr.sgi.com, rientjes@google.com
-Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
- warning
-References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com> <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com> <20070601135900.ec44b1aa.akpm@linux-foundation.org> <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com> <20070601151649.bb23c6f9.akpm@linux-foundation.org> <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com> <20070601153328.1118ccaf.akpm@linux-foundation.org> <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Extending boot protocol & bzImage for paravirt_ops
+References: <4656FB8F.4090604@goop.org> <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <466087CF.70708@goop.org> <4660924A.2070009@zytor.com> <466093E3.4010701@goop.org> <46609636.4050208@zytor.com> <4660BBDF.1040007@goop.org>
+In-Reply-To: <4660BBDF.1040007@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Well there are architectural problems. We determine the power of two slab 
-> at compile time. The object size information is currently not available in 
-> the binary :=).
->   
+Jeremy Fitzhardinge wrote:
+> 
+> Well, I think we can safely say that its something that's only
+> meaningful in 32/64-bit mode, so we aren't constrained by the real-mode
+> address space.
+> 
+> One of my goals in this project is to make the boot image, in some way,
+> completely define which memory it needs it get started.  That means that
+> the boot loader can either place things knowing they'll avoid the boot
+> image and/or definitively know that the image is unloadable.
+> 
+> So I don't think its strictly necessary to pre-define what memory this
+> object can use, since I think it can be safely determined dynamically.
+> 
 
-That only applies to allocations with constant sizes. One presumes
-nobody is explicitly doing kmalloc(0), so we can use a separate
-runtime-computed-size path to do poisoning. (Which is probably 90% of
-the problem, since people who kmalloc(sizeof(struct foo)) will generally
-stay within bounds without too much effort.)
+That's a method of defining the memory space.
 
-J
+I think the current definition is suitable for entering at the 16-bit
+entry point.
+
+	-hpa
