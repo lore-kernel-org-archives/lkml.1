@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbXFBHEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbXFBHHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759212AbXFBHEL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 03:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbXFBHD6
+	id S1759870AbXFBHHE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 03:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbXFBHG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 03:03:58 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:1308 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754779AbXFBHD5 (ORCPT
+	Sat, 2 Jun 2007 03:06:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41271 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754785AbXFBHGz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 03:03:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OLhMw1gW1qVEnTovB+HcOEXGKY7xXozvo1hmgtF9fFK7HkY0tidsBKVO6LrKUCpd25dFHnd4bxXW8qoDfTWqcPxcEEN4jgerJGiz3XIAuJFbV80/TlFGZ8nm+NmLvAR/O3D8SaufWxKkSZygdDabKzPxranc+rK739Sm55uNdbE=
-Message-ID: <fdaac4d50706020003g5f1658fewf6e0757aaa1c27bd@mail.gmail.com>
-Date: Sat, 2 Jun 2007 16:03:56 +0900
-From: "Jun Koi" <junkoi2004@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>
-Subject: Re: [kvm-devel] [GIT PULL][RESEND] KVM cpu hotplug fixes
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <46604A05.6060507@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 2 Jun 2007 03:06:55 -0400
+Date: Sat, 2 Jun 2007 00:06:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Eric Sandeen <sandeen@sandeen.net>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
+Message-Id: <20070602000645.508ddf93.akpm@linux-foundation.org>
+In-Reply-To: <20070602065923.GB8387@cvg>
+References: <20070524170554.GC19709@duck.suse.cz>
+	<20070524203653.GA7693@duck.suse.cz>
+	<465DF0B4.2050203@sandeen.net>
+	<20070601211036.GA23975@duck.suse.cz>
+	<46609FBD.5040407@sandeen.net>
+	<20070601154834.53558d1b.akpm@linux-foundation.org>
+	<4660FD7F.4090302@sandeen.net>
+	<20070601224339.c803e04e.akpm@linux-foundation.org>
+	<20070602063403.GA8387@cvg>
+	<20070601235422.fdc1f750.akpm@linux-foundation.org>
+	<20070602065923.GB8387@cvg>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <465FB8AA.6050504@qumranet.com>
-	 <alpine.LFD.0.98.0706010819050.3957@woody.linux-foundation.org>
-	 <46604A05.6060507@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Avi,
+On Sat, 2 Jun 2007 10:59:23 +0400 Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-On 6/2/07, Avi Kivity <avi@qumranet.com> wrote:
-> Linus Torvalds wrote:
-> > Don't send me pull requests like this. And absolutely do NOT send them as
-> > resends. I just  get grumpy.
-> >
-> > If all the added code had been KVM-only, I might not care. But when the
-> > bulk of the code touches core files, you had better explain why this is so
-> > important that it cannot wait for the next merge window.
->
-> Ok.  This was really wanted by laptop-carrying users, but I guess
-> they'll have to wait for 2.6.23.
->
+> [Andrew Morton - Fri, Jun 01, 2007 at 11:54:22PM -0700]
+> | On Sat, 2 Jun 2007 10:34:03 +0400 Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> | 
+> | > | That patch is DOA, methinks.
+> | > | 
+> | > 
+> | > Andrew, what does it mean - "DOA"? Dead on arrival?
+> | 
+> | yes - I dropped it.
+> | 
+> 
+> But that could lead to rejection of my code-style-conversion patch...
+> Should I remake them?
 
-Could you explain a bit:
+Actually I've rebuilt those patches four times already.  People keep
+changing stuff.
 
-1) Why CPU hotplug is that important for virtualization?
+> Actually Jan was right, the current state of UDF (without his patches)
+> could lead to lost blocks and his patch must be just fixed I think.
 
-2) Why this patch is wanted by laptop users?
-
-I tried to answer myself those questions, but to no avail.
-
-Thank you,
-Jun
+sure.
