@@ -1,168 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763281AbXFBTzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759041AbXFBUDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763281AbXFBTzs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 15:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762021AbXFBTzj
+	id S1759041AbXFBUDR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 16:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbXFBUDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 15:55:39 -0400
-Received: from mail.tmr.com ([64.65.253.246]:37568 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751239AbXFBTzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 15:55:38 -0400
-Message-ID: <4661CB1C.60806@tmr.com>
-Date: Sat, 02 Jun 2007 15:55:08 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sat, 2 Jun 2007 16:03:04 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:54893 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754815AbXFBUDB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 16:03:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=mUA7xmoJR57uP09oukWgVqvYElwSM6QhWKV7EtKYrPborILfL0eKo1S0qnyg63ptPwyhHISIXLx1sP21cUqRHWlfM+SlJ0H6O5V3ZTbM8kJAHs8rTA430ktFWp2gXEV3lVbCnXyrUOzD74oFniuQLmiY0GouKtzbjHkXNofmkuU=
+Date: Sun, 3 Jun 2007 00:01:46 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Eric Sandeen <sandeen@sandeen.net>,
+       Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
+Message-ID: <20070602200146.GC8518@cvg>
+References: <4660FD7F.4090302@sandeen.net> <20070601224339.c803e04e.akpm@linux-foundation.org> <20070602063403.GA8387@cvg> <20070601235422.fdc1f750.akpm@linux-foundation.org> <20070602065923.GB8387@cvg> <20070602000645.508ddf93.akpm@linux-foundation.org> <20070602140619.GA10303@cvg> <20070602103203.e39d25ed.akpm@linux-foundation.org> <20070602185707.GA8518@cvg> <20070602121616.37ffce9e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: David Chinner <dgc@sgi.com>, david@lang.hm,
-       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
-   and dm/md.
-References: <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <20070531070656.GK32105@kernel.dk> <465ECDDB.9030304@tmr.com> <20070531133649.GY32105@kernel.dk> <466043A2.5040002@tmr.com> <20070602145133.GG32105@kernel.dk>
-In-Reply-To: <20070602145133.GG32105@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070602121616.37ffce9e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Fri, Jun 01 2007, Bill Davidsen wrote:
->   
->> Jens Axboe wrote:
->>     
->>> On Thu, May 31 2007, Bill Davidsen wrote:
->>>  
->>>       
->>>> Jens Axboe wrote:
->>>>    
->>>>         
->>>>> On Thu, May 31 2007, David Chinner wrote:
->>>>>
->>>>>      
->>>>>           
->>>>>> On Thu, May 31, 2007 at 08:26:45AM +0200, Jens Axboe wrote:
->>>>>>   
->>>>>>        
->>>>>>             
->>>>>>> On Thu, May 31 2007, David Chinner wrote:
->>>>>>>     
->>>>>>>          
->>>>>>>               
->>>>>>>> IOWs, there are two parts to the problem:
->>>>>>>>
->>>>>>>> 	1 - guaranteeing I/O ordering
->>>>>>>> 	2 - guaranteeing blocks are on persistent storage.
->>>>>>>>
->>>>>>>> Right now, a single barrier I/O is used to provide both of these
->>>>>>>> guarantees. In most cases, all we really need to provide is 1); the
->>>>>>>> need for 2) is a much rarer condition but still needs to be
->>>>>>>> provided.
->>>>>>>>
->>>>>>>>       
->>>>>>>>            
->>>>>>>>                 
->>>>>>>>> if I am understanding it correctly, the big win for barriers is that 
->>>>>>>>> you do NOT have to stop and wait until the data is on persistant 
->>>>>>>>> media before you can continue.
->>>>>>>>>         
->>>>>>>>>              
->>>>>>>>>                   
->>>>>>>> Yes, if we define a barrier to only guarantee 1), then yes this
->>>>>>>> would be a big win (esp. for XFS). But that requires all filesystems
->>>>>>>> to handle sync writes differently, and sync_blockdev() needs to
->>>>>>>> call blkdev_issue_flush() as well....
->>>>>>>>
->>>>>>>> So, what do we do here? Do we define a barrier I/O to only provide
->>>>>>>> ordering, or do we define it to also provide persistent storage
->>>>>>>> writeback? Whatever we decide, it needs to be documented....
->>>>>>>>       
->>>>>>>>            
->>>>>>>>                 
->>>>>>> The block layer already has a notion of the two types of barriers, with
->>>>>>> a very small amount of tweaking we could expose that. There's 
->>>>>>> absolutely
->>>>>>> zero reason we can't easily support both types of barriers.
->>>>>>>     
->>>>>>>          
->>>>>>>               
->>>>>> That sounds like a good idea - we can leave the existing
->>>>>> WRITE_BARRIER behaviour unchanged and introduce a new WRITE_ORDERED
->>>>>> behaviour that only guarantees ordering. The filesystem can then
->>>>>> choose which to use where appropriate....
->>>>>>   
->>>>>>        
->>>>>>             
->>>>> Precisely. The current definition of barriers are what Chris and I came
->>>>> up with many years ago, when solving the problem for reiserfs
->>>>> originally. It is by no means the only feasible approach.
->>>>>
->>>>> I'll add a WRITE_ORDERED command to the #barrier branch, it already
->>>>> contains the empty-bio barrier support I posted yesterday (well a
->>>>> slightly modified and cleaned up version).
->>>>>
->>>>>
->>>>>      
->>>>>           
->>>> Wait. Do filesystems expect (depend on) anything but ordering now? Does 
->>>> md? Having users of barriers as they currently behave suddenly getting 
->>>> SYNC behavior where they expect ORDERED is likely to have a negative 
->>>> effect on performance. Or do I misread what is actually guaranteed by 
->>>> WRITE_BARRIER now, and a flush is currently happening in all cases?
->>>>    
->>>>         
->>> See the above stuff you quote, it's answered there. It's not a change,
->>> this is how the Linux barrier write has always worked since I first
->>> implemented it. What David and I are talking about is adding a more
->>> relaxed version as well, that just implies ordering.
->>>  
->>>       
->> I was reading the documentation in block/biodoc.txt, which seems to just 
->> say ordered:
->>
->>    1.2.1 I/O Barriers
->>
->>    There is a way to enforce strict ordering for i/os through barriers.
->>    All requests before a barrier point must be serviced before the barrier
->>    request and any other requests arriving after the barrier will not be
->>    serviced until after the barrier has completed. This is useful for
->>    higher
->>    level control on write ordering, e.g flushing a log of committed updates
->>    to disk before the corresponding updates themselves.
->>
->>    A flag in the bio structure, BIO_BARRIER is used to identify a
->>    barrier i/o.
->>    The generic i/o scheduler would make sure that it places the barrier
->>    request and
->>    all other requests coming after it after all the previous requests
->>    in the
->>    queue. Barriers may be implemented in different ways depending on the
->>    driver. A SCSI driver for example could make use of ordered tags to
->>    preserve the necessary ordering with a lower impact on throughput.
->>    For IDE
->>    this might be two sync cache flush: a pre and post flush when
->>    encountering
->>    a barrier write.
->>
->> The "flush" comment is associated with IDE, so it wasn't clear that the 
->> device cache is always cleared to force the data to the platter.
->>     
->
-> The above should mention that the ordered tag comment for SCSI assumes
-> that the drive uses write through caching. If it does, then an ordered
-> tag is enough. If it doesn't, then you need a bit more than that (a post
-> flush, after the ordered tag has completed).
->
->   
-Thanks, go it.
+[Andrew Morton - Sat, Jun 02, 2007 at 12:16:16PM -0700]
+[...snip...]
+| 
+| No, the problem is that the patch caused the kernel to take inode_lock
+| within the newly-added drop_inode(), btu drop_inode() is already called
+| under inode_lock.
+| 
+| It has nothing to do with lock_kernel() and it has nothing to do with
+| sleeping.
+| 
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+Andrew, the only call that could leading to subseq. inode_lock lock
+is mark_inode_dirty() I guess (and that is snown by Eric's dump)
+but as I shown you in my dbg print without SMP it's OK. So
+is it SMP who lead to lock? How it depends on it? (I understand
+that is a stupid question for you but if you have time explain
+me this please ;)
+
+		Cyrill
 
