@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762649AbXFBTfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762855AbXFBToS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762649AbXFBTfQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 15:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760359AbXFBTfG
+	id S1762855AbXFBToS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 15:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760793AbXFBToJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 15:35:06 -0400
-Received: from h80ad2262.async.vt.edu ([128.173.34.98]:39183 "EHLO
-	h80ad2262.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759174AbXFBTfE (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 15:35:04 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: debian developer <debiandev@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Scott Preece <sepreece@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/1] document Acked-by:
-In-Reply-To: Your message of "Sat, 02 Jun 2007 19:04:29 +0530."
-             <f24d23310706020634p3f9f4187j577bea46df86ee5d@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <200706010209.l51299kN000531@shell0.pdx.osdl.net> <28278.1180675923@turing-police.cc.vt.edu> <465FB862.207@zytor.com> <alpine.DEB.0.99.0706010648030.9768@sigma.j-a-k-j.com> <m3sl9b5vcm.fsf@maximus.localdomain> <7b69d1470706011237j50f29e4ch73f86acdc294fecd@mail.gmail.com> <20070601130024.72163dc0.akpm@linux-foundation.org> <20070601130411.218009d5.akpm@linux-foundation.org>
-            <f24d23310706020634p3f9f4187j577bea46df86ee5d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1180812889_4213P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 02 Jun 2007 15:34:49 -0400
-Message-ID: <7064.1180812889@turing-police.cc.vt.edu>
+	Sat, 2 Jun 2007 15:44:09 -0400
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:39751 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759174AbXFBToI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 15:44:08 -0400
+Date: Sat, 2 Jun 2007 12:43:22 -0700
+From: Jouni Malinen <j@w1.fi>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Dan Williams <dan.j.williams@intel.com>, mingo@redhat.com, neilb@suse.de,
+       "John W. Linville" <linville@tuxdriver.com>, linux-raid@vger.kernel.org,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: multiple xor_block() functions
+Message-ID: <20070602194321.GB31754@jm.kir.nu>
+References: <20070602185746.GI5500@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070602185746.GI5500@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1180812889_4213P
-Content-Type: text/plain; charset=us-ascii
-
-On Sat, 02 Jun 2007 19:04:29 +0530, debian developer said:
-> On 6/2/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+On Sat, Jun 02, 2007 at 08:57:46PM +0200, Adrian Bunk wrote:
+> include/linux/raid/xor.h:extern void xor_block(unsigned int count, unsigned int bytes, void **ptr);
+> drivers/md/xor.c:xor_block(unsigned int count, unsigned int bytes, void **ptr)
+> drivers/md/xor.c:EXPORT_SYMBOL(xor_block);
 > 
-> > It's quite common for experienced kernel developers to ack completely broken
-> > patches.
+> and
 > 
-> common!!
+> net/ieee80211/ieee80211_crypt_ccmp.c:static inline void xor_block(u8 * b, u8 * a, size_t len)
 > 
-> is'nt that a bit too ...
+> 
+> At least one of them has to be renamed.
 
-Lots of code looks totally reasonable to a kernel coder, except it doesn't
-actually work when run, or doesn't actually build for a common architecture.
-Let's face it - if I hit a bug on my Dell Latitude in a -mm kernel, our
-current depth of testers means that I'm probably the only person who's
-likely to test the fix before it goes uptream to Linus as a "probably works".
+Why? Not that I would really mind renaming one of these, but I don't see
+a good reason for it. ieee80211_crypt_ccmp.c should not include
+linux/raid/xor.h and the xor_block() in CCMP code is a static inline
+function that should not show up outside the scope of this file. Do we
+have some magic that makes exported symbols pollute name space for
+inlined helper functions?
 
-
---==_Exmh_1180812889_4213P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGYcZZcC3lWbTT17ARAkVtAJ4j99xpJ5jrdCBFcGERZDwSlHBI/QCfa4Re
-xF0KyVhmxbx2Wckmvdjhbb8=
-=p2Es
------END PGP SIGNATURE-----
-
---==_Exmh_1180812889_4213P--
+-- 
+Jouni Malinen                                            PGP id EFC895FA
