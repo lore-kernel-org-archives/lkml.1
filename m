@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbXFBEyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbXFBFKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757203AbXFBEyr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 00:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXFBEyk
+	id S1756147AbXFBFKd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 01:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbXFBFKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 00:54:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34412 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754077AbXFBEyj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 00:54:39 -0400
-Date: Fri, 1 Jun 2007 21:54:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       jeremy@goop.org
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-Message-Id: <20070601215427.f06d09e7.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706012139480.11577@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
-	<20070601204141.f84ad72f.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com>
-	<20070601213117.1178e8e0.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706012139480.11577@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 2 Jun 2007 01:10:21 -0400
+Received: from 1wt.eu ([62.212.114.60]:2807 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751570AbXFBFKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 01:10:20 -0400
+Date: Sat, 2 Jun 2007 07:10:06 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Mark Lord <liml@rtr.ca>
+Cc: Jeff Garzik <jeff@garzik.org>, Daniel J Blueman <daniel.blueman@gmail.com>,
+       bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Compact Flash performance...
+Message-ID: <20070602051005.GQ943@1wt.eu>
+References: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com> <465E3FF0.9010709@rtr.ca> <6278d2220705310222rde9ad28ndfd8feced84a3c6f@mail.gmail.com> <465EBE20.6090803@rtr.ca> <6278d2220705311025q6ee030e2kd44b7302a50ac902@mail.gmail.com> <465F360D.6020603@rtr.ca> <6278d2220705311439x40f7b1c1l7cef54acd2e8fcea@mail.gmail.com> <465F4D4E.6050305@rtr.ca> <465F4E20.5080503@garzik.org> <465F4FA2.8030200@rtr.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465F4FA2.8030200@rtr.ca>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007 21:45:15 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Fri, 1 Jun 2007, Andrew Morton wrote:
+On Thu, May 31, 2007 at 06:43:46PM -0400, Mark Lord wrote:
+> Jeff Garzik wrote:
+> >Mark Lord wrote:
+> >>Some cards may perform better when their "memory" interface is used
+> >>instead of the "I/O" interface, or vice-versa.  I'm not sure which
+> >>of the two methods was selected by libata (probably the "memory" 
+> >>interface).
+> >
+> >I am very CF-ignorant.  How does libata select a memory or I/O interface 
+> >on a CF device?
 > 
-> > They are different instances which happen to have the same length (zero).
-> 
-> I guess one could use the slab allocators as a type of reservation 
-> ticket generator with zero sized objects. Hmmm.... But is that really a 
-> useful thing to do?
-> 
-> > But the code will incorrectly decide that they are the same instance.  It
-> > might cause refcounting or accounting errors, for example.  I don't know - the
-> > kernel's a big place.
-> 
-> That would have to occur with objects that are repeatedly allocated and 
-> then linked toghether etc. Linking typicallty requires a listhead so its 
-> typically difficult to do zero length objects.
+> Right.  Usually we cannot select them, as it's the wires between
+> the ATA chipset (motherboard) and the CFCARD that determine this.
 
-Well I can't immediately think of a scenario in which it's likely to occur,
-but we're in the position of trying to prove a negative.
+CF cards support 3 modes (MEM, I/O and True IDE), and neither MEM nor I/O
+modes can talk IDE. Most often, the PIN 9 is simply shorted to the ground
+at the connector to set the card in True IDE mode, which makes it emulate
+a standard IDE disk.
 
-Poke Bill Irwin - he'll think of something ;)
-
-> > I agree the risk is low, but if something _does_ blow up, it will do so subtly.
-> 
-> The cases that we have seen so far are due to array allocations of N 
-> elements where N == 0 leads to the creation of a zero sized object.
-> The objects of the array are not zero sized it is just that zero of 
-> them are allocated.
-
-We lose leak-detection and double-free detection this way, too.  Not a big
-deal.
+Cheers,
+Willy
 
