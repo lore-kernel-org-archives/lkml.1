@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbXFBRHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762362AbXFBRJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762261AbXFBRHH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 13:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760273AbXFBRG4
+	id S1762362AbXFBRJT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 13:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760623AbXFBRJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 13:06:56 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:51822 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759206AbXFBRGz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 13:06:55 -0400
-Date: Sat, 2 Jun 2007 19:06:57 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, jeremy@xensource.com,
-       chrisw@sous-sol.org
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
-Subject: [-mm patch] fix XEN_BLKDEV_FRONTEND Makefile entry
-Message-ID: <20070602170657.GF5500@stusta.de>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+	Sat, 2 Jun 2007 13:09:11 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:55356 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760610AbXFBRJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 13:09:09 -0400
+Date: Sat, 2 Jun 2007 19:08:22 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Amin Azez <azez@ufomechanic.net>
+cc: Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xt_gateway match (kernel,2)
+In-Reply-To: <Pine.LNX.4.61.0706021856200.5076@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0706021906290.5076@yvahk01.tjqt.qr>
+References: <46604D8B.7030507@ufomechanic.net> <Pine.LNX.4.61.0706021337370.21057@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0706021856200.5076@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_XEN_BLKDEV_FRONTEND shouldn't silently prevent the compilation of 
-most other block drivers.
+On Jun 2 2007 18:56, Jan Engelhardt wrote:
+>---
+> include/linux/netfilter/xt_gateway.h |   13 +++++
+> net/netfilter/Kconfig                |    9 +++
+> net/netfilter/Makefile               |    1 
+> net/netfilter/xt_gateway.c           |   85 +++++++++++++++++++++++++++++++++++
+> 4 files changed, 108 insertions(+)
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+A MODULE_ALIAS was missing, causing iptables/netfilter not to autoload 
+the module.
+SVN tree¹ updated (grab the refreshed patch from there, not reposting 
+for this minimal change).
 
----
---- linux-2.6.22-rc3-mm1/drivers/block/Makefile.old	2007-06-02 18:21:12.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/block/Makefile	2007-06-02 18:21:53.000000000 +0200
-@@ -28,7 +28,7 @@
- obj-$(CONFIG_VIODASD)		+= viodasd.o
- obj-$(CONFIG_BLK_DEV_SX8)	+= sx8.o
- obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
--obj-$(CONFIG_XEN_BLKDEV_FRONTEND) := xen-blkfront.o
-+obj-$(CONFIG_XEN_BLKDEV_FRONTEND) += xen-blkfront.o
- obj-$(CONFIG_XILINX_SYSACE)	+= xsysace.o
- obj-$(CONFIG_LGUEST_GUEST)	+= lguest_blk.o
- 
 
+	Jan
+-- 
+[¹] https://dev.computergmbh.de/svn/misc_kernel/xt_gateway/trunk/
