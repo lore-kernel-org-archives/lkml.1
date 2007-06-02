@@ -1,191 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbXFBESE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbXFBEbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbXFBESE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 00:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXFBERz
+	id S1755283AbXFBEbn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 00:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbXFBEbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 00:17:55 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49451 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752336AbXFBERy (ORCPT
+	Sat, 2 Jun 2007 00:31:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51138 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751153AbXFBEbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 00:17:54 -0400
-Date: Fri, 1 Jun 2007 21:17:53 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Conditionals for development tests and output
-Message-ID: <Pine.LNX.4.64.0706012113200.11472@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 2 Jun 2007 00:31:34 -0400
+Date: Fri, 1 Jun 2007 21:31:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       jeremy@goop.org
+Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
+Message-Id: <20070601213117.1178e8e0.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
+	<20070601204141.f84ad72f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This introduces 
+On Fri, 1 Jun 2007 21:01:09 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-CONFIG_DEVELKERNEL
+> On Fri, 1 Jun 2007, Andrew Morton wrote:
+> 
+> > > On Fri, 1 Jun 2007 18:37:46 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> > >
+> > > +#define ZERO_SIZE_PTR ((void *)16)
+> > 
+> > Jeremy's point was a good one.  The kernel _does_ use address-comparison
+> > to determine object-inequality in an unknown but non-zero number of places.
+> > 
+> > It is of course unlikely that this will occur in conjunction with zero-sized
+> > objects, but who knows?
+> 
+> The zero sized objects are always the same and have the same content of 
+> nothingness. So the kernel would find that they are the same which they 
+> indeed are. Why could this be a problem?
 
-If CONFIG_DEVELKERNEL is set then this is a development kernel.
-Otherwise the kernel to be built is a a production kernel.
+They are different instances which happen to have the same length (zero).
 
+But the code will incorrectly decide that they are the same instance.  It
+might cause refcounting or accounting errors, for example.  I don't know - the
+kernel's a big place.
 
-If CONFIG_DEVELKERNEL is set then the constant
+I agree the risk is low, but if something _does_ blow up, it will do so subtly.
 
-DEVELKERNEL
-
-is set to 1. Otherwise it is zero.
-
-The following functions are defined in kernel.h for diagnostics
-
-DEVEL_WARN_ON(condition)
-
-	Warn on the condition but only if this is a development kernel
-
-DEVEL_WARN_ON_ONCE(condition)
-
-	Warn on the condition once but only if this is a development kernel
-
-devel_printk(fmt, ...)
-
-	Output that should only be generated for a development kernel.
-
-
-CONFIG_DEVELKERNEL is set and cleared by edit the Makefile. Line 7 contains
-
-DEVELKERNEL = 1
-
-
-Updates SLAB and SLUB to not perform the kmalloc(0) tests anymore
-if the kernel is not a development kernel.
-
-
-Editing DEVELKERNEL requires a 
-
-	make clean
-
-to correctly rebuild the kernel with the proper settings. This is similar 
-to editing the version number. Sam: Is there any way to avoid the make 
-clean?
-
-Cc: Dave Jones <davej@redhat.com>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-
----
- Makefile                 |    3 ++-
- include/linux/kernel.h   |   14 ++++++++++++++
- include/linux/slub_def.h |    2 +-
- mm/slab.c                |    2 +-
- mm/slub.c                |    4 ++--
- scripts/kconfig/symbol.c |    9 +++++++++
- 6 files changed, 29 insertions(+), 5 deletions(-)
-
-Index: slub/Makefile
-===================================================================
---- slub.orig/Makefile	2007-06-01 20:11:57.000000000 -0700
-+++ slub/Makefile	2007-06-01 20:56:27.000000000 -0700
-@@ -3,6 +3,7 @@ PATCHLEVEL = 6
- SUBLEVEL = 22
- EXTRAVERSION = -rc3-mm1
- NAME = Jeff Thinks I Should Change This, But To What?
-+DEVELKERNEL = 1
- 
- # *DOCUMENTATION*
- # To see a list of typical targets execute "make help"
-@@ -320,7 +321,7 @@ AFLAGS          := -D__ASSEMBLY__
- KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
- KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
- 
--export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
-+export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION DEVELKERNEL
- export ARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
- export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
- export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
-Index: slub/scripts/kconfig/symbol.c
-===================================================================
---- slub.orig/scripts/kconfig/symbol.c	2007-06-01 20:13:24.000000000 -0700
-+++ slub/scripts/kconfig/symbol.c	2007-06-01 21:07:52.000000000 -0700
-@@ -72,6 +72,15 @@ void sym_init(void)
- 	sym->type = S_STRING;
- 	sym->flags |= SYMBOL_AUTO;
- 	sym_add_default(sym, uts.release);
-+
-+	sym = sym_lookup("DEVELKERNEL", 0);
-+	sym->type = S_BOOLEAN;
-+	sym->flags |= SYMBOL_VALID|SYMBOL_AUTO;
-+	p = getenv("DEVELKERNEL");
-+	if (p && atoi(p))
-+		sym_add_default(sym, "y");
-+	else
-+		sym_add_default(sym, "n");
- }
- 
- enum symbol_type sym_get_type(struct symbol *sym)
-Index: slub/include/linux/kernel.h
-===================================================================
---- slub.orig/include/linux/kernel.h	2007-06-01 20:19:17.000000000 -0700
-+++ slub/include/linux/kernel.h	2007-06-01 20:30:16.000000000 -0700
-@@ -375,4 +375,18 @@ struct sysinfo {
- #define NUMA_BUILD 0
- #endif
- 
-+#ifdef CONFIG_DEVELKERNEL
-+#define DEVELKERNEL 1
-+#else
-+#define DEVELKERNEL 0
-+#endif
-+
-+#define DEVEL_WARN_ON(x)	WARN_ON(DEVELKERNEL && (x))
-+#define DEVEL_WARN_ON_ONCE(x)	WARN_ON_ONCE(DEVELKERNEL && (x))
-+
-+#define devel_printk(fmt,arg...) 	({					\
-+	if (DEVELKERNEL)						\
-+			printk(fmt, ##arg);				\
-+})
-+
- #endif
-Index: slub/include/linux/slub_def.h
-===================================================================
---- slub.orig/include/linux/slub_def.h	2007-06-01 20:25:06.000000000 -0700
-+++ slub/include/linux/slub_def.h	2007-06-01 20:28:02.000000000 -0700
-@@ -80,7 +80,7 @@ static inline int kmalloc_index(size_t s
- 	 * allocate memory but return ZERO_SIZE_PTR.
- 	 * WARN so that people can review and fix their code.
- 	 */
--	WARN_ON_ONCE(size == 0);
-+	DEVEL_WARN_ON_ONCE(size == 0);
- 
- 	if (!size)
- 		return 0;
-Index: slub/mm/slub.c
-===================================================================
---- slub.orig/mm/slub.c	2007-06-01 20:24:26.000000000 -0700
-+++ slub/mm/slub.c	2007-06-01 20:28:20.000000000 -0700
-@@ -2525,8 +2525,8 @@ void __init kmem_cache_init(void)
- 	kmem_size = offsetof(struct kmem_cache, cpu_slab) +
- 				nr_cpu_ids * sizeof(struct page *);
- 
--	printk(KERN_INFO "SLUB: Genslabs=%d, HWalign=%d, Order=%d-%d, MinObjects=%d,"
--		" Processors=%d, Nodes=%d\n",
-+	devel_printk(KERN_INFO "SLUB: Genslabs=%d, HWalign=%d, Order=%d-%d, "
-+		"MinObjects=%d, Processors=%d, Nodes=%d\n",
- 		KMALLOC_SHIFT_HIGH, cache_line_size(),
- 		slub_min_order, slub_max_order, slub_min_objects,
- 		nr_cpu_ids, nr_node_ids);
-Index: slub/mm/slab.c
-===================================================================
---- slub.orig/mm/slab.c	2007-06-01 20:29:39.000000000 -0700
-+++ slub/mm/slab.c	2007-06-01 20:29:45.000000000 -0700
-@@ -774,7 +774,7 @@ static inline struct kmem_cache *__find_
- 	 */
- 	BUG_ON(malloc_sizes[INDEX_AC].cs_cachep == NULL);
- #endif
--	WARN_ON_ONCE(size == 0);
-+	DEVEL_WARN_ON_ONCE(size == 0);
- 	while (size > csizep->cs_size)
- 		csizep++;
- 
