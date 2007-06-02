@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763675AbXFBXPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762176AbXFBXWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763675AbXFBXPi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 19:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761892AbXFBXPc
+	id S1762176AbXFBXWs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 19:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762266AbXFBXWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 19:15:32 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:63955 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760064AbXFBXPc convert rfc822-to-8bit (ORCPT
+	Sat, 2 Jun 2007 19:22:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40031 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761892AbXFBXWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 19:15:32 -0400
-Date: Sat, 2 Jun 2007 16:13:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       jejb <james.bottomley@steeleye.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Subject: Re: [1/3] 2.6.22-rc3: known regressions v2
-Message-Id: <20070602161337.46f267da.randy.dunlap@oracle.com>
-In-Reply-To: <46600F1C.5000302@googlemail.com>
-References: <46600F1C.5000302@googlemail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sat, 2 Jun 2007 19:22:41 -0400
+Subject: Re: Device Driver Etiquette
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matthew Fredrickson <creslin@digium.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <a714c0e137cf5cf814e790e3fdef23c8@digium.com>
+References: <a714c0e137cf5cf814e790e3fdef23c8@digium.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sat, 02 Jun 2007 16:22:00 -0700
+Message-Id: <1180826520.2815.3.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 01 Jun 2007 14:20:44 +0200 Michal Piotrowski wrote:
+On Fri, 2007-06-01 at 12:47 -0500, Matthew Fredrickson wrote:
 
-> Hi all,
-> 
-> Here is a list of some known regressions in 2.6.22-rc3.
-> 
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
-> 
-> 
-> Unclassified
-> 
-> Subject    : build failed in function `vic_sys_interrupt'
-> References : http://lkml.org/lkml/2007/5/31/227
-> Submitter  : Toralf Förster <toralf.foerster@gmx.de>
-> Status     : Unknown
+> My question is this: is there a way to either work around the problem I 
+> am seeing with the stack without recompiling the kernel with 8K stack 
+> size or without disabling irqs for such a long period of time (which I 
+> think is not a nice thing to do either) OR is it acceptable (although 
+> not nice) to simply fix it this way, by disabling irqs while it loads 
+> the firmware?
 
-I probably wouldn't call a randconfig build problem a regression.
+I wonder if you're chasing ghosts; 4K stack kernels have a seperate
+stack for interrupts so... those should be safe.
 
-James, does Voyager support SMP=n now?
+Btw, you forgot to post a pointer to the source code of your driver, so
+it's a lot harder for us (read: impossible) to give you good advice..
 
+Greetings,
+   Arjan van de Ven
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
