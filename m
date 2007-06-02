@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbXFBCzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760686AbXFBDGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759950AbXFBCzQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 22:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXFBCzF
+	id S1760686AbXFBDGf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 23:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbXFBDG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 22:55:05 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:52613 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753230AbXFBCzD (ORCPT
+	Fri, 1 Jun 2007 23:06:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34577 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754141AbXFBDG1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 22:55:03 -0400
-Date: Fri, 1 Jun 2007 19:54:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
+	Fri, 1 Jun 2007 23:06:27 -0400
+Date: Fri, 1 Jun 2007 20:06:25 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
 cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        Jeremy Fitzhardinge <jeremy@goop.org>
 Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-In-Reply-To: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.0.98.0706011947030.3957@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706011947030.3957@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706012005040.11202@schroedinger.engr.sgi.com>
 References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0706011947030.3957@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 1 Jun 2007, Linus Torvalds wrote:
+
+> So when I suggested the uglier
+> 
+> 	if ((unsigned long)x <= 16)
+> 		return;
+> 
+> I really did mean to use that ugly cast.. Yours is prettier, but sadly, 
+> yours is simply not safe: a signed comparison might end up making _all_ 
+> kernel pointers trigger that test.
+
+Maybe we can have a compromise? Lets at least keep the ZERO_SIZE_PTR
+reference in there.
 
 
-On Fri, 1 Jun 2007, Christoph Lameter wrote:
->  
-> -	if (!x)
-> +	if (x <= ZERO_SIZE_PTR)
->  		return;
+SLUB: Make sure that the comparision with ZERO_SIZE_PTR is unsigned
 
-Btw, this is _not_ safe.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-A number of gcc versions have done signed arithmetic on pointers. It's 
-insane and stupid, but it happens, and it so happens to work on 
-architectures where the point where the sign changes over is not a valid 
-pointer area.
 
-On x86, doing signed arithmetic on pointers is a clear and unambiguous 
-_bug_ (because a C object really _can_ start in "positive" space and end 
-in "negative" pointer space), but I think some gcc versions did it there 
-too.
+---
+ mm/slub.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-On some other architectures, like x86-64, the virtual memory around the 
-magic switch-over point is not mappable, so a C object cannot validly 
-straddle the area where positive overflows into negative, and as such a 
-compiler _could_ consider pointers to be signed (although I really don't 
-see the point).
-
-So when I suggested the uglier
-
-	if ((unsigned long)x <= 16)
-		return;
-
-I really did mean to use that ugly cast.. Yours is prettier, but sadly, 
-yours is simply not safe: a signed comparison might end up making _all_ 
-kernel pointers trigger that test.
-
-			Linus
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-06-01 20:00:56.000000000 -0700
++++ slub/mm/slub.c	2007-06-01 20:04:26.000000000 -0700
+@@ -2338,7 +2338,13 @@ void kfree(const void *x)
+ 	struct kmem_cache *s;
+ 	struct page *page;
+ 
+-	if (x <= ZERO_SIZE_PTR)
++	/*
++	 * This has to be an unsigned comparison. According to Linus
++	 * some gcc version tread a pointer as a signed entity. Then
++	 * this comparison would be true for all "negative" pointers
++	 * (which would cover the whole upper half of the address space).
++	 */
++	if ((unsigned long)x <= (unsigned long)ZERO_SIZE_PTR)
+ 		return;
+ 
+ 	page = virt_to_head_page(x);
