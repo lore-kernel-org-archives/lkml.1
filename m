@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbXFBEhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbXFBEkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbXFBEhS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 00:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXFBEhH
+	id S1756258AbXFBEkT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 00:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXFBEkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 00:37:07 -0400
-Received: from chen.mtu.ru ([195.34.34.232]:3236 "EHLO chen.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751570AbXFBEhG (ORCPT <rfc822; linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 00:37:06 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-To: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>,
-       linux-kernel@vger.kernel.org
-Date: Sat, 02 Jun 2007 08:36:03 +0400
-References: <878xb35sje.fsf@goat.bogus.local>
-User-Agent: KNode/0.10.5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <20070602043604.5887E558E6B@chen.mtu.ru>
+	Sat, 2 Jun 2007 00:40:08 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:49363 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751570AbXFBEkH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 00:40:07 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
+Date: Sat, 2 Jun 2007 04:30:30 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <f3qrp6$ftn$1@taverner.cs.berkeley.edu>
+References: <653438.15244.qm@web36612.mail.mud.yahoo.com> <f3il25$pcp$1@taverner.cs.berkeley.edu> <20070524144726.GB3920@ucw.cz> <12508.1180719875@turing-police.cc.vt.edu>
+Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1180758630 16311 128.32.168.222 (2 Jun 2007 04:30:30 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Sat, 2 Jun 2007 04:30:30 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olaf Dietsche wrote:
+Valdis.Kletnieks@vt.edu writes:
+>Experience over on the Windows side of the fence indicates that "remote bad
+>guys get some local user first" is a *MAJOR* part of the current real-world
+>threat model - the vast majority of successful attacks on end-user boxes these
+>days start off with either "Get user to (click on link|open attachment)" or
+>"Subvert the path to a website (either by hacking the real site or hijacking
+>the DNS) and deliver a drive-by fruiting when the user visits the page".
 
-> resume from suspend to ram doesn't work for my laptop and never
-> has. So, this is not a regression.
-> 
-> Hibernate (aka suspend to disk) works, however.
-> 
-> When I resume, everything seems to come up (fan becomes busy, disk and
-> dvd spin up for a short time), but the machine is not responding to
-> anything - neither keyboard, mouse nor ping from another machine. The
-> laptop is effectively dead and only a power cycle helps.
-> 
+AppArmor isn't trying to defend everyday users from getting phished or
+social engineered; it is trying to protect servers from getting rooted
+because of security holes in their network daemons.  I find that a
+laudable goal.  Sure, it doesn't solve every security problem in the
+world, but so what?  A tool that could solve that one security problem
+would still be a useful thing, even if it did nothing else.
 
-I understand that every case of failed resume is different, but this looks
-quite similar to the problem I have:
-http://bugzilla.kernel.org/show_bug.cgi?id=7499, at least symptoms :)
+I don't find the Windows stuff too relevant here.  As I understand it,
+AppArmor isn't aimed at defending Windows desktop users; it is aimed at
+defending Linux servers.  A pretty different environment, I'd say.
 
-> I've tried a minimal config and init=/bin/bash as well, but the result
-> is the same.
-> 
+Ultimately, there are some things AppArmor may be good at, and there
+are also sure to be some things it is bloody useless for.  My hammer
+isn't very good for screwing in screws, but I still find it useful.
+I confess I don't understand the kvetching about AppArmor's goals.
+What are you expecting, some kind of silver bullet?
 
-One more similarity :) And BTW s2ram does not work either.
-
--andrey
-
+A question I'd find more interesting is whether AppArmor is able to
+meet its stated goals, under a reasonable threat model, and with what
+degree of assurance, and at what cost.  But I don't know whether that's
+relevant for the linux-kernel mailing list.
