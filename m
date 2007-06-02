@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759041AbXFBUDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbXFBUL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759041AbXFBUDR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 16:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbXFBUDE
+	id S1760039AbXFBUL5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 16:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXFBULu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 16:03:04 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:54893 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754815AbXFBUDB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 16:03:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=mUA7xmoJR57uP09oukWgVqvYElwSM6QhWKV7EtKYrPborILfL0eKo1S0qnyg63ptPwyhHISIXLx1sP21cUqRHWlfM+SlJ0H6O5V3ZTbM8kJAHs8rTA430ktFWp2gXEV3lVbCnXyrUOzD74oFniuQLmiY0GouKtzbjHkXNofmkuU=
-Date: Sun, 3 Jun 2007 00:01:46 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Eric Sandeen <sandeen@sandeen.net>,
-       Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
-Message-ID: <20070602200146.GC8518@cvg>
-References: <4660FD7F.4090302@sandeen.net> <20070601224339.c803e04e.akpm@linux-foundation.org> <20070602063403.GA8387@cvg> <20070601235422.fdc1f750.akpm@linux-foundation.org> <20070602065923.GB8387@cvg> <20070602000645.508ddf93.akpm@linux-foundation.org> <20070602140619.GA10303@cvg> <20070602103203.e39d25ed.akpm@linux-foundation.org> <20070602185707.GA8518@cvg> <20070602121616.37ffce9e.akpm@linux-foundation.org>
+	Sat, 2 Jun 2007 16:11:50 -0400
+Received: from lucidpixels.com ([75.144.35.66]:44069 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753268AbXFBULt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 16:11:49 -0400
+Date: Sat, 2 Jun 2007 16:11:48 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Andi Kleen <andi@firstfloor.org>
+cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't
+ the kernel realize the BIOS has problems and re-map appropriately?
+In-Reply-To: <20070602092232.GP7217@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0706021610210.19116@p34.internal.lan>
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
+ <200706011407.51779.jbarnes@virtuousgeek.org> <20070601211943.GO7217@one.firstfloor.org>
+ <200706011441.57149.jbarnes@virtuousgeek.org> <20070602010539.GA13512@linux-os.sc.intel.com>
+ <20070602092232.GP7217@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070602121616.37ffce9e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andrew Morton - Sat, Jun 02, 2007 at 12:16:16PM -0700]
-[...snip...]
-| 
-| No, the problem is that the patch caused the kernel to take inode_lock
-| within the newly-added drop_inode(), btu drop_inode() is already called
-| under inode_lock.
-| 
-| It has nothing to do with lock_kernel() and it has nothing to do with
-| sleeping.
-| 
 
-Andrew, the only call that could leading to subseq. inode_lock lock
-is mark_inode_dirty() I guess (and that is snown by Eric's dump)
-but as I shown you in my dbg print without SMP it's OK. So
-is it SMP who lead to lock? How it depends on it? (I understand
-that is a stupid question for you but if you have time explain
-me this please ;)
 
-		Cyrill
+On Sat, 2 Jun 2007, Andi Kleen wrote:
+
+>> I feel, having a silent/transparent workaround is not a good idea. With that
+>
+> If enough RAM is chopped off users will notice. They tend to complain
+> when they miss RAM.  I don't like panic very much because for many
+> users it will be a show stopper (even when they are not blessed
+> with "quiet" boots like some distributions do)
+>
+> The message in dmesg could be also emphasized a bit with a little
+> ASCII art (but no <blink> tag in there)
+>
+> The problem I'm more worried about is if the system will be really
+> stable --- could it be that the memory controller is still
+> misconfigured and cause other stability issues? (we've had such
+> cases in the past). Also I'm not sure we can handle the case of
+> the MTRR wrong not at the end of memory but at the hole sanely.
+>
+> -Andi
+>
+
+So far I have been booting with mem=8832M and have run stress/loaded the 
+memory subsystem pretty good; what other tests should I run?
+
+It'd be nice if we could pose some sort of solution/warning for the future 
+so other people do not have to experience the same problems.
+
+What are the next steps?
+
+Justin.
 
