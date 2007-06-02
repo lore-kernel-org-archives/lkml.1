@@ -1,103 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763110AbXFBS76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762342AbXFBTBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763110AbXFBS76 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 14:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758973AbXFBS7j
+	id S1762342AbXFBTBe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 15:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758733AbXFBTBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 14:59:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:5906 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757784AbXFBS7i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 14:59:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=ovMt9+q66RBWbc+Lm500LMFvqmMLoyrFLcKcvGcb7c4uqR1GnNA9LfyR7DJqQk+YkqI/UQp87aGle0ke9H2C7lmdECTOl612ZR8SMgE3DT8n1OZoGFKJIus44H4d3dXmb+R6nn6cKXStYpR9FTnJLLiM0tu2dU2XsL/eGawb/iI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 1/2] serverworks: remove crappy code
-Date: Sat, 2 Jun 2007 21:05:28 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200706022105.28680.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Jun 2007 15:01:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40898 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756896AbXFBTBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 15:01:24 -0400
+Date: Sat, 2 Jun 2007 15:01:20 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200706021901.l52J1KbW016799@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] O_CLOEXEC for SCM_RIGHTS
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Part two in the O_CLOEXEC saga: adding support for file descriptors received
+through Unix domain sockets.
 
-Remove crappy code noticed by Linus, see
+The patch is once again pretty minimal, it introduces a new flag for recvmsg
+and passes it just like the existing MSG_CMSG_COMPAT flag.  I think this bit
+is not used otherwise but the networking people will know better.
 
-	http://lkml.org/lkml/2007/5/23/476
+This new flag is not recognized by recvfrom and recv.  These functions cannot
+be used for that purpose and the asymmetry this introduces is not worse than
+the already existing MSG_CMSG_COMPAT situations.
 
-for details.
+The patch must be applied on the patch which introduced O_CLOEXEC.  It has to
+remove static from the new get_unused_fd_flags function but since scm.c cannot
+live in a module the function still hasn't to be exported.
 
-While at it simplify logic a bit.
+Here's a test program to make sure the code works.  It's so much longer than
+the actual patch...
 
-There should be no functionality changes caused by this patch.
+#include <errno.h>
+#include <error.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/pci/serverworks.c |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+#ifndef O_CLOEXEC
+# define O_CLOEXEC 02000000
+#endif
+#ifndef MSG_CMSG_CLOEXEC
+# define MSG_CMSG_CLOEXEC 0x40000000
+#endif
 
-Index: b/drivers/ide/pci/serverworks.c
-===================================================================
---- a/drivers/ide/pci/serverworks.c
-+++ b/drivers/ide/pci/serverworks.c
-@@ -1,5 +1,5 @@
+
+int
+main (int argc, char *argv[])
+{
+  if (argc > 1)
+    {
+      int fd = atol (argv[1]);
+      printf ("child: fd = %d\n", fd);
+      if (fcntl (fd, F_GETFD) == 0 || errno != EBADF)
+        {
+          puts ("file descriptor valid in child");
+          return 1;
+        }
+      return 0;
+
+    }
+
+  struct sockaddr_un sun;
+  strcpy (sun.sun_path, "./testsocket");
+  sun.sun_family = AF_UNIX;
+
+  char databuf[] = "hello";
+  struct iovec iov[1];
+  iov[0].iov_base = databuf;
+  iov[0].iov_len = sizeof (databuf);
+
+  union
+  {
+    struct cmsghdr hdr;
+    char bytes[CMSG_SPACE (sizeof (int))];
+  } buf;
+  struct msghdr msg = { .msg_iov = iov, .msg_iovlen = 1,
+                        .msg_control = buf.bytes,
+                        .msg_controllen = sizeof (buf) };
+  struct cmsghdr *cmsg = CMSG_FIRSTHDR (&msg);
+
+  cmsg->cmsg_level = SOL_SOCKET;
+  cmsg->cmsg_type = SCM_RIGHTS;
+  cmsg->cmsg_len = CMSG_LEN (sizeof (int));
+
+  msg.msg_controllen = cmsg->cmsg_len;
+
+  pid_t child = fork ();
+  if (child == -1)
+    error (1, errno, "fork");
+  if (child == 0)
+    {
+      int sock = socket (PF_UNIX, SOCK_STREAM, 0);
+      if (sock < 0)
+        error (1, errno, "socket");
+
+      if (bind (sock, (struct sockaddr *) &sun, sizeof (sun)) < 0)
+        error (1, errno, "bind");
+      if (listen (sock, SOMAXCONN) < 0)
+        error (1, errno, "listen");
+
+      int conn = accept (sock, NULL, NULL);
+      if (conn == -1)
+        error (1, errno, "accept");
+
+      *(int *) CMSG_DATA (cmsg) = sock;
+      if (sendmsg (conn, &msg, MSG_NOSIGNAL) < 0)
+        error (1, errno, "sendmsg");
+
+      return 0;
+    }
+
+  /* For a test suite this should be more robust like a
+     barrier in shared memory.  */
+  sleep (1);
+  
+  int sock = socket (PF_UNIX, SOCK_STREAM, 0);
+  if (sock < 0)
+    error (1, errno, "socket");
+
+  if (connect (sock, (struct sockaddr *) &sun, sizeof (sun)) < 0)
+    error (1, errno, "connect");
+  unlink (sun.sun_path);
+
+  *(int *) CMSG_DATA (cmsg) = -1;
+
+  if (recvmsg (sock, &msg, MSG_CMSG_CLOEXEC) < 0)
+    error (1, errno, "recvmsg");
+
+  int fd = *(int *) CMSG_DATA (cmsg);
+  if (fd == -1)
+    error (1, 0, "no descriptor received");
+
+  char fdname[20];
+  snprintf (fdname, sizeof (fdname), "%d", fd);
+  execl ("/proc/self/exe", argv[0], fdname, NULL);
+  puts ("execl failed");
+  return 1;
+}
+
+
+
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -855,7 +855,7 @@
  /*
-- * linux/drivers/ide/pci/serverworks.c		Version 0.9	Mar 4 2007
-+ * linux/drivers/ide/pci/serverworks.c		Version 0.10	Jun 2 2007
-  *
-  * Copyright (C) 1998-2000 Michel Aubry
-  * Copyright (C) 1998-2000 Andrzej Krzysztofowicz
-@@ -170,7 +170,6 @@ static int svwks_tune_chipset (ide_drive
- 		if (!drive->init_speed) {
- 			u8 dma_stat = inb(hwif->dma_status);
+  * Find an empty file descriptor entry, and mark it busy.
+  */
+-static int get_unused_fd_flags(int flags)
++int get_unused_fd_flags(int flags)
+ {
+ 	struct files_struct * files = current->files;
+ 	int fd, error;
+--- a/include/linux/file.h
++++ b/include/linux/file.h
+@@ -73,6 +73,7 @@ extern struct file * FASTCALL(fget_light(unsigned int fd, int *fput_needed));
+ extern void FASTCALL(set_close_on_exec(unsigned int fd, int flag));
+ extern void put_filp(struct file *);
+ extern int get_unused_fd(void);
++extern int FASTCALL(get_unused_fd_flags(int flags));
+ extern void FASTCALL(put_unused_fd(unsigned int fd));
+ struct kmem_cache;
  
--dma_pio:
- 			if (((ultra_enable << (7-drive->dn) & 0x80) == 0x80) &&
- 			    ((dma_stat & (1<<(5+unit))) == (1<<(5+unit)))) {
- 				drive->current_speed = drive->init_speed = XFER_UDMA_0 + udma_modes[(ultra_timing >> (4*unit)) & ~(0xF0)];
-@@ -179,7 +178,6 @@ dma_pio:
- 				   ((dma_stat&(1<<(5+unit)))==(1<<(5+unit)))) {
- 				u8 dmaspeed = dma_timing;
+--- a/include/linux/socket.h
++++ b/include/linux/socket.h
+@@ -253,6 +253,9 @@ struct ucred {
  
--				dma_timing &= ~0xFFU;
- 				if ((dmaspeed & 0x20) == 0x20)
- 					dmaspeed = XFER_MW_DMA_2;
- 				else if ((dmaspeed & 0x21) == 0x21)
-@@ -190,10 +188,11 @@ dma_pio:
- 					goto dma_pio;
- 				drive->current_speed = drive->init_speed = dmaspeed;
- 				return 0;
--			} else if (pio_timing) {
-+			}
-+dma_pio:
-+			if (pio_timing) {
- 				u8 piospeed = pio_timing;
+ #define MSG_EOF         MSG_FIN
  
--				pio_timing &= ~0xFFU;
- 				if ((piospeed & 0x20) == 0x20)
- 					piospeed = XFER_PIO_4;
- 				else if ((piospeed & 0x22) == 0x22)
-@@ -214,8 +213,8 @@ dma_pio:
++#define MSG_CMSG_CLOEXEC 0x40000000	/* Set close_on_exit for file
++					   descriptor received through
++					   SCM_RIGHTS */
+ #if defined(CONFIG_COMPAT)
+ #define MSG_CMSG_COMPAT	0x80000000	/* This message needs 32 bit fixups */
+ #else
+--- a/net/core/scm.c
++++ b/net/core/scm.c
+@@ -228,7 +228,8 @@ void scm_detach_fds(struct msghdr *msg, struct scm_cookie *scm)
+ 		err = security_file_receive(fp[i]);
+ 		if (err)
+ 			break;
+-		err = get_unused_fd();
++		err = get_unused_fd_flags(MSG_CMSG_CLOEXEC & msg->msg_flags
++					  ? O_CLOEXEC : 0);
+ 		if (err < 0)
+ 			break;
+ 		new_fd = err;
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1939,9 +1939,7 @@ asmlinkage long sys_recvmsg(int fd, struct msghdr __user *msg,
+ 	total_len = err;
  
- oem_setup_failed:
+ 	cmsg_ptr = (unsigned long)msg_sys.msg_control;
+-	msg_sys.msg_flags = 0;
+-	if (MSG_CMSG_COMPAT & flags)
+-		msg_sys.msg_flags = MSG_CMSG_COMPAT;
++	msg_sys.msg_flags = flags & (MSG_CMSG_CLOEXEC|MSG_CMSG_COMPAT);
  
--	pio_timing	&= ~0xFFU;
--	dma_timing	&= ~0xFFU;
-+	pio_timing	= 0;
-+	dma_timing	= 0;
- 	ultra_timing	&= ~(0x0F << (4*unit));
- 	ultra_enable	&= ~(0x01 << drive->dn);
- 	csb5_pio	&= ~(0x0F << (4*drive->dn));
+ 	if (sock->file->f_flags & O_NONBLOCK)
+ 		flags |= MSG_DONTWAIT;
