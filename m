@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762447AbXFBBC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761701AbXFBBFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762447AbXFBBC3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 21:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756297AbXFBBCX
+	id S1761701AbXFBBFX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 21:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbXFBBFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 21:02:23 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:49683 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755277AbXFBBCW (ORCPT
+	Fri, 1 Jun 2007 21:05:12 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:42047 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754966AbXFBBFK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 21:02:22 -0400
-Message-ID: <4660C194.4010003@zytor.com>
-Date: Fri, 01 Jun 2007 18:02:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 1 Jun 2007 21:05:10 -0400
+Date: Fri, 1 Jun 2007 18:04:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, pj@sgi.com, simon.derr@bull.net,
+       clameter@cthulhu.engr.sgi.com, rientjes@google.com
+Subject: Re: [RFC] [PATCH] cpuset operations causes Badness at mm/slab.c:777
+ warning
+In-Reply-To: <Pine.LNX.4.64.0706011721390.10254@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.0.98.0706011801280.3957@woody.linux-foundation.org>
+References: <465FCA79.70207@in.ibm.com> <200706011620.05756.srinivasa@in.ibm.com>
+ <466081DE.70205@goop.org> <Pine.LNX.4.64.0706011345220.4323@schroedinger.engr.sgi.com>
+ <20070601135900.ec44b1aa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011444010.5009@schroedinger.engr.sgi.com>
+ <20070601151649.bb23c6f9.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011519030.7625@schroedinger.engr.sgi.com>
+ <20070601153328.1118ccaf.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011534170.9497@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0706011554300.3957@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706011617330.9781@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0706011638360.3957@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706011642530.9992@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0706011653290.3957@woody.linux-foundation.org>
+ <20070601171612.8194394a.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706011721390.10254@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Extending boot protocol & bzImage for paravirt_ops
-References: <4656FB8F.4090604@goop.org> <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <466087CF.70708@goop.org> <4660924A.2070009@zytor.com> <466093E3.4010701@goop.org> <46609636.4050208@zytor.com> <4660BBDF.1040007@goop.org> <4660BCF8.7000208@zytor.com> <4660C0CD.5060606@goop.org>
-In-Reply-To: <4660C0CD.5060606@goop.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> 
-> Just to clarify:
-> 
-> In my proposal is that we have bzImage structured something like (where
-> "|" is concatenation, and "()" is a  blob containing stuff):
-> 
->     bzImage = 16-bit setup | ELF file (decompressor, compressed kernel)
->       
-> 
-> With the intention that 32-bit only bootloader always loads the ELF file
-> as-is and just runs it.  Aside from the fact that its an ELF file,
-> there's nothing else about it which really concerns the bootloader,
-> since once its loaded and running, it does all its own setup.  Its not
-> clear that code32_start really means much in this case, though I guess
-> it could point to the same place as the ELF file's entrypoint.
-> 
 
-It would have to, because of the way code32_start is defined to work.
-We don't get control again after its use as a hook.
 
-> Whereas you're proposing:
+On Fri, 1 Jun 2007, Christoph Lameter wrote:
+>
+> On Fri, 1 Jun 2007, Andrew Morton wrote:
 > 
->     bzImage = 16-bit setup | decompressor | compressed kernel (ELF file)
->       
+> > I think it'd be better if we kept the WARN_ON_ONCE(size == 0) in there,
 > 
-> where code32_start points to the decompressor, and some other pointer
-> points to the compressed kernel data.  And your intent is that an
-> external bootloader could also interpret the compressed kernel image,
-> and identify what format its in and handle it appropriately from
-> outside.  Right?
+> The trouble with the WARN_ON is that it triggers even for code that is 
+> okay like noted by Jeremy.
 
-Correct.
+Yes. Sometimes it's just more natural to have
 
-> In both cases, it seems to me that we need an extra boot_param pointer
-> to point to the offset of the payload blob (ELF file in my case,
-> compressed kernel in yours).  Yes?
+	ptr = kmalloc(size);
+	.. use it ..
+	free(ptr);
 
-Indeed.
+and if a *degenerate* case of size=0 happens, who cares? It should just 
+work, as long as we (obviously) don't actually try to access the pointer.
 
-	-hpa
+So I don't much like the WARN_ON(size == 0). I think it potentially just 
+causes people to write around it, and quite possibly causes the callers to 
+write code that is not at all more readable or maintainable!
 
+That's why I'd much rather return BADPTR instead: we'll get an oops for 
+buggy code, but we don't penalize the "natural" and good code! So once you 
+return BADPTR, there really isn't any good reason for the WARN_ON.
+
+			Linus
