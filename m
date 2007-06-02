@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764059AbXFBX3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763748AbXFBXeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764059AbXFBX3e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 19:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762291AbXFBX32
+	id S1763748AbXFBXeK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 19:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbXFBXd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 19:29:28 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34868 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762288AbXFBX31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 19:29:27 -0400
-Date: Sat, 2 Jun 2007 16:29:27 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Roman Zippel <zippel@linux-m68k.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>
-Subject: Re: Conditionals for development tests and output
-In-Reply-To: <20070602190236.GA10768@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0706021627360.15441@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706012113200.11472@schroedinger.engr.sgi.com>
- <20070602190236.GA10768@uranus.ravnborg.org>
+	Sat, 2 Jun 2007 19:33:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47801 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752155AbXFBXd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 19:33:57 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH] IO-APIC blacklist
+Date: Sat, 2 Jun 2007 19:33:40 -0400
+User-Agent: KMail/1.9.5
+Cc: Tear <tarrqt@yahoo.com>, mingo@redhat.com, akpm@linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>
+References: <105227.2990.qm@web63604.mail.re1.yahoo.com> <alpine.LFD.0.98.0706021400330.23741@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706021400330.23741@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706021933.40583.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Jun 2007, Sam Ravnborg wrote:
+>   -uhci_hcd 0000:00:1f.2: irq 19, io base 0x0000ff80	 # slow
+>   +uhci_hcd 0000:00:1f.2: irq 17, io base 0x0000ff80	 # fine
 
-> The below patch suffers from the problem that changing the
-> value of DEVELKERNEL in the Makefile are not automatically
-> reflected in autoconf.h.
+nope, this function is on on hardware IRQ 19 in both cases.
 
-Well you are restating what is in the description. See below.
+it just looks like IRQ 17 in the ACPI case due to this:
 
-> We need to get this fixed before merging this I think.
+ACPI: PCI Interrupt 0000:00:1f.2[D] -> GSI 19 (level, low) -> IRQ 17
 
-I thought you would maybe able to help?
+Totally bogus?  Yes.
+google "Kill IRQ compression"
+But while I truly hate this particular hack and I've wanted it gone for a long time,
+it doesn't appear to be related to the failure at hand -- it just makes
+it more irritating to debug.
 
-> > Editing DEVELKERNEL requires a 
-> > 
-> > 	make clean
-> > 
-> > to correctly rebuild the kernel with the proper settings. This is similar 
-> > to editing the version number. Sam: Is there any way to avoid the make 
-> > clean?
-   ^^^^^^^^^^^^
-
+-Len
