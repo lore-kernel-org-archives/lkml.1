@@ -1,62 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763915AbXFBWzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762291AbXFBWzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763915AbXFBWzG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 18:55:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761910AbXFBWy4
+	id S1762291AbXFBWzY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 18:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763949AbXFBWzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 18:54:56 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53629 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761692AbXFBWyz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 18:54:55 -0400
-Date: Sat, 2 Jun 2007 15:54:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tear <tarrqt@yahoo.com>, mingo@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Brown, Len" <len.brown@intel.com>
-Subject: Re: [RFC][PATCH] IO-APIC blacklist
-Message-Id: <20070602155440.c1f8d1cb.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706021400330.23741@woody.linux-foundation.org>
-References: <105227.2990.qm@web63604.mail.re1.yahoo.com>
-	<alpine.LFD.0.98.0706021400330.23741@woody.linux-foundation.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 2 Jun 2007 18:55:09 -0400
+Received: from hera.cwi.nl ([192.16.191.8]:63170 "EHLO hera.cwi.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763917AbXFBWzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 18:55:07 -0400
+Date: Sun, 3 Jun 2007 00:54:54 +0200
+From: Andries Brouwer <Andries.Brouwer@cwi.nl>
+To: Jonathan Schleifer <js@h3c.de>
+Cc: Andries.Brouwer@cwi.nl, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Ignore partition table on device
+Message-ID: <20070602225454.GA24367@apps.cwi.nl>
+References: <20070602205513.0312ebe0@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070602205513.0312ebe0@localhost>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Jun 2007 14:28:58 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Sat, Jun 02, 2007 at 08:55:13PM +0200, Jonathan Schleifer wrote:
 
-> That blacklist entry is _ancient_. It's entirely possible that it's just 
-> bogus: we've had so many ACPI fixes since it was added, that it's quite 
-> possible that the blacklist entry itself is bogus, and is the result of 
-> some old ACPI bug that triggered on that entry.
+> This patch adds a new kernel parameter (ignore_partitions=device) to
+> the kernel. It is useful when using a fake RAID with dmraid so that
+> Linux won't complain about attemps to access the drive beyond its
+> boundaries when udev and/or hald are started.
 > 
-> The Dell GX240 entry was added by commit 68e4ad79294 in the historic Linux 
-> archive:
-> 
->     Author: Len Brown <len.brown@intel.com>
->     Date:   Sat Aug 9 15:00:59 2003 -0400
-> 
->     ACPI from 2.4:
->     build: add ACPI_HT, delete ACPI_HT_ONLY
->     boot: add acpi={force, off, ht}; delete "noht", "acpismp="
->     add DMI blacklist from UnitedLinux
-> 
-> and since it sounds like the machine _works_ with ACPI on, my real 
-> preference would be to just remove the black-list entry.
-> 
-> In fact, I thought that patch already existed in the -mm tree?
+> +static char * __initdata ignore_dev;
 
-It is.  remove-dell-optiplex-gx240-from-the-acpi-blacklist.patch
+> +	if (ignore_dev != NULL && !strcmp(state->name, ignore_dev)) {
 
-> Len - do you have any archives back from 2003 and earlier to indicate why 
-> the Dell GX240 was blacklisted?
+I agree that the current behaviour of touching all devices seen
+at boot time is rather undesirable. It adds twenty seconds to the
+boot time of my machine, where Linux tries to read nonexisting media
+in the on-board usb storage devices, starting error-recovery when that
+fails, etc. (These days it also seems that even when no errors occur
+everything is done twice - maybe a libata bug, I have not looked,
+attached a dmesg fragment.) And the unasked-for guessing has caused
+a thin trickle of problems for over ten years.
 
-"add DMI blacklist from UnitedLinux".  Lost in the mists of time, I expect.
+But this patch is not really an improvement.
+It allows you to tell about a single device that the kernel should
+not try to find a partition table there, because even if it finds
+something that resembles a partition table, it would be mistaken.
+The general case is that one wants to say the same thing about
+several devices - if you ask me, about all devices, except possibly
+for an explicitly specified boot device.
 
-I guess we can tag remove-dell-optiplex-gx240-from-the-acpi-blacklist.patch
-as "backport to 2.6.22.x if it doesn't break anything in 2.6.23-rcX".
+It should be userspace that directs the kernel to probe a device.
+It should be udev or some such program that tells the kernel to
+look for a partition table on a newly found device. Perhaps even
+for a partition table of known type. Or maybe userspace does the
+looking itself, using partx or so - sometimes userspace knows better
+what to expect.
+
+Maybe there already is such an option in the vanilla kernel,
+but if there isnt't it should be added: noautoreadpt.
+
+Andries
+
+"done twice":
+[   26.505536] SCSI device sda: 625142448 512-byte hdwr sectors (320073 MB)
+[   26.505584] sda: Write Protect is off
+[   26.505616] sda: Mode Sense: 00 3a 00 00
+[   26.505630] SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[   26.505713] SCSI device sda: 625142448 512-byte hdwr sectors (320073 MB)
+[   26.505755] sda: Write Protect is off
+[   26.505787] sda: Mode Sense: 00 3a 00 00
+[   26.505801] SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[   26.505844]  sda: sda1 sda2 < sda5 >
+[   26.535025] sd 0:0:0:0: Attached scsi disk sda
+
+"done twice":
+[   25.839447] scsi6 : SCSI emulation for USB Mass Storage devices
+[   30.844107] sd 6:0:0:0: Attached scsi removable disk sdb
+[   42.519502] sdb : READ CAPACITY failed.
+[   42.770997] scsi7 : SCSI emulation for USB Mass Storage devices
+[   48.024083] sd 7:0:0:0: Attached scsi removable disk sdb
+[   49.326683] sdb : READ CAPACITY failed.
+[   49.331174] scsi 7:0:0:0: rejecting I/O to dead device
+
+There is nothing wrong with sdb (and sdc, sdd, sde).
+They are just USB card readers without media.
+
+This is an Ubuntu 2.6.20 kernel.
