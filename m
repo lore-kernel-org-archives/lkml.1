@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763458AbXFBWSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763458AbXFBWVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763458AbXFBWSo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 18:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760064AbXFBWSh
+	id S1763458AbXFBWVu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 18:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759280AbXFBWVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 18:18:37 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34588 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757767AbXFBWSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 18:18:36 -0400
-Message-ID: <4661ECB4.7020902@garzik.org>
-Date: Sat, 02 Jun 2007 18:18:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Sat, 2 Jun 2007 18:21:43 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:43997 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756671AbXFBWVn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 18:21:43 -0400
+Message-ID: <4661ED70.5000208@zytor.com>
+Date: Sat, 02 Jun 2007 15:21:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: 7eggert@gmx.de
-CC: Tejun Heo <htejun@gmail.com>, David Greaves <david@dgreaves.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       IDE Linux <linux-ide@vger.kernel.org>, ballen@gravity.phys.uwm.edu
-Subject: Re: 2.6.22-rc3 hibernate(?) disables SMART on ide
-References: <8rnax-6XX-11@gated-at.bofh.it> <8rA7H-1B4-1@gated-at.bofh.it> <E1Hub8O-0000rF-Hb@be1.lrz>
-In-Reply-To: <E1Hub8O-0000rF-Hb@be1.lrz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jonathan Schleifer <js@h3c.de>
+CC: aeb@cwi.nl, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Ignore partition table on device
+References: <20070602205513.0312ebe0@localhost>	<4661D32B.2040706@zytor.com> <20070602233435.4c432bc5@localhost>
+In-Reply-To: <20070602233435.4c432bc5@localhost>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert wrote:
-> Therefore I suggest setting the smart-enabled-bit in the kernel, in spite of
-> not being the kernel's duty. It would be a 99,99% DTRT.
+Jonathan Schleifer wrote:
+> "H. Peter Anvin" <hpa@zytor.com> wrote:
+> 
+>> This seems broken.  If nothing else, there should be ways to enable or
+>> disable this at runtime.
+> 
+> What exactly do you consider broken?
+> I don't really see a way to change that at runtime since hard disk
+> partition tables are read at bootup. Or did you mean to change the
+> device where the partition table should be ignored at runtime, so one
+> could enable/disable it and reattach the device under the condition
+> that it's a removable device?
 
-NAK.  That's hardcoding policy in the kernel.
+Partition tables aren't just read at bootup.  We also adjust partition
+tables at runtime.  Since this is dynamic, ignoring partition tables
+should be, too.
 
-	Jeff
-
-
+	-hpa
