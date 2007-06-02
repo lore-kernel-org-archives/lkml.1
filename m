@@ -1,108 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760560AbXFBOTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbXFBOX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760560AbXFBOTR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 10:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757788AbXFBOTI
+	id S1760610AbXFBOX6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 10:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758343AbXFBOXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 10:19:08 -0400
-Received: from mga03.intel.com ([143.182.124.21]:55561 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757995AbXFBOTH convert rfc822-to-8bit (ORCPT
+	Sat, 2 Jun 2007 10:23:50 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:38977 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758146AbXFBOXs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 10:19:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,375,1175497200"; 
-   d="scan'208";a="234829192"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Sat, 2 Jun 2007 10:23:48 -0400
+Date: Sat, 2 Jun 2007 15:23:33 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Richard Hughes <hughsient@gmail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Bastien Nocera <hadess@hadess.net>, John Belmonte <john@neggie.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+Message-ID: <20070602142333.GA3452@srcf.ucam.org>
+References: <1180614979.2693.26.camel@localhost.localdomain> <1180615994.3030.166.camel@cookie.hadess.net> <1180619002.2693.35.camel@localhost.localdomain> <1180626416.3469.7.camel@localhost.localdomain> <d120d5000706010945w4de3e8d9i4d43d2ae686e4d0a@mail.gmail.com> <1180788652.2355.27.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Dependent CPU core speed reporting not updated withCPUFREQ_SHARED_TYPE_HW?
-Date: Sat, 2 Jun 2007 07:19:03 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F5F5B144@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <20070602064325.GB7445@redhat.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Dependent CPU core speed reporting not updated withCPUFREQ_SHARED_TYPE_HW?
-Thread-Index: Acek4V9WMEFElWA3TB+6uT+8n1QEfgAPg6Kw
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Dave Jones" <davej@redhat.com>
-Cc: "Darrick J. Wong" <djwong@us.ibm.com>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 02 Jun 2007 14:19:05.0344 (UTC) FILETIME=[F9E55000:01C7A520]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1180788652.2355.27.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: Add INPUT support to toshiba_acpi
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Sat, Jun 02, 2007 at 01:50:52PM +0100, Richard Hughes wrote:
+> > KEY_SCREENLOCK? KEY_SCREENSAVER?
+> 
+> Either of these keys would be good to add.
 
->-----Original Message-----
->From: Dave Jones [mailto:davej@redhat.com] 
->Sent: Friday, June 01, 2007 11:43 PM
->To: Pallipadi, Venkatesh
->Cc: Darrick J. Wong; linux-kernel@vger.kernel.org
->Subject: Re: Dependent CPU core speed reporting not updated 
->withCPUFREQ_SHARED_TYPE_HW?
->
->On Fri, Jun 01, 2007 at 06:59:25PM -0700, Venki Pallipadi wrote:
->
-> > Hmmm. How about having a new cpufreq_sysfs entry to say
-> > these CPUs are frequency dependent in hardware.
->
->Wait, wasn't this the entire purpose of affected_cpus in the first
->place? So we could see which CPUs would be affected by a frequency
->change?  What went wrong here?
->
-> > affected_cpus today has a single cpufreq directory for all 
->affected_cpus
-> > and we coordinate all CPUs in software. To change freq, we 
->will have to
-> > move among all affected_cpus and write an MSR.
->
->This I think is where the problem started.  That these remained
->independant.  Changing one should also affect the others that it
->'affects'. Is that not the case?
->
+We've been interpreting "KEY_COFFEE" as screenlock (as in "I've gone for 
+a coffee break, lock the screen").
 
-Yes. Current affected_cpus they are dependent from user perspective.
-Single set of /sysfs files linked in to multiple cpus. But kernel
-Kernel knows that these are multiple dependent cpus and while
-changing freq, driver typically goes from one CPU to other using
-set_cpus_allowed to write MSR on all CPUs.
-
-> > Hardware coordination basically tells us that kernel can control
-> > frequency
-> > percpu, but underneath hardware will pick highest requested 
->freq among a
-> > group of CPUs. Instaed of handling this case as the 
->existing software
-> > coordination case above, we can add a new entry in cpufreq /sysfs
-> > denoting
-> > hardware coordinated CPU group.
-> > 
-> > Though it will be confusing with too many interfaces, I 
->feel this is the
-> > right way to go about here.
->
->If 'affected_cpus' doesn't do the right thing, I'd vote for making it
->do so over adding more interfaces.
->
-
-The problem here is that with hardware coordination, kernel need not
-do what we do for affected_cpus today. Kernel can manage each CPU
-independently in terms of setting freq as underlying hardware
-guarantees to do the coordination (picking up the highest freq
-among a group of dependent cpus). So ideally we can just manage cpu
-frequencies as we do today without affected_cpus. But, in this case
-there is a fyi from hardware which says even though OS is thinking that
-CPUs are independent, hardware is doing the coordination across these
-CPUs.
-
-We cannot directly use affected_cpus for this. We can probably change
-to use affected_cpus in a way that we enforce software coordination on
-top of hardware coordination. But, maintaining freq as in current
-affected_cpus may not be as optimal as doing a percpu policy and
-decision.
-
-Thanks,
-Venki
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
