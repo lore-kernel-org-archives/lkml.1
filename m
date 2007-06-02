@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760686AbXFBDGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbXFBDYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760686AbXFBDGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 23:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbXFBDG1
+	id S1758669AbXFBDYR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 23:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbXFBDYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 23:06:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34577 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754141AbXFBDG1 (ORCPT
+	Fri, 1 Jun 2007 23:24:05 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42065 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752116AbXFBDYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 23:06:27 -0400
-Date: Fri, 1 Jun 2007 20:06:25 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-In-Reply-To: <alpine.LFD.0.98.0706011947030.3957@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706012005040.11202@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
- <alpine.LFD.0.98.0706011947030.3957@woody.linux-foundation.org>
+	Fri, 1 Jun 2007 23:24:04 -0400
+X-Sasl-enc: W+j8dBubg/DeA2qdKicjGbU3hpQ62XoPqIHwXB2LSqCH 1180754641
+Date: Sat, 2 Jun 2007 00:23:58 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tuncer Ayaz <tuncer.ayaz@gmail.com>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: 2.6.22 libata spindown
+Message-ID: <20070602032358.GA8815@khazad-dum.debian.net>
+References: <4ac8254d0706011314g5468f02m3cf5a5281bd30018@mail.gmail.com> <4660841D.5050003@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4660841D.5050003@garzik.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jun 2007, Linus Torvalds wrote:
+On Fri, 01 Jun 2007, Jeff Garzik wrote:
+> IIRC, Debian was the one OS that really did need a shutdown utility 
+> update, as the message says :)
 
-> So when I suggested the uglier
-> 
-> 	if ((unsigned long)x <= 16)
-> 		return;
-> 
-> I really did mean to use that ugly cast.. Yours is prettier, but sadly, 
-> yours is simply not safe: a signed comparison might end up making _all_ 
-> kernel pointers trigger that test.
+Actually, editing /etc/init.d/halt is enough.  Find the hddown="-h" and
+change it to hddown="".
 
-Maybe we can have a compromise? Lets at least keep the ZERO_SIZE_PTR
-reference in there.
-
-
-SLUB: Make sure that the comparision with ZERO_SIZE_PTR is unsigned
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-
----
- mm/slub.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-Index: slub/mm/slub.c
-===================================================================
---- slub.orig/mm/slub.c	2007-06-01 20:00:56.000000000 -0700
-+++ slub/mm/slub.c	2007-06-01 20:04:26.000000000 -0700
-@@ -2338,7 +2338,13 @@ void kfree(const void *x)
- 	struct kmem_cache *s;
- 	struct page *page;
- 
--	if (x <= ZERO_SIZE_PTR)
-+	/*
-+	 * This has to be an unsigned comparison. According to Linus
-+	 * some gcc version tread a pointer as a signed entity. Then
-+	 * this comparison would be true for all "negative" pointers
-+	 * (which would cover the whole upper half of the address space).
-+	 */
-+	if ((unsigned long)x <= (unsigned long)ZERO_SIZE_PTR)
- 		return;
- 
- 	page = virt_to_head_page(x);
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
