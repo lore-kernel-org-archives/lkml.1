@@ -1,134 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762062AbXFBQvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762074AbXFBQ5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762062AbXFBQvg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 12:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760064AbXFBQva
+	id S1762074AbXFBQ5z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 12:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760524AbXFBQ5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 12:51:30 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:13492 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759206AbXFBQv3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 12:51:29 -0400
-Date: Sat, 2 Jun 2007 09:50:09 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alex Riesen <raa.lkml@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: OOPS (NULL pointer dereference) in v2.6.22-rc3
-Message-Id: <20070602095009.32d85075.randy.dunlap@oracle.com>
-In-Reply-To: <20070602013502.a20ad424.akpm@linux-foundation.org>
-References: <20070601221515.GA6673@steel.home>
-	<20070602013502.a20ad424.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Sat, 2 Jun 2007 12:57:48 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:51432 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760362AbXFBQ5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 12:57:47 -0400
+Date: Sat, 2 Jun 2007 18:56:57 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Amin Azez <azez@ufomechanic.net>
+cc: Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xt_gateway match (kernel)
+In-Reply-To: <Pine.LNX.4.61.0706021337370.21057@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0706021856200.5076@yvahk01.tjqt.qr>
+References: <46604D8B.7030507@ufomechanic.net> <Pine.LNX.4.61.0706021337370.21057@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Jun 2007 01:35:02 -0700 Andrew Morton wrote:
 
-> On Sat, 2 Jun 2007 00:15:15 +0200 Alex Riesen <raa.lkml@gmail.com> wrote:
-> 
-> > Ubuntu 7.04, P4, SMT, hyperthreading active. Not reproducable, context unknown,
-> > seen only two times :(
-> > 
-> > kernel: BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
-> > kernel:  printing eip:
-> > kernel: 00000000
-> > kernel: *pde = 00000000
-> > kernel: Oops: 0000 [#1]
-> > kernel: SMP 
-> > kernel: Modules linked in: binfmt_misc fan button firmware_class it87 hwmon_vid hwmon i2c_isa p4_clockmod speedstep_lib ipv6 snd_intel8x0 snd_ac97_codec sr_mod cdrom ac97_bus usb_storage snd_pcm_oss sg piix snd_pcm snd_mixer_oss snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device snd e100 floppy generic ehci_hcd uhci_hcd soundcore snd_page_alloc intel_agp agpgart ide_core evdev
-> > kernel: CPU:    1
-> > kernel: EIP:    0060:[<00000000>]    Not tainted VLI
-> > kernel: EFLAGS: 00210246   (2.6.22-rc3-t #74)
-> > kernel: EIP is at 0x0
-> > kernel: eax: f635b040   ebx: c02df2e0   ecx: 00005403   edx: d2b798c0
-> > kernel: esi: d2b798c0   edi: bfca8f48   ebp: e9df5f6c   esp: e9df5f54
-> > kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> > kernel: Process watch (pid: 24035, ti=e9df5000 task=e2ed8030 task.ti=e9df5000)
-> > kernel: Stack: c0164f04 bfca8f48 00005403 d2b798c0 d2b798c0 bfca8f48 e9df5f98 c016514d 
-> > kernel:        00000001 e9fb8f49 00000644 00010612 e2ed8140 c1817980 d2b798c0 fffffff7 
-> > kernel:        b7e95ff4 e9df5fb0 c0165191 bfca8f48 00000000 00000001 bfca8f48 e9df5000 
-> > kernel: Call Trace:
-> > kernel:  [show_trace_log_lvl+26/47] show_trace_log_lvl+0x1a/0x2f
-> > kernel:  [show_stack_log_lvl+157/165] show_stack_log_lvl+0x9d/0xa5
-> > kernel:  [show_registers+441/651] show_registers+0x1b9/0x28b
-> > kernel:  [die+273/530] die+0x111/0x212
-> > kernel:  [do_page_fault+1060/1266] do_page_fault+0x424/0x4f2
-> > kernel:  [error_code+114/120] error_code+0x72/0x78
-> > kernel:  [vfs_ioctl+562/581] vfs_ioctl+0x232/0x245
-> > kernel:  [sys_ioctl+49/72] sys_ioctl+0x31/0x48
-> > kernel:  [sysenter_past_esp+95/133] sysenter_past_esp+0x5f/0x85
-> > kernel:  =======================
-> > kernel: Code:  Bad EIP value.
-> > kernel: EIP: [<00000000>] 0x0 SS:ESP 0068:e9df5f54
-> > gconfd (raa-2316): Exiting
-> > init: tty4 main process (1607) killed by TERM signal
-> > init: tty5 main process (1608) killed by TERM signal
-> > init: tty2 main process (1610) killed by TERM signal
-> > init: tty3 main process (1613) killed by TERM signal
-> > init: tty1 main process (1614) killed by TERM signal
-> > init: tty6 main process (1615) killed by TERM signal
-> > gdm[1950]: GDM detected a halt or restart in progress.
-> > kernel: mtrr: no MTRR for ec000000,4000000 found
-> > kernel: mtrr: no MTRR for e8000000,4000000 found
-> > postfix/master[2041]: terminating on signal 15
-> > exiting on signal 15
-> > 
-> 
-> I think we've seen a report of that before.  Do you recall what the system
-> was doing at the time?
+Originally from Amin Azez <azez@ufomechanic.net>,
+http://lists.netfilter.org/pipermail/netfilter-devel/2007-June/027954.html
 
-That's http://bugzilla.kernel.org/show_bug.cgi?id=8473
+This adds a gateway match to iptables that lets you match against the
+routed ipv4 gateway, it's very useful for SNAT if you want to avoid
+replicating your routing in your SNAT table.
+
+e.g.
+
+	iptables -t nat -A POSTROUTING -m gateway --nexthop 172.16.1.1 \
+		-j SNAT --to-address 172.16.1.5
+	iptables -t nat -A POSTROUTING -m gateway --nexthop 192.168.1.1 \
+		-j SNAT --to-address 192.168.1.25
+
+to help you choose the right SNAT address.
+
+It works by comparing the to-be-matched gateway IP with the key in the
+neighbor table of the next-hop (the key is the layer 3 address).
+
+	--gateway 1.2.3.4
+
+only matches if the packet is destined to 1.2.3.4 as a ROUTE, i.e.
+1.2.3.4 is not also the target address.
+
+	--nexthop 1.2.3.4
+
+matches if the next hop is specified as 1.2.3.4 either as a gateway or
+as a final destination.
+
+It cannot do magic, and match on non-routed aliases of routers, it only
+matches the targeted IP address from which the layer 2 address has been
+(or will be) actually derived.
 
 
-> Anyway, please add this, which might catch it:
-> 
-> --- a/fs/ioctl.c~a
-> +++ a/fs/ioctl.c
-> @@ -20,6 +20,7 @@ static long do_ioctl(struct file *filp, 
->  		unsigned long arg)
->  {
->  	int error = -ENOTTY;
-> +	void *f;
->  
->  	if (!filp->f_op)
->  		goto out;
-> @@ -29,10 +30,15 @@ static long do_ioctl(struct file *filp, 
->  		if (error == -ENOIOCTLCMD)
->  			error = -EINVAL;
->  		goto out;
-> -	} else if (filp->f_op->ioctl) {
-> +	} else if ((f = filp->f_op->ioctl)) {
->  		lock_kernel();
-> -		error = filp->f_op->ioctl(filp->f_path.dentry->d_inode,
-> -					  filp, cmd, arg);
-> +		if (!filp->f_op->ioctl) {
-> +			printk("%s: ioctl %p disappeared\n", __FUNCTION__, f);
-> +			error = 0;
-> +		} else {
-> +			error = filp->f_op->ioctl(filp->f_path.dentry->d_inode,
-> +						  filp, cmd, arg);
-> +		}
->  		unlock_kernel();
->  	}
->  
-> _
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+[Posted to LKML/NF-DEV on 2007-06-02]
 
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ include/linux/netfilter/xt_gateway.h |   13 +++++
+ net/netfilter/Kconfig                |    9 +++
+ net/netfilter/Makefile               |    1 
+ net/netfilter/xt_gateway.c           |   85 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 108 insertions(+)
+
+Index: linux-2.6.22-rc3-git6/include/linux/netfilter/xt_gateway.h
+===================================================================
+--- /dev/null
++++ linux-2.6.22-rc3-git6/include/linux/netfilter/xt_gateway.h
+@@ -0,0 +1,13 @@
++#ifndef _XT_GATEWAY_H
++#define _XT_GATEWAY_H
++
++#define XT_GATEWAY_INV		0x1	/* Negate the condition */
++#define XT_GATEWAY_ROUTE	0x2	/* ...and the gateway is not the final hop */
++
++struct xt_gateway_info {
++	/* Inclusive: network order. */
++	uint32_t gateway;
++	uint8_t flags;
++};
++
++#endif /* _XT_GATEWAY_H */
+Index: linux-2.6.22-rc3-git6/net/netfilter/Kconfig
+===================================================================
+--- linux-2.6.22-rc3-git6.orig/net/netfilter/Kconfig
++++ linux-2.6.22-rc3-git6/net/netfilter/Kconfig
+@@ -468,6 +468,15 @@ config NETFILTER_XT_MATCH_ESP
+ 
+ 	  To compile it as a module, choose M here.  If unsure, say N.
+ 
++config NETFILTER_XT_MATCH_GATEWAY
++	tristate '"gateway" match support'
++	depends on NETFILTER_XTABLES
++	---help---
++	  This option makes possible to match the IP address of the
++	  routed gateway for routed packets.
++
++	  To compile it as a module, choose M here. If unsure, say N.
++
+ config NETFILTER_XT_MATCH_HELPER
+ 	tristate '"helper" match support'
+ 	depends on NETFILTER_XTABLES
+Index: linux-2.6.22-rc3-git6/net/netfilter/Makefile
+===================================================================
+--- linux-2.6.22-rc3-git6.orig/net/netfilter/Makefile
++++ linux-2.6.22-rc3-git6/net/netfilter/Makefile
+@@ -56,6 +56,7 @@ obj-$(CONFIG_NETFILTER_XT_MATCH_CONNTRAC
+ obj-$(CONFIG_NETFILTER_XT_MATCH_DCCP) += xt_dccp.o
+ obj-$(CONFIG_NETFILTER_XT_MATCH_DSCP) += xt_dscp.o
+ obj-$(CONFIG_NETFILTER_XT_MATCH_ESP) += xt_esp.o
++obj-$(CONFIG_NETFILTER_XT_MATCH_GATEWAY) += xt_gateway.o
+ obj-$(CONFIG_NETFILTER_XT_MATCH_HELPER) += xt_helper.o
+ obj-$(CONFIG_NETFILTER_XT_MATCH_LENGTH) += xt_length.o
+ obj-$(CONFIG_NETFILTER_XT_MATCH_LIMIT) += xt_limit.o
+Index: linux-2.6.22-rc3-git6/net/netfilter/xt_gateway.c
+===================================================================
+--- /dev/null
++++ linux-2.6.22-rc3-git6/net/netfilter/xt_gateway.c
+@@ -0,0 +1,85 @@
++/*
++ * netfilter module to match nexthop router by IP address
++ * (C) 2007 UFO Mechanic <azez@ufomechanic.net>
++ * © Jan Engelhardt <jengelh@gmx.de>, 2007
++ *   to save time and bugs, based on ip_range by
++ *   (C) 2003 Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/ip.h>
++#include <linux/module.h>
++#include <linux/skbuff.h>
++#include <linux/types.h>
++#include <linux/netfilter/x_tables.h>
++#include <linux/netfilter/xt_gateway.h>
++#include <net/dst.h>
++#include <net/neighbour.h>
++
++static int xt_gateway_match1(const struct sk_buff *skb,
++			     const struct xt_gateway_info *info)
++{
++        const struct iphdr *iph;
++	const struct dst_entry *dst;
++	const struct neighbour *neigh;
++	const struct neigh_table *tbl;
++
++	if (skb == NULL) /* necessary? */
++		return false;
++	if ((dst = skb->dst) == NULL)
++		return false;
++	if ((neigh = dst->neighbour) == NULL)
++		return false;
++	if ((tbl = neigh->tbl) == NULL)
++		return false;
++	if (tbl->family != AF_INET)
++		return false;
++	if (memcmp(&info->gateway, &neigh->primary_key, tbl->key_len) != 0)
++		return false;
++	if (info->flags & XT_GATEWAY_ROUTE)
++		return true;
++	iph = ip_hdr(skb);
++	if (iph->daddr == info->gateway)
++		return true;
++
++	return false;
++}
++
++static int xt_gateway_match(const struct sk_buff *skb,
++			    const struct net_device *in,
++			    const struct net_device *out,
++			    const struct xt_match *match,
++			    const void *matchinfo, int offset,
++			    unsigned int protoff, int *hotdrop)
++{
++	const struct xt_gateway_info *info = matchinfo;
++	return !!(info->flags & XT_GATEWAY_INV) ^
++	       xt_gateway_match1(skb, info);
++}
++
++static struct xt_match xt_gateway_reg = {
++	.name      = "gateway",
++	.family    = AF_INET,
++	.match     = xt_gateway_match,
++	.matchsize = sizeof(struct xt_gateway_info),
++	.me        = THIS_MODULE
++};
++
++static int __init xt_gateway_init(void)
++{
++	return xt_register_match(&xt_gateway_reg);
++}
++
++static void __exit xt_gateway_exit(void)
++{
++	xt_unregister_match(&xt_gateway_reg);
++	return;
++}
++
++module_init(xt_gateway_init);
++module_exit(xt_gateway_exit);
++MODULE_AUTHOR("Sam Liddicott <azez@ufomechanic.net>");
++MODULE_DESCRIPTION("netfilter nexthop gateway match module");
++MODULE_LICENSE("GPL");
