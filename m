@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762362AbXFBRJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762291AbXFBRN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762362AbXFBRJT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 13:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760623AbXFBRJL
+	id S1762291AbXFBRN6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 13:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760623AbXFBRNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 13:09:11 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:55356 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760610AbXFBRJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 13:09:09 -0400
-Date: Sat, 2 Jun 2007 19:08:22 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Amin Azez <azez@ufomechanic.net>
-cc: Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xt_gateway match (kernel,2)
-In-Reply-To: <Pine.LNX.4.61.0706021856200.5076@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0706021906290.5076@yvahk01.tjqt.qr>
-References: <46604D8B.7030507@ufomechanic.net> <Pine.LNX.4.61.0706021337370.21057@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0706021856200.5076@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Sat, 2 Jun 2007 13:13:51 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:36303 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760586AbXFBRNu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 13:13:50 -0400
+Date: Sat, 2 Jun 2007 10:12:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Kilkenny <akilkenny@xes-inc.com>, wim@iguana.be
+Cc: khollis@bitgate.com, linux-standards@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Watchdog API Update
+Message-Id: <20070602101202.9d118c44.randy.dunlap@oracle.com>
+In-Reply-To: <46606CBA.9020904@xes-inc.com>
+References: <46606CBA.9020904@xes-inc.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 2 2007 18:56, Jan Engelhardt wrote:
->---
-> include/linux/netfilter/xt_gateway.h |   13 +++++
-> net/netfilter/Kconfig                |    9 +++
-> net/netfilter/Makefile               |    1 
-> net/netfilter/xt_gateway.c           |   85 +++++++++++++++++++++++++++++++++++
-> 4 files changed, 108 insertions(+)
+On Fri, 01 Jun 2007 14:00:10 -0500 Andrew Kilkenny wrote:
 
-A MODULE_ALIAS was missing, causing iptables/netfilter not to autoload 
-the module.
-SVN tree¹ updated (grab the refreshed patch from there, not reposting 
-for this minimal change).
+> Patched from 2.6.16
+> 
+> Included are patches for the Watchdog API. This API is already AD HOC 
+> according to the documentation, so the update is not expected to meet 
+> much opposition.
+> 
+> The patch/api update adds support for enabling watchdog monitoring 
+> directly via the kernel driver. It appears some drivers do this on their 
+> own, while others implement the api, dictating that userspace programs 
+> manage the watchdog. This includes adding both the ability for userspace 
+> to enable/disable the feature, and to compile in the feature to be 
+> enabled automatically at boot.
+> 
+> The Patch file includes diffs from watchdog.h, the watchdog.txt 
+> documentation, and a KConfig file.
+
+what patch file??
+
+> I am unsure on the licensing information. The header file only mentions 
+> it was derived from Ken's original code. GPL information is absent, 
+> along with dates. In fact, I am unsure where the copyright belongs, if 
+> it defaults to Berkshire PC, if it must be GPL, and the like. Guidance 
+> will be greatly appreciated, especially if (absent a GPL declaration) I 
+> need permission to handle this code.
 
 
-	Jan
--- 
-[¹] https://dev.computergmbh.de/svn/misc_kernel/xt_gateway/trunk/
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
