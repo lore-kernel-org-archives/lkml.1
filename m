@@ -1,61 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbXFBIoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbXFBIva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758299AbXFBIoQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 04:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXFBIoD
+	id S1757720AbXFBIva (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 04:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXFBIvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 04:44:03 -0400
-Received: from lucidpixels.com ([75.144.35.66]:53746 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753715AbXFBIoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 04:44:01 -0400
-Date: Sat, 2 Jun 2007 04:43:59 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't
- the kernel realize the BIOS has problems and re-map appropriately?
-In-Reply-To: <200706011815.53065.jbarnes@virtuousgeek.org>
-Message-ID: <Pine.LNX.4.64.0706020443490.32599@p34.internal.lan>
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
- <200706011441.57149.jbarnes@virtuousgeek.org> <20070602010539.GA13512@linux-os.sc.intel.com>
- <200706011815.53065.jbarnes@virtuousgeek.org>
+	Sat, 2 Jun 2007 04:51:22 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:43403 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752166AbXFBIvW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 04:51:22 -0400
+Message-ID: <46612F80.2070906@cosmosbay.com>
+Date: Sat, 02 Jun 2007 10:51:12 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Mike Richards <mrmikerich@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Missing RAM on x86_64
+References: <516d7fa80706012151m32facb87nafb68811c784fa54@mail.gmail.com>
+In-Reply-To: <516d7fa80706012151m32facb87nafb68811c784fa54@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 02 Jun 2007 10:51:19 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mike Richards a écrit :
+> Hi, I appear to be missing quite a bit of RAM on an x86_64 system. I
+> have 1GB installed, but 'free' only shows 878MB:
+> 
+> pokey$ free -m
+>             total       used       free     shared    buffers     cached
+> Mem:           878        571        306          0         52        332
+> -/+ buffers/cache:        186        691
+> Swap:         1023          0       1023
+> 
+> I'm used to seeing a little bit of RAM missing with 32bit systems, but
+> 146MB seems a bit much. The part of dmesg that concerns the RAM is
+> shown below. Anyone know what's up here? Is this normal for an x86_64
+> system?
+> 
+> Linux version 2.6.20.11 (root@pokey) (gcc version 4.1.2) #1 SMP Thu
+> May 24 18:29:52 GMT 2007
+> Command line: auto BOOT_IMAGE=2.6.20.11 rw root=801
+> BIOS-provided physical RAM map:
+> BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+> BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+> BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+> BIOS-e820: 0000000000100000 - 0000000037fd0000 (usable)
+> BIOS-e820: 0000000037fd0000 - 0000000037fde000 (ACPI data)
+> BIOS-e820: 0000000037fde000 - 0000000038000000 (ACPI NVS)
+> BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+> BIOS-e820: 00000000fee00000 - 00000000fef00000 (reserved)
+> BIOS-e820: 00000000ff780000 - 0000000100000000 (reserved)
 
 
-On Fri, 1 Jun 2007, Jesse Barnes wrote:
+I would say your BIOS needs an update or some tweakings.
 
-> On Friday, June 1, 2007 6:05:39 Venki Pallipadi wrote:
->> On Fri, Jun 01, 2007 at 02:41:57PM -0700, Jesse Barnes wrote:
->>> On Friday, June 1, 2007 2:19:43 Andi Kleen wrote:
->>>> And normally the MTRRs win, don't they (if I remember the table
->>>> correctly) So if the MTRR says UC and PAT disagrees it might not
->>>> actually help
->>>
->>> I just checked, yes the MTRRs win for UC types.  But it sounds like the
->>> cases we're talking about are actually situations where there's no MTRR
->>> coverage, so the default type is used.  The manual doesn't specifically
->>> call out how memory using the default type interacts with PAT, but it may
->>> well be that it stays uncached if the default type is uncached.  Again
->>> that argues for fixing the MTRR mapping problem in some way.
->>
->> I feel, having a silent/transparent workaround is not a good idea. With
->> that chances are BIOS bug will go unnoticed (having an error message in
->> dmesg may not get noticed either). Probably we should just panic at boot
->> with a
->> detailed message about the e820 mtrr discrepancy (which can be logged as
->> a BUG to BIOS provider) and suggest a temporary workaround of "mem=___".
->
-> That might be best, short of actually fixing the MTRRs...
->
-> Jesse
->
->
+The (usable) parts that it gives to the OS (linux) are :
 
-Indeed, at least it will inform the user of -what- is going on.
+0000000000000000 - 000000000009fc00
+0000000000100000 - 0000000037fd0000
+
+Thats not 1024 MB, but 892 MB
+
+Here is the output on a 16 GB x86_64 machine
+
+BIOS-provided physical RAM map:
+  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+  BIOS-e820: 0000000000100000 - 000000007fff0000 (usable)
+  BIOS-e820: 000000007fff0000 - 000000007ffff000 (ACPI data)
+  BIOS-e820: 000000007ffff000 - 0000000080000000 (ACPI NVS)
+  BIOS-e820: 00000000ff780000 - 0000000100000000 (reserved)
+  BIOS-e820: 0000000100000000 - 0000000480000000 (usable)
+
+On node 0 totalpages: 2097039
+On node 1 totalpages: 2097152
+
+total of 4194078 pages (while exact 16GB should be 4194304 pages)
+
+
