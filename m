@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbXFBAhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762105AbXFBAiL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760628AbXFBAhr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 20:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbXFBAhk
+	id S1762105AbXFBAiL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 20:38:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbXFBAh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 20:37:40 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:52247 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbXFBAhj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jun 2007 20:37:39 -0400
-Date: Fri, 1 Jun 2007 20:37:27 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Scott Preece <sepreece@gmail.com>,
-       Valdis.Kletnieks@vt.edu, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/1] document Acked-by:
-In-Reply-To: <m33b1b5map.fsf@maximus.localdomain>
-Message-ID: <alpine.DEB.0.99.0706012032260.31394@sigma.j-a-k-j.com>
-References: <200706010209.l51299kN000531@shell0.pdx.osdl.net>
- <28278.1180675923@turing-police.cc.vt.edu> <465FB862.207@zytor.com>
- <alpine.DEB.0.99.0706010648030.9768@sigma.j-a-k-j.com> <m3sl9b5vcm.fsf@maximus.localdomain>
- <7b69d1470706011237j50f29e4ch73f86acdc294fecd@mail.gmail.com>
- <m3fy5b5nrt.fsf@maximus.localdomain> <46609AEC.4070603@zytor.com>
- <m33b1b5map.fsf@maximus.localdomain>
+	Fri, 1 Jun 2007 20:37:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:41323 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754246AbXFBAh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 20:37:56 -0400
+Message-ID: <4660BBDF.1040007@goop.org>
+Date: Fri, 01 Jun 2007 17:37:51 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Extending boot protocol & bzImage for paravirt_ops
+References: <4656FB8F.4090604@goop.org> <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <466087CF.70708@goop.org> <4660924A.2070009@zytor.com> <466093E3.4010701@goop.org> <46609636.4050208@zytor.com>
+In-Reply-To: <46609636.4050208@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I think the comment had to do with the concept that ACK/NAK implies
-> > authority.  If you're not the maintainer, it's rude to imply that you
-> > are.  Obvious, test reports (good or bad!) are always welcome.
-> 
-> Well, I understand a test is a different thing, an experiment to
-> see if the patch works or not, while ack/etc. is just opinion
-> of someone who reads the patch without actually using it.
-> 
-> I think ack/etc doesn't, in any way, imply being the maintainer,
-> though it imply that the "acker" has actually read the code,
-> understands it, and believes it's correct (or not, and why).
-> 
-> If we want to differentiate between "authoritative" and
-> "non-authoritative" opinions (and the name and email address
-> aren't enough) then I think we need to state that explicite
-> (perhaps something like "Acked-by: FIRST M. LAST <addr>, XXX
-> subsystem maintainer" would suffice).
+H. Peter Anvin wrote:
+> Well, if we define is as a movable object then it has to be treated as
+> such.  It's a protocol definition issue.  If we define it opaque, though
+> -- of for that matter, if we don't -- we should define what memory it
+> can live in, though.  Right now, the only "available" memory we have is
+> end of setup to 0xa0000; the command line is defined to be allocated
+> from this memory.
+>   
 
-"Acked-by:" does not mean "I like this" but rather "I approve of this". 
-Someone who is not a maintainer is encouraged to speak of like and 
-dislike, in great detail, but has no position at all to approve or 
-disapprove of it going in.
+Well, I think we can safely say that its something that's only
+meaningful in 32/64-bit mode, so we aren't constrained by the real-mode
+address space.
 
-If I put "Acked-by: John..." on a patch of any kind, even trivial, it 
-would look incredibly stupid, because I'm just some guy messing around 
-with the kernel. A tactful response to me doing that from any actual 
-kernel bigwig would be, "I appreciate your enthusiasm, but you are not 
-part of the kernel patch flow." Similarly, a tactful response to me 
-NACKing a patch would be, "I appreciate your concern, but you are in no 
-position to remove a patch from the stream. Your comments will be 
-considered and implemented or countered by an actual maintainer."
+One of my goals in this project is to make the boot image, in some way,
+completely define which memory it needs it get started.  That means that
+the boot loader can either place things knowing they'll avoid the boot
+image and/or definitively know that the image is unloadable.
 
-This is appropriate.
+So I don't think its strictly necessary to pre-define what memory this
+object can use, since I think it can be safely determined dynamically.
+
+    J
