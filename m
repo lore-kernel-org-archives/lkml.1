@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbXFBVx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762594AbXFBV7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761241AbXFBVx0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 17:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759844AbXFBVxT
+	id S1762594AbXFBV7Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 17:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757053AbXFBV7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 17:53:19 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:41823 "EHLO mail.ukfsn.org"
+	Sat, 2 Jun 2007 17:59:08 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:50038 "EHLO mail.g-house.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759065AbXFBVxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 17:53:18 -0400
-Message-ID: <4661E6CA.1080203@dgreaves.com>
-Date: Sat, 02 Jun 2007 22:53:14 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	id S1756671AbXFBV7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 17:59:07 -0400
+Date: Sat, 2 Jun 2007 22:59:01 +0100 (BST)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.22-rc3 safe to migrate to?
+In-Reply-To: <Pine.LNX.4.64.0706021723480.22318@p34.internal.lan>
+Message-ID: <alpine.DEB.0.99.0706022253130.16496@sheep.housecafe.de>
+References: <Pine.LNX.4.64.0706021723480.22318@p34.internal.lan>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       IDE Linux <linux-ide@vger.kernel.org>, ballen@gravity.phys.uwm.edu
-Subject: Re: 2.6.22-rc3 hibernate(?) disables SMART on ide
-References: <46609290.5030701@dgreaves.com> <46613C53.8010205@gmail.com>
-In-Reply-To: <46613C53.8010205@gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> David Greaves wrote:
->> I have 2 ide disks. If I enable SMART and hibernate/suspend2disk, SMART is
->> disabled when I resume.
->>
->> Same as in 2.6.21.1
-> 
-> According to the ATA standard, the device (drive) itself is responsible
-> for preserving SMART enabled status over power cycles.  It seems your
-> drive doesn't wanna do that.  I don't think mangling with SMART setup in
-> the kernel is wise thing to do.  Bruce, any ideas?  Maybe hook smartd
-> such that it gets suspend/resume events?
+On Sat, 2 Jun 2007, Justin Piszcz wrote:
+> Wondering as their were a lot of XFS related issues early on in 
+> development..?  The 2.6.22-rc3 kernel has the core 2 duo coretemp patch by 
+> ruik which I want be running as long as 2.6.22-rc3 does not have any severe 
+> XFS issues?
 
-Sorry, FYI, I made the same mistake as when I reported the wol problem - I was
-booting 2.6.21.1.
+Tracking -rc and running 2.6.22-rc3 for a couple of days now, no 
+problems with xfs since this infamous 2.6.17 thingy[0]. But that's 
+pretty useless information I guess, since your setup will be different 
+from mine. Did you have anything "special" in mind when asking this?
 
-I am having problems with 2.6.22-rc3 but when it does suspend/resume I can
-confirm that the problem is still there (of course).
+C.
 
-However your comments still stand.
+[0] http://oss.sgi.com/projects/xfs/faq.html#dir2
+-- 
+BOFH excuse #339:
 
-One unpleasant side effect is that I get
-
-hda: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
-hda: drive_cmd: error=0x04 { DriveStatusError }
-ide: failed opcode was: 0xb0
-hda: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
-hda: drive_cmd: error=0x04 { DriveStatusError }
-ide: failed opcode was: 0xb0
-...
-and
-hdb: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
-hdb: drive_cmd: error=0x04 { DriveStatusError }
-ide: failed opcode was: 0xb0
-hdb: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
-hdb: drive_cmd: error=0x04 { DriveStatusError }
-ide: failed opcode was: 0xb0
-...
-
-when the system comes back (induced from smartd I guess) until I do a:
- smartctl -son
-
-David
+manager in the cable duct
