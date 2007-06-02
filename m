@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbXFBMkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbXFBMmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759242AbXFBMkr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 08:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbXFBMkk
+	id S1758255AbXFBMmB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 08:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbXFBMlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 08:40:40 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:7445 "EHLO relay.sw.ru"
+	Sat, 2 Jun 2007 08:41:55 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:51429 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757506AbXFBMki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 08:40:38 -0400
-Message-ID: <4661652D.9040404@sw.ru>
-Date: Sat, 02 Jun 2007 16:40:13 +0400
-From: Vasily Averin <vvs@sw.ru>
-Organization: SW-soft
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.0.10) Gecko/20070301 SUSE/1.8_seamonkey_1.0.8-0.1 SeaMonkey/1.0.8
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, devel@openvz.org,
-       linux-ext4@vger.kernel.org, Stephen Tweedie <sct@redhat.com>,
-       adilger@clusterfs.com
-Subject: [PATCH ext3/ext4] lost brelse in ext3_read_inode
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+	id S1753200AbXFBMly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 08:41:54 -0400
+Date: Sat, 2 Jun 2007 14:42:55 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: jakub@redhat.com, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       daplas@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Section mismatches in drivers/video/console/promcon
+Message-ID: <20070602124255.GA10119@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Kirill Korotaev <dev@openvz.org>
+Building a kernel for sparc64 defconfig gave me following warnings:
+WARNING: drivers/built-in.o(.text+0xb788): Section mismatch: reference to .init.data:promfont_unitable (between 'promcon_init_unimap' and 'promcon_init')
+WARNING: drivers/built-in.o(.text+0xb790): Section mismatch: reference to .init.data:promfont_unitable (between 'promcon_init_unimap' and 'promcon_init')
+WARNING: drivers/built-in.o(.text+0xb794): Section mismatch: reference to .init.data:promfont_unicount (between 'promcon_init_unimap' and 'promcon_init')
+WARNING: drivers/built-in.o(.text+0xb798): Section mismatch: reference to .init.data:promfont_unicount (between 'promcon_init_unimap' and 'promcon_init')
 
-One of error path in ext3_read_inode() leaks bh since brelse is forgoten.
+The warnings happens because the function: promcon_init_unimap()
+references promfont_unitable and promfont_unicount which are marked
+__initdata by the conmakehash command in the drivers/video/console/Makefile
 
-Signed-Off-By:	Kirill Korotaev <dev@openvz.org>
-Acked-by:	Vasily Averin <vvs@sw.ru>
+The function promcon_init_unimap() are referenced in two places:
+1) In prom_con_init() which is marked __init => no problem.
+2) In promcon_init() which is not marked __init => warning.
+The actual code is here:
+	if (!promcon_uni_pagedir[0] && p) {
+		promcon_init_unimap(conp);
+	}
 
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index a6cb617..2a85dde 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -2677,8 +2677,10 @@ void ext3_read_inode(struct inode * inode)
- 		 */
- 		ei->i_extra_isize = le16_to_cpu(raw_inode->i_extra_isize);
- 		if (EXT3_GOOD_OLD_INODE_SIZE + ei->i_extra_isize >
--		    EXT3_INODE_SIZE(inode->i_sb))
-+		    EXT3_INODE_SIZE(inode->i_sb)) {
-+			brelse (bh);
- 			goto bad_inode;
-+		}
- 		if (ei->i_extra_isize == 0) {
- 			/* The extra space is currently unused. Use it. */
- 			ei->i_extra_isize = sizeof(struct ext3_inode) -
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index b34182b..0cd7bc4 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -2673,8 +2673,10 @@ void ext4_read_inode(struct inode * inode)
- 		 */
- 		ei->i_extra_isize = le16_to_cpu(raw_inode->i_extra_isize);
- 		if (EXT4_GOOD_OLD_INODE_SIZE + ei->i_extra_isize >
--		    EXT4_INODE_SIZE(inode->i_sb))
-+		    EXT4_INODE_SIZE(inode->i_sb)) {
-+			brelse (bh);
- 			goto bad_inode;
-+		}
- 		if (ei->i_extra_isize == 0) {
- 			/* The extra space is currently unused. Use it. */
- 			ei->i_extra_isize = sizeof(struct ext4_inode) -
+I could not from the code judge if promcon_init_unimap is really
+only used during early init or this is a bug.
+If promcon_init_unimap() is only used during early init it
+should be marked __init_refok (with a proper comment)
+to silence the warning.
 
+A few people in to: that I hope can help out (thanks to git blame)...
+
+	Sam
