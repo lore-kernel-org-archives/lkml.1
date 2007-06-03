@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbXFCJkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbXFCJk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759728AbXFCJkk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 05:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758573AbXFCJka
+	id S1760640AbXFCJk4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 05:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760141AbXFCJkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 05:40:30 -0400
-Received: from web50111.mail.re2.yahoo.com ([206.190.39.137]:25875 "HELO
-	web50111.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758008AbXFCJkU (ORCPT
+	Sun, 3 Jun 2007 05:40:46 -0400
+Received: from web50101.mail.re2.yahoo.com ([206.190.38.29]:37736 "HELO
+	web50101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758573AbXFCJkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 05:40:20 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jun 2007 05:40:20 EDT
+	Sun, 3 Jun 2007 05:40:45 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Tf42Cj7RB/BIIAcEkTggvTIqFiV7WvSKGV0Azyzlc4XejElm5lOTxr8ZENjIA/4XqQXAQGx4eQ8eIjnV9gatinHUfdcT71Sy1Di49BWVoc3n+E/u6pzuz7uuoRm5ldOAXlTT7BJPKZ1ZapEP+H2AdHS6Ms9Z1TaWoAjVcVYDjtg=;
-X-YMail-OSG: Gu0IjjAVM1nlF7NFCf9_EXokiQgoKEv0qMlocJujqQWawmlK1C.y7uaAHcbmQQgw0ulXHdRalP_tCap7uUP6gBf4RFrfBh2eQdP2xzdJPrVFUYmAhGTbpBMchCP1ShG5T_iBaAmKkDc-
-Date: Sun, 3 Jun 2007 02:33:38 -0700 (PDT)
+  b=1jxRlmEZUk7RmwDaLjOEwadvSBSVooHxO8AHkA+ivrQTUKuNt7dMIWjG9L9Vn3PEbzNhq0ihvzack/Xd6gZwbPFiltQOOCGhNEZ2w0hWNYv9aO5UarY2uQ5NCF/ooyKmEaPKfDj4O5TXHjA4t6glB15O5wycVmoogxBIFBM6TJs=;
+X-YMail-OSG: X6wny4UVM1mJmg6__MaQLDyTcbpuF_uCKxN2LndhemHaTRG2bfAY4XMjH8sEXJDihuJ7.gOO0svw4746GN3AX6g8wsS29ZSLoqyF9lqwfqBKTlPNSHlx0LAyYSWDJgE4t2QmfBFHmIY-
+Date: Sun, 3 Jun 2007 02:34:03 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
 Subject: [PATCH 23/36] drivers edac Lindent amd76x driver
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
@@ -24,7 +23,7 @@ To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <802758.73123.qm@web50111.mail.re2.yahoo.com>
+Message-ID: <325199.9497.qm@web50101.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
