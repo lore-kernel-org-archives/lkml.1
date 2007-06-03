@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbXFCVDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752909AbXFCVEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752201AbXFCVDb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 17:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbXFCVDY
+	id S1752909AbXFCVEs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 17:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXFCVEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 17:03:24 -0400
-Received: from mx.laposte.net ([81.255.54.16]:58127 "EHLO mx.laposte.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751134AbXFCVDY convert rfc822-to-8bit (ORCPT
+	Sun, 3 Jun 2007 17:04:41 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:10622 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbXFCVEk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 17:03:24 -0400
-Date: Sun,  3 Jun 2007 23:03:00 +0200
-Message-Id: <JJ2VT0$DB190600B73F354932BEAB2E7CA01539@laposte.net>
-Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
+	Sun, 3 Jun 2007 17:04:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ECICwYjXt61M+zd3ot8ua+HBtGDGYjdaXYdbtafF6pTMYu7QsTsLgA3ANw1Rglevq99puHoyqCt5tTFf8juDRBjUNWPf+Lj/pHInnfs7dQNQ0iEnev9AsWMUCqReZGGFXvrEy6Gjtaa+2Nr316yq19MNvE8UYhtJ6i90w6MhRFo=
+Message-ID: <e6fb8a8f0706031404g7f284d3cn568773b1c1f37437@mail.gmail.com>
+Date: Sun, 3 Jun 2007 17:04:39 -0400
+From: "Chris Smith" <smitty1e@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [kbuild-devel] kbuild update
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net
+In-Reply-To: <20070603203611.GA8834@uranus.ravnborg.org>
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-From: =?iso-8859-1?b?RW1tYW51ZWwgRnVzdOk=?= <emmanuel.fuste@laposte.net>
-To: "ebiederm" <ebiederm@xmission.com>
-Cc: "djwong" <djwong@us.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-X-XaM3-API-Version: 4.1 (B103)
-X-SenderIP: 127.0.0.1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070603203611.GA8834@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> This is just getting confusing.
-> 
-> Emmanuel Fust.  Please play with /proc/irq/*/smp_affinity by
-and and
-> confirm that you can move your irqs.  This will confirm it
-is the decision
-> part.
-> 
-Ok, as planned, you're right ;-) , playing with
-/proc/irq/*/smp_affinity let me move irqs.
+> What's next?
+> ...
+> -> A few cygwin specific changes may hit kbuild - to allow the kernel to be built
+>    using cygwin on a windoze box.
 
-Emmanuel.
----
-
-Créez votre adresse électronique prenom.nom@laposte.net 
-1 Go d'espace de stockage, anti-spam et anti-virus intégrés.
-
+This seems vaguely immoral. ;)
+Thanks,
+Chris
