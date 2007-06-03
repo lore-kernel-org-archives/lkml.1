@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbXFCUuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbXFCUuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbXFCUuT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 16:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbXFCUr4
+	id S1755589AbXFCUuk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 16:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbXFCUsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 16:47:56 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56377 "EHLO pasmtpB.tele.dk"
+	Sun, 3 Jun 2007 16:48:12 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:56539 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753269AbXFCUrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 16:47:55 -0400
-Date: Sun, 3 Jun 2007 22:48:56 +0200
+	id S1753340AbXFCUsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 16:48:11 -0400
+Date: Sun, 3 Jun 2007 22:49:12 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        kbuild-devel@lists.sourceforge.net
-Subject: [PATCH 16/19] kbuild: remove hardcoded apic_es7000 from modpost
-Message-ID: <20070603204856.GQ9240@uranus.ravnborg.org>
+Subject: [PATCH 17/19] kbuild: refactor code in modpost
+Message-ID: <20070603204912.GR9240@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,41 +23,120 @@ User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH 16/19] kbuild: remove hardcoded apic_es7000 from modpost
+Subject: [PATCH 17/19] kbuild: refactor code in modpost
 From: Sam Ravnborg <sam@ravnborg.org>
-Date: Sun, 3 Jun 2007 00:05:10 +0200
+Date: Sun, 3 Jun 2007 00:41:22 +0200
 
-Replace the hardcoded variable name apic_es7000 in modpost
-with a __initdata_refok marker.
-
+Move more checks from whitelist to the section check functions
+Renumber the patterns.
+No functional changes.
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/i386/mach-generic/es7000.c |    2 +-
- scripts/mod/modpost.c           |    1 -
- 2 files changed, 1 insertions(+), 2 deletions(-)
+ scripts/mod/modpost.c |   33 +++++++--------------------------
+ 1 files changed, 7 insertions(+), 26 deletions(-)
 
-diff --git a/arch/i386/mach-generic/es7000.c b/arch/i386/mach-generic/es7000.c
-index b47f951..4742626 100644
---- a/arch/i386/mach-generic/es7000.c
-+++ b/arch/i386/mach-generic/es7000.c
-@@ -66,4 +66,4 @@ static int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- }
- #endif
- 
--struct genapic apic_es7000 = APIC_INIT("es7000", probe_es7000);
-+struct genapic __initdata_refok apic_es7000 = APIC_INIT("es7000", probe_es7000);
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 0f9130f..877ed0c 100644
+index 877ed0c..f0474a9 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -657,7 +657,6 @@ static int secref_whitelist(const char *modname, const char *tosec,
- 		"_probe",
- 		"_probe_one",
- 		"_console",
--		"apic_es7000",
+@@ -612,14 +612,10 @@ static int strrcmp(const char *s, const char *sub)
+  *   atsym = *driver, *_template, *_sht, *_ops, *_probe, *probe_one, *_console
+  *
+  * Pattern 3:
+- *   Whitelist all references from .pci_fixup* section to .init.text
+- *   This is part of the PCI init when built-in
+- *
+- * Pattern 4:
+  *   Whitelist all refereces from .text.head to .init.data
+  *   Whitelist all refereces from .text.head to .init.text
+  *
+- * Pattern 5:
++ * Pattern 4:
+  *   Some symbols belong to init section but still it is ok to reference
+  *   these from non-init sections as these symbols don't have any memory
+  *   allocated for them and symbol address and value are same. So even
+@@ -628,7 +624,7 @@ static int strrcmp(const char *s, const char *sub)
+  *   This pattern is identified by
+  *   refsymname = __init_begin, _sinittext, _einittext
+  *
+- * Pattern 7:
++ * Pattern 5:
+  *  Logos used in drivers/video/logo reside in __initdata but the
+  *  funtion that references them are EXPORT_SYMBOL() so cannot be
+  *  marker __init. So we whitelist them here.
+@@ -636,12 +632,6 @@ static int strrcmp(const char *s, const char *sub)
+  *  tosec      = .init.data
+  *  fromsec    = .text*
+  *  refsymname = logo_
+- *
+- * Pattern 10:
+- *  ia64 has machvec table for each platform and
+- *  powerpc has a machine desc table for each platform.
+- *  It is mixture of function pointers of .init.text and .text.
+- *  fromsec  = .machvec | .machine.desc
+  **/
+ static int secref_whitelist(const char *modname, const char *tosec,
+ 			    const char *fromsec, const char *atsym,
+@@ -698,32 +688,22 @@ static int secref_whitelist(const char *modname, const char *tosec,
+ 		return 1;
+ 
+ 	/* Check for pattern 3 */
+-	if ((strncmp(fromsec, ".pci_fixup", strlen(".pci_fixup")) == 0) &&
+-	    (strcmp(tosec, ".init.text") == 0))
+-	return 1;
+-
+-	/* Check for pattern 4 */
+ 	if ((strcmp(fromsec, ".text.head") == 0) &&
+ 		((strcmp(tosec, ".init.data") == 0) ||
+ 		(strcmp(tosec, ".init.text") == 0)))
+ 	return 1;
+ 
+-	/* Check for pattern 5 */
++	/* Check for pattern 4 */
+ 	for (s = pat3refsym; *s; s++)
+ 		if (strcmp(refsymname, *s) == 0)
+ 			return 1;
+ 
+-	/* Check for pattern 7 */
++	/* Check for pattern 5 */
+ 	if ((strcmp(tosec, ".init.data") == 0) &&
+ 	    (strncmp(fromsec, ".text", strlen(".text")) == 0) &&
+ 	    (strncmp(refsymname, "logo_", strlen("logo_")) == 0))
+ 		return 1;
+ 
+-	/* Check for pattern 10 */
+-	if ((strcmp(fromsec, ".machvec") == 0) ||
+-	    (strcmp(fromsec, ".machine.desc") == 0))
+-		return 1;
+-
+ 	return 0;
+ }
+ 
+@@ -1085,6 +1065,8 @@ static int initexit_section_ref_ok(const char *name)
+ 		"__ex_table",
+ 		".altinstructions",
+ 		".fixup",
++		".machvec",		/* ia64 + powerpc uses these */
++		".machine.desc",
+ 		".opd",			/* See comment [OPD] */
+ 		".parainstructions",
+ 		".pdr",
+@@ -1161,14 +1143,13 @@ static int init_section_ref_ok(const char *name)
+ 		"__param",
+ 		".data.rel.ro",		/* used by parisc64 */
+ 		".init",
+-		".pci_fixup_header",
+-		".pci_fixup_final",
+ 		".text.lock",
  		NULL
  	};
- 
+ 	/* Start of section names */
+ 	const char *namelist2[] = {
+ 		".init.",
++		".pci_fixup",
+ 		".rodata",
+ 		NULL
+ 	};
 -- 
 1.5.1.rc3.1544.g8a923
 
