@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763772AbXFCFyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763952AbXFCGVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763772AbXFCFyl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 01:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbXFCFyc
+	id S1763952AbXFCGVB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 02:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXFCGUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 01:54:32 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:39769
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755118AbXFCFyb (ORCPT
+	Sun, 3 Jun 2007 02:20:53 -0400
+Received: from heineken.digium.com ([216.207.245.2]:58963 "EHLO
+	heineken.digium.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755169AbXFCGUw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 01:54:31 -0400
-From: Rob Landley <rob@landley.net>
-To: Chris Wright <chrisw@sous-sol.org>
-Subject: Re: What is the kernel documentation mailing list ?
-Date: Sun, 3 Jun 2007 01:54:18 -0400
-User-Agent: KMail/1.9.1
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Piyush K <piyush.ker@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-References: <a4b287450706010414j5435ed39hc89a93911a5fe24c@mail.gmail.com> <9a8748490706010426r1c6e5b38m7ab12086695fe3f6@mail.gmail.com> <20070601234839.GF3390@sequoia.sous-sol.org>
-In-Reply-To: <20070601234839.GF3390@sequoia.sous-sol.org>
+	Sun, 3 Jun 2007 02:20:52 -0400
+Date: Sun, 3 Jun 2007 01:20:37 -0500 (CDT)
+From: Matt Fredrickson <creslin@digium.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Message-ID: <13097765.160991180851637904.JavaMail.root@jupiler.digium.com>
+In-Reply-To: <17916027.160971180851607681.JavaMail.root@jupiler.digium.com>
+Subject: Re: Device Driver Etiquette
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706030154.19261.rob@landley.net>
+X-Originating-IP: [68.62.219.187]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 June 2007 7:48 pm, Chris Wright wrote:
-> * Jesper Juhl (jesper.juhl@gmail.com) wrote:
-> > On 01/06/07, Piyush K <piyush.ker@gmail.com> wrote:
-> > >Hi,
-> > >What is the kernel documentation mailing list where I can discuss
-> > >kernel documentation changes ?
-> > >Please cc to my email address too.
-> > >Thanks,
-> > >PYK
-> > 
-> > As far as I know, there is no dedicated list for documentation issues.
-> > There was a linux-doc@vger.kernel.org list at one point but I think it
-> > died - not 100% sure though.
+
+----- "Arjan van de Ven" <arjan@infradead.org> wrote:
+> On Fri, 2007-06-01 at 12:47 -0500, Matthew Fredrickson wrote:
 > 
-> There is some recent attempt to bring it back to life.
+> > My question is this: is there a way to either work around the
+> problem I 
+> > am seeing with the stack without recompiling the kernel with 8K
+> stack 
+> > size or without disabling irqs for such a long period of time (which
+> I 
+> > think is not a nice thing to do either) OR is it acceptable
+> (although 
+> > not nice) to simply fix it this way, by disabling irqs while it
+> loads 
+> > the firmware?
+> 
+> I wonder if you're chasing ghosts; 4K stack kernels have a seperate
+> stack for interrupts so... those should be safe.
+> 
+> Btw, you forgot to post a pointer to the source code of your driver,
+> so
+> it's a lot harder for us (read: impossible) to give you good advice..
 
-Er, yes.  Me. :)
+As someone mentioned in another post, I believe what is causing this problem is a combination of factors.  The triggering of the softlockup detector seems to be what pushes it over the edge.  I think I will try as suggested to change the timer for it so that it does not trigger while the card is initializing.
 
-The Linux Foundation is paying me to focus on documentation for a while.  
-(Woot!)  I just got http://kernel.org/doc up a few days ago (it needs lots 
-more work), and I'm pondering setting up a git repository if my queue of 
-patches to move files around in Documentation gets too long.  I'm also slowly 
-reading through the "make htmldocs" output, beating on doclifter, writing new 
-documentation...
+If you'd like to see the source, here's a link:
+http://svn.digium.com/view/zaptel/trunk/wct4xxp/
 
-What do you need? :)
+I can't give you the stack trace right now, since I'm not in the office, but it begins in the vpm450_init function and goes into the Octasic API functions, in the ChannelOpen routines as well as the chip initialization routines (the ones that load the firmware.
 
-Rob
+---
+Matthew Fredrickson
+Kernel Developer
+Digium, Inc.
