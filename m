@@ -1,74 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762503AbXFCLWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbXFCLYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762503AbXFCLWy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 07:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760799AbXFCLWp
+	id S1762204AbXFCLYu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 07:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758397AbXFCLYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 07:22:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:30660 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757139AbXFCLWo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 07:22:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kn3qWOPRv19UUL6HGvflEN188UGM7CDaubPP6U0PAAyToX2tDcj82C9BS40Xkk6hyzLnxfiwH4DxhYuD2U0VftWiL03XYtAJURb58j3VBs0BrvP3yZdFspLV14me9fFh0iIB4ZA4k68746QrLI4E+q56rolcBXTxnp4gMxqa4R8=
-Message-ID: <6278d2220706030422t7f249a8w144634949e3acdeb@mail.gmail.com>
-Date: Sun, 3 Jun 2007 12:22:42 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Matt Fredrickson" <creslin@digium.com>
-Subject: Re: Device Driver Etiquette
-Cc: "Lee Revell" <rlrevell@joe-job.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, hpa@zytor.com
-In-Reply-To: <15604445.159241180797166445.JavaMail.root@jupiler.digium.com>
+	Sun, 3 Jun 2007 07:24:43 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:35102 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758253AbXFCLYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 07:24:43 -0400
+Date: Sun, 3 Jun 2007 13:23:54 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>
+cc: Netfilter Mailing List <netfilter@lists.netfilter.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] xt_connlimit (iptables) - connection limiting
+In-Reply-To: <Pine.LNX.4.61.0706031312570.10578@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0706031323160.10578@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0706031248290.10578@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0706031312570.10578@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12467610.159201180797054019.JavaMail.root@jupiler.digium.com>
-	 <15604445.159241180797166445.JavaMail.root@jupiler.digium.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/06/07, Matt Fredrickson <creslin@digium.com> wrote:
-> ----- "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
-> > On 1 Jun, 19:40, "Lee Revell" <rlrevell@joe-job.com> wrote:
-> > > On 6/1/07, Matthew Fredrickson <creslin@digium.com> wrote:
-> > >
-> > > > is it acceptable (although
-> > > > not nice) to simply fix it this way, by disabling irqs while it
-> > loads
-> > > > the firmware?
-> > >
-> > > I would say to just disable IRQs while loading firmware.  Almost
-> > every
-> > > server I maintain has some vendor driver which generates a "many
-> > lost
-> > > ticks!" message on load.  As long as it's only done at module load
-> > > time it should be fine.
-> >
-> > For anything ~10s or more, you'll probably also need to call the
-> > timer
-> > update function to prevent soft lockup warning being generated.
->
-> Ahhh... so there is a way to get rid of that cursed message.  I forgot to mention this in my original message, the only place that I had seen this problem is on a certain machine (Dell 2950) with a certain distribution (FC6) kernel.  I had trimmed the code down to fit in 4K stacks already quite a bit.
->
-> I believe what actually made it crash and overflow the stack (the straw that breaks the
-> camels back, so to speak) was the intermittent triggering of the softlockup detector.
->  I think if I can disable that while the firmware is loading that will fix the stack overflow
-> issues and correct my problem.
 
-It may not help, since the NMIs used to detect soft lockups will still
-be received; the soft lockup update call just updates the per-cpu
-timer, but there may be less chance of overrunning the end of the
-stack from not getting the stack trace.
+Previous patch had a wrong #include line, this one seems better :)
 
-There is no substitute for implementing your own firmware uploading
-mechanism or getting this one addressed though ;-) .
+================
 
-Dan
+Adds connlimit to iptables.
 
-> Matthew Fredrickson
--- 
-Daniel J Blueman
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+
+---
+ extensions/.connlimit-test      |    2 
+ extensions/libipt_connlimit.c   |  129 ++++++++++++++++++++++++++++++++++++++++
+ extensions/libipt_connlimit.man |   21 ++++++
+ 3 files changed, 152 insertions(+)
+
+Index: iptables/extensions/.connlimit-test
+===================================================================
+--- /dev/null
++++ iptables/extensions/.connlimit-test
+@@ -0,0 +1,2 @@
++#!/bin/sh
++[ -f "$KERNEL_DIR/include/linux/netfilter/xt_connlimit.h" ] && echo connlimit
+Index: iptables/extensions/libipt_connlimit.c
+===================================================================
+--- /dev/null
++++ iptables/extensions/libipt_connlimit.c
+@@ -0,0 +1,129 @@
++/* Shared library add-on to iptables to add connection limit support. */
++#include <stdio.h>
++#include <netdb.h>
++#include <string.h>
++#include <stdlib.h>
++#include <stddef.h>
++#include <getopt.h>
++#include <iptables.h>
++#include <linux/netfilter_ipv4/ip_conntrack.h>
++#include <linux/netfilter/xt_connlimit.h>
++
++/* Function which prints out usage message. */
++static void help(void)
++{
++	printf(
++"connlimit v%s options:\n"
++"[!] --connlimit-above n		match if the number of existing tcp connections is (not) above n\n"
++" --connlimit-mask n		group hosts using mask\n"
++"\n", IPTABLES_VERSION);
++}
++
++static struct option opts[] = {
++	{"connlimit-above", 1, NULL, '1'},
++	{"connlimit-mask",  1, NULL, '2'},
++	{NULL},
++};
++
++/* Function which parses command options; returns true if it
++   ate an option */
++static int parse(int c, char **argv, int invert, unsigned int *flags,
++		 const struct ipt_entry *entry, unsigned int *nfcache,
++		 struct ipt_entry_match **match)
++{
++	struct xt_connlimit_info *info = (void *)(*match)->data;
++	int i;
++
++	if (!(*flags & 2))
++		/*
++		 * set default mask unless we have already seen a mask option
++		 */
++		info->mask = htonl(0xFFFFFFFF);
++
++	switch (c) {
++	case '1':
++		check_inverse(optarg, &invert, &optind, 0);
++		info->limit   = strtoul(argv[optind-1], NULL, 0);
++		info->inverse = invert;
++		*flags |= 1;
++		break;
++
++	case '2':
++		i = strtol(argv[optind-1], NULL, 0);
++		if (i < 0 || i > 32)
++			exit_error(PARAMETER_PROBLEM,
++				"--connlimit-mask must be between 0 and 32");
++
++		if (i == 0)
++			info->mask = 0;
++		else
++			info->mask = htonl(0xFFFFFFFF << (32 - i));
++
++		*flags |= 2;
++		break;
++
++	default:
++		return 0;
++	}
++
++	return 1;
++}
++
++/* Final check */
++static void final_check(unsigned int flags)
++{
++	if (!(flags & 1))
++		exit_error(PARAMETER_PROBLEM, "You must specify `--connlimit-above'");
++}
++
++static int count_bits(u_int32_t mask)
++{
++	int i, bits;
++
++	for (bits = 0, i = 31; i >= 0; i--) {
++		if (mask & htonl((u_int32_t)1 << i)) {
++			bits++;
++			continue;
++		}
++		break;
++	}
++	return bits;
++}
++
++/* Prints out the matchinfo. */
++static void print(const struct ipt_ip *ip, const struct ipt_entry_match *match,
++		  int numeric)
++{
++	const struct xt_connlimit_info *info = (const void *)match->data;
++
++	printf("#conn/%d %s %d ", count_bits(info->mask),
++	       info->inverse ? "<" : ">", info->limit);
++}
++
++/* Saves the matchinfo in parsable form to stdout. */
++static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match)
++{
++	const struct xt_connlimit_info *info = (const void *)match->data;
++
++	printf("%s--connlimit-above %u --connlimit-mask %u ",
++	       info->inverse ? "! " : "", info->limit,
++	       count_bits(info->mask));
++}
++
++static struct iptables_match connlimit = {
++	.name		= "connlimit",
++	.version	= IPTABLES_VERSION,
++	.size		= IPT_ALIGN(sizeof(struct xt_connlimit_info)),
++	.userspacesize 	= offsetof(struct xt_connlimit_info, data),
++	.help		= help,
++	.parse 		= parse,
++	.final_check	= final_check,
++	.print		= print,
++	.save		= save,
++	.extra_opts	= opts,
++};
++
++static __attribute__((constructor)) void libipt_connlimit_init(void)
++{
++	register_match(&connlimit);
++}
+Index: iptables/extensions/libipt_connlimit.man
+===================================================================
+--- /dev/null
++++ iptables/extensions/libipt_connlimit.man
+@@ -0,0 +1,21 @@
++Allows you to restrict the number of parallel TCP connections to a
++server per client IP address (or address block).
++.TP
++[\fB!\fR] \fB--connlimit-above \fIn\fR
++match if the number of existing tcp connections is (not) above n
++.TP
++.BI "--connlimit-mask " "bits"
++group hosts using mask
++.P
++Examples:
++.TP
++# allow 2 telnet connections per client host
++iptables -A INPUT -p tcp --syn --dport 23 -m connlimit --connlimit-above 2 -j REJECT
++.TP
++# you can also match the other way around:
++iptables -A INPUT -p tcp --syn --dport 23 -m connlimit ! --connlimit-above 2 -j ACCEPT
++.TP
++# limit the nr of parallel http requests to 16 per class C sized \
++network (24 bit netmask)
++iptables -p tcp --syn --dport 80 -m connlimit --connlimit-above 16
++--connlimit-mask 24 -j REJECT
