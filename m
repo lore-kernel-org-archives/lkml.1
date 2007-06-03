@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751573AbXFCSpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751768AbXFCSqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751573AbXFCSpa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 14:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbXFCSpS
+	id S1751768AbXFCSqV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 14:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbXFCSqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 14:45:18 -0400
-Received: from lazybastard.de ([212.112.238.170]:34597 "EHLO
+	Sun, 3 Jun 2007 14:46:11 -0400
+Received: from lazybastard.de ([212.112.238.170]:34629 "EHLO
 	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbXFCSpQ (ORCPT
+	with ESMTP id S1751036AbXFCSqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 14:45:16 -0400
-Date: Sun, 3 Jun 2007 20:40:38 +0200
+	Sun, 3 Jun 2007 14:46:09 -0400
+Date: Sun, 3 Jun 2007 20:41:31 +0200
 From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org
@@ -29,8 +29,8 @@ Cc: akpm@osdl.org, Sam Ravnborg <sam@ravnborg.org>,
        Roland Dreier <rdreier@cisco.com>,
        Ondrej Zajicek <santiago@crfreenet.org>,
        Ulisses Furquim <ulissesf@gmail.com>
-Subject: [Patch 02/18] fs/Makefile
-Message-ID: <20070603184038.GC8952@lazybastard.org>
+Subject: [Patch 03/18] fs/logfs/Makefile
+Message-ID: <20070603184131.GD8952@lazybastard.org>
 References: <20070603183845.GA8952@lazybastard.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -40,13 +40,20 @@ User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- linux-2.6.21logfs/fs/Makefile~logfs	2007-06-03 19:18:57.000000000 +0200
-+++ linux-2.6.21logfs/fs/Makefile	2007-06-03 19:18:57.000000000 +0200
-@@ -95,6 +95,7 @@ obj-$(CONFIG_NTFS_FS)		+= ntfs/
- obj-$(CONFIG_UFS_FS)		+= ufs/
- obj-$(CONFIG_EFS_FS)		+= efs/
- obj-$(CONFIG_JFFS2_FS)		+= jffs2/
-+obj-$(CONFIG_LOGFS)		+= logfs/
- obj-$(CONFIG_AFFS_FS)		+= affs/
- obj-$(CONFIG_ROMFS_FS)		+= romfs/
- obj-$(CONFIG_QNX4FS_FS)		+= qnx4/
+--- /dev/null	2007-03-13 19:15:28.862769062 +0100
++++ linux-2.6.21logfs/fs/logfs/Makefile	2007-06-03 19:18:57.000000000 +0200
+@@ -0,0 +1,14 @@
++obj-$(CONFIG_LOGFS)	+= logfs.o
++
++logfs-y	+= compr.o
++logfs-y	+= dir.o
++logfs-y	+= file.o
++logfs-y	+= gc.o
++logfs-y	+= inode.o
++logfs-y	+= journal.o
++logfs-y	+= memtree.o
++logfs-y	+= readwrite.o
++logfs-y	+= segment.o
++logfs-y	+= super.o
++logfs-$(CONFIG_LOGFS_FSCK)	+= progs/fsck.o
++logfs-y	+= progs/mkfs.o
