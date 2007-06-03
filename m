@@ -1,245 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbXFCOn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbXFCOnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757356AbXFCOn0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbXFCOlG
+	id S1756430AbXFCOnn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 10:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXFCOlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:41:06 -0400
-Received: from web50110.mail.re2.yahoo.com ([206.190.38.38]:33834 "HELO
-	web50110.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755250AbXFCOlE (ORCPT
+	Sun, 3 Jun 2007 10:41:17 -0400
+Received: from web50105.mail.re2.yahoo.com ([206.190.38.33]:48057 "HELO
+	web50105.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753540AbXFCOlP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:41:04 -0400
+	Sun, 3 Jun 2007 10:41:15 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=1uUOWRphcZ8Y2ylXaXhfeHOk96EX416UiskF75NtOWtNeLaWBvIsH0C0iKalVB/qhisoutFfH/WrJ6YlN8PNLzdNzxFxnWrSlnZuLx33yendsjub79rklFpgcCATDjiI+glzyXdNpHkdj6b4eKd5tCi+6yiHAkQDP8pzKiFZx4M=;
-X-YMail-OSG: 73a.0FgVM1kGVRcu9HPu_rDih2qdznrN_OT1eso576T27GtFkrPQ6RDSK9igABl_af4qBOpidEH2u3dKNwzE.javP4M0Ql2PK9qTv1aKko19mN0-
-Date: Sun, 3 Jun 2007 07:41:01 -0700 (PDT)
+  b=NIF0lq+xZpFMKfF9go/CarUNnxOe3XQeKBWiKkcV4iUIDlpCHQRlM2AeixqXpv2gnPssJlHHYYPd8AqFYfvrTh1oybuf3Sxfqz1jocyUyOBqbeuqy7szakIhXAPh7secUSFH6vJ8kivAQ/fLIKMeEHaG1bqtRo4iUXdC5S2CWds=;
+X-YMail-OSG: no2BVlUVM1kKmWSxC5mYzXTwal07MsrfDgNXm6hI4kpVwMkSjk9ZLE6pBjRy6jXkog--
+Date: Sun, 3 Jun 2007 07:41:14 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
-Subject: [PATCH 13/36] drivers edac mod to include edac_core.h
+Subject: [PATCH 14/36] drivers edac add dev_name getter function
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <846409.47248.qm@web50110.mail.re2.yahoo.com>
+Message-ID: <367798.81198.qm@web50105.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Douglas Thompson <dougthompson@xmission.com>
+From:	Dave Jiang <djiang@mvista.com>
 
-In the refactoring of edac_mc.c into several subsystem files,
-the header file edac_mc.h became meaningless. A new header file
-edac_core.h was created. All the files that previously included
-"edac_mc.h" are changed to include "edac_core.h".
+Move dev_name() macro to a more generic interface since it's not
+possible
+to determine whether a device is pci, platform, or of_device easily.
 
+Now each low level driver sets the name into the control structure, and
+the EDAC core references the control structure for the information.
 
-Signed-off-by:	Douglas Thompson <dougthompson@xmission.com>
+Better abstraction.
+
+Signed-off-by: Dave Jiang <djiang@mvista.com>
+Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
 ---
- amd76x_edac.c     |    4 ++--
- e752x_edac.c      |    4 ++--
- e7xxx_edac.c      |    4 ++--
- edac_mc.c         |    2 +-
- edac_mc_sysfs.c   |    2 +-
- edac_module.c     |    4 ++--
- edac_pci_sysfs.c  |    4 ++--
- i5000_edac.c      |    4 ++--
- i82443bxgx_edac.c |    2 +-
- i82860_edac.c     |    4 ++--
- i82875p_edac.c    |    4 ++--
- r82600_edac.c     |    4 ++--
- 12 files changed, 21 insertions(+), 21 deletions(-)
-
+ amd76x_edac.c     |    1 +
+ e752x_edac.c      |    1 +
+ e7xxx_edac.c      |    1 +
+ edac_core.h       |    8 +++-----
+ edac_device.c     |    6 +++---
+ edac_mc.c         |    6 +++---
+ i5000_edac.c      |    1 +
+ i82443bxgx_edac.c |    1 +
+ i82860_edac.c     |    1 +
+ i82875p_edac.c    |    1 +
+ r82600_edac.c     |    1 +
+ 11 files changed, 17 insertions(+), 11 deletions(-)
 ---
-Index: linux-2.6.21.1/drivers/edac/amd76x_edac.c
+Index: linux-2.6.22-rc1/drivers/edac/amd76x_edac.c
 ===================================================================
---- linux-2.6.21.1.orig/drivers/edac/amd76x_edac.c
-+++ linux-2.6.21.1/drivers/edac/amd76x_edac.c
-@@ -17,9 +17,9 @@
- #include <linux/pci.h>
- #include <linux/pci_ids.h>
- #include <linux/slab.h>
--#include "edac_mc.h"
-+#include "edac_core.h"
+--- linux-2.6.22-rc1.orig/drivers/edac/amd76x_edac.c
++++ linux-2.6.22-rc1/drivers/edac/amd76x_edac.c
+@@ -253,6 +253,7 @@ static int amd76x_probe1(struct pci_dev 
+ 	mci->mod_name = EDAC_MOD_STR;
+ 	mci->mod_ver = AMD76X_REVISION;
+ 	mci->ctl_name = amd76x_devs[dev_idx].ctl_name;
++	mci->dev_name = pci_name(pdev);
+ 	mci->edac_check = amd76x_check;
+ 	mci->ctl_page_to_phys = NULL;
  
--#define AMD76X_REVISION	" Ver: 2.0.1 "  __DATE__
-+#define AMD76X_REVISION	" Ver: 2.0.2 "  __DATE__
- #define EDAC_MOD_STR	"amd76x_edac"
- 
- #define amd76x_printk(level, fmt, arg...) \
-Index: linux-2.6.21.1/drivers/edac/e752x_edac.c
+Index: linux-2.6.22-rc1/drivers/edac/edac_core.h
 ===================================================================
---- linux-2.6.21.1.orig/drivers/edac/e752x_edac.c
-+++ linux-2.6.21.1/drivers/edac/e752x_edac.c
-@@ -23,9 +23,9 @@
- #include <linux/pci_ids.h>
- #include <linux/slab.h>
- #include <linux/edac.h>
--#include "edac_mc.h"
-+#include "edac_core.h"
+--- linux-2.6.22-rc1.orig/drivers/edac/edac_core.h
++++ linux-2.6.22-rc1/drivers/edac/edac_core.h
+@@ -95,11 +95,7 @@ extern int edac_debug_level;
+ #define PCI_VEND_DEV(vend, dev) PCI_VENDOR_ID_ ## vend, \
+ 	PCI_DEVICE_ID_ ## vend ## _ ## dev
  
--#define E752X_REVISION	" Ver: 2.0.1 " __DATE__
-+#define E752X_REVISION	" Ver: 2.0.2 " __DATE__
- #define EDAC_MOD_STR	"e752x_edac"
+-#if defined(CONFIG_X86) && defined(CONFIG_PCI)
+-#define dev_name(dev) pci_name(to_pci_dev(dev))
+-#else
+-#define dev_name(dev) to_platform_device(dev)->name
+-#endif
++#define dev_name(dev) (dev)->dev_name
  
- static int force_function_unhide;
-Index: linux-2.6.21.1/drivers/edac/edac_mc.c
+ /* memory devices */
+ enum dev_type {
+@@ -368,6 +364,7 @@ struct mem_ctl_info {
+ 	const char *mod_name;
+ 	const char *mod_ver;
+ 	const char *ctl_name;
++	const char *dev_name;
+ 	char proc_name[MC_PROC_NAME_MAX_LEN + 1];
+ 	void *pvt_info;
+ 	u32 ue_noinfo_count;	/* Uncorrectable Errors w/o info */
+@@ -538,6 +535,7 @@ struct edac_device_ctl_info {
+ 
+ 	const char *mod_name;	/* module name */
+ 	const char *ctl_name;	/* edac controller  name */
++	const char *dev_name;	/* pci/platform/etc... name */
+ 
+ 	void *pvt_info;		/* pointer to 'private driver' info */
+ 
+Index: linux-2.6.22-rc1/drivers/edac/e752x_edac.c
 ===================================================================
---- linux-2.6.21.1.orig/drivers/edac/edac_mc.c
-+++ linux-2.6.21.1/drivers/edac/edac_mc.c
-@@ -31,7 +31,7 @@
- #include <asm/uaccess.h>
- #include <asm/page.h>
- #include <asm/edac.h>
--#include "edac_mc.h"
-+#include "edac_core.h"
- #include "edac_module.h"
+--- linux-2.6.22-rc1.orig/drivers/edac/e752x_edac.c
++++ linux-2.6.22-rc1/drivers/edac/e752x_edac.c
+@@ -1004,6 +1004,7 @@ static int e752x_probe1(struct pci_dev *
  
+ 	debugf3("%s(): more mci init\n", __func__);
+ 	mci->ctl_name = pvt->dev_info->ctl_name;
++	mci->dev_name = pci_name(pdev);
+ 	mci->edac_check = e752x_check;
+ 	mci->ctl_page_to_phys = ctl_page_to_phys;
  
-Index: linux-2.6.21.1/drivers/edac/edac_mc_sysfs.c
+Index: linux-2.6.22-rc1/drivers/edac/e7xxx_edac.c
 ===================================================================
---- linux-2.6.21.1.orig/drivers/edac/edac_mc_sysfs.c
-+++ linux-2.6.21.1/drivers/edac/edac_mc_sysfs.c
-@@ -12,7 +12,7 @@
- #include <linux/sysdev.h>
- #include <linux/ctype.h>
+--- linux-2.6.22-rc1.orig/drivers/edac/e7xxx_edac.c
++++ linux-2.6.22-rc1/drivers/edac/e7xxx_edac.c
+@@ -463,6 +463,7 @@ static int e7xxx_probe1(struct pci_dev *
  
--#include "edac_mc.h"
-+#include "edac_core.h"
- #include "edac_module.h"
- 
- /* MC EDAC Controls, setable by module parameter, and sysfs */
-Index: linux-2.6.21.1/drivers/edac/edac_module.c
+ 	debugf3("%s(): more mci init\n", __func__);
+ 	mci->ctl_name = pvt->dev_info->ctl_name;
++	mci->dev_name = pci_name(pdev);
+ 	mci->edac_check = e7xxx_check;
+ 	mci->ctl_page_to_phys = ctl_page_to_phys;
+ 	e7xxx_init_csrows(mci, pdev, dev_idx, drc);
+Index: linux-2.6.22-rc1/drivers/edac/i5000_edac.c
 ===================================================================
---- linux-2.6.21.1.orig/drivers/edac/edac_module.c
-+++ linux-2.6.21.1/drivers/edac/edac_module.c
-@@ -3,10 +3,10 @@
- #include <linux/kthread.h>
- #include <linux/edac.h>
+--- linux-2.6.22-rc1.orig/drivers/edac/i5000_edac.c
++++ linux-2.6.22-rc1/drivers/edac/i5000_edac.c
+@@ -1345,6 +1345,7 @@ static int i5000_probe1(struct pci_dev *
+ 	mci->mod_name = "i5000_edac.c";
+ 	mci->mod_ver = I5000_REVISION;
+ 	mci->ctl_name = i5000_devs[dev_idx].ctl_name;
++	mci->dev_name = pci_name(pdev);
+ 	mci->ctl_page_to_phys = NULL;
  
--#include "edac_mc.h"
-+#include "edac_core.h"
- #include "edac_module.h"
- 
--#define EDAC_MC_VERSION "Ver: 2.0.3" __DATE__
-+#define EDAC_MC_VERSION "Ver: 2.0.4 " __DATE__
- 
- #ifdef CONFIG_EDAC_DEBUG
- /* Values of 0 to 4 will generate output */
-Index: linux-2.6.21.1/drivers/edac/edac_pci_sysfs.c
+ 	/* Set the function pointer to an actual operation function */
+Index: linux-2.6.22-rc1/drivers/edac/i82443bxgx_edac.c
 ===================================================================
---- linux-2.6.21.1.orig/drivers/edac/edac_pci_sysfs.c
-+++ linux-2.6.21.1/drivers/edac/edac_pci_sysfs.c
-@@ -1,4 +1,4 @@
--/* edac_mc kernel module
-+/*
-  * (C) 2005, 2006 Linux Networx (http://lnxi.com)
-  * This file may be distributed under the terms of the
-  * GNU General Public License.
-@@ -10,7 +10,7 @@
- #include <linux/sysdev.h>
- #include <linux/ctype.h>
+--- linux-2.6.22-rc1.orig/drivers/edac/i82443bxgx_edac.c
++++ linux-2.6.22-rc1/drivers/edac/i82443bxgx_edac.c
+@@ -318,6 +318,7 @@ static int  i82443bxgx_edacmc_probe1(str
+ 	mci->mod_name = EDAC_MOD_STR;
+ 	mci->mod_ver = I82443_REVISION;
+ 	mci->ctl_name = "I82443BXGX";
++	mci->dev_name = pci_name(pdev);
+ 	mci->edac_check = i82443bxgx_edacmc_check;
+ 	mci->ctl_page_to_phys = NULL;
  
--#include "edac_mc.h"
-+#include "edac_core.h"
- #include "edac_module.h"
- 
- 
-Index: linux-2.6.21.1/drivers/edac/i5000_edac.c
+Index: linux-2.6.22-rc1/drivers/edac/i82860_edac.c
 ===================================================================
---- linux-2.6.21.1.orig/drivers/edac/i5000_edac.c
-+++ linux-2.6.21.1/drivers/edac/i5000_edac.c
-@@ -22,12 +22,12 @@
- #include <linux/edac.h>
- #include <asm/mmzone.h>
- 
--#include "edac_mc.h"
-+#include "edac_core.h"
- 
- /*
-  * Alter this version for the I5000 module when modifications are made
+--- linux-2.6.22-rc1.orig/drivers/edac/i82860_edac.c
++++ linux-2.6.22-rc1/drivers/edac/i82860_edac.c
+@@ -200,6 +200,7 @@ static int i82860_probe1(struct pci_dev 
+ 	mci->mod_name = EDAC_MOD_STR;
+ 	mci->mod_ver = I82860_REVISION;
+ 	mci->ctl_name = i82860_devs[dev_idx].ctl_name;
++	mci->dev_name = pci_name(pdev);
+ 	mci->edac_check = i82860_check;
+ 	mci->ctl_page_to_phys = NULL;
+ 	i82860_init_csrows(mci, pdev);
+Index: linux-2.6.22-rc1/drivers/edac/i82875p_edac.c
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/edac/i82875p_edac.c
++++ linux-2.6.22-rc1/drivers/edac/i82875p_edac.c
+@@ -407,6 +407,7 @@ static int i82875p_probe1(struct pci_dev
+ 	mci->mod_name = EDAC_MOD_STR;
+ 	mci->mod_ver = I82875P_REVISION;
+ 	mci->ctl_name = i82875p_devs[dev_idx].ctl_name;
++	mci->dev_name = pci_name(pdev);
+ 	mci->edac_check = i82875p_check;
+ 	mci->ctl_page_to_phys = NULL;
+ 	debugf3("%s(): init pvt\n", __func__);
+Index: linux-2.6.22-rc1/drivers/edac/r82600_edac.c
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/edac/r82600_edac.c
++++ linux-2.6.22-rc1/drivers/edac/r82600_edac.c
+@@ -11,7 +11,7 @@
+  *
+  * Written with reference to 82600 High Integration Dual PCI System
+  * Controller Data Book:
+- *
+http://www.radisys.com/files/support_downloads/007-01277-0002.82600DataBook.pdf
++ *
+www.radisys.com/files/support_downloads/007-01277-0002.82600DataBook.pdf
+  * references to this document given in []
   */
--#define I5000_REVISION    " Ver: 2.0.11.devel " __DATE__
-+#define I5000_REVISION    " Ver: 2.0.12 " __DATE__
  
- #define i5000_printk(level, fmt, arg...) \
-         edac_printk(level, "i5000", fmt, ##arg)
-Index: linux-2.6.21.1/drivers/edac/i82443bxgx_edac.c
+@@ -305,6 +305,7 @@ static int r82600_probe1(struct pci_dev 
+ 	mci->mod_name = EDAC_MOD_STR;
+ 	mci->mod_ver = R82600_REVISION;
+ 	mci->ctl_name = "R82600";
++	mci->dev_name = pci_name(pdev);
+ 	mci->edac_check = r82600_check;
+ 	mci->ctl_page_to_phys = NULL;
+ 	r82600_init_csrows(mci, pdev, dramcr);
+Index: linux-2.6.22-rc1/drivers/edac/edac_mc.c
 ===================================================================
---- linux-2.6.21.1.orig/drivers/edac/i82443bxgx_edac.c
-+++ linux-2.6.21.1/drivers/edac/i82443bxgx_edac.c
-@@ -29,7 +29,7 @@
+--- linux-2.6.22-rc1.orig/drivers/edac/edac_mc.c
++++ linux-2.6.22-rc1/drivers/edac/edac_mc.c
+@@ -248,7 +248,7 @@ static int add_mc_to_global_list (struct
+ fail0:
+ 	edac_printk(KERN_WARNING, EDAC_MC,
+ 		    "%s (%s) %s %s already assigned %d\n", p->dev->bus_id,
+-		    dev_name(p->dev), p->mod_name, p->ctl_name, p->mc_idx);
++		    dev_name(mci), p->mod_name, p->ctl_name, p->mc_idx);
+ 	return 1;
  
- #include <linux/slab.h>
+ fail1:
+@@ -353,7 +353,7 @@ int edac_mc_add_mc(struct mem_ctl_info *
  
--#include "edac_mc.h"
-+#include "edac_core.h"
+ 	/* Report action taken */
+ 	edac_mc_printk(mci, KERN_INFO, "Giving out device to %s %s: DEV
+%s\n",
+-		mci->mod_name, mci->ctl_name, dev_name(mci->dev));
++		mci->mod_name, mci->ctl_name, dev_name(mci));
  
- #define I82443_REVISION	"0.1"
- 
-Index: linux-2.6.21.1/drivers/edac/i82860_edac.c
+ 	mutex_unlock(&mem_ctls_mutex);
+ 	return 0;
+@@ -391,7 +391,7 @@ struct mem_ctl_info * edac_mc_del_mc(str
+ 	mutex_unlock(&mem_ctls_mutex);
+ 	edac_printk(KERN_INFO, EDAC_MC,
+ 		"Removed device %d for %s %s: DEV %s\n", mci->mc_idx,
+-		mci->mod_name, mci->ctl_name, dev_name(mci->dev));
++		mci->mod_name, mci->ctl_name, dev_name(mci));
+ 	return mci;
+ }
+ EXPORT_SYMBOL_GPL(edac_mc_del_mc);
+Index: linux-2.6.22-rc1/drivers/edac/edac_device.c
 ===================================================================
---- linux-2.6.21.1.orig/drivers/edac/i82860_edac.c
-+++ linux-2.6.21.1/drivers/edac/i82860_edac.c
-@@ -14,9 +14,9 @@
- #include <linux/pci.h>
- #include <linux/pci_ids.h>
- #include <linux/slab.h>
--#include "edac_mc.h"
-+#include "edac_core.h"
+--- linux-2.6.22-rc1.orig/drivers/edac/edac_device.c
++++ linux-2.6.22-rc1/drivers/edac/edac_device.c
+@@ -264,7 +264,7 @@ static int add_edac_dev_to_global_list (
+ fail0:
+ 	edac_printk(KERN_WARNING, EDAC_MC,
+ 		"%s (%s) %s %s already assigned %d\n",
+-		rover->dev->bus_id, dev_name(rover->dev),
++		rover->dev->bus_id, dev_name(rover),
+ 		rover->mod_name, rover->ctl_name, rover->dev_idx);
+ 	return 1;
  
--#define  I82860_REVISION " Ver: 2.0.1 " __DATE__
-+#define  I82860_REVISION " Ver: 2.0.2 " __DATE__
- #define EDAC_MOD_STR	"i82860_edac"
+@@ -491,7 +491,7 @@ int edac_device_add_device(struct edac_d
+ 		"Giving out device to module '%s' controller '%s': DEV '%s' (%s)\n",
+ 		edac_dev->mod_name,
+ 		edac_dev->ctl_name,
+-		dev_name(edac_dev->dev),
++		dev_name(edac_dev),
+ 		edac_op_state_toString(edac_dev)
+ 		);
  
- #define i82860_printk(level, fmt, arg...) \
-Index: linux-2.6.21.1/drivers/edac/i82875p_edac.c
-===================================================================
---- linux-2.6.21.1.orig/drivers/edac/i82875p_edac.c
-+++ linux-2.6.21.1/drivers/edac/i82875p_edac.c
-@@ -18,9 +18,9 @@
- #include <linux/pci.h>
- #include <linux/pci_ids.h>
- #include <linux/slab.h>
--#include "edac_mc.h"
-+#include "edac_core.h"
+@@ -553,7 +553,7 @@ struct edac_device_ctl_info * edac_devic
+ 		edac_dev->dev_idx,
+ 		edac_dev->mod_name,
+ 		edac_dev->ctl_name,
+-		dev_name(edac_dev->dev));
++		dev_name(edac_dev));
  
--#define I82875P_REVISION	" Ver: 2.0.1 " __DATE__
-+#define I82875P_REVISION	" Ver: 2.0.2 " __DATE__
- #define EDAC_MOD_STR		"i82875p_edac"
- 
- #define i82875p_printk(level, fmt, arg...) \
-Index: linux-2.6.21.1/drivers/edac/r82600_edac.c
-===================================================================
---- linux-2.6.21.1.orig/drivers/edac/r82600_edac.c
-+++ linux-2.6.21.1/drivers/edac/r82600_edac.c
-@@ -20,9 +20,9 @@
- #include <linux/pci.h>
- #include <linux/pci_ids.h>
- #include <linux/slab.h>
--#include "edac_mc.h"
-+#include "edac_core.h"
- 
--#define R82600_REVISION	" Ver: 2.0.1 " __DATE__
-+#define R82600_REVISION	" Ver: 2.0.2 " __DATE__
- #define EDAC_MOD_STR	"r82600_edac"
- 
- #define r82600_printk(level, fmt, arg...) \
-Index: linux-2.6.21.1/drivers/edac/e7xxx_edac.c
-===================================================================
---- linux-2.6.21.1.orig/drivers/edac/e7xxx_edac.c
-+++ linux-2.6.21.1/drivers/edac/e7xxx_edac.c
-@@ -28,9 +28,9 @@
- #include <linux/pci_ids.h>
- #include <linux/slab.h>
- #include <linux/edac.h>
--#include "edac_mc.h"
-+#include "edac_core.h"
- 
--#define	E7XXX_REVISION " Ver: 2.0.1 " __DATE__
-+#define	E7XXX_REVISION " Ver: 2.0.2 " __DATE__
- #define	EDAC_MOD_STR	"e7xxx_edac"
- 
- #define e7xxx_printk(level, fmt, arg...) \
+ 	return edac_dev;
+ }
 
