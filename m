@@ -1,102 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751177AbXFCSjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751268AbXFCSnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751177AbXFCSjv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 14:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbXFCSjo
+	id S1751268AbXFCSnq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 14:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbXFCSnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 14:39:44 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4501 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750750AbXFCSjo (ORCPT
+	Sun, 3 Jun 2007 14:43:37 -0400
+Received: from lazybastard.de ([212.112.238.170]:59653 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbXFCSng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 14:39:44 -0400
-Date: Sun, 3 Jun 2007 14:39:41 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] /sys/block -> /sys/class/block  (Fedora 3 & 4 testers
- wanted)
-Message-ID: <Pine.LNX.4.44L0.0706031416430.1771-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 3 Jun 2007 14:43:36 -0400
+Date: Sun, 3 Jun 2007 20:38:46 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Cc: akpm@osdl.org, Sam Ravnborg <sam@ravnborg.org>,
+       John Stoffel <john@stoffel.org>, David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
+       Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: LogFS take four
+Message-ID: <20070603183845.GA8952@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg:
+This round the patch is split into file-sized hunks.  There actually
+seem to be kernel developers not manly enough to digest 6000+ lines of
+code at once.  An I thought I was the only wimp around.
 
-A while back you asked whether Kay's block-device patch would work 
-under FC3 or FC4.  I've got an old FC4 system; the normal kernel-update 
-procedure hasn't worked on it for some time.  (I don't remember exactly 
-when it stopped working.)
+Again, anyone giving comments in the last round is on Cc:.
 
-Not for any sinister reason.  The underlying problem seems to be that
-the nash script or the nash executable in the initramfs image created
-by RedHat's mkinitrd program in FC4 has a few errors.  In particular,
-the "--movedev" option to the switchroot command doesn't work right.
+I'll try to respond to comments but the next round of patches may take a
+while longer, due to other responsibilities.
 
-On the other hand, I customized that script for myself last year (only
-a few changes were needed) and have had no problems booting any kernel
-up to and including your current development tree.
 
-For the record, here is the script as created by FC4's last official 
-update:
+Changed since take three:
+o one blank line between functions
+o depend on MTD
+o use LOGFS_BLOCKSHIFT in logfs_index
+o #define EOF to 512
+o moved BUILD_BUG_ON() into an inline function
+o declare completion futility on the stack
+o 64bit nanoseconds time format
+o created logfs_compare_inode()
+o created struct logfs_device_ops
+o truncate() to zero sets embedded flag
+o unwrap logfs_memcpy()
+o add FS_READONLY flag to superblock
+o create blockdev_device_ops
+  This one still needs some infrastructure and testing.
+o Fix data corruption bug.
 
-#!/bin/nash
 
-mount -t proc /proc /proc
-setquiet
-echo Mounted /proc filesystem
-echo Mounting sysfs
-mount -t sysfs /sys /sys
-echo Creating /dev
-mount -o mode=0755 -t tmpfs /dev /dev
-mknod /dev/console c 5 1
-mknod /dev/null c 1 3
-mknod /dev/zero c 1 5
-mkdir /dev/pts
-mkdir /dev/shm
-echo Starting udev
-/sbin/udevstart
-echo -n "/sbin/hotplug" > /proc/sys/kernel/hotplug
-echo "Loading jbd.ko module"
-insmod /lib/jbd.ko 
-echo "Loading ext3.ko module"
-insmod /lib/ext3.ko 
-/sbin/udevstart
-echo Creating root device
-mkrootdev /dev/root
-echo Mounting root filesystem
-mount -o defaults --ro -t ext3 /dev/root /sysroot
-echo Switching to new root
-switchroot --movedev /sysroot
+Unchanged:
+o convert #define's to enums.
+  Afaics one of those has to be cast to u8, the other has to go through
+  cpu_to_be64.  I don't see how enums are an advantage under such circumstances
+  and Thomas didn't seem to be sure either.
+o generic function for logfs_type()
+o generic helper for logfs_prepare_write()
+o removed EOF
+o error handling
+o move rootdir generation back to mkfs
+o replace kmap() with kmap_atomic()
+o document logfs_new_meta_inode()
+o Use KMEM_CACHE() helper for kmem_cache_create()
+o read object header first, then read or read&uncompress object data
+o shrink inodes to 200 bytes
 
-Don't ask me why udevstart is called twice -- it works okay under FC4's 
-2.6.17 kernel.
 
-Here is the diff for my customized version:
+Won't happen (unless I get convinced to do otherwise):
+o lowercase LOGFS_SUPER and LOGFS_INODE
+  These simply match the common pattern used is many Linux filesystems.
+o remove "extern"
+  For structures, this keyword actually serves a purpose and makes sense.
+  On the other hand, it is completely bogus for functions and I won't be
+  bullied into adding bogus crud either.
+o Move fs/logfs/Locking to Documentation/
+  At least JFFS2 has such documentation in its own directory as well.
+  I can see good arguments for either side and no strong consensus.  While
+  I ultimately just don't case, doing nothing is a good option in cases
+  of great uncertainty.
+o change (void*) to "proper" cast
+  Neither variant is much better than the other.  I'm open for suggestions
+  to completely remove the casts, though.
+o Change LOGFS_BUG() and LOGFS_BUG_ON() to inline functions
+  These are macros for very much the same reasons BUG() and BUG_ON() are.
 
---- norm/init   2007-06-03 14:02:58.000000000 -0400
-+++ test/init   2007-06-03 14:01:13.000000000 -0400
-@@ -22,7 +22,10 @@
- /sbin/udevstart
- echo Creating root device
- mkrootdev /dev/root
-+umount /sys
- echo Mounting root filesystem
- mount -o defaults --ro -t ext3 /dev/root /sysroot
-+mount -t tmpfs --bind /dev /sysroot/dev
- echo Switching to new root
--switchroot --movedev /sysroot
-+switchroot /sysroot
-+umount /initrd/dev
+Jörn
 
-In all honesty, I should mention that the versions of nash and udev in
-my customized initramfs image aren't the same as the ones in the FC4
-image.  They are derived from FC6; in fact I use the same initramfs
-image for testing new kernels under both FC4 and FC6.  Also the
-contents of etc/udev/udev.conf differ in the two images.
-
-Alan Stern
-
+-- 
+A victorious army first wins and then seeks battle.
+-- Sun Tzu
