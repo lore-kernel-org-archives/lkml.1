@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752213AbXFCSzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbXFCSzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752213AbXFCSzK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 14:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXFCSyx
+	id S1751542AbXFCSzo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 14:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXFCSzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 14:54:53 -0400
-Received: from lazybastard.de ([212.112.238.170]:58079 "EHLO
+	Sun, 3 Jun 2007 14:55:24 -0400
+Received: from lazybastard.de ([212.112.238.170]:58095 "EHLO
 	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751726AbXFCSyv (ORCPT
+	with ESMTP id S1751806AbXFCSzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 14:54:51 -0400
-Date: Sun, 3 Jun 2007 20:50:13 +0200
+	Sun, 3 Jun 2007 14:55:21 -0400
+Date: Sun, 3 Jun 2007 20:50:42 +0200
 From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org
@@ -29,8 +29,8 @@ Cc: akpm@osdl.org, Sam Ravnborg <sam@ravnborg.org>,
        Roland Dreier <rdreier@cisco.com>,
        Ondrej Zajicek <santiago@crfreenet.org>,
        Ulisses Furquim <ulissesf@gmail.com>
-Subject: [Patch 16/18] fs/logfs/progs/fsck.c
-Message-ID: <20070603185012.GQ8952@lazybastard.org>
+Subject: [Patch 17/18] fs/logfs/progs/mkfs.c
+Message-ID: <20070603185041.GR8952@lazybastard.org>
 References: <20070603183845.GA8952@lazybastard.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -41,321 +41,329 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 --- /dev/null	2007-03-13 19:15:28.862769062 +0100
-+++ linux-2.6.21logfs/fs/logfs/progs/fsck.c	2007-06-03 19:18:57.000000000 +0200
-@@ -0,0 +1,316 @@
++++ linux-2.6.21logfs/fs/logfs/progs/mkfs.c	2007-06-03 19:18:57.000000000 +0200
+@@ -0,0 +1,324 @@
 +/*
-+ * fs/logfs/prog/fsck.c	- filesystem check
++ * fs/logfs/prog/mkfs.c	- filesystem generation
 + *
 + * As should be obvious for Linux kernel code, license is GPLv2
 + *
 + * Copyright (c) 2005-2007 Joern Engel
 + *
-+ * In principle this could get moved to userspace.  However it might still
-+ * make some sense to keep it in the kernel.  It is a pure checker and will
-+ * only report problems, not attempt to repair them.
++ * Should get moved to userspace.
 + */
 +#include "../logfs.h"
 +
-+static u64 used_bytes;
-+static u64 free_bytes;
-+static u64 last_ino;
-+static u64 *inode_bytes;
-+static u64 *inode_links;
++enum {
++	OFS_SB = 0,
++	OFS_JOURNAL,
++	OFS_ROOTDIR,
++	OFS_IFILE,
++	OFS_COUNT
++};
 +
-+/*
-+ * Pass 1: blocks
-+ */
++static u64 segment_offset[OFS_COUNT];
 +
-+static u32 logfs_free_bytes(struct super_block *sb, u32 segno)
++static u64 fssize;
++static u64 no_segs;
++static u64 free_blocks;
++
++static u32 segsize;
++static u32 blocksize;
++static int segshift;
++static int blockshift;
++static int writeshift;
++
++static u32 blocks_per_seg;
++static u16 version;
++
++static __be32 bb_array[1024];
++static int bb_count;
++
++
++#if 0
++/* rootdir */
++static int make_rootdir(struct super_block *sb)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_segment_header sh;
-+	struct logfs_object_header h;
-+	u64 ofs, ino, pos;
-+	u32 seg_ofs, free, size;
-+	u16 len;
-+	int err;
-+	void *reserved;
++	struct logfs_disk_inode *di;
++	int ret;
 +
-+	/* Some segments are reserved.  Just pretend they were all valid */
-+	reserved = btree_lookup(&super->s_reserved_segments, segno);
-+	if (reserved)
-+		return 0;
++	di = kzalloc(blocksize, GFP_KERNEL);
++	if (!di)
++		return -ENOMEM;
 +
-+	err = wbuf_read(sb, dev_ofs(sb, segno, 0), sizeof(sh), &sh);
-+	BUG_ON(err);
-+	if (!memchr_inv(&sh, 0xff, sizeof(sh)))
-+		return super->s_segsize;
-+
-+	free = super->s_segsize;
-+	for (seg_ofs = sizeof(h); seg_ofs + sizeof(h) < super->s_segsize; ) {
-+		wbuf_read(sb, dev_ofs(sb, segno, seg_ofs), sizeof(h), &h);
-+		BUG_ON(err);
-+		if (!memchr_inv(&h, 0xff, sizeof(h)))
-+			break;
-+
-+		ofs = dev_ofs(sb, segno, seg_ofs);
-+		ino = be64_to_cpu(h.ino);
-+		pos = be64_to_cpu(h.pos);
-+		len = be16_to_cpu(h.len);
-+		size = (u32)be16_to_cpu(h.len) + sizeof(h);
-+		if (logfs_is_valid_block(sb, ofs, ino, pos)) {
-+			if (sh.level != 0)
-+				len = sb->s_blocksize;
-+			inode_bytes[ino] += len + sizeof(h);
-+			free -= len + sizeof(h);
-+		}
-+		seg_ofs += size;
-+	}
-+	return free;
++	di->di_flags	= cpu_to_be32(LOGFS_IF_VALID);
++	di->di_mode	= cpu_to_be16(S_IFDIR | 0755);
++	di->di_refcount	= cpu_to_be32(2);
++	ret = mtdwrite(sb, segment_offset[OFS_ROOTDIR], blocksize, di);
++	kfree(di);
++	return ret;
 +}
 +
-+static void logfsck_blocks(struct super_block *sb)
++/* summary */
++static int make_summary(struct super_block *sb)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+	int i;
-+	int free;
++	struct logfs_disk_sum *sum;
++	u64 sum_ofs;
++	int ret;
 +
-+	printk(KERN_INFO);
-+	for (i=0; i<super->s_no_segs; i++) {
-+		free = logfs_free_bytes(sb, i);
-+		free_bytes += free;
-+		printk(" %5x", free);
-+		if (i % 8 == 7)
-+			printk("\n" KERN_INFO);
-+	}
-+	printk("\n");
++	sum = kzalloc(LOGFS_BLOCKSIZE, GFP_KERNEL);
++	if (!sum)
++		return -ENOMEM;
++	memset(sum, 0xff, LOGFS_BLOCKSIZE);
++
++	sum->oids[0].ino = cpu_to_be64(LOGFS_INO_MASTER);
++	sum->oids[0].pos = cpu_to_be64(LOGFS_INO_ROOT);
++	sum_ofs = segment_offset[OFS_ROOTDIR];
++	sum_ofs += segsize - blocksize;
++	sum->level = LOGFS_MAX_LEVELS;
++	ret = mtdwrite(sb, sum_ofs, LOGFS_BLOCKSIZE, sum);
++	kfree(sum);
++	return ret;
++}
++#endif
++
++/* journal */
++static size_t __write_header(struct logfs_journal_header *h, size_t len,
++		size_t datalen, u16 type, u8 compr)
++{
++	h->h_len	= cpu_to_be16(len);
++	h->h_type	= cpu_to_be16(type);
++	h->h_version	= cpu_to_be16(++version);
++	h->h_datalen	= cpu_to_be16(datalen);
++	h->h_compr	= compr;
++	h->h_pad[0]	= 'h';
++	h->h_pad[1]	= 'a';
++	h->h_pad[2]	= 't';
++	h->h_crc	= logfs_crc32(h, len, 4);
++	return len;
 +}
 +
-+/*
-+ * Pass 2: directories
-+ */
-+
-+static noinline int read_one_dd(struct inode *dir, loff_t pos, u64 *ino,
-+		u8 *type)
++static size_t write_header(struct logfs_journal_header *h, size_t datalen,
++		u16 type)
 +{
-+	struct logfs_disk_dentry dd;
-+	int err;
++	size_t len = datalen + sizeof(*h);
++	return __write_header(h, len, datalen, type, COMPR_NONE);
++}
 +
-+	err = logfs_inode_read(dir, &dd, sizeof(dd), pos);
-+	if (err)
-+		return err;
-+	*ino = be64_to_cpu(dd.ino);
-+	*type = dd.type;
++static size_t je_badsegments(void *data, u16 *type)
++{
++	memcpy(data, bb_array, blocksize);
++	*type = JE_BADSEGMENTS;
++	return blocksize;
++}
++
++static size_t je_anchor(void *_da, u16 *type)
++{
++	struct logfs_je_anchor *da = _da;
++
++	memset(da, 0, sizeof(*da));
++	da->da_last_ino	= cpu_to_be64(LOGFS_RESERVED_INOS);
++	da->da_size	= cpu_to_be64((LOGFS_INO_ROOT+1) * blocksize);
++#if 0
++	da->da_used_bytes = cpu_to_be64(blocksize);
++	da->da_data[LOGFS_INO_ROOT] = cpu_to_be64(3*segsize);
++#else
++	da->da_data[LOGFS_INO_ROOT] = 0;
++#endif
++	*type = JE_ANCHOR;
++	return sizeof(*da);
++}
++
++static size_t je_dynsb(void *_dynsb, u16 *type)
++{
++	struct logfs_je_dynsb *dynsb = _dynsb;
++
++	memset(dynsb, 0, sizeof(*dynsb));
++	dynsb->ds_used_bytes	= cpu_to_be64(blocksize);
++	*type = JE_DYNSB;
++	return sizeof(*dynsb);
++}
++
++static size_t je_commit(void *h, u16 *type)
++{
++	*type = JE_COMMIT;
 +	return 0;
 +}
 +
-+static s64 dir_seek_data(struct inode *inode, s64 pos)
++static size_t write_je(size_t jpos, void *scratch, void *header,
++		size_t (*write)(void *scratch, u16 *type))
 +{
-+	s64 new_pos = logfs_seek_data(inode, pos);
++	void *data;
++	ssize_t len, max, compr_len, pad_len, full_len;
++	u16 type;
++	u8 compr = COMPR_ZLIB;
 +
-+	return max((s64)pos, new_pos - 1);
++	header += jpos;
++	data = header + sizeof(struct logfs_journal_header);
++
++	len = write(scratch, &type);
++	if (len == 0)
++		return write_header(header, 0, type);
++
++	max = blocksize - jpos;
++	compr_len = logfs_compress(scratch, data, len, max);
++	if ((compr_len < 0) || (type == JE_ANCHOR)) {
++		BUG_ON(len > max);
++		memcpy(data, scratch, len);
++		compr_len = len;
++		compr = COMPR_NONE;
++	}
++
++	pad_len = ALIGN(compr_len, 16);
++	memset(data + compr_len, 0, pad_len - compr_len);
++	full_len = pad_len + sizeof(struct logfs_journal_header);
++
++	return __write_header(header, full_len, len, type, compr);
 +}
 +
-+static int __logfsck_dirs(struct inode *dir)
++static int make_journal(struct super_block *sb)
 +{
-+	struct inode *inode;
-+	loff_t pos;
-+	u64 ino;
-+	u8 type;
-+	int cookie, err, ret = 0;
++	struct logfs_super *super = logfs_super(sb);
++	void *journal, *scratch;
++	size_t jpos;
++	int ret;
 +
-+	for (pos=0; ; pos++) {
-+		err = read_one_dd(dir, pos, &ino, &type);
-+		if (err == -ENODATA) {
-+			/* dentry was deleted */
-+			pos = dir_seek_data(dir, pos);
++	journal = kzalloc(2*blocksize, GFP_KERNEL);
++	if (!journal)
++		return -ENOMEM;
++
++	scratch = journal + blocksize;
++
++	jpos = 0;
++	/* erasecount is not written - implicitly set to 0 */
++	/* neither are summary, index, wbuf */
++	jpos += write_je(jpos, scratch, journal, je_badsegments);
++	jpos += write_je(jpos, scratch, journal, je_anchor);
++	jpos += write_je(jpos, scratch, journal, je_dynsb);
++	jpos += write_je(jpos, scratch, journal, je_commit);
++	ret = super->s_devops->write(sb, segment_offset[OFS_JOURNAL], blocksize, journal);
++	kfree(journal);
++	return ret;
++}
++
++/* superblock */
++static int make_super(struct super_block *sb, struct logfs_disk_super *ds)
++{
++	struct logfs_super *super = logfs_super(sb);
++	void *sector;
++	int ret;
++
++	sector = kzalloc(4096, GFP_KERNEL);
++	if (!sector)
++		return -ENOMEM;
++
++	memset(ds, 0, sizeof(*ds));
++
++	ds->ds_magic		= cpu_to_be64(LOGFS_MAGIC);
++	ds->ds_ifile_levels	= 1; /* 2+1, 1GiB */
++	ds->ds_iblock_levels	= 4; /* 3+1, 512GiB */
++	ds->ds_data_levels	= 1; /* old, young, unknown */
++
++	ds->ds_feature_incompat	= 0;
++	ds->ds_feature_ro_compat= 0;
++
++	ds->ds_feature_compat	= 0;
++	ds->ds_flags		= 0;
++
++	ds->ds_filesystem_size	= cpu_to_be64(fssize);
++	ds->ds_segment_shift	= segshift;
++	ds->ds_block_shift	= blockshift;
++	ds->ds_write_shift	= writeshift;
++
++	ds->ds_journal_seg[0]	= cpu_to_be64(1);
++	ds->ds_journal_seg[1]	= cpu_to_be64(2);
++	ds->ds_journal_seg[2]	= 0;
++	ds->ds_journal_seg[3]	= 0;
++
++	ds->ds_root_reserve	= 0;
++
++	ds->ds_crc = logfs_crc32(ds, sizeof(*ds), 12);
++
++	memcpy(sector, ds, sizeof(*ds));
++	ret = super->s_devops->write(sb, segment_offset[OFS_SB], 4096, sector);
++	kfree(sector);
++	return ret;
++}
++
++/* main */
++static void getsize(struct super_block *sb, u64 *size,
++		u64 *no_segs)
++{
++	*no_segs = logfs_super(sb)->s_mtd->size >> segshift;
++	*size = *no_segs << segshift;
++}
++
++static int bad_block_scan(struct super_block *sb)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct mtd_info *mtd = super->s_mtd;
++	int k, seg=0;
++	u64 ofs;
++
++	bb_count = 0;
++	for (ofs=0; ofs<fssize; ofs+=segsize) {
++		int bad = 0;
++
++		for (k=0; k<segsize; k+=mtd->erasesize) {
++			/* iterate subblocks */
++			bad = bad ? : mtd->block_isbad(mtd, ofs+k);
++		}
++		if (!bad) {
++			if (seg < OFS_COUNT)
++				segment_offset[seg++] = ofs;
 +			continue;
 +		}
-+		if (err == -EOF)
-+			break;
-+		if (err)
-+			goto error0;
 +
-+		err = -EIO;
-+		if (ino > last_ino) {
-+			printk(KERN_INFO "ino %llx > last_ino %llx\n",
-+					ino, last_ino);
-+			goto error0;
-+		}
-+		inode = logfs_iget(dir->i_sb, ino, &cookie);
-+		if (!inode) {
-+			printk(KERN_INFO "Could not find inode #%llx\n", ino);
-+			goto error0;
-+		}
-+		if (type != logfs_type(inode)) {
-+			printk(KERN_INFO "dd type %x != inode type %x\n",
-+					type, logfs_type(inode));
-+			goto error1;
-+		}
-+		inode_links[ino]++;
-+		err = 0;
-+		if (type == DT_DIR) {
-+			inode_links[dir->i_ino]++;
-+			inode_links[ino]++;
-+			err = __logfsck_dirs(inode);
-+		}
-+error1:
-+		logfs_iput(inode, cookie);
-+error0:
-+		if (!ret)
-+			ret = err;
-+		continue;
++		if (bb_count > 512)
++			return -EIO;
++		bb_array[bb_count++] = cpu_to_be32(ofs >> segshift);
 +	}
-+	return 1;
++	return 0;
 +}
 +
-+static int logfsck_dirs(struct super_block *sb)
++int logfs_mkfs(struct super_block *sb, struct logfs_disk_super *ds)
 +{
-+	struct inode *dir;
-+	int cookie;
++	int ret = 0;
 +
-+	dir = logfs_iget(sb, LOGFS_INO_ROOT, &cookie);
-+	if (!dir)
-+		return 0;
++	segshift = 17;
++	blockshift = 12;
++	writeshift = 8;
 +
-+	inode_links[LOGFS_INO_MASTER] += 1;
-+	inode_links[LOGFS_INO_ROOT] += 2;
-+	__logfsck_dirs(dir);
++	segsize = 1 << segshift;
++	blocksize = 1 << blockshift;
++	version = 0;
 +
-+	logfs_iput(dir, cookie);
-+	return 1;
-+}
++	getsize(sb, &fssize, &no_segs);
 +
-+/*
-+ * Pass 3: inodes
-+ */
++	/* 3 segs for sb and journal,
++	 * 1 block per seg extra,
++	 * 1 block for rootdir
++	 */
++	blocks_per_seg = 1 << (segshift - blockshift);
++	free_blocks = (no_segs - 3) * (blocks_per_seg - 1) - 1;
 +
-+static int logfs_check_inode(struct inode *inode)
-+{
-+	struct logfs_inode *li = logfs_inode(inode);
-+	u64 bytes0 = li->li_used_bytes;
-+	u64 bytes1 = inode_bytes[inode->i_ino];
-+	u64 links0 = inode->i_nlink;
-+	u64 links1 = inode_links[inode->i_ino];
-+
-+	if (bytes0 || bytes1 || links0 || links1
-+			|| inode->i_ino == logfs_super(inode->i_sb)->s_last_ino)
-+		printk(KERN_INFO "%lx: %llx(%llx) bytes, %llx(%llx) links\n",
-+				inode->i_ino, bytes0, bytes1, links0, links1);
-+	used_bytes += bytes0;
-+	return (bytes0 == bytes1) && (links0 == links1);
-+}
-+
-+static int logfs_check_ino(struct super_block *sb, u64 ino)
-+{
-+	struct inode *inode;
-+	int ret, cookie;
-+
-+	inode = logfs_iget(sb, ino, &cookie);
-+	if (!inode)
-+		return 1;
-+	ret = logfs_check_inode(inode);
-+	logfs_iput(inode, cookie);
-+	return ret;
-+}
-+
-+static int logfsck_inodes(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	s64 i;
-+	int ret = 1;
-+
-+	if (!logfs_check_ino(sb, LOGFS_INO_MASTER))
-+		ret = 0;;
-+	if (!logfs_check_ino(sb, LOGFS_INO_ROOT))
-+		ret = 0;
-+	for (i=16; i<super->s_last_ino; i++) {
-+		i = dir_seek_data(super->s_master_inode, i);
-+		if (!logfs_check_ino(sb, i))
-+			ret = 0;;
-+	}
-+	return ret;
-+}
-+
-+/*
-+ * Pass 4: Total blocks
-+ */
-+
-+static int logfsck_stats(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	u64 ostore_segs, total, expected;
-+	int i, reserved_segs;
-+
-+	/* one for the superblock */
-+	reserved_segs = 1;
-+	journal_for_each(i)
-+		if (super->s_journal_seg[i])
-+			reserved_segs++;
-+	reserved_segs += super->s_bad_segments;
-+
-+	ostore_segs = super->s_no_segs - reserved_segs;
-+	expected = ostore_segs << super->s_segshift;
-+	total = free_bytes + used_bytes;
-+
-+	printk(KERN_INFO "free:%8llx, used:%8llx, total:%8llx",
-+			free_bytes, used_bytes, expected);
-+	if (total > expected)
-+		printk(" + %llx\n", total - expected);
-+	else if (total < expected)
-+		printk(" - %llx\n", expected - total);
-+	else
-+		printk("\n");
-+
-+	return total == expected;
-+}
-+
-+static int __logfs_fsck(struct super_block *sb)
-+{
-+	int ret;
-+	int err = 0;
-+
-+	/* pass 1: check blocks */
-+	logfsck_blocks(sb);
-+	/* pass 2: check directories */
-+	ret = logfsck_dirs(sb);
-+	if (!ret) {
-+		printk(KERN_ERR "Pass 2: directory check failed\n");
-+		err = -EIO;
-+	}
-+	/* pass 3: check inodes */
-+	ret = logfsck_inodes(sb);
-+	if (!ret) {
-+		printk(KERN_ERR "Pass 3: inode check failed\n");
-+		err = -EIO;
-+	}
-+	/* Pass 4: Total blocks */
-+	ret = logfsck_stats(sb);
-+	if (!ret) {
-+		printk(KERN_ERR "Pass 4: statistic check failed\n");
-+		err = -EIO;
-+	}
-+
-+	return err;
-+}
-+
-+int logfs_fsck(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	int ret = -ENOMEM;
-+
-+	used_bytes = 0;
-+	free_bytes = 0;
-+	last_ino = super->s_last_ino;
-+	inode_bytes = kzalloc(last_ino * sizeof(u64), GFP_KERNEL);
-+	if (!inode_bytes)
++	ret = bad_block_scan(sb);
++	if (ret)
 +		return ret;
-+	inode_links = kzalloc(last_ino * sizeof(u64), GFP_KERNEL);
-+	if (!inode_links)
-+		goto err;
 +
-+	ret = __logfs_fsck(sb);
++#if 0
++	ret = make_rootdir(sb);
++	if (ret)
++		return ret;
 +
-+	kfree(inode_links);
-+	inode_links = NULL;
-+err:
-+	kfree(inode_bytes);
-+	inode_bytes = NULL;
-+	return ret;
++	ret = make_summary(sb);
++	if (ret)
++		return ret;
++#endif
++
++	ret = make_journal(sb);
++	if (ret)
++		return ret;
++
++	ret = make_super(sb, ds);
++	if (ret)
++		return ret;
++
++	return 0;
 +}
