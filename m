@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbXFCUrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbXFCUsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753857AbXFCUrp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 16:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbXFCUqi
+	id S1752713AbXFCUsB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 16:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbXFCUq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 16:46:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48255 "EHLO mx1.redhat.com"
+	Sun, 3 Jun 2007 16:46:56 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:53057 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753293AbXFCUqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 16:46:37 -0400
-Message-ID: <4663289D.5030109@redhat.com>
-Date: Sun, 03 Jun 2007 13:46:21 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 2/2] ufd v1 - use unsequential O(1) fdmap
-References: <send-serie.davidel@xmailserver.org.24319.1180825146.2> <4663067C.9050002@redhat.com> <Pine.LNX.4.64.0706031127220.13247@alien.or.mcafeemobile.com> <466319DB.80800@redhat.com> <Pine.LNX.4.64.0706031311490.13247@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0706031311490.13247@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	id S1752632AbXFCUqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 16:46:55 -0400
+Date: Sun, 3 Jun 2007 22:47:56 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net
+Subject: [PATCH 10/19] kbuild: add support for reading stdin with gen_init_cpio
+Message-ID: <20070603204756.GK9240@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Subject: [PATCH 10/19] kbuild: add support for reading stdin with gen_init_cpio
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Thu, 10 May 2007 22:44:28 -0700
 
-Davide Libenzi wrote:
->> If randomizing each allocator is too expensive then randomize at the
->> very least the number of the first descriptor you give out.
-> 
-> Can you tell me how this can be a problem, and in which way making a 
-> random thing would help?
+Treat an argument of "-" as meaning "read stdin for cpio files" so
+gen_init_cpio can be piped into.
 
-In attacking an application every bit of known data can be used in an
-exploit.  Be it something as simple as having a predetermined value at a
-certain point in the program since it loaded a file descriptor into a
-register.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ usr/gen_init_cpio.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-But what I'm mostly thinking about is the case where I/O could be
-redirected.  The intruding program could call dup2() and suddenly the
-program wanting to write a password to disk could be directed to send it
-over a socket.  One could imagine countless such attacks.
+diff --git a/usr/gen_init_cpio.c b/usr/gen_init_cpio.c
+index 8365db6..7abc07f 100644
+--- a/usr/gen_init_cpio.c
++++ b/usr/gen_init_cpio.c
+@@ -498,7 +498,9 @@ int main (int argc, char *argv[])
+ 		exit(1);
+ 	}
+ 
+-	if (! (cpio_list = fopen(argv[1], "r"))) {
++	if (!strcmp(argv[1], "-"))
++		cpio_list = stdin;
++	else if (! (cpio_list = fopen(argv[1], "r"))) {
+ 		fprintf(stderr, "ERROR: unable to open '%s': %s\n\n",
+ 			argv[1], strerror(errno));
+ 		usage(argv[0]);
+-- 
+1.5.1.rc3.1544.g8a923
 
-I don't say such an attack exists today.  But this is no reason to not
-implement these extra security measures.  The cost of a randomized star
-base (offset from 2^30) should be zero.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGYyid2ijCOnn/RHQRAjRoAJ9XsAazZtc9V3AxaPjiNMjK8jPUZgCdG/Eg
-KPug5Sq9REHd6H3AR0ax2aU=
-=9iUM
------END PGP SIGNATURE-----
+----- End forwarded message -----
