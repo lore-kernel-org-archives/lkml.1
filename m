@@ -1,856 +1,400 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbXFCOt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760618AbXFCOtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759543AbXFCOt0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757765AbXFCOnw
+	id S1760618AbXFCOtq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 10:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbXFCOoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:43:52 -0400
-Received: from web50104.mail.re2.yahoo.com ([206.190.38.32]:31778 "HELO
+	Sun, 3 Jun 2007 10:44:03 -0400
+Received: from web50104.mail.re2.yahoo.com ([206.190.38.32]:32090 "HELO
 	web50104.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755977AbXFCOnt (ORCPT
+	by vger.kernel.org with SMTP id S1757961AbXFCOoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:43:49 -0400
+	Sun, 3 Jun 2007 10:44:00 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Gxq3zMlLihcnsCWGMlD5VC/pqVdh6GGoJnRwaG0YP7UAI/yvXoZN2KR96HEx8nI1R7E212HXu+ZzeJNQ/WBacYr8SEgXst3EHkK7z/RWarB3NzGvpLf7qjCchxOxcMrl4T+yCMocbCZX8Od01POS8z9QuicXTCnoxH1GmiZLpS0=;
-X-YMail-OSG: BFv.PJwVM1lsOUUD4X8KRFRyl99yseCObnkNLYmjsCCzpDkAjO8hUHJuzd6akUl47P9Ei8lt7QRdHT7a.ZMRvElZPemxb_k.nr6VSiGr4FyLbq09okFne.SN7tG.UY54LW9OWw--
-Date: Sun, 3 Jun 2007 07:43:48 -0700 (PDT)
+  b=h/Z6HIekoy1IVMDnYr+NxBBhyvOf+vfXHQb9HgA9fcCtr9hgeX5k5mUu5PecBfebRCzRhx1ObiDHWWDiKnOpNJqzXTG6VE21srxEyoJq+nLlHgXPDUoS366c9haufXwKoLFtFcy+SlR7wAZ2lOxMXegvTAom0GUNDJHU9aNOWFw=;
+X-YMail-OSG: D40n3g4VM1lL_44vldEF4t8zhzWPEwsmvbWjK7iztG8wceW68y2.nwjomckREp_f4PiJg4nCn5uqhyGN7oOSCLoPGDfsmSLkEvKXDv8JpHUEzp21lytKUYqLUnf9w31XeOQA5w--
+Date: Sun, 3 Jun 2007 07:43:59 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
-Subject: [PATCH 29/36] drivers edac Lindent e752x driver
+Subject: [PATCH 30/36] drivers edac Lindent i82443bxgx driver
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <682428.83892.qm@web50104.mail.re2.yahoo.com>
+Message-ID: <691589.83892.qm@web50104.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Dave Jiang <djiang@mvista.com>
+From:	Douglas Thompson <dougthompson@xmission.com>
 
-Run e752x_edac.c file through Lindent for cleanup
+Run i82443bxgx.c file through Lindent for cleanup
 
-Signed-off-by: Dave Jiang <djiang@mvista.com>
 Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
+Signed-off-by: Dave Jiang <djiang@mvista.com>
 ---
- e752x_edac.c |  328
-++++++++++++++++++++++++++++-------------------------------
- 1 file changed, 158 insertions(+), 170 deletions(-)
----
+ i82443bxgx_edac.c |  158
+++++++++++++++++++++++++------------------------------
+ 1 file changed, 71 insertions(+), 87 deletions(-)
 
-Index: linux-2.6.22-rc1/drivers/edac/e752x_edac.c
+
+Index: linux-2.6.22-rc1/drivers/edac/i82443bxgx_edac.c
 ===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/e752x_edac.c
-+++ linux-2.6.22-rc1/drivers/edac/e752x_edac.c
-@@ -204,27 +204,24 @@ struct e752x_error_info {
+--- linux-2.6.22-rc1.orig/drivers/edac/i82443bxgx_edac.c
++++ linux-2.6.22-rc1/drivers/edac/i82443bxgx_edac.c
+@@ -35,7 +35,6 @@
  
- static const struct e752x_dev_info e752x_devs[] = {
- 	[E7520] = {
--		.err_dev = PCI_DEVICE_ID_INTEL_7520_1_ERR,
--		.ctl_dev = PCI_DEVICE_ID_INTEL_7520_0,
--		.ctl_name = "E7520"
--	},
-+		   .err_dev = PCI_DEVICE_ID_INTEL_7520_1_ERR,
-+		   .ctl_dev = PCI_DEVICE_ID_INTEL_7520_0,
-+		   .ctl_name = "E7520"},
- 	[E7525] = {
--		.err_dev = PCI_DEVICE_ID_INTEL_7525_1_ERR,
--		.ctl_dev = PCI_DEVICE_ID_INTEL_7525_0,
--		.ctl_name = "E7525"
--	},
-+		   .err_dev = PCI_DEVICE_ID_INTEL_7525_1_ERR,
-+		   .ctl_dev = PCI_DEVICE_ID_INTEL_7525_0,
-+		   .ctl_name = "E7525"},
- 	[E7320] = {
--		.err_dev = PCI_DEVICE_ID_INTEL_7320_1_ERR,
--		.ctl_dev = PCI_DEVICE_ID_INTEL_7320_0,
--		.ctl_name = "E7320"
--	},
-+		   .err_dev = PCI_DEVICE_ID_INTEL_7320_1_ERR,
-+		   .ctl_dev = PCI_DEVICE_ID_INTEL_7320_0,
-+		   .ctl_name = "E7320"},
+ #define EDAC_MOD_STR    "i82443bxgx_edac"
+ 
+-
+ /* The 82443BX supports SDRAM, or EDO (EDO for mobile only), "Memory
+  * Size: 8 MB to 512 MB (1GB with Registered DIMMs) with eight memory
+  * rows" "The 82443BX supports multiple-bit error detection and
+@@ -61,67 +60,60 @@
+ #define I82443BXGX_NR_CHANS  1
+ #define I82443BXGX_NR_DIMMS  4
+ 
+-
+-
+ /* 82443 PCI Device 0 */
+-#define I82443BXGX_NBXCFG 0x50   /* 32bit register starting at this
+PCI
+-				* config space offset */
+-#define I82443BXGX_NBXCFG_OFFSET_NON_ECCROW 24 /* Array of bits, zero
+if
+-					      * row is non-ECC */
+-#define I82443BXGX_NBXCFG_OFFSET_DRAM_FREQ 12 /* 2
+bits,00=100MHz,10=66 MHz */
+-
+-#define I82443BXGX_NBXCFG_OFFSET_DRAM_INTEGRITY 7 /* 2 bits:       */
+-#define I82443BXGX_NBXCFG_INTEGRITY_NONE   0x0    /* 00 = Non-ECC */
+-#define I82443BXGX_NBXCFG_INTEGRITY_EC     0x1    /* 01 = EC (only) */
+-#define I82443BXGX_NBXCFG_INTEGRITY_ECC    0x2    /* 10 = ECC */
+-#define I82443BXGX_NBXCFG_INTEGRITY_SCRUB  0x3    /* 11 = ECC + HW
+Scrub */
++#define I82443BXGX_NBXCFG 0x50	/* 32bit register starting at this PCI
++				 * config space offset */
++#define I82443BXGX_NBXCFG_OFFSET_NON_ECCROW 24	/* Array of bits, zero
+if
++						 * row is non-ECC */
++#define I82443BXGX_NBXCFG_OFFSET_DRAM_FREQ 12	/* 2
+bits,00=100MHz,10=66 MHz */
++
++#define I82443BXGX_NBXCFG_OFFSET_DRAM_INTEGRITY 7	/* 2 bits:       */
++#define I82443BXGX_NBXCFG_INTEGRITY_NONE   0x0	/* 00 = Non-ECC */
++#define I82443BXGX_NBXCFG_INTEGRITY_EC     0x1	/* 01 = EC (only) */
++#define I82443BXGX_NBXCFG_INTEGRITY_ECC    0x2	/* 10 = ECC */
++#define I82443BXGX_NBXCFG_INTEGRITY_SCRUB  0x3	/* 11 = ECC + HW Scrub
+*/
+ 
+ #define I82443BXGX_NBXCFG_OFFSET_ECC_DIAG_ENABLE  6
+ 
+-
+ /* 82443 PCI Device 0 */
+-#define I82443BXGX_EAP   0x80   /* 32bit register starting at this PCI
+-				* config space offset, Error Address
+-				* Pointer Register */
+-#define I82443BXGX_EAP_OFFSET_EAP  12   /* High 20 bits of error
+address */
+-#define I82443BXGX_EAP_OFFSET_MBE  BIT(1) /* Err at EAP was multi-bit
+(W1TC) */
+-#define I82443BXGX_EAP_OFFSET_SBE  BIT(0) /* Err at EAP was single-bit
+(W1TC)*/
++#define I82443BXGX_EAP   0x80	/* 32bit register starting at this PCI
++				 * config space offset, Error Address
++				 * Pointer Register */
++#define I82443BXGX_EAP_OFFSET_EAP  12	/* High 20 bits of error address
+*/
++#define I82443BXGX_EAP_OFFSET_MBE  BIT(1)	/* Err at EAP was multi-bit
+(W1TC) */
++#define I82443BXGX_EAP_OFFSET_SBE  BIT(0)	/* Err at EAP was single-bit
+(W1TC) */
+ 
+-#define I82443BXGX_ERRCMD  0x90   /* 8bit register starting at this
+PCI
++#define I82443BXGX_ERRCMD  0x90	/* 8bit register starting at this PCI
+ 				 * config space offset. */
+-#define I82443BXGX_ERRCMD_OFFSET_SERR_ON_MBE BIT(1) /* 1 = enable */
+-#define I82443BXGX_ERRCMD_OFFSET_SERR_ON_SBE BIT(0) /* 1 = enable */
++#define I82443BXGX_ERRCMD_OFFSET_SERR_ON_MBE BIT(1)	/* 1 = enable */
++#define I82443BXGX_ERRCMD_OFFSET_SERR_ON_SBE BIT(0)	/* 1 = enable */
+ 
+-#define I82443BXGX_ERRSTS  0x91   /* 16bit register starting at this
+PCI
++#define I82443BXGX_ERRSTS  0x91	/* 16bit register starting at this PCI
+ 				 * config space offset. */
+-#define I82443BXGX_ERRSTS_OFFSET_MBFRE 5 /* 3 bits - first err row
+multibit */
+-#define I82443BXGX_ERRSTS_OFFSET_MEF   BIT(4) /* 1 = MBE occurred */
+-#define I82443BXGX_ERRSTS_OFFSET_SBFRE 1 /* 3 bits - first err row
+singlebit */
+-#define I82443BXGX_ERRSTS_OFFSET_SEF   BIT(0) /* 1 = SBE occurred */
+-
++#define I82443BXGX_ERRSTS_OFFSET_MBFRE 5	/* 3 bits - first err row
+multibit */
++#define I82443BXGX_ERRSTS_OFFSET_MEF   BIT(4)	/* 1 = MBE occurred */
++#define I82443BXGX_ERRSTS_OFFSET_SBFRE 1	/* 3 bits - first err row
+singlebit */
++#define I82443BXGX_ERRSTS_OFFSET_SEF   BIT(0)	/* 1 = SBE occurred */
+ 
+-#define I82443BXGX_DRAMC 0x57   /* 8bit register starting at this PCI
+-			       * config space offset. */
+-#define I82443BXGX_DRAMC_OFFSET_DT 3      /* 2 bits, DRAM Type */
+-#define I82443BXGX_DRAMC_DRAM_IS_EDO 0    /* 00 = EDO */
++#define I82443BXGX_DRAMC 0x57	/* 8bit register starting at this PCI
++				 * config space offset. */
++#define I82443BXGX_DRAMC_OFFSET_DT 3	/* 2 bits, DRAM Type */
++#define I82443BXGX_DRAMC_DRAM_IS_EDO 0	/* 00 = EDO */
+ #define I82443BXGX_DRAMC_DRAM_IS_SDRAM 1	/* 01 = SDRAM */
+-#define I82443BXGX_DRAMC_DRAM_IS_RSDRAM 2 /* 10 = Registered SDRAM */
+-
+-
+-#define I82443BXGX_DRB 0x60   /* 8x 8bit registers starting at this
+PCI
+-			     * config space offset. */
++#define I82443BXGX_DRAMC_DRAM_IS_RSDRAM 2	/* 10 = Registered SDRAM */
+ 
++#define I82443BXGX_DRB 0x60	/* 8x 8bit registers starting at this PCI
++				 * config space offset. */
+ 
+ /* FIXME - don't poll when ECC disabled? */
+ 
+-
+ struct i82443bxgx_edacmc_error_info {
+ 	u32 eap;
  };
  
- static unsigned long ctl_page_to_phys(struct mem_ctl_info *mci,
--		unsigned long page)
-+				      unsigned long page)
- {
- 	u32 remap;
--	struct e752x_pvt *pvt = (struct e752x_pvt *) mci->pvt_info;
-+	struct e752x_pvt *pvt = (struct e752x_pvt *)mci->pvt_info;
- 
- 	debugf3("%s()\n", __func__);
- 
-@@ -244,13 +241,13 @@ static unsigned long ctl_page_to_phys(st
- }
- 
- static void do_process_ce(struct mem_ctl_info *mci, u16 error_one,
--		u32 sec1_add, u16 sec1_syndrome)
-+			  u32 sec1_add, u16 sec1_syndrome)
- {
- 	u32 page;
- 	int row;
- 	int channel;
- 	int i;
--	struct e752x_pvt *pvt = (struct e752x_pvt *) mci->pvt_info;
-+	struct e752x_pvt *pvt = (struct e752x_pvt *)mci->pvt_info;
- 
- 	debugf3("%s()\n", __func__);
- 
-@@ -262,9 +259,10 @@ static void do_process_ce(struct mem_ctl
- 		/* chip select are bits 14 & 13 */
- 		row = ((page >> 1) & 3);
- 		e752x_printk(KERN_WARNING,
--			"Test row %d Table %d %d %d %d %d %d %d %d\n", row,
--			pvt->map[0], pvt->map[1], pvt->map[2], pvt->map[3],
--			pvt->map[4], pvt->map[5], pvt->map[6], pvt->map[7]);
-+			     "Test row %d Table %d %d %d %d %d %d %d %d\n", row,
-+			     pvt->map[0], pvt->map[1], pvt->map[2], pvt->map[3],
-+			     pvt->map[4], pvt->map[5], pvt->map[6],
-+			     pvt->map[7]);
- 
- 		/* test for channel remapping */
- 		for (i = 0; i < 8; i++) {
-@@ -278,7 +276,8 @@ static void do_process_ce(struct mem_ctl
- 			row = i;
- 		else
- 			e752x_mc_printk(mci, KERN_WARNING,
--				"row %d not found in remap table\n", row);
-+					"row %d not found in remap table\n",
-+					row);
- 	} else
- 		row = edac_mc_find_csrow_by_page(mci, page);
- 
-@@ -290,12 +289,12 @@ static void do_process_ce(struct mem_ctl
- 
- 	/* e752x mc reads 34:6 of the DRAM linear address */
- 	edac_mc_handle_ce(mci, page, offset_in_page(sec1_add << 4),
--			sec1_syndrome, row, channel, "e752x CE");
-+			  sec1_syndrome, row, channel, "e752x CE");
- }
- 
- static inline void process_ce(struct mem_ctl_info *mci, u16 error_one,
--		u32 sec1_add, u16 sec1_syndrome, int *error_found,
--		int handle_error)
-+			      u32 sec1_add, u16 sec1_syndrome, int *error_found,
-+			      int handle_error)
- {
- 	*error_found = 1;
- 
-@@ -304,11 +303,11 @@ static inline void process_ce(struct mem
- }
- 
- static void do_process_ue(struct mem_ctl_info *mci, u16 error_one,
--		u32 ded_add, u32 scrb_add)
-+			  u32 ded_add, u32 scrb_add)
- {
- 	u32 error_2b, block_page;
- 	int row;
--	struct e752x_pvt *pvt = (struct e752x_pvt *) mci->pvt_info;
-+	struct e752x_pvt *pvt = (struct e752x_pvt *)mci->pvt_info;
- 
- 	debugf3("%s()\n", __func__);
- 
-@@ -319,14 +318,14 @@ static void do_process_ue(struct mem_ctl
- 		block_page = error_2b >> (PAGE_SHIFT - 4);
- 
- 		row = pvt->mc_symmetric ?
--			/* chip select are bits 14 & 13 */
--			((block_page >> 1) & 3) :
--			edac_mc_find_csrow_by_page(mci, block_page);
-+		    /* chip select are bits 14 & 13 */
-+		    ((block_page >> 1) & 3) :
-+		    edac_mc_find_csrow_by_page(mci, block_page);
- 
- 		/* e752x mc reads 34:6 of the DRAM linear address */
- 		edac_mc_handle_ue(mci, block_page,
--					offset_in_page(error_2b << 4),
--					row, "e752x UE from Read");
-+				  offset_in_page(error_2b << 4),
-+				  row, "e752x UE from Read");
- 	}
- 	if (error_one & 0x0404) {
- 		error_2b = scrb_add;
-@@ -335,19 +334,20 @@ static void do_process_ue(struct mem_ctl
- 		block_page = error_2b >> (PAGE_SHIFT - 4);
- 
- 		row = pvt->mc_symmetric ?
--			/* chip select are bits 14 & 13 */
--			((block_page >> 1) & 3) :
--			edac_mc_find_csrow_by_page(mci, block_page);
-+		    /* chip select are bits 14 & 13 */
-+		    ((block_page >> 1) & 3) :
-+		    edac_mc_find_csrow_by_page(mci, block_page);
- 
- 		/* e752x mc reads 34:6 of the DRAM linear address */
- 		edac_mc_handle_ue(mci, block_page,
--					offset_in_page(error_2b << 4),
--					row, "e752x UE from Scruber");
-+				  offset_in_page(error_2b << 4),
-+				  row, "e752x UE from Scruber");
- 	}
- }
- 
- static inline void process_ue(struct mem_ctl_info *mci, u16 error_one,
--		u32 ded_add, u32 scrb_add, int *error_found, int handle_error)
-+			      u32 ded_add, u32 scrb_add, int *error_found,
-+			      int handle_error)
- {
- 	*error_found = 1;
- 
-@@ -356,7 +356,7 @@ static inline void process_ue(struct mem
- }
- 
- static inline void process_ue_no_info_wr(struct mem_ctl_info *mci,
--		int *error_found, int handle_error)
-+					 int *error_found, int handle_error)
- {
- 	*error_found = 1;
- 
-@@ -368,24 +368,24 @@ static inline void process_ue_no_info_wr
- }
- 
- static void do_process_ded_retry(struct mem_ctl_info *mci, u16 error,
--		u32 retry_add)
-+				 u32 retry_add)
- {
- 	u32 error_1b, page;
- 	int row;
--	struct e752x_pvt *pvt = (struct e752x_pvt *) mci->pvt_info;
-+	struct e752x_pvt *pvt = (struct e752x_pvt *)mci->pvt_info;
- 
- 	error_1b = retry_add;
--	page = error_1b >> (PAGE_SHIFT - 4); /* convert the addr to 4k page
-*/
--	row = pvt->mc_symmetric ?
--		((page >> 1) & 3) : /* chip select are bits 14 & 13 */
--		edac_mc_find_csrow_by_page(mci, page);
-+	page = error_1b >> (PAGE_SHIFT - 4);	/* convert the addr to 4k page
-*/
-+	row = pvt->mc_symmetric ? ((page >> 1) & 3) :	/* chip select are bits
-14 & 13 */
-+	    edac_mc_find_csrow_by_page(mci, page);
- 	e752x_mc_printk(mci, KERN_WARNING,
--		"CE page 0x%lx, row %d : Memory read retry\n",
--		(long unsigned int) page, row);
-+			"CE page 0x%lx, row %d : Memory read retry\n",
-+			(long unsigned int)page, row);
- }
- 
- static inline void process_ded_retry(struct mem_ctl_info *mci, u16
-error,
--		u32 retry_add, int *error_found, int handle_error)
-+				     u32 retry_add, int *error_found,
-+				     int handle_error)
- {
- 	*error_found = 1;
- 
-@@ -394,7 +394,7 @@ static inline void process_ded_retry(str
- }
- 
- static inline void process_threshold_ce(struct mem_ctl_info *mci, u16
-error,
--		int *error_found, int handle_error)
-+					int *error_found, int handle_error)
- {
- 	*error_found = 1;
- 
-@@ -418,12 +418,12 @@ static void do_global_error(int fatal, u
- 	for (i = 0; i < 11; i++) {
- 		if (errors & (1 << i))
- 			e752x_printk(KERN_WARNING, "%sError %s\n",
--				fatal_message[fatal], global_message[i]);
-+				     fatal_message[fatal], global_message[i]);
- 	}
- }
- 
- static inline void global_error(int fatal, u32 errors, int
-*error_found,
--		int handle_error)
-+				int handle_error)
- {
- 	*error_found = 1;
- 
-@@ -445,12 +445,12 @@ static void do_hub_error(int fatal, u8 e
- 	for (i = 0; i < 7; i++) {
- 		if (errors & (1 << i))
- 			e752x_printk(KERN_WARNING, "%sError %s\n",
--				fatal_message[fatal], hub_message[i]);
-+				     fatal_message[fatal], hub_message[i]);
- 	}
- }
- 
- static inline void hub_error(int fatal, u8 errors, int *error_found,
--		int handle_error)
-+			     int handle_error)
- {
- 	*error_found = 1;
- 
-@@ -472,7 +472,7 @@ static void do_membuf_error(u8 errors)
- 	for (i = 0; i < 4; i++) {
- 		if (errors & (1 << i))
- 			e752x_printk(KERN_WARNING, "Non-Fatal Error %s\n",
--				membuf_message[i]);
-+				     membuf_message[i]);
- 	}
- }
- 
-@@ -503,12 +503,12 @@ static void do_sysbus_error(int fatal, u
- 	for (i = 0; i < 10; i++) {
- 		if (errors & (1 << i))
- 			e752x_printk(KERN_WARNING, "%sError System Bus %s\n",
--				fatal_message[fatal], sysbus_message[i]);
-+				     fatal_message[fatal], sysbus_message[i]);
- 	}
- }
- 
- static inline void sysbus_error(int fatal, u32 errors, int
-*error_found,
--		int handle_error)
-+				int handle_error)
- {
- 	*error_found = 1;
- 
-@@ -517,7 +517,7 @@ static inline void sysbus_error(int fata
- }
- 
- static void e752x_check_hub_interface(struct e752x_error_info *info,
--		int *error_found, int handle_error)
-+				      int *error_found, int handle_error)
- {
- 	u8 stat8;
- 
-@@ -525,33 +525,32 @@ static void e752x_check_hub_interface(st
- 
- 	stat8 = info->hi_ferr;
- 
--	if(stat8 & 0x7f) { /* Error, so process */
-+	if (stat8 & 0x7f) {	/* Error, so process */
- 		stat8 &= 0x7f;
- 
--		if(stat8 & 0x2b)
-+		if (stat8 & 0x2b)
- 			hub_error(1, stat8 & 0x2b, error_found, handle_error);
- 
--		if(stat8 & 0x54)
-+		if (stat8 & 0x54)
- 			hub_error(0, stat8 & 0x54, error_found, handle_error);
- 	}
 -
- 	//pci_read_config_byte(dev,E752X_HI_NERR,&stat8);
- 
- 	stat8 = info->hi_nerr;
- 
--	if(stat8 & 0x7f) { /* Error, so process */
-+	if (stat8 & 0x7f) {	/* Error, so process */
- 		stat8 &= 0x7f;
- 
- 		if (stat8 & 0x2b)
- 			hub_error(1, stat8 & 0x2b, error_found, handle_error);
- 
--		if(stat8 & 0x54)
-+		if (stat8 & 0x54)
- 			hub_error(0, stat8 & 0x54, error_found, handle_error);
- 	}
+-static void i82443bxgx_edacmc_get_error_info (struct mem_ctl_info
+*mci,
+-		struct i82443bxgx_edacmc_error_info *info)
++static void i82443bxgx_edacmc_get_error_info(struct mem_ctl_info *mci,
++					     struct i82443bxgx_edacmc_error_info
++					     *info)
+ {
+ 	struct pci_dev *pdev;
+ 	pdev = to_pci_dev(mci->dev);
+@@ -139,9 +131,10 @@ static void i82443bxgx_edacmc_get_error_
+ 				 I82443BXGX_EAP_OFFSET_MBE);
  }
  
- static void e752x_check_sysbus(struct e752x_error_info *info,
--		int *error_found, int handle_error)
-+			       int *error_found, int handle_error)
+-
+-static int i82443bxgx_edacmc_process_error_info (struct mem_ctl_info
+*mci,
+-		struct i82443bxgx_edacmc_error_info *info, int handle_errors)
++static int i82443bxgx_edacmc_process_error_info(struct mem_ctl_info
+*mci,
++						struct
++						i82443bxgx_edacmc_error_info
++						*info, int handle_errors)
  {
- 	u32 stat32, error32;
+ 	int error_found = 0;
+ 	u32 eapaddr, page, pageoffset;
+@@ -152,31 +145,26 @@ static int i82443bxgx_edacmc_process_err
+ 	page = eapaddr >> PAGE_SHIFT;
+ 	pageoffset = eapaddr - (page << PAGE_SHIFT);
  
-@@ -559,47 +558,47 @@ static void e752x_check_sysbus(struct e7
- 	stat32 = info->sysbus_ferr + (info->sysbus_nerr << 16);
- 
- 	if (stat32 == 0)
--		return;  /* no errors */
-+		return;		/* no errors */
- 
- 	error32 = (stat32 >> 16) & 0x3ff;
- 	stat32 = stat32 & 0x3ff;
- 
--	if(stat32 & 0x087)
-+	if (stat32 & 0x087)
- 		sysbus_error(1, stat32 & 0x087, error_found, handle_error);
- 
--	if(stat32 & 0x378)
-+	if (stat32 & 0x378)
- 		sysbus_error(0, stat32 & 0x378, error_found, handle_error);
- 
--	if(error32 & 0x087)
-+	if (error32 & 0x087)
- 		sysbus_error(1, error32 & 0x087, error_found, handle_error);
- 
--	if(error32 & 0x378)
-+	if (error32 & 0x378)
- 		sysbus_error(0, error32 & 0x378, error_found, handle_error);
- }
- 
--static void e752x_check_membuf (struct e752x_error_info *info,
--		int *error_found, int handle_error)
-+static void e752x_check_membuf(struct e752x_error_info *info,
-+			       int *error_found, int handle_error)
- {
- 	u8 stat8;
- 
- 	stat8 = info->buf_ferr;
- 
--	if (stat8 & 0x0f) { /* Error, so process */
-+	if (stat8 & 0x0f) {	/* Error, so process */
- 		stat8 &= 0x0f;
- 		membuf_error(stat8, error_found, handle_error);
+-	if (info->eap  & I82443BXGX_EAP_OFFSET_SBE) {
++	if (info->eap & I82443BXGX_EAP_OFFSET_SBE) {
+ 		error_found = 1;
+ 		if (handle_errors)
+-			edac_mc_handle_ce(
+-				mci, page, pageoffset,
+-				/* 440BX/GX don't make syndrome information available */
+-				0,
+-				edac_mc_find_csrow_by_page(mci, page),
+-				0,	/* channel */
+-				mci->ctl_name);
++			edac_mc_handle_ce(mci, page, pageoffset,
++					  /* 440BX/GX don't make syndrome information available */
++					  0, edac_mc_find_csrow_by_page(mci, page), 0,	/* channel */
++					  mci->ctl_name);
  	}
  
- 	stat8 = info->buf_nerr;
- 
--	if (stat8 & 0x0f) { /* Error, so process */
-+	if (stat8 & 0x0f) {	/* Error, so process */
- 		stat8 &= 0x0f;
- 		membuf_error(stat8, error_found, handle_error);
- 	}
- }
- 
--static void e752x_check_dram (struct mem_ctl_info *mci,
--		struct e752x_error_info *info, int *error_found,
--		int handle_error)
-+static void e752x_check_dram(struct mem_ctl_info *mci,
-+			     struct e752x_error_info *info, int *error_found,
-+			     int handle_error)
- {
- 	u16 error_one, error_next;
- 
-@@ -607,94 +606,90 @@ static void e752x_check_dram (struct mem
- 	error_next = info->dram_nerr;
- 
- 	/* decode and report errors */
--	if(error_one & 0x0101)  /* check first error correctable */
-+	if (error_one & 0x0101)	/* check first error correctable */
- 		process_ce(mci, error_one, info->dram_sec1_add,
--			   info->dram_sec1_syndrome, error_found,
--			   handle_error);
-+			   info->dram_sec1_syndrome, error_found, handle_error);
- 
--	if(error_next & 0x0101)  /* check next error correctable */
-+	if (error_next & 0x0101)	/* check next error correctable */
- 		process_ce(mci, error_next, info->dram_sec2_add,
--			   info->dram_sec2_syndrome, error_found,
--			   handle_error);
-+			   info->dram_sec2_syndrome, error_found, handle_error);
- 
--	if(error_one & 0x4040)
-+	if (error_one & 0x4040)
- 		process_ue_no_info_wr(mci, error_found, handle_error);
- 
--	if(error_next & 0x4040)
-+	if (error_next & 0x4040)
- 		process_ue_no_info_wr(mci, error_found, handle_error);
- 
--	if(error_one & 0x2020)
-+	if (error_one & 0x2020)
- 		process_ded_retry(mci, error_one, info->dram_retr_add,
- 				  error_found, handle_error);
- 
--	if(error_next & 0x2020)
-+	if (error_next & 0x2020)
- 		process_ded_retry(mci, error_next, info->dram_retr_add,
- 				  error_found, handle_error);
- 
--	if(error_one & 0x0808)
--		process_threshold_ce(mci, error_one, error_found,
--				     handle_error);
-+	if (error_one & 0x0808)
-+		process_threshold_ce(mci, error_one, error_found, handle_error);
- 
--	if(error_next & 0x0808)
-+	if (error_next & 0x0808)
- 		process_threshold_ce(mci, error_next, error_found,
- 				     handle_error);
- 
--	if(error_one & 0x0606)
-+	if (error_one & 0x0606)
- 		process_ue(mci, error_one, info->dram_ded_add,
- 			   info->dram_scrb_add, error_found, handle_error);
- 
--	if(error_next & 0x0606)
-+	if (error_next & 0x0606)
- 		process_ue(mci, error_next, info->dram_ded_add,
- 			   info->dram_scrb_add, error_found, handle_error);
- }
- 
--static void e752x_get_error_info (struct mem_ctl_info *mci,
--		struct e752x_error_info *info)
-+static void e752x_get_error_info(struct mem_ctl_info *mci,
-+				 struct e752x_error_info *info)
- {
- 	struct pci_dev *dev;
- 	struct e752x_pvt *pvt;
- 
- 	memset(info, 0, sizeof(*info));
--	pvt = (struct e752x_pvt *) mci->pvt_info;
-+	pvt = (struct e752x_pvt *)mci->pvt_info;
- 	dev = pvt->dev_d0f1;
- 	pci_read_config_dword(dev, E752X_FERR_GLOBAL, &info->ferr_global);
- 
- 	if (info->ferr_global) {
- 		pci_read_config_byte(dev, E752X_HI_FERR, &info->hi_ferr);
- 		pci_read_config_word(dev, E752X_SYSBUS_FERR,
--				&info->sysbus_ferr);
-+				     &info->sysbus_ferr);
- 		pci_read_config_byte(dev, E752X_BUF_FERR, &info->buf_ferr);
--		pci_read_config_word(dev, E752X_DRAM_FERR,
--				&info->dram_ferr);
-+		pci_read_config_word(dev, E752X_DRAM_FERR, &info->dram_ferr);
- 		pci_read_config_dword(dev, E752X_DRAM_SEC1_ADD,
--				&info->dram_sec1_add);
-+				      &info->dram_sec1_add);
- 		pci_read_config_word(dev, E752X_DRAM_SEC1_SYNDROME,
--				&info->dram_sec1_syndrome);
-+				     &info->dram_sec1_syndrome);
- 		pci_read_config_dword(dev, E752X_DRAM_DED_ADD,
--				&info->dram_ded_add);
-+				      &info->dram_ded_add);
- 		pci_read_config_dword(dev, E752X_DRAM_SCRB_ADD,
--				&info->dram_scrb_add);
-+				      &info->dram_scrb_add);
- 		pci_read_config_dword(dev, E752X_DRAM_RETR_ADD,
--				&info->dram_retr_add);
-+				      &info->dram_retr_add);
- 
- 		if (info->hi_ferr & 0x7f)
- 			pci_write_config_byte(dev, E752X_HI_FERR,
--					info->hi_ferr);
-+					      info->hi_ferr);
- 
- 		if (info->sysbus_ferr)
- 			pci_write_config_word(dev, E752X_SYSBUS_FERR,
--					info->sysbus_ferr);
-+					      info->sysbus_ferr);
- 
- 		if (info->buf_ferr & 0x0f)
- 			pci_write_config_byte(dev, E752X_BUF_FERR,
--					info->buf_ferr);
-+					      info->buf_ferr);
- 
- 		if (info->dram_ferr)
- 			pci_write_bits16(pvt->bridge_ck, E752X_DRAM_FERR,
--					info->dram_ferr, info->dram_ferr);
-+					 info->dram_ferr, info->dram_ferr);
- 
- 		pci_write_config_dword(dev, E752X_FERR_GLOBAL,
--				info->ferr_global);
-+				       info->ferr_global);
+-	if (info->eap  & I82443BXGX_EAP_OFFSET_MBE) {
++	if (info->eap & I82443BXGX_EAP_OFFSET_MBE) {
+ 		error_found = 1;
+ 		if (handle_errors)
+-			edac_mc_handle_ue(
+-				mci, page, pageoffset,
+-				edac_mc_find_csrow_by_page(mci, page),
+-				mci->ctl_name);
++			edac_mc_handle_ue(mci, page, pageoffset,
++					  edac_mc_find_csrow_by_page(mci, page),
++					  mci->ctl_name);
  	}
  
- 	pci_read_config_dword(dev, E752X_NERR_GLOBAL, &info->nerr_global);
-@@ -702,38 +697,38 @@ static void e752x_get_error_info (struct
- 	if (info->nerr_global) {
- 		pci_read_config_byte(dev, E752X_HI_NERR, &info->hi_nerr);
- 		pci_read_config_word(dev, E752X_SYSBUS_NERR,
--				&info->sysbus_nerr);
-+				     &info->sysbus_nerr);
- 		pci_read_config_byte(dev, E752X_BUF_NERR, &info->buf_nerr);
--		pci_read_config_word(dev, E752X_DRAM_NERR,
--				&info->dram_nerr);
-+		pci_read_config_word(dev, E752X_DRAM_NERR, &info->dram_nerr);
- 		pci_read_config_dword(dev, E752X_DRAM_SEC2_ADD,
--				&info->dram_sec2_add);
-+				      &info->dram_sec2_add);
- 		pci_read_config_word(dev, E752X_DRAM_SEC2_SYNDROME,
--				&info->dram_sec2_syndrome);
-+				     &info->dram_sec2_syndrome);
- 
- 		if (info->hi_nerr & 0x7f)
- 			pci_write_config_byte(dev, E752X_HI_NERR,
--					info->hi_nerr);
-+					      info->hi_nerr);
- 
- 		if (info->sysbus_nerr)
- 			pci_write_config_word(dev, E752X_SYSBUS_NERR,
--					info->sysbus_nerr);
-+					      info->sysbus_nerr);
- 
- 		if (info->buf_nerr & 0x0f)
- 			pci_write_config_byte(dev, E752X_BUF_NERR,
--					info->buf_nerr);
-+					      info->buf_nerr);
- 
- 		if (info->dram_nerr)
- 			pci_write_bits16(pvt->bridge_ck, E752X_DRAM_NERR,
--					info->dram_nerr, info->dram_nerr);
-+					 info->dram_nerr, info->dram_nerr);
- 
- 		pci_write_config_dword(dev, E752X_NERR_GLOBAL,
--				info->nerr_global);
-+				       info->nerr_global);
- 	}
+ 	return error_found;
  }
  
--static int e752x_process_error_info (struct mem_ctl_info *mci,
--		struct e752x_error_info *info, int handle_errors)
-+static int e752x_process_error_info(struct mem_ctl_info *mci,
-+				    struct e752x_error_info *info,
-+				    int handle_errors)
+-
+ static void i82443bxgx_edacmc_check(struct mem_ctl_info *mci)
  {
- 	u32 error32, stat32;
- 	int error_found;
-@@ -780,25 +775,25 @@ static inline int dual_channel_active(u1
+ 	struct i82443bxgx_edacmc_error_info info;
+@@ -186,11 +174,10 @@ static void i82443bxgx_edacmc_check(stru
+ 	i82443bxgx_edacmc_process_error_info(mci, &info, 1);
  }
  
- static void e752x_init_csrows(struct mem_ctl_info *mci, struct pci_dev
-*pdev,
--		u16 ddrcsr)
-+			      u16 ddrcsr)
+-
+ static void i82443bxgx_init_csrows(struct mem_ctl_info *mci,
+-					struct pci_dev *pdev,
+-					enum edac_type edac_mode,
+-					enum mem_type mtype)
++				   struct pci_dev *pdev,
++				   enum edac_type edac_mode,
++				   enum mem_type mtype)
  {
  	struct csrow_info *csrow;
- 	unsigned long last_cumul_size;
- 	int index, mem_dev, drc_chan;
--	int drc_drbg;  /* DRB granularity 0=64mb, 1=128mb */
--	int drc_ddim;  /* DRAM Data Integrity Mode 0=none, 2=edac */
-+	int drc_drbg;		/* DRB granularity 0=64mb, 1=128mb */
-+	int drc_ddim;		/* DRAM Data Integrity Mode 0=none, 2=edac */
- 	u8 value;
- 	u32 dra, drc, cumul_size;
- 
- 	dra = 0;
--	for (index=0; index < 4; index++) {
-+	for (index = 0; index < 4; index++) {
- 		u8 dra_reg;
--		pci_read_config_byte(pdev, E752X_DRA+index, &dra_reg);
-+		pci_read_config_byte(pdev, E752X_DRA + index, &dra_reg);
- 		dra |= dra_reg << (index * 8);
- 	}
- 	pci_read_config_dword(pdev, E752X_DRC, &drc);
- 	drc_chan = dual_channel_active(ddrcsr);
--	drc_drbg = drc_chan + 1;  /* 128 in dual mode, 64 in single */
-+	drc_drbg = drc_chan + 1;	/* 128 in dual mode, 64 in single */
- 	drc_ddim = (drc >> 20) & 0x3;
- 
- 	/* The dram row boundary (DRB) reg values are boundary address for
-@@ -846,7 +841,7 @@ static void e752x_init_csrows(struct mem
- }
- 
- static void e752x_init_mem_map_table(struct pci_dev *pdev,
--		struct e752x_pvt *pvt)
-+				     struct e752x_pvt *pvt)
- {
  	int index;
- 	u8 value, last, row, stat8;
-@@ -861,7 +856,7 @@ static void e752x_init_mem_map_table(str
- 			/* no dimm in the slot, so flag it as empty */
- 			pvt->map[index] = 0xff;
- 			pvt->map[index + 1] = 0xff;
--		} else {        /* there is a dimm in the slot */
-+		} else {	/* there is a dimm in the slot */
- 			pvt->map[index] = row;
- 			row++;
- 			last = value;
-@@ -870,10 +865,9 @@ static void e752x_init_mem_map_table(str
- 			 */
- 			pci_read_config_byte(pdev, E752X_DRB + index + 1,
- 					     &value);
--			pvt->map[index + 1] = (value == last) ?
--			    0xff :      /* the dimm is single sided,
--					   so flag as empty */
--			    row;        /* this is a double sided dimm
-+			pvt->map[index + 1] = (value == last) ? 0xff :	/* the dimm is
-single sided,
-+									   so flag as empty */
-+			    row;	/* this is a double sided dimm
- 					   to save the next row # */
- 			row++;
- 			last = value;
-@@ -887,13 +881,12 @@ static void e752x_init_mem_map_table(str
- 
- /* Return 0 on success or 1 on failure. */
- static int e752x_get_devs(struct pci_dev *pdev, int dev_idx,
--		struct e752x_pvt *pvt)
-+			  struct e752x_pvt *pvt)
- {
- 	struct pci_dev *dev;
- 
- 	pvt->bridge_ck = pci_get_device(PCI_VENDOR_ID_INTEL,
--					pvt->dev_info->err_dev,
--					pvt->bridge_ck);
-+					pvt->dev_info->err_dev, pvt->bridge_ck);
- 
- 	if (pvt->bridge_ck == NULL)
- 		pvt->bridge_ck = pci_scan_single_device(pdev->bus,
-@@ -901,8 +894,8 @@ static int e752x_get_devs(struct pci_dev
- 
- 	if (pvt->bridge_ck == NULL) {
- 		e752x_printk(KERN_ERR, "error reporting device not found:"
--		       "vendor %x device 0x%x (broken BIOS?)\n",
--		       PCI_VENDOR_ID_INTEL, e752x_devs[dev_idx].err_dev);
-+			     "vendor %x device 0x%x (broken BIOS?)\n",
-+			     PCI_VENDOR_ID_INTEL, e752x_devs[dev_idx].err_dev);
- 		return 1;
+@@ -233,8 +220,7 @@ static void i82443bxgx_init_csrows(struc
  	}
- 
-@@ -917,7 +910,7 @@ static int e752x_get_devs(struct pci_dev
- 
- 	return 0;
- 
--fail:
-+      fail:
- 	pci_dev_put(pvt->bridge_ck);
- 	return 1;
  }
-@@ -945,20 +938,20 @@ static int e752x_probe1(struct pci_dev *
+ 
+-
+-static int  i82443bxgx_edacmc_probe1(struct pci_dev *pdev, int
+dev_idx)
++static int i82443bxgx_edacmc_probe1(struct pci_dev *pdev, int dev_idx)
+ {
  	struct mem_ctl_info *mci;
- 	struct e752x_pvt *pvt;
- 	u16 ddrcsr;
--	int drc_chan;	/* Number of channels 0=1chan,1=2chan */
-+	int drc_chan;		/* Number of channels 0=1chan,1=2chan */
- 	struct e752x_error_info discard;
- 
- 	debugf0("%s(): mci\n", __func__);
- 	debugf0("Starting Probe1\n");
- 
- 	/* make sure error reporting method is sane */
--	switch(edac_op_state) {
--		case EDAC_OPSTATE_POLL:
--		case EDAC_OPSTATE_NMI:
--			break;
--		default:
--			edac_op_state = EDAC_OPSTATE_POLL;
--			break;
-+	switch (edac_op_state) {
-+	case EDAC_OPSTATE_POLL:
-+	case EDAC_OPSTATE_NMI:
-+		break;
-+	default:
-+		edac_op_state = EDAC_OPSTATE_POLL;
-+		break;
+ 	u8 dramc;
+@@ -260,7 +246,7 @@ static int  i82443bxgx_edacmc_probe1(str
+ 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
+ 	pci_read_config_byte(pdev, I82443BXGX_DRAMC, &dramc);
+ 	switch ((dramc >> I82443BXGX_DRAMC_OFFSET_DT) & (BIT(0) | BIT(1))) {
+-	case  I82443BXGX_DRAMC_DRAM_IS_EDO:
++	case I82443BXGX_DRAMC_DRAM_IS_EDO:
+ 		mtype = MEM_EDO;
+ 		break;
+ 	case I82443BXGX_DRAMC_DRAM_IS_SDRAM:
+@@ -270,7 +256,8 @@ static int  i82443bxgx_edacmc_probe1(str
+ 		mtype = MEM_RDR;
+ 		break;
+ 	default:
+-		debugf0("Unknown/reserved DRAM type value in DRAMC register!\n");
++		debugf0
++		    ("Unknown/reserved DRAM type value in DRAMC register!\n");
+ 		mtype = -MEM_UNKNOWN;
  	}
  
- 	/* check to see if device 0 function 1 is enabled; if it isn't, we
-@@ -968,7 +961,7 @@ static int e752x_probe1(struct pci_dev *
- 	pci_read_config_byte(pdev, E752X_DEVPRES1, &stat8);
- 	if (!force_function_unhide && !(stat8 & (1 << 5))) {
- 		printk(KERN_INFO "Contact your BIOS vendor to see if the "
--			"E752x error registers can be safely un-hidden\n");
-+		       "E752x error registers can be safely un-hidden\n");
- 		return -ENOMEM;
- 	}
- 	stat8 |= (1 << 5);
-@@ -995,7 +988,7 @@ static int e752x_probe1(struct pci_dev *
- 	mci->dev = &pdev->dev;
+@@ -282,13 +269,12 @@ static int  i82443bxgx_edacmc_probe1(str
+ 	mci->scrub_cap = SCRUB_FLAG_HW_SRC;
+ 	pci_read_config_dword(pdev, I82443BXGX_NBXCFG, &nbxcfg);
+ 	ecc_mode = ((nbxcfg >> I82443BXGX_NBXCFG_OFFSET_DRAM_INTEGRITY) &
+-				(BIT(0) | BIT(1)));
++		    (BIT(0) | BIT(1)));
  
- 	debugf3("%s(): init pvt\n", __func__);
--	pvt = (struct e752x_pvt *) mci->pvt_info;
-+	pvt = (struct e752x_pvt *)mci->pvt_info;
- 	pvt->dev_info = &e752x_devs[dev_idx];
- 	pvt->mc_symmetric = ((ddrcsr & 0x10) != 0);
+ 	mci->scrub_mode = (ecc_mode == I82443BXGX_NBXCFG_INTEGRITY_SCRUB)
+-		? SCRUB_HW_SRC
+-		: SCRUB_NONE;
++	    ? SCRUB_HW_SRC : SCRUB_NONE;
  
-@@ -1028,36 +1021,34 @@ static int e752x_probe1(struct pci_dev *
- 	pci_read_config_word(pdev, E752X_REMAPLIMIT, &pci_data);
- 	pvt->remaplimit = ((u32) pci_data) << 14;
- 	e752x_printk(KERN_INFO,
--		"tolm = %x, remapbase = %x, remaplimit = %x\n", pvt->tolm,
--		pvt->remapbase, pvt->remaplimit);
-+		     "tolm = %x, remapbase = %x, remaplimit = %x\n", pvt->tolm,
-+		     pvt->remapbase, pvt->remaplimit);
- 
- 	/* Here we assume that we will never see multiple instances of this
- 	 * type of memory controller.  The ID is therefore hardcoded to 0.
- 	 */
--	if (edac_mc_add_mc(mci,0)) {
-+	if (edac_mc_add_mc(mci, 0)) {
- 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
- 		goto fail;
- 	}
- 
- 	e752x_init_error_reporting_regs(pvt);
--	e752x_get_error_info(mci, &discard); /* clear other MCH errors */
-+	e752x_get_error_info(mci, &discard);	/* clear other MCH errors */
- 
- 	/* allocating generic PCI control info */
- 	e752x_pci = edac_pci_create_generic_ctl(&pdev->dev, EDAC_MOD_STR);
- 	if (!e752x_pci) {
- 		printk(KERN_WARNING
--			"%s(): Unable to create PCI control\n",
+-	switch(ecc_mode) {
++	switch (ecc_mode) {
+ 	case I82443BXGX_NBXCFG_INTEGRITY_NONE:
+ 		edac_mode = EDAC_NONE;
+ 		break;
+@@ -300,8 +286,9 @@ static int  i82443bxgx_edacmc_probe1(str
+ 		edac_mode = EDAC_SECDED;
+ 		break;
+ 	default:
+-		debugf0("%s(): Unknown/reserved ECC state in NBXCFG register!\n",
 -			__func__);
-+		       "%s(): Unable to create PCI control\n", __func__);
- 		printk(KERN_WARNING
--			"%s(): PCI error report via EDAC not setup\n",
--			__func__);
-+		       "%s(): PCI error report via EDAC not setup\n", __func__);
++		debugf0
++		    ("%s(): Unknown/reserved ECC state in NBXCFG register!\n",
++		     __func__);
+ 		edac_mode = EDAC_UNKNOWN;
+ 		break;
  	}
+@@ -312,8 +299,10 @@ static int  i82443bxgx_edacmc_probe1(str
+ 	 * here, or we get "phantom" errors occuring at module-load
+ 	 * time. */
+ 	pci_write_bits32(pdev, I82443BXGX_EAP,
+-			 (I82443BXGX_EAP_OFFSET_SBE | I82443BXGX_EAP_OFFSET_MBE),
+-			 (I82443BXGX_EAP_OFFSET_SBE | I82443BXGX_EAP_OFFSET_MBE));
++			 (I82443BXGX_EAP_OFFSET_SBE |
++			  I82443BXGX_EAP_OFFSET_MBE),
++			 (I82443BXGX_EAP_OFFSET_SBE |
++			  I82443BXGX_EAP_OFFSET_MBE));
  
- 	/* get this far and it's successful */
- 	debugf3("%s(): success\n", __func__);
+ 	mci->mod_name = EDAC_MOD_STR;
+ 	mci->mod_ver = I82443_REVISION;
+@@ -330,36 +319,36 @@ static int  i82443bxgx_edacmc_probe1(str
+ 	debugf3("MC: " __FILE__ ": %s(): success\n", __func__);
  	return 0;
  
 -fail:
 +      fail:
- 	pci_dev_put(pvt->dev_d0f0);
- 	pci_dev_put(pvt->dev_d0f1);
- 	pci_dev_put(pvt->bridge_ck);
-@@ -1068,12 +1059,12 @@ fail:
+ 	edac_mc_free(mci);
+ 	return -ENODEV;
+ }
++
+ EXPORT_SYMBOL_GPL(i82443bxgx_edacmc_probe1);
  
  /* returns count (>= 0), or negative on error */
- static int __devinit e752x_init_one(struct pci_dev *pdev,
--		const struct pci_device_id *ent)
-+				    const struct pci_device_id *ent)
+ static int __devinit i82443bxgx_edacmc_init_one(struct pci_dev *pdev,
+-				     const struct pci_device_id *ent)
++						const struct pci_device_id *ent)
  {
- 	debugf0("%s()\n", __func__);
+ 	debugf0("MC: " __FILE__ ": %s()\n", __func__);
  
- 	/* wake up and enable device */
--	if(pci_enable_device(pdev) < 0)
-+	if (pci_enable_device(pdev) < 0)
- 		return -EIO;
+ 	/* don't need to call pci_device_enable() */
+-	return  i82443bxgx_edacmc_probe1(pdev, ent->driver_data);
++	return i82443bxgx_edacmc_probe1(pdev, ent->driver_data);
+ }
  
- 	return e752x_probe1(pdev, ent->driver_data);
-@@ -1092,7 +1083,7 @@ static void __devexit e752x_remove_one(s
- 	if ((mci = edac_mc_del_mc(&pdev->dev)) == NULL)
+-
+ static void __devexit i82443bxgx_edacmc_remove_one(struct pci_dev
+*pdev)
+ {
+ 	struct mem_ctl_info *mci;
+ 
+ 	debugf0(__FILE__ ": %s()\n", __func__);
+ 
+-	if ((mci = edac_mc_del_mc(&pdev->dev)) == NULL )
++	if ((mci = edac_mc_del_mc(&pdev->dev)) == NULL)
  		return;
  
--	pvt = (struct e752x_pvt *) mci->pvt_info;
-+	pvt = (struct e752x_pvt *)mci->pvt_info;
- 	pci_dev_put(pvt->dev_d0f0);
- 	pci_dev_put(pvt->dev_d0f1);
- 	pci_dev_put(pvt->bridge_ck);
-@@ -1101,20 +1092,17 @@ static void __devexit e752x_remove_one(s
+ 	edac_mc_free(mci);
+ }
+-EXPORT_SYMBOL_GPL(i82443bxgx_edacmc_remove_one);
  
- static const struct pci_device_id e752x_pci_tbl[] __devinitdata = {
- 	{
--		PCI_VEND_DEV(INTEL, 7520_0), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
--		E7520
--	},
-+	 PCI_VEND_DEV(INTEL, 7520_0), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+	 E7520},
- 	{
--		PCI_VEND_DEV(INTEL, 7525_0), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
--		E7525
--	},
-+	 PCI_VEND_DEV(INTEL, 7525_0), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+	 E7525},
- 	{
--		PCI_VEND_DEV(INTEL, 7320_0), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
--		E7320
--	},
-+	 PCI_VEND_DEV(INTEL, 7320_0), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+	 E7320},
- 	{
--		0,
--	}	/* 0 terminated list. */
-+	 0,
-+	 }			/* 0 terminated list. */
++EXPORT_SYMBOL_GPL(i82443bxgx_edacmc_remove_one);
+ 
+ static const struct pci_device_id i82443bxgx_pci_tbl[] __devinitdata =
+{
+ 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82443BX_0)},
+@@ -371,7 +360,6 @@ static const struct pci_device_id i82443
+ 
+ MODULE_DEVICE_TABLE(pci, i82443bxgx_pci_tbl);
+ 
+-
+ static struct pci_driver i82443bxgx_edacmc_driver = {
+ 	.name = EDAC_MOD_STR,
+ 	.probe = i82443bxgx_edacmc_init_one,
+@@ -379,23 +367,19 @@ static struct pci_driver i82443bxgx_edac
+ 	.id_table = i82443bxgx_pci_tbl,
  };
  
- MODULE_DEVICE_TABLE(pci, e752x_pci_tbl);
-@@ -1150,6 +1138,6 @@ MODULE_DESCRIPTION("MC support for Intel
+-
+ static int __init i82443bxgx_edacmc_init(void)
+ {
+ 	return pci_register_driver(&i82443bxgx_edacmc_driver);
+ }
  
- module_param(force_function_unhide, int, 0444);
- MODULE_PARM_DESC(force_function_unhide, "if BIOS sets Dev0:Fun1 up as
-hidden:"
--" 1=force unhide and hope BIOS doesn't fight driver for Dev0:Fun1
-access");
-+		 " 1=force unhide and hope BIOS doesn't fight driver for Dev0:Fun1
-access");
- module_param(edac_op_state, int, 0444);
- MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state:
-0=Poll,1=NMI");
+-
+ static void __exit i82443bxgx_edacmc_exit(void)
+ {
+ 	pci_unregister_driver(&i82443bxgx_edacmc_driver);
+ }
+ 
+-
+ module_init(i82443bxgx_edacmc_init);
+ module_exit(i82443bxgx_edacmc_exit);
+ 
+-
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Tim Small <tim@buttersideup.com> - WPAD");
+ MODULE_DESCRIPTION("EDAC MC support for Intel 82443BX/GX memory
+controllers");
 
