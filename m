@@ -1,97 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbXFCNDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762629AbXFCNFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761972AbXFCNDD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 09:03:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759632AbXFCNCy
+	id S1762629AbXFCNFZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 09:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbXFCNFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 09:02:54 -0400
-Received: from os.inf.tu-dresden.de ([141.76.48.99]:40151 "EHLO
-	os.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759606AbXFCNCx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 09:02:53 -0400
-Date: Sun, 3 Jun 2007 15:02:46 +0200
-From: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [1/4] 2.6.22-rc3: known regressions
-Message-ID: <20070603150246.5151dda6@laptop.hypervisor.org>
-In-Reply-To: <465C2225.2000100@googlemail.com>
-References: <465C2225.2000100@googlemail.com>
-X-Mailer: X-Mailer 5.0 Gold
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_cg5MW5v95WXuOXt=S6Qlirs";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Sun, 3 Jun 2007 09:05:15 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:36734 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1759802AbXFCNFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 09:05:14 -0400
+Message-ID: <380875906.01702@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sun, 3 Jun 2007 21:05:08 +0800
+From: Fengguang Wu <fengguang.wu@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+       cotte@de.ibm.com, hugh@veritas.com, neilb@suse.de, zanussi@us.ibm.com,
+       hch@infradead.org
+Subject: Re: [PATCH] sendfile removal
+Message-ID: <20070603130507.GA11170@mail.ustc.edu.cn>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+	cotte@de.ibm.com, hugh@veritas.com, neilb@suse.de,
+	zanussi@us.ibm.com, hch@infradead.org
+References: <20070531124753.a99f713c.dada1@cosmosbay.com> <20070531105321.GQ32105@kernel.dk> <465F9BEF.20504@zytor.com> <20070601054120.GI32105@kernel.dk> <465FB3AD.5030807@zytor.com> <465FC92C.50608@cosmosbay.com> <466040C1.6030004@zytor.com> <alpine.LFD.0.98.0706010904110.3957@woody.linux-foundation.org> <20070602150104.GH32105@kernel.dk> <alpine.LFD.0.98.0706020836360.23741@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706020836360.23741@woody.linux-foundation.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_cg5MW5v95WXuOXt=S6Qlirs
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Sat, Jun 02, 2007 at 08:40:04AM -0700, Linus Torvalds wrote:
+> On Sat, 2 Jun 2007, Jens Axboe wrote:
+> Your suggested:
+> 
+> >       if ((flags & SPLICE_F_NONBLOCK) && spd.nr_pages) {
+> >               if (TestSetPageLocked(page))
+> >                       break;
+> >       } else
+> >               lock_page(page);
+> > 
+> > should do that - always block for the first page and potentially return
+> > a partial results for the remaining pages that read-ahead kicked into
+> > gear.
+> 
+> would work, but I suspect that for a server, returning EAGAIN once is 
+> actually the best option - if it has a select() loop, and something else 
+> is running, the "return EAGAIN once" actually makes tons of sense (it 
+> would basically boil down to the kernel effectively saying "ok, try 
+> anything else you might have pending in your queues first, if you get back 
+> to me, I'll block then").
 
-On Tue, 29 May 2007 14:52:53 +0200 Michal Piotrowski (MP) wrote:
+May be we can settle with "return EAGAIN once" for *all* possible
+waits, including I/O submitted by others:
 
-MP> Here is a list of some known regressions in 2.6.22-rc3.
-MP>=20
-MP> Feel free to add new regressions/remove fixed etc.
-MP> http://kernelnewbies.org/known_regressions
+          if ((flags & SPLICE_F_NONBLOCK) &&
+                  TestSetPageLocked(page) &&
+                  in->f_ra.prev_index != index)
+                  break;
+          else
+                  lock_page(page);
 
-Here's another 2.6.22-rc3 regression. It was ok on 2.6.21. I believe it
-triggered during: echo 0 > /proc/sys/kernel/nmi_watchdog
+However, the upper layer generic_file_splice_read() may keep
+on calling __generic_file_splice_read(), so we need more code to
+stop it with flag SPLICE_INTERNAL_WILLBLOCK:
 
+---
+(not tested yet; still not sure if it's the best solution.)
 
-------------[ cut here ]------------
-kernel BUG at arch/i386/kernel/cpu/perfctr-watchdog.c:126!
-invalid opcode: 0000 [#1]
-PREEMPT=20
-Modules linked in:
-CPU:    0
-EIP:    0060:[<c010cae5>]    Not tainted VLI
-EFLAGS: 00010286   (2.6.22-rc3 #2)
-EIP is at release_evntsel_nmi+0x16/0x22
-eax: 000000c1   ebx: 080f7408   ecx: c04296e0   edx: ffffff3b
-esi: 00000001   edi: f69d4240   ebp: 00000002   esp: f6962f30
-ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-Process rc.M (pid: 1281, ti=3Df6962000 task=3Df706c030 task.ti=3Df6962000)
-Stack: c010cb60 c010cda3 c0110abe 080f7408 f6962f64 f6962fa0 c042ab68 fffff=
-fff=20
-       c01853a8 080f7408 f6962f64 f6962fa0 080f7408 00000002 c042a774 f69d4=
-240=20
-       080f7408 c0185339 00000002 c0156d33 f6962fa0 f7fcccb4 f69d4240 fffff=
-ff7=20
-Call Trace:
- [<c010cb60>] single_msr_unreserve+0xd/0x1a
- [<c010cda3>] disable_lapic_nmi_watchdog+0x2b/0x39
- [<c0110abe>] proc_nmi_enabled+0xa0/0xbd
- [<c01853a8>] proc_sys_write+0x6f/0x8c
- [<c0185339>] proc_sys_write+0x0/0x8c
- [<c0156d33>] vfs_write+0x8a/0x10c
- [<c01571ef>] sys_write+0x41/0x67
- [<c0103c30>] syscall_call+0x7/0xb
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Code: 00 c7 04 24 f6 5d 3c c0 e8 7d e0 00 00 83 ca ff 89 d0 5a 59 c3 8b 0d =
-28
-6e 48 c0 31 d2 85 c9 74 0e 89 c2 2b 51 18 83 fa 42 76 04 <0f> 0b eb fe 0f b=
-3 15
-38 6e 48 c0 c3 8b 0d 28 6e 48 c0 31 d2 85 EIP: [<c010cae5>]
-release_evntsel_nmi+0x16/0x22 SS:ESP 0068:f6962f30
+In non-block splicing, return EAGAIN once for all possible I/O waits.
 
-Cheers,
+It works by checking (ra.prev_index != index) in
+__generic_file_splice_read().  Another reader on the same fd will at
+worst cause a few more splice syscalls.
 
-	- Udo
+If keep calling generic_file_splice_read() in non-block mode, it will
+return partial data before the first hole; then return EAGAIN at
+second call; at last it will block on the I/O page.
 
---Sig_cg5MW5v95WXuOXt=S6Qlirs
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ fs/splice.c               |   38 ++++++++++++++++++++++--------------
+ include/linux/pipe_fs_i.h |    2 +
+ 2 files changed, 26 insertions(+), 14 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+--- linux-2.6.22-rc3-mm1.orig/fs/splice.c
++++ linux-2.6.22-rc3-mm1/fs/splice.c
+@@ -264,10 +264,11 @@ static ssize_t splice_to_pipe(struct pip
+ static int
+ __generic_file_splice_read(struct file *in, loff_t *ppos,
+ 			   struct pipe_inode_info *pipe, size_t len,
+-			   unsigned int flags)
++			   unsigned int *flags)
+ {
+ 	struct address_space *mapping = in->f_mapping;
+ 	unsigned int loff, nr_pages;
++	unsigned int first_hole;
+ 	struct page *pages[PIPE_BUFFERS];
+ 	struct partial_page partial[PIPE_BUFFERS];
+ 	struct page *page;
+@@ -278,7 +279,7 @@ __generic_file_splice_read(struct file *
+ 	struct splice_pipe_desc spd = {
+ 		.pages = pages,
+ 		.partial = partial,
+-		.flags = flags,
++		.flags = *flags,
+ 		.ops = &page_cache_pipe_buf_ops,
+ 	};
+ 
+@@ -299,12 +300,17 @@ __generic_file_splice_read(struct file *
+ 	 * Lookup the (hopefully) full range of pages we need.
+ 	 */
+ 	spd.nr_pages = find_get_pages_contig(mapping, index, nr_pages, pages);
++	first_hole = spd.nr_pages;
++	index += spd.nr_pages;
+ 
+ 	/*
+ 	 * If find_get_pages_contig() returned fewer pages than we needed,
+-	 * allocate the rest.
++	 * readahead/allocate the rest.
+ 	 */
+-	index += spd.nr_pages;
++	if (spd.nr_pages < nr_pages)
++		page_cache_readahead_ondemand(mapping, &in->f_ra, in,
++				NULL, index, nr_pages - spd.nr_pages);
++
+ 	while (spd.nr_pages < nr_pages) {
+ 		/*
+ 		 * Page could be there, find_get_pages_contig() breaks on
+@@ -312,9 +318,6 @@ __generic_file_splice_read(struct file *
+ 		 */
+ 		page = find_get_page(mapping, index);
+ 		if (!page) {
+-			page_cache_readahead_ondemand(mapping, &in->f_ra, in,
+-					NULL, index, nr_pages - spd.nr_pages);
+-
+ 			/*
+ 			 * page didn't exist, allocate one.
+ 			 */
+@@ -369,13 +372,13 @@ __generic_file_splice_read(struct file *
+ 		 */
+ 		if (!PageUptodate(page)) {
+ 			/*
+-			 * If in nonblock mode then dont block on waiting
+-			 * for an in-flight io page
++			 * In non-block mode, only block at the second try.
+ 			 */
+-			if (flags & SPLICE_F_NONBLOCK) {
+-				if (TestSetPageLocked(page))
+-					break;
+-			} else
++			if ((*flags & SPLICE_F_NONBLOCK) &&
++				TestSetPageLocked(page) &&
++				in->f_ra.prev_index != index)
++				break;
++			else
+ 				lock_page(page);
+ 
+ 			/*
+@@ -454,6 +457,10 @@ fill_it:
+ 		page_cache_release(pages[page_nr++]);
+ 	in->f_ra.prev_index = index;
+ 
++	if ((*flags & SPLICE_F_NONBLOCK) && (spd.nr_pages > first_hole)) {
++		*flags |= SPLICE_INTERNAL_WILLBLOCK;
++		spd.nr_pages = first_hole;
++	}
+ 	if (spd.nr_pages)
+ 		return splice_to_pipe(pipe, &spd);
+ 
+@@ -480,7 +487,7 @@ ssize_t generic_file_splice_read(struct 
+ 	spliced = 0;
+ 
+ 	while (len) {
+-		ret = __generic_file_splice_read(in, ppos, pipe, len, flags);
++		ret = __generic_file_splice_read(in, ppos, pipe, len, &flags);
+ 
+ 		if (ret < 0)
+ 			break;
+@@ -496,6 +503,9 @@ ssize_t generic_file_splice_read(struct 
+ 		*ppos += ret;
+ 		len -= ret;
+ 		spliced += ret;
++
++		if (flags & SPLICE_INTERNAL_WILLBLOCK)
++			break;
+ 	}
+ 
+ 	if (spliced)
+--- linux-2.6.22-rc3-mm1.orig/include/linux/pipe_fs_i.h
++++ linux-2.6.22-rc3-mm1/include/linux/pipe_fs_i.h
+@@ -82,6 +82,8 @@ int generic_pipe_buf_steal(struct pipe_i
+ #define SPLICE_F_MORE	(0x04)	/* expect more data */
+ #define SPLICE_F_GIFT	(0x08)	/* pages passed in are a gift */
+ 
++#define SPLICE_INTERNAL_WILLBLOCK  (0x100) /* read on next page will block */
++
+ /*
+  * Passed to the actors
+  */
 
-iD8DBQFGYrv2nhRzXSM7nSkRAjo1AJ0RPAoCSIswup0BQ537E3pmgWJUSACfduA+
-orS0wSgoXvYFMnrF872g1ck=
-=EwQ/
------END PGP SIGNATURE-----
-
---Sig_cg5MW5v95WXuOXt=S6Qlirs--
