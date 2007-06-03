@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761430AbXFCMfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762243AbXFCMha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761430AbXFCMfY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 08:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757620AbXFCMfK
+	id S1762243AbXFCMha (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 08:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757979AbXFCMhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 08:35:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:39641 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756897AbXFCMfI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 08:35:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=DmGgqOPg9n4qG+XyHZbkilzkPkXtcYcxML5BXJPt8Co0JZ1rWKIzwG/HaMs2r4UYlGd6G6WMYh/6gQStj93Kgr/McXP4fCOuZq3C3M1RLpYr7al3oNmLrXZl+lekAU/m/otiRlV3D6guRbApw+CHsC9m8NcGQ6yrLbxaf4FhtY0=
-Message-ID: <3ae72650706030535k26f9d982t382d8fd145c4e966@mail.gmail.com>
-Date: Sun, 3 Jun 2007 14:35:07 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
-Subject: Re: Kernel 2.6.22-rc3 breaks USB: Unable to get HID descriptor (error sending control message: Operation not permitted)
-Cc: "Jiri Kosina" <jikos@jikos.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706030749580.3653@p34.internal.lan>
+	Sun, 3 Jun 2007 08:37:24 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:34959 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756897AbXFCMhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 08:37:23 -0400
+Date: Sun, 3 Jun 2007 14:35:46 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Yasuyuki KOZAKAI <yasuyuki.kozakai@toshiba.co.jp>
+cc: netfilter-devel@lists.netfilter.org, netfilter@lists.netfilter.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] xt_connlimit (kernel) - connection limiting
+In-Reply-To: <200706031146.l53BkuaZ011945@toshiba.co.jp>
+Message-ID: <Pine.LNX.4.61.0706031434530.10578@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0706031248290.10578@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0706031312450.10578@yvahk01.tjqt.qr> <200706031146.l53BkuaZ011945@toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0706021841520.3376@p34.internal.lan>
-	 <Pine.LNX.4.64.0706031146470.29896@twin.jikos.cz>
-	 <Pine.LNX.4.64.0706030634400.3574@p34.internal.lan>
-	 <Pine.LNX.4.64.0706031300240.29896@twin.jikos.cz>
-	 <Pine.LNX.4.64.0706030716070.3574@p34.internal.lan>
-	 <Pine.LNX.4.64.0706031321450.29896@twin.jikos.cz>
-	 <Pine.LNX.4.64.0706030749580.3653@p34.internal.lan>
-X-Google-Sender-Auth: 61c046412080e48d
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/3/07, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
-> On Sun, 3 Jun 2007, Jiri Kosina wrote:
->
-> > On Sun, 3 Jun 2007, Justin Piszcz wrote:
-> >
-> >>> Thanks. Does by any chance reverting the commit
-> >>> 9f8b17e643fe6aa505629658445849397bda4e4f improve the situation?
-> >> I have not played around with git/etc enough to back it out, if you have a
-> >> patch that applies on top of 2.6.22-rc3 that backs it out I can give it a try.
-> >
-> > Please try this
->
-> [[ .. snip .. ]]
->
-> The patch was successful and now my USB device is working again!
+Hello,
 
-Please set:
-  CONFIG_USB_DEVICE_CLASS=y
-there should be no patch needed. The option already defaults to yes in
-the latest kernel.
+>From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+>Date: Sun, 3 Jun 2007 13:12:55 +0200 (MEST)
+>
+>> +static int __init xt_connlimit_init(void)
+>> +{
+>> +	need_conntrack_ipv4();
+>> +	return xt_register_match(&xt_connlimit_reg);
+>> +}
+>
+>You can use nf_ct_l3proto_try_module_get() instead of introducing
+>need_conntrack_ipv4(). Please refer xt_state.c and xt_conntrack.c as
+>example.
+
+Thank you for this hint. I will add it and post updates versions
+of the patch(es) when I am done with all.
+
 
 Thanks,
-Kay
+	Jan
+-- 
