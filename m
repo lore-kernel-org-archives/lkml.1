@@ -1,191 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbXFCOqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbXFCOrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756960AbXFCOqt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbXFCOmp
+	id S1757861AbXFCOrF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 10:47:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbXFCOmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:42:45 -0400
-Received: from web50106.mail.re2.yahoo.com ([206.190.38.34]:46841 "HELO
-	web50106.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756728AbXFCOmn (ORCPT
+	Sun, 3 Jun 2007 10:42:54 -0400
+Received: from web50104.mail.re2.yahoo.com ([206.190.38.32]:29780 "HELO
+	web50104.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755648AbXFCOmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:42:43 -0400
+	Sun, 3 Jun 2007 10:42:53 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=OU7X/FlztqZSKx0iJ2o/3VurK/5xF5hkM/+iUS9k+cIVulgP9zzKL4gObfzAhFydYVvrGuI9ZONzjYc6RobAODZAcdQszJK/Eg09OOi6ZwZZHWMxwAOLJIuzY127XxFPOfFgeNVe25pblGNRs8acRZMBaT1HMM847jSft43qj48=;
-X-YMail-OSG: 5LKIcM8VM1l3GF4hqJ7bJMS1FqgNT9CpoHcY5SSpRBcsSQWGEhCslxEaCk0FZo02VdZwep17KNGMUnFEXgqdtIAHIdnPUg3mM3VNn7JoAtuSE7ALqHQJLHei
-Date: Sun, 3 Jun 2007 07:42:42 -0700 (PDT)
+  b=nwrNqfVH96TwtV13EOBAXvNUmZVLj3mxAK87U7fEi0yyTP0rL+exbX14hN+XJYeQvaQ0JDuJhAX8jrRUv1gDAfPO5T5kv3k8e+pi87rsf0V0PMYpkCsG1Tj2Q6aiKmcm1/4W80oflztZnXSiq5He2JOiY19kJwrwJOA08V82dVU=;
+X-YMail-OSG: togZjWAVM1mwXdOhfVBmno2iSQHzevfVRUN7GrltvpZwIlYNtm7PgW.CviAADz84Og--
+Date: Sun, 3 Jun 2007 07:42:52 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
-Subject: [PATCH 22/36] drivers edac cleanup workq ifdefs
+Subject: [PATCH 23/36] drivers edac Lindent amd76x driver
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <806178.3977.qm@web50106.mail.re2.yahoo.com>
+Message-ID: <301440.83285.qm@web50104.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From:	Douglas Thompson <dougthompson@xmission.com>
 
-The origin of this code comes from patches at sourceforge, that 
-allow EDAC to be updated to various kernels. With kernel version 2.6.20
-a
-new workq system was installed, thus the patches needed to be modified
-based on the kernel version. For submitting to the latest kernel.org
-those #ifdefs are removed
+Run this driver through Lindent for cleanup purposes
 
-Signed-off-by:	Douglas Thompson <dougthompson@xmission.com>
+Signed-off-by: Dave Jiang <djiang@mvista.com>
+Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
+---
+ amd76x_edac.c |   54
++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 25 insertions(+), 29 deletions(-)
 ---
 
- edac_core.h   |   13 +------------
- edac_device.c |   11 -----------
- edac_mc.c     |   10 ----------
- edac_pci.c    |   10 ----------
- 4 files changed, 1 insertion(+), 43 deletions(-)
-
-Index: linux-2.6.22-rc1/drivers/edac/edac_core.h
+Index: linux-2.6.22-rc1/drivers/edac/amd76x_edac.c
 ===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/edac_core.h
-+++ linux-2.6.22-rc1/drivers/edac/edac_core.h
-@@ -395,11 +395,8 @@ struct mem_ctl_info {
- 	struct completion kobj_complete;
+--- linux-2.6.22-rc1.orig/drivers/edac/amd76x_edac.c
++++ linux-2.6.22-rc1/drivers/edac/amd76x_edac.c
+@@ -86,11 +86,9 @@ struct amd76x_dev_info {
  
- 	/* work struct for this MC */
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
- 	struct delayed_work work;
--#else
--	struct work_struct work;
--#endif
-+
- 	/* the internal state of this controller instance */
- 	int op_state;
+ static const struct amd76x_dev_info amd76x_devs[] = {
+ 	[AMD761] = {
+-		.ctl_name = "AMD761"
+-	},
++		    .ctl_name = "AMD761"},
+ 	[AMD762] = {
+-		.ctl_name = "AMD762"
+-	},
++		    .ctl_name = "AMD762"},
  };
-@@ -530,11 +527,7 @@ struct edac_device_ctl_info {
- 	/* the internal state of this controller instance */
- 	int op_state;
- 	/* work struct for this instance */
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
- 	struct delayed_work work;
--#else
--	struct work_struct work;
--#endif
  
- 	/* pointer to edac polling checking routine:
- 	 *      If NOT NULL: points to polling check routine
-@@ -647,11 +640,7 @@ struct edac_pci_ctl_info {
- 	/* the internal state of this controller instance */
- 	int op_state;
- 	/* work struct for this instance */
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
- 	struct delayed_work work;
--#else
--	struct work_struct work;
--#endif
- 
- 	/* pointer to edac polling checking routine:
- 	 *      If NOT NULL: points to polling check routine
-Index: linux-2.6.22-rc1/drivers/edac/edac_device.c
-===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/edac_device.c
-+++ linux-2.6.22-rc1/drivers/edac/edac_device.c
-@@ -332,17 +332,10 @@ EXPORT_SYMBOL(edac_device_find);
-  * edac_device_workq_function
-  *	performs the operation scheduled by a workq request
+ /**
+@@ -102,21 +100,21 @@ static const struct amd76x_dev_info amd7
+  *	on the chip so that further errors will be reported
   */
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
- static void edac_device_workq_function(struct work_struct *work_req)
+ static void amd76x_get_error_info(struct mem_ctl_info *mci,
+-		struct amd76x_error_info *info)
++				  struct amd76x_error_info *info)
  {
- 	struct delayed_work *d_work = (struct delayed_work *)work_req;
- 	struct edac_device_ctl_info *edac_dev =
-to_edac_device_ctl_work(d_work);
--#else
--static void edac_device_workq_function(void *ptr)
--{
--	struct edac_device_ctl_info *edac_dev =
--	    (struct edac_device_ctl_info *)ptr;
--#endif
+ 	struct pci_dev *pdev;
  
- 	//debugf0("%s() here and running\n", __func__);
- 	lock_device_list();
-@@ -372,11 +365,7 @@ void edac_device_workq_setup(struct edac
- 	edac_dev->poll_msec = msec;
- 	edac_calc_delay(edac_dev);	/* Calc delay jiffies */
+ 	pdev = to_pci_dev(mci->dev);
+ 	pci_read_config_dword(pdev, AMD76X_ECC_MODE_STATUS,
+-				&info->ecc_mode_status);
++			      &info->ecc_mode_status);
  
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
- 	INIT_DELAYED_WORK(&edac_dev->work, edac_device_workq_function);
--#else
--	INIT_WORK(&edac_dev->work, edac_device_workq_function, edac_dev);
--#endif
- 	queue_delayed_work(edac_workqueue, &edac_dev->work, edac_dev->delay);
+ 	if (info->ecc_mode_status & BIT(8))
+ 		pci_write_bits32(pdev, AMD76X_ECC_MODE_STATUS,
+-				(u32) BIT(8), (u32) BIT(8));
++				 (u32) BIT(8), (u32) BIT(8));
+ 
+ 	if (info->ecc_mode_status & BIT(9))
+ 		pci_write_bits32(pdev, AMD76X_ECC_MODE_STATUS,
+-				(u32) BIT(9), (u32) BIT(9));
++				 (u32) BIT(9), (u32) BIT(9));
  }
  
-Index: linux-2.6.22-rc1/drivers/edac/edac_mc.c
-===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/edac_mc.c
-+++ linux-2.6.22-rc1/drivers/edac/edac_mc.c
-@@ -235,16 +235,10 @@ static int edac_mc_assert_error_check_an
-  * edac_mc_workq_function
-  *	performs the operation scheduled by a workq request
+ /**
+@@ -130,7 +128,8 @@ static void amd76x_get_error_info(struct
+  *	then attempt to handle and clean up after the error
   */
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
- static void edac_mc_workq_function(struct work_struct *work_req)
+ static int amd76x_process_error_info(struct mem_ctl_info *mci,
+-		struct amd76x_error_info *info, int handle_errors)
++				     struct amd76x_error_info *info,
++				     int handle_errors)
  {
- 	struct delayed_work *d_work = (struct delayed_work *)work_req;
- 	struct mem_ctl_info *mci = to_edac_mem_ctl_work(d_work);
--#else
--static void edac_mc_workq_function(void *ptr)
--{
--	struct mem_ctl_info *mci = (struct mem_ctl_info *)ptr;
--#endif
+ 	int error_found;
+ 	u32 row;
+@@ -138,7 +137,7 @@ static int amd76x_process_error_info(str
+ 	error_found = 0;
  
- 	mutex_lock(&mem_ctls_mutex);
+ 	/*
+-	 *	Check for an uncorrectable error
++	 *      Check for an uncorrectable error
+ 	 */
+ 	if (info->ecc_mode_status & BIT(8)) {
+ 		error_found = 1;
+@@ -146,12 +145,12 @@ static int amd76x_process_error_info(str
+ 		if (handle_errors) {
+ 			row = (info->ecc_mode_status >> 4) & 0xf;
+ 			edac_mc_handle_ue(mci, mci->csrows[row].first_page, 0,
+-				row, mci->ctl_name);
++					  row, mci->ctl_name);
+ 		}
+ 	}
  
-@@ -274,11 +268,7 @@ void edac_mc_workq_setup(struct mem_ctl_
+ 	/*
+-	 *	Check for a correctable error
++	 *      Check for a correctable error
+ 	 */
+ 	if (info->ecc_mode_status & BIT(9)) {
+ 		error_found = 1;
+@@ -159,7 +158,7 @@ static int amd76x_process_error_info(str
+ 		if (handle_errors) {
+ 			row = info->ecc_mode_status & 0xf;
+ 			edac_mc_handle_ce(mci, mci->csrows[row].first_page, 0,
+-				0, row, 0, mci->ctl_name);
++					  0, row, 0, mci->ctl_name);
+ 		}
+ 	}
+ 
+@@ -182,7 +181,7 @@ static void amd76x_check(struct mem_ctl_
+ }
+ 
+ static void amd76x_init_csrows(struct mem_ctl_info *mci, struct
+pci_dev *pdev,
+-		enum edac_type edac_mode)
++			       enum edac_type edac_mode)
+ {
+ 	struct csrow_info *csrow;
+ 	u32 mba, mba_base, mba_mask, dms;
+@@ -193,8 +192,7 @@ static void amd76x_init_csrows(struct me
+ 
+ 		/* find the DRAM Chip Select Base address and mask */
+ 		pci_read_config_dword(pdev,
+-				      AMD76X_MEM_BASE_ADDR + (index * 4),
+-				      &mba);
++				      AMD76X_MEM_BASE_ADDR + (index * 4), &mba);
+ 
+ 		if (!(mba & BIT(0)))
+ 			continue;
+@@ -249,7 +247,7 @@ static int amd76x_probe1(struct pci_dev 
+ 	mci->mtype_cap = MEM_FLAG_RDDR;
+ 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
+ 	mci->edac_cap = ems_mode ?
+-			(EDAC_FLAG_EC | EDAC_FLAG_SECDED) : EDAC_FLAG_NONE;
++	    (EDAC_FLAG_EC | EDAC_FLAG_SECDED) : EDAC_FLAG_NONE;
+ 	mci->mod_name = EDAC_MOD_STR;
+ 	mci->mod_ver = AMD76X_REVISION;
+ 	mci->ctl_name = amd76x_devs[dev_idx].ctl_name;
+@@ -258,12 +256,12 @@ static int amd76x_probe1(struct pci_dev 
+ 	mci->ctl_page_to_phys = NULL;
+ 
+ 	amd76x_init_csrows(mci, pdev, ems_modes[ems_mode]);
+-	amd76x_get_error_info(mci, &discard);  /* clear counters */
++	amd76x_get_error_info(mci, &discard);	/* clear counters */
+ 
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci,0)) {
++	if (edac_mc_add_mc(mci, 0)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+@@ -272,14 +270,14 @@ static int amd76x_probe1(struct pci_dev 
+ 	debugf3("%s(): success\n", __func__);
+ 	return 0;
+ 
+-fail:
++      fail:
+ 	edac_mc_free(mci);
+ 	return -ENODEV;
+ }
+ 
+ /* returns count (>= 0), or negative on error */
+ static int __devinit amd76x_init_one(struct pci_dev *pdev,
+-		const struct pci_device_id *ent)
++				     const struct pci_device_id *ent)
  {
  	debugf0("%s()\n", __func__);
  
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
- 	INIT_DELAYED_WORK(&mci->work, edac_mc_workq_function);
--#else
--	INIT_WORK(&mci->work, edac_mc_workq_function, mci);
--#endif
- 	queue_delayed_work(edac_workqueue, &mci->work,
-msecs_to_jiffies(msec));
- }
+@@ -309,16 +307,14 @@ static void __devexit amd76x_remove_one(
  
-Index: linux-2.6.22-rc1/drivers/edac/edac_pci.c
-===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/edac_pci.c
-+++ linux-2.6.22-rc1/drivers/edac/edac_pci.c
-@@ -214,16 +214,10 @@ EXPORT_SYMBOL_GPL(edac_pci_find);
-  * edac_pci_workq_function()
-  * 	performs the operation scheduled by a workq request
-  */
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
- static void edac_pci_workq_function(struct work_struct *work_req)
- {
- 	struct delayed_work *d_work = (struct delayed_work *)work_req;
- 	struct edac_pci_ctl_info *pci = to_edac_pci_ctl_work(d_work);
--#else
--static void edac_pci_workq_function(void *ptr)
--{
--	struct edac_pci_ctl_info *pci = ptr;
--#endif
+ static const struct pci_device_id amd76x_pci_tbl[] __devinitdata = {
+ 	{
+-		PCI_VEND_DEV(AMD, FE_GATE_700C), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+-		AMD762
+-	},
++	 PCI_VEND_DEV(AMD, FE_GATE_700C), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++	 AMD762},
+ 	{
+-		PCI_VEND_DEV(AMD, FE_GATE_700E), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+-		AMD761
+-	},
++	 PCI_VEND_DEV(AMD, FE_GATE_700E), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++	 AMD761},
+ 	{
+-		0,
+-	}	/* 0 terminated list. */
++	 0,
++	 }			/* 0 terminated list. */
+ };
  
- 	edac_lock_pci_list();
- 
-@@ -248,11 +242,7 @@ static void edac_pci_workq_setup(struct 
- {
- 	debugf0("%s()\n", __func__);
- 
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
- 	INIT_DELAYED_WORK(&pci->work, edac_pci_workq_function);
--#else
--	INIT_WORK(&pci->work, edac_pci_workq_function, pci);
--#endif
- 	queue_delayed_work(edac_workqueue, &pci->work,
- 			   msecs_to_jiffies(edac_pci_get_poll_msec()));
- }
+ MODULE_DEVICE_TABLE(pci, amd76x_pci_tbl);
 
