@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763732AbXFCFHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763772AbXFCFyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763732AbXFCFHr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 01:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXFCFHk
+	id S1763772AbXFCFyl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 01:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbXFCFyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 01:07:40 -0400
-Received: from h80ad2262.async.vt.edu ([128.173.34.98]:60074 "EHLO
-	h80ad2262.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754549AbXFCFHj (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 01:07:39 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Netfilter Mailing List <netfilter@lists.netfilter.org>,
-       Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] xt_u32 - match arbitrary bits and bytes of a packet
-In-Reply-To: Your message of "Sat, 02 Jun 2007 23:46:46 +0200."
-             <Pine.LNX.4.61.0706022322340.28357@yvahk01.tjqt.qr>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.LNX.4.61.0706022322340.28357@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1180847247_3873P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 3 Jun 2007 01:54:32 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:39769
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755118AbXFCFyb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 01:54:31 -0400
+From: Rob Landley <rob@landley.net>
+To: Chris Wright <chrisw@sous-sol.org>
+Subject: Re: What is the kernel documentation mailing list ?
+Date: Sun, 3 Jun 2007 01:54:18 -0400
+User-Agent: KMail/1.9.1
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, Piyush K <piyush.ker@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+References: <a4b287450706010414j5435ed39hc89a93911a5fe24c@mail.gmail.com> <9a8748490706010426r1c6e5b38m7ab12086695fe3f6@mail.gmail.com> <20070601234839.GF3390@sequoia.sous-sol.org>
+In-Reply-To: <20070601234839.GF3390@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Sun, 03 Jun 2007 01:07:27 -0400
-Message-ID: <18087.1180847247@turing-police.cc.vt.edu>
+Content-Disposition: inline
+Message-Id: <200706030154.19261.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1180847247_3873P
-Content-Type: text/plain; charset=us-ascii
-
-On Sat, 02 Jun 2007 23:46:46 +0200, Jan Engelhardt said:
-
-> along comes xt_u32, a revamped ipt_u32,
-
-+1 for doing this - I've been dragging along a local ipt_u32 patch for a while,
-and been wishing it had ipv6 support.
-
->     *	Reduced the buffer size to 17 KB. I think that is quite ok since 
-> 	I added an overflow check,  SHOULD THERE BE ANY device with an 
-> 	MTU larger than our loopback masterpiece (16436 bytes).
+On Friday 01 June 2007 7:48 pm, Chris Wright wrote:
+> * Jesper Juhl (jesper.juhl@gmail.com) wrote:
+> > On 01/06/07, Piyush K <piyush.ker@gmail.com> wrote:
+> > >Hi,
+> > >What is the kernel documentation mailing list where I can discuss
+> > >kernel documentation changes ?
+> > >Please cc to my email address too.
+> > >Thanks,
+> > >PYK
+> > 
+> > As far as I know, there is no dedicated list for documentation issues.
+> > There was a linux-doc@vger.kernel.org list at one point but I think it
+> > died - not 100% sure though.
 > 
-> 	Are there such devices that support Megasuperjumboframes?
+> There is some recent attempt to bring it back to life.
 
-IP over Infiniband? I think those have some outrageous MTU?  Personally,
-I wouldn't need it for anything bigger than 9K ethernet jumbograms, but
-that one's a decision for others.
+Er, yes.  Me. :)
 
+The Linux Foundation is paying me to focus on documentation for a while.  
+(Woot!)  I just got http://kernel.org/doc up a few days ago (it needs lots 
+more work), and I'm pondering setting up a git repository if my queue of 
+patches to move files around in Documentation gets too long.  I'm also slowly 
+reading through the "make htmldocs" output, beating on doclifter, writing new 
+documentation...
 
---==_Exmh_1180847247_3873P
-Content-Type: application/pgp-signature
+What do you need? :)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGYkyPcC3lWbTT17ARAgUrAJ9uKK1dIGLxjHTLVbINo5VkfBb/4wCfVpIM
-KWETgfVCEUrItMy08VcThOc=
-=XZFc
------END PGP SIGNATURE-----
-
---==_Exmh_1180847247_3873P--
+Rob
