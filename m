@@ -1,60 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbXFCOjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbXFCOjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbXFCOjY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbXFCOjK
+	id S1753790AbXFCOjj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 10:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbXFCOjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:39:10 -0400
-Received: from web50106.mail.re2.yahoo.com ([206.190.38.34]:40097 "HELO
-	web50106.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752655AbXFCOjI (ORCPT
+	Sun, 3 Jun 2007 10:39:17 -0400
+Received: from web50104.mail.re2.yahoo.com ([206.190.38.32]:22906 "HELO
+	web50104.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752758AbXFCOjQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:39:08 -0400
+	Sun, 3 Jun 2007 10:39:16 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=5MY0ENFC/P1z4bp9A9lmHK3UYYW0XAQEJYkdV/C7t5iTs5n9GtnTlJr0AKRApAEcYX48uX/PhcznKgqiW5XoxecQ76GCpC3c0dIAA9F2X55uBZ95DZ8tTCEDytOSUZI/NNK/HrtSSrm1TDieuTmqLtR4qjrEplXXv5TptqIuhfs=;
-X-YMail-OSG: FPkz5YAVM1lyp4S24edKa15KbYeLJFqaPTP5GsrPj59.yTVVRCygcFZsjL35HajbhrWPVA--
-Date: Sun, 3 Jun 2007 07:39:06 -0700 (PDT)
+  b=r3TSizyn6zo8xyHdFUGKrW7d0X4ufYdqG8+JGUtaNid/UEWu269GSesgmYoBfoVR2Fw6Z2oyeZwsGLW6Gj43FSg1TkFkQqGXq/hTZbgEyl2BUdLG2sPFHcVo9d2fEdolx6f3fkGfGWDscY9kl5uHI4uKB7GiEE/H4zlpTxiNs3s=;
+X-YMail-OSG: 25REAxUVM1nVTvipsZ.CiOLx7If96.Erj19TmBmNgQ.bpFds3g8mrBg0lnN0wYxvqLRdlA--
+Date: Sun, 3 Jun 2007 07:39:14 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
-Subject: [PATCH 1/36] drivers edac remove depends on X86
+Subject: [PATCH 2/36] drivers edac add edac_mc_find API
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <123360.2742.qm@web50106.mail.re2.yahoo.com>
+Message-ID: <147202.82456.qm@web50104.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From:	Douglas Thompson <dougthompson@xmission.com>
 
-Remove the 'depends on x86' as EDAC runs on other ARCHs now.
+This simple patch adds an important CORE API for EDAC that
+EDAC drivers can use to find their edac_mc control structure by passing
+a mem_ctl_info 'instance' value
 
-Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
+Needed for subsequent patches
+
+Signed-off-by:  Douglas Thompson <dougthompson@xmission.com>
+--
+ edac_mc.c |   28 ++++++++++++++++++++++++++++
+ edac_mc.h |    1 +
+ 2 files changed, 29 insertions(+)
+--
+diff -puN
+drivers/edac/edac_mc.c~edac-new-opteron-athlon64-memory-controller-driver
+drivers/edac/edac_mc.c
 ---
-
- Kconfig |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.22-rc3-mm1/drivers/edac/Kconfig
-===================================================================
---- linux-2.6.22-rc3-mm1.orig/drivers/edac/Kconfig
-+++ linux-2.6.22-rc3-mm1/drivers/edac/Kconfig
-@@ -3,13 +3,11 @@
- #	Copyright (c) 2003 Linux Networx
- #	Licensed and distributed under the GPL
- #
--# $Id: Kconfig,v 1.4.2.7 2005/07/08 22:05:38 dsp_llnl Exp $
--#
+a/drivers/edac/edac_mc.c~edac-new-opteron-athlon64-memory-controller-driver
++++ a/drivers/edac/edac_mc.c
+@@ -1457,6 +1457,34 @@ static void del_mc_from_global_list(stru
+ }
  
- menuconfig EDAC
--	tristate "EDAC - error detection and reporting (EXPERIMENTAL)"
-+	bool "EDAC - error detection and reporting (EXPERIMENTAL)"
- 	depends on HAS_IOMEM
--	depends on X86 && EXPERIMENTAL
-+	depends on EXPERIMENTAL
- 	help
- 	  EDAC is designed to report errors in the core system.
- 	  These are low-level errors that are reported in the CPU or
+ /**
++ * edac_mc_find: Search for a mem_ctl_info structure whose index is
+'idx'.
++ *
++ * If found, return a pointer to the structure.
++ * Else return NULL.
++ *
++ * Caller must hold mem_ctls_mutex.
++ */
++struct mem_ctl_info * edac_mc_find(int idx)
++{
++	struct list_head *item;
++	struct mem_ctl_info *mci;
++
++	list_for_each(item, &mc_devices) {
++		mci = list_entry(item, struct mem_ctl_info, link);
++
++		if (mci->mc_idx >= idx) {
++			if (mci->mc_idx == idx)
++				return mci;
++
++			break;
++		}
++	}
++
++	return NULL;
++}
++EXPORT_SYMBOL(edac_mc_find);
++
++/**
+  * edac_mc_add_mc: Insert the 'mci' structure into the mci global list
+and
+  *                 create sysfs entries associated with mci structure
+  * @mci: pointer to the mci structure to be added to the list
+diff -puN
+drivers/edac/edac_mc.h~edac-new-opteron-athlon64-memory-controller-driver
+drivers/edac/edac_mc.h
+---
+a/drivers/edac/edac_mc.h~edac-new-opteron-athlon64-memory-controller-driver
++++ a/drivers/edac/edac_mc.h
+@@ -430,6 +430,7 @@ void edac_mc_dump_mci(struct mem_ctl_inf
+ void edac_mc_dump_csrow(struct csrow_info *csrow);
+ #endif  /* CONFIG_EDAC_DEBUG */
+ 
++extern struct mem_ctl_info * edac_mc_find(int idx);
+ extern int edac_mc_add_mc(struct mem_ctl_info *mci,int mc_idx);
+ extern struct mem_ctl_info * edac_mc_del_mc(struct device *dev);
+ extern int edac_mc_find_csrow_by_page(struct mem_ctl_info *mci,
 
