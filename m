@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbXFCOyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbXFCPEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbXFCOyd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbXFCOyY
+	id S1753422AbXFCPEA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 11:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbXFCPDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:54:24 -0400
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:35880 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167AbXFCOyX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:54:23 -0400
-Date: Sun, 3 Jun 2007 16:55:32 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20070603145529.GC3879@enneenne.com>
-References: <20070530165705.GD29337@enneenne.com> <4662AE11.70107@drzeus.cx>
+	Sun, 3 Jun 2007 11:03:52 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:56863 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751826AbXFCPDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 11:03:51 -0400
+Message-ID: <4662D852.4000005@dgreaves.com>
+Date: Sun, 03 Jun 2007 16:03:46 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4662AE11.70107@drzeus.cx>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: mmc0: unrecognised SCR structure version 1
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <htejun@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       netdev@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression
+References: <46608E3F.4060201@dgreaves.com> <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 03, 2007 at 02:03:29PM +0200, Pierre Ossman wrote:
-> 
-> To my knowledge, no such version exists. So either your card is broken or you
-> have some transfer problem on your board. What's the name of this card and have
-> you tried any others?
+Linus Torvalds wrote:
+> It would be interesting to see what triggered it, since it apparently 
+> worked before. So yes, a bisection would be great.
 
-I suppose the same... but this is the only cards who gives me such
-problems! What do you think it could be the problem? Maybe some PXA
-MMC special settings?
+Tejun, all the problematic patches are yours - so adding you.
+Neil, since the problem only occurs whilst an xfs filesystem is mounted on a
+raid6 array, I've cc'ed you too...
 
-The card is a 512MB MiniSD by Viking InterWorks.
+OK
+Got as far as I could...
+I've run 9 or 10 kernels/bisects and got to a point with 8 of Tejun's changesets
+where it wouldn't compile:
 
-Thanks,
+  CC      drivers/ata/sata_via.o
+drivers/ata/sata_via.c:120: error: `ata_scsi_device_suspend' undeclared here
+(not in a function)
+drivers/ata/sata_via.c:120: error: initializer element is not constant
+drivers/ata/sata_via.c:120: error: (near initialization for `svia_sht.suspend')
+drivers/ata/sata_via.c:121: error: `ata_scsi_device_resume' undeclared here (not
+in a function)
+drivers/ata/sata_via.c:121: error: initializer element is not constant
+drivers/ata/sata_via.c:121: error: (near initialization for `svia_sht.resume')
+make[2]: *** [drivers/ata/sata_via.o] Error 1
 
-Rodolfo
+git bisect visualise gave:
 
--- 
+bad: 48aaae7a2fa46e1ed0d0b7677fde79ccfcb8c963
+bisect: 54936f8b099325992f0f212a5e366fd5257c6c9c
+good: 0a3fd051c7036ef71b58863f8e5da7c3dabd9d3f
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+I used:
+git reset --hard 8575b814097af648dad284bd3087875a11b13d18
+git reset --hard e92351bb53c0849fabfa80be53cbf3b0aa166e54
+git reset --hard 3a32a8e96694a243ec7e7feb6d76dfc4b1fe90c1
+git reset --hard 9666f4009c22f6520ac3fb8a19c9e32ab973e828
+to step through - non compiled
+git reset --hard 1d30c33d8d07868199560b24f10ed6280e78a89c
+compiled and hung on resume.
+
+given the first patch identified is
+9666f4009c22f6520ac3fb8a19c9e32ab973e828: "libata: reimplement suspend/resume
+support using sdev->manage_start_stop"
+That seems a good candidate...
+
+Incidentally, when I compile 1d30c33d8d07868199560b24f10ed6280e78a89c (far side
+of the implicated changesets) if I umount my xfs over raid6 filesystem (no lvm
+as I said in the OP) the resume succeeds.
+
+
+David
+PS I hope I've interpreted bisect correctly - first use and all that...
