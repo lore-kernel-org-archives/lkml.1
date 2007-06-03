@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762458AbXFCLZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbXFCLvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762458AbXFCLZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 07:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758698AbXFCLZv
+	id S1760904AbXFCLvS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 07:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757979AbXFCLvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 07:25:51 -0400
-Received: from web63608.mail.re1.yahoo.com ([69.147.97.78]:20337 "HELO
-	web63608.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758397AbXFCLZu (ORCPT
+	Sun, 3 Jun 2007 07:51:09 -0400
+Received: from imx9.toshiba.co.jp ([202.33.96.51]:46948 "EHLO
+	imx9.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757833AbXFCLvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 07:25:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=wbao2yHMKWa9qKcZWWFxM+H9ftBBrUbdtxZ6EvTXg4SSrh6sY5zMe7U90x1OshCnaDTwBUGyAyKNgtRNgW7edG2ezRHMGOmbGgpsFbH3ezBTSlUj6HlqJ15YfXTyICH3rOqMhSzw9Hl/6gfx8Uu4r1dcDnv9iyj1xnQ1W4HB7pU=;
-X-YMail-OSG: JAeEvEsVM1m3ONgQ3R1kOlptqQRSDqmCp1dp1AMbViHAeee4SMgbTghVz8KwCeQMRCSkLCWGP2F56g09Mu64AxWlRJXB7aJUcPLtjRx8lYAAoPO7FZQL_ejd4xJh1Ts-
-Date: Sun, 3 Jun 2007 04:25:49 -0700 (PDT)
-From: Tear <tarrqt@yahoo.com>
-Subject: Re: [RFC][PATCH] IO-APIC blacklist
-To: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200706030016.54555.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <954422.64985.qm@web63608.mail.re1.yahoo.com>
+	Sun, 3 Jun 2007 07:51:08 -0400
+Date: Sun, 03 Jun 2007 20:46:56 +0900 (JST)
+Message-Id: <200706031146.l53Bku3q011948@toshiba.co.jp>
+To: jengelh@linux01.gwdg.de
+Cc: netfilter-devel@lists.netfilter.org, netfilter@lists.netfilter.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] xt_connlimit (kernel) - connection limiting
+From: Yasuyuki KOZAKAI <yasuyuki.kozakai@toshiba.co.jp>
+In-Reply-To: <Pine.LNX.4.61.0706031312450.10578@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0706031248290.10578@yvahk01.tjqt.qr>
+	<Pine.LNX.4.61.0706031312450.10578@yvahk01.tjqt.qr>
+X-Mailer: Mew version 5.1 on Emacs 20.7 / Mule 4.0 (HANANOEN)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown <lenb@kernel.org> wrote:
-> [snip]
-> 
-> Also, please capture the output from acpidump
-> and attach it to a bug report here:
-> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-> 
-> [snip]
 
 Hi,
 
-I have created a bug report in bugzilla.kernel.org.
-Here's the URL:
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Date: Sun, 3 Jun 2007 13:12:55 +0200 (MEST)
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8572
+> +static int __init xt_connlimit_init(void)
+> +{
+> +	need_conntrack_ipv4();
+> +	return xt_register_match(&xt_connlimit_reg);
+> +}
 
-I have attached the output of acpidump to the bug
-report.
+You can use nf_ct_l3proto_try_module_get() instead of introducing
+need_conntrack_ipv4(). Please refer xt_state.c and xt_conntrack.c as
+example.
 
-Let's continue our discussion there.
-
-Thanks,
-- Tear
-
-
-
-       
-____________________________________________________________________________________
-Yahoo! oneSearch: Finally, mobile search 
-that gives answers, not web links. 
-http://mobile.yahoo.com/mobileweb/onesearch?refer=1ONXIC
+-- Yasuyuki Kozakai
