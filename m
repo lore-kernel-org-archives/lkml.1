@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763952AbXFCGVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764147AbXFCGXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763952AbXFCGVB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 02:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXFCGUx
+	id S1764147AbXFCGXv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 02:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXFCGXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 02:20:53 -0400
-Received: from heineken.digium.com ([216.207.245.2]:58963 "EHLO
-	heineken.digium.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755169AbXFCGUw (ORCPT
+	Sun, 3 Jun 2007 02:23:44 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:55356 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755169AbXFCGXn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 02:20:52 -0400
-Date: Sun, 3 Jun 2007 01:20:37 -0500 (CDT)
-From: Matt Fredrickson <creslin@digium.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <13097765.160991180851637904.JavaMail.root@jupiler.digium.com>
-In-Reply-To: <17916027.160971180851607681.JavaMail.root@jupiler.digium.com>
-Subject: Re: Device Driver Etiquette
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [68.62.219.187]
+	Sun, 3 Jun 2007 02:23:43 -0400
+Date: Sun, 03 Jun 2007 00:23:48 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Kernel 2.6.22-rc3 safe to migrate to?
+In-reply-to: <fa.vxJKq726YMWJY2i/waKQsNec3aU@ifi.uio.no>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Message-id: <46625E74.8070800@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.eE9c0s9eXX/aO2N8hiu3e2Yehz8@ifi.uio.no>
+ <fa.hq4JzIoUe01l8ywIZPkqjocRBmc@ifi.uio.no>
+ <fa.3aN+T/xQVA3sf9DdMPLOfUVmYA0@ifi.uio.no>
+ <fa.mJ71j4nyi6ALIkQjLcpIJtTbVVI@ifi.uio.no>
+ <fa.vxJKq726YMWJY2i/waKQsNec3aU@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
------ "Arjan van de Ven" <arjan@infradead.org> wrote:
-> On Fri, 2007-06-01 at 12:47 -0500, Matthew Fredrickson wrote:
+Justin Piszcz wrote:
+> Sent this in another e-mail to LKML, it breaks support for my UPS:
 > 
-> > My question is this: is there a way to either work around the
-> problem I 
-> > am seeing with the stack without recompiling the kernel with 8K
-> stack 
-> > size or without disabling irqs for such a long period of time (which
-> I 
-> > think is not a nice thing to do either) OR is it acceptable
-> (although 
-> > not nice) to simply fix it this way, by disabling irqs while it
-> loads 
-> > the firmware?
+>  From jpiszcz@lucidpixels.com Sat Jun  2 18:43:52 2007
+> Date: Sat, 2 Jun 2007 18:43:52 -0400 (EDT)
+> From: Justin Piszcz <jpiszcz@lucidpixels.com>
+> To: linux-kernel@vger.kernel.org
+> Subject: Kernel 2.6.22-rc3 breaks USB: Unable to get HID descriptor 
+> (error sending control message: Operation not permitted)
 > 
-> I wonder if you're chasing ghosts; 4K stack kernels have a seperate
-> stack for interrupts so... those should be safe.
+> I use nut-2.0.4-4 with a UPS attached via USB and from 2.6.21.3 -> 
+> 2.6.22-rc3 it
+> stops working, see below.  My .config is attached.
 > 
-> Btw, you forgot to post a pointer to the source code of your driver,
-> so
-> it's a lot harder for us (read: impossible) to give you good advice..
 
-As someone mentioned in another post, I believe what is causing this problem is a combination of factors.  The triggering of the softlockup detector seems to be what pushes it over the edge.  I think I will try as suggested to change the timer for it so that it does not trigger while the card is initializing.
+I also have seen this on -rc2-mm1, my APC UPS status was not showing up. 
+  I haven't investigated in any more detail.
 
-If you'd like to see the source, here's a link:
-http://svn.digium.com/view/zaptel/trunk/wct4xxp/
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-I can't give you the stack trace right now, since I'm not in the office, but it begins in the vpm450_init function and goes into the Octasic API functions, in the ChannelOpen routines as well as the chip initialization routines (the ones that load the firmware.
-
----
-Matthew Fredrickson
-Kernel Developer
-Digium, Inc.
