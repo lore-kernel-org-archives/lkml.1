@@ -1,50 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbXFCQcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbXFCQjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755007AbXFCQcP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 12:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXFCQcB
+	id S1755411AbXFCQjQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 12:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXFCQi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 12:32:01 -0400
-Received: from waste.org ([66.93.16.53]:54545 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751819AbXFCQcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 12:32:00 -0400
-Date: Sun, 3 Jun 2007 11:27:31 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: Conditionals for development tests and output
-Message-ID: <20070603162730.GQ11166@waste.org>
-References: <Pine.LNX.4.64.0706012113200.11472@schroedinger.engr.sgi.com> <20070602144348.GD5500@stusta.de> <20070602104821.d2d8d668.akpm@linux-foundation.org>
+	Sun, 3 Jun 2007 12:38:58 -0400
+Received: from stinky.trash.net ([213.144.137.162]:47973 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbXFCQi5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 12:38:57 -0400
+Message-ID: <4662EE12.1080400@trash.net>
+Date: Sun, 03 Jun 2007 18:36:34 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070602104821.d2d8d668.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Strobl Anton <a.strobl@aws-it.at>, linux-kernel@vger.kernel.org,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: OOPS iproute2/tc/u32_destroy in 2.6.22-rc3-git6
+References: <20070603161814.q5x2jsq8dck4gcgw@bigboss.aws-it.at> <4662D881.5080600@googlemail.com>
+In-Reply-To: <4662D881.5080600@googlemail.com>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------020307050403080008000008"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 02, 2007 at 10:48:21AM -0700, Andrew Morton wrote:
-> On Sat, 2 Jun 2007 16:43:48 +0200 Adrian Bunk <bunk@stusta.de> wrote:
+This is a multi-part message in MIME format.
+--------------020307050403080008000008
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+Michal Piotrowski wrote:
+> Strobl Anton pisze:
 > 
-> > And your approach could easily result in code paths never tested in 
-> > -mm or -rc kernels exploding in the actual release.
-> 
-> yep, we need to ensure that DEVELKERNEL gets turned off a few weeks
-> before final release.
+>> While trying to stop qdisc/cbq with command
+>>
+>>    tc qdisc del dev eth1 root
+>>
+>> EIP is at u32_destroy+0x52/0xd8 [cls_u32]
 
-I'm not very keen on this whole idea. It's a fairly well-known
-phenomenon that behavior can change for the worse when you turn off
-debug flags for a variety of reasons. So instituting a monoculture
-where -everyone- has a global debug flag on then turns it off is a little
-worrisome.
 
-When we're talking about a single warning, it's probably not a big
-deal, but once we expand the usage to cover a dozen or a hundred
-things, the odds that we'll hide a race or side-effect somewhere
-increase.
+Please try this patch.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+
+--------------020307050403080008000008
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+[NET_SCHED]: Fix filter double free
+
+cbq and atm destroy their filters twice when destroying inner classes
+during qdisc destruction.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+
+---
+commit a2b6772f1b9524b8d3c67bee3b92956d44555b22
+tree a4b8b9f3675606ff935d2422e26b24adf6c1ad3c
+parent 1df4e603136d09c0aee78102a05fb960be3764bb
+author Patrick McHardy <kaber@trash.net> Sun, 03 Jun 2007 18:35:09 +0200
+committer Patrick McHardy <kaber@trash.net> Sun, 03 Jun 2007 18:35:09 +0200
+
+ net/sched/sch_atm.c |    1 +
+ net/sched/sch_cbq.c |    8 +++++---
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/net/sched/sch_atm.c b/net/sched/sch_atm.c
+index be7d299..d1c383f 100644
+--- a/net/sched/sch_atm.c
++++ b/net/sched/sch_atm.c
+@@ -599,6 +599,7 @@ static void atm_tc_destroy(struct Qdisc *sch)
+ 	/* races ? */
+ 	while ((flow = p->flows)) {
+ 		tcf_destroy_chain(flow->filter_list);
++		flow->filter_list = NULL;
+ 		if (flow->ref > 1)
+ 			printk(KERN_ERR "atm_destroy: %p->ref = %d\n",flow,
+ 			    flow->ref);
+diff --git a/net/sched/sch_cbq.c b/net/sched/sch_cbq.c
+index a294542..ee2d596 100644
+--- a/net/sched/sch_cbq.c
++++ b/net/sched/sch_cbq.c
+@@ -1748,10 +1748,12 @@ cbq_destroy(struct Qdisc* sch)
+ 	 * classes from root to leafs which means that filters can still
+ 	 * be bound to classes which have been destroyed already. --TGR '04
+ 	 */
+-	for (h = 0; h < 16; h++)
+-		for (cl = q->classes[h]; cl; cl = cl->next)
++	for (h = 0; h < 16; h++) {
++		for (cl = q->classes[h]; cl; cl = cl->next) {
+ 			tcf_destroy_chain(cl->filter_list);
+-
++			cl->filter_list = NULL;
++		}
++	}
+ 	for (h = 0; h < 16; h++) {
+ 		struct cbq_class *next;
+ 
+
+--------------020307050403080008000008--
