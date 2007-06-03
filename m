@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763991AbXFBX5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932217AbXFCAVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763991AbXFBX5p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 19:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762288AbXFBX5g
+	id S932217AbXFCAVc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 20:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762288AbXFCAVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 19:57:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59371 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760616AbXFBX5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 19:57:36 -0400
-Date: Sat, 2 Jun 2007 19:57:05 -0400
-From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200706022357.l52Nv56Y028615@devserv.devel.redhat.com>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] V3: O_CLOEXEC for SCM_RIGHTS
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
+	Sat, 2 Jun 2007 20:21:24 -0400
+Received: from mail-in-04.arcor-online.net ([151.189.21.44]:35830 "EHLO
+	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760064AbXFCAVY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 20:21:24 -0400
+Message-ID: <46620979.9020901@punnoor.de>
+Date: Sun, 03 Jun 2007 08:21:13 +0800
+From: Prakash Punnoor <prakash@punnoor.de>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+MIME-Version: 1.0
+To: Daniel Hazelton <dhazelton@enter.net>
+CC: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Trivial Patch] Remove JFFS2 dependency on internal Zlib header
+References: <200706021520.36478.dhazelton@enter.net>
+In-Reply-To: <200706021520.36478.dhazelton@enter.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Take two: I forgot to change the compat code.  This has now happened.  Only one
-additional line changed.
+Daniel Hazelton wrote:
+> 
+> Signed-off-by: Daniel Hazelton <dhazelton@enter.net>
+> 
+> DRH
+> 
+> diff --git a/fs/jffs2/compr_zlib.c b/fs/jffs2/compr_zlib.c
+> index 2b87fcc..9f1b935 100644
+> --- a/fs/jffs2/compr_zlib.c
+> +++ b/fs/jffs2/compr_zlib.c
+> @@ -16,7 +16,6 @@
+>  #include <linux/kernel.h>
+>  #include <linux/slab.h>
+>  #include <linux/zlib.h>
+> -#include <linux/zutil.h>
+>  #include "nodelist.h"
+>  #include "compr.h"
+> 
+> @@ -154,7 +153,7 @@ static int jffs2_zlib_decompress(unsigned char *data_in,
+> 
+>         /* If it's deflate, and it's got no preset dictionary, then
+>            we can tell zlib to skip the adler32 check. */
+> -       if (srclen > 2 && !(data_in[1] & PRESET_DICT) &&
+> +       if (srclen > 2 && !(data_in[1] & 0x20) &&
+>             ((data_in[0] & 0x0f) == Z_DEFLATED) &&
+>             !(((data_in[0]<<8) + data_in[1]) % 31)) {
+> 
 
-Everything else from the first patch remains the same.  I try to avoid clogging
-the list unnecessarily by not resending the test program.
+
+Why not
+
+#define PRESET_DICT 0x20
+
+instead of obfuscating the code with a magic number ? (Or name it 
+differently if it clashes with something else...)
 
 
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+Cheers,
 
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -855,7 +855,7 @@
- /*
-  * Find an empty file descriptor entry, and mark it busy.
-  */
--static int get_unused_fd_flags(int flags)
-+int get_unused_fd_flags(int flags)
- {
- 	struct files_struct * files = current->files;
- 	int fd, error;
---- a/include/linux/file.h
-+++ b/include/linux/file.h
-@@ -73,6 +73,7 @@ extern struct file * FASTCALL(fget_light(unsigned int fd, int *fput_needed));
- extern void FASTCALL(set_close_on_exec(unsigned int fd, int flag));
- extern void put_filp(struct file *);
- extern int get_unused_fd(void);
-+extern int FASTCALL(get_unused_fd_flags(int flags));
- extern void FASTCALL(put_unused_fd(unsigned int fd));
- struct kmem_cache;
- 
---- a/include/linux/socket.h
-+++ b/include/linux/socket.h
-@@ -253,6 +253,9 @@ struct ucred {
- 
- #define MSG_EOF         MSG_FIN
- 
-+#define MSG_CMSG_CLOEXEC 0x40000000	/* Set close_on_exit for file
-+					   descriptor received through
-+					   SCM_RIGHTS */
- #if defined(CONFIG_COMPAT)
- #define MSG_CMSG_COMPAT	0x80000000	/* This message needs 32 bit fixups */
- #else
---- a/net/compat.c
-+++ b/net/compat.c
-@@ -276,7 +276,8 @@ void scm_detach_fds_compat(struct msghdr *kmsg, struct scm_cookie *scm)
- 		err = security_file_receive(fp[i]);
- 		if (err)
- 			break;
--		err = get_unused_fd();
-+		err = get_unused_fd_flags(MSG_CMSG_CLOEXEC & msg->msg_flags
-+					  ? O_CLOEXEC : 0);
- 		if (err < 0)
- 			break;
- 		new_fd = err;
---- a/net/core/scm.c
-+++ b/net/core/scm.c
-@@ -228,7 +228,8 @@ void scm_detach_fds(struct msghdr *msg, struct scm_cookie *scm)
- 		err = security_file_receive(fp[i]);
- 		if (err)
- 			break;
--		err = get_unused_fd();
-+		err = get_unused_fd_flags(MSG_CMSG_CLOEXEC & msg->msg_flags
-+					  ? O_CLOEXEC : 0);
- 		if (err < 0)
- 			break;
- 		new_fd = err;
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -1939,9 +1939,7 @@ asmlinkage long sys_recvmsg(int fd, struct msghdr __user *msg,
- 	total_len = err;
- 
- 	cmsg_ptr = (unsigned long)msg_sys.msg_control;
--	msg_sys.msg_flags = 0;
--	if (MSG_CMSG_COMPAT & flags)
--		msg_sys.msg_flags = MSG_CMSG_COMPAT;
-+	msg_sys.msg_flags = flags & (MSG_CMSG_CLOEXEC|MSG_CMSG_COMPAT);
- 
- 	if (sock->file->f_flags & O_NONBLOCK)
- 		flags |= MSG_DONTWAIT;
+Prakash
