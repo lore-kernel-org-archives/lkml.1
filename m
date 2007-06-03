@@ -1,58 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbXFCTQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbXFCTRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751330AbXFCTQb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 15:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbXFCTQX
+	id S1751528AbXFCTRz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 15:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbXFCTRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 15:16:23 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3584 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbXFCTQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 15:16:22 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 3 Jun 2007 12:16:21 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Aaron Wiebe <epiphani@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: slow open() calls and o_nonblock
-In-Reply-To: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706031159200.13247@alien.or.mcafeemobile.com>
-References: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 3 Jun 2007 15:17:48 -0400
+Received: from lug-owl.de ([195.71.106.12]:35889 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbXFCTRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 15:17:47 -0400
+Date: Sun, 3 Jun 2007 21:17:44 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
+       Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: LogFS take four
+Message-ID: <20070603191744.GU2649@lug-owl.de>
+Mail-Followup-To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-mtd@lists.infradead.org, akpm@osdl.org,
+	Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Jamie Lokier <jamie@shareable.org>,
+	Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+	Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
+	Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
+	Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+	Bill Davidsen <davidsen@tmr.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Albert Cahalan <acahalan@gmail.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Roland Dreier <rdreier@cisco.com>,
+	Ondrej Zajicek <santiago@crfreenet.org>,
+	Ulisses Furquim <ulissesf@gmail.com>
+References: <20070603183845.GA8952@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="R10gueRtU1pFqy+X"
+Content-Disposition: inline
+In-Reply-To: <20070603183845.GA8952@lazybastard.org>
+X-Operating-System: Linux mail 2.6.18-4-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Jun 2007, Aaron Wiebe wrote:
 
-> (ps.  having come from the socket side of the fence, its incredibly
-> frustrating to be unable to poll() or epoll regular file FDs --
-> Especially knowing that the kernel is translating them into a TCP
-> socket to do NFS anyway.  Please add regular files to epoll and give
-> me a way to do the opens in the same fasion as connects!)
+--R10gueRtU1pFqy+X
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You may want to follow Ingo and Zach work on syslets/threadlets. If that 
-goes in, you can make *any* syscall asynchronous.
-I ended up writing a userspace library, to cover the same exact problem 
-you have:
+On Sun, 2007-06-03 20:38:46 +0200, J=C3=B6rn Engel <joern@lazybastard.org> =
+wrote:
+> This round the patch is split into file-sized hunks.  There actually
+> seem to be kernel developers not manly enough to digest 6000+ lines of
+> code at once.  An I thought I was the only wimp around.
 
-http://www.xmailserver.org/guasi.html
+Though it would be nice to have them as a pile of patches so that
+after applying them one-by-one, the kernel still compiles.
 
-I basically host an epoll_wait (containing all my sockets, pipes, etc) 
-inside a GUASI async request, where other non-pollable async requests are 
-hosted. So guasi_fetch() becomes my main event collector, and when the 
-epoll_wait async request show up, I handle all the events in there.
-This is a *very-trivial* HTTP server using such solution (coroutines, 
-epoll and GUASI):
+Eg. if the first patches wire up the new feature into the build
+system, but the actual .c file aren't yet there, that won't compile
+and thus make git-bisect'ing harder...
 
-http://www.xmailserver.org/cghttpd-home.html
+MfG, JBG
 
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:         Alles wird gut! ...und heute wirds schon ein bi=C3=9F=
+chen besser.
+the second  :
 
+--R10gueRtU1pFqy+X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-- Davide
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFGYxPYHb1edYOZ4bsRAuYEAJ4wyb55K7xjMA756Zgks2UoX7uoBgCeJ1O8
+CbO2o3g+2MscPNvsEeteFwQ=
+=O4MV
+-----END PGP SIGNATURE-----
 
+--R10gueRtU1pFqy+X--
