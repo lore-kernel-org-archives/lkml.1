@@ -1,107 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbXFCQjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbXFCQmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411AbXFCQjQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 12:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXFCQi6
+	id S1755994AbXFCQmH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 12:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbXFCQl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 12:38:58 -0400
-Received: from stinky.trash.net ([213.144.137.162]:47973 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbXFCQi5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 12:38:57 -0400
-Message-ID: <4662EE12.1080400@trash.net>
-Date: Sun, 03 Jun 2007 18:36:34 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Strobl Anton <a.strobl@aws-it.at>, linux-kernel@vger.kernel.org,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: OOPS iproute2/tc/u32_destroy in 2.6.22-rc3-git6
-References: <20070603161814.q5x2jsq8dck4gcgw@bigboss.aws-it.at> <4662D881.5080600@googlemail.com>
-In-Reply-To: <4662D881.5080600@googlemail.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: multipart/mixed;
- boundary="------------020307050403080008000008"
+	Sun, 3 Jun 2007 12:41:56 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3505 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753396AbXFCQlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 12:41:55 -0400
+Date: Sun, 3 Jun 2007 16:41:43 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 1/2] PM: Introduce hibernation and suspend notifiers
+Message-ID: <20070603164143.GB4093@ucw.cz>
+References: <200705272229.21263.rjw@sisk.pl> <200706020241.53788.rjw@sisk.pl> <200706020243.20117.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706020243.20117.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020307050403080008000008
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Hi!
 
-Michal Piotrowski wrote:
-> Strobl Anton pisze:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
->> While trying to stop qdisc/cbq with command
->>
->>    tc qdisc del dev eth1 root
->>
->> EIP is at u32_destroy+0x52/0xd8 [cls_u32]
+> Make it possible to register hibernation and suspend notifiers, so that
+> subsystems can perform hibernation-related or suspend-related operations that
+> should not be carried out by device drivers' .suspend() and .resume() routines.
 
+One more question: what will we call in suspend-to-both case? I do not
+think we can call SUSPEND_PREPARE with frozen tasks, so just one call
+to HIBERNATION_PREPARE?
 
-Please try this patch.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Ack.
 
-
---------------020307050403080008000008
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
-
-[NET_SCHED]: Fix filter double free
-
-cbq and atm destroy their filters twice when destroying inner classes
-during qdisc destruction.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-
----
-commit a2b6772f1b9524b8d3c67bee3b92956d44555b22
-tree a4b8b9f3675606ff935d2422e26b24adf6c1ad3c
-parent 1df4e603136d09c0aee78102a05fb960be3764bb
-author Patrick McHardy <kaber@trash.net> Sun, 03 Jun 2007 18:35:09 +0200
-committer Patrick McHardy <kaber@trash.net> Sun, 03 Jun 2007 18:35:09 +0200
-
- net/sched/sch_atm.c |    1 +
- net/sched/sch_cbq.c |    8 +++++---
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/net/sched/sch_atm.c b/net/sched/sch_atm.c
-index be7d299..d1c383f 100644
---- a/net/sched/sch_atm.c
-+++ b/net/sched/sch_atm.c
-@@ -599,6 +599,7 @@ static void atm_tc_destroy(struct Qdisc *sch)
- 	/* races ? */
- 	while ((flow = p->flows)) {
- 		tcf_destroy_chain(flow->filter_list);
-+		flow->filter_list = NULL;
- 		if (flow->ref > 1)
- 			printk(KERN_ERR "atm_destroy: %p->ref = %d\n",flow,
- 			    flow->ref);
-diff --git a/net/sched/sch_cbq.c b/net/sched/sch_cbq.c
-index a294542..ee2d596 100644
---- a/net/sched/sch_cbq.c
-+++ b/net/sched/sch_cbq.c
-@@ -1748,10 +1748,12 @@ cbq_destroy(struct Qdisc* sch)
- 	 * classes from root to leafs which means that filters can still
- 	 * be bound to classes which have been destroyed already. --TGR '04
- 	 */
--	for (h = 0; h < 16; h++)
--		for (cl = q->classes[h]; cl; cl = cl->next)
-+	for (h = 0; h < 16; h++) {
-+		for (cl = q->classes[h]; cl; cl = cl->next) {
- 			tcf_destroy_chain(cl->filter_list);
--
-+			cl->filter_list = NULL;
-+		}
-+	}
- 	for (h = 0; h < 16; h++) {
- 		struct cbq_class *next;
- 
-
---------------020307050403080008000008--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
