@@ -1,77 +1,1123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbXFCOks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbXFCOlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbXFCOks (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbXFCOj4
+	id S1755443AbXFCOlN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 10:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbXFCOkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:39:56 -0400
-Received: from web50107.mail.re2.yahoo.com ([206.190.38.35]:23402 "HELO
+	Sun, 3 Jun 2007 10:40:05 -0400
+Received: from web50107.mail.re2.yahoo.com ([206.190.38.35]:23763 "HELO
 	web50107.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753967AbXFCOjt (ORCPT
+	by vger.kernel.org with SMTP id S1754034AbXFCOkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:39:49 -0400
+	Sun, 3 Jun 2007 10:40:00 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=rF98L2azdpyKnjpf+Fcwmbk091zrCqoqwekoghR+BNmks3uw4GidYGSrwIZmkQO1VOLbYnJP3NXoimgNqq5GtxPyxYvm93aMs82sW+AitRM0eqqItQ8eQVULx8/UCASKdAKNw0BMl0T8eFWvXoekwKHIkCKfVjyIH1f9nnDhiiM=;
-X-YMail-OSG: p8nqhwQVM1kSwpg4HE2ltQNu_u85Wnk96BZhIw5y
-Date: Sun, 3 Jun 2007 07:39:47 -0700 (PDT)
+  b=mvg0REZ97EkPzRXQsoYWsL5OAvdjg3NkO6TYz+nmpToOzxwX2r607m4MSXBKHGLqz2JgQKsHWm6EMrYHjREQZmyh+48TSjCl1AZskFfaxJMS/ubK+rZkRovjZR8mD8m5dZxTJzQqIaulHLvxaLWb6U4pzTg+gmRuBA5F2f1K55g=;
+X-YMail-OSG: Ijl1Jg0VM1ky1ymkdw3hGjZ497dQ45chyq6etmL000QfG5Ken._NbJF3EKmI7FchVnvKaEFjIAkiNMkIcHfigAYVFjrylLsuvbgeObaIj8MT24Q-
+Date: Sun, 3 Jun 2007 07:39:58 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
-Subject: [PATCH 5/36] drivers edac refactored src files
+Subject: [PATCH 6/36] drivers edac new edac_device class added
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <720764.83322.qm@web50107.mail.re2.yahoo.com>
+Message-ID: <157758.83344.qm@web50107.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From:	Douglas Thompson <dougthompson@xmission.com>
 
-This is a large patch to refactor the original EDAC module in the
-kernel
-and to break it up into better file granularity, such that each source
-file contains a given subsystem of the EDAC CORE.
+This patch adds the new 'class' of object to be managed, named:
+'edac_device'.
 
-Originally, the EDAC 'core' was contained in one source file: edac_mc.c
-with it corresponding edac_mc.h file.
+As a peer of the 'edac_mc' class of object, it provides a non-memory
+centric
+view of an ERROR DETECTING device in hardware. It provides a sysfs
+interface
+and an abstraction for varioius EDAC type devices.
 
-Now, there are the following files:
+Multiple 'instances' within the class are possible, with each
+'instance'
+able to have multiple 'blocks', and each 'block' having 'attributes'.
 
-edac_module.c	The main module init/exit function and other overhead
-edac_mc.c	Code handling the edac_mc class of object
-edac_mc_sysfs.c	Code handling for sysfs presentation
-edac_pci_sysfs.c  Code handling for PCI sysfs presentation
-edac_core.h	CORE .h include file for 'edac_mc' and 'edac_device'
-drivers
-edac_module.h	Internal CORE .h include file
+At the 'block' level there are the 'ce_count' and 'ue_count' fields
+which the device driver can update and/or call edac_device_handle_XX()
+functions. At each higher level are additional 'total' count fields,
+which are a summation of counts below that level.
 
-This forms a foundation upon which a later patch can create the
-'edac_device'
-class of object code in a new file 'edac_device.c'.
+This 'edac_device' has been used to capture and present ECC errors 
+which are found in a a L1 and L2 system on a per CORE/CPU basis.
 
 Signed-off-by:  Douglas Thompson <dougthompson@xmission.com>
 --
- Makefile         |    7
- edac_core.h      |  478 +++++++++++++++++++
- edac_mc.c        | 1316
--------------------------------------------------------
- edac_mc.h        |  471 -------------------
- edac_mc_sysfs.c  |  889 +++++++++++++++++++++++++++++++++++++
- edac_module.c    |  130 +++++
- edac_module.h    |   55 ++
- edac_pci_sysfs.c |  361 +++++++++++++++
- 8 files changed, 1932 insertions(+), 1775 deletions(-)
+ Makefile            |    4
+ edac_core.h         |  252 +++++++++++++++
+ edac_device.c       |  668 +++++++++++++++++++++++++++++++++++++++++
+ edac_device_sysfs.c |  832
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+ edac_mc.c           |    8
+ edac_mc_sysfs.c     |   42 --
+ edac_module.c       |  147 ++++++++-
+ edac_module.h       |    9
+ 8 files changed, 1912 insertions(+), 50 deletions(-)
 --
-Index: linux-2.6.22-rc3-mm1/drivers/edac/edac_mc_sysfs.c
+Index: linux-2.6.22-rc1/drivers/edac/edac_device.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22-rc3-mm1/drivers/edac/edac_mc_sysfs.c
-@@ -0,0 +1,889 @@
++++ linux-2.6.22-rc1/drivers/edac/edac_device.c
+@@ -0,0 +1,669 @@
++
 +/*
-+ * edac_mc kernel module
-+ * (C) 2005, 2006 Linux Networx (http://lnxi.com)
++ * edac_device.c
++ * (C) 2007 www.douglaskthompson.com
++ *
++ * This file may be distributed under the terms of the
++ * GNU General Public License.
++ *
++ * Written by Doug Thompson <norsk5@xmission.com>
++ *
++ * edac_device API implementation
++ * 19 Jan 2007
++ */
++
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/smp.h>
++#include <linux/init.h>
++#include <linux/sysctl.h>
++#include <linux/highmem.h>
++#include <linux/timer.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++#include <linux/list.h>
++#include <linux/sysdev.h>
++#include <linux/ctype.h>
++#include <linux/workqueue.h>
++#include <asm/uaccess.h>
++#include <asm/page.h>
++
++#include "edac_core.h"
++#include "edac_module.h"
++
++/* lock to memory controller's control array */
++static DECLARE_MUTEX(device_ctls_mutex);
++static struct list_head edac_device_list =
+LIST_HEAD_INIT(edac_device_list);
++
++
++static inline void lock_device_list(void)
++{
++	down(&device_ctls_mutex);
++}
++
++static inline void unlock_device_list(void)
++{
++	up(&device_ctls_mutex);
++}
++
++
++#ifdef CONFIG_EDAC_DEBUG
++static void edac_device_dump_device(struct edac_device_ctl_info
+*edac_dev)
++{
++	debugf3("\tedac_dev = %p dev_idx=%d \n", edac_dev,edac_dev->dev_idx);
++	debugf4("\tedac_dev->edac_check = %p\n", edac_dev->edac_check);
++	debugf3("\tdev = %p\n", edac_dev->dev);
++	debugf3("\tmod_name:ctl_name = %s:%s\n",
++		edac_dev->mod_name, edac_dev->ctl_name);
++	debugf3("\tpvt_info = %p\n\n", edac_dev->pvt_info);
++}
++#endif  /* CONFIG_EDAC_DEBUG */
++
++/*
++ * The alloc() and free() functions for the 'edac_device' control info
++ * structure. A MC driver will allocate one of these for each
+edac_device
++ * it is going to control/register with the EDAC CORE.
++ */
++struct edac_device_ctl_info *edac_device_alloc_ctl_info(
++	unsigned sz_private,
++	char *edac_device_name,
++	unsigned nr_instances,
++	char *edac_block_name,
++	unsigned nr_blocks,
++	unsigned offset_value,
++	struct edac_attrib_spec *attrib_spec,
++	unsigned nr_attribs)
++{
++	struct edac_device_ctl_info *dev_ctl;
++	struct edac_device_instance *dev_inst, *inst;
++	struct edac_device_block *dev_blk, *blk_p, *blk;
++	struct edac_attrib *dev_attrib, *attrib_p, *attrib;
++	unsigned total_size;
++	unsigned count;
++	unsigned instance, block, attr;
++	void *pvt;
++
++	debugf1("%s() instances=%d blocks=%d\n",
++		__func__,nr_instances,nr_blocks);
++
++	/* Figure out the offsets of the various items from the start of an
++	 * ctl_info structure.  We want the alignment of each item
++	 * to be at least as stringent as what the compiler would
++	 * provide if we could simply hardcode everything into a single
+struct.
++	 */
++	dev_ctl = (struct edac_device_ctl_info *) 0;
++
++	/* Calc the 'end' offset past the ctl_info structure */
++	dev_inst = (struct edac_device_instance *)
++			edac_align_ptr(&dev_ctl[1],sizeof(*dev_inst));
++
++	/* Calc the 'end' offset past the instance array */
++	dev_blk = (struct edac_device_block *)
++			edac_align_ptr(&dev_inst[nr_instances],sizeof(*dev_blk));
++
++	/* Calc the 'end' offset past the dev_blk array */
++	count = nr_instances * nr_blocks;
++	dev_attrib = (struct edac_attrib *)
++			edac_align_ptr(&dev_blk[count],sizeof(*dev_attrib));
++
++	/* Check for case of NO attributes specified */
++	if (nr_attribs > 0)
++		count *= nr_attribs;
++
++	/* Calc the 'end' offset past the attributes array */
++	pvt = edac_align_ptr(&dev_attrib[count],sz_private);
++	total_size = ((unsigned long) pvt) + sz_private;
++
++	/* Allocate the amount of memory for the set of control structures */
++	if ((dev_ctl = kmalloc(total_size, GFP_KERNEL)) == NULL)
++		return NULL;
++
++	/* Adjust pointers so they point within the memory we just allocated
++	 * rather than an imaginary chunk of memory located at address 0.
++	 */
++	dev_inst = (struct edac_device_instance *)
++			(((char *) dev_ctl) + ((unsigned long) dev_inst));
++	dev_blk = (struct edac_device_block *)
++			(((char *) dev_ctl) + ((unsigned long) dev_blk));
++	dev_attrib = (struct edac_attrib *)
++			(((char *) dev_ctl) + ((unsigned long) dev_attrib));
++	pvt = sz_private ?
++			(((char *) dev_ctl) + ((unsigned long) pvt)) : NULL;
++
++	memset(dev_ctl, 0, total_size);		/* clear all fields */
++	dev_ctl->nr_instances = nr_instances;
++	dev_ctl->instances = dev_inst;
++	dev_ctl->pvt_info = pvt;
++
++	/* Name of this edac device, ensure null terminated */
++	snprintf(dev_ctl->name,sizeof(dev_ctl->name),"%s", edac_device_name);
++	dev_ctl->name[sizeof(dev_ctl->name)-1] = '\0';
++
++	/* Initialize every Instance */
++	for (instance = 0; instance < nr_instances; instance++) {
++		inst = &dev_inst[instance];
++		inst->ctl = dev_ctl;
++		inst->nr_blocks = nr_blocks;
++		blk_p = &dev_blk[instance * nr_blocks];
++		inst->blocks = blk_p;
++
++		/* name of this instance */
++		snprintf(inst->name, sizeof(inst->name),
++			"%s%u", edac_device_name, instance);
++		inst->name[sizeof(inst->name)-1] = '\0';
++
++		/* Initialize every block in each instance */
++		for (		block = 0;
++				block < nr_blocks;
++				block++) {
++			blk = &blk_p[block];
++			blk->instance = inst;
++			blk->nr_attribs = nr_attribs;
++			attrib_p = &dev_attrib[block * nr_attribs];
++			blk->attribs = attrib_p;
++			snprintf(blk->name, sizeof(blk->name),
++				"%s%d", edac_block_name,block+1);
++			blk->name[sizeof(blk->name)-1] = '\0';
++
++			debugf1("%s() instance=%d block=%d name=%s\n",
++				__func__, instance,block,blk->name);
++
++			if (attrib_spec != NULL) {
++				/* when there is an attrib_spec passed int then
++				 * Initialize every attrib of each block
++				 */
++				for (attr = 0; attr < nr_attribs; attr++) {
++					attrib = &attrib_p[attr];
++					attrib->block = blk;
++
++					/* Link each attribute to the caller's
++					 * spec entry, for name and type
++				 	 */
++					attrib->spec = &attrib_spec[attr];
++				}
++			}
++		}
++	}
++
++	/* Mark this instance as merely ALLOCATED */
++	dev_ctl->op_state = OP_ALLOC;
++
++	return dev_ctl;
++}
++EXPORT_SYMBOL_GPL(edac_device_alloc_ctl_info);
++
++/*
++ * edac_device_free_ctl_info()
++ *	frees the memory allocated by the edac_device_alloc_ctl_info()
++ *	function
++ */
++void edac_device_free_ctl_info( struct edac_device_ctl_info *ctl_info)
+{
++	kfree(ctl_info);
++}
++EXPORT_SYMBOL_GPL(edac_device_free_ctl_info);
++
++
++
++/*
++ * find_edac_device_by_dev
++ *	scans the edac_device list for a specific 'struct device *'
++ */
++static struct edac_device_ctl_info *
++find_edac_device_by_dev(struct device *dev)
++{
++	struct edac_device_ctl_info *edac_dev;
++	struct list_head *item;
++
++	debugf3("%s()\n", __func__);
++
++	list_for_each(item, &edac_device_list) {
++		edac_dev = list_entry(item, struct edac_device_ctl_info, link);
++
++		if (edac_dev->dev == dev)
++			return edac_dev;
++	}
++
++	return NULL;
++}
++
++/*
++ * add_edac_dev_to_global_list
++ *	Before calling this function, caller must
++ *	assign a unique value to edac_dev->dev_idx.
++ *	Return:
++ *		0 on success
++ *		1 on failure.
++ */
++static int add_edac_dev_to_global_list (struct edac_device_ctl_info
+*edac_dev)
++{
++	struct list_head *item, *insert_before;
++	struct edac_device_ctl_info *rover;
++
++	insert_before = &edac_device_list;
++
++	/* Determine if already on the list */
++	if (unlikely((rover = find_edac_device_by_dev(edac_dev->dev)) !=
+NULL))
++		goto fail0;
++
++	/* Insert in ascending order by 'dev_idx', so find position */
++	list_for_each(item, &edac_device_list) {
++		rover = list_entry(item, struct edac_device_ctl_info, link);
++
++		if (rover->dev_idx >= edac_dev->dev_idx) {
++			if (unlikely(rover->dev_idx == edac_dev->dev_idx))
++				goto fail1;
++
++			insert_before = item;
++			break;
++		}
++	}
++
++	list_add_tail_rcu(&edac_dev->link, insert_before);
++	return 0;
++
++fail0:
++	edac_printk(KERN_WARNING, EDAC_MC,
++		"%s (%s) %s %s already assigned %d\n",
++		rover->dev->bus_id, dev_name(rover->dev),
++		rover->mod_name, rover->ctl_name, rover->dev_idx);
++	return 1;
++
++fail1:
++	edac_printk(KERN_WARNING, EDAC_MC,
++		"bug in low-level driver: attempt to assign\n"
++		"    duplicate dev_idx %d in %s()\n", rover->dev_idx, __func__);
++	return 1;
++}
++
++/*
++ * complete_edac_device_list_del
++ */
++static void complete_edac_device_list_del(struct rcu_head *head)
++{
++	struct edac_device_ctl_info *edac_dev;
++
++	edac_dev = container_of(head, struct edac_device_ctl_info, rcu);
++	INIT_LIST_HEAD(&edac_dev->link);
++	complete(&edac_dev->complete);
++}
++
++/*
++ * del_edac_device_from_global_list
++ */
++static void del_edac_device_from_global_list(
++			struct edac_device_ctl_info *edac_device)
++{
++	list_del_rcu(&edac_device->link);
++	init_completion(&edac_device->complete);
++	call_rcu(&edac_device->rcu, complete_edac_device_list_del);
++	wait_for_completion(&edac_device->complete);
++}
++
++/**
++ * edac_device_find
++ *	Search for a edac_device_ctl_info structure whose index is 'idx'.
++ *
++ * If found, return a pointer to the structure.
++ * Else return NULL.
++ *
++ * Caller must hold device_ctls_mutex.
++ */
++struct edac_device_ctl_info * edac_device_find(int idx)
++{
++	struct list_head *item;
++	struct edac_device_ctl_info *edac_dev;
++
++	/* Iterate over list, looking for exact match of ID */
++	list_for_each(item, &edac_device_list) {
++		edac_dev = list_entry(item, struct edac_device_ctl_info, link);
++
++		if (edac_dev->dev_idx >= idx) {
++			if (edac_dev->dev_idx == idx)
++				return edac_dev;
++
++			/* not on list, so terminate early */
++			break;
++		}
++	}
++
++	return NULL;
++}
++EXPORT_SYMBOL(edac_device_find);
++
++
++/*
++ * edac_workq_function
++ *	performs the operation scheduled by a workq request
++ */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
++static void edac_workq_function(struct work_struct *work_req)
++{
++	struct delayed_work *d_work = (struct delayed_work*) work_req;
++	struct edac_device_ctl_info *edac_dev =
++		to_edac_device_ctl_work(d_work);
++#else
++static void edac_workq_function(void *ptr)
++{
++	struct edac_device_ctl_info *edac_dev =
++		(struct edac_device_ctl_info *) ptr;
++#endif
++
++	//debugf0("%s() here and running\n", __func__);
++	lock_device_list();
++
++	/* Only poll controllers that are running polled and have a check */
++	if ((edac_dev->op_state == OP_RUNNING_POLL) &&
++					(edac_dev->edac_check != NULL)) {
++		edac_dev->edac_check(edac_dev);
++	}
++
++	unlock_device_list();
++
++	/* Reschedule */
++	queue_delayed_work(edac_workqueue,&edac_dev->work, edac_dev->delay);
++}
++
++/*
++ * edac_workq_setup
++ *	initialize a workq item for this edac_device instance
++ *	passing in the new delay period in msec
++ */
++void edac_workq_setup(struct edac_device_ctl_info *edac_dev, unsigned
+msec)
++{
++	debugf0("%s()\n", __func__);
++
++	edac_dev->poll_msec = msec;
++	edac_device_calc_delay(edac_dev);	/* Calc delay jiffies */
++
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
++	INIT_DELAYED_WORK(&edac_dev->work,edac_workq_function);
++#else
++	INIT_WORK(&edac_dev->work,edac_workq_function,edac_dev);
++#endif
++	queue_delayed_work(edac_workqueue,&edac_dev->work, edac_dev->delay);
++}
++
++/*
++ * edac_workq_teardown
++ *	stop the workq processing on this edac_dev
++ */
++void edac_workq_teardown(struct edac_device_ctl_info *edac_dev)
++{
++	int status;
++
++	status = cancel_delayed_work(&edac_dev->work);
++	if (status == 0) {
++		/* workq instance might be running, wait for it */
++		flush_workqueue(edac_workqueue);
++	}
++}
++
++/*
++ * edac_device_reset_delay_period
++ */
++
++void edac_device_reset_delay_period(
++		struct edac_device_ctl_info *edac_dev,
++		unsigned long value)
++{
++	lock_device_list();
++
++	/* cancel the current workq request */
++	edac_workq_teardown(edac_dev);
++
++	/* restart the workq request, with new delay value */
++	edac_workq_setup(edac_dev, value);
++
++	unlock_device_list();
++}
++
++/*
++ * edac_op_state_toString(edac_dev)
++ */
++static char *edac_op_state_toString(struct edac_device_ctl_info
+*edac_dev)
++{
++	int opstate = edac_dev->op_state;
++
++	if (opstate == OP_RUNNING_POLL)
++		return "POLLED";
++	else if (opstate == OP_RUNNING_INTERRUPT)
++		return "INTERRUPT";
++	else if (opstate == OP_RUNNING_POLL_INTR)
++		return "POLL-INTR";
++	else if (opstate == OP_ALLOC)
++		return "ALLOC";
++	else if (opstate == OP_OFFLINE)
++		return "OFFLINE";
++
++	return "UNKNOWN";
++}
++
++/**
++ * edac_device_add_device: Insert the 'edac_dev' structure into the
++ * edac_device global list and create sysfs entries associated with
++ * edac_device structure.
++ * @edac_device: pointer to the edac_device structure to be added to
+the list
++ * @edac_idx: A unique numeric identifier to be assigned to the
++ * 'edac_device' structure.
++ *
++ * Return:
++ *	0	Success
++ *	!0	Failure
++ */
++int edac_device_add_device(struct edac_device_ctl_info *edac_dev, int
+edac_idx)
++{
++	debugf0("%s()\n", __func__);
++
++	edac_dev->dev_idx = edac_idx;
++#ifdef CONFIG_EDAC_DEBUG
++	if (edac_debug_level >= 3)
++		edac_device_dump_device(edac_dev);
++#endif
++	lock_device_list();
++
++	if (add_edac_dev_to_global_list(edac_dev))
++		goto fail0;
++
++	/* set load time so that error rate can be tracked */
++	edac_dev->start_time = jiffies;
++
++	/* create this instance's sysfs entries */
++	if (edac_device_create_sysfs(edac_dev)) {
++		edac_device_printk(edac_dev, KERN_WARNING,
++			"failed to create sysfs device\n");
++		goto fail1;
++	}
++
++	/* If there IS a check routine, then we are running POLLED */
++	if (edac_dev->edac_check != NULL) {
++		/* This instance is NOW RUNNING */
++		edac_dev->op_state = OP_RUNNING_POLL;
++
++		/* enable workq processing on this instance, default = 1000 msec */
++		edac_workq_setup(edac_dev, 1000);
++	} else {
++		edac_dev->op_state = OP_RUNNING_INTERRUPT;
++	}
++
++
++	/* Report action taken */
++	edac_device_printk(edac_dev, KERN_INFO,
++		"Giving out device to module '%s' controller '%s': DEV '%s' (%s)\n",
++		edac_dev->mod_name,
++		edac_dev->ctl_name,
++		dev_name(edac_dev->dev),
++		edac_op_state_toString(edac_dev)
++		);
++
++	unlock_device_list();
++	return 0;
++
++fail1:
++	/* Some error, so remove the entry from the lsit */
++	del_edac_device_from_global_list(edac_dev);
++
++fail0:
++	unlock_device_list();
++	return 1;
++}
++EXPORT_SYMBOL_GPL(edac_device_add_device);
++
++/**
++ * edac_device_del_device:
++ *	Remove sysfs entries for specified edac_device structure and
++ *	then remove edac_device structure from global list
++ *
++ * @pdev:
++ *	Pointer to 'struct device' representing edac_device
++ *	structure to remove.
++ *
++ * Return:
++ *	Pointer to removed edac_device structure,
++ *	OR NULL if device not found.
++ */
++struct edac_device_ctl_info * edac_device_del_device(struct device
+*dev)
++{
++	struct edac_device_ctl_info *edac_dev;
++
++	debugf0("MC: %s()\n", __func__);
++
++	lock_device_list();
++
++	if ((edac_dev = find_edac_device_by_dev(dev)) == NULL) {
++		unlock_device_list();
++		return NULL;
++	}
++
++	/* mark this instance as OFFLINE */
++	edac_dev->op_state = OP_OFFLINE;
++
++	/* clear workq processing on this instance */
++	edac_workq_teardown(edac_dev);
++
++	/* Tear down the sysfs entries for this instance */
++	edac_device_remove_sysfs(edac_dev);
++
++	/* deregister from global list */
++	del_edac_device_from_global_list(edac_dev);
++
++	unlock_device_list();
++
++	edac_printk(KERN_INFO, EDAC_MC,
++		"Removed device %d for %s %s: DEV %s\n",
++		edac_dev->dev_idx,
++		edac_dev->mod_name,
++		edac_dev->ctl_name,
++		dev_name(edac_dev->dev));
++
++	return edac_dev;
++}
++EXPORT_SYMBOL_GPL(edac_device_del_device);
++
++
++static inline int edac_device_get_log_ce(struct edac_device_ctl_info
+*edac_dev)
++{
++	return edac_dev->log_ce;
++}
++
++static inline int edac_device_get_log_ue(struct edac_device_ctl_info
+*edac_dev)
++{
++	return edac_dev->log_ue;
++}
++
++static inline int edac_device_get_panic_on_ue(
++		struct edac_device_ctl_info *edac_dev)
++{
++	return edac_dev->panic_on_ue;
++}
++
++/*
++ * edac_device_handle_ce
++ *	perform a common output and handling of an 'edac_dev' CE event
++ */
++void edac_device_handle_ce(struct edac_device_ctl_info *edac_dev,
++		int inst_nr, int block_nr, const char *msg)
++{
++	struct edac_device_instance *instance;
++	struct edac_device_block *block = NULL;
++
++	if ((inst_nr >= edac_dev->nr_instances) || (inst_nr < 0)) {
++		edac_device_printk(edac_dev, KERN_ERR,
++			"INTERNAL ERROR: 'instance' out of range "
++			"(%d >= %d)\n", inst_nr, edac_dev->nr_instances);
++		return;
++	}
++
++	instance = edac_dev->instances + inst_nr;
++
++	if ((block_nr >= instance->nr_blocks) || (block_nr < 0)) {
++		edac_device_printk(edac_dev, KERN_ERR,
++			"INTERNAL ERROR: instance %d 'block' out of range "
++			"(%d >= %d)\n", inst_nr, block_nr, instance->nr_blocks);
++		return;
++	}
++
++	if (instance->nr_blocks > 0) {
++		block = instance->blocks + block_nr;
++		block->counters.ce_count++;
++	}
++
++	/* Propogate the count up the 'totals' tree */
++	instance->counters.ce_count++;
++	edac_dev->counters.ce_count++;
++
++	if (edac_device_get_log_ce(edac_dev))
++		edac_device_printk(edac_dev, KERN_WARNING,
++		"CE ctl: %s, instance: %s, block: %s: %s\n",
++		edac_dev->ctl_name, instance->name,
++		block ? block->name : "N/A", msg);
++}
++EXPORT_SYMBOL_GPL(edac_device_handle_ce);
++
++/*
++ * edac_device_handle_ue
++ *	perform a common output and handling of an 'edac_dev' UE event
++ */
++void edac_device_handle_ue(struct edac_device_ctl_info *edac_dev,
++		int inst_nr, int block_nr, const char *msg)
++{
++	struct edac_device_instance *instance;
++	struct edac_device_block *block = NULL;
++
++	if ((inst_nr >= edac_dev->nr_instances) || (inst_nr < 0)) {
++		edac_device_printk(edac_dev, KERN_ERR,
++			"INTERNAL ERROR: 'instance' out of range "
++			"(%d >= %d)\n", inst_nr, edac_dev->nr_instances);
++		return;
++	}
++
++	instance = edac_dev->instances + inst_nr;
++
++	if ((block_nr >= instance->nr_blocks) || (block_nr < 0)) {
++		edac_device_printk(edac_dev, KERN_ERR,
++			"INTERNAL ERROR: instance %d 'block' out of range "
++			"(%d >= %d)\n", inst_nr, block_nr, instance->nr_blocks);
++		return;
++	}
++
++	if (instance->nr_blocks > 0) {
++		block = instance->blocks + block_nr;
++		block->counters.ue_count++;
++	}
++
++	/* Propogate the count up the 'totals' tree */
++	instance->counters.ue_count++;
++	edac_dev->counters.ue_count++;
++
++	if (edac_device_get_log_ue(edac_dev))
++		edac_device_printk(edac_dev, KERN_EMERG,
++		"UE ctl: %s, instance: %s, block: %s: %s\n",
++		edac_dev->ctl_name, instance->name,
++		block ? block->name : "N/A", msg);
++
++	if (edac_device_get_panic_on_ue(edac_dev))
++		panic("EDAC %s: UE instance: %s, block %s: %s\n",
++			edac_dev->ctl_name, instance->name,
++			block ? block->name : "N/A", msg);
++}
++EXPORT_SYMBOL_GPL(edac_device_handle_ue);
++
+Index: linux-2.6.22-rc1/drivers/edac/Makefile
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/edac/Makefile
++++ linux-2.6.22-rc1/drivers/edac/Makefile
+@@ -10,9 +10,9 @@
+ 
+ obj-$(CONFIG_EDAC_MM_EDAC)		+= edac_core.o
+ 
+-edac_core-objs	:= edac_mc.o edac_mc_sysfs.o edac_pci_sysfs.o
++edac_core-objs	:= edac_mc.o edac_device.o edac_mc_sysfs.o
+edac_pci_sysfs.o
+ 
+-edac_core-objs	+= edac_module.o
++edac_core-objs	+= edac_module.o edac_device_sysfs.o
+ 
+ obj-$(CONFIG_EDAC_AMD76X)		+= amd76x_edac.o
+ obj-$(CONFIG_EDAC_E7XXX)		+= e7xxx_edac.o
+Index: linux-2.6.22-rc1/drivers/edac/edac_mc.c
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/edac/edac_mc.c
++++ linux-2.6.22-rc1/drivers/edac/edac_mc.c
+@@ -88,7 +88,7 @@ static void edac_mc_dump_mci(struct mem_
+  * If 'size' is a constant, the compiler will optimize this whole
+function
+  * down to either a no-op or the addition of a constant to the value
+of 'ptr'.
+  */
+-static inline char * align_ptr(void *ptr, unsigned size)
++char * edac_align_ptr(void *ptr, unsigned size)
+ {
+ 	unsigned align, r;
+ 
+@@ -147,10 +147,10 @@ struct mem_ctl_info *edac_mc_alloc(unsig
+ 	 * hardcode everything into a single struct.
+ 	 */
+ 	mci = (struct mem_ctl_info *) 0;
+-	csi = (struct csrow_info *)align_ptr(&mci[1], sizeof(*csi));
++	csi = (struct csrow_info *)edac_align_ptr(&mci[1], sizeof(*csi));
+ 	chi = (struct channel_info *)
+-			align_ptr(&csi[nr_csrows], sizeof(*chi));
+-	pvt = align_ptr(&chi[nr_chans * nr_csrows], sz_pvt);
++			edac_align_ptr(&csi[nr_csrows], sizeof(*chi));
++	pvt = edac_align_ptr(&chi[nr_chans * nr_csrows], sz_pvt);
+ 	size = ((unsigned long) pvt) + sz_pvt;
+ 
+ 	if ((mci = kmalloc(size, GFP_KERNEL)) == NULL)
+Index: linux-2.6.22-rc1/drivers/edac/edac_core.h
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/edac/edac_core.h
++++ linux-2.6.22-rc1/drivers/edac/edac_core.h
+@@ -32,9 +32,14 @@
+ #include <linux/completion.h>
+ #include <linux/kobject.h>
+ #include <linux/platform_device.h>
++#include <linux/sysdev.h>
++#include <linux/workqueue.h>
++#include <linux/version.h>
+ 
+ #define EDAC_MC_LABEL_LEN	31
+-#define MC_PROC_NAME_MAX_LEN 7
++#define EDAC_DEVICE_NAME_LEN	31
++#define EDAC_ATTRIB_VALUE_LEN	15
++#define MC_PROC_NAME_MAX_LEN	7
+ 
+ #if PAGE_SHIFT < 20
+ #define PAGES_TO_MiB( pages )	( ( pages ) >> ( 20 - PAGE_SHIFT ) )
+@@ -51,6 +56,10 @@
+ #define edac_mc_chipset_printk(mci, level, prefix, fmt, arg...) \
+ 	printk(level "EDAC " prefix " MC%d: " fmt, mci->mc_idx, ##arg)
+ 
++/* edac_device printk */
++#define edac_device_printk(ctl, level, fmt, arg...) \
++	printk(level "EDAC DEVICE%d: " fmt, ctl->dev_idx, ##arg)
++
+ /* prefixes for edac_printk() and edac_mc_printk() */
+ #define EDAC_MC "MC"
+ #define EDAC_PCI "PCI"
+@@ -62,7 +71,7 @@ extern int edac_debug_level;
+ #define edac_debug_printk(level, fmt, arg...)                         
+  \
+ 	do {                                                             \
+ 		if (level <= edac_debug_level)                           \
+-			edac_printk(KERN_DEBUG, EDAC_DEBUG, fmt, ##arg); \
++			edac_printk(KERN_EMERG, EDAC_DEBUG, fmt, ##arg); \
+ 	} while(0)
+ 
+ #define debugf0( ... ) edac_debug_printk(0, __VA_ARGS__ )
+@@ -195,6 +204,8 @@ enum scrub_type {
+ 
+ /* FIXME - should have notify capabilities: NMI, LOG, PROC, etc */
+ 
++extern char * edac_align_ptr(void *ptr, unsigned size);
++
+ /*
+  * There are several things to be aware of that aren't at all obvious:
+  *
+@@ -376,6 +387,231 @@ struct mem_ctl_info {
+ 	struct completion kobj_complete;
+ };
+ 
++/*
++ * The following are the structures to provide for a generice
++ * or abstract 'edac_device'. This set of structures and the
++ * code that implements the APIs for the same, provide for
++ * registering EDAC type devices which are NOT standard memory.
++ *
++ * CPU caches (L1 and L2)
++ * DMA engines
++ * Core CPU swithces
++ * Fabric switch units
++ * PCIe interface controllers
++ * other EDAC/ECC type devices that can be monitored for
++ * errors, etc.
++ *
++ * It allows for a 2 level set of hiearchry. For example:
++ *
++ * cache could be composed of L1, L2 and L3 levels of cache.
++ * Each CPU core would have its own L1 cache, while sharing
++ * L2 and maybe L3 caches.
++ *
++ * View them arranged, via the sysfs presentation:
++ * /sys/devices/system/edac/..
++ *
++ *	mc/		<existing memory device directory>
++ *	cpu/cpu0/..	<L1 and L2 block directory>
++ *		/L1-cache/ce_count
++ *			 /ue_count
++ *		/L2-cache/ce_count
++ *			 /ue_count
++ *	cpu/cpu1/..	<L1 and L2 block directory>
++ *		/L1-cache/ce_count
++ *			 /ue_count
++ *		/L2-cache/ce_count
++ *			 /ue_count
++ *	...
++ *
++ *	the L1 and L2 directories would be "edac_device_block's"
++ */
++
++struct edac_device_counter {
++	u32	ue_count;
++	u32	ce_count;
++};
++
++#define INC_COUNTER(cnt)	(cnt++)
++
++/*
++ * An array of these is passed to the alloc() function
++ * to specify attributes of the edac_block
++ */
++struct edac_attrib_spec {
++	char  name[EDAC_DEVICE_NAME_LEN + 1];
++
++	int type;
++#define	EDAC_ATTR_INT		0x01
++#define EDAC_ATTR_CHAR		0x02
++};
++
++
++/* Attribute control structure
++ * In this structure is a pointer to the driver's edac_attrib_spec
++ * The life of this pointer is inclusive in the life of the driver's
++ * life cycle.
++ */
++struct edac_attrib {
++	struct edac_device_block *block;	/* Up Pointer */
++
++	struct edac_attrib_spec *spec;		/* ptr to module spec entry */
++
++	union {					/* actual value */
++		int edac_attrib_int_value;
++		char edac_attrib_char_value[EDAC_ATTRIB_VALUE_LEN + 1];
++	} edac_attrib_value;
++};
++
++/* device block control structure */
++struct edac_device_block {
++	struct edac_device_instance *instance;	/* Up Pointer */
++	char  name[EDAC_DEVICE_NAME_LEN + 1];
++
++	struct edac_device_counter counters;	/* basic UE and CE counters */
++
++	int nr_attribs;				/* how many attributes */
++	struct edac_attrib *attribs;		/* this block's attributes */
++
++	/* edac sysfs device control */
++	struct kobject kobj;
++	struct completion kobj_complete;
++};
++
++/* device instance control structure */
++struct edac_device_instance {
++	struct edac_device_ctl_info *ctl;	/* Up pointer */
++	char name[EDAC_DEVICE_NAME_LEN + 4];
++
++	struct edac_device_counter counters;	/* instance counters */
++
++	u32 nr_blocks;				/* how many blocks */
++	struct edac_device_block *blocks;	/* block array */
++
++	/* edac sysfs device control */
++	struct kobject kobj;
++	struct completion kobj_complete;
++};
++
++
++/*
++ * Abstract edac_device control info structure
++ *
++ */
++struct edac_device_ctl_info {
++	/* for global list of edac_device_ctl_info structs */
++	struct list_head link;
++
++	int dev_idx;
++
++	/* Per instance controls for this edac_device */
++	int log_ue;		/* boolean for logging UEs */
++	int log_ce;		/* boolean for logging CEs */
++	int panic_on_ue;	/* boolean for panic'ing on an UE */
++	unsigned poll_msec;	/* number of milliseconds to poll interval */
++	unsigned long delay;	/* number of jiffies for poll_msec */
++
++	struct sysdev_class *edac_class;	/* pointer to class */
++
++	/* the internal state of this controller instance */
++	int op_state;
++#define	OP_ALLOC		0x100
++#define OP_RUNNING_POLL		0x201
++#define OP_RUNNING_INTERRUPT	0x202
++#define OP_RUNNING_POLL_INTR	0x203
++#define OP_OFFLINE		0x300
++
++	/* work struct for this instance */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
++	struct delayed_work work;
++#else
++	struct work_struct work;
++#endif
++
++	/* pointer to edac polling checking routine:
++	 *	If NOT NULL: points to polling check routine
++	 *	If NULL: Then assumes INTERRUPT operation, where
++	 *		MC driver will receive events
++	 */
++	void (*edac_check) (struct edac_device_ctl_info * edac_dev);
++
++	struct device *dev;	/* pointer to device structure */
++
++	const char *mod_name;	/* module name */
++	const char *ctl_name;	/* edac controller  name */
++
++	void *pvt_info;		/* pointer to 'private driver' info */
++
++	unsigned long start_time;/* edac_device load start time (jiffies)*/
++
++	/* these are for safe removal of mc devices from global list while
++	 * NMI handlers may be traversing list
++	 */
++	struct rcu_head rcu;
++	struct completion complete;
++
++	/* sysfs top name under 'edac' directory
++	 * and instance name:
++	 *	cpu/cpu0/...
++	 *	cpu/cpu1/...
++	 *	cpu/cpu2/...
++	 *	...
++	 */
++	char name[EDAC_DEVICE_NAME_LEN + 1];
++
++	/* Number of instances supported on this control structure
++	 * and the array of those instances
++	 */
++	u32 nr_instances;
++	struct edac_device_instance *instances;
++
++	/* Event counters for the this whole EDAC Device */
++	struct edac_device_counter counters;
++
++	/* edac sysfs device control for the 'name'
++	 * device this structure controls
++	 */
++	struct kobject kobj;
++	struct completion kobj_complete;
++};
++
++/* To get from the instance's wq to the beginning of the ctl structure
+*/
++#define to_edac_device_ctl_work(w) \
++		container_of(w,struct edac_device_ctl_info,work)
++
++/* Function to calc the number of delay jiffies from poll_msec */
++static inline void edac_device_calc_delay(
++				struct edac_device_ctl_info *edac_dev)
++{
++	/* convert from msec to jiffies */
++	edac_dev->delay = edac_dev->poll_msec * HZ / 1000;
++}
++
++/*
++ * The alloc() and free() functions for the 'edac_device' control info
++ * structure. A MC driver will allocate one of these for each
+edac_device
++ * it is going to control/register with the EDAC CORE.
++ */
++extern struct edac_device_ctl_info *edac_device_alloc_ctl_info(
++	unsigned sizeof_private,
++	char *edac_device_name,
++	unsigned nr_instances,
++	char *edac_block_name,
++	unsigned nr_blocks,
++	unsigned offset_value,
++	struct edac_attrib_spec *attrib_spec,
++	unsigned nr_attribs
++);
++
++/* The offset value can be:
++ *	-1 indicating no offset value
++ *	0 for zero-based block numbers
++ *	1 for 1-based block number
++ *	other for other-based block number
++ */
++#define	BLOCK_OFFSET_VALUE_OFF	((unsigned) -1)
++
++extern void edac_device_free_ctl_info( struct edac_device_ctl_info
+*ctl_info);
++
+ #ifdef CONFIG_PCI
+ 
+ /* write all or some bits in a byte-register*/
+@@ -466,13 +702,17 @@ extern void edac_mc_handle_fbd_ce(struct
+ 		char *msg);
+ 
+ /*
+- * This kmalloc's and initializes all the structures.
+- * Can't be used if all structures don't have the same lifetime.
++ * edac_device APIs
+  */
+ extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned
+nr_csrows,
+ 		unsigned nr_chans);
+-
+-/* Free an mc previously allocated by edac_mc_alloc() */
+ extern void edac_mc_free(struct mem_ctl_info *mci);
++extern int edac_device_add_device(struct edac_device_ctl_info
+*edac_dev, int edac_idx);
++extern struct edac_device_ctl_info * edac_device_del_device(struct
+device *dev);
++extern void edac_device_handle_ue(struct edac_device_ctl_info
+*edac_dev,
++		int inst_nr, int block_nr, const char *msg);
++extern void edac_device_handle_ce(struct edac_device_ctl_info
+*edac_dev,
++		int inst_nr, int block_nr, const char *msg);
++
+ 
+ #endif				/* _EDAC_CORE_H_ */
+Index: linux-2.6.22-rc1/drivers/edac/edac_device_sysfs.c
+===================================================================
+--- /dev/null
++++ linux-2.6.22-rc1/drivers/edac/edac_device_sysfs.c
+@@ -0,0 +1,837 @@
++/*
++ * file for managing the edac_device class of devices for EDAC
++ *
++ * (C) 2007 SoftwareBitMaker(http://www.softwarebitmaker.com)
 + * This file may be distributed under the terms of the
 + * GNU General Public License.
 + *
@@ -83,227 +1129,1081 @@ Index: linux-2.6.22-rc3-mm1/drivers/edac/edac_mc_sysfs.c
 +#include <linux/sysdev.h>
 +#include <linux/ctype.h>
 +
-+#include "edac_mc.h"
++#include "edac_core.h"
 +#include "edac_module.h"
 +
-+/* MC EDAC Controls, setable by module parameter, and sysfs */
-+static int log_ue = 1;
-+static int log_ce = 1;
-+static int panic_on_ue;
-+static int poll_msec = 1000;
 +
-+/* Getter functions for above */
-+int edac_get_log_ue()
++#define EDAC_DEVICE_SYMLINK	"device"
++
++#define to_edacdev(k) container_of(k, struct edac_device_ctl_info,
+kobj)
++#define to_edacdev_attr(a) container_of(a, struct edacdev_attribute,
+attr)
++
++#ifdef DKT
++
++static ssize_t edac_dev_ue_count_show(struct edac_device_ctl_info
+*edac_dev,
++					char *data)
 +{
-+	return log_ue;
++	return sprintf(data,"%d\n", edac_dev->ue_count);
 +}
 +
-+int edac_get_log_ce()
++static ssize_t edac_dev_ce_count_show(struct edac_device_ctl_info
+*edac_dev,
++					char *data)
 +{
-+	return log_ce;
++	return sprintf(data,"%d\n", edac_dev->ce_count);
 +}
 +
-+int edac_get_panic_on_ue()
++static ssize_t edac_dev_seconds_show(struct edac_device_ctl_info
+*edac_dev,
++					char *data)
 +{
-+	return panic_on_ue;
++	return sprintf(data,"%ld\n", (jiffies - edac_dev->start_time) / HZ);
 +}
 +
-+int edac_get_poll_msec()
++static ssize_t edac_dev_ctl_name_show(struct edac_device_ctl_info
+*edac_dev,
++					char *data)
 +{
-+	return poll_msec;
++	return sprintf(data,"%s\n", edac_dev->ctl_name);
 +}
 +
-+/* Parameter declarations for above */
-+module_param(panic_on_ue, int, 0644);
-+MODULE_PARM_DESC(panic_on_ue, "Panic on uncorrected error: 0=off
-1=on");
-+module_param(log_ue, int, 0644);
-+MODULE_PARM_DESC(log_ue, "Log uncorrectable error to console: 0=off
-1=on");
-+module_param(log_ce, int, 0644);
-+MODULE_PARM_DESC(log_ce, "Log correctable error to console: 0=off
-1=on");
-+module_param(poll_msec, int, 0644);
-+MODULE_PARM_DESC(poll_msec, "Polling period in milliseconds");
 +
++struct edacdev_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct edac_device_ctl_info *,char *);
++	ssize_t (*store)(struct edac_device_ctl_info *, const char *,size_t);
++};
++
++
++/* EDAC DEVICE show/store functions for top most object */
++static ssize_t edacdev_show(struct kobject *kobj, struct attribute
+*attr,
++		char *buffer)
++{
++	struct edac_device_ctl_info *edac_dev = to_edacdev(kobj);
++	struct edacdev_attribute * edacdev_attr = to_edacdev_attr(attr);
++
++	if (edacdev_attr->show)
++		return edacdev_attr->show(edac_dev, buffer);
++
++	return -EIO;
++}
++
++static ssize_t edacdev_store(struct kobject *kobj, struct attribute
+*attr,
++		const char *buffer, size_t count)
++{
++	struct edac_device_ctl_info *edac_dev = to_edacdev(kobj);
++	struct edacdev_attribute * edacdev_attr = to_edacdev_attr(attr);
++
++	if (edacdev_attr->store)
++		return edacdev_attr->store(edac_dev, buffer, count);
++
++	return -EIO;
++}
++
++static struct sysfs_ops edac_dev_ops = {
++	.show = edacdev_show,
++	.store = edacdev_store
++};
++
++#define EDACDEV_ATTR(_name,_mode,_show,_store)			\
++static struct edacdev_attribute edac_dev_attr_##_name = {			\
++	.attr = {.name = __stringify(_name), .mode = _mode },	\
++	.show   = _show,					\
++	.store  = _store,					\
++};
++
++/* default Control file */
++EDACDEV_ATTR(reset_counters,S_IWUSR,NULL,edac_dev_reset_counters_store);
++
++/* default Attribute files */
++EDACDEV_ATTR(mc_name,S_IRUGO,edac_dev_ctl_name_show,NULL);
++EDACDEV_ATTR(seconds_since_reset,S_IRUGO,edac_dev_seconds_show,NULL);
++EDACDEV_ATTR(ue_count,S_IRUGO,edac_dev_ue_count_show,NULL);
++EDACDEV_ATTR(ce_count,S_IRUGO,edac_dev_ce_count_show,NULL);
++
++
++static struct edacdev_attribute *edacdev_attr[] = {
++	&edacdev_attr_reset_counters,
++	&edacdev_attr_mc_name,
++	&edacdev_attr_seconds_since_reset,
++	&edacdev_attr_ue_count,
++	&edacdev_attr_ce_count,
++	NULL
++};
 +
 +/*
-+ * various constants for Memory Controllers
++ * Release of a Edac Device controlling instance
 + */
-+static const char *mem_types[] = {
-+	[MEM_EMPTY] = "Empty",
-+	[MEM_RESERVED] = "Reserved",
-+	[MEM_UNKNOWN] = "Unknown",
-+	[MEM_FPM] = "FPM",
-+	[MEM_EDO] = "EDO",
-+	[MEM_BEDO] = "BEDO",
-+	[MEM_SDR] = "Unbuffered-SDR",
-+	[MEM_RDR] = "Registered-SDR",
-+	[MEM_DDR] = "Unbuffered-DDR",
-+	[MEM_RDDR] = "Registered-DDR",
-+	[MEM_RMBS] = "RMBS"
++static void edac_dev_instance_release(struct kobject *kobj)
++{
++	struct edac_device_ctl_info *edac_dev;
++
++	edac_dev = to_edacdev(kobj);
++	debugf0("%s() idx=%d\n", __func__, edac_dev->dev_idx);
++	complete(&edac_dev->kobj_complete);
++}
++
++static struct kobj_type ktype_device = {
++	.release = edac_dev_instance_release,
++	.sysfs_ops = &edacdev_ops,
++	.default_attrs = (struct attribute **) edacdev_attr,
 +};
 +
-+static const char *dev_types[] = {
-+	[DEV_UNKNOWN] = "Unknown",
-+	[DEV_X1] = "x1",
-+	[DEV_X2] = "x2",
-+	[DEV_X4] = "x4",
-+	[DEV_X8] = "x8",
-+	[DEV_X16] = "x16",
-+	[DEV_X32] = "x32",
-+	[DEV_X64] = "x64"
++#endif
++
++/************************** edac_device sysfs code and data
+**************/
++
++/*
++ * Set of edac_device_ctl_info attribute store/show functions
++ */
++
++/* 'log_ue' */
++static ssize_t edac_device_ctl_log_ue_show(
++		struct edac_device_ctl_info *ctl_info, char *data)
++{
++        return sprintf(data,"%u\n", ctl_info->log_ue);
++}
++
++static ssize_t edac_device_ctl_log_ue_store(
++		struct edac_device_ctl_info *ctl_info,
++			const char *data,size_t count)
++{
++	/* if parameter is zero, turn off flag, if non-zero turn on flag */
++	ctl_info->log_ue = (simple_strtoul(data,NULL,0) != 0);
++
++        return count;
++}
++
++/* 'log_ce' */
++static ssize_t edac_device_ctl_log_ce_show(
++		struct edac_device_ctl_info *ctl_info,char *data)
++{
++        return sprintf(data,"%u\n", ctl_info->log_ce);
++}
++
++static ssize_t edac_device_ctl_log_ce_store(
++		struct edac_device_ctl_info *ctl_info,
++			const char *data,size_t count)
++{
++	/* if parameter is zero, turn off flag, if non-zero turn on flag */
++	ctl_info->log_ce = (simple_strtoul(data,NULL,0) != 0);
++
++        return count;
++}
++
++
++/* 'panic_on_ue' */
++static ssize_t edac_device_ctl_panic_on_ue_show(
++		struct edac_device_ctl_info *ctl_info, char *data)
++{
++        return sprintf(data,"%u\n", ctl_info->panic_on_ue);
++}
++
++static ssize_t edac_device_ctl_panic_on_ue_store(
++		struct edac_device_ctl_info *ctl_info,
++			const char *data,size_t count)
++{
++	/* if parameter is zero, turn off flag, if non-zero turn on flag */
++	ctl_info->panic_on_ue = (simple_strtoul(data,NULL,0) != 0);
++
++	return count;
++}
++
++/* 'poll_msec' show and store functions*/
++static ssize_t edac_device_ctl_poll_msec_show(
++		struct edac_device_ctl_info *ctl_info, char *data)
++{
++        return sprintf(data,"%u\n", ctl_info->poll_msec);
++}
++
++static ssize_t edac_device_ctl_poll_msec_store(
++		struct edac_device_ctl_info *ctl_info,
++		const char *data,size_t count)
++{
++	unsigned long value;
++
++	/* get the value and enforce that it is non-zero, must be at least
++	 * one millisecond for the delay period, between scans
++	 * Then cancel last outstanding delay for the work request
++	 * and set a new one.
++	 */
++	value = simple_strtoul(data,NULL,0);
++	edac_device_reset_delay_period(ctl_info,value);
++
++        return count;
++}
++
++
++/* edac_device_ctl_info specific attribute structure */
++struct ctl_info_attribute {
++        struct attribute attr;
++        ssize_t (*show)(struct edac_device_ctl_info *,char *);
++        ssize_t (*store)(struct edac_device_ctl_info *,const char
+*,size_t);
 +};
 +
-+static const char *edac_caps[] = {
-+	[EDAC_UNKNOWN] = "Unknown",
-+	[EDAC_NONE] = "None",
-+	[EDAC_RESERVED] = "Reserved",
-+	[EDAC_PARITY] = "PARITY",
-+	[EDAC_EC] = "EC",
-+	[EDAC_SECDED] = "SECDED",
-+	[EDAC_S2ECD2ED] = "S2ECD2ED",
-+	[EDAC_S4ECD4ED] = "S4ECD4ED",
-+	[EDAC_S8ECD8ED] = "S8ECD8ED",
-+	[EDAC_S16ECD16ED] = "S16ECD16ED"
++#define to_ctl_info(k) container_of(k, struct edac_device_ctl_info,
+kobj)
++#define to_ctl_info_attr(a) container_of(a,struct
+ctl_info_attribute,attr)
++
++/* Function to 'show' fields from the edac_dev 'ctl_info' structure */
++static ssize_t edac_dev_ctl_info_show(struct kobject *kobj,
++                        struct attribute *attr,
++                        char *buffer)
++{
++        struct edac_device_ctl_info *edac_dev = to_ctl_info(kobj);
++        struct ctl_info_attribute *ctl_info_attr =
+to_ctl_info_attr(attr);
++
++        if (ctl_info_attr->show)
++                return ctl_info_attr->show(edac_dev,buffer);
++        return -EIO;
++}
++
++/* Function to 'store' fields into the edac_dev 'ctl_info' structure
+*/
++static ssize_t edac_dev_ctl_info_store(struct kobject *kobj,
++                        struct attribute *attr,
++                	const char *buffer, size_t count)
++{
++        struct edac_device_ctl_info *edac_dev = to_ctl_info(kobj);
++        struct ctl_info_attribute *ctl_info_attr =
+to_ctl_info_attr(attr);
++
++        if (ctl_info_attr->store)
++                return ctl_info_attr->store(edac_dev, buffer, count);
++        return -EIO;
++}
++
++/* edac_dev file operations for an 'ctl_info' */
++static struct sysfs_ops device_ctl_info_ops = {
++	.show   = edac_dev_ctl_info_show,
++	.store  = edac_dev_ctl_info_store
 +};
++
++#define CTL_INFO_ATTR(_name,_mode,_show,_store)        \
++static struct ctl_info_attribute attr_ctl_info_##_name = {      \
++        .attr = {.name = __stringify(_name), .mode = _mode },   \
++        .show   = _show,                                        \
++        .store  = _store,                                       \
++};
++
++
++/* Declare the various ctl_info attributes here and their respective
+ops */
++CTL_INFO_ATTR(log_ue,S_IRUGO|S_IWUSR,
++		edac_device_ctl_log_ue_show,
++		edac_device_ctl_log_ue_store);
++CTL_INFO_ATTR(log_ce,S_IRUGO|S_IWUSR,
++		edac_device_ctl_log_ce_show,
++		edac_device_ctl_log_ce_store);
++CTL_INFO_ATTR(panic_on_ue,S_IRUGO|S_IWUSR,
++		edac_device_ctl_panic_on_ue_show,
++		edac_device_ctl_panic_on_ue_store);
++CTL_INFO_ATTR(poll_msec,S_IRUGO|S_IWUSR,
++		edac_device_ctl_poll_msec_show,
++		edac_device_ctl_poll_msec_store);
++
++
++/* Base Attributes of the EDAC_DEVICE ECC object */
++static struct ctl_info_attribute *device_ctrl_attr[] = {
++	&attr_ctl_info_panic_on_ue,
++	&attr_ctl_info_log_ue,
++	&attr_ctl_info_log_ce,
++	&attr_ctl_info_poll_msec,
++	NULL,
++};
++
++/* Main DEVICE kobject release() function */
++static void edac_device_ctrl_master_release(struct kobject *kobj)
++{
++	struct edac_device_ctl_info *edac_dev;
++
++	edac_dev = to_edacdev(kobj);
++
++	debugf1("%s()\n", __func__);
++	complete(&edac_dev->kobj_complete);
++}
++
++static struct kobj_type ktype_device_ctrl = {
++	.release = edac_device_ctrl_master_release,
++	.sysfs_ops = &device_ctl_info_ops,
++	.default_attrs = (struct attribute **) device_ctrl_attr,
++};
++
++
++/**************** edac_device main kobj ctor/dtor code
+*********************/
++
++/*
++ * edac_device_register_main_kobj
++ *
++ *	perform the high level setup for the new edac_device instance
++ *
++ * Return:  0 SUCCESS
++ *         !0 FAILURE
++ */
++static int edac_device_register_main_kobj(
++		struct edac_device_ctl_info *edac_dev)
++{
++	int err = 0;
++	struct sysdev_class *edac_class;
++
++	debugf1("%s()\n", __func__);
++
++        /* get the /sys/devices/system/edac reference */
++        edac_class = edac_get_edac_class();
++        if (edac_class == NULL) {
++                debugf1("%s() no edac_class error=%d\n", __func__,
+err);
++                return err;
++        }
++
++	/* Point to the 'edac_class' this instance 'reports' to */
++	edac_dev->edac_class = edac_class;
++
++	/* Init the devices's kobject */
++	memset(&edac_dev->kobj, 0, sizeof (struct kobject));
++	edac_dev->kobj.ktype = &ktype_device_ctrl;
++
++	/* set this new device under the edac_class kobject */
++	edac_dev->kobj.parent = &edac_class->kset.kobj;
++
++	/* generate sysfs "..../edac/<name>"   */
++	debugf1("%s() set name of kobject to: %s\n",
++		__func__, edac_dev->name);
++	err = kobject_set_name(&edac_dev->kobj,"%s",edac_dev->name);
++	if (err)
++		return err;
++	err = kobject_register(&edac_dev->kobj);
++	if (err) {
++		debugf1("%s()Failed to register '.../edac/%s'\n",
++			__func__,edac_dev->name);
++		return err;
++	}
++
++	debugf1("%s() Registered '.../edac/%s' kobject\n",
++		__func__, edac_dev->name);
++
++	return 0;
++}
++
++/*
++ * edac_device_unregister_main_kobj:
++ *	the '..../edac/<name>' kobject
++ */
++static void edac_device_unregister_main_kobj(
++			struct edac_device_ctl_info *edac_dev)
++{
++	debugf0("%s()\n", __func__);
++	debugf1("%s() name of kobject is: %s\n",
++		__func__, kobject_name(&edac_dev->kobj));
++
++	init_completion(&edac_dev->kobj_complete);
++
++	/*
++	 * Unregister the edac device's kobject and
++	 * wait for reference count to reach 0.
++	 */
++	kobject_unregister(&edac_dev->kobj);
++	wait_for_completion(&edac_dev->kobj_complete);
++}
++
++
++/*************** edac_dev -> instance information ***********/
++
++/*
++ * Set of low-level instance attribute show functions
++ */
++static ssize_t instance_ue_count_show(
++		struct edac_device_instance *instance, char *data)
++{
++        return sprintf(data,"%u\n", instance->counters.ue_count);
++}
++
++static ssize_t instance_ce_count_show(
++		struct edac_device_instance *instance, char *data)
++{
++        return sprintf(data,"%u\n", instance->counters.ce_count);
++}
++
++
++
++#define to_instance(k) container_of(k, struct edac_device_instance,
+kobj)
++#define to_instance_attr(a) container_of(a,struct
+instance_attribute,attr)
++
++/* DEVICE instance kobject release() function */
++static void edac_device_ctrl_instance_release(struct kobject *kobj)
++{
++	struct edac_device_instance *instance;
++
++	debugf1("%s()\n", __func__);
++
++	instance = to_instance(kobj);
++	complete(&instance->kobj_complete);
++}
++
++
++/* instance specific attribute structure */
++struct instance_attribute {
++        struct attribute attr;
++        ssize_t (*show)(struct edac_device_instance *,char *);
++        ssize_t (*store)(struct edac_device_instance *,const char
+*,size_t);
++};
++
++
++/* Function to 'show' fields from the edac_dev 'instance' structure */
++static ssize_t edac_dev_instance_show(struct kobject *kobj,
++                        struct attribute *attr,
++                        char *buffer)
++{
++        struct edac_device_instance *instance = to_instance(kobj);
++        struct instance_attribute *instance_attr =
+to_instance_attr(attr);
++
++        if (instance_attr->show)
++                return instance_attr->show(instance,buffer);
++        return -EIO;
++}
++
++
++/* Function to 'store' fields into the edac_dev 'instance' structure
+*/
++static ssize_t edac_dev_instance_store(struct kobject *kobj,
++                        struct attribute *attr,
++                	const char *buffer, size_t count)
++{
++        struct edac_device_instance *instance = to_instance(kobj);
++        struct instance_attribute *instance_attr =
+to_instance_attr(attr);
++
++        if (instance_attr->store)
++                return instance_attr->store(instance, buffer, count);
++        return -EIO;
++}
++
++
++
++/* edac_dev file operations for an 'instance' */
++static struct sysfs_ops device_instance_ops = {
++	.show   = edac_dev_instance_show,
++	.store  = edac_dev_instance_store
++};
++
++#define INSTANCE_ATTR(_name,_mode,_show,_store)        \
++static struct instance_attribute attr_instance_##_name = {      \
++        .attr = {.name = __stringify(_name), .mode = _mode },   \
++        .show   = _show,                                        \
++        .store  = _store,                                       \
++};
++
++/*
++ * Define attributes visible for the edac_device instance object
++ *	Each contains a pointer to a show and an optional set
++ *	function pointer that does the low level output/input
++ */
++INSTANCE_ATTR(ce_count,S_IRUGO,instance_ce_count_show,NULL);
++INSTANCE_ATTR(ue_count,S_IRUGO,instance_ue_count_show,NULL);
++
++/* list of edac_dev 'instance' attributes */
++static struct instance_attribute *device_instance_attr[] = {
++	&attr_instance_ce_count,
++	&attr_instance_ue_count,
++	NULL,
++};
++
++/* The 'ktype' for each edac_dev 'instance' */
++static struct kobj_type ktype_instance_ctrl = {
++	.release = edac_device_ctrl_instance_release,
++	.sysfs_ops = &device_instance_ops,
++	.default_attrs = (struct attribute **) device_instance_attr,
++};
++
++
++/*************** edac_dev -> instance -> block information *********/
++
++/*
++ * Set of low-level block attribute show functions
++ */
++static ssize_t block_ue_count_show(
++		struct edac_device_block *block, char *data)
++{
++        return sprintf(data,"%u\n", block->counters.ue_count);
++}
++
++static ssize_t block_ce_count_show(
++		struct edac_device_block *block, char *data)
++{
++        return sprintf(data,"%u\n", block->counters.ce_count);
++}
++
++
++
++#define to_block(k) container_of(k, struct edac_device_block, kobj)
++#define to_block_attr(a) container_of(a,struct block_attribute,attr)
++
++/* DEVICE block kobject release() function */
++static void edac_device_ctrl_block_release(struct kobject *kobj)
++{
++	struct edac_device_block *block;
++
++	debugf1("%s()\n", __func__);
++
++	block = to_block(kobj);
++	complete(&block->kobj_complete);
++}
++
++/* block specific attribute structure */
++struct block_attribute {
++        struct attribute attr;
++        ssize_t (*show)(struct edac_device_block *,char *);
++        ssize_t (*store)(struct edac_device_block *,const char
+*,size_t);
++};
++
++/* Function to 'show' fields from the edac_dev 'block' structure */
++static ssize_t edac_dev_block_show(struct kobject *kobj,
++                        struct attribute *attr,
++                        char *buffer)
++{
++        struct edac_device_block *block = to_block(kobj);
++        struct block_attribute *block_attr = to_block_attr(attr);
++
++        if (block_attr->show)
++                return block_attr->show(block,buffer);
++        return -EIO;
++}
++
++
++/* Function to 'store' fields into the edac_dev 'block' structure */
++static ssize_t edac_dev_block_store(struct kobject *kobj,
++                        struct attribute *attr,
++                	const char *buffer, size_t count)
++{
++        struct edac_device_block *block = to_block(kobj);
++        struct block_attribute *block_attr = to_block_attr(attr);
++
++        if (block_attr->store)
++                return block_attr->store(block, buffer, count);
++        return -EIO;
++}
++
++
++/* edac_dev file operations for a 'block' */
++static struct sysfs_ops device_block_ops = {
++	.show   = edac_dev_block_show,
++	.store  = edac_dev_block_store
++};
++
++
++#define BLOCK_ATTR(_name,_mode,_show,_store)        \
++static struct block_attribute attr_block_##_name = {                  
+    \
++        .attr = {.name = __stringify(_name), .mode = _mode },   \
++        .show   = _show,                                        \
++        .store  = _store,                                       \
++};
++
++BLOCK_ATTR(ce_count,S_IRUGO,block_ce_count_show,NULL);
++BLOCK_ATTR(ue_count,S_IRUGO,block_ue_count_show,NULL);
++
++
++/* list of edac_dev 'block' attributes */
++static struct block_attribute *device_block_attr[] = {
++	&attr_block_ce_count,
++	&attr_block_ue_count,
++	NULL,
++};
++
++/* The 'ktype' for each edac_dev 'block' */
++static struct kobj_type ktype_block_ctrl = {
++	.release = edac_device_ctrl_block_release,
++	.sysfs_ops = &device_block_ops,
++	.default_attrs = (struct attribute **) device_block_attr,
++};
++
++
++/************** block ctor/dtor  code ************/
++
++/*
++ * edac_device_create_block
++ */
++static int edac_device_create_block(
++		struct edac_device_ctl_info *edac_dev,
++		struct edac_device_instance *instance,
++		int idx)
++{
++	int err;
++	struct edac_device_block *block;
++
++	block = &instance->blocks[idx];
++
++	debugf1("%s() Instance '%s' block[%d] '%s'\n",
++		__func__,instance->name, idx, block->name);
++
++	/* init this block's kobject */
++	memset(&block->kobj, 0, sizeof (struct kobject));
++	block->kobj.parent = &instance->kobj;
++	block->kobj.ktype = &ktype_block_ctrl;
++
++	err = kobject_set_name(&block->kobj,"%s",block->name);
++	if (err)
++		return err;
++
++	err = kobject_register(&block->kobj);
++	if (err) {
++		debugf1("%s()Failed to register instance '%s'\n",
++			__func__,block->name);
++		return err;
++	}
++
++	return 0;
++}
++
++/*
++ * edac_device_delete_block(edac_dev,j);
++ */
++static void edac_device_delete_block(
++		struct edac_device_ctl_info *edac_dev,
++		struct edac_device_instance *instance,
++		int idx)
++{
++	struct edac_device_block *block;
++
++	block = &instance->blocks[idx];
++
++	/* unregister this block's kobject */
++	init_completion(&block->kobj_complete);
++	kobject_unregister(&block->kobj);
++	wait_for_completion(&block->kobj_complete);
++}
++
++/************** instance ctor/dtor  code ************/
++
++/*
++ * edac_device_create_instance
++ *	create just one instance of an edac_device 'instance'
++ */
++static int edac_device_create_instance(
++		struct edac_device_ctl_info *edac_dev, int idx)
++{
++	int i, j;
++	int err;
++	struct edac_device_instance *instance;
++
++	instance = &edac_dev->instances[idx];
++
++	/* Init the instance's kobject */
++	memset(&instance->kobj, 0, sizeof (struct kobject));
++
++	/* set this new device under the edac_device main kobject */
++	instance->kobj.parent = &edac_dev->kobj;
++	instance->kobj.ktype = &ktype_instance_ctrl;
++
++	err = kobject_set_name(&instance->kobj,"%s",instance->name);
++	if (err)
++		return err;
++
++	err = kobject_register(&instance->kobj);
++	if (err != 0) {
++		debugf2("%s() Failed to register instance '%s'\n",
++			__func__,instance->name);
++		return err;
++	}
++
++	debugf1("%s() now register '%d' blocks for instance %d\n",
++			__func__,instance->nr_blocks,idx);
++
++	/* register all blocks of this instance */
++	for (i = 0; i < instance->nr_blocks; i++ ) {
++		err = edac_device_create_block(edac_dev,instance,i);
++		if (err) {
++			for (j = 0; j < i; j++) {
++				edac_device_delete_block(edac_dev,instance,j);
++			}
++			return err;
++		}
++	}
++
++	debugf1("%s() Registered instance %d '%s' kobject\n",
++		__func__, idx, instance->name);
++
++	return 0;
++}
++
++/*
++ * edac_device_remove_instance
++ *	remove an edac_device instance
++ */
++static void edac_device_delete_instance(
++		struct edac_device_ctl_info *edac_dev, int idx)
++{
++	int i;
++	struct edac_device_instance *instance;
++
++	instance = &edac_dev->instances[idx];
++
++	/* unregister all blocks in this instance */
++	for (i = 0; i < instance->nr_blocks; i++) {
++		edac_device_delete_block(edac_dev,instance,i);
++	}
++
++	/* unregister this instance's kobject */
++	init_completion(&instance->kobj_complete);
++	kobject_unregister(&instance->kobj);
++	wait_for_completion(&instance->kobj_complete);
++}
++
++/*
++ * edac_device_create_instances
++ *	create the first level of 'instances' for this device
++ *	(ie  'cache' might have 'cache0', 'cache1', 'cache2', etc
++ */
++static int edac_device_create_instances(struct edac_device_ctl_info
+*edac_dev)
++{
++	int i, j;
++	int err;
++
++	debugf0("%s()\n", __func__);
++
++	/* iterate over creation of the instances */
++	for (i = 0; i < edac_dev->nr_instances; i++ ) {
++		err = edac_device_create_instance(edac_dev,i);
++		if (err) {
++			/* unwind previous instances on error */
++			for (j = 0; j < i; j++) {
++				edac_device_delete_instance(edac_dev,j);
++			}
++			return err;
++		}
++	}
++
++	return 0;
++}
++
++/*
++ * edac_device_delete_instances(edac_dev);
++ *	unregister all the kobjects of the instances
++ */
++static void edac_device_delete_instances(struct edac_device_ctl_info
+*edac_dev)
++{
++	int i;
++
++	/* iterate over creation of the instances */
++	for (i = 0; i < edac_dev->nr_instances; i++ ) {
++		edac_device_delete_instance(edac_dev,i);
++	}
++}
++
++/******************* edac_dev sysfs ctor/dtor  code *************/
++
++/*
++ * edac_device_create_sysfs() Constructor
++ *
++ * Create a new edac_device kobject instance,
++ *
++ * Return:
++ *	0	Success
++ *	!0	Failure
++ */
++int edac_device_create_sysfs(struct edac_device_ctl_info *edac_dev)
++{
++	int err;
++	struct kobject *edac_kobj=&edac_dev->kobj;
++
++	/* register this instance's main kobj with the edac class kobj */
++	err = edac_device_register_main_kobj(edac_dev);
++	if (err)
++		return err;
++
++	debugf0("%s() idx=%d\n", __func__, edac_dev->dev_idx);
++
++	/* create a symlink from the edac device
++	 * to the platform 'device' being used for this
++	 */
++	err = sysfs_create_link(edac_kobj,
++				&edac_dev->dev->kobj,
++				EDAC_DEVICE_SYMLINK);
++	if (err) {
++		debugf0("%s() sysfs_create_link() returned err= %d\n",
++			__func__, err);
++		return err;
++	}
++
++	debugf0("%s() calling create-instances, idx=%d\n",
++		__func__, edac_dev->dev_idx);
++
++	/* Create the first level instance directories */
++	err = edac_device_create_instances(edac_dev);
++	if (err) {
++		goto error0;
++	}
++
++	return 0;
++
++	/* Error unwind stack */
++
++error0:
++	edac_device_unregister_main_kobj(edac_dev);
++
++	return err;
++}
++
++/*
++ * edac_device_remove_sysfs() destructor
++ *
++ * remove a edac_device instance
++ */
++void edac_device_remove_sysfs(struct edac_device_ctl_info *edac_dev)
++{
++	debugf0("%s()\n", __func__);
++
++	edac_device_delete_instances(edac_dev);
++
++	/* remove the sym link */
++	sysfs_remove_link(&edac_dev->kobj, EDAC_DEVICE_SYMLINK);
++
++	/* unregister the instance's main kobj */
++	edac_device_unregister_main_kobj(edac_dev);
++}
++
+Index: linux-2.6.22-rc1/drivers/edac/edac_mc_sysfs.c
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/edac/edac_mc_sysfs.c
++++ linux-2.6.22-rc1/drivers/edac/edac_mc_sysfs.c
+@@ -94,14 +94,6 @@ static const char *edac_caps[] = {
+ 	[EDAC_S16ECD16ED] = "S16ECD16ED"
+ };
+ 
+-/*
+- * sysfs object: /sys/devices/system/edac
+- *	need to export to other files in this modules
+- */
+-struct sysdev_class edac_class = {
+-	set_kset_name("edac"),
+-};
+-
+ /* sysfs object:
+  *	/sys/devices/system/edac/mc
+  */
+@@ -224,43 +216,38 @@ static struct kobj_type ktype_memctrl = 
+ int edac_sysfs_memctrl_setup(void)
+ {
+ 	int err = 0;
++	struct sysdev_class *edac_class;
+ 
+ 	debugf1("%s()\n", __func__);
+ 
+-	/* create the /sys/devices/system/edac directory */
+-	err = sysdev_class_register(&edac_class);
+-
+-	if (err) {
+-		debugf1("%s() error=%d\n", __func__, err);
++	/* get the /sys/devices/system/edac class reference */
++	edac_class = edac_get_edac_class();
++	if (edac_class == NULL) {
++		debugf1("%s() no edac_class error=%d\n", __func__, err);
+ 		return err;
+ 	}
+ 
+ 	/* Init the MC's kobject */
+ 	memset(&edac_memctrl_kobj, 0, sizeof (edac_memctrl_kobj));
+-	edac_memctrl_kobj.parent = &edac_class.kset.kobj;
++	edac_memctrl_kobj.parent = &edac_class->kset.kobj;
+ 	edac_memctrl_kobj.ktype = &ktype_memctrl;
+ 
+ 	/* generate sysfs "..../edac/mc"   */
+ 	err = kobject_set_name(&edac_memctrl_kobj,"mc");
+-
+-	if (err)
+-		goto fail;
++	if (err) {
++		debugf1("%s() Failed to set name '.../edac/mc'\n", __func__ );
++		return err;
++	}
+ 
+ 	/* FIXME: maybe new sysdev_create_subdir() */
+ 	err = kobject_register(&edac_memctrl_kobj);
+-
+ 	if (err) {
+-		debugf1("Failed to register '.../edac/mc'\n");
+-		goto fail;
++		debugf1("%s() Failed to register '.../edac/mc'\n", __func__ );
++		return err;
+ 	}
+ 
+-	debugf1("Registered '.../edac/mc' kobject\n");
+-
++	debugf1("%s() Registered '.../edac/mc' kobject\n",__func__);
+ 	return 0;
+-
+-fail:
+-	sysdev_class_unregister(&edac_class);
+-	return err;
+ }
+ 
+ /*
+@@ -276,9 +263,6 @@ void edac_sysfs_memctrl_teardown(void)
+ 	init_completion(&edac_memctrl_kobj_complete);
+ 	kobject_unregister(&edac_memctrl_kobj);
+ 	wait_for_completion(&edac_memctrl_kobj_complete);
+-
+-	/* Unregister the 'edac' object */
+-	sysdev_class_unregister(&edac_class);
+ }
+ 
+ 
+@@ -286,32 +270,38 @@ void edac_sysfs_memctrl_teardown(void)
+  */
+ 
+ /* Set of more default csrow<id> attribute show/store functions */
+-static ssize_t csrow_ue_count_show(struct csrow_info *csrow, char
+*data, int private)
++static ssize_t csrow_ue_count_show(struct csrow_info *csrow, char
+*data,
++			int private)
+ {
+ 	return sprintf(data,"%u\n", csrow->ue_count);
+ }
+ 
+-static ssize_t csrow_ce_count_show(struct csrow_info *csrow, char
+*data, int private)
++static ssize_t csrow_ce_count_show(struct csrow_info *csrow, char
+*data,
++			int private)
+ {
+ 	return sprintf(data,"%u\n", csrow->ce_count);
+ }
+ 
+-static ssize_t csrow_size_show(struct csrow_info *csrow, char *data,
+int private)
++static ssize_t csrow_size_show(struct csrow_info *csrow, char *data,
++			int private)
+ {
+ 	return sprintf(data,"%u\n", PAGES_TO_MiB(csrow->nr_pages));
+ }
+ 
+-static ssize_t csrow_mem_type_show(struct csrow_info *csrow, char
+*data, int private)
++static ssize_t csrow_mem_type_show(struct csrow_info *csrow, char
+*data,
++			int private)
+ {
+ 	return sprintf(data,"%s\n", mem_types[csrow->mtype]);
+ }
+ 
+-static ssize_t csrow_dev_type_show(struct csrow_info *csrow, char
+*data, int private)
++static ssize_t csrow_dev_type_show(struct csrow_info *csrow, char
+*data,
++			int private)
+ {
+ 	return sprintf(data,"%s\n", dev_types[csrow->dtype]);
+ }
+ 
+-static ssize_t csrow_edac_mode_show(struct csrow_info *csrow, char
+*data, int private)
++static ssize_t csrow_edac_mode_show(struct csrow_info *csrow, char
+*data,
++			int private)
+ {
+ 	return sprintf(data,"%s\n", edac_caps[csrow->edac_mode]);
+ }
+@@ -509,9 +499,10 @@ static int edac_create_channel_files(str
+ 	if (!err) {
+ 		/* create the CE Count attribute file */
+ 		err = sysfs_create_file(kobj,
+-			(struct attribute *) dynamic_csrow_ce_count_attr[chan]);
++			(struct attribute *)dynamic_csrow_ce_count_attr[chan]);
+ 	} else {
+-		debugf1("%s()  dimm labels and ce_count files created", __func__);
++		debugf1("%s()  dimm labels and ce_count files created",
++			__func__);
+ 	}
+ 
+ 	return err;
+@@ -643,7 +634,7 @@ static ssize_t mci_sdram_scrub_rate_show
+ 	} else {
+ 		/* FIXME: produce "not implemented" ERROR for user-side.  */
+ 		edac_printk(KERN_WARNING, EDAC_MC,
+-			"Memory scrubbing 'get' control is not implemented!\n");
++			"Memory scrubbing 'get' control is not implemented\n");
+ 	}
+ 	return sprintf(data, "%d\n", bandwidth);
+ }
+@@ -755,7 +746,8 @@ MCIDEV_ATTR(ue_count,S_IRUGO,mci_ue_coun
+ MCIDEV_ATTR(ce_count,S_IRUGO,mci_ce_count_show,NULL);
+ 
+ /* memory scrubber attribute file */
+-MCIDEV_ATTR(sdram_scrub_rate,S_IRUGO|S_IWUSR,mci_sdram_scrub_rate_show,mci_sdram_scrub_rate_store);
++MCIDEV_ATTR(sdram_scrub_rate,S_IRUGO|S_IWUSR,mci_sdram_scrub_rate_show,\
++			mci_sdram_scrub_rate_store);
+ 
+ static struct mcidev_attribute *mci_attr[] = {
+ 	&mci_attr_reset_counters,
+Index: linux-2.6.22-rc1/drivers/edac/edac_module.c
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/edac/edac_module.c
++++ linux-2.6.22-rc1/drivers/edac/edac_module.c
+@@ -13,8 +13,77 @@ int edac_debug_level = 1;
+ EXPORT_SYMBOL_GPL(edac_debug_level);
+ #endif
+ 
++/* scope is to module level only */
++struct workqueue_struct *edac_workqueue;
++
++/* private to this file */
+ static struct task_struct *edac_thread;
+ 
 +
 +/*
 + * sysfs object: /sys/devices/system/edac
 + *	need to export to other files in this modules
 + */
-+struct sysdev_class edac_class = {
++static struct sysdev_class edac_class = {
 +	set_kset_name("edac"),
 +};
-+
-+/* sysfs object:
-+ *	/sys/devices/system/edac/mc
-+ */
-+static struct kobject edac_memctrl_kobj;
-+
-+/* We use these to wait for the reference counts on edac_memctrl_kobj
-and
-+ * edac_pci_kobj to reach 0.
-+ */
-+static struct completion edac_memctrl_kobj_complete;
++static int edac_class_valid = 0;
 +
 +/*
-+ * /sys/devices/system/edac/mc;
-+ *	data structures and methods
-+ */
-+static ssize_t memctrl_int_show(void *ptr, char *buffer)
-+{
-+	int *value = (int*) ptr;
-+	return sprintf(buffer, "%u\n", *value);
-+}
-+
-+static ssize_t memctrl_int_store(void *ptr, const char *buffer, size_t
-count)
-+{
-+	int *value = (int*) ptr;
-+
-+	if (isdigit(*buffer))
-+		*value = simple_strtoul(buffer, NULL, 0);
-+
-+	return count;
-+}
-+
-+struct memctrl_dev_attribute {
-+	struct attribute attr;
-+	void *value;
-+	ssize_t (*show)(void *,char *);
-+	ssize_t (*store)(void *, const char *, size_t);
-+};
-+
-+/* Set of show/store abstract level functions for memory control
-object */
-+static ssize_t memctrl_dev_show(struct kobject *kobj,
-+		struct attribute *attr, char *buffer)
-+{
-+	struct memctrl_dev_attribute *memctrl_dev;
-+	memctrl_dev = (struct memctrl_dev_attribute*)attr;
-+
-+	if (memctrl_dev->show)
-+		return memctrl_dev->show(memctrl_dev->value, buffer);
-+
-+	return -EIO;
-+}
-+
-+static ssize_t memctrl_dev_store(struct kobject *kobj, struct
-attribute *attr,
-+		const char *buffer, size_t count)
-+{
-+	struct memctrl_dev_attribute *memctrl_dev;
-+	memctrl_dev = (struct memctrl_dev_attribute*)attr;
-+
-+	if (memctrl_dev->store)
-+		return memctrl_dev->store(memctrl_dev->value, buffer, count);
-+
-+	return -EIO;
-+}
-+
-+static struct sysfs_ops memctrlfs_ops = {
-+	.show   = memctrl_dev_show,
-+	.store  = memctrl_dev_store
-+};
-+
-+#define MEMCTRL_ATTR(_name,_mode,_show,_store)			\
-+static struct memctrl_dev_attribute attr_##_name = {			\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
-+	.value  = &_name,					\
-+	.show   = _show,					\
-+	.store  = _store,					\
-+};
-+
-+#define MEMCTRL_STRING_ATTR(_name,_data,_mode,_show,_store)	\
-+static struct memctrl_dev_attribute attr_##_name = {			\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
-+	.value  = _data,					\
-+	.show   = _show,					\
-+	.store  = _store,					\
-+};
-+
-+/* csrow<id> control files */
-+MEMCTRL_ATTR(panic_on_ue,S_IRUGO|S_IWUSR,memctrl_int_show,memctrl_int_store);
-+MEMCTRL_ATTR(log_ue,S_IRUGO|S_IWUSR,memctrl_int_show,memctrl_int_store);
-+MEMCTRL_ATTR(log_ce,S_IRUGO|S_IWUSR,memctrl_int_show,memctrl_int_store);
-+MEMCTRL_ATTR(poll_msec,S_IRUGO|S_IWUSR,memctrl_int_show,memctrl_int_store);
-+
-+/* Base Attributes of the memory ECC object */
-+static struct memctrl_dev_attribute *memctrl_attr[] = {
-+	&attr_panic_on_ue,
-+	&attr_log_ue,
-+	&attr_log_ce,
-+	&attr_poll_msec,
-+	NULL,
-+};
-+
-+/* Main MC kobject release() function */
-+static void edac_memctrl_master_release(struct kobject *kobj)
-+{
-+	debugf1("%s()\n", __func__);
-+	complete(&edac_memctrl_kobj_complete);
-+}
-+
-+static struct kobj_type ktype_memctrl = {
-+	.release = edac_memctrl_master_release,
-+	.sysfs_ops = &memctrlfs_ops,
-+	.default_attrs = (struct attribute **) memctrl_attr,
-+};
-+
-+/* Initialize the main sysfs entries for edac:
-+ *   /sys/devices/system/edac
++ * edac_get_edac_class()
 + *
-+ * and children
-+ *
-+ * Return:  0 SUCCESS
-+ *         !0 FAILURE
++ *	return pointer to the edac class of 'edac'
 + */
-+int edac_sysfs_memctrl_setup(void)
++struct sysdev_class *edac_get_edac_class(void)
 +{
-+	int err = 0;
++	struct sysdev_class *classptr=NULL;
 +
-+	debugf1("%s()\n", __func__);
++	if (edac_class_valid)
++		classptr = &edac_class;
++
++	return classptr;
++}
++
++/*
++ * edac_register_sysfs_edac_name()
++ *
++ *	register the 'edac' into /sys/devices/system
++ *
++ * return:
++ *	0  success
++ *	!0 error
++ */
++static int edac_register_sysfs_edac_name(void)
++{
++	int err;
 +
 +	/* create the /sys/devices/system/edac directory */
 +	err = sysdev_class_register(&edac_class);
@@ -313,3697 +2213,172 @@ attribute *attr,
 +		return err;
 +	}
 +
-+	/* Init the MC's kobject */
-+	memset(&edac_memctrl_kobj, 0, sizeof (edac_memctrl_kobj));
-+	edac_memctrl_kobj.parent = &edac_class.kset.kobj;
-+	edac_memctrl_kobj.ktype = &ktype_memctrl;
-+
-+	/* generate sysfs "..../edac/mc"   */
-+	err = kobject_set_name(&edac_memctrl_kobj,"mc");
-+
-+	if (err)
-+		goto fail;
-+
-+	/* FIXME: maybe new sysdev_create_subdir() */
-+	err = kobject_register(&edac_memctrl_kobj);
-+
-+	if (err) {
-+		debugf1("Failed to register '.../edac/mc'\n");
-+		goto fail;
-+	}
-+
-+	debugf1("Registered '.../edac/mc' kobject\n");
-+
++	edac_class_valid = 1;
 +	return 0;
-+
-+fail:
-+	sysdev_class_unregister(&edac_class);
-+	return err;
 +}
 +
 +/*
-+ * MC teardown:
-+ *	the '..../edac/mc' kobject followed by '..../edac' itself
++ * sysdev_class_unregister()
++ *
++ *	unregister the 'edac' from /sys/devices/system
 + */
-+void edac_sysfs_memctrl_teardown(void)
++static void edac_unregister_sysfs_edac_name(void)
 +{
-+	debugf0("MC: " __FILE__ ": %s()\n", __func__);
++	/* only if currently registered, then unregister it */
++	if (edac_class_valid)
++		sysdev_class_unregister(&edac_class);
 +
-+	/* Unregister the MC's kobject and wait for reference count to reach
-0.
-+	 */
-+	init_completion(&edac_memctrl_kobj_complete);
-+	kobject_unregister(&edac_memctrl_kobj);
-+	wait_for_completion(&edac_memctrl_kobj_complete);
-+
-+	/* Unregister the 'edac' object */
-+	sysdev_class_unregister(&edac_class);
++	edac_class_valid = 0;
 +}
 +
 +
-+/* EDAC sysfs CSROW data structures and methods
-+ */
-+
-+/* Set of more default csrow<id> attribute show/store functions */
-+static ssize_t csrow_ue_count_show(struct csrow_info *csrow, char
-*data, int private)
-+{
-+	return sprintf(data,"%u\n", csrow->ue_count);
-+}
-+
-+static ssize_t csrow_ce_count_show(struct csrow_info *csrow, char
-*data, int private)
-+{
-+	return sprintf(data,"%u\n", csrow->ce_count);
-+}
-+
-+static ssize_t csrow_size_show(struct csrow_info *csrow, char *data,
-int private)
-+{
-+	return sprintf(data,"%u\n", PAGES_TO_MiB(csrow->nr_pages));
-+}
-+
-+static ssize_t csrow_mem_type_show(struct csrow_info *csrow, char
-*data, int private)
-+{
-+	return sprintf(data,"%s\n", mem_types[csrow->mtype]);
-+}
-+
-+static ssize_t csrow_dev_type_show(struct csrow_info *csrow, char
-*data, int private)
-+{
-+	return sprintf(data,"%s\n", dev_types[csrow->dtype]);
-+}
-+
-+static ssize_t csrow_edac_mode_show(struct csrow_info *csrow, char
-*data, int private)
-+{
-+	return sprintf(data,"%s\n", edac_caps[csrow->edac_mode]);
-+}
-+
-+/* show/store functions for DIMM Label attributes */
-+static ssize_t channel_dimm_label_show(struct csrow_info *csrow,
-+		char *data, int channel)
-+{
-+	return snprintf(data, EDAC_MC_LABEL_LEN,"%s",
-+			csrow->channels[channel].label);
-+}
-+
-+static ssize_t channel_dimm_label_store(struct csrow_info *csrow,
-+				const char *data,
-+				size_t count,
-+				int channel)
-+{
-+	ssize_t max_size = 0;
-+
-+	max_size = min((ssize_t)count,(ssize_t)EDAC_MC_LABEL_LEN-1);
-+	strncpy(csrow->channels[channel].label, data, max_size);
-+	csrow->channels[channel].label[max_size] = '\0';
-+
-+	return max_size;
-+}
-+
-+/* show function for dynamic chX_ce_count attribute */
-+static ssize_t channel_ce_count_show(struct csrow_info *csrow,
-+				char *data,
-+				int channel)
-+{
-+	return sprintf(data, "%u\n", csrow->channels[channel].ce_count);
-+}
-+
-+/* csrow specific attribute structure */
-+struct csrowdev_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct csrow_info *,char *,int);
-+	ssize_t (*store)(struct csrow_info *, const char *,size_t,int);
-+	int    private;
-+};
-+
-+#define to_csrow(k) container_of(k, struct csrow_info, kobj)
-+#define to_csrowdev_attr(a) container_of(a, struct csrowdev_attribute,
-attr)
-+
-+/* Set of show/store higher level functions for default csrow
-attributes */
-+static ssize_t csrowdev_show(struct kobject *kobj,
-+			struct attribute *attr,
-+			char *buffer)
-+{
-+	struct csrow_info *csrow = to_csrow(kobj);
-+	struct csrowdev_attribute *csrowdev_attr = to_csrowdev_attr(attr);
-+
-+	if (csrowdev_attr->show)
-+		return csrowdev_attr->show(csrow,
-+					buffer,
-+					csrowdev_attr->private);
-+	return -EIO;
-+}
-+
-+static ssize_t csrowdev_store(struct kobject *kobj, struct attribute
-*attr,
-+		const char *buffer, size_t count)
-+{
-+	struct csrow_info *csrow = to_csrow(kobj);
-+	struct csrowdev_attribute * csrowdev_attr = to_csrowdev_attr(attr);
-+
-+	if (csrowdev_attr->store)
-+		return csrowdev_attr->store(csrow,
-+					buffer,
-+					count,
-+					csrowdev_attr->private);
-+	return -EIO;
-+}
-+
-+static struct sysfs_ops csrowfs_ops = {
-+	.show   = csrowdev_show,
-+	.store  = csrowdev_store
-+};
-+
-+#define CSROWDEV_ATTR(_name,_mode,_show,_store,_private)	\
-+static struct csrowdev_attribute attr_##_name = {			\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
-+	.show   = _show,					\
-+	.store  = _store,					\
-+	.private = _private,					\
-+};
-+
-+/* default cwrow<id>/attribute files */
-+CSROWDEV_ATTR(size_mb,S_IRUGO,csrow_size_show,NULL,0);
-+CSROWDEV_ATTR(dev_type,S_IRUGO,csrow_dev_type_show,NULL,0);
-+CSROWDEV_ATTR(mem_type,S_IRUGO,csrow_mem_type_show,NULL,0);
-+CSROWDEV_ATTR(edac_mode,S_IRUGO,csrow_edac_mode_show,NULL,0);
-+CSROWDEV_ATTR(ue_count,S_IRUGO,csrow_ue_count_show,NULL,0);
-+CSROWDEV_ATTR(ce_count,S_IRUGO,csrow_ce_count_show,NULL,0);
-+
-+/* default attributes of the CSROW<id> object */
-+static struct csrowdev_attribute *default_csrow_attr[] = {
-+	&attr_dev_type,
-+	&attr_mem_type,
-+	&attr_edac_mode,
-+	&attr_size_mb,
-+	&attr_ue_count,
-+	&attr_ce_count,
-+	NULL,
-+};
-+
-+
-+/* possible dynamic channel DIMM Label attribute files */
-+CSROWDEV_ATTR(ch0_dimm_label,S_IRUGO|S_IWUSR,
-+		channel_dimm_label_show,
-+		channel_dimm_label_store,
-+		0 );
-+CSROWDEV_ATTR(ch1_dimm_label,S_IRUGO|S_IWUSR,
-+		channel_dimm_label_show,
-+		channel_dimm_label_store,
-+		1 );
-+CSROWDEV_ATTR(ch2_dimm_label,S_IRUGO|S_IWUSR,
-+		channel_dimm_label_show,
-+		channel_dimm_label_store,
-+		2 );
-+CSROWDEV_ATTR(ch3_dimm_label,S_IRUGO|S_IWUSR,
-+		channel_dimm_label_show,
-+		channel_dimm_label_store,
-+		3 );
-+CSROWDEV_ATTR(ch4_dimm_label,S_IRUGO|S_IWUSR,
-+		channel_dimm_label_show,
-+		channel_dimm_label_store,
-+		4 );
-+CSROWDEV_ATTR(ch5_dimm_label,S_IRUGO|S_IWUSR,
-+		channel_dimm_label_show,
-+		channel_dimm_label_store,
-+		5 );
-+
-+/* Total possible dynamic DIMM Label attribute file table */
-+static struct csrowdev_attribute *dynamic_csrow_dimm_attr[] = {
-+		&attr_ch0_dimm_label,
-+		&attr_ch1_dimm_label,
-+		&attr_ch2_dimm_label,
-+		&attr_ch3_dimm_label,
-+		&attr_ch4_dimm_label,
-+		&attr_ch5_dimm_label
-+};
-+
-+/* possible dynamic channel ce_count attribute files */
-+CSROWDEV_ATTR(ch0_ce_count,S_IRUGO|S_IWUSR,
-+		channel_ce_count_show,
-+		NULL,
-+		0 );
-+CSROWDEV_ATTR(ch1_ce_count,S_IRUGO|S_IWUSR,
-+		channel_ce_count_show,
-+		NULL,
-+		1 );
-+CSROWDEV_ATTR(ch2_ce_count,S_IRUGO|S_IWUSR,
-+		channel_ce_count_show,
-+		NULL,
-+		2 );
-+CSROWDEV_ATTR(ch3_ce_count,S_IRUGO|S_IWUSR,
-+		channel_ce_count_show,
-+		NULL,
-+		3 );
-+CSROWDEV_ATTR(ch4_ce_count,S_IRUGO|S_IWUSR,
-+		channel_ce_count_show,
-+		NULL,
-+		4 );
-+CSROWDEV_ATTR(ch5_ce_count,S_IRUGO|S_IWUSR,
-+		channel_ce_count_show,
-+		NULL,
-+		5 );
-+
-+/* Total possible dynamic ce_count attribute file table */
-+static struct csrowdev_attribute *dynamic_csrow_ce_count_attr[] = {
-+		&attr_ch0_ce_count,
-+		&attr_ch1_ce_count,
-+		&attr_ch2_ce_count,
-+		&attr_ch3_ce_count,
-+		&attr_ch4_ce_count,
-+		&attr_ch5_ce_count
-+};
-+
-+
-+#define EDAC_NR_CHANNELS	6
-+
-+/* Create dynamic CHANNEL files, indexed by 'chan',  under specifed
-CSROW */
-+static int edac_create_channel_files(struct kobject *kobj, int chan)
-+{
-+	int err=-ENODEV;
-+
-+	if (chan >= EDAC_NR_CHANNELS)
-+		return err;
-+
-+	/* create the DIMM label attribute file */
-+	err = sysfs_create_file(kobj,
-+			(struct attribute *) dynamic_csrow_dimm_attr[chan]);
-+
-+	if (!err) {
-+		/* create the CE Count attribute file */
-+		err = sysfs_create_file(kobj,
-+			(struct attribute *) dynamic_csrow_ce_count_attr[chan]);
-+	} else {
-+		debugf1("%s()  dimm labels and ce_count files created", __func__);
-+	}
-+
-+	return err;
-+}
-+
-+/* No memory to release for this kobj */
-+static void edac_csrow_instance_release(struct kobject *kobj)
-+{
-+	struct csrow_info *cs;
-+
-+	cs = container_of(kobj, struct csrow_info, kobj);
-+	complete(&cs->kobj_complete);
-+}
-+
-+/* the kobj_type instance for a CSROW */
-+static struct kobj_type ktype_csrow = {
-+	.release = edac_csrow_instance_release,
-+	.sysfs_ops = &csrowfs_ops,
-+	.default_attrs = (struct attribute **) default_csrow_attr,
-+};
-+
-+/* Create a CSROW object under specifed edac_mc_device */
-+static int edac_create_csrow_object(
-+		struct kobject *edac_mci_kobj,
-+		struct csrow_info *csrow,
-+		int index)
-+{
-+	int err = 0;
-+	int chan;
-+
-+	memset(&csrow->kobj, 0, sizeof(csrow->kobj));
-+
-+	/* generate ..../edac/mc/mc<id>/csrow<index>   */
-+
-+	csrow->kobj.parent = edac_mci_kobj;
-+	csrow->kobj.ktype = &ktype_csrow;
-+
-+	/* name this instance of csrow<id> */
-+	err = kobject_set_name(&csrow->kobj,"csrow%d",index);
-+	if (err)
-+		goto error_exit;
-+
-+	/* Instanstiate the csrow object */
-+	err = kobject_register(&csrow->kobj);
-+	if (!err) {
-+		/* Create the dyanmic attribute files on this csrow,
-+		 * namely, the DIMM labels and the channel ce_count
-+		 */
-+		for (chan = 0; chan < csrow->nr_channels; chan++) {
-+			err = edac_create_channel_files(&csrow->kobj,chan);
-+			if (err)
-+				break;
-+		}
-+	}
-+
-+error_exit:
-+	return err;
-+}
-+
-+/* default sysfs methods and data structures for the main MCI kobject
-*/
-+
-+static ssize_t mci_reset_counters_store(struct mem_ctl_info *mci,
-+		const char *data, size_t count)
-+{
-+	int row, chan;
-+
-+	mci->ue_noinfo_count = 0;
-+	mci->ce_noinfo_count = 0;
-+	mci->ue_count = 0;
-+	mci->ce_count = 0;
-+
-+	for (row = 0; row < mci->nr_csrows; row++) {
-+		struct csrow_info *ri = &mci->csrows[row];
-+
-+		ri->ue_count = 0;
-+		ri->ce_count = 0;
-+
-+		for (chan = 0; chan < ri->nr_channels; chan++)
-+			ri->channels[chan].ce_count = 0;
-+	}
-+
-+	mci->start_time = jiffies;
-+	return count;
-+}
-+
-+/* memory scrubbing */
-+static ssize_t mci_sdram_scrub_rate_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
-+{
-+	u32 bandwidth = -1;
-+
-+	if (mci->set_sdram_scrub_rate) {
-+
-+		memctrl_int_store(&bandwidth, data, count);
-+
-+		if (!(*mci->set_sdram_scrub_rate)(mci, &bandwidth)) {
-+			edac_printk(KERN_DEBUG, EDAC_MC,
-+				"Scrub rate set successfully, applied: %d\n",
-+				bandwidth);
-+		} else {
-+			/* FIXME: error codes maybe? */
-+			edac_printk(KERN_DEBUG, EDAC_MC,
-+				"Scrub rate set FAILED, could not apply: %d\n",
-+				bandwidth);
-+		}
-+	} else {
-+		/* FIXME: produce "not implemented" ERROR for user-side. */
-+		edac_printk(KERN_WARNING, EDAC_MC,
-+			"Memory scrubbing 'set'control is not implemented!\n");
-+	}
-+	return count;
-+}
-+
-+static ssize_t mci_sdram_scrub_rate_show(struct mem_ctl_info *mci,
-char *data)
-+{
-+	u32 bandwidth = -1;
-+
-+	if (mci->get_sdram_scrub_rate) {
-+		if (!(*mci->get_sdram_scrub_rate)(mci, &bandwidth)) {
-+			edac_printk(KERN_DEBUG, EDAC_MC,
-+				"Scrub rate successfully, fetched: %d\n",
-+				bandwidth);
-+		} else {
-+			/* FIXME: error codes maybe? */
-+			edac_printk(KERN_DEBUG, EDAC_MC,
-+				"Scrub rate fetch FAILED, got: %d\n",
-+				bandwidth);
-+		}
-+	} else {
-+		/* FIXME: produce "not implemented" ERROR for user-side.  */
-+		edac_printk(KERN_WARNING, EDAC_MC,
-+			"Memory scrubbing 'get' control is not implemented!\n");
-+	}
-+	return sprintf(data, "%d\n", bandwidth);
-+}
-+
-+/* default attribute files for the MCI object */
-+static ssize_t mci_ue_count_show(struct mem_ctl_info *mci, char *data)
-+{
-+	return sprintf(data,"%d\n", mci->ue_count);
-+}
-+
-+static ssize_t mci_ce_count_show(struct mem_ctl_info *mci, char *data)
-+{
-+	return sprintf(data,"%d\n", mci->ce_count);
-+}
-+
-+static ssize_t mci_ce_noinfo_show(struct mem_ctl_info *mci, char
-*data)
-+{
-+	return sprintf(data,"%d\n", mci->ce_noinfo_count);
-+}
-+
-+static ssize_t mci_ue_noinfo_show(struct mem_ctl_info *mci, char
-*data)
-+{
-+	return sprintf(data,"%d\n", mci->ue_noinfo_count);
-+}
-+
-+static ssize_t mci_seconds_show(struct mem_ctl_info *mci, char *data)
-+{
-+	return sprintf(data,"%ld\n", (jiffies - mci->start_time) / HZ);
-+}
-+
-+static ssize_t mci_ctl_name_show(struct mem_ctl_info *mci, char *data)
-+{
-+	return sprintf(data,"%s\n", mci->ctl_name);
-+}
-+
-+static ssize_t mci_size_mb_show(struct mem_ctl_info *mci, char *data)
-+{
-+	int total_pages, csrow_idx;
-+
-+	for (total_pages = csrow_idx = 0; csrow_idx < mci->nr_csrows;
-+			csrow_idx++) {
-+		struct csrow_info *csrow = &mci->csrows[csrow_idx];
-+
-+		if (!csrow->nr_pages)
-+			continue;
-+
-+		total_pages += csrow->nr_pages;
-+	}
-+
-+	return sprintf(data,"%u\n", PAGES_TO_MiB(total_pages));
-+}
-+
-+struct mcidev_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct mem_ctl_info *,char *);
-+	ssize_t (*store)(struct mem_ctl_info *, const char *,size_t);
-+};
-+
-+#define to_mci(k) container_of(k, struct mem_ctl_info, edac_mci_kobj)
-+#define to_mcidev_attr(a) container_of(a, struct mcidev_attribute,
-attr)
-+
-+/* MCI show/store functions for top most object */
-+static ssize_t mcidev_show(struct kobject *kobj, struct attribute
-*attr,
-+		char *buffer)
-+{
-+	struct mem_ctl_info *mem_ctl_info = to_mci(kobj);
-+	struct mcidev_attribute * mcidev_attr = to_mcidev_attr(attr);
-+
-+	if (mcidev_attr->show)
-+		return mcidev_attr->show(mem_ctl_info, buffer);
-+
-+	return -EIO;
-+}
-+
-+static ssize_t mcidev_store(struct kobject *kobj, struct attribute
-*attr,
-+		const char *buffer, size_t count)
-+{
-+	struct mem_ctl_info *mem_ctl_info = to_mci(kobj);
-+	struct mcidev_attribute * mcidev_attr = to_mcidev_attr(attr);
-+
-+	if (mcidev_attr->store)
-+		return mcidev_attr->store(mem_ctl_info, buffer, count);
-+
-+	return -EIO;
-+}
-+
-+static struct sysfs_ops mci_ops = {
-+	.show = mcidev_show,
-+	.store = mcidev_store
-+};
-+
-+#define MCIDEV_ATTR(_name,_mode,_show,_store)			\
-+static struct mcidev_attribute mci_attr_##_name = {			\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
-+	.show   = _show,					\
-+	.store  = _store,					\
-+};
-+
-+/* default Control file */
-+MCIDEV_ATTR(reset_counters,S_IWUSR,NULL,mci_reset_counters_store);
-+
-+/* default Attribute files */
-+MCIDEV_ATTR(mc_name,S_IRUGO,mci_ctl_name_show,NULL);
-+MCIDEV_ATTR(size_mb,S_IRUGO,mci_size_mb_show,NULL);
-+MCIDEV_ATTR(seconds_since_reset,S_IRUGO,mci_seconds_show,NULL);
-+MCIDEV_ATTR(ue_noinfo_count,S_IRUGO,mci_ue_noinfo_show,NULL);
-+MCIDEV_ATTR(ce_noinfo_count,S_IRUGO,mci_ce_noinfo_show,NULL);
-+MCIDEV_ATTR(ue_count,S_IRUGO,mci_ue_count_show,NULL);
-+MCIDEV_ATTR(ce_count,S_IRUGO,mci_ce_count_show,NULL);
-+
-+/* memory scrubber attribute file */
-+MCIDEV_ATTR(sdram_scrub_rate,S_IRUGO|S_IWUSR,mci_sdram_scrub_rate_show,mci_sdram_scrub_rate_store);
-+
-+static struct mcidev_attribute *mci_attr[] = {
-+	&mci_attr_reset_counters,
-+	&mci_attr_mc_name,
-+	&mci_attr_size_mb,
-+	&mci_attr_seconds_since_reset,
-+	&mci_attr_ue_noinfo_count,
-+	&mci_attr_ce_noinfo_count,
-+	&mci_attr_ue_count,
-+	&mci_attr_ce_count,
-+	&mci_attr_sdram_scrub_rate,
-+	NULL
-+};
-+
-+/*
-+ * Release of a MC controlling instance
-+ */
-+static void edac_mci_instance_release(struct kobject *kobj)
-+{
-+	struct mem_ctl_info *mci;
-+
-+	mci = to_mci(kobj);
-+	debugf0("%s() idx=%d\n", __func__, mci->mc_idx);
-+	complete(&mci->kobj_complete);
-+}
-+
-+static struct kobj_type ktype_mci = {
-+	.release = edac_mci_instance_release,
-+	.sysfs_ops = &mci_ops,
-+	.default_attrs = (struct attribute **) mci_attr,
-+};
-+
-+
-+#define EDAC_DEVICE_SYMLINK	"device"
-+
-+/*
-+ * Create a new Memory Controller kobject instance,
-+ *	mc<id> under the 'mc' directory
-+ *
-+ * Return:
-+ *	0	Success
-+ *	!0	Failure
-+ */
-+int edac_create_sysfs_mci_device(struct mem_ctl_info *mci)
-+{
-+	int i;
-+	int err;
-+	struct csrow_info *csrow;
-+	struct kobject *edac_mci_kobj=&mci->edac_mci_kobj;
-+
-+	debugf0("%s() idx=%d\n", __func__, mci->mc_idx);
-+	memset(edac_mci_kobj, 0, sizeof(*edac_mci_kobj));
-+
-+	/* set the name of the mc<id> object */
-+	err = kobject_set_name(edac_mci_kobj,"mc%d",mci->mc_idx);
-+	if (err)
-+		return err;
-+
-+	/* link to our parent the '..../edac/mc' object */
-+	edac_mci_kobj->parent = &edac_memctrl_kobj;
-+	edac_mci_kobj->ktype = &ktype_mci;
-+
-+	/* register the mc<id> kobject */
-+	err = kobject_register(edac_mci_kobj);
-+	if (err)
-+		return err;
-+
-+	/* create a symlink for the device */
-+	err = sysfs_create_link(edac_mci_kobj, &mci->dev->kobj,
-+				EDAC_DEVICE_SYMLINK);
-+	if (err)
-+		goto fail0;
-+
-+	/* Make directories for each CSROW object
-+	 * under the mc<id> kobject
-+	 */
-+	for (i = 0; i < mci->nr_csrows; i++) {
-+		csrow = &mci->csrows[i];
-+
-+		/* Only expose populated CSROWs */
-+		if (csrow->nr_pages > 0) {
-+			err = edac_create_csrow_object(edac_mci_kobj,csrow,i);
-+			if (err)
-+				goto fail1;
-+		}
-+	}
-+
-+	return 0;
-+
-+	/* CSROW error: backout what has already been registered,  */
-+fail1:
-+	for ( i--; i >= 0; i--) {
-+		if (csrow->nr_pages > 0) {
-+			init_completion(&csrow->kobj_complete);
-+			kobject_unregister(&mci->csrows[i].kobj);
-+			wait_for_completion(&csrow->kobj_complete);
-+		}
-+	}
-+
-+fail0:
-+	init_completion(&mci->kobj_complete);
-+	kobject_unregister(edac_mci_kobj);
-+	wait_for_completion(&mci->kobj_complete);
-+	return err;
-+}
-+
-+/*
-+ * remove a Memory Controller instance
-+ */
-+void edac_remove_sysfs_mci_device(struct mem_ctl_info *mci)
-+{
-+	int i;
-+
-+	debugf0("%s()\n", __func__);
-+
-+	/* remove all csrow kobjects */
-+	for (i = 0; i < mci->nr_csrows; i++) {
-+		if (mci->csrows[i].nr_pages > 0) {
-+			init_completion(&mci->csrows[i].kobj_complete);
-+			kobject_unregister(&mci->csrows[i].kobj);
-+			wait_for_completion(&mci->csrows[i].kobj_complete);
-+		}
-+	}
-+
-+	sysfs_remove_link(&mci->edac_mci_kobj, EDAC_DEVICE_SYMLINK);
-+	init_completion(&mci->kobj_complete);
-+	kobject_unregister(&mci->edac_mci_kobj);
-+	wait_for_completion(&mci->kobj_complete);
-+}
-+
-+
-Index: linux-2.6.22-rc3-mm1/drivers/edac/Makefile
-===================================================================
---- linux-2.6.22-rc3-mm1.orig/drivers/edac/Makefile
-+++ linux-2.6.22-rc3-mm1/drivers/edac/Makefile
-@@ -8,7 +8,12 @@
- # $Id: Makefile,v 1.4.2.3 2005/07/08 22:05:38 dsp_llnl Exp $
- 
- 
--obj-$(CONFIG_EDAC_MM_EDAC)		+= edac_mc.o
-+obj-$(CONFIG_EDAC_MM_EDAC)		+= edac_core.o
-+
-+edac_core-objs	:= edac_mc.o edac_mc_sysfs.o edac_pci_sysfs.o
-+
-+edac_core-objs	+= edac_module.o
-+
- obj-$(CONFIG_EDAC_AMD76X)		+= amd76x_edac.o
- obj-$(CONFIG_EDAC_E7XXX)		+= e7xxx_edac.o
- obj-$(CONFIG_EDAC_E752X)		+= e752x_edac.o
-Index: linux-2.6.22-rc3-mm1/drivers/edac/edac_pci_sysfs.c
-===================================================================
---- /dev/null
-+++ linux-2.6.22-rc3-mm1/drivers/edac/edac_pci_sysfs.c
-@@ -0,0 +1,361 @@
-+/* edac_mc kernel module
-+ * (C) 2005, 2006 Linux Networx (http://lnxi.com)
-+ * This file may be distributed under the terms of the
-+ * GNU General Public License.
-+ *
-+ * Written Doug Thompson <norsk5@xmission.com>
-+ *
-+ */
-+#include <linux/module.h>
-+#include <linux/sysdev.h>
-+#include <linux/ctype.h>
-+
-+#include "edac_mc.h"
-+#include "edac_module.h"
-+
-+
-+#ifdef CONFIG_PCI
-+static int check_pci_parity = 0;	/* default YES check PCI parity */
-+static int panic_on_pci_parity;		/* default no panic on PCI Parity */
-+static atomic_t pci_parity_count = ATOMIC_INIT(0);
-+
-+static struct kobject edac_pci_kobj; /* /sys/devices/system/edac/pci
-*/
-+static struct completion edac_pci_kobj_complete;
-+
-+
-+static ssize_t edac_pci_int_show(void *ptr, char *buffer)
-+{
-+	int *value = ptr;
-+	return sprintf(buffer,"%d\n",*value);
-+}
-+
-+static ssize_t edac_pci_int_store(void *ptr, const char *buffer,
-size_t count)
-+{
-+	int *value = ptr;
-+
-+	if (isdigit(*buffer))
-+		*value = simple_strtoul(buffer,NULL,0);
-+
-+	return count;
-+}
-+
-+struct edac_pci_dev_attribute {
-+	struct attribute attr;
-+	void *value;
-+	ssize_t (*show)(void *,char *);
-+	ssize_t (*store)(void *, const char *,size_t);
-+};
-+
-+/* Set of show/store abstract level functions for PCI Parity object */
-+static ssize_t edac_pci_dev_show(struct kobject *kobj, struct
-attribute *attr,
-+		char *buffer)
-+{
-+	struct edac_pci_dev_attribute *edac_pci_dev;
-+	edac_pci_dev= (struct edac_pci_dev_attribute*)attr;
-+
-+	if (edac_pci_dev->show)
-+		return edac_pci_dev->show(edac_pci_dev->value, buffer);
-+	return -EIO;
-+}
-+
-+static ssize_t edac_pci_dev_store(struct kobject *kobj,
-+		struct attribute *attr, const char *buffer, size_t count)
-+{
-+	struct edac_pci_dev_attribute *edac_pci_dev;
-+	edac_pci_dev= (struct edac_pci_dev_attribute*)attr;
-+
-+	if (edac_pci_dev->show)
-+		return edac_pci_dev->store(edac_pci_dev->value, buffer, count);
-+	return -EIO;
-+}
-+
-+static struct sysfs_ops edac_pci_sysfs_ops = {
-+	.show   = edac_pci_dev_show,
-+	.store  = edac_pci_dev_store
-+};
-+
-+#define EDAC_PCI_ATTR(_name,_mode,_show,_store)			\
-+static struct edac_pci_dev_attribute edac_pci_attr_##_name = {		\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
-+	.value  = &_name,					\
-+	.show   = _show,					\
-+	.store  = _store,					\
-+};
-+
-+#define EDAC_PCI_STRING_ATTR(_name,_data,_mode,_show,_store)	\
-+static struct edac_pci_dev_attribute edac_pci_attr_##_name = {		\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
-+	.value  = _data,					\
-+	.show   = _show,					\
-+	.store  = _store,					\
-+};
-+
-+/* PCI Parity control files */
-+EDAC_PCI_ATTR(check_pci_parity, S_IRUGO|S_IWUSR, edac_pci_int_show,
-+	edac_pci_int_store);
-+EDAC_PCI_ATTR(panic_on_pci_parity, S_IRUGO|S_IWUSR, edac_pci_int_show,
-+	edac_pci_int_store);
-+EDAC_PCI_ATTR(pci_parity_count, S_IRUGO, edac_pci_int_show, NULL);
-+
-+/* Base Attributes of the memory ECC object */
-+static struct edac_pci_dev_attribute *edac_pci_attr[] = {
-+	&edac_pci_attr_check_pci_parity,
-+	&edac_pci_attr_panic_on_pci_parity,
-+	&edac_pci_attr_pci_parity_count,
-+	NULL,
-+};
-+
-+/* No memory to release */
-+static void edac_pci_release(struct kobject *kobj)
-+{
-+	debugf1("%s()\n", __func__);
-+	complete(&edac_pci_kobj_complete);
-+}
-+
-+static struct kobj_type ktype_edac_pci = {
-+	.release = edac_pci_release,
-+	.sysfs_ops = &edac_pci_sysfs_ops,
-+	.default_attrs = (struct attribute **) edac_pci_attr,
-+};
-+
-+/**
-+ * edac_sysfs_pci_setup()
-+ *
-+ *	setup the sysfs for EDAC PCI attributes
-+ *	assumes edac_class has already been initialized
-+ */
-+int edac_sysfs_pci_setup(void)
-+{
-+	int err;
-+	struct sysdev_class *edac_class;
-+
-+	debugf1("%s()\n", __func__);
-+
-+	edac_class = edac_get_edac_class();
-+
-+	memset(&edac_pci_kobj, 0, sizeof(edac_pci_kobj));
-+	edac_pci_kobj.parent = &edac_class->kset.kobj;
-+	edac_pci_kobj.ktype = &ktype_edac_pci;
-+	err = kobject_set_name(&edac_pci_kobj, "pci");
-+
-+	if (!err) {
-+		/* Instanstiate the pci object */
-+		/* FIXME: maybe new sysdev_create_subdir() */
-+		err = kobject_register(&edac_pci_kobj);
-+
-+		if (err)
-+			debugf1("Failed to register '.../edac/pci'\n");
-+		else
-+			debugf1("Registered '.../edac/pci' kobject\n");
-+	}
-+
-+	return err;
-+}
-+
-+/*
-+ * edac_sysfs_pci_teardown
-+ *
-+ *	perform the sysfs teardown for the PCI attributes
-+ */
-+void edac_sysfs_pci_teardown(void)
-+{
-+	debugf0("%s()\n", __func__);
-+	init_completion(&edac_pci_kobj_complete);
-+	kobject_unregister(&edac_pci_kobj);
-+	wait_for_completion(&edac_pci_kobj_complete);
-+}
-+
-+
-+static u16 get_pci_parity_status(struct pci_dev *dev, int secondary)
-+{
-+	int where;
-+	u16 status;
-+
-+	where = secondary ? PCI_SEC_STATUS : PCI_STATUS;
-+	pci_read_config_word(dev, where, &status);
-+
-+	/* If we get back 0xFFFF then we must suspect that the card has been
-+	 * pulled but the Linux PCI layer has not yet finished cleaning up.
-+	 * We don't want to report on such devices
-+	 */
-+
-+	if (status == 0xFFFF) {
-+		u32 sanity;
-+
-+		pci_read_config_dword(dev, 0, &sanity);
-+
-+		if (sanity == 0xFFFFFFFF)
-+			return 0;
-+	}
-+
-+	status &= PCI_STATUS_DETECTED_PARITY | PCI_STATUS_SIG_SYSTEM_ERROR |
-+		PCI_STATUS_PARITY;
-+
-+	if (status)
-+		/* reset only the bits we are interested in */
-+		pci_write_config_word(dev, where, status);
-+
-+	return status;
-+}
-+
-+typedef void (*pci_parity_check_fn_t) (struct pci_dev *dev);
-+
-+/* Clear any PCI parity errors logged by this device. */
-+static void edac_pci_dev_parity_clear(struct pci_dev *dev)
-+{
-+	u8 header_type;
-+
-+	get_pci_parity_status(dev, 0);
-+
-+	/* read the device TYPE, looking for bridges */
-+	pci_read_config_byte(dev, PCI_HEADER_TYPE, &header_type);
-+
-+	if ((header_type & 0x7F) == PCI_HEADER_TYPE_BRIDGE)
-+		get_pci_parity_status(dev, 1);
-+}
-+
-+/*
-+ *  PCI Parity polling
-+ *
-+ */
-+static void edac_pci_dev_parity_test(struct pci_dev *dev)
-+{
-+	u16 status;
-+	u8  header_type;
-+
-+	/* read the STATUS register on this device
-+	 */
-+	status = get_pci_parity_status(dev, 0);
-+
-+	debugf2("PCI STATUS= 0x%04x %s\n", status, dev->dev.bus_id );
-+
-+	/* check the status reg for errors */
-+	if (status) {
-+		if (status & (PCI_STATUS_SIG_SYSTEM_ERROR))
-+			edac_printk(KERN_CRIT, EDAC_PCI,
-+				"Signaled System Error on %s\n",
-+				pci_name(dev));
-+
-+		if (status & (PCI_STATUS_PARITY)) {
-+			edac_printk(KERN_CRIT, EDAC_PCI,
-+				"Master Data Parity Error on %s\n",
-+				pci_name(dev));
-+
-+			atomic_inc(&pci_parity_count);
-+		}
-+
-+		if (status & (PCI_STATUS_DETECTED_PARITY)) {
-+			edac_printk(KERN_CRIT, EDAC_PCI,
-+				"Detected Parity Error on %s\n",
-+				pci_name(dev));
-+
-+			atomic_inc(&pci_parity_count);
-+		}
-+	}
-+
-+	/* read the device TYPE, looking for bridges */
-+	pci_read_config_byte(dev, PCI_HEADER_TYPE, &header_type);
-+
-+	debugf2("PCI HEADER TYPE= 0x%02x %s\n", header_type, dev->dev.bus_id
-);
-+
-+	if ((header_type & 0x7F) == PCI_HEADER_TYPE_BRIDGE) {
-+		/* On bridges, need to examine secondary status register  */
-+		status = get_pci_parity_status(dev, 1);
-+
-+		debugf2("PCI SEC_STATUS= 0x%04x %s\n",
-+				status, dev->dev.bus_id );
-+
-+		/* check the secondary status reg for errors */
-+		if (status) {
-+			if (status & (PCI_STATUS_SIG_SYSTEM_ERROR))
-+				edac_printk(KERN_CRIT, EDAC_PCI, "Bridge "
-+					"Signaled System Error on %s\n",
-+					pci_name(dev));
-+
-+			if (status & (PCI_STATUS_PARITY)) {
-+				edac_printk(KERN_CRIT, EDAC_PCI, "Bridge "
-+					"Master Data Parity Error on "
-+					"%s\n", pci_name(dev));
-+
-+				atomic_inc(&pci_parity_count);
-+			}
-+
-+			if (status & (PCI_STATUS_DETECTED_PARITY)) {
-+				edac_printk(KERN_CRIT, EDAC_PCI, "Bridge "
-+					"Detected Parity Error on %s\n",
-+					pci_name(dev));
-+
-+				atomic_inc(&pci_parity_count);
-+			}
-+		}
-+	}
-+}
-+
-+/*
-+ * pci_dev parity list iterator
-+ *	Scan the PCI device list for one iteration, looking for SERRORs
-+ *	Master Parity ERRORS or Parity ERRORs on primary or secondary
-devices
-+ */
-+static inline void edac_pci_dev_parity_iterator(pci_parity_check_fn_t
-fn)
-+{
-+	struct pci_dev *dev = NULL;
-+
-+	/* request for kernel access to the next PCI device, if any,
-+	 * and while we are looking at it have its reference count
-+	 * bumped until we are done with it
-+	 */
-+	while((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
-+		fn(dev);
-+	}
-+}
-+
-+/*
-+ * edac_pci_do_parity_check
-+ *
-+ *	performs the actual PCI parity check operation
-+ */
-+void edac_pci_do_parity_check(void)
-+{
-+	unsigned long flags;
-+	int before_count;
-+
-+	debugf3("%s()\n", __func__);
-+
-+	if (!check_pci_parity)
-+		return;
-+
-+	before_count = atomic_read(&pci_parity_count);
-+
-+	/* scan all PCI devices looking for a Parity Error on devices and
-+	 * bridges
-+	 */
-+	local_irq_save(flags);
-+	edac_pci_dev_parity_iterator(edac_pci_dev_parity_test);
-+	local_irq_restore(flags);
-+
-+	/* Only if operator has selected panic on PCI Error */
-+	if (panic_on_pci_parity) {
-+		/* If the count is different 'after' from 'before' */
-+		if (before_count != atomic_read(&pci_parity_count))
-+			panic("EDAC: PCI Parity Error");
-+	}
-+}
-+
-+void edac_pci_clear_parity_errors(void)
-+{
-+	/* Clear any PCI bus parity errors that devices initially have logged
-+	 * in their registers.
-+	 */
-+	edac_pci_dev_parity_iterator(edac_pci_dev_parity_clear);
-+}
-+
-+
-+/*
-+ * Define the PCI parameter to the module
-+ */
-+module_param(check_pci_parity, int, 0644);
-+MODULE_PARM_DESC(check_pci_parity, "Check for PCI bus parity errors:
-0=off 1=on");
-+module_param(panic_on_pci_parity, int, 0644);
-+MODULE_PARM_DESC(panic_on_pci_parity, "Panic on PCI Bus Parity error:
-0=off 1=on");
-+
-+#endif	/* CONFIG_PCI */
-Index: linux-2.6.22-rc3-mm1/drivers/edac/edac_core.h
-===================================================================
---- /dev/null
-+++ linux-2.6.22-rc3-mm1/drivers/edac/edac_core.h
-@@ -0,0 +1,478 @@
-+/*
-+ * Defines, structures, APIs for edac_core module
-+ *
-+ * (C) 2007 Linux Networx (http://lnxi.com)
-+ * This file may be distributed under the terms of the
-+ * GNU General Public License.
-+ *
-+ * Written by Thayne Harbaugh
-+ * Based on work by Dan Hollis <goemon at anime dot net> and others.
-+ *	http://www.anime.net/~goemon/linux-ecc/
-+ *
-+ * NMI handling support added by
-+ *     Dave Peterson <dsp@llnl.gov> <dave_peterson@pobox.com>
-+ *
-+ * Refactored for multi-source files:
-+ *	Doug Thompson <norsk5@xmission.com>
-+ *
-+ */
-+
-+#ifndef _EDAC_CORE_H_
-+#define _EDAC_CORE_H_
-+
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/module.h>
-+#include <linux/spinlock.h>
-+#include <linux/smp.h>
-+#include <linux/pci.h>
-+#include <linux/time.h>
-+#include <linux/nmi.h>
-+#include <linux/rcupdate.h>
-+#include <linux/completion.h>
-+#include <linux/kobject.h>
-+#include <linux/platform_device.h>
-+
-+#define EDAC_MC_LABEL_LEN	31
-+#define MC_PROC_NAME_MAX_LEN 7
-+
-+#if PAGE_SHIFT < 20
-+#define PAGES_TO_MiB( pages )	( ( pages ) >> ( 20 - PAGE_SHIFT ) )
-+#else				/* PAGE_SHIFT > 20 */
-+#define PAGES_TO_MiB( pages )	( ( pages ) << ( PAGE_SHIFT - 20 ) )
-+#endif
-+
-+#define edac_printk(level, prefix, fmt, arg...) \
-+	printk(level "EDAC " prefix ": " fmt, ##arg)
-+
-+#define edac_mc_printk(mci, level, fmt, arg...) \
-+	printk(level "EDAC MC%d: " fmt, mci->mc_idx, ##arg)
-+
-+#define edac_mc_chipset_printk(mci, level, prefix, fmt, arg...) \
-+	printk(level "EDAC " prefix " MC%d: " fmt, mci->mc_idx, ##arg)
-+
-+/* prefixes for edac_printk() and edac_mc_printk() */
-+#define EDAC_MC "MC"
-+#define EDAC_PCI "PCI"
-+#define EDAC_DEBUG "DEBUG"
-+
-+#ifdef CONFIG_EDAC_DEBUG
-+extern int edac_debug_level;
-+
-+#define edac_debug_printk(level, fmt, arg...)                         
-  \
-+	do {                                                             \
-+		if (level <= edac_debug_level)                           \
-+			edac_printk(KERN_DEBUG, EDAC_DEBUG, fmt, ##arg); \
-+	} while(0)
-+
-+#define debugf0( ... ) edac_debug_printk(0, __VA_ARGS__ )
-+#define debugf1( ... ) edac_debug_printk(1, __VA_ARGS__ )
-+#define debugf2( ... ) edac_debug_printk(2, __VA_ARGS__ )
-+#define debugf3( ... ) edac_debug_printk(3, __VA_ARGS__ )
-+#define debugf4( ... ) edac_debug_printk(4, __VA_ARGS__ )
-+
-+#else  /* !CONFIG_EDAC_DEBUG */
-+
-+#define debugf0( ... )
-+#define debugf1( ... )
-+#define debugf2( ... )
-+#define debugf3( ... )
-+#define debugf4( ... )
-+
-+#endif  /* !CONFIG_EDAC_DEBUG */
-+
-+#define BIT(x) (1 << (x))
-+
-+#define PCI_VEND_DEV(vend, dev) PCI_VENDOR_ID_ ## vend, \
-+	PCI_DEVICE_ID_ ## vend ## _ ## dev
-+
-+#if defined(CONFIG_X86) && defined(CONFIG_PCI)
-+#define dev_name(dev) pci_name(to_pci_dev(dev))
-+#else
-+#define dev_name(dev) to_platform_device(dev)->name
-+#endif
-+
-+/* memory devices */
-+enum dev_type {
-+	DEV_UNKNOWN = 0,
-+	DEV_X1,
-+	DEV_X2,
-+	DEV_X4,
-+	DEV_X8,
-+	DEV_X16,
-+	DEV_X32,		/* Do these parts exist? */
-+	DEV_X64			/* Do these parts exist? */
-+};
-+
-+#define DEV_FLAG_UNKNOWN	BIT(DEV_UNKNOWN)
-+#define DEV_FLAG_X1		BIT(DEV_X1)
-+#define DEV_FLAG_X2		BIT(DEV_X2)
-+#define DEV_FLAG_X4		BIT(DEV_X4)
-+#define DEV_FLAG_X8		BIT(DEV_X8)
-+#define DEV_FLAG_X16		BIT(DEV_X16)
-+#define DEV_FLAG_X32		BIT(DEV_X32)
-+#define DEV_FLAG_X64		BIT(DEV_X64)
-+
-+/* memory types */
-+enum mem_type {
-+	MEM_EMPTY = 0,		/* Empty csrow */
-+	MEM_RESERVED,		/* Reserved csrow type */
-+	MEM_UNKNOWN,		/* Unknown csrow type */
-+	MEM_FPM,		/* Fast page mode */
-+	MEM_EDO,		/* Extended data out */
-+	MEM_BEDO,		/* Burst Extended data out */
-+	MEM_SDR,		/* Single data rate SDRAM */
-+	MEM_RDR,		/* Registered single data rate SDRAM */
-+	MEM_DDR,		/* Double data rate SDRAM */
-+	MEM_RDDR,		/* Registered Double data rate SDRAM */
-+	MEM_RMBS,		/* Rambus DRAM */
-+	MEM_DDR2,               /* DDR2 RAM */
-+	MEM_FB_DDR2,            /* fully buffered DDR2 */
-+	MEM_RDDR2,              /* Registered DDR2 RAM */
-+};
-+
-+#define MEM_FLAG_EMPTY		BIT(MEM_EMPTY)
-+#define MEM_FLAG_RESERVED	BIT(MEM_RESERVED)
-+#define MEM_FLAG_UNKNOWN	BIT(MEM_UNKNOWN)
-+#define MEM_FLAG_FPM		BIT(MEM_FPM)
-+#define MEM_FLAG_EDO		BIT(MEM_EDO)
-+#define MEM_FLAG_BEDO		BIT(MEM_BEDO)
-+#define MEM_FLAG_SDR		BIT(MEM_SDR)
-+#define MEM_FLAG_RDR		BIT(MEM_RDR)
-+#define MEM_FLAG_DDR		BIT(MEM_DDR)
-+#define MEM_FLAG_RDDR		BIT(MEM_RDDR)
-+#define MEM_FLAG_RMBS		BIT(MEM_RMBS)
-+#define MEM_FLAG_DDR2           BIT(MEM_DDR2)
-+#define MEM_FLAG_FB_DDR2        BIT(MEM_FB_DDR2)
-+#define MEM_FLAG_RDDR2          BIT(MEM_RDDR2)
-+
-+/* chipset Error Detection and Correction capabilities and mode */
-+enum edac_type {
-+	EDAC_UNKNOWN = 0,	/* Unknown if ECC is available */
-+	EDAC_NONE,		/* Doesnt support ECC */
-+	EDAC_RESERVED,		/* Reserved ECC type */
-+	EDAC_PARITY,		/* Detects parity errors */
-+	EDAC_EC,		/* Error Checking - no correction */
-+	EDAC_SECDED,		/* Single bit error correction, Double detection */
-+	EDAC_S2ECD2ED,		/* Chipkill x2 devices - do these exist? */
-+	EDAC_S4ECD4ED,		/* Chipkill x4 devices */
-+	EDAC_S8ECD8ED,		/* Chipkill x8 devices */
-+	EDAC_S16ECD16ED,	/* Chipkill x16 devices */
-+};
-+
-+#define EDAC_FLAG_UNKNOWN	BIT(EDAC_UNKNOWN)
-+#define EDAC_FLAG_NONE		BIT(EDAC_NONE)
-+#define EDAC_FLAG_PARITY	BIT(EDAC_PARITY)
-+#define EDAC_FLAG_EC		BIT(EDAC_EC)
-+#define EDAC_FLAG_SECDED	BIT(EDAC_SECDED)
-+#define EDAC_FLAG_S2ECD2ED	BIT(EDAC_S2ECD2ED)
-+#define EDAC_FLAG_S4ECD4ED	BIT(EDAC_S4ECD4ED)
-+#define EDAC_FLAG_S8ECD8ED	BIT(EDAC_S8ECD8ED)
-+#define EDAC_FLAG_S16ECD16ED	BIT(EDAC_S16ECD16ED)
-+
-+/* scrubbing capabilities */
-+enum scrub_type {
-+	SCRUB_UNKNOWN = 0,	/* Unknown if scrubber is available */
-+	SCRUB_NONE,		/* No scrubber */
-+	SCRUB_SW_PROG,		/* SW progressive (sequential) scrubbing */
-+	SCRUB_SW_SRC,		/* Software scrub only errors */
-+	SCRUB_SW_PROG_SRC,	/* Progressive software scrub from an error */
-+	SCRUB_SW_TUNABLE,	/* Software scrub frequency is tunable */
-+	SCRUB_HW_PROG,		/* HW progressive (sequential) scrubbing */
-+	SCRUB_HW_SRC,		/* Hardware scrub only errors */
-+	SCRUB_HW_PROG_SRC,	/* Progressive hardware scrub from an error */
-+	SCRUB_HW_TUNABLE	/* Hardware scrub frequency is tunable */
-+};
-+
-+#define SCRUB_FLAG_SW_PROG	BIT(SCRUB_SW_PROG)
-+#define SCRUB_FLAG_SW_SRC	BIT(SCRUB_SW_SRC_CORR)
-+#define SCRUB_FLAG_SW_PROG_SRC	BIT(SCRUB_SW_PROG_SRC_CORR)
-+#define SCRUB_FLAG_SW_TUN	BIT(SCRUB_SW_SCRUB_TUNABLE)
-+#define SCRUB_FLAG_HW_PROG	BIT(SCRUB_HW_PROG)
-+#define SCRUB_FLAG_HW_SRC	BIT(SCRUB_HW_SRC_CORR)
-+#define SCRUB_FLAG_HW_PROG_SRC	BIT(SCRUB_HW_PROG_SRC_CORR)
-+#define SCRUB_FLAG_HW_TUN	BIT(SCRUB_HW_TUNABLE)
-+
-+/* FIXME - should have notify capabilities: NMI, LOG, PROC, etc */
-+
-+/*
-+ * There are several things to be aware of that aren't at all obvious:
-+ *
-+ *
-+ * SOCKETS, SOCKET SETS, BANKS, ROWS, CHIP-SELECT ROWS, CHANNELS,
-etc..
-+ *
-+ * These are some of the many terms that are thrown about that don't
-always
-+ * mean what people think they mean (Inconceivable!).  In the interest
-of
-+ * creating a common ground for discussion, terms and their
-definitions
-+ * will be established.
-+ *
-+ * Memory devices:	The individual chip on a memory stick.  These
-devices
-+ *			commonly output 4 and 8 bits each.  Grouping several
-+ *			of these in parallel provides 64 bits which is common
-+ *			for a memory stick.
-+ *
-+ * Memory Stick:	A printed circuit board that agregates multiple
-+ *			memory devices in parallel.  This is the atomic
-+ *			memory component that is purchaseable by Joe consumer
-+ *			and loaded into a memory socket.
-+ *
-+ * Socket:		A physical connector on the motherboard that accepts
-+ *			a single memory stick.
-+ *
-+ * Channel:		Set of memory devices on a memory stick that must be
-+ *			grouped in parallel with one or more additional
-+ *			channels from other memory sticks.  This parallel
-+ *			grouping of the output from multiple channels are
-+ *			necessary for the smallest granularity of memory access.
-+ *			Some memory controllers are capable of single channel -
-+ *			which means that memory sticks can be loaded
-+ *			individually.  Other memory controllers are only
-+ *			capable of dual channel - which means that memory
-+ *			sticks must be loaded as pairs (see "socket set").
-+ *
-+ * Chip-select row:	All of the memory devices that are selected
-together.
-+ *			for a single, minimum grain of memory access.
-+ *			This selects all of the parallel memory devices across
-+ *			all of the parallel channels.  Common chip-select rows
-+ *			for single channel are 64 bits, for dual channel 128
-+ *			bits.
-+ *
-+ * Single-Ranked stick:	A Single-ranked stick has 1 chip-select row of
-memmory.
-+ *			Motherboards commonly drive two chip-select pins to
-+ *			a memory stick. A single-ranked stick, will occupy
-+ *			only one of those rows. The other will be unused.
-+ *
-+ * Double-Ranked stick:	A double-ranked stick has two chip-select rows
-which
-+ *			access different sets of memory devices.  The two
-+ *			rows cannot be accessed concurrently.
-+ *
-+ * Double-sided stick:	DEPRECATED TERM, see Double-Ranked stick.
-+ *			A double-sided stick has two chip-select rows which
-+ *			access different sets of memory devices.  The two
-+ *			rows cannot be accessed concurrently.  "Double-sided"
-+ *			is irrespective of the memory devices being mounted
-+ *			on both sides of the memory stick.
-+ *
-+ * Socket set:		All of the memory sticks that are required for for
-+ *			a single memory access or all of the memory sticks
-+ *			spanned by a chip-select row.  A single socket set
-+ *			has two chip-select rows and if double-sided sticks
-+ *			are used these will occupy those chip-select rows.
-+ *
-+ * Bank:		This term is avoided because it is unclear when
-+ *			needing to distinguish between chip-select rows and
-+ *			socket sets.
-+ *
-+ * Controller pages:
-+ *
-+ * Physical pages:
-+ *
-+ * Virtual pages:
-+ *
-+ *
-+ * STRUCTURE ORGANIZATION AND CHOICES
-+ *
-+ *
-+ *
-+ * PS - I enjoyed writing all that about as much as you enjoyed
-reading it.
-+ */
-+
-+struct channel_info {
-+	int chan_idx;		/* channel index */
-+	u32 ce_count;		/* Correctable Errors for this CHANNEL */
-+	char label[EDAC_MC_LABEL_LEN + 1];  /* DIMM label on motherboard */
-+	struct csrow_info *csrow;	/* the parent */
-+};
-+
-+struct csrow_info {
-+	unsigned long first_page;	/* first page number in dimm */
-+	unsigned long last_page;	/* last page number in dimm */
-+	unsigned long page_mask;	/* used for interleaving -
-+					 * 0UL for non intlv
-+					 */
-+	u32 nr_pages;		/* number of pages in csrow */
-+	u32 grain;		/* granularity of reported error in bytes */
-+	int csrow_idx;		/* the chip-select row */
-+	enum dev_type dtype;	/* memory device type */
-+	u32 ue_count;		/* Uncorrectable Errors for this csrow */
-+	u32 ce_count;		/* Correctable Errors for this csrow */
-+	enum mem_type mtype;	/* memory csrow type */
-+	enum edac_type edac_mode;	/* EDAC mode for this csrow */
-+	struct mem_ctl_info *mci;	/* the parent */
-+
-+	struct kobject kobj;	/* sysfs kobject for this csrow */
-+	struct completion kobj_complete;
-+
-+	/* FIXME the number of CHANNELs might need to become dynamic */
-+	u32 nr_channels;
-+	struct channel_info *channels;
-+};
-+
-+struct mem_ctl_info {
-+	struct list_head link;  /* for global list of mem_ctl_info structs */
-+	unsigned long mtype_cap;	/* memory types supported by mc */
-+	unsigned long edac_ctl_cap;	/* Mem controller EDAC capabilities */
-+	unsigned long edac_cap;	/* configuration capabilities - this is
-+				 * closely related to edac_ctl_cap.  The
-+				 * difference is that the controller may be
-+				 * capable of s4ecd4ed which would be listed
-+				 * in edac_ctl_cap, but if channels aren't
-+				 * capable of s4ecd4ed then the edac_cap would
-+				 * not have that capability.
-+				 */
-+	unsigned long scrub_cap;	/* chipset scrub capabilities */
-+	enum scrub_type scrub_mode;	/* current scrub mode */
-+
-+	/* Translates sdram memory scrub rate given in bytes/sec to the
-+	   internal representation and configures whatever else needs
-+	   to be configured.
-+	*/
-+	int (*set_sdram_scrub_rate) (struct mem_ctl_info *mci, u32 *bw);
-+
-+	/* Get the current sdram memory scrub rate from the internal
-+	   representation and converts it to the closest matching
-+	   bandwith in bytes/sec.
-+	*/
-+	int (*get_sdram_scrub_rate) (struct mem_ctl_info *mci, u32 *bw);
-+
-+	/* pointer to edac checking routine */
-+	void (*edac_check) (struct mem_ctl_info * mci);
-+
-+	/*
-+	 * Remaps memory pages: controller pages to physical pages.
-+	 * For most MC's, this will be NULL.
-+	 */
-+	/* FIXME - why not send the phys page to begin with? */
-+	unsigned long (*ctl_page_to_phys) (struct mem_ctl_info * mci,
-+					unsigned long page);
-+	int mc_idx;
-+	int nr_csrows;
-+	struct csrow_info *csrows;
-+	/*
-+	 * FIXME - what about controllers on other busses? - IDs must be
-+	 * unique.  dev pointer should be sufficiently unique, but
-+	 * BUS:SLOT.FUNC numbers may not be unique.
-+	 */
-+	struct device *dev;
-+	const char *mod_name;
-+	const char *mod_ver;
-+	const char *ctl_name;
-+	char proc_name[MC_PROC_NAME_MAX_LEN + 1];
-+	void *pvt_info;
-+	u32 ue_noinfo_count;	/* Uncorrectable Errors w/o info */
-+	u32 ce_noinfo_count;	/* Correctable Errors w/o info */
-+	u32 ue_count;		/* Total Uncorrectable Errors for this MC */
-+	u32 ce_count;		/* Total Correctable Errors for this MC */
-+	unsigned long start_time;	/* mci load start time (in jiffies) */
-+
-+	/* this stuff is for safe removal of mc devices from global list
-while
-+	 * NMI handlers may be traversing list
-+	 */
-+	struct rcu_head rcu;
-+	struct completion complete;
-+
-+	/* edac sysfs device control */
-+	struct kobject edac_mci_kobj;
-+	struct completion kobj_complete;
-+};
-+
-+#ifdef CONFIG_PCI
-+
-+/* write all or some bits in a byte-register*/
-+static inline void pci_write_bits8(struct pci_dev *pdev, int offset,
-u8 value,
-+		u8 mask)
-+{
-+	if (mask != 0xff) {
-+		u8 buf;
-+
-+		pci_read_config_byte(pdev, offset, &buf);
-+		value &= mask;
-+		buf &= ~mask;
-+		value |= buf;
-+	}
-+
-+	pci_write_config_byte(pdev, offset, value);
-+}
-+
-+/* write all or some bits in a word-register*/
-+static inline void pci_write_bits16(struct pci_dev *pdev, int offset,
-+		u16 value, u16 mask)
-+{
-+	if (mask != 0xffff) {
-+		u16 buf;
-+
-+		pci_read_config_word(pdev, offset, &buf);
-+		value &= mask;
-+		buf &= ~mask;
-+		value |= buf;
-+	}
-+
-+	pci_write_config_word(pdev, offset, value);
-+}
-+
-+/* write all or some bits in a dword-register*/
-+static inline void pci_write_bits32(struct pci_dev *pdev, int offset,
-+		u32 value, u32 mask)
-+{
-+	if (mask != 0xffff) {
-+		u32 buf;
-+
-+		pci_read_config_dword(pdev, offset, &buf);
-+		value &= mask;
-+		buf &= ~mask;
-+		value |= buf;
-+	}
-+
-+	pci_write_config_dword(pdev, offset, value);
-+}
-+
-+#endif /* CONFIG_PCI */
-+
-+extern struct mem_ctl_info * edac_mc_find(int idx);
-+extern int edac_mc_add_mc(struct mem_ctl_info *mci,int mc_idx);
-+extern struct mem_ctl_info * edac_mc_del_mc(struct device *dev);
-+extern int edac_mc_find_csrow_by_page(struct mem_ctl_info *mci,
-+					unsigned long page);
-+
-+/*
-+ * The no info errors are used when error overflows are reported.
-+ * There are a limited number of error logging registers that can
-+ * be exausted.  When all registers are exhausted and an additional
-+ * error occurs then an error overflow register records that an
-+ * error occured and the type of error, but doesn't have any
-+ * further information.  The ce/ue versions make for cleaner
-+ * reporting logic and function interface - reduces conditional
-+ * statement clutter and extra function arguments.
-+ */
-+extern void edac_mc_handle_ce(struct mem_ctl_info *mci,
-+		unsigned long page_frame_number, unsigned long offset_in_page,
-+		unsigned long syndrome, int row, int channel,
-+		const char *msg);
-+extern void edac_mc_handle_ce_no_info(struct mem_ctl_info *mci,
-+		const char *msg);
-+extern void edac_mc_handle_ue(struct mem_ctl_info *mci,
-+		unsigned long page_frame_number, unsigned long offset_in_page,
-+		int row, const char *msg);
-+extern void edac_mc_handle_ue_no_info(struct mem_ctl_info *mci,
-+		const char *msg);
-+extern void edac_mc_handle_fbd_ue(struct mem_ctl_info *mci,
-+		unsigned int csrow,
-+		unsigned int channel0,
-+		unsigned int channel1,
-+		char *msg);
-+extern void edac_mc_handle_fbd_ce(struct mem_ctl_info *mci,
-+		unsigned int csrow,
-+		unsigned int channel,
-+		char *msg);
-+
-+/*
-+ * This kmalloc's and initializes all the structures.
-+ * Can't be used if all structures don't have the same lifetime.
-+ */
-+extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned
-nr_csrows,
-+		unsigned nr_chans);
-+
-+/* Free an mc previously allocated by edac_mc_alloc() */
-+extern void edac_mc_free(struct mem_ctl_info *mci);
-+
-+#endif				/* _EDAC_CORE_H_ */
-Index: linux-2.6.22-rc3-mm1/drivers/edac/edac_mc.c
-===================================================================
---- linux-2.6.22-rc3-mm1.orig/drivers/edac/edac_mc.c
-+++ linux-2.6.22-rc3-mm1/drivers/edac/edac_mc.c
-@@ -27,1197 +27,17 @@
- #include <linux/list.h>
- #include <linux/sysdev.h>
- #include <linux/ctype.h>
--#include <linux/kthread.h>
--#include <linux/freezer.h>
- #include <asm/uaccess.h>
- #include <asm/page.h>
- #include <asm/edac.h>
- #include "edac_mc.h"
-+#include "edac_module.h"
- 
--#define EDAC_MC_VERSION "Ver: 2.0.1 " __DATE__
--
--
--#ifdef CONFIG_EDAC_DEBUG
--/* Values of 0 to 4 will generate output */
--int edac_debug_level = 1;
--EXPORT_SYMBOL_GPL(edac_debug_level);
--#endif
--
--/* EDAC Controls, setable by module parameter, and sysfs */
--static int log_ue = 1;
--static int log_ce = 1;
--static int panic_on_ue;
--static int poll_msec = 1000;
- 
- /* lock to memory controller's control array */
- static DECLARE_MUTEX(mem_ctls_mutex);
- static struct list_head mc_devices = LIST_HEAD_INIT(mc_devices);
- 
--static struct task_struct *edac_thread;
--
--#ifdef CONFIG_PCI
--static int check_pci_parity = 0;	/* default YES check PCI parity */
--static int panic_on_pci_parity;		/* default no panic on PCI Parity */
--static atomic_t pci_parity_count = ATOMIC_INIT(0);
--
--static struct kobject edac_pci_kobj; /* /sys/devices/system/edac/pci
-*/
--static struct completion edac_pci_kobj_complete;
--#endif	/* CONFIG_PCI */
--
--/*  START sysfs data and methods */
--
--
--static const char *mem_types[] = {
--	[MEM_EMPTY] = "Empty",
--	[MEM_RESERVED] = "Reserved",
--	[MEM_UNKNOWN] = "Unknown",
--	[MEM_FPM] = "FPM",
--	[MEM_EDO] = "EDO",
--	[MEM_BEDO] = "BEDO",
--	[MEM_SDR] = "Unbuffered-SDR",
--	[MEM_RDR] = "Registered-SDR",
--	[MEM_DDR] = "Unbuffered-DDR",
--	[MEM_RDDR] = "Registered-DDR",
--	[MEM_RMBS] = "RMBS"
--};
--
--static const char *dev_types[] = {
--	[DEV_UNKNOWN] = "Unknown",
--	[DEV_X1] = "x1",
--	[DEV_X2] = "x2",
--	[DEV_X4] = "x4",
--	[DEV_X8] = "x8",
--	[DEV_X16] = "x16",
--	[DEV_X32] = "x32",
--	[DEV_X64] = "x64"
--};
--
--static const char *edac_caps[] = {
--	[EDAC_UNKNOWN] = "Unknown",
--	[EDAC_NONE] = "None",
--	[EDAC_RESERVED] = "Reserved",
--	[EDAC_PARITY] = "PARITY",
--	[EDAC_EC] = "EC",
--	[EDAC_SECDED] = "SECDED",
--	[EDAC_S2ECD2ED] = "S2ECD2ED",
--	[EDAC_S4ECD4ED] = "S4ECD4ED",
--	[EDAC_S8ECD8ED] = "S8ECD8ED",
--	[EDAC_S16ECD16ED] = "S16ECD16ED"
--};
--
--/* sysfs object: /sys/devices/system/edac */
--static struct sysdev_class edac_class = {
--	set_kset_name("edac"),
--};
--
--/* sysfs object:
-- *	/sys/devices/system/edac/mc
-- */
--static struct kobject edac_memctrl_kobj;
--
--/* We use these to wait for the reference counts on edac_memctrl_kobj
-and
-- * edac_pci_kobj to reach 0.
-- */
--static struct completion edac_memctrl_kobj_complete;
--
--/*
-- * /sys/devices/system/edac/mc;
-- *	data structures and methods
-- */
--static ssize_t memctrl_int_show(void *ptr, char *buffer)
--{
--	int *value = (int*) ptr;
--	return sprintf(buffer, "%u\n", *value);
--}
--
--static ssize_t memctrl_int_store(void *ptr, const char *buffer, size_t
-count)
--{
--	int *value = (int*) ptr;
--
--	if (isdigit(*buffer))
--		*value = simple_strtoul(buffer, NULL, 0);
--
--	return count;
--}
--
--struct memctrl_dev_attribute {
--	struct attribute attr;
--	void *value;
--	ssize_t (*show)(void *,char *);
--	ssize_t (*store)(void *, const char *, size_t);
--};
--
--/* Set of show/store abstract level functions for memory control
-object */
--static ssize_t memctrl_dev_show(struct kobject *kobj,
--		struct attribute *attr, char *buffer)
--{
--	struct memctrl_dev_attribute *memctrl_dev;
--	memctrl_dev = (struct memctrl_dev_attribute*)attr;
--
--	if (memctrl_dev->show)
--		return memctrl_dev->show(memctrl_dev->value, buffer);
--
--	return -EIO;
--}
--
--static ssize_t memctrl_dev_store(struct kobject *kobj, struct
-attribute *attr,
--		const char *buffer, size_t count)
--{
--	struct memctrl_dev_attribute *memctrl_dev;
--	memctrl_dev = (struct memctrl_dev_attribute*)attr;
--
--	if (memctrl_dev->store)
--		return memctrl_dev->store(memctrl_dev->value, buffer, count);
--
--	return -EIO;
--}
--
--static struct sysfs_ops memctrlfs_ops = {
--	.show   = memctrl_dev_show,
--	.store  = memctrl_dev_store
--};
--
--#define MEMCTRL_ATTR(_name,_mode,_show,_store)			\
--static struct memctrl_dev_attribute attr_##_name = {			\
--	.attr = {.name = __stringify(_name), .mode = _mode },	\
--	.value  = &_name,					\
--	.show   = _show,					\
--	.store  = _store,					\
--};
--
--#define MEMCTRL_STRING_ATTR(_name,_data,_mode,_show,_store)	\
--static struct memctrl_dev_attribute attr_##_name = {			\
--	.attr = {.name = __stringify(_name), .mode = _mode },	\
--	.value  = _data,					\
--	.show   = _show,					\
--	.store  = _store,					\
--};
--
--/* csrow<id> control files */
--MEMCTRL_ATTR(panic_on_ue,S_IRUGO|S_IWUSR,memctrl_int_show,memctrl_int_store);
--MEMCTRL_ATTR(log_ue,S_IRUGO|S_IWUSR,memctrl_int_show,memctrl_int_store);
--MEMCTRL_ATTR(log_ce,S_IRUGO|S_IWUSR,memctrl_int_show,memctrl_int_store);
--MEMCTRL_ATTR(poll_msec,S_IRUGO|S_IWUSR,memctrl_int_show,memctrl_int_store);
--
--/* Base Attributes of the memory ECC object */
--static struct memctrl_dev_attribute *memctrl_attr[] = {
--	&attr_panic_on_ue,
--	&attr_log_ue,
--	&attr_log_ce,
--	&attr_poll_msec,
--	NULL,
--};
--
--/* Main MC kobject release() function */
--static void edac_memctrl_master_release(struct kobject *kobj)
--{
--	debugf1("%s()\n", __func__);
--	complete(&edac_memctrl_kobj_complete);
--}
--
--static struct kobj_type ktype_memctrl = {
--	.release = edac_memctrl_master_release,
--	.sysfs_ops = &memctrlfs_ops,
--	.default_attrs = (struct attribute **) memctrl_attr,
--};
--
--/* Initialize the main sysfs entries for edac:
-- *   /sys/devices/system/edac
-- *
-- * and children
-- *
-- * Return:  0 SUCCESS
-- *         !0 FAILURE
-- */
--static int edac_sysfs_memctrl_setup(void)
--{
--	int err = 0;
--
--	debugf1("%s()\n", __func__);
--
--	/* create the /sys/devices/system/edac directory */
--	err = sysdev_class_register(&edac_class);
--
--	if (err) {
--		debugf1("%s() error=%d\n", __func__, err);
--		return err;
--	}
--
--	/* Init the MC's kobject */
--	memset(&edac_memctrl_kobj, 0, sizeof (edac_memctrl_kobj));
--	edac_memctrl_kobj.parent = &edac_class.kset.kobj;
--	edac_memctrl_kobj.ktype = &ktype_memctrl;
--
--	/* generate sysfs "..../edac/mc"   */
--	err = kobject_set_name(&edac_memctrl_kobj,"mc");
--
--	if (err)
--		goto fail;
--
--	/* FIXME: maybe new sysdev_create_subdir() */
--	err = kobject_register(&edac_memctrl_kobj);
--
--	if (err) {
--		debugf1("Failed to register '.../edac/mc'\n");
--		goto fail;
--	}
--
--	debugf1("Registered '.../edac/mc' kobject\n");
--
--	return 0;
--
--fail:
--	sysdev_class_unregister(&edac_class);
--	return err;
--}
--
--/*
-- * MC teardown:
-- *	the '..../edac/mc' kobject followed by '..../edac' itself
-- */
--static void edac_sysfs_memctrl_teardown(void)
--{
--	debugf0("MC: " __FILE__ ": %s()\n", __func__);
--
--	/* Unregister the MC's kobject and wait for reference count to reach
--	 * 0.
--	 */
--	init_completion(&edac_memctrl_kobj_complete);
--	kobject_unregister(&edac_memctrl_kobj);
--	wait_for_completion(&edac_memctrl_kobj_complete);
--
--	/* Unregister the 'edac' object */
--	sysdev_class_unregister(&edac_class);
--}
--
--#ifdef CONFIG_PCI
--static ssize_t edac_pci_int_show(void *ptr, char *buffer)
--{
--	int *value = ptr;
--	return sprintf(buffer,"%d\n",*value);
--}
--
--static ssize_t edac_pci_int_store(void *ptr, const char *buffer,
-size_t count)
--{
--	int *value = ptr;
--
--	if (isdigit(*buffer))
--		*value = simple_strtoul(buffer,NULL,0);
--
--	return count;
--}
--
--struct edac_pci_dev_attribute {
--	struct attribute attr;
--	void *value;
--	ssize_t (*show)(void *,char *);
--	ssize_t (*store)(void *, const char *,size_t);
--};
--
--/* Set of show/store abstract level functions for PCI Parity object */
--static ssize_t edac_pci_dev_show(struct kobject *kobj, struct
-attribute *attr,
--		char *buffer)
--{
--	struct edac_pci_dev_attribute *edac_pci_dev;
--	edac_pci_dev= (struct edac_pci_dev_attribute*)attr;
--
--	if (edac_pci_dev->show)
--		return edac_pci_dev->show(edac_pci_dev->value, buffer);
--	return -EIO;
--}
--
--static ssize_t edac_pci_dev_store(struct kobject *kobj,
--		struct attribute *attr, const char *buffer, size_t count)
--{
--	struct edac_pci_dev_attribute *edac_pci_dev;
--	edac_pci_dev= (struct edac_pci_dev_attribute*)attr;
--
--	if (edac_pci_dev->show)
--		return edac_pci_dev->store(edac_pci_dev->value, buffer, count);
--	return -EIO;
--}
--
--static struct sysfs_ops edac_pci_sysfs_ops = {
--	.show   = edac_pci_dev_show,
--	.store  = edac_pci_dev_store
--};
--
--#define EDAC_PCI_ATTR(_name,_mode,_show,_store)			\
--static struct edac_pci_dev_attribute edac_pci_attr_##_name = {		\
--	.attr = {.name = __stringify(_name), .mode = _mode },	\
--	.value  = &_name,					\
--	.show   = _show,					\
--	.store  = _store,					\
--};
--
--#define EDAC_PCI_STRING_ATTR(_name,_data,_mode,_show,_store)	\
--static struct edac_pci_dev_attribute edac_pci_attr_##_name = {		\
--	.attr = {.name = __stringify(_name), .mode = _mode },	\
--	.value  = _data,					\
--	.show   = _show,					\
--	.store  = _store,					\
--};
--
--/* PCI Parity control files */
--EDAC_PCI_ATTR(check_pci_parity, S_IRUGO|S_IWUSR, edac_pci_int_show,
--	edac_pci_int_store);
--EDAC_PCI_ATTR(panic_on_pci_parity, S_IRUGO|S_IWUSR, edac_pci_int_show,
--	edac_pci_int_store);
--EDAC_PCI_ATTR(pci_parity_count, S_IRUGO, edac_pci_int_show, NULL);
--
--/* Base Attributes of the memory ECC object */
--static struct edac_pci_dev_attribute *edac_pci_attr[] = {
--	&edac_pci_attr_check_pci_parity,
--	&edac_pci_attr_panic_on_pci_parity,
--	&edac_pci_attr_pci_parity_count,
--	NULL,
--};
--
--/* No memory to release */
--static void edac_pci_release(struct kobject *kobj)
--{
--	debugf1("%s()\n", __func__);
--	complete(&edac_pci_kobj_complete);
--}
--
--static struct kobj_type ktype_edac_pci = {
--	.release = edac_pci_release,
--	.sysfs_ops = &edac_pci_sysfs_ops,
--	.default_attrs = (struct attribute **) edac_pci_attr,
--};
--
--/**
-- * edac_sysfs_pci_setup()
-- *
-- */
--static int edac_sysfs_pci_setup(void)
--{
--	int err;
--
--	debugf1("%s()\n", __func__);
--
--	memset(&edac_pci_kobj, 0, sizeof(edac_pci_kobj));
--	edac_pci_kobj.parent = &edac_class.kset.kobj;
--	edac_pci_kobj.ktype = &ktype_edac_pci;
--	err = kobject_set_name(&edac_pci_kobj, "pci");
--
--	if (!err) {
--		/* Instanstiate the csrow object */
--		/* FIXME: maybe new sysdev_create_subdir() */
--		err = kobject_register(&edac_pci_kobj);
--
--		if (err)
--			debugf1("Failed to register '.../edac/pci'\n");
--		else
--			debugf1("Registered '.../edac/pci' kobject\n");
--	}
--
--	return err;
--}
--
--static void edac_sysfs_pci_teardown(void)
--{
--	debugf0("%s()\n", __func__);
--	init_completion(&edac_pci_kobj_complete);
--	kobject_unregister(&edac_pci_kobj);
--	wait_for_completion(&edac_pci_kobj_complete);
--}
--
--
--static u16 get_pci_parity_status(struct pci_dev *dev, int secondary)
--{
--	int where;
--	u16 status;
--
--	where = secondary ? PCI_SEC_STATUS : PCI_STATUS;
--	pci_read_config_word(dev, where, &status);
--
--	/* If we get back 0xFFFF then we must suspect that the card has been
--	 * pulled but the Linux PCI layer has not yet finished cleaning up.
--	 * We don't want to report on such devices
--	 */
--
--	if (status == 0xFFFF) {
--		u32 sanity;
--
--		pci_read_config_dword(dev, 0, &sanity);
--
--		if (sanity == 0xFFFFFFFF)
--			return 0;
--	}
--
--	status &= PCI_STATUS_DETECTED_PARITY | PCI_STATUS_SIG_SYSTEM_ERROR |
--		PCI_STATUS_PARITY;
--
--	if (status)
--		/* reset only the bits we are interested in */
--		pci_write_config_word(dev, where, status);
--
--	return status;
--}
--
--typedef void (*pci_parity_check_fn_t) (struct pci_dev *dev);
--
--/* Clear any PCI parity errors logged by this device. */
--static void edac_pci_dev_parity_clear(struct pci_dev *dev)
--{
--	u8 header_type;
--
--	get_pci_parity_status(dev, 0);
--
--	/* read the device TYPE, looking for bridges */
--	pci_read_config_byte(dev, PCI_HEADER_TYPE, &header_type);
--
--	if ((header_type & 0x7F) == PCI_HEADER_TYPE_BRIDGE)
--		get_pci_parity_status(dev, 1);
--}
--
--/*
-- *  PCI Parity polling
-- *
-- */
--static void edac_pci_dev_parity_test(struct pci_dev *dev)
--{
--	u16 status;
--	u8  header_type;
--
--	/* read the STATUS register on this device
--	 */
--	status = get_pci_parity_status(dev, 0);
--
--	debugf2("PCI STATUS= 0x%04x %s\n", status, dev->dev.bus_id );
--
--	/* check the status reg for errors */
--	if (status) {
--		if (status & (PCI_STATUS_SIG_SYSTEM_ERROR))
--			edac_printk(KERN_CRIT, EDAC_PCI,
--				"Signaled System Error on %s\n",
--				pci_name(dev));
--
--		if (status & (PCI_STATUS_PARITY)) {
--			edac_printk(KERN_CRIT, EDAC_PCI,
--				"Master Data Parity Error on %s\n",
--				pci_name(dev));
--
--			atomic_inc(&pci_parity_count);
--		}
--
--		if (status & (PCI_STATUS_DETECTED_PARITY)) {
--			edac_printk(KERN_CRIT, EDAC_PCI,
--				"Detected Parity Error on %s\n",
--				pci_name(dev));
--
--			atomic_inc(&pci_parity_count);
--		}
--	}
--
--	/* read the device TYPE, looking for bridges */
--	pci_read_config_byte(dev, PCI_HEADER_TYPE, &header_type);
--
--	debugf2("PCI HEADER TYPE= 0x%02x %s\n", header_type, dev->dev.bus_id
-);
--
--	if ((header_type & 0x7F) == PCI_HEADER_TYPE_BRIDGE) {
--		/* On bridges, need to examine secondary status register  */
--		status = get_pci_parity_status(dev, 1);
--
--		debugf2("PCI SEC_STATUS= 0x%04x %s\n",
--				status, dev->dev.bus_id );
--
--		/* check the secondary status reg for errors */
--		if (status) {
--			if (status & (PCI_STATUS_SIG_SYSTEM_ERROR))
--				edac_printk(KERN_CRIT, EDAC_PCI, "Bridge "
--					"Signaled System Error on %s\n",
--					pci_name(dev));
--
--			if (status & (PCI_STATUS_PARITY)) {
--				edac_printk(KERN_CRIT, EDAC_PCI, "Bridge "
--					"Master Data Parity Error on "
--					"%s\n", pci_name(dev));
--
--				atomic_inc(&pci_parity_count);
--			}
--
--			if (status & (PCI_STATUS_DETECTED_PARITY)) {
--				edac_printk(KERN_CRIT, EDAC_PCI, "Bridge "
--					"Detected Parity Error on %s\n",
--					pci_name(dev));
--
--				atomic_inc(&pci_parity_count);
--			}
--		}
--	}
--}
--
--/*
-- * pci_dev parity list iterator
-- *	Scan the PCI device list for one iteration, looking for SERRORs
-- *	Master Parity ERRORS or Parity ERRORs on primary or secondary
-devices
-- */
--static inline void edac_pci_dev_parity_iterator(pci_parity_check_fn_t
-fn)
--{
--	struct pci_dev *dev = NULL;
--
--	/* request for kernel access to the next PCI device, if any,
--	 * and while we are looking at it have its reference count
--	 * bumped until we are done with it
--	 */
--	while((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
--		fn(dev);
--	}
--}
--
--static void do_pci_parity_check(void)
--{
--	unsigned long flags;
--	int before_count;
--
--	debugf3("%s()\n", __func__);
--
--	if (!check_pci_parity)
--		return;
--
--	before_count = atomic_read(&pci_parity_count);
--
--	/* scan all PCI devices looking for a Parity Error on devices and
--	 * bridges
--	 */
--	local_irq_save(flags);
--	edac_pci_dev_parity_iterator(edac_pci_dev_parity_test);
--	local_irq_restore(flags);
--
--	/* Only if operator has selected panic on PCI Error */
--	if (panic_on_pci_parity) {
--		/* If the count is different 'after' from 'before' */
--		if (before_count != atomic_read(&pci_parity_count))
--			panic("EDAC: PCI Parity Error");
--	}
--}
--
--static inline void clear_pci_parity_errors(void)
--{
--	/* Clear any PCI bus parity errors that devices initially have logged
--	 * in their registers.
--	 */
--	edac_pci_dev_parity_iterator(edac_pci_dev_parity_clear);
--}
--
--#else	/* CONFIG_PCI */
--
--/* pre-process these away */
--#define	do_pci_parity_check()
--#define	clear_pci_parity_errors()
--#define	edac_sysfs_pci_teardown()
--#define	edac_sysfs_pci_setup()	(0)
--
--#endif	/* CONFIG_PCI */
--
--/* EDAC sysfs CSROW data structures and methods
-- */
--
--/* Set of more default csrow<id> attribute show/store functions */
--static ssize_t csrow_ue_count_show(struct csrow_info *csrow, char
-*data, int private)
--{
--	return sprintf(data,"%u\n", csrow->ue_count);
--}
--
--static ssize_t csrow_ce_count_show(struct csrow_info *csrow, char
-*data, int private)
--{
--	return sprintf(data,"%u\n", csrow->ce_count);
--}
--
--static ssize_t csrow_size_show(struct csrow_info *csrow, char *data,
-int private)
--{
--	return sprintf(data,"%u\n", PAGES_TO_MiB(csrow->nr_pages));
--}
--
--static ssize_t csrow_mem_type_show(struct csrow_info *csrow, char
-*data, int private)
--{
--	return sprintf(data,"%s\n", mem_types[csrow->mtype]);
--}
--
--static ssize_t csrow_dev_type_show(struct csrow_info *csrow, char
-*data, int private)
--{
--	return sprintf(data,"%s\n", dev_types[csrow->dtype]);
--}
--
--static ssize_t csrow_edac_mode_show(struct csrow_info *csrow, char
-*data, int private)
--{
--	return sprintf(data,"%s\n", edac_caps[csrow->edac_mode]);
--}
--
--/* show/store functions for DIMM Label attributes */
--static ssize_t channel_dimm_label_show(struct csrow_info *csrow,
--		char *data, int channel)
--{
--	return snprintf(data, EDAC_MC_LABEL_LEN,"%s",
--			csrow->channels[channel].label);
--}
--
--static ssize_t channel_dimm_label_store(struct csrow_info *csrow,
--				const char *data,
--				size_t count,
--				int channel)
--{
--	ssize_t max_size = 0;
--
--	max_size = min((ssize_t)count,(ssize_t)EDAC_MC_LABEL_LEN-1);
--	strncpy(csrow->channels[channel].label, data, max_size);
--	csrow->channels[channel].label[max_size] = '\0';
--
--	return max_size;
--}
--
--/* show function for dynamic chX_ce_count attribute */
--static ssize_t channel_ce_count_show(struct csrow_info *csrow,
--				char *data,
--				int channel)
--{
--	return sprintf(data, "%u\n", csrow->channels[channel].ce_count);
--}
--
--/* csrow specific attribute structure */
--struct csrowdev_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct csrow_info *,char *,int);
--	ssize_t (*store)(struct csrow_info *, const char *,size_t,int);
--	int    private;
--};
--
--#define to_csrow(k) container_of(k, struct csrow_info, kobj)
--#define to_csrowdev_attr(a) container_of(a, struct csrowdev_attribute,
-attr)
--
--/* Set of show/store higher level functions for default csrow
-attributes */
--static ssize_t csrowdev_show(struct kobject *kobj,
--			struct attribute *attr,
--			char *buffer)
--{
--	struct csrow_info *csrow = to_csrow(kobj);
--	struct csrowdev_attribute *csrowdev_attr = to_csrowdev_attr(attr);
--
--	if (csrowdev_attr->show)
--		return csrowdev_attr->show(csrow,
--					buffer,
--					csrowdev_attr->private);
--	return -EIO;
--}
--
--static ssize_t csrowdev_store(struct kobject *kobj, struct attribute
-*attr,
--		const char *buffer, size_t count)
--{
--	struct csrow_info *csrow = to_csrow(kobj);
--	struct csrowdev_attribute * csrowdev_attr = to_csrowdev_attr(attr);
--
--	if (csrowdev_attr->store)
--		return csrowdev_attr->store(csrow,
--					buffer,
--					count,
--					csrowdev_attr->private);
--	return -EIO;
--}
--
--static struct sysfs_ops csrowfs_ops = {
--	.show   = csrowdev_show,
--	.store  = csrowdev_store
--};
--
--#define CSROWDEV_ATTR(_name,_mode,_show,_store,_private)	\
--static struct csrowdev_attribute attr_##_name = {			\
--	.attr = {.name = __stringify(_name), .mode = _mode },	\
--	.show   = _show,					\
--	.store  = _store,					\
--	.private = _private,					\
--};
--
--/* default cwrow<id>/attribute files */
--CSROWDEV_ATTR(size_mb,S_IRUGO,csrow_size_show,NULL,0);
--CSROWDEV_ATTR(dev_type,S_IRUGO,csrow_dev_type_show,NULL,0);
--CSROWDEV_ATTR(mem_type,S_IRUGO,csrow_mem_type_show,NULL,0);
--CSROWDEV_ATTR(edac_mode,S_IRUGO,csrow_edac_mode_show,NULL,0);
--CSROWDEV_ATTR(ue_count,S_IRUGO,csrow_ue_count_show,NULL,0);
--CSROWDEV_ATTR(ce_count,S_IRUGO,csrow_ce_count_show,NULL,0);
--
--/* default attributes of the CSROW<id> object */
--static struct csrowdev_attribute *default_csrow_attr[] = {
--	&attr_dev_type,
--	&attr_mem_type,
--	&attr_edac_mode,
--	&attr_size_mb,
--	&attr_ue_count,
--	&attr_ce_count,
--	NULL,
--};
--
--
--/* possible dynamic channel DIMM Label attribute files */
--CSROWDEV_ATTR(ch0_dimm_label,S_IRUGO|S_IWUSR,
--		channel_dimm_label_show,
--		channel_dimm_label_store,
--		0 );
--CSROWDEV_ATTR(ch1_dimm_label,S_IRUGO|S_IWUSR,
--		channel_dimm_label_show,
--		channel_dimm_label_store,
--		1 );
--CSROWDEV_ATTR(ch2_dimm_label,S_IRUGO|S_IWUSR,
--		channel_dimm_label_show,
--		channel_dimm_label_store,
--		2 );
--CSROWDEV_ATTR(ch3_dimm_label,S_IRUGO|S_IWUSR,
--		channel_dimm_label_show,
--		channel_dimm_label_store,
--		3 );
--CSROWDEV_ATTR(ch4_dimm_label,S_IRUGO|S_IWUSR,
--		channel_dimm_label_show,
--		channel_dimm_label_store,
--		4 );
--CSROWDEV_ATTR(ch5_dimm_label,S_IRUGO|S_IWUSR,
--		channel_dimm_label_show,
--		channel_dimm_label_store,
--		5 );
--
--/* Total possible dynamic DIMM Label attribute file table */
--static struct csrowdev_attribute *dynamic_csrow_dimm_attr[] = {
--		&attr_ch0_dimm_label,
--		&attr_ch1_dimm_label,
--		&attr_ch2_dimm_label,
--		&attr_ch3_dimm_label,
--		&attr_ch4_dimm_label,
--		&attr_ch5_dimm_label
--};
--
--/* possible dynamic channel ce_count attribute files */
--CSROWDEV_ATTR(ch0_ce_count,S_IRUGO|S_IWUSR,
--		channel_ce_count_show,
--		NULL,
--		0 );
--CSROWDEV_ATTR(ch1_ce_count,S_IRUGO|S_IWUSR,
--		channel_ce_count_show,
--		NULL,
--		1 );
--CSROWDEV_ATTR(ch2_ce_count,S_IRUGO|S_IWUSR,
--		channel_ce_count_show,
--		NULL,
--		2 );
--CSROWDEV_ATTR(ch3_ce_count,S_IRUGO|S_IWUSR,
--		channel_ce_count_show,
--		NULL,
--		3 );
--CSROWDEV_ATTR(ch4_ce_count,S_IRUGO|S_IWUSR,
--		channel_ce_count_show,
--		NULL,
--		4 );
--CSROWDEV_ATTR(ch5_ce_count,S_IRUGO|S_IWUSR,
--		channel_ce_count_show,
--		NULL,
--		5 );
--
--/* Total possible dynamic ce_count attribute file table */
--static struct csrowdev_attribute *dynamic_csrow_ce_count_attr[] = {
--		&attr_ch0_ce_count,
--		&attr_ch1_ce_count,
--		&attr_ch2_ce_count,
--		&attr_ch3_ce_count,
--		&attr_ch4_ce_count,
--		&attr_ch5_ce_count
--};
--
--
--#define EDAC_NR_CHANNELS	6
--
--/* Create dynamic CHANNEL files, indexed by 'chan',  under specifed
-CSROW */
--static int edac_create_channel_files(struct kobject *kobj, int chan)
--{
--	int err=-ENODEV;
--
--	if (chan >= EDAC_NR_CHANNELS)
--		return err;
--
--	/* create the DIMM label attribute file */
--	err = sysfs_create_file(kobj,
--			(struct attribute *) dynamic_csrow_dimm_attr[chan]);
--
--	if (!err) {
--		/* create the CE Count attribute file */
--		err = sysfs_create_file(kobj,
--			(struct attribute *) dynamic_csrow_ce_count_attr[chan]);
--	} else {
--		debugf1("%s()  dimm labels and ce_count files created", __func__);
--	}
--
--	return err;
--}
--
--/* No memory to release for this kobj */
--static void edac_csrow_instance_release(struct kobject *kobj)
--{
--	struct csrow_info *cs;
--
--	cs = container_of(kobj, struct csrow_info, kobj);
--	complete(&cs->kobj_complete);
--}
--
--/* the kobj_type instance for a CSROW */
--static struct kobj_type ktype_csrow = {
--	.release = edac_csrow_instance_release,
--	.sysfs_ops = &csrowfs_ops,
--	.default_attrs = (struct attribute **) default_csrow_attr,
--};
--
--/* Create a CSROW object under specifed edac_mc_device */
--static int edac_create_csrow_object(
--		struct kobject *edac_mci_kobj,
--		struct csrow_info *csrow,
--		int index)
--{
--	int err = 0;
--	int chan;
--
--	memset(&csrow->kobj, 0, sizeof(csrow->kobj));
--
--	/* generate ..../edac/mc/mc<id>/csrow<index>   */
--
--	csrow->kobj.parent = edac_mci_kobj;
--	csrow->kobj.ktype = &ktype_csrow;
--
--	/* name this instance of csrow<id> */
--	err = kobject_set_name(&csrow->kobj,"csrow%d",index);
--	if (err)
--		goto error_exit;
--
--	/* Instanstiate the csrow object */
--	err = kobject_register(&csrow->kobj);
--	if (!err) {
--		/* Create the dyanmic attribute files on this csrow,
--		 * namely, the DIMM labels and the channel ce_count
--		 */
--		for (chan = 0; chan < csrow->nr_channels; chan++) {
--			err = edac_create_channel_files(&csrow->kobj,chan);
--			if (err)
--				break;
--		}
--	}
--
--error_exit:
--	return err;
--}
--
--/* default sysfs methods and data structures for the main MCI kobject
-*/
--
--static ssize_t mci_reset_counters_store(struct mem_ctl_info *mci,
--		const char *data, size_t count)
--{
--	int row, chan;
--
--	mci->ue_noinfo_count = 0;
--	mci->ce_noinfo_count = 0;
--	mci->ue_count = 0;
--	mci->ce_count = 0;
--
--	for (row = 0; row < mci->nr_csrows; row++) {
--		struct csrow_info *ri = &mci->csrows[row];
--
--		ri->ue_count = 0;
--		ri->ce_count = 0;
--
--		for (chan = 0; chan < ri->nr_channels; chan++)
--			ri->channels[chan].ce_count = 0;
--	}
--
--	mci->start_time = jiffies;
--	return count;
--}
--
--/* memory scrubbing */
--static ssize_t mci_sdram_scrub_rate_store(struct mem_ctl_info *mci,
--					const char *data, size_t count)
--{
--	u32 bandwidth = -1;
--
--	if (mci->set_sdram_scrub_rate) {
--
--		memctrl_int_store(&bandwidth, data, count);
--
--		if (!(*mci->set_sdram_scrub_rate)(mci, &bandwidth)) {
--			edac_printk(KERN_DEBUG, EDAC_MC,
--				"Scrub rate set successfully, applied: %d\n",
--				bandwidth);
--		} else {
--			/* FIXME: error codes maybe? */
--			edac_printk(KERN_DEBUG, EDAC_MC,
--				"Scrub rate set FAILED, could not apply: %d\n",
--				bandwidth);
--		}
--	} else {
--		/* FIXME: produce "not implemented" ERROR for user-side. */
--		edac_printk(KERN_WARNING, EDAC_MC,
--			"Memory scrubbing 'set'control is not implemented!\n");
--	}
--	return count;
--}
--
--static ssize_t mci_sdram_scrub_rate_show(struct mem_ctl_info *mci,
-char *data)
--{
--	u32 bandwidth = -1;
--
--	if (mci->get_sdram_scrub_rate) {
--		if (!(*mci->get_sdram_scrub_rate)(mci, &bandwidth)) {
--			edac_printk(KERN_DEBUG, EDAC_MC,
--				"Scrub rate successfully, fetched: %d\n",
--				bandwidth);
--		} else {
--			/* FIXME: error codes maybe? */
--			edac_printk(KERN_DEBUG, EDAC_MC,
--				"Scrub rate fetch FAILED, got: %d\n",
--				bandwidth);
--		}
--	} else {
--		/* FIXME: produce "not implemented" ERROR for user-side.  */
--		edac_printk(KERN_WARNING, EDAC_MC,
--			"Memory scrubbing 'get' control is not implemented!\n");
--	}
--	return sprintf(data, "%d\n", bandwidth);
--}
--
--/* default attribute files for the MCI object */
--static ssize_t mci_ue_count_show(struct mem_ctl_info *mci, char *data)
--{
--	return sprintf(data,"%d\n", mci->ue_count);
--}
--
--static ssize_t mci_ce_count_show(struct mem_ctl_info *mci, char *data)
--{
--	return sprintf(data,"%d\n", mci->ce_count);
--}
--
--static ssize_t mci_ce_noinfo_show(struct mem_ctl_info *mci, char
-*data)
--{
--	return sprintf(data,"%d\n", mci->ce_noinfo_count);
--}
--
--static ssize_t mci_ue_noinfo_show(struct mem_ctl_info *mci, char
-*data)
--{
--	return sprintf(data,"%d\n", mci->ue_noinfo_count);
--}
--
--static ssize_t mci_seconds_show(struct mem_ctl_info *mci, char *data)
--{
--	return sprintf(data,"%ld\n", (jiffies - mci->start_time) / HZ);
--}
--
--static ssize_t mci_ctl_name_show(struct mem_ctl_info *mci, char *data)
--{
--	return sprintf(data,"%s\n", mci->ctl_name);
--}
--
--static ssize_t mci_size_mb_show(struct mem_ctl_info *mci, char *data)
--{
--	int total_pages, csrow_idx;
--
--	for (total_pages = csrow_idx = 0; csrow_idx < mci->nr_csrows;
--			csrow_idx++) {
--		struct csrow_info *csrow = &mci->csrows[csrow_idx];
--
--		if (!csrow->nr_pages)
--			continue;
--
--		total_pages += csrow->nr_pages;
--	}
--
--	return sprintf(data,"%u\n", PAGES_TO_MiB(total_pages));
--}
--
--struct mcidev_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct mem_ctl_info *,char *);
--	ssize_t (*store)(struct mem_ctl_info *, const char *,size_t);
--};
--
--#define to_mci(k) container_of(k, struct mem_ctl_info, edac_mci_kobj)
--#define to_mcidev_attr(a) container_of(a, struct mcidev_attribute,
-attr)
--
--/* MCI show/store functions for top most object */
--static ssize_t mcidev_show(struct kobject *kobj, struct attribute
-*attr,
--		char *buffer)
--{
--	struct mem_ctl_info *mem_ctl_info = to_mci(kobj);
--	struct mcidev_attribute * mcidev_attr = to_mcidev_attr(attr);
--
--	if (mcidev_attr->show)
--		return mcidev_attr->show(mem_ctl_info, buffer);
--
--	return -EIO;
--}
--
--static ssize_t mcidev_store(struct kobject *kobj, struct attribute
-*attr,
--		const char *buffer, size_t count)
--{
--	struct mem_ctl_info *mem_ctl_info = to_mci(kobj);
--	struct mcidev_attribute * mcidev_attr = to_mcidev_attr(attr);
--
--	if (mcidev_attr->store)
--		return mcidev_attr->store(mem_ctl_info, buffer, count);
--
--	return -EIO;
--}
--
--static struct sysfs_ops mci_ops = {
--	.show = mcidev_show,
--	.store = mcidev_store
--};
--
--#define MCIDEV_ATTR(_name,_mode,_show,_store)			\
--static struct mcidev_attribute mci_attr_##_name = {			\
--	.attr = {.name = __stringify(_name), .mode = _mode },	\
--	.show   = _show,					\
--	.store  = _store,					\
--};
--
--/* default Control file */
--MCIDEV_ATTR(reset_counters,S_IWUSR,NULL,mci_reset_counters_store);
--
--/* default Attribute files */
--MCIDEV_ATTR(mc_name,S_IRUGO,mci_ctl_name_show,NULL);
--MCIDEV_ATTR(size_mb,S_IRUGO,mci_size_mb_show,NULL);
--MCIDEV_ATTR(seconds_since_reset,S_IRUGO,mci_seconds_show,NULL);
--MCIDEV_ATTR(ue_noinfo_count,S_IRUGO,mci_ue_noinfo_show,NULL);
--MCIDEV_ATTR(ce_noinfo_count,S_IRUGO,mci_ce_noinfo_show,NULL);
--MCIDEV_ATTR(ue_count,S_IRUGO,mci_ue_count_show,NULL);
--MCIDEV_ATTR(ce_count,S_IRUGO,mci_ce_count_show,NULL);
--
--/* memory scrubber attribute file */
--MCIDEV_ATTR(sdram_scrub_rate,S_IRUGO|S_IWUSR,mci_sdram_scrub_rate_show,mci_sdram_scrub_rate_store);
--
--static struct mcidev_attribute *mci_attr[] = {
--	&mci_attr_reset_counters,
--	&mci_attr_mc_name,
--	&mci_attr_size_mb,
--	&mci_attr_seconds_since_reset,
--	&mci_attr_ue_noinfo_count,
--	&mci_attr_ce_noinfo_count,
--	&mci_attr_ue_count,
--	&mci_attr_ce_count,
--	&mci_attr_sdram_scrub_rate,
--	NULL
--};
--
--/*
-- * Release of a MC controlling instance
-- */
--static void edac_mci_instance_release(struct kobject *kobj)
--{
--	struct mem_ctl_info *mci;
--
--	mci = to_mci(kobj);
--	debugf0("%s() idx=%d\n", __func__, mci->mc_idx);
--	complete(&mci->kobj_complete);
--}
--
--static struct kobj_type ktype_mci = {
--	.release = edac_mci_instance_release,
--	.sysfs_ops = &mci_ops,
--	.default_attrs = (struct attribute **) mci_attr,
--};
--
--
--#define EDAC_DEVICE_SYMLINK	"device"
--
--/*
-- * Create a new Memory Controller kobject instance,
-- *	mc<id> under the 'mc' directory
-- *
-- * Return:
-- *	0	Success
-- *	!0	Failure
-- */
--static int edac_create_sysfs_mci_device(struct mem_ctl_info *mci)
--{
--	int i;
--	int err;
--	struct csrow_info *csrow;
--	struct kobject *edac_mci_kobj=&mci->edac_mci_kobj;
--
--	debugf0("%s() idx=%d\n", __func__, mci->mc_idx);
--	memset(edac_mci_kobj, 0, sizeof(*edac_mci_kobj));
--
--	/* set the name of the mc<id> object */
--	err = kobject_set_name(edac_mci_kobj,"mc%d",mci->mc_idx);
--	if (err)
--		return err;
--
--	/* link to our parent the '..../edac/mc' object */
--	edac_mci_kobj->parent = &edac_memctrl_kobj;
--	edac_mci_kobj->ktype = &ktype_mci;
--
--	/* register the mc<id> kobject */
--	err = kobject_register(edac_mci_kobj);
--	if (err)
--		return err;
--
--	/* create a symlink for the device */
--	err = sysfs_create_link(edac_mci_kobj, &mci->dev->kobj,
--				EDAC_DEVICE_SYMLINK);
--	if (err)
--		goto fail0;
--
--	/* Make directories for each CSROW object
--	 * under the mc<id> kobject
--	 */
--	for (i = 0; i < mci->nr_csrows; i++) {
--		csrow = &mci->csrows[i];
--
--		/* Only expose populated CSROWs */
--		if (csrow->nr_pages > 0) {
--			err = edac_create_csrow_object(edac_mci_kobj,csrow,i);
--			if (err)
--				goto fail1;
--		}
--	}
--
--	return 0;
--
--	/* CSROW error: backout what has already been registered,  */
--fail1:
--	for ( i--; i >= 0; i--) {
--		if (csrow->nr_pages > 0) {
--			init_completion(&csrow->kobj_complete);
--			kobject_unregister(&mci->csrows[i].kobj);
--			wait_for_completion(&csrow->kobj_complete);
--		}
--	}
--
--fail0:
--	init_completion(&mci->kobj_complete);
--	kobject_unregister(edac_mci_kobj);
--	wait_for_completion(&mci->kobj_complete);
--	return err;
--}
--
--/*
-- * remove a Memory Controller instance
-- */
--static void edac_remove_sysfs_mci_device(struct mem_ctl_info *mci)
--{
--	int i;
--
--	debugf0("%s()\n", __func__);
--
--	/* remove all csrow kobjects */
--	for (i = 0; i < mci->nr_csrows; i++) {
--		if (mci->csrows[i].nr_pages > 0) {
--			init_completion(&mci->csrows[i].kobj_complete);
--			kobject_unregister(&mci->csrows[i].kobj);
--			wait_for_completion(&mci->csrows[i].kobj_complete);
--		}
--	}
--
--	sysfs_remove_link(&mci->edac_mci_kobj, EDAC_DEVICE_SYMLINK);
--	init_completion(&mci->kobj_complete);
--	kobject_unregister(&mci->edac_mci_kobj);
--	wait_for_completion(&mci->kobj_complete);
--}
--
--/* END OF sysfs data and methods */
--
- #ifdef CONFIG_EDAC_DEBUG
- 
- static void edac_mc_dump_channel(struct channel_info *chan)
-@@ -1672,7 +492,7 @@ void edac_mc_handle_ce(struct mem_ctl_in
- 		return;
- 	}
- 
--	if (log_ce)
-+	if (edac_get_log_ce())
- 		/* FIXME - put in DIMM location */
- 		edac_mc_printk(mci, KERN_WARNING,
- 			"CE page 0x%lx, offset 0x%lx, grain %d, syndrome "
-@@ -1707,7 +527,7 @@ EXPORT_SYMBOL_GPL(edac_mc_handle_ce);
- 
- void edac_mc_handle_ce_no_info(struct mem_ctl_info *mci, const char
-*msg)
- {
--	if (log_ce)
-+	if (edac_get_log_ce())
- 		edac_mc_printk(mci, KERN_WARNING,
- 			"CE - no information available: %s\n", msg);
- 
-@@ -1751,14 +571,14 @@ void edac_mc_handle_ue(struct mem_ctl_in
- 		pos += chars;
- 	}
- 
--	if (log_ue)
-+	if (edac_get_log_ue())
- 		edac_mc_printk(mci, KERN_EMERG,
- 			"UE page 0x%lx, offset 0x%lx, grain %d, row %d, "
- 			"labels \"%s\": %s\n", page_frame_number,
- 			offset_in_page, mci->csrows[row].grain, row, labels,
- 			msg);
- 
--	if (panic_on_ue)
-+	if (edac_get_panic_on_ue())
- 		panic("EDAC MC%d: UE page 0x%lx, offset 0x%lx, grain %d, "
- 			"row %d, labels \"%s\": %s\n", mci->mc_idx,
- 			page_frame_number, offset_in_page,
-@@ -1771,10 +591,10 @@ EXPORT_SYMBOL_GPL(edac_mc_handle_ue);
- 
- void edac_mc_handle_ue_no_info(struct mem_ctl_info *mci, const char
-*msg)
- {
--	if (panic_on_ue)
-+	if (edac_get_panic_on_ue())
- 		panic("EDAC MC%d: Uncorrected Error", mci->mc_idx);
- 
--	if (log_ue)
-+	if (edac_get_log_ue())
- 		edac_mc_printk(mci, KERN_WARNING,
- 			"UE - no information available: %s\n", msg);
- 	mci->ue_noinfo_count++;
-@@ -1837,13 +657,13 @@ void edac_mc_handle_fbd_ue(struct mem_ct
- 	chars = snprintf(pos, len + 1, "-%s",
- 			 mci->csrows[csrow].channels[channelb].label);
- 
--	if (log_ue)
-+	if (edac_get_log_ue())
- 		edac_mc_printk(mci, KERN_EMERG,
- 			"UE row %d, channel-a= %d channel-b= %d "
- 			"labels \"%s\": %s\n", csrow, channela, channelb,
- 			labels, msg);
- 
--	if (panic_on_ue)
-+	if (edac_get_panic_on_ue())
- 		panic("UE row %d, channel-a= %d channel-b= %d "
- 				"labels \"%s\": %s\n", csrow, channela,
- 				channelb, labels, msg);
-@@ -1878,7 +698,7 @@ void edac_mc_handle_fbd_ce(struct mem_ct
- 		return;
- 	}
- 
--	if (log_ce)
-+	if (edac_get_log_ce())
- 		/* FIXME - put in DIMM location */
- 		edac_mc_printk(mci, KERN_WARNING,
- 			"CE row %d, channel %d, label \"%s\": %s\n",
-@@ -1896,7 +716,7 @@ EXPORT_SYMBOL(edac_mc_handle_fbd_ce);
  /*
-  * Iterate over all MC instances and check for ECC, et al, errors
-  */
--static inline void check_mc_devices(void)
-+void edac_check_mc_devices(void)
- {
- 	struct list_head *item;
- 	struct mem_ctl_info *mci;
-@@ -1913,118 +733,3 @@ static inline void check_mc_devices(void
- 
- 	up(&mem_ctls_mutex);
+  * Check MC status every edac_get_poll_msec().
+  * Check PCI status every edac_get_poll_msec() as well.
+@@ -53,11 +122,40 @@ static int edac_kernel_thread(void *arg)
  }
--
--/*
-- * Check MC status every poll_msec.
-- * Check PCI status every poll_msec as well.
-- *
-- * This where the work gets done for edac.
-- *
-- * SMP safe, doesn't use NMI, and auto-rate-limits.
-- */
--static void do_edac_check(void)
--{
--	debugf3("%s()\n", __func__);
--	check_mc_devices();
--	do_pci_parity_check();
--}
--
--static int edac_kernel_thread(void *arg)
--{
--	set_freezable();
--	while (!kthread_should_stop()) {
--		do_edac_check();
--
--		/* goto sleep for the interval */
--		schedule_timeout_interruptible((HZ * poll_msec) / 1000);
--		try_to_freeze();
--	}
--
--	return 0;
--}
--
--/*
-- * edac_mc_init
-- *      module initialization entry point
-- */
--static int __init edac_mc_init(void)
--{
--	edac_printk(KERN_INFO, EDAC_MC, EDAC_MC_VERSION "\n");
--
--	/*
--	 * Harvest and clear any boot/initialization PCI parity errors
--	 *
--	 * FIXME: This only clears errors logged by devices present at time
-of
--	 * 	module initialization.  We should also do an initial clear
--	 *	of each newly hotplugged device.
--	 */
--	clear_pci_parity_errors();
--
+ 
+ /*
++ * edac_workqueue_setup
++ *	initialize the edac work queue for polling operations
++ */
++static int edac_workqueue_setup(void)
++{
++	edac_workqueue = create_singlethread_workqueue("edac-poller");
++	if (edac_workqueue == NULL)
++		return -ENODEV;
++	else
++		return 0;
++}
++
++/*
++ * edac_workqueue_teardown
++ *	teardown the edac workqueue
++ */
++static void edac_workqueue_teardown(void)
++{
++	if (edac_workqueue) {
++		flush_workqueue(edac_workqueue);
++		destroy_workqueue(edac_workqueue);
++		edac_workqueue = NULL;
++	}
++}
++
++
++/*
+  * edac_init
+  *      module initialization entry point
+  */
+ static int __init edac_init(void)
+ {
++	int err = 0;
++
+ 	edac_printk(KERN_INFO, EDAC_MC, EDAC_MC_VERSION "\n");
+ 
+ 	/*
+@@ -69,32 +167,61 @@ static int __init edac_init(void)
+ 	 */
+ 	edac_pci_clear_parity_errors();
+ 
 -	/* Create the MC sysfs entries */
--	if (edac_sysfs_memctrl_setup()) {
--		edac_printk(KERN_ERR, EDAC_MC,
--			"Error initializing sysfs code\n");
++	/*
++	 * perform the registration of the /sys/devices/system/edac object
++	 */
++	if (edac_register_sysfs_edac_name()) {
++		edac_printk(KERN_ERR, EDAC_MC,
++			"Error initializing 'edac' kobject\n");
++		err = -ENODEV;
++		goto error;
++	}
++
++	/* Create the MC sysfs entries, must be first
++	 */
+ 	if (edac_sysfs_memctrl_setup()) {
+ 		edac_printk(KERN_ERR, EDAC_MC,
+ 			"Error initializing sysfs code\n");
 -		return -ENODEV;
--	}
--
--	/* Create the PCI parity sysfs entries */
--	if (edac_sysfs_pci_setup()) {
++		err = -ENODEV;
++		goto error_sysfs;
+ 	}
+ 
+ 	/* Create the PCI parity sysfs entries */
+ 	if (edac_sysfs_pci_setup()) {
 -		edac_sysfs_memctrl_teardown();
--		edac_printk(KERN_ERR, EDAC_MC,
--			"EDAC PCI: Error initializing sysfs code\n");
+ 		edac_printk(KERN_ERR, EDAC_MC,
+ 			"PCI: Error initializing sysfs code\n");
 -		return -ENODEV;
--	}
--
--	/* create our kernel thread */
--	edac_thread = kthread_run(edac_kernel_thread, NULL, "kedac");
--
--	if (IS_ERR(edac_thread)) {
++		err = -ENODEV;
++		goto error_mem;
++	}
++
++	/* Setup/Initialize the edac_device system */
++	err = edac_workqueue_setup();
++	if (err) {
++		edac_printk(KERN_ERR, EDAC_MC, "init WorkQueue failure\n");
++		goto error_pci;
+ 	}
+ 
+ 	/* create our kernel thread */
+ 	edac_thread = kthread_run(edac_kernel_thread, NULL, "kedac");
+ 
+ 	if (IS_ERR(edac_thread)) {
 -		/* remove the sysfs entries */
 -		edac_sysfs_memctrl_teardown();
 -		edac_sysfs_pci_teardown();
 -		return PTR_ERR(edac_thread);
--	}
--
--	return 0;
--}
--
--/*
-- * edac_mc_exit()
-- *      module exit/termination functioni
-- */
--static void __exit edac_mc_exit(void)
--{
--	debugf0("%s()\n", __func__);
--	kthread_stop(edac_thread);
--
--	/* tear down the sysfs device */
--	edac_sysfs_memctrl_teardown();
--	edac_sysfs_pci_teardown();
--}
--
--module_init(edac_mc_init);
--module_exit(edac_mc_exit);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Linux Networx (http://lnxi.com) Thayne Harbaugh et
-al\n"
--	"Based on work by Dan Hollis et al");
--MODULE_DESCRIPTION("Core library routines for MC reporting");
--
--module_param(panic_on_ue, int, 0644);
--MODULE_PARM_DESC(panic_on_ue, "Panic on uncorrected error: 0=off
-1=on");
--#ifdef CONFIG_PCI
--module_param(check_pci_parity, int, 0644);
--MODULE_PARM_DESC(check_pci_parity, "Check for PCI bus parity errors:
-0=off 1=on");
--module_param(panic_on_pci_parity, int, 0644);
--MODULE_PARM_DESC(panic_on_pci_parity, "Panic on PCI Bus Parity error:
-0=off 1=on");
--#endif
--module_param(log_ue, int, 0644);
--MODULE_PARM_DESC(log_ue, "Log uncorrectable error to console: 0=off
-1=on");
--module_param(log_ce, int, 0644);
--MODULE_PARM_DESC(log_ce, "Log correctable error to console: 0=off
-1=on");
--module_param(poll_msec, int, 0644);
--MODULE_PARM_DESC(poll_msec, "Polling period in milliseconds");
--#ifdef CONFIG_EDAC_DEBUG
--module_param(edac_debug_level, int, 0644);
--MODULE_PARM_DESC(edac_debug_level, "Debug level");
--#endif
-Index: linux-2.6.22-rc3-mm1/drivers/edac/edac_module.c
-===================================================================
---- /dev/null
-+++ linux-2.6.22-rc3-mm1/drivers/edac/edac_module.c
-@@ -0,0 +1,130 @@
-+
-+#include <linux/freezer.h>
-+#include <linux/kthread.h>
-+
-+#include "edac_mc.h"
-+#include "edac_module.h"
-+
-+#define EDAC_MC_VERSION "Ver: 2.0.3" __DATE__
-+
-+#ifdef CONFIG_EDAC_DEBUG
-+/* Values of 0 to 4 will generate output */
-+int edac_debug_level = 1;
-+EXPORT_SYMBOL_GPL(edac_debug_level);
-+#endif
-+
-+static struct task_struct *edac_thread;
-+
-+/*
-+ * Check MC status every edac_get_poll_msec().
-+ * Check PCI status every edac_get_poll_msec() as well.
-+ *
-+ * This where the work gets done for edac.
-+ *
-+ * SMP safe, doesn't use NMI, and auto-rate-limits.
-+ */
-+static void do_edac_check(void)
-+{
-+	debugf3("%s()\n", __func__);
-+
-+	/* perform the poll activities */
-+	edac_check_mc_devices();
-+	edac_pci_do_parity_check();
-+}
-+
-+/*
-+ * Action thread for EDAC to perform the POLL operations
-+ */
-+static int edac_kernel_thread(void *arg)
-+{
-+	int msec;
-+
-+	while (!kthread_should_stop()) {
-+
-+		do_edac_check();
-+
-+		/* goto sleep for the interval */
-+		msec = (HZ * edac_get_poll_msec()) / 1000;
-+		schedule_timeout_interruptible(msec);
-+		try_to_freeze();
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * edac_init
-+ *      module initialization entry point
-+ */
-+static int __init edac_init(void)
-+{
-+	edac_printk(KERN_INFO, EDAC_MC, EDAC_MC_VERSION "\n");
-+
-+	/*
-+	 * Harvest and clear any boot/initialization PCI parity errors
-+	 *
-+	 * FIXME: This only clears errors logged by devices present at time
-of
-+	 * 	module initialization.  We should also do an initial clear
-+	 *	of each newly hotplugged device.
-+	 */
-+	edac_pci_clear_parity_errors();
-+
-+	/* Create the MC sysfs entries */
-+	if (edac_sysfs_memctrl_setup()) {
-+		edac_printk(KERN_ERR, EDAC_MC,
-+			"Error initializing sysfs code\n");
-+		return -ENODEV;
-+	}
-+
-+	/* Create the PCI parity sysfs entries */
-+	if (edac_sysfs_pci_setup()) {
-+		edac_sysfs_memctrl_teardown();
-+		edac_printk(KERN_ERR, EDAC_MC,
-+			"PCI: Error initializing sysfs code\n");
-+		return -ENODEV;
-+	}
-+
-+	/* create our kernel thread */
-+	edac_thread = kthread_run(edac_kernel_thread, NULL, "kedac");
-+
-+	if (IS_ERR(edac_thread)) {
-+		/* remove the sysfs entries */
-+		edac_sysfs_memctrl_teardown();
-+		edac_sysfs_pci_teardown();
-+		return PTR_ERR(edac_thread);
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * edac_exit()
-+ *      module exit/termination function
-+ */
-+static void __exit edac_exit(void)
-+{
-+	debugf0("%s()\n", __func__);
-+	kthread_stop(edac_thread);
-+
-+	/* tear down the sysfs device */
-+	edac_sysfs_memctrl_teardown();
-+	edac_sysfs_pci_teardown();
-+}
-+
-+/*
-+ * Inform the kernel of our entry and exit points
-+ */
-+module_init(edac_init);
-+module_exit(edac_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Doug Thompson www.softwarebitmaker.com, et al");
-+MODULE_DESCRIPTION("Core library routines for EDAC reporting");
-+
-+/* refer to *_sysfs.c files for parameters that are exported via sysfs
-*/
-+
-+#ifdef CONFIG_EDAC_DEBUG
-+module_param(edac_debug_level, int, 0644);
-+MODULE_PARM_DESC(edac_debug_level, "Debug level");
-+#endif
-+
-Index: linux-2.6.22-rc3-mm1/drivers/edac/edac_module.h
-===================================================================
---- /dev/null
-+++ linux-2.6.22-rc3-mm1/drivers/edac/edac_module.h
-@@ -0,0 +1,55 @@
-+
-+/*
-+ * edac_module.h
-+ *
-+ * For defining functions/data for within the EDAC_CORE module only
-+ *
-+ * written by doug thompson <norsk5@xmission.h>
-+ */
-+
-+#ifndef	__EDAC_MODULE_H__
-+#define	__EDAC_MODULE_H__
-+
-+#include <linux/sysdev.h>
-+
-+#include "edac_core.h"
-+
-+/*
-+ * INTERNAL EDAC MODULE:
-+ * EDAC memory controller sysfs create/remove functions
-+ * and setup/teardown functions
-+ */
-+extern int edac_create_sysfs_mci_device(struct mem_ctl_info *mci);
-+extern void edac_remove_sysfs_mci_device(struct mem_ctl_info *mci);
-+extern int edac_sysfs_memctrl_setup(void);
-+extern void edac_sysfs_memctrl_teardown(void);
-+extern void edac_check_mc_devices(void);
-+extern int edac_get_log_ue(void);
-+extern int edac_get_log_ce(void);
-+extern int edac_get_panic_on_ue(void);
-+extern int edac_get_poll_msec(void);
-+
-+extern int edac_device_create_sysfs(struct edac_device_ctl_info
-*edac_dev);
-+extern void edac_device_remove_sysfs(struct edac_device_ctl_info
-*edac_dev);
-+extern struct sysdev_class *edac_get_edac_class(void);
-+
-+
-+/*
-+ * EDAC PCI functions
-+ */
-+#ifdef	CONFIG_PCI
-+extern void edac_pci_do_parity_check(void);
-+extern void edac_pci_clear_parity_errors(void);
-+extern int edac_sysfs_pci_setup(void);
-+extern void edac_sysfs_pci_teardown(void);
-+#else   /* CONFIG_PCI */
-+/* pre-process these away */
-+#define edac_pci_do_parity_check()
-+#define edac_pci_clear_parity_errors()
-+#define edac_sysfs_pci_setup()  (0)
-+#define edac_sysfs_pci_teardown()
-+#endif  /* CONFIG_PCI */
-+
-+
-+#endif	/* __EDAC_MODULE_H__ */
-+
-Index: linux-2.6.22-rc3-mm1/drivers/edac/edac_mc.h
-===================================================================
---- linux-2.6.22-rc3-mm1.orig/drivers/edac/edac_mc.h
-+++ linux-2.6.22-rc3-mm1/drivers/edac/edac_mc.h
-@@ -1,476 +1,9 @@
--/*
-- * MC kernel module
-- * (C) 2003 Linux Networx (http://lnxi.com)
-- * This file may be distributed under the terms of the
-- * GNU General Public License.
-- *
-- * Written by Thayne Harbaugh
-- * Based on work by Dan Hollis <goemon at anime dot net> and others.
-- *	http://www.anime.net/~goemon/linux-ecc/
-- *
-- * NMI handling support added by
-- *     Dave Peterson <dsp@llnl.gov> <dave_peterson@pobox.com>
-- *
-- * $Id: edac_mc.h,v 1.4.2.10 2005/10/05 00:43:44 dsp_llnl Exp $
-- *
-- */
--
--#ifndef _EDAC_MC_H_
--#define _EDAC_MC_H_
--
--#include <linux/kernel.h>
--#include <linux/types.h>
--#include <linux/module.h>
--#include <linux/spinlock.h>
--#include <linux/smp.h>
--#include <linux/pci.h>
--#include <linux/time.h>
--#include <linux/nmi.h>
--#include <linux/rcupdate.h>
--#include <linux/completion.h>
--#include <linux/kobject.h>
--#include <linux/platform_device.h>
--
--#define EDAC_MC_LABEL_LEN	31
--#define MC_PROC_NAME_MAX_LEN 7
--
--#if PAGE_SHIFT < 20
--#define PAGES_TO_MiB( pages )	( ( pages ) >> ( 20 - PAGE_SHIFT ) )
--#else				/* PAGE_SHIFT > 20 */
--#define PAGES_TO_MiB( pages )	( ( pages ) << ( PAGE_SHIFT - 20 ) )
--#endif
--
--#define edac_printk(level, prefix, fmt, arg...) \
--	printk(level "EDAC " prefix ": " fmt, ##arg)
--
--#define edac_mc_printk(mci, level, fmt, arg...) \
--	printk(level "EDAC MC%d: " fmt, mci->mc_idx, ##arg)
--
--#define edac_mc_chipset_printk(mci, level, prefix, fmt, arg...) \
--	printk(level "EDAC " prefix " MC%d: " fmt, mci->mc_idx, ##arg)
--
--/* prefixes for edac_printk() and edac_mc_printk() */
--#define EDAC_MC "MC"
--#define EDAC_PCI "PCI"
--#define EDAC_DEBUG "DEBUG"
--
--#ifdef CONFIG_EDAC_DEBUG
--extern int edac_debug_level;
--
--#define edac_debug_printk(level, fmt, arg...)                         
-  \
--	do {                                                             \
--		if (level <= edac_debug_level)                           \
--			edac_printk(KERN_DEBUG, EDAC_DEBUG, fmt, ##arg); \
--	} while(0)
--
--#define debugf0( ... ) edac_debug_printk(0, __VA_ARGS__ )
--#define debugf1( ... ) edac_debug_printk(1, __VA_ARGS__ )
--#define debugf2( ... ) edac_debug_printk(2, __VA_ARGS__ )
--#define debugf3( ... ) edac_debug_printk(3, __VA_ARGS__ )
--#define debugf4( ... ) edac_debug_printk(4, __VA_ARGS__ )
--
--#else  /* !CONFIG_EDAC_DEBUG */
--
--#define debugf0( ... )
--#define debugf1( ... )
--#define debugf2( ... )
--#define debugf3( ... )
--#define debugf4( ... )
--
--#endif  /* !CONFIG_EDAC_DEBUG */
++		err = PTR_ERR(edac_thread);
++		goto error_work;
+ 	}
  
--#define BIT(x) (1 << (x))
--
--#define PCI_VEND_DEV(vend, dev) PCI_VENDOR_ID_ ## vend, \
--	PCI_DEVICE_ID_ ## vend ## _ ## dev
--
--#if defined(CONFIG_X86) && defined(CONFIG_PCI)
--#define dev_name(dev) pci_name(to_pci_dev(dev))
--#else
--#define dev_name(dev) to_platform_device(dev)->name
--#endif
--
--/* memory devices */
--enum dev_type {
--	DEV_UNKNOWN = 0,
--	DEV_X1,
--	DEV_X2,
--	DEV_X4,
--	DEV_X8,
--	DEV_X16,
--	DEV_X32,		/* Do these parts exist? */
--	DEV_X64			/* Do these parts exist? */
--};
--
--#define DEV_FLAG_UNKNOWN	BIT(DEV_UNKNOWN)
--#define DEV_FLAG_X1		BIT(DEV_X1)
--#define DEV_FLAG_X2		BIT(DEV_X2)
--#define DEV_FLAG_X4		BIT(DEV_X4)
--#define DEV_FLAG_X8		BIT(DEV_X8)
--#define DEV_FLAG_X16		BIT(DEV_X16)
--#define DEV_FLAG_X32		BIT(DEV_X32)
--#define DEV_FLAG_X64		BIT(DEV_X64)
--
--/* memory types */
--enum mem_type {
--	MEM_EMPTY = 0,		/* Empty csrow */
--	MEM_RESERVED,		/* Reserved csrow type */
--	MEM_UNKNOWN,		/* Unknown csrow type */
--	MEM_FPM,		/* Fast page mode */
--	MEM_EDO,		/* Extended data out */
--	MEM_BEDO,		/* Burst Extended data out */
--	MEM_SDR,		/* Single data rate SDRAM */
--	MEM_RDR,		/* Registered single data rate SDRAM */
--	MEM_DDR,		/* Double data rate SDRAM */
--	MEM_RDDR,		/* Registered Double data rate SDRAM */
--	MEM_RMBS,		/* Rambus DRAM */
--	MEM_DDR2,               /* DDR2 RAM */
--	MEM_FB_DDR2,            /* fully buffered DDR2 */
--	MEM_RDDR2,              /* Registered DDR2 RAM */
--};
--
--#define MEM_FLAG_EMPTY		BIT(MEM_EMPTY)
--#define MEM_FLAG_RESERVED	BIT(MEM_RESERVED)
--#define MEM_FLAG_UNKNOWN	BIT(MEM_UNKNOWN)
--#define MEM_FLAG_FPM		BIT(MEM_FPM)
--#define MEM_FLAG_EDO		BIT(MEM_EDO)
--#define MEM_FLAG_BEDO		BIT(MEM_BEDO)
--#define MEM_FLAG_SDR		BIT(MEM_SDR)
--#define MEM_FLAG_RDR		BIT(MEM_RDR)
--#define MEM_FLAG_DDR		BIT(MEM_DDR)
--#define MEM_FLAG_RDDR		BIT(MEM_RDDR)
--#define MEM_FLAG_RMBS		BIT(MEM_RMBS)
--#define MEM_FLAG_DDR2           BIT(MEM_DDR2)
--#define MEM_FLAG_FB_DDR2        BIT(MEM_FB_DDR2)
--#define MEM_FLAG_RDDR2          BIT(MEM_RDDR2)
--
--/* chipset Error Detection and Correction capabilities and mode */
--enum edac_type {
--	EDAC_UNKNOWN = 0,	/* Unknown if ECC is available */
--	EDAC_NONE,		/* Doesnt support ECC */
--	EDAC_RESERVED,		/* Reserved ECC type */
--	EDAC_PARITY,		/* Detects parity errors */
--	EDAC_EC,		/* Error Checking - no correction */
--	EDAC_SECDED,		/* Single bit error correction, Double detection */
--	EDAC_S2ECD2ED,		/* Chipkill x2 devices - do these exist? */
--	EDAC_S4ECD4ED,		/* Chipkill x4 devices */
--	EDAC_S8ECD8ED,		/* Chipkill x8 devices */
--	EDAC_S16ECD16ED,	/* Chipkill x16 devices */
--};
--
--#define EDAC_FLAG_UNKNOWN	BIT(EDAC_UNKNOWN)
--#define EDAC_FLAG_NONE		BIT(EDAC_NONE)
--#define EDAC_FLAG_PARITY	BIT(EDAC_PARITY)
--#define EDAC_FLAG_EC		BIT(EDAC_EC)
--#define EDAC_FLAG_SECDED	BIT(EDAC_SECDED)
--#define EDAC_FLAG_S2ECD2ED	BIT(EDAC_S2ECD2ED)
--#define EDAC_FLAG_S4ECD4ED	BIT(EDAC_S4ECD4ED)
--#define EDAC_FLAG_S8ECD8ED	BIT(EDAC_S8ECD8ED)
--#define EDAC_FLAG_S16ECD16ED	BIT(EDAC_S16ECD16ED)
--
--/* scrubbing capabilities */
--enum scrub_type {
--	SCRUB_UNKNOWN = 0,	/* Unknown if scrubber is available */
--	SCRUB_NONE,		/* No scrubber */
--	SCRUB_SW_PROG,		/* SW progressive (sequential) scrubbing */
--	SCRUB_SW_SRC,		/* Software scrub only errors */
--	SCRUB_SW_PROG_SRC,	/* Progressive software scrub from an error */
--	SCRUB_SW_TUNABLE,	/* Software scrub frequency is tunable */
--	SCRUB_HW_PROG,		/* HW progressive (sequential) scrubbing */
--	SCRUB_HW_SRC,		/* Hardware scrub only errors */
--	SCRUB_HW_PROG_SRC,	/* Progressive hardware scrub from an error */
--	SCRUB_HW_TUNABLE	/* Hardware scrub frequency is tunable */
--};
--
--#define SCRUB_FLAG_SW_PROG	BIT(SCRUB_SW_PROG)
--#define SCRUB_FLAG_SW_SRC	BIT(SCRUB_SW_SRC_CORR)
--#define SCRUB_FLAG_SW_PROG_SRC	BIT(SCRUB_SW_PROG_SRC_CORR)
--#define SCRUB_FLAG_SW_TUN	BIT(SCRUB_SW_SCRUB_TUNABLE)
--#define SCRUB_FLAG_HW_PROG	BIT(SCRUB_HW_PROG)
--#define SCRUB_FLAG_HW_SRC	BIT(SCRUB_HW_SRC_CORR)
--#define SCRUB_FLAG_HW_PROG_SRC	BIT(SCRUB_HW_PROG_SRC_CORR)
--#define SCRUB_FLAG_HW_TUN	BIT(SCRUB_HW_TUNABLE)
--
--/* FIXME - should have notify capabilities: NMI, LOG, PROC, etc */
+ 	return 0;
++
++	/* Error teardown stack */
++error_work:
++	edac_workqueue_teardown();
++error_pci:
++	edac_sysfs_pci_teardown();
++error_mem:
++	edac_sysfs_memctrl_teardown();
++error_sysfs:
++	edac_unregister_sysfs_edac_name();
++error:
++	return err;
+ }
  
  /*
-- * There are several things to be aware of that aren't at all obvious:
-- *
-- *
-- * SOCKETS, SOCKET SETS, BANKS, ROWS, CHIP-SELECT ROWS, CHANNELS,
-etc..
-- *
-- * These are some of the many terms that are thrown about that don't
-always
-- * mean what people think they mean (Inconceivable!).  In the interest
-of
-- * creating a common ground for discussion, terms and their
-definitions
-- * will be established.
-- *
-- * Memory devices:	The individual chip on a memory stick.  These
-devices
-- *			commonly output 4 and 8 bits each.  Grouping several
-- *			of these in parallel provides 64 bits which is common
-- *			for a memory stick.
-- *
-- * Memory Stick:	A printed circuit board that agregates multiple
-- *			memory devices in parallel.  This is the atomic
-- *			memory component that is purchaseable by Joe consumer
-- *			and loaded into a memory socket.
-- *
-- * Socket:		A physical connector on the motherboard that accepts
-- *			a single memory stick.
-- *
-- * Channel:		Set of memory devices on a memory stick that must be
-- *			grouped in parallel with one or more additional
-- *			channels from other memory sticks.  This parallel
-- *			grouping of the output from multiple channels are
-- *			necessary for the smallest granularity of memory access.
-- *			Some memory controllers are capable of single channel -
-- *			which means that memory sticks can be loaded
-- *			individually.  Other memory controllers are only
-- *			capable of dual channel - which means that memory
-- *			sticks must be loaded as pairs (see "socket set").
-- *
-- * Chip-select row:	All of the memory devices that are selected
-together.
-- *			for a single, minimum grain of memory access.
-- *			This selects all of the parallel memory devices across
-- *			all of the parallel channels.  Common chip-select rows
-- *			for single channel are 64 bits, for dual channel 128
-- *			bits.
-- *
-- * Single-Ranked stick:	A Single-ranked stick has 1 chip-select row of
-memmory.
-- *			Motherboards commonly drive two chip-select pins to
-- *			a memory stick. A single-ranked stick, will occupy
-- *			only one of those rows. The other will be unused.
-+ * Older .h file for edac, until all drivers are modified
-  *
-- * Double-Ranked stick:	A double-ranked stick has two chip-select rows
-which
-- *			access different sets of memory devices.  The two
-- *			rows cannot be accessed concurrently.
-- *
-- * Double-sided stick:	DEPRECATED TERM, see Double-Ranked stick.
-- *			A double-sided stick has two chip-select rows which
-- *			access different sets of memory devices.  The two
-- *			rows cannot be accessed concurrently.  "Double-sided"
-- *			is irrespective of the memory devices being mounted
-- *			on both sides of the memory stick.
-- *
-- * Socket set:		All of the memory sticks that are required for for
-- *			a single memory access or all of the memory sticks
-- *			spanned by a chip-select row.  A single socket set
-- *			has two chip-select rows and if double-sided sticks
-- *			are used these will occupy those chip-select rows.
-- *
-- * Bank:		This term is avoided because it is unclear when
-- *			needing to distinguish between chip-select rows and
-- *			socket sets.
-- *
-- * Controller pages:
-- *
-- * Physical pages:
-- *
-- * Virtual pages:
-- *
-- *
-- * STRUCTURE ORGANIZATION AND CHOICES
-- *
-- *
-- *
-- * PS - I enjoyed writing all that about as much as you enjoyed
-reading it.
-- */
--
--struct channel_info {
--	int chan_idx;		/* channel index */
--	u32 ce_count;		/* Correctable Errors for this CHANNEL */
--	char label[EDAC_MC_LABEL_LEN + 1];  /* DIMM label on motherboard */
--	struct csrow_info *csrow;	/* the parent */
--};
--
--struct csrow_info {
--	unsigned long first_page;	/* first page number in dimm */
--	unsigned long last_page;	/* last page number in dimm */
--	unsigned long page_mask;	/* used for interleaving -
--					 * 0UL for non intlv
--					 */
--	u32 nr_pages;		/* number of pages in csrow */
--	u32 grain;		/* granularity of reported error in bytes */
--	int csrow_idx;		/* the chip-select row */
--	enum dev_type dtype;	/* memory device type */
--	u32 ue_count;		/* Uncorrectable Errors for this csrow */
--	u32 ce_count;		/* Correctable Errors for this csrow */
--	enum mem_type mtype;	/* memory csrow type */
--	enum edac_type edac_mode;	/* EDAC mode for this csrow */
--	struct mem_ctl_info *mci;	/* the parent */
--
--	struct kobject kobj;	/* sysfs kobject for this csrow */
--	struct completion kobj_complete;
--
--	/* FIXME the number of CHANNELs might need to become dynamic */
--	u32 nr_channels;
--	struct channel_info *channels;
--};
--
--struct mem_ctl_info {
--	struct list_head link;  /* for global list of mem_ctl_info structs */
--	unsigned long mtype_cap;	/* memory types supported by mc */
--	unsigned long edac_ctl_cap;	/* Mem controller EDAC capabilities */
--	unsigned long edac_cap;	/* configuration capabilities - this is
--				 * closely related to edac_ctl_cap.  The
--				 * difference is that the controller may be
--				 * capable of s4ecd4ed which would be listed
--				 * in edac_ctl_cap, but if channels aren't
--				 * capable of s4ecd4ed then the edac_cap would
--				 * not have that capability.
--				 */
--	unsigned long scrub_cap;	/* chipset scrub capabilities */
--	enum scrub_type scrub_mode;	/* current scrub mode */
--
--	/* Translates sdram memory scrub rate given in bytes/sec to the
--	   internal representation and configures whatever else needs
--	   to be configured.
--	*/
--	int (*set_sdram_scrub_rate) (struct mem_ctl_info *mci, u32 *bw);
--
--	/* Get the current sdram memory scrub rate from the internal
--	   representation and converts it to the closest matching
--	   bandwith in bytes/sec.
--	*/
--	int (*get_sdram_scrub_rate) (struct mem_ctl_info *mci, u32 *bw);
--
--	/* pointer to edac checking routine */
--	void (*edac_check) (struct mem_ctl_info * mci);
--
--	/*
--	 * Remaps memory pages: controller pages to physical pages.
--	 * For most MC's, this will be NULL.
--	 */
--	/* FIXME - why not send the phys page to begin with? */
--	unsigned long (*ctl_page_to_phys) (struct mem_ctl_info * mci,
--					unsigned long page);
--	int mc_idx;
--	int nr_csrows;
--	struct csrow_info *csrows;
--	/*
--	 * FIXME - what about controllers on other busses? - IDs must be
--	 * unique.  dev pointer should be sufficiently unique, but
--	 * BUS:SLOT.FUNC numbers may not be unique.
--	 */
--	struct device *dev;
--	const char *mod_name;
--	const char *mod_ver;
--	const char *ctl_name;
--	char proc_name[MC_PROC_NAME_MAX_LEN + 1];
--	void *pvt_info;
--	u32 ue_noinfo_count;	/* Uncorrectable Errors w/o info */
--	u32 ce_noinfo_count;	/* Correctable Errors w/o info */
--	u32 ue_count;		/* Total Uncorrectable Errors for this MC */
--	u32 ce_count;		/* Total Correctable Errors for this MC */
--	unsigned long start_time;	/* mci load start time (in jiffies) */
--
--	/* this stuff is for safe removal of mc devices from global list
-while
--	 * NMI handlers may be traversing list
--	 */
--	struct rcu_head rcu;
--	struct completion complete;
--
--	/* edac sysfs device control */
--	struct kobject edac_mci_kobj;
--	struct completion kobj_complete;
--};
--
--#ifdef CONFIG_PCI
--
--/* write all or some bits in a byte-register*/
--static inline void pci_write_bits8(struct pci_dev *pdev, int offset,
-u8 value,
--		u8 mask)
--{
--	if (mask != 0xff) {
--		u8 buf;
--
--		pci_read_config_byte(pdev, offset, &buf);
--		value &= mask;
--		buf &= ~mask;
--		value |= buf;
--	}
--
--	pci_write_config_byte(pdev, offset, value);
--}
--
--/* write all or some bits in a word-register*/
--static inline void pci_write_bits16(struct pci_dev *pdev, int offset,
--		u16 value, u16 mask)
--{
--	if (mask != 0xffff) {
--		u16 buf;
--
--		pci_read_config_word(pdev, offset, &buf);
--		value &= mask;
--		buf &= ~mask;
--		value |= buf;
--	}
--
--	pci_write_config_word(pdev, offset, value);
--}
--
--/* write all or some bits in a dword-register*/
--static inline void pci_write_bits32(struct pci_dev *pdev, int offset,
--		u32 value, u32 mask)
--{
--	if (mask != 0xffff) {
--		u32 buf;
--
--		pci_read_config_dword(pdev, offset, &buf);
--		value &= mask;
--		buf &= ~mask;
--		value |= buf;
--	}
--
--	pci_write_config_dword(pdev, offset, value);
--}
--
--#endif /* CONFIG_PCI */
--
--extern struct mem_ctl_info * edac_mc_find(int idx);
--extern int edac_mc_add_mc(struct mem_ctl_info *mci,int mc_idx);
--extern struct mem_ctl_info * edac_mc_del_mc(struct device *dev);
--extern int edac_mc_find_csrow_by_page(struct mem_ctl_info *mci,
--					unsigned long page);
--
--/*
-- * The no info errors are used when error overflows are reported.
-- * There are a limited number of error logging registers that can
-- * be exausted.  When all registers are exhausted and an additional
-- * error occurs then an error overflow register records that an
-- * error occured and the type of error, but doesn't have any
-- * further information.  The ce/ue versions make for cleaner
-- * reporting logic and function interface - reduces conditional
-- * statement clutter and extra function arguments.
-- */
--extern void edac_mc_handle_ce(struct mem_ctl_info *mci,
--		unsigned long page_frame_number, unsigned long offset_in_page,
--		unsigned long syndrome, int row, int channel,
--		const char *msg);
--extern void edac_mc_handle_ce_no_info(struct mem_ctl_info *mci,
--		const char *msg);
--extern void edac_mc_handle_ue(struct mem_ctl_info *mci,
--		unsigned long page_frame_number, unsigned long offset_in_page,
--		int row, const char *msg);
--extern void edac_mc_handle_ue_no_info(struct mem_ctl_info *mci,
--		const char *msg);
--extern void edac_mc_handle_fbd_ue(struct mem_ctl_info *mci,
--		unsigned int csrow,
--		unsigned int channel0,
--		unsigned int channel1,
--		char *msg);
--extern void edac_mc_handle_fbd_ce(struct mem_ctl_info *mci,
--		unsigned int csrow,
--		unsigned int channel,
--		char *msg);
--
--/*
-- * This kmalloc's and initializes all the structures.
-- * Can't be used if all structures don't have the same lifetime.
-  */
--extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned
-nr_csrows,
--		unsigned nr_chans);
+@@ -106,9 +233,11 @@ static void __exit edac_exit(void)
+ 	debugf0("%s()\n", __func__);
+ 	kthread_stop(edac_thread);
  
--/* Free an mc previously allocated by edac_mc_alloc() */
--extern void edac_mc_free(struct mem_ctl_info *mci);
-+#include "edac_core.h"
+-	/* tear down the sysfs device */
++	/* tear down the various subsystems*/
++	edac_workqueue_teardown();
+ 	edac_sysfs_memctrl_teardown();
+ 	edac_sysfs_pci_teardown();
++	edac_unregister_sysfs_edac_name();
+ }
  
--#endif				/* _EDAC_MC_H_ */
+ /*
+Index: linux-2.6.22-rc1/drivers/edac/edac_module.h
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/edac/edac_module.h
++++ linux-2.6.22-rc1/drivers/edac/edac_module.h
+@@ -33,6 +33,15 @@ extern int edac_device_create_sysfs(stru
+ extern void edac_device_remove_sysfs(struct edac_device_ctl_info
+*edac_dev);
+ extern struct sysdev_class *edac_get_edac_class(void);
+ 
++/* edac core workqueue: single CPU mode */
++extern struct workqueue_struct *edac_workqueue;
++extern void edac_workq_setup(struct edac_device_ctl_info *edac_dev,
++				unsigned msec);
++extern void edac_workq_teardown(struct edac_device_ctl_info
+*edac_dev);
++extern void edac_device_reset_delay_period(
++			struct edac_device_ctl_info *edac_dev,
++			unsigned long value);
++
+ 
+ /*
+  * EDAC PCI functions
 
