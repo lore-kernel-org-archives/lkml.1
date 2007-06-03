@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbXFCRUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbXFCRX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757014AbXFCRUf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 13:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbXFCRU2
+	id S1756692AbXFCRX6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 13:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXFCRXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 13:20:28 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:58703 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752013AbXFCRU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 13:20:27 -0400
-Date: Sun, 3 Jun 2007 19:18:48 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andrew Beverley <andy@andybev.com>
-cc: Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Netfilter Mailing List <netfilter@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] xt_connlimit (kernel) - connection limiting
-In-Reply-To: <1180890022.6601.6.camel@andybev>
-Message-ID: <Pine.LNX.4.61.0706031914120.10578@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0706031248290.10578@yvahk01.tjqt.qr> 
- <Pine.LNX.4.61.0706031312450.10578@yvahk01.tjqt.qr> <1180890022.6601.6.camel@andybev>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Sun, 3 Jun 2007 13:23:51 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:44414 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752653AbXFCRXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 13:23:50 -0400
+Date: Sun, 3 Jun 2007 13:15:34 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH] syslets demo - fix malloc failure check
+Message-ID: <20070603171534.GA30116@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix the stack malloc failure check.
 
-On Jun 3 2007 18:00, Andrew Beverley wrote:
->On Sun, 2007-06-03 at 13:12 +0200, Jan Engelhardt wrote:
->> Adds the connlimit match that has been in POM-NG for a long time.
->> 
->>     *	works with 2.6.22, xtables'ified and all that
->> 
->>     *	will request nf_conntrack_ipv4 upon load
->> 	(otherwise it hotdrops every packet - a glitch that goes back
->> 	to at least 2.6.20.2)
->
->Excellent! This has been at the back of my mind for a while.
->
->Is there any chance of getting UDP flows added as well as TCP
->connections?
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ syslets/async-test-v5/sys.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-I dare to say it's easy. The real problem is rather, that UDP is
-connectionless, so for one, connlimit can, by definition of the word
-'connectionless', not apply to UDP, though it is technically
-possible. Second, because UDP "connections" "fly" (timeout after 30
-seconds), just spewing one UDP packet out may kill another connection
-(e.g. if you use connlimit in conjunction with DROP or REJECT).
-What's more, UDP packets can be easily forged, much more than TCP, so
-anyone on the same subtree (not subnet, because that's something
-different) can send a bogus UDP packet and stop your connections from
-working.
-Let's see how to implement UDP counting...
-
-
-	Jan
--- 
+Index: linux-2.6/syslets/async-test-v5/sys.h
+===================================================================
+--- linux-2.6.orig/syslets/async-test-v5/sys.h	2007-05-31 13:29:57.000000000 -0400
++++ linux-2.6/syslets/async-test-v5/sys.h	2007-06-03 13:12:43.000000000 -0400
+@@ -108,9 +108,10 @@ static u64 completion_ring[MAX_PENDING];
+ 
+ static unsigned long thread_stack_alloc()
+ {
+-	void *stack = malloc(THREAD_STACK_SIZE) + THREAD_STACK_SIZE;
++	void *stack = malloc(THREAD_STACK_SIZE);
+ 	assert(stack != NULL);
+ 
++	stack += THREAD_STACK_SIZE;
+ 	pr("allocated stack: %p\n", stack);
+ 
+ 	return (unsigned long)stack;
