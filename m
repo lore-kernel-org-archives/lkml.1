@@ -1,99 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbXFCQ12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbXFCQcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbXFCQ12 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 12:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbXFCQ1S
+	id S1755007AbXFCQcP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 12:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXFCQcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 12:27:18 -0400
-Received: from daemonizer.de ([87.230.16.230]:53807 "EHLO daemonizer.de"
+	Sun, 3 Jun 2007 12:32:01 -0400
+Received: from waste.org ([66.93.16.53]:54545 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751690AbXFCQ1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 12:27:16 -0400
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: b44: regression in 2.6.22 (resend)
-Date: Sun, 3 Jun 2007 18:26:02 +0200
-User-Agent: KMail/1.9.7
-Cc: Michael Buesch <mb@bu3sch.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20070525172431.60affaca@freepuppy> <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
-In-Reply-To: <1180380230.3657.3.camel@chaos>
+	id S1751819AbXFCQcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 12:32:00 -0400
+Date: Sun, 3 Jun 2007 11:27:31 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: Conditionals for development tests and output
+Message-ID: <20070603162730.GQ11166@waste.org>
+References: <Pine.LNX.4.64.0706012113200.11472@schroedinger.engr.sgi.com> <20070602144348.GD5500@stusta.de> <20070602104821.d2d8d668.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2176219.MicN8hRCvA";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706031826.06891.maxi@daemonizer.de>
-X-Spam-Score: -4.2 (----)
-X-Spam-Report: No, hits=-4.2 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.2 AWL AWL: From: address is in the auto white-list
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070602104821.d2d8d668.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2176219.MicN8hRCvA
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, Jun 02, 2007 at 10:48:21AM -0700, Andrew Morton wrote:
+> On Sat, 2 Jun 2007 16:43:48 +0200 Adrian Bunk <bunk@stusta.de> wrote:
+> 
+> > And your approach could easily result in code paths never tested in 
+> > -mm or -rc kernels exploding in the actual release.
+> 
+> yep, we need to ensure that DEVELKERNEL gets turned off a few weeks
+> before final release.
 
-On Monday 28 May 2007, Thomas Gleixner wrote:
-> On Mon, 2007-05-28 at 19:44 +0200, Maximilian Engelhardt wrote:
-> > > Can you please keep CONFIG_HIGH_RES_TIMERS and CONFIG_NOHZ and try the
-> > > following combinations on the kernel command line:
-> > >
-> > > 1) highres=3Doff nohz=3Doff (should be the same as your working confi=
-g)
-> > > 2) highres=3Doff
-> > > 3) nohz=3Doff
-> >
-> > I tested this with my 2.6.22-rc3 kernel, here are the results:
-> >
-> > without any special boot parameters: problem does appear
-> > highres=3Doff nohz=3Doff: problem does not appear
-> > highres=3Doff: problem does not appear
-> > nohz=3Doff: problem does appear
->
-> Is there any other strange behavior of the high res enabled kernel than
-> the b44 problem ?
+I'm not very keen on this whole idea. It's a fairly well-known
+phenomenon that behavior can change for the worse when you turn off
+debug flags for a variety of reasons. So instituting a monoculture
+where -everyone- has a global debug flag on then turns it off is a little
+worrisome.
 
-I didn't notice anything in the past (as I wrote). But today I did some tes=
-ts=20
-for an updated version of the p54 mac80211 wlan driver and I noticed exactl=
-y=20
-the same problem:
+When we're talking about a single warning, it's probably not a big
+deal, but once we expand the usage to cover a dozen or a hundred
+things, the odds that we'll hide a race or side-effect somewhere
+increase.
 
-when booting with highres=3Doff everything is fine.
-But when I boot an highres enabled kernel and I do the iperf-test with the =
-p54=20
-driver, my systems becomes unresponsive during the test. It seems to be=20
-exactly the same problem I have with the b44 driver.
-So this might not be a bug in the b44 code but a bug somewhere in the linux=
-=20
-networking code.
-
-I did the test with an 2.6.22-rc3-git4 kernel and the p54 driver built=20
-external as module.=20
-
-Maxi
-
---nextPart2176219.MicN8hRCvA
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGYuueOimwv528XGERAqZNAJ9jz78DPqrgzhMYyeFI7FAKmsx96QCfULJ3
-CWJqCY3C3RIgMcsYRSgz5Q0=
-=Fr+1
------END PGP SIGNATURE-----
-
---nextPart2176219.MicN8hRCvA--
+-- 
+Mathematics is the supreme nostalgia of our time.
