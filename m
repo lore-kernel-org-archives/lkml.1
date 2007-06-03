@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbXFCWwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbXFCW7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753099AbXFCWwt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 18:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbXFCWwk
+	id S1753061AbXFCW7W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 18:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXFCW7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 18:52:40 -0400
-Received: from lixom.net ([66.141.50.11]:53229 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbXFCWwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 18:52:39 -0400
-Date: Sun, 3 Jun 2007 17:58:40 -0500
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] libata: CONFIG_PM=n compile fix
-Message-ID: <20070603225840.GA25465@lixom.net>
-References: <20070527030954.GA18974@havoc.gtf.org>
+	Sun, 3 Jun 2007 18:59:15 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34413 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751051AbXFCW7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 18:59:14 -0400
+Date: Mon, 4 Jun 2007 00:59:03 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 1/2] PM: Introduce hibernation and suspend notifiers
+Message-ID: <20070603225903.GC2971@elf.ucw.cz>
+References: <200705272229.21263.rjw@sisk.pl> <200706020243.20117.rjw@sisk.pl> <20070603164143.GB4093@ucw.cz> <200706040038.54161.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070527030954.GA18974@havoc.gtf.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: olof@lixom.net (Olof Johansson)
+In-Reply-To: <200706040038.54161.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_PM=n compile fix.
+On Mon 2007-06-04 00:38:53, Rafael J. Wysocki wrote:
+> On Sunday, 3 June 2007 18:41, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Make it possible to register hibernation and suspend notifiers, so that
+> > > subsystems can perform hibernation-related or suspend-related operations that
+> > > should not be carried out by device drivers' .suspend() and .resume() routines.
+> > 
+> > One more question: what will we call in suspend-to-both case? I do not
+> > think we can call SUSPEND_PREPARE with frozen tasks, so just one call
+> > to HIBERNATION_PREPARE?
+> 
+> Yes, right now it should work this way.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
----
-
-Hi,
-
-On Sat, May 26, 2007 at 11:09:54PM -0400, Jeff Garzik wrote:
-
-> This is checked into the 'mv-ahci-pata' branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
-
-Didn't build for me without this change, since I had CONFIG_PM=n.
-
-
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 21df81e..07d5a95 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -1818,6 +1836,14 @@ static void ahci_post_internal_cmd(struct ata_queued_cmd *qc)
- 	}
- }
- 
-+static int ahci_port_resume(struct ata_port *ap)
-+{
-+	ahci_power_up(ap);
-+	ahci_start_port(ap);
-+
-+	return 0;
-+}
-+
- #ifdef CONFIG_PM
- static int ahci_port_suspend(struct ata_port *ap, pm_message_t mesg)
- {
-@@ -1835,14 +1861,6 @@ static int ahci_port_suspend(struct ata_port *ap, pm_message_t mesg)
- 	return rc;
- }
- 
--static int ahci_port_resume(struct ata_port *ap)
--{
--	ahci_power_up(ap);
--	ahci_start_port(ap);
--
--	return 0;
--}
--
- static int ahci_pci_device_suspend(struct pci_dev *pdev, pm_message_t mesg)
- {
- 	struct ata_host *host = dev_get_drvdata(&pdev->dev);
+(Should it be mentioned in docuementation?)
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
