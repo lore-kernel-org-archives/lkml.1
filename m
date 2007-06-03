@@ -1,90 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbXFCScT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751177AbXFCSjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751700AbXFCScT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 14:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXFCScL
+	id S1751177AbXFCSjv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 14:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbXFCSjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 14:32:11 -0400
-Received: from earth.simplelists.com ([81.3.86.41]:2507 "EHLO
-	earth.simplelists.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbXFCScK (ORCPT
+	Sun, 3 Jun 2007 14:39:44 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4501 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750750AbXFCSjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 14:32:10 -0400
-Subject: Re: [PATCH 1/2] xt_connlimit (kernel) - connection limiting
-From: Andrew Beverley <andy@andybev.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Netfilter Mailing List <netfilter@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0706031914120.10578@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0706031248290.10578@yvahk01.tjqt.qr>
-	 <Pine.LNX.4.61.0706031312450.10578@yvahk01.tjqt.qr>
-	 <1180890022.6601.6.camel@andybev>
-	 <Pine.LNX.4.61.0706031914120.10578@yvahk01.tjqt.qr>
-Content-Type: text/plain
-Date: Sun, 03 Jun 2007 19:32:06 +0100
-Message-Id: <1180895526.6601.44.camel@andybev>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Jun 2007 14:39:44 -0400
+Date: Sun, 3 Jun 2007 14:39:41 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] /sys/block -> /sys/class/block  (Fedora 3 & 4 testers
+ wanted)
+Message-ID: <Pine.LNX.4.44L0.0706031416430.1771-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-03 at 19:18 +0200, Jan Engelhardt wrote:
-> On Jun 3 2007 18:00, Andrew Beverley wrote:
-> >On Sun, 2007-06-03 at 13:12 +0200, Jan Engelhardt wrote:
-> >> Adds the connlimit match that has been in POM-NG for a long time.
-> >> 
-> >>     *	works with 2.6.22, xtables'ified and all that
-> >> 
-> >>     *	will request nf_conntrack_ipv4 upon load
-> >> 	(otherwise it hotdrops every packet - a glitch that goes back
-> >> 	to at least 2.6.20.2)
-> >
-> >Excellent! This has been at the back of my mind for a while.
-> >
-> >Is there any chance of getting UDP flows added as well as TCP
-> >connections?
-> 
-> I dare to say it's easy. The real problem is rather, that UDP is
-> connectionless, so for one, connlimit can, by definition of the word
-> 'connectionless', not apply to UDP, though it is technically
-> possible.
+Greg:
 
-Understood.
+A while back you asked whether Kay's block-device patch would work 
+under FC3 or FC4.  I've got an old FC4 system; the normal kernel-update 
+procedure hasn't worked on it for some time.  (I don't remember exactly 
+when it stopped working.)
 
-> Second, because UDP "connections" "fly" (timeout after 30
-> seconds), just spewing one UDP packet out may kill another connection
-> (e.g. if you use connlimit in conjunction with DROP or REJECT).
+Not for any sinister reason.  The underlying problem seems to be that
+the nash script or the nash executable in the initramfs image created
+by RedHat's mkinitrd program in FC4 has a few errors.  In particular,
+the "--movedev" option to the switchroot command doesn't work right.
 
-I see what you mean, although I personally would use this with an IPSET
-target, and I would argue it is the responsibility of the administrator
-to ensure it is used correctly.
+On the other hand, I customized that script for myself last year (only
+a few changes were needed) and have had no problems booting any kernel
+up to and including your current development tree.
 
-> What's more, UDP packets can be easily forged, much more than TCP, so
-> anyone on the same subtree (not subnet, because that's something
-> different) can send a bogus UDP packet and stop your connections from
-> working.
+For the record, here is the script as created by FC4's last official 
+update:
 
-I didn't know that, but I doubt anyone where I would use it would be
-able to do that :-)
+#!/bin/nash
 
-> Let's see how to implement UDP counting...
+mount -t proc /proc /proc
+setquiet
+echo Mounted /proc filesystem
+echo Mounting sysfs
+mount -t sysfs /sys /sys
+echo Creating /dev
+mount -o mode=0755 -t tmpfs /dev /dev
+mknod /dev/console c 5 1
+mknod /dev/null c 1 3
+mknod /dev/zero c 1 5
+mkdir /dev/pts
+mkdir /dev/shm
+echo Starting udev
+/sbin/udevstart
+echo -n "/sbin/hotplug" > /proc/sys/kernel/hotplug
+echo "Loading jbd.ko module"
+insmod /lib/jbd.ko 
+echo "Loading ext3.ko module"
+insmod /lib/ext3.ko 
+/sbin/udevstart
+echo Creating root device
+mkrootdev /dev/root
+echo Mounting root filesystem
+mount -o defaults --ro -t ext3 /dev/root /sysroot
+echo Switching to new root
+switchroot --movedev /sysroot
 
-The alternative, as I see it, is to adapt hashlimit to have an option to
-limit by number of different concurrent streams to different port
-numbers (but same source/destination IP address). However, I personally
-think it would sit better in connlimit, even if UDP is not a connection
-by strict definition.
+Don't ask me why udevstart is called twice -- it works okay under FC4's 
+2.6.17 kernel.
 
-Is it something you would consider, or shall I look at it myself?
+Here is the diff for my customized version:
 
-With regards to Patrick's comment, IIRC this was one of the points he
-originally raised.
+--- norm/init   2007-06-03 14:02:58.000000000 -0400
++++ test/init   2007-06-03 14:01:13.000000000 -0400
+@@ -22,7 +22,10 @@
+ /sbin/udevstart
+ echo Creating root device
+ mkrootdev /dev/root
++umount /sys
+ echo Mounting root filesystem
+ mount -o defaults --ro -t ext3 /dev/root /sysroot
++mount -t tmpfs --bind /dev /sysroot/dev
+ echo Switching to new root
+-switchroot --movedev /sysroot
++switchroot /sysroot
++umount /initrd/dev
 
-Regards,
+In all honesty, I should mention that the versions of nash and udev in
+my customized initramfs image aren't the same as the ones in the FC4
+image.  They are derived from FC6; in fact I use the same initramfs
+image for testing new kernels under both FC4 and FC6.  Also the
+contents of etc/udev/udev.conf differ in the two images.
 
-Andy Beverley
-
+Alan Stern
 
