@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbXFCOv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbXFCOw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761468AbXFCOv5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758463AbXFCOox
+	id S1759424AbXFCOw3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 10:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbXFCOpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:44:53 -0400
-Received: from web50104.mail.re2.yahoo.com ([206.190.38.32]:33742 "HELO
-	web50104.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758386AbXFCOov (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:44:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Sh0j+lnnexGK5B9GUZJwUZ6+v6sJxY2QO2nPJOY9+XW4qss3L60Ae8rx0WgK9J0P5mWDC/mzqCcyp8mCmVstZZql2NycotNXbjJ3NUGSgtla5rPBQAQ1gXDDXMvJRXIUXS4sSmeBBxfLHQHtlPV6Ge54aG7Yd1yL7rYWXY2TNYk=;
-X-YMail-OSG: VsNHNdgVM1k_RBStEFSVMk93adYK8FIRcpZ8DeHcyiodmdZaVtQu8zdPc3wRYefdiKreXK0zm2vZv24HY9DFbfWZhBdGzMbyS7dLzlgvXwJgIi8ke7uKfdWsDCfN2PtlGxglaCt2uA--
-Date: Sun, 3 Jun 2007 07:44:50 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: [PATCH 36/36] drivers edac update maintainers
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
+	Sun, 3 Jun 2007 10:45:44 -0400
+Received: from xenotime.net ([66.160.160.81]:33772 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756818AbXFCOpn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 10:45:43 -0400
+Date: Sun, 3 Jun 2007 07:45:52 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, rdunlap@xenotime.net,
+       akpm@linux-foundation.org, Chen Li-jun <cljun@xiyou.edu.cn>,
+       Wang Ya-gang <lazy_linux@126.com>
+Subject: Re: [RFC] Documentation/CodingStyle: Add rules for goto labels
+Message-Id: <20070603074552.430c3d02.rdunlap@xenotime.net>
+In-Reply-To: <20070603142939.GW4095@ftp.linux.org.uk>
+References: <20070603142450.GA4230@localhost.localdomain>
+	<20070603142939.GW4095@ftp.linux.org.uk>
+Organization: YPO4
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <939987.84243.qm@web50104.mail.re2.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Douglas Thompson <dougthompson@xmission.com>
+On Sun, 3 Jun 2007 15:29:39 +0100 Al Viro wrote:
 
-Added new maintainers for the new EDAC drivers.
+> On Sun, Jun 03, 2007 at 10:24:50PM +0800, WANG Cong wrote:
+>   
+> > +Do care when you use Lindent to indent your code, since it may use spaces
+> > +instead of tabs before a goto label and it may also align the label in a
+> > +wrong position. A goto label should be aligned in the column that is 8
+> > +characters ahead of the statement just below this label. Please fix it manually
+> > +if you find Lindent is wrong.
+> 
+> Lindent is wrong, but the style you are advocating is, at the very
+> least, not universal.  Equally (if not more) common is putting label
+> in column 1, period.  Regardless of indentation level of the statement
+> following it.
 
-Signed-off-by:	Douglas Thompson <dougthompson@xmission.com>
+ack Al's style.
+
 ---
-
- MAINTAINERS |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-
-Index: linux-2.6.22-rc3-mm1/MAINTAINERS
-===================================================================
---- linux-2.6.22-rc3-mm1.orig/MAINTAINERS
-+++ linux-2.6.22-rc3-mm1/MAINTAINERS
-@@ -1377,6 +1377,27 @@ L:	bluesmoke-devel@lists.sourceforge.net
- W:	bluesmoke.sourceforge.net
- S:	Maintained
- 
-+EDAC-I82443BXGX
-+P:	Tim Small
-+M:	tim@buttersideup.com
-+L:	bluesmoke-devel@lists.sourceforge.net
-+W:	bluesmoke.sourceforge.net
-+S:	Maintained
-+
-+EDAC-I3000
-+P:	Jason Uhlenkott
-+M:	juhlenko@akamai.com
-+L:	bluesmoke-devel@lists.sourceforge.net
-+W:	bluesmoke.sourceforge.net
-+S:	Maintained
-+
-+EDAC-I5000
-+P:	Doug Thompson
-+M:	norsk5@xmission.com
-+L:	bluesmoke-devel@lists.sourceforge.net
-+W:	bluesmoke.sourceforge.net
-+S:	Maintained
-+
- EDAC-R82600
- P:	Tim Small
- M:	tim@buttersideup.com
-
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
