@@ -1,37 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbXFCQRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbXFCQ12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbXFCQRk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 12:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbXFCQRd
+	id S1754897AbXFCQ12 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 12:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbXFCQ1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 12:17:33 -0400
-Received: from waste.org ([66.93.16.53]:50781 "EHLO waste.org"
+	Sun, 3 Jun 2007 12:27:18 -0400
+Received: from daemonizer.de ([87.230.16.230]:53807 "EHLO daemonizer.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752861AbXFCQRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 12:17:32 -0400
-Date: Sun, 3 Jun 2007 11:17:22 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, jeremy@goop.org
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-Message-ID: <20070603161722.GP11166@waste.org>
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com> <20070601204141.f84ad72f.akpm@linux-foundation.org> <Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com> <20070601213117.1178e8e0.akpm@linux-foundation.org> <Pine.LNX.4.64.0706012139480.11577@schroedinger.engr.sgi.com> <20070601215427.f06d09e7.akpm@linux-foundation.org>
+	id S1751690AbXFCQ1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 12:27:16 -0400
+From: Maximilian Engelhardt <maxi@daemonizer.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: b44: regression in 2.6.22 (resend)
+Date: Sun, 3 Jun 2007 18:26:02 +0200
+User-Agent: KMail/1.9.7
+Cc: Michael Buesch <mb@bu3sch.de>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20070525172431.60affaca@freepuppy> <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
+In-Reply-To: <1180380230.3657.3.camel@chaos>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070601215427.f06d09e7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/signed;
+  boundary="nextPart2176219.MicN8hRCvA";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706031826.06891.maxi@daemonizer.de>
+X-Spam-Score: -4.2 (----)
+X-Spam-Report: No, hits=-4.2 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	*  0.2 AWL AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 09:54:27PM -0700, Andrew Morton wrote:
-> We lose leak-detection and double-free detection this way, too.  Not a big
-> deal.
+--nextPart2176219.MicN8hRCvA
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-We could keep a global counter and warn if count < 0 or > N.
+On Monday 28 May 2007, Thomas Gleixner wrote:
+> On Mon, 2007-05-28 at 19:44 +0200, Maximilian Engelhardt wrote:
+> > > Can you please keep CONFIG_HIGH_RES_TIMERS and CONFIG_NOHZ and try the
+> > > following combinations on the kernel command line:
+> > >
+> > > 1) highres=3Doff nohz=3Doff (should be the same as your working confi=
+g)
+> > > 2) highres=3Doff
+> > > 3) nohz=3Doff
+> >
+> > I tested this with my 2.6.22-rc3 kernel, here are the results:
+> >
+> > without any special boot parameters: problem does appear
+> > highres=3Doff nohz=3Doff: problem does not appear
+> > highres=3Doff: problem does not appear
+> > nohz=3Doff: problem does appear
+>
+> Is there any other strange behavior of the high res enabled kernel than
+> the b44 problem ?
 
-An awful lot of fuss over nothing though.
+I didn't notice anything in the past (as I wrote). But today I did some tes=
+ts=20
+for an updated version of the p54 mac80211 wlan driver and I noticed exactl=
+y=20
+the same problem:
 
--- 
-Mathematics is the supreme nostalgia of our time.
+when booting with highres=3Doff everything is fine.
+But when I boot an highres enabled kernel and I do the iperf-test with the =
+p54=20
+driver, my systems becomes unresponsive during the test. It seems to be=20
+exactly the same problem I have with the b44 driver.
+So this might not be a bug in the b44 code but a bug somewhere in the linux=
+=20
+networking code.
+
+I did the test with an 2.6.22-rc3-git4 kernel and the p54 driver built=20
+external as module.=20
+
+Maxi
+
+--nextPart2176219.MicN8hRCvA
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGYuueOimwv528XGERAqZNAJ9jz78DPqrgzhMYyeFI7FAKmsx96QCfULJ3
+CWJqCY3C3RIgMcsYRSgz5Q0=
+=Fr+1
+-----END PGP SIGNATURE-----
+
+--nextPart2176219.MicN8hRCvA--
