@@ -1,211 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbXFCLYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762458AbXFCLZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762204AbXFCLYu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 07:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758397AbXFCLYn
+	id S1762458AbXFCLZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 07:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758698AbXFCLZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 07:24:43 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:35102 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758253AbXFCLYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 07:24:43 -0400
-Date: Sun, 3 Jun 2007 13:23:54 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>
-cc: Netfilter Mailing List <netfilter@lists.netfilter.org>,
+	Sun, 3 Jun 2007 07:25:51 -0400
+Received: from web63608.mail.re1.yahoo.com ([69.147.97.78]:20337 "HELO
+	web63608.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758397AbXFCLZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 07:25:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=wbao2yHMKWa9qKcZWWFxM+H9ftBBrUbdtxZ6EvTXg4SSrh6sY5zMe7U90x1OshCnaDTwBUGyAyKNgtRNgW7edG2ezRHMGOmbGgpsFbH3ezBTSlUj6HlqJ15YfXTyICH3rOqMhSzw9Hl/6gfx8Uu4r1dcDnv9iyj1xnQ1W4HB7pU=;
+X-YMail-OSG: JAeEvEsVM1m3ONgQ3R1kOlptqQRSDqmCp1dp1AMbViHAeee4SMgbTghVz8KwCeQMRCSkLCWGP2F56g09Mu64AxWlRJXB7aJUcPLtjRx8lYAAoPO7FZQL_ejd4xJh1Ts-
+Date: Sun, 3 Jun 2007 04:25:49 -0700 (PDT)
+From: Tear <tarrqt@yahoo.com>
+Subject: Re: [RFC][PATCH] IO-APIC blacklist
+To: Len Brown <lenb@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       akpm@linux-foundation.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] xt_connlimit (iptables) - connection limiting
-In-Reply-To: <Pine.LNX.4.61.0706031312570.10578@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0706031323160.10578@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0706031248290.10578@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0706031312570.10578@yvahk01.tjqt.qr>
+In-Reply-To: <200706030016.54555.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <954422.64985.qm@web63608.mail.re1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Len Brown <lenb@kernel.org> wrote:
+> [snip]
+> 
+> Also, please capture the output from acpidump
+> and attach it to a bug report here:
+> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
+> 
+> [snip]
 
-Previous patch had a wrong #include line, this one seems better :)
+Hi,
 
-================
+I have created a bug report in bugzilla.kernel.org.
+Here's the URL:
 
-Adds connlimit to iptables.
+http://bugzilla.kernel.org/show_bug.cgi?id=8572
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+I have attached the output of acpidump to the bug
+report.
 
----
- extensions/.connlimit-test      |    2 
- extensions/libipt_connlimit.c   |  129 ++++++++++++++++++++++++++++++++++++++++
- extensions/libipt_connlimit.man |   21 ++++++
- 3 files changed, 152 insertions(+)
+Let's continue our discussion there.
 
-Index: iptables/extensions/.connlimit-test
-===================================================================
---- /dev/null
-+++ iptables/extensions/.connlimit-test
-@@ -0,0 +1,2 @@
-+#!/bin/sh
-+[ -f "$KERNEL_DIR/include/linux/netfilter/xt_connlimit.h" ] && echo connlimit
-Index: iptables/extensions/libipt_connlimit.c
-===================================================================
---- /dev/null
-+++ iptables/extensions/libipt_connlimit.c
-@@ -0,0 +1,129 @@
-+/* Shared library add-on to iptables to add connection limit support. */
-+#include <stdio.h>
-+#include <netdb.h>
-+#include <string.h>
-+#include <stdlib.h>
-+#include <stddef.h>
-+#include <getopt.h>
-+#include <iptables.h>
-+#include <linux/netfilter_ipv4/ip_conntrack.h>
-+#include <linux/netfilter/xt_connlimit.h>
-+
-+/* Function which prints out usage message. */
-+static void help(void)
-+{
-+	printf(
-+"connlimit v%s options:\n"
-+"[!] --connlimit-above n		match if the number of existing tcp connections is (not) above n\n"
-+" --connlimit-mask n		group hosts using mask\n"
-+"\n", IPTABLES_VERSION);
-+}
-+
-+static struct option opts[] = {
-+	{"connlimit-above", 1, NULL, '1'},
-+	{"connlimit-mask",  1, NULL, '2'},
-+	{NULL},
-+};
-+
-+/* Function which parses command options; returns true if it
-+   ate an option */
-+static int parse(int c, char **argv, int invert, unsigned int *flags,
-+		 const struct ipt_entry *entry, unsigned int *nfcache,
-+		 struct ipt_entry_match **match)
-+{
-+	struct xt_connlimit_info *info = (void *)(*match)->data;
-+	int i;
-+
-+	if (!(*flags & 2))
-+		/*
-+		 * set default mask unless we have already seen a mask option
-+		 */
-+		info->mask = htonl(0xFFFFFFFF);
-+
-+	switch (c) {
-+	case '1':
-+		check_inverse(optarg, &invert, &optind, 0);
-+		info->limit   = strtoul(argv[optind-1], NULL, 0);
-+		info->inverse = invert;
-+		*flags |= 1;
-+		break;
-+
-+	case '2':
-+		i = strtol(argv[optind-1], NULL, 0);
-+		if (i < 0 || i > 32)
-+			exit_error(PARAMETER_PROBLEM,
-+				"--connlimit-mask must be between 0 and 32");
-+
-+		if (i == 0)
-+			info->mask = 0;
-+		else
-+			info->mask = htonl(0xFFFFFFFF << (32 - i));
-+
-+		*flags |= 2;
-+		break;
-+
-+	default:
-+		return 0;
-+	}
-+
-+	return 1;
-+}
-+
-+/* Final check */
-+static void final_check(unsigned int flags)
-+{
-+	if (!(flags & 1))
-+		exit_error(PARAMETER_PROBLEM, "You must specify `--connlimit-above'");
-+}
-+
-+static int count_bits(u_int32_t mask)
-+{
-+	int i, bits;
-+
-+	for (bits = 0, i = 31; i >= 0; i--) {
-+		if (mask & htonl((u_int32_t)1 << i)) {
-+			bits++;
-+			continue;
-+		}
-+		break;
-+	}
-+	return bits;
-+}
-+
-+/* Prints out the matchinfo. */
-+static void print(const struct ipt_ip *ip, const struct ipt_entry_match *match,
-+		  int numeric)
-+{
-+	const struct xt_connlimit_info *info = (const void *)match->data;
-+
-+	printf("#conn/%d %s %d ", count_bits(info->mask),
-+	       info->inverse ? "<" : ">", info->limit);
-+}
-+
-+/* Saves the matchinfo in parsable form to stdout. */
-+static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match)
-+{
-+	const struct xt_connlimit_info *info = (const void *)match->data;
-+
-+	printf("%s--connlimit-above %u --connlimit-mask %u ",
-+	       info->inverse ? "! " : "", info->limit,
-+	       count_bits(info->mask));
-+}
-+
-+static struct iptables_match connlimit = {
-+	.name		= "connlimit",
-+	.version	= IPTABLES_VERSION,
-+	.size		= IPT_ALIGN(sizeof(struct xt_connlimit_info)),
-+	.userspacesize 	= offsetof(struct xt_connlimit_info, data),
-+	.help		= help,
-+	.parse 		= parse,
-+	.final_check	= final_check,
-+	.print		= print,
-+	.save		= save,
-+	.extra_opts	= opts,
-+};
-+
-+static __attribute__((constructor)) void libipt_connlimit_init(void)
-+{
-+	register_match(&connlimit);
-+}
-Index: iptables/extensions/libipt_connlimit.man
-===================================================================
---- /dev/null
-+++ iptables/extensions/libipt_connlimit.man
-@@ -0,0 +1,21 @@
-+Allows you to restrict the number of parallel TCP connections to a
-+server per client IP address (or address block).
-+.TP
-+[\fB!\fR] \fB--connlimit-above \fIn\fR
-+match if the number of existing tcp connections is (not) above n
-+.TP
-+.BI "--connlimit-mask " "bits"
-+group hosts using mask
-+.P
-+Examples:
-+.TP
-+# allow 2 telnet connections per client host
-+iptables -A INPUT -p tcp --syn --dport 23 -m connlimit --connlimit-above 2 -j REJECT
-+.TP
-+# you can also match the other way around:
-+iptables -A INPUT -p tcp --syn --dport 23 -m connlimit ! --connlimit-above 2 -j ACCEPT
-+.TP
-+# limit the nr of parallel http requests to 16 per class C sized \
-+network (24 bit netmask)
-+iptables -p tcp --syn --dport 80 -m connlimit --connlimit-above 16
-+--connlimit-mask 24 -j REJECT
+Thanks,
+- Tear
+
+
+
+       
+____________________________________________________________________________________
+Yahoo! oneSearch: Finally, mobile search 
+that gives answers, not web links. 
+http://mobile.yahoo.com/mobileweb/onesearch?refer=1ONXIC
