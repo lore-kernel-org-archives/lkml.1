@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751363AbXFCSbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbXFCScT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751363AbXFCSbk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 14:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbXFCSbd
+	id S1751700AbXFCScT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 14:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXFCScL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 14:31:33 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:4959 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbXFCSbc (ORCPT
+	Sun, 3 Jun 2007 14:32:11 -0400
+Received: from earth.simplelists.com ([81.3.86.41]:2507 "EHLO
+	earth.simplelists.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751045AbXFCScK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 14:31:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XsWpniYK3qtQ1YBe2MCxx2ODvivz2u2/LHrYRTs0TYhNcEpctuEPONEXIchWt7t2Y6eAcRSp/FReHWZltR7CHBiUazUrWXaezKHAXoprIz/s5GJ8qBT4x6bHiiTIDwpXE4g6QFEIlB8NLy7d0t9HRoeschwvnxdBwvFmeSTeUFw=
-Message-ID: <7b69d1470706031131p768e9084jd594d02105095313@mail.gmail.com>
-Date: Sun, 3 Jun 2007 13:31:30 -0500
-From: "Scott Preece" <sepreece@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch 1/1] document Acked-by:
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>, "Adrian Bunk" <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070602211539.0224706b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 3 Jun 2007 14:32:10 -0400
+Subject: Re: [PATCH 1/2] xt_connlimit (kernel) - connection limiting
+From: Andrew Beverley <andy@andybev.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>,
+       Netfilter Mailing List <netfilter@lists.netfilter.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0706031914120.10578@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0706031248290.10578@yvahk01.tjqt.qr>
+	 <Pine.LNX.4.61.0706031312450.10578@yvahk01.tjqt.qr>
+	 <1180890022.6601.6.camel@andybev>
+	 <Pine.LNX.4.61.0706031914120.10578@yvahk01.tjqt.qr>
+Content-Type: text/plain
+Date: Sun, 03 Jun 2007 19:32:06 +0100
+Message-Id: <1180895526.6601.44.camel@andybev>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706010209.l51299kN000531@shell0.pdx.osdl.net>
-	 <20070602141144.GC5500@stusta.de>
-	 <20070602104700.53b6b811.akpm@linux-foundation.org>
-	 <7b69d1470706021957t4d6a1b43k33c0766b27975f31@mail.gmail.com>
-	 <20070602210614.75862701.randy.dunlap@oracle.com>
-	 <20070602211539.0224706b.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/2/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sat, 2 Jun 2007 21:06:14 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
->
-> > On Sat, 2 Jun 2007 19:57:41 -0700 Scott Preece wrote:
+On Sun, 2007-06-03 at 19:18 +0200, Jan Engelhardt wrote:
+> On Jun 3 2007 18:00, Andrew Beverley wrote:
+> >On Sun, 2007-06-03 at 13:12 +0200, Jan Engelhardt wrote:
+> >> Adds the connlimit match that has been in POM-NG for a long time.
+> >> 
+> >>     *	works with 2.6.22, xtables'ified and all that
+> >> 
+> >>     *	will request nf_conntrack_ipv4 upon load
+> >> 	(otherwise it hotdrops every packet - a glitch that goes back
+> >> 	to at least 2.6.20.2)
 > >
-> > > On 6/2/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > ...
-> > > > +The Signed-off-by: tag implies that the signer was involved in the development
-> > > ---
-> > >
-> > > Change "implies" to "indicates" - it's an explicit statement, not an
-> > > implication.
-> > >
-> > > ---
-> > > > +of the patch, or that he/she was in the patch's delivery path.
-> > > > +
-> > > > +If a person was not directly involved in the preparation or handling of a
-> > > > +patch but wishes to signify and record their approval of it then they can
-> > > > +arrange to have an Acked-by: line added to the patch's changelog.
-> > > > +
-> > > > +Acked-by: is often used by the maintainer of the affected code when that
-> > > > +maintainer neither contributed to nor forwarded the patch themselves.
-> > > ---
-> > >
-> > > This using plural pronouns for indefinite gender leaves one in vague
-> > > territory, but I think "themself" would be better than "themselves,
-> > > since "maintainer" is singular.
+> >Excellent! This has been at the back of my mind for a while.
 > >
-> > ugh.  :(
-> > not-acked-by: /me
-> >
->
-> I just deleted it ;)
->
-> "neither contributed to nor forwarded the patch."
->
----
+> >Is there any chance of getting UDP flows added as well as TCP
+> >connections?
+> 
+> I dare to say it's easy. The real problem is rather, that UDP is
+> connectionless, so for one, connlimit can, by definition of the word
+> 'connectionless', not apply to UDP, though it is technically
+> possible.
 
-Wise as usual - much better!
+Understood.
 
-scott
+> Second, because UDP "connections" "fly" (timeout after 30
+> seconds), just spewing one UDP packet out may kill another connection
+> (e.g. if you use connlimit in conjunction with DROP or REJECT).
+
+I see what you mean, although I personally would use this with an IPSET
+target, and I would argue it is the responsibility of the administrator
+to ensure it is used correctly.
+
+> What's more, UDP packets can be easily forged, much more than TCP, so
+> anyone on the same subtree (not subnet, because that's something
+> different) can send a bogus UDP packet and stop your connections from
+> working.
+
+I didn't know that, but I doubt anyone where I would use it would be
+able to do that :-)
+
+> Let's see how to implement UDP counting...
+
+The alternative, as I see it, is to adapt hashlimit to have an option to
+limit by number of different concurrent streams to different port
+numbers (but same source/destination IP address). However, I personally
+think it would sit better in connlimit, even if UDP is not a connection
+by strict definition.
+
+Is it something you would consider, or shall I look at it myself?
+
+With regards to Patrick's comment, IIRC this was one of the points he
+originally raised.
+
+Regards,
+
+Andy Beverley
+
+
