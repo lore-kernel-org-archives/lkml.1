@@ -1,371 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbXFCOu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbXFCOvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759227AbXFCOu5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085AbXFCOo2
+	id S1760972AbXFCOvY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 10:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbXFCOoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:44:28 -0400
-Received: from web50108.mail.re2.yahoo.com ([206.190.38.36]:28656 "HELO
-	web50108.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758061AbXFCOo1 (ORCPT
+	Sun, 3 Jun 2007 10:44:37 -0400
+Received: from web50111.mail.re2.yahoo.com ([206.190.39.137]:31251 "HELO
+	web50111.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758162AbXFCOog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:44:27 -0400
+	Sun, 3 Jun 2007 10:44:36 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Yy6hfmHS2q0cTlL5JT6qJ0i5LL76a+U0+fAS9j7NCo1JpEEQ/tcUZJtfnZ+hNxwu5g9nE6V90csq70O29K1nLgWUYcX1U1erVye7LT3ppZcHpPLw0b49FMBnh8H9PH966SZB4mH+6PYoL7dh3PpM0hIBmgYspuMrBeSJ6karP3c=;
-X-YMail-OSG: jEBN0GkVM1lZVca3xH4YejX2b0UCMNNhgLxyI4xxdfqjjxiq68H2pDtRLIB0BySCzDgVfNM9zUwnrJcRaqAa.SjU7wplLHRjXm6QRQECzdwqnim8m9BGKAClBGfmk4xlaYK4I3Ft9.s-
-Date: Sun, 3 Jun 2007 07:44:26 -0700 (PDT)
+  b=EAG0dljytPZE+XG/IwmxJoibDAl7Xxg1sZDMYrFZqeQgujJK9O+caRI7TIu9XII7qflyKLj+PvumeNZ4qM8+/7upYoqwmCT9wVqtFJzcVPKOGtMVqAL38jtvq41FOKTzsYlW18ALrf/dXUwKPYoA6N7Yes2/9IZPxANhYituemU=;
+X-YMail-OSG: xDBqBN0VM1lrs.ARFHeVA0_RaUYgfV2uU0qIhweQtTMt6A0rsU0gOWNM2KVSEo84herIeg--
+Date: Sun, 3 Jun 2007 07:44:35 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
-Subject: [PATCH 33/36] driver edac add edac_device and edac_mc sysfs controls
+Subject: [PATCH 34/36] drivers edac mod edac_device output strings
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <360092.57193.qm@web50108.mail.re2.yahoo.com>
+Message-ID: <557553.87568.qm@web50111.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Douglas Thompson	<dougthompson@xmission.com>
+From:	Douglas Thompson <dougthompson@xmission.com>
 
-Added new controls for the edac_device and edac_mc sysfs folder.
-These can be initialized by the low level driver to provide misc
-controls into the low level driver for its use
+The error handling output strings needed to be refactored for better
+displaying of the error informaton.
 
-Signed-off-by:	Douglas Thompson	<dougthompson@xmission.com>
+Also needed to added offset_value for output as well
+
+Signed-off-by:	Douglas Thompson <dougthompson@xmission.com>
 ---
- edac_core.h         |   52
-+++++++++++++++++++++++++++++++++++++++++++--
- edac_device_sysfs.c |   51
-+++++++++++++++++++++++++++++++++++++++-----
- edac_mc_sysfs.c     |   60
-+++++++++++++++++++++++++++++++++++++++-------------
- 3 files changed, 141 insertions(+), 22 deletions(-)
 
-Index: linux-2.6.22-rc1/drivers/edac/edac_core.h
+ edac_device.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.22-rc3-mm1/drivers/edac/edac_device.c
 ===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/edac_core.h
-+++ linux-2.6.22-rc1/drivers/edac/edac_core.h
-@@ -326,6 +326,18 @@ struct csrow_info {
- 	struct channel_info *channels;
- };
+--- linux-2.6.22-rc3-mm1.orig/drivers/edac/edac_device.c
++++ linux-2.6.22-rc3-mm1/drivers/edac/edac_device.c
+@@ -158,7 +158,7 @@ struct edac_device_ctl_info *edac_device
+ 			attrib_p = &dev_attrib[block * nr_attribs];
+ 			blk->attribs = attrib_p;
+ 			snprintf(blk->name, sizeof(blk->name),
+-				 "%s%d", edac_block_name, block + 1);
++				 "%s%d", edac_block_name, block+offset_value);
+ 			blk->name[sizeof(blk->name) - 1] = '\0';
  
-+/* mcidev_sysfs_attribute structure
-+ *	used for driver sysfs attributes and in mem_ctl_info
-+ * 	sysfs top level entries
-+ */
-+struct mcidev_sysfs_attribute {
-+        struct attribute attr;
-+        ssize_t (*show)(struct mem_ctl_info *,char *);
-+        ssize_t (*store)(struct mem_ctl_info *, const char *,size_t);
-+};
-+
-+/* MEMORY controller information structure
-+ */
- struct mem_ctl_info {
- 	struct list_head link;	/* for global list of mem_ctl_info structs */
- 	unsigned long mtype_cap;	/* memory types supported by mc */
-@@ -353,6 +365,7 @@ struct mem_ctl_info {
- 	 */
- 	int (*get_sdram_scrub_rate) (struct mem_ctl_info * mci, u32 * bw);
+ 			debugf1("%s() instance=%d block=%d name=%s\n",
+@@ -580,7 +580,7 @@ void edac_device_handle_ce(struct edac_d
  
-+
- 	/* pointer to edac checking routine */
- 	void (*edac_check) (struct mem_ctl_info * mci);
- 
-@@ -394,6 +407,18 @@ struct mem_ctl_info {
- 	struct kobject edac_mci_kobj;
- 	struct completion kobj_complete;
- 
-+	/* Additional top controller level attributes, but specified
-+	 * by the low level driver.
-+	 *
-+	 * Set by the low level driver to provide attributes at the
-+	 * controller level, same level as 'ue_count' and 'ce_count' above.
-+	 * An array of structures, NULL terminated
-+	 *
-+	 * If attributes are desired, then set to array of attributes
-+	 * If no attributes are desired, leave NULL
-+	 */
-+	struct mcidev_sysfs_attribute *mc_driver_sysfs_attributes;
-+
- 	/* work struct for this MC */
- 	struct delayed_work work;
- 
-@@ -402,7 +427,7 @@ struct mem_ctl_info {
- };
- 
- /*
-- * The following are the structures to provide for a generice
-+ * The following are the structures to provide for a generic
-  * or abstract 'edac_device'. This set of structures and the
-  * code that implements the APIs for the same, provide for
-  * registering EDAC type devices which are NOT standard memory.
-@@ -505,6 +530,16 @@ struct edac_device_instance {
- 	struct completion kobj_complete;
- };
- 
-+/* edac_dev_sysfs_attribute structure
-+ *     used for driver sysfs attributes and in mem_ctl_info
-+ *     sysfs top level entries
-+ */
-+struct edac_dev_sysfs_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(struct edac_device_ctl_info *,char *);
-+	ssize_t (*store)(struct edac_device_ctl_info *, const char *,size_t);
-+};
-+
- /*
-  * Abstract edac_device control info structure
-  *
-@@ -522,7 +557,20 @@ struct edac_device_ctl_info {
- 	unsigned poll_msec;	/* number of milliseconds to poll interval */
- 	unsigned long delay;	/* number of jiffies for poll_msec */
- 
--	struct sysdev_class *edac_class;	/* pointer to class */
-+	/* Additional top controller level attributes, but specified
-+	 * by the low level driver.
-+	 *
-+	 * Set by the low level driver to provide attributes at the
-+	 * controller level, same level as 'ue_count' and 'ce_count' above.
-+	 * An array of structures, NULL terminated
-+	 *
-+	 * If attributes are desired, then set to array of attributes
-+	 * If no attributes are desired, leave NULL
-+	 */
-+	struct edac_dev_sysfs_attribute *sysfs_attributes;
-+
-+	/* pointer to main 'edac' class in sysfs */
-+	struct sysdev_class *edac_class;
- 
- 	/* the internal state of this controller instance */
- 	int op_state;
-Index: linux-2.6.22-rc1/drivers/edac/edac_mc_sysfs.c
-===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/edac_mc_sysfs.c
-+++ linux-2.6.22-rc1/drivers/edac/edac_mc_sysfs.c
-@@ -1,15 +1,14 @@
- /*
-  * edac_mc kernel module
-- * (C) 2005, 2006 Linux Networx (http://lnxi.com)
-+ * (C) 2005-2007 Linux Networx (http://lnxi.com)
-+ *
-  * This file may be distributed under the terms of the
-  * GNU General Public License.
-  *
-- * Written Doug Thompson <norsk5@xmission.com>
-+ * Written Doug Thompson <norsk5@xmission.com>
-www.softwarebitmaker.com
-  *
-  */
- 
--#include <linux/module.h>
--#include <linux/sysdev.h>
- #include <linux/ctype.h>
- 
- #include "edac_core.h"
-@@ -661,21 +660,15 @@ static ssize_t mci_size_mb_show(struct m
- 	return sprintf(data, "%u\n", PAGES_TO_MiB(total_pages));
+ 	if (edac_device_get_log_ce(edac_dev))
+ 		edac_device_printk(edac_dev, KERN_WARNING,
+-				   "CE ctl: %s, instance: %s, block: %s: %s\n",
++				   "CE: %s instance: %s block: %s '%s'\n",
+ 				   edac_dev->ctl_name, instance->name,
+ 				   block ? block->name : "N/A", msg);
  }
+@@ -626,12 +626,12 @@ void edac_device_handle_ue(struct edac_d
  
--struct mcidev_attribute {
--	struct attribute attr;
--	 ssize_t(*show) (struct mem_ctl_info *, char *);
--	 ssize_t(*store) (struct mem_ctl_info *, const char *, size_t);
--};
--
- #define to_mci(k) container_of(k, struct mem_ctl_info, edac_mci_kobj)
--#define to_mcidev_attr(a) container_of(a, struct mcidev_attribute,
-attr)
-+#define to_mcidev_attr(a) container_of(a,struct
-mcidev_sysfs_attribute,attr)
+ 	if (edac_device_get_log_ue(edac_dev))
+ 		edac_device_printk(edac_dev, KERN_EMERG,
+-				   "UE ctl: %s, instance: %s, block: %s: %s\n",
++				   "UE: %s instance: %s block: %s '%s'\n",
+ 				   edac_dev->ctl_name, instance->name,
+ 				   block ? block->name : "N/A", msg);
  
- /* MCI show/store functions for top most object */
- static ssize_t mcidev_show(struct kobject *kobj, struct attribute
-*attr,
- 			   char *buffer)
- {
- 	struct mem_ctl_info *mem_ctl_info = to_mci(kobj);
--	struct mcidev_attribute *mcidev_attr = to_mcidev_attr(attr);
-+	struct mcidev_sysfs_attribute *mcidev_attr = to_mcidev_attr(attr);
- 
- 	if (mcidev_attr->show)
- 		return mcidev_attr->show(mem_ctl_info, buffer);
-@@ -687,7 +680,7 @@ static ssize_t mcidev_store(struct kobje
- 			    const char *buffer, size_t count)
- {
- 	struct mem_ctl_info *mem_ctl_info = to_mci(kobj);
--	struct mcidev_attribute *mcidev_attr = to_mcidev_attr(attr);
-+	struct mcidev_sysfs_attribute *mcidev_attr = to_mcidev_attr(attr);
- 
- 	if (mcidev_attr->store)
- 		return mcidev_attr->store(mem_ctl_info, buffer, count);
-@@ -701,7 +694,7 @@ static struct sysfs_ops mci_ops = {
- };
- 
- #define MCIDEV_ATTR(_name,_mode,_show,_store)			\
--static struct mcidev_attribute mci_attr_##_name = {			\
-+static struct mcidev_sysfs_attribute mci_attr_##_name = {			\
- 	.attr = {.name = __stringify(_name), .mode = _mode },	\
- 	.show   = _show,					\
- 	.store  = _store,					\
-@@ -723,7 +716,7 @@ MCIDEV_ATTR(ce_count, S_IRUGO, mci_ce_co
- MCIDEV_ATTR(sdram_scrub_rate, S_IRUGO | S_IWUSR,
-mci_sdram_scrub_rate_show,
- 	    mci_sdram_scrub_rate_store);
- 
--static struct mcidev_attribute *mci_attr[] = {
-+static struct mcidev_sysfs_attribute *mci_attr[] = {
- 	&mci_attr_reset_counters,
- 	&mci_attr_mc_name,
- 	&mci_attr_size_mb,
-@@ -757,6 +750,34 @@ static struct kobj_type ktype_mci = {
- #define EDAC_DEVICE_SYMLINK	"device"
- 
- /*
-+ * edac_create_driver_attributes
-+ *	create MC driver specific attributes at the topmost level
-+ *	directory of this mci instance.
-+ */
-+static int edac_create_driver_attributes(struct mem_ctl_info *mci)
-+{
-+	int err;
-+	struct mcidev_sysfs_attribute *sysfs_attrib;
-+
-+	/* point to the start of the array and iterate over it
-+	 * adding each attribute listed to this mci instance's kobject
-+	 */
-+	sysfs_attrib = mci->mc_driver_sysfs_attributes;
-+
-+	while (sysfs_attrib->attr.name != NULL) {
-+		err = sysfs_create_file(&mci->edac_mci_kobj,
-+					(struct attribute*) sysfs_attrib);
-+		if (err) {
-+			return err;
-+		}
-+
-+		sysfs_attrib++;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-  * Create a new Memory Controller kobject instance,
-  *	mc<id> under the 'mc' directory
-  *
-@@ -794,6 +815,15 @@ int edac_create_sysfs_mci_device(struct 
- 	if (err)
- 		goto fail0;
- 
-+	/* If the low level driver desires some attributes,
-+	 * then create them now for the driver.
-+	 */
-+	if (mci->mc_driver_sysfs_attributes) {
-+		err = edac_create_driver_attributes(mci);
-+		if (err)
-+			goto fail0;
-+	}
-+
- 	/* Make directories for each CSROW object
- 	 * under the mc<id> kobject
- 	 */
-Index: linux-2.6.22-rc1/drivers/edac/edac_device_sysfs.c
-===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/edac_device_sysfs.c
-+++ linux-2.6.22-rc1/drivers/edac/edac_device_sysfs.c
-@@ -9,8 +9,6 @@
-  *
-  */
- 
--#include <linux/module.h>
--#include <linux/sysdev.h>
- #include <linux/ctype.h>
- 
- #include "edac_core.h"
-@@ -622,6 +620,34 @@ static void edac_device_delete_instances
- /******************* edac_dev sysfs ctor/dtor  code *************/
- 
- /*
-+ * edac_device_add_sysfs_attributes
-+ *	add some attributes to this instance's main kobject
-+ */
-+static int edac_device_add_sysfs_attributes(
-+			struct edac_device_ctl_info *edac_dev)
-+{
-+	int err;
-+        struct edac_dev_sysfs_attribute *sysfs_attrib;
-+
-+        /* point to the start of the array and iterate over it
-+         * adding each attribute listed to this mci instance's kobject
-+         */
-+        sysfs_attrib = edac_dev->sysfs_attributes;
-+
-+        while (sysfs_attrib->attr.name != NULL) {
-+                err = sysfs_create_file(&edac_dev->kobj,
-+                                        (struct attribute*)
-sysfs_attrib);
-+                if (err) {
-+                        return err;
-+                }
-+
-+                sysfs_attrib++;
-+        }
-+
-+        return 0;
-+}
-+
-+/*
-  * edac_device_create_sysfs() Constructor
-  *
-  * Create a new edac_device kobject instance,
-@@ -642,6 +668,18 @@ int edac_device_create_sysfs(struct edac
- 
- 	debugf0("%s() idx=%d\n", __func__, edac_dev->dev_idx);
- 
-+	/* If the low level driver requests some sysfs entries
-+	 * then go create them here
-+	 */
-+	if (edac_dev->sysfs_attributes != NULL) {
-+		err = edac_device_add_sysfs_attributes(edac_dev);
-+		if (err) {
-+			debugf0("%s() failed to add sysfs attribs\n",
-+				__func__);
-+			goto err_unreg_object;
-+		}
-+	}
-+
- 	/* create a symlink from the edac device
- 	 * to the platform 'device' being used for this
- 	 */
-@@ -650,7 +688,7 @@ int edac_device_create_sysfs(struct edac
- 	if (err) {
- 		debugf0("%s() sysfs_create_link() returned err= %d\n",
- 			__func__, err);
--		return err;
-+		goto err_unreg_object;
- 	}
- 
- 	debugf0("%s() calling create-instances, idx=%d\n",
-@@ -659,14 +697,17 @@ int edac_device_create_sysfs(struct edac
- 	/* Create the first level instance directories */
- 	err = edac_device_create_instances(edac_dev);
- 	if (err) {
--		goto error0;
-+		goto err_remove_link;
- 	}
- 
- 	return 0;
- 
- 	/* Error unwind stack */
-+err_remove_link:
-+	/* remove the sym link */
-+	sysfs_remove_link(&edac_dev->kobj, EDAC_DEVICE_SYMLINK);
- 
--      error0:
-+err_unreg_object:
- 	edac_device_unregister_main_kobj(edac_dev);
- 
- 	return err;
+ 	if (edac_device_get_panic_on_ue(edac_dev))
+-		panic("EDAC %s: UE instance: %s, block %s: %s\n",
++		panic("EDAC %s: UE instance: %s block %s '%s'\n",
+ 		      edac_dev->ctl_name, instance->name,
+ 		      block ? block->name : "N/A", msg);
+ }
 
