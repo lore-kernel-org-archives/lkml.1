@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbXFCXSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbXFCXZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753050AbXFCXSI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 19:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXFCXR4
+	id S1753141AbXFCXZR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 19:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXFCXZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 19:17:56 -0400
-Received: from 27.mail-out.ovh.net ([213.186.38.137]:35822 "HELO
-	27.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751333AbXFCXRz (ORCPT
+	Sun, 3 Jun 2007 19:25:06 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:2218 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720AbXFCXZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 19:17:55 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jun 2007 19:17:55 EDT
-Date: Mon, 4 Jun 2007 02:10:51 +0300
-From: Samuel Ortiz <samuel@sortiz.org>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: linux-kernel@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com,
-       bjorn.helgaas@hp.com
-Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
-Message-ID: <20070603231050.GA3829@sortiz.org>
-Reply-To: Samuel Ortiz <samuel@sortiz.org>
-References: <200706031200.07514.arvidjaar@mail.ru> <200706031216.06172.arvidjaar@mail.ru>
+	Sun, 3 Jun 2007 19:25:04 -0400
+X-Greylist: delayed 1403 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jun 2007 19:25:04 EDT
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Daniel Hazelton <dhazelton@enter.net>,
+       Anand Jahagirdar <anandjigar@gmail.com>, security@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Patch related with Fork Bombing Atack
+References: <25ae38200705310645n5e913a91weaa14521908f7989@mail.gmail.com>
+	<20070531134611.GZ32105@kernel.dk>
+	<25ae38200705312348r3cd02c90h5080617fa1f0a987@mail.gmail.com>
+	<200706010325.23185.dhazelton@enter.net>
+	<20070601073020.GL32105@kernel.dk>
+From: Nix <nix@esperi.org.uk>
+Emacs: the road to Hell is paved with extensibility.
+Date: Mon, 04 Jun 2007 00:01:21 +0100
+In-Reply-To: <20070601073020.GL32105@kernel.dk> (Jens Axboe's message of "1 Jun 2007 08:31:59 +0100")
+Message-ID: <87odjw8wxq.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706031216.06172.arvidjaar@mail.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Ovh-Remote: 90.28.104.183 (aannecy-257-1-25-183.w90-28.abo.wanadoo.fr)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+X-DCC-sgs_public_dcc_server-Metrics: hades 1199; Body=5 Fuz1=5 Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrey,
+On 1 Jun 2007, Jens Axboe told this:
+> I think Anand is assuming that because syslog may coalesce identical
+> messages into "repeated foo times" in the messages file, that it's not a
+> dos. That is of course wrong.
 
-On Sun, Jun 03, 2007 at 12:16:05PM +0400, Andrey Borzenkov wrote:
-> 
-> Adding "nopnp" parameters finds device just fine so it is apparently result of 
-> this commit:
-> 
-> commit d0d4f69bb65a8c1c1430c577a583632709b874c6
-> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> Date:   Tue May 8 00:36:05 2007 -0700
-> 
->     smsc-ircc2: add PNP support
-> 
-> What information is needed to debug it further?
-It seems that PnP tells us that the FIR port is at 0x2e8 while we're
-expecting it at 0x2f8.
-Could you apply this patch and then send me a dmesg dump of the
-smsc-ircc initialisation ?
+Not all syslog daemons do that, anyway. (syslog-ng doesn't, for one.)
 
-Cheers,
-Samuel.
-
-
-diff --git a/drivers/net/irda/smsc-ircc2.c b/drivers/net/irda/smsc-ircc2.c
-index 9043bf4..d1d46a6 100644
---- a/drivers/net/irda/smsc-ircc2.c
-+++ b/drivers/net/irda/smsc-ircc2.c
-@@ -391,6 +391,9 @@ static int __init smsc_ircc_pnp_probe(struct pnp_dev *dev,
- 	dma = pnp_dma(dev, 0);
- 	irq = pnp_irq(dev, 0);
- 
-+	printk("%s(): fir 0x%x sir 0x%x dma %d irq %d\n",
-+	       __FUNCTION__, firbase, sirbase, dma, irq);
-+
- 	if (smsc_ircc_open(firbase, sirbase, dma, irq))
- 		return -ENODEV;
- 
-@@ -655,6 +658,7 @@ static int smsc_ircc_present(unsigned int fir_base, unsigned int sir_base)
- 	irq     = (config & IRCC_INTERFACE_IRQ_MASK) >> 4;
- 
- 	if (high != 0x10 || low != 0xb8 || (chip != 0xf1 && chip != 0xf2)) {
-+		printk("High: 0x%x, Chip 0x%x\n", high, chip);
- 		IRDA_WARNING("%s(), addr 0x%04x - no device found!\n",
- 			     __FUNCTION__, fir_base);
- 		goto out3;
-
-
-
+-- 
+`On a scale of one to ten of usefulness, BBC BASIC was several points ahead
+ of the competition, scoring a relatively respectable zero.' --- Peter Corlett
