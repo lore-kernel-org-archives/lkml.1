@@ -1,595 +1,541 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbXFCOoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbXFCOoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbXFCOoD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXFCOl3
+	id S1756402AbXFCOoc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 10:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755755AbXFCOlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:41:29 -0400
-Received: from web50107.mail.re2.yahoo.com ([206.190.38.35]:26657 "HELO
-	web50107.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753963AbXFCOl0 (ORCPT
+	Sun, 3 Jun 2007 10:41:37 -0400
+Received: from web50104.mail.re2.yahoo.com ([206.190.38.32]:27318 "HELO
+	web50104.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752477AbXFCOlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:41:26 -0400
+	Sun, 3 Jun 2007 10:41:36 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=I6jFryem/licPfM3V2ybcfDF/+9L0a0+45YSvV6u9xGvYh7Oil5zKxl+iFYXV6OPqRFA4WKogAfEoBcPLlzphdnl+6NOujVp76Lz/roV9TTiLhsMXH9IriBHYRv4fduuB1Hx+LXq1tMqD5FkPyyZA/KCVJFUBEhi4S0U/baIzYg=;
-X-YMail-OSG: wwqXTmIVM1lxNpzhSYaJH.8uJ.4Eiayhc579bMFKW0EZOp1.mb_iS4wBDEsihMpCd_kbhlmRzVbCH3l7ZWdkOuZO6Xz.g7XcFduxEtmodla8uxcn8pxq9t5ZFqNhM1MfsbX6xxK.DI6eZYV0FuxZKPPUi9RyO5.Y1w--
-Date: Sun, 3 Jun 2007 07:41:24 -0700 (PDT)
+  b=PDIHaoNTfCf/zU0HmZrKwr3a2nrnaJ2ES6/sFo6sNjqrYZ8j80GvAMXYwjOhQSEJ/x4L1AxWaSt3R/9+vwaQ+uHD5jt3wlzyEmg9dJWSmh9GKXfLNgA44J/zkQcmy4eVIhxEa6NZqBv4TOgNp0XqgqggSVgPiV3CjeVtLrN3Y+Y=;
+X-YMail-OSG: MHgcqeMVM1lvcIQaPnzsoWhm4KFtYm_gU0oAAqri
+Date: Sun, 3 Jun 2007 07:41:35 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
-Subject: [PATCH 15/36] drivers edac new intel 30x0 driver
+Subject: [PATCH 16/36] drivers edac mod move mc to use workq
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <993461.84244.qm@web50107.mail.re2.yahoo.com>
+Message-ID: <346998.83220.qm@web50104.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Jason Uhlenkott <juhlenko@akamai.com>
+From:	Dave Jiang <djiang@mvista.com>
 
-Here's a driver for the Intel 3000 and 3010 memory controllers,
-relative to today's Sourceforge code drop.  This has only had light
-testing (I've yet to actually see it handle a memory error) but it
-detects my hardware correctly.
+Move the memory controller object to work queue based implementation
+from the
+kernel thread based. 
 
-Signed-off-by: Jason Uhlenkott <juhlenko@akamai.com>
+Signed-off-by: Dave Jiang <djiang@mvista.com>
 Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
 ---
- drivers/edac/Kconfig      |    7 
- drivers/edac/Makefile     |    1 
- drivers/edac/i3000_edac.c |  491
-++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pci_ids.h   |    1 
- 4 files changed, 500 insertions(+)
+ edac_core.h     |   14 ++++++
+ edac_device.c   |   36 +++++++++-------
+ edac_mc.c       |  119
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ edac_mc_sysfs.c |   14 ++++--
+ edac_module.c   |   86 +++++-----------------------------------
+ edac_module.h   |    4 -
+ 6 files changed, 176 insertions(+), 97 deletions(-)
+---
 
-Index: linux-2.6.22-rc1/drivers/edac/i3000_edac.c
+Index: linux-2.6.21.1/drivers/edac/edac_core.h
 ===================================================================
---- /dev/null
-+++ linux-2.6.22-rc1/drivers/edac/i3000_edac.c
-@@ -0,0 +1,493 @@
-+/*
-+ * Intel 3000/3010 Memory Controller kernel module
-+ * Copyright (C) 2007 Akamai Technologies, Inc.
-+ * Shamelessly copied from:
-+ * 	Intel D82875P Memory Controller kernel module
-+ * 	(C) 2003 Linux Networx (http://lnxi.com)
-+ *
-+ * This file may be distributed under the terms of the
-+ * GNU General Public License.
-+ */
+--- linux-2.6.21.1.orig/drivers/edac/edac_core.h
++++ linux-2.6.21.1/drivers/edac/edac_core.h
+@@ -382,6 +382,15 @@ struct mem_ctl_info {
+ 	/* edac sysfs device control */
+ 	struct kobject edac_mci_kobj;
+ 	struct completion kobj_complete;
 +
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/pci.h>
-+#include <linux/pci_ids.h>
-+#include <linux/slab.h>
-+#include "edac_core.h"
-+
-+#define I3000_REVISION		"1.1"
-+
-+#define EDAC_MOD_STR		"i3000_edac"
-+
-+#define I3000_RANKS		8
-+#define I3000_RANKS_PER_CHANNEL	4
-+#define I3000_CHANNELS		2
-+
-+/* Intel 3000 register addresses - device 0 function 0 - DRAM
-Controller */
-+
-+#define I3000_MCHBAR		0x44	/* MCH Memory Mapped Register BAR */
-+#define I3000_MCHBAR_MASK	0xffffc000
-+#define I3000_MMR_WINDOW_SIZE	16384
-+
-+#define I3000_EDEAP		0x70	/* Extended DRAM Error Address Pointer (8b)
-+					 *
-+					 * 7:1   reserved
-+					 * 0     bit 32 of address
-+					 */
-+#define I3000_DEAP		0x58	/* DRAM Error Address Pointer (32b)
-+					 *
-+					 * 31:7  address
-+					 * 6:1   reserved
-+					 * 0     Error channel 0/1
-+					 */
-+#define I3000_DEAP_GRAIN	(1 << 7)
-+#define I3000_DEAP_PFN(edeap, deap)	((((edeap) & 1) << (32 -
-PAGE_SHIFT)) | \
-+					((deap) >> PAGE_SHIFT))
-+#define I3000_DEAP_OFFSET(deap)		((deap) & ~(I3000_DEAP_GRAIN-1) &
-~PAGE_MASK)
-+#define I3000_DEAP_CHANNEL(deap)	((deap) & 1)
-+
-+#define I3000_DERRSYN		0x5c	/* DRAM Error Syndrome (8b)
-+					 *
-+					 *  7:0  DRAM ECC Syndrome
-+					 */
-+
-+#define I3000_ERRSTS		0xc8	/* Error Status Register (16b)
-+					 *
-+					 * 15:12 reserved
-+					 * 11    MCH Thermal Sensor Event for SMI/SCI/SERR
-+					 * 10    reserved
-+					 *  9    LOCK to non-DRAM Memory Flag (LCKF)
-+					 *  8    Received Refresh Timeout Flag (RRTOF)
-+					 *  7:2  reserved
-+					 *  1    Multiple-bit DRAM ECC Error Flag (DMERR)
-+					 *  0    Single-bit DRAM ECC Error Flag (DSERR)
-+					 */
-+#define I3000_ERRSTS_BITS	0x0b03	/* bits which indicate errors */
-+#define I3000_ERRSTS_UE		0x0002
-+#define I3000_ERRSTS_CE		0x0001
-+
-+#define I3000_ERRCMD		0xca	/* Error Command (16b)
-+					 *
-+					 * 15:12 reserved
-+					 * 11    SERR on MCH Thermal Sensor Event (TSESERR)
-+					 * 10    reserved
-+					 *  9    SERR on LOCK to non-DRAM Memory (LCKERR)
-+					 *  8    SERR on DRAM Refresh Timeout (DRTOERR)
-+					 *  7:2  reserved
-+					 *  1    SERR Multiple-Bit DRAM ECC Error (DMERR)
-+					 *  0    SERR on Single-Bit ECC Error (DSERR)
-+					 */
-+
-+/* Intel  MMIO register space - device 0 function 0 - MMR space */
-+
-+#define I3000_DRB_SHIFT 25	/* 32MiB grain */
-+
-+#define I3000_C0DRB		0x100	/* Channel 0 DRAM Rank Boundary (8b x 4)
-+					 *
-+					 * 7:0   Channel 0 DRAM Rank Boundary Address
-+					 */
-+#define I3000_C1DRB		0x180	/* Channel 1 DRAM Rank Boundary (8b x 4)
-+					 *
-+					 * 7:0   Channel 1 DRAM Rank Boundary Address
-+					 */
-+
-+#define I3000_C0DRA		0x108	/* Channel 0 DRAM Rank Attribute (8b x 2)
-+					 *
-+					 * 7     reserved
-+					 * 6:4   DRAM odd Rank Attribute
-+					 * 3     reserved
-+					 * 2:0   DRAM even Rank Attribute
-+					 *
-+					 * Each attribute defines the page
-+					 * size of the corresponding rank:
-+					 *     000: unpopulated
-+					 *     001: reserved
-+					 *     010: 4 KB
-+					 *     011: 8 KB
-+					 *     100: 16 KB
-+					 *     Others: reserved
-+					 */
-+#define I3000_C1DRA		0x188	/* Channel 1 DRAM Rank Attribute (8b x 2)
++	/* work struct for this MC */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
++	struct delayed_work work;
++#else
++	struct work_struct work;
++#endif
++	/* the internal state of this controller instance */
++	int op_state;
+ };
+ 
+ /*
+@@ -573,6 +582,9 @@ struct edac_device_ctl_info {
+ };
+ 
+ /* To get from the instance's wq to the beginning of the ctl structure
 */
-+#define ODD_RANK_ATTRIB(dra) (((dra) & 0x70) >> 4)
-+#define EVEN_RANK_ATTRIB(dra) ((dra) & 0x07)
++#define to_edac_mem_ctl_work(w) \
++		container_of(w, struct mem_ctl_info, work)
 +
-+#define I3000_C0DRC0		0x120	/* DRAM Controller Mode 0 (32b)
-+					 *
-+					 * 31:30 reserved
-+					 * 29    Initialization Complete (IC)
-+					 * 28:11 reserved
-+					 * 10:8  Refresh Mode Select (RMS)
-+					 * 7     reserved
-+					 * 6:4   Mode Select (SMS)
-+					 * 3:2   reserved
-+					 * 1:0   DRAM Type (DT)
-+					 */
+ #define to_edac_device_ctl_work(w) \
+ 		container_of(w,struct edac_device_ctl_info,work)
+ 
+@@ -584,6 +596,8 @@ static inline void edac_device_calc_dela
+ 	edac_dev->delay = edac_dev->poll_msec * HZ / 1000;
+ }
+ 
++#define edac_calc_delay(dev) dev->delay = dev->poll_msec * HZ / 1000;
 +
-+#define I3000_C0DRC1		0x124	/* DRAM Controller Mode 1 (32b)
-+					 *
-+					 * 31    Enhanced Addressing Enable (ENHADE)
-+					 * 30:0  reserved
-+					 */
+ /*
+  * The alloc() and free() functions for the 'edac_device' control info
+  * structure. A MC driver will allocate one of these for each
+edac_device
+Index: linux-2.6.21.1/drivers/edac/edac_device.c
+===================================================================
+--- linux-2.6.21.1.orig/drivers/edac/edac_device.c
++++ linux-2.6.21.1/drivers/edac/edac_device.c
+@@ -332,17 +332,17 @@ EXPORT_SYMBOL(edac_device_find);
+ 
+ 
+ /*
+- * edac_workq_function
++ * edac_device_workq_function
+  *	performs the operation scheduled by a workq request
+  */
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+-static void edac_workq_function(struct work_struct *work_req)
++static void edac_device_workq_function(struct work_struct *work_req)
+ {
+ 	struct delayed_work *d_work = (struct delayed_work*) work_req;
+ 	struct edac_device_ctl_info *edac_dev =
+ 		to_edac_device_ctl_work(d_work);
+ #else
+-static void edac_workq_function(void *ptr)
++static void edac_device_workq_function(void *ptr)
+ {
+ 	struct edac_device_ctl_info *edac_dev =
+ 		(struct edac_device_ctl_info *) ptr;
+@@ -364,30 +364,31 @@ static void edac_workq_function(void *pt
+ }
+ 
+ /*
+- * edac_workq_setup
++ * edac_device_workq_setup
+  *	initialize a workq item for this edac_device instance
+  *	passing in the new delay period in msec
+  */
+-void edac_workq_setup(struct edac_device_ctl_info *edac_dev, unsigned
+msec)
++void edac_device_workq_setup(struct edac_device_ctl_info *edac_dev,
++		unsigned msec)
+ {
+ 	debugf0("%s()\n", __func__);
+ 
+ 	edac_dev->poll_msec = msec;
+-	edac_device_calc_delay(edac_dev);	/* Calc delay jiffies */
++	edac_calc_delay(edac_dev);	/* Calc delay jiffies */
+ 
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
+-	INIT_DELAYED_WORK(&edac_dev->work,edac_workq_function);
++	INIT_DELAYED_WORK(&edac_dev->work, edac_device_workq_function);
+ #else
+-	INIT_WORK(&edac_dev->work,edac_workq_function,edac_dev);
++	INIT_WORK(&edac_dev->work, edac_device_workq_function, edac_dev);
+ #endif
+-	queue_delayed_work(edac_workqueue,&edac_dev->work, edac_dev->delay);
++	queue_delayed_work(edac_workqueue, &edac_dev->work, edac_dev->delay);
+ }
+ 
+ /*
+- * edac_workq_teardown
++ * edac_device_workq_teardown
+  *	stop the workq processing on this edac_dev
+  */
+-void edac_workq_teardown(struct edac_device_ctl_info *edac_dev)
++void edac_device_workq_teardown(struct edac_device_ctl_info *edac_dev)
+ {
+ 	int status;
+ 
+@@ -409,10 +410,10 @@ void edac_device_reset_delay_period(
+ 	lock_device_list();
+ 
+ 	/* cancel the current workq request */
+-	edac_workq_teardown(edac_dev);
++	edac_device_workq_teardown(edac_dev);
+ 
+ 	/* restart the workq request, with new delay value */
+-	edac_workq_setup(edac_dev, value);
++	edac_device_workq_setup(edac_dev, value);
+ 
+ 	unlock_device_list();
+ }
+@@ -479,8 +480,11 @@ int edac_device_add_device(struct edac_d
+ 		/* This instance is NOW RUNNING */
+ 		edac_dev->op_state = OP_RUNNING_POLL;
+ 
+-		/* enable workq processing on this instance, default = 1000 msec */
+-		edac_workq_setup(edac_dev, 1000);
++		/*
++		 * enable workq processing on this instance,
++		 * default = 1000 msec
++		 */
++		edac_device_workq_setup(edac_dev, 1000);
+ 	} else {
+ 		edac_dev->op_state = OP_RUNNING_INTERRUPT;
+ 	}
+@@ -538,7 +542,7 @@ struct edac_device_ctl_info * edac_devic
+ 	edac_dev->op_state = OP_OFFLINE;
+ 
+ 	/* clear workq processing on this instance */
+-	edac_workq_teardown(edac_dev);
++	edac_device_workq_teardown(edac_dev);
+ 
+ 	/* Tear down the sysfs entries for this instance */
+ 	edac_device_remove_sysfs(edac_dev);
+Index: linux-2.6.21.1/drivers/edac/edac_mc.c
+===================================================================
+--- linux-2.6.21.1.orig/drivers/edac/edac_mc.c
++++ linux-2.6.21.1/drivers/edac/edac_mc.c
+@@ -184,6 +184,8 @@ struct mem_ctl_info *edac_mc_alloc(unsig
+ 		}
+ 	}
+ 
++	mci->op_state = OP_ALLOC;
 +
-+
-+enum i3000p_chips {
-+	I3000 = 0,
-+};
-+
-+struct i3000_dev_info {
-+	const char *ctl_name;
-+};
-+
-+struct i3000_error_info {
-+	u16 errsts;
-+	u8 derrsyn;
-+	u8 edeap;
-+	u32 deap;
-+	u16 errsts2;
-+};
-+
-+static const struct i3000_dev_info i3000_devs[] = {
-+	[I3000] = {
-+		     .ctl_name = "i3000"
-+	},
-+};
-+
-+static struct pci_dev *mci_pdev = NULL;
-+static int i3000_registered = 1;
-+
-+static void i3000_get_error_info(struct mem_ctl_info *mci,
-+		struct i3000_error_info *info)
+ 	return mci;
+ }
+ EXPORT_SYMBOL_GPL(edac_mc_alloc);
+@@ -215,6 +217,107 @@ static struct mem_ctl_info *find_mci_by_
+ 	return NULL;
+ }
+ 
++/*
++ * handler for EDAC to check if NMI type handler has asserted
+interrupt
++ */
++static int edac_mc_assert_error_check_and_clear(void)
 +{
-+	struct pci_dev *pdev;
++	int vreg;
 +
-+	pdev = to_pci_dev(mci->dev);
-+
-+	/*
-+	 * This is a mess because there is no atomic way to read all the
-+	 * registers at once and the registers can transition from CE being
-+	 * overwritten by UE.
-+	 */
-+	pci_read_config_word(pdev, I3000_ERRSTS, &info->errsts);
-+	if (!(info->errsts & I3000_ERRSTS_BITS))
-+		return;
-+	pci_read_config_byte(pdev, I3000_EDEAP, &info->edeap);
-+	pci_read_config_dword(pdev, I3000_DEAP, &info->deap);
-+	pci_read_config_byte(pdev, I3000_DERRSYN, &info->derrsyn);
-+	pci_read_config_word(pdev, I3000_ERRSTS, &info->errsts2);
-+
-+	/*
-+	 * If the error is the same for both reads then the first set
-+	 * of reads is valid.  If there is a change then there is a CE
-+	 * with no info and the second set of reads is valid and
-+	 * should be UE info.
-+	 */
-+	if ((info->errsts ^ info->errsts2) & I3000_ERRSTS_BITS) {
-+			pci_read_config_byte(pdev, I3000_EDEAP,
-+					&info->edeap);
-+			pci_read_config_dword(pdev, I3000_DEAP,
-+					&info->deap);
-+			pci_read_config_byte(pdev, I3000_DERRSYN,
-+					&info->derrsyn);
-+	}
-+
-+	/* Clear any error bits.
-+	 * (Yes, we really clear bits by writing 1 to them.)
-+	 */
-+	pci_write_bits16(pdev, I3000_ERRSTS, I3000_ERRSTS_BITS,
-I3000_ERRSTS_BITS);
-+}
-+
-+static int i3000_process_error_info(struct mem_ctl_info *mci,
-+		struct i3000_error_info *info, int handle_errors)
-+{
-+	int row, multi_chan;
-+	int pfn, offset, channel;
-+
-+	multi_chan = mci->csrows[0].nr_channels - 1;
-+
-+	if (!(info->errsts & I3000_ERRSTS_BITS))
-+		return 0;
-+
-+	if (!handle_errors)
++	if(edac_op_state == EDAC_OPSTATE_POLL)
 +		return 1;
 +
-+	if ((info->errsts ^ info->errsts2) & I3000_ERRSTS_BITS) {
-+		edac_mc_handle_ce_no_info(mci, "UE overwrote CE");
-+		info->errsts = info->errsts2;
++	vreg = atomic_read(&edac_err_assert);
++	if(vreg) {
++		atomic_set(&edac_err_assert, 0);
++		return 1;
 +	}
 +
-+	pfn = I3000_DEAP_PFN(info->edeap, info->deap);
-+	offset = I3000_DEAP_OFFSET(info->deap);
-+	channel = I3000_DEAP_CHANNEL(info->deap);
-+
-+	row = edac_mc_find_csrow_by_page(mci, pfn);
-+
-+	if (info->errsts & I3000_ERRSTS_UE)
-+		edac_mc_handle_ue(mci, pfn, offset, row, "i3000 UE");
-+	else
-+		edac_mc_handle_ce(mci, pfn, offset, info->derrsyn, row,
-+				       multi_chan ? channel : 0,
-+				       "i3000 CE");
-+
-+	return 1;
++	return 0;
 +}
 +
-+static void i3000_check(struct mem_ctl_info *mci)
++/*
++ * edac_mc_workq_function
++ *	performs the operation scheduled by a workq request
++ */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
++static void edac_mc_workq_function(struct work_struct *work_req)
 +{
-+	struct i3000_error_info info;
-+
-+	debugf1("MC%d: %s()\n", mci->mc_idx, __func__);
-+	i3000_get_error_info(mci, &info);
-+	i3000_process_error_info(mci, &info, 1);
-+}
-+
-+static int i3000_is_interleaved(const unsigned char *c0dra,
-+				const unsigned char *c1dra,
-+				const unsigned char *c0drb,
-+				const unsigned char *c1drb)
++	struct delayed_work *d_work = (struct delayed_work*) work_req;
++	struct mem_ctl_info *mci = to_edac_mem_ctl_work(d_work);
++#else
++static void edac_mc_workq_function(void *ptr)
 +{
-+	int i;
++	struct mem_ctl_info *mci = (struct mem_ctl_info *) ptr;
++#endif
 +
-+	/* If the channels aren't populated identically then
-+	 * we're not interleaved.
-+	 */
-+	for (i = 0; i < I3000_RANKS_PER_CHANNEL / 2; i++)
-+		if (ODD_RANK_ATTRIB(c0dra[i]) != ODD_RANK_ATTRIB(c1dra[i]) ||
-+		    EVEN_RANK_ATTRIB(c0dra[i]) != EVEN_RANK_ATTRIB(c1dra[i]))
-+			return 0;
++	mutex_lock(&mem_ctls_mutex);
 +
-+	/* If the rank boundaries for the two channels are different
-+	 * then we're not interleaved.
-+	 */
-+	for (i = 0; i < I3000_RANKS_PER_CHANNEL; i++)
-+		if (c0drb[i] != c1drb[i])
-+			return 0;
-+
-+	return 1;
-+}
-+
-+static int i3000_probe1(struct pci_dev *pdev, int dev_idx)
-+{
-+	int rc;
-+	int i;
-+	struct mem_ctl_info *mci = NULL;
-+	unsigned long last_cumul_size;
-+	int interleaved, nr_channels;
-+	unsigned char dra[I3000_RANKS / 2], drb[I3000_RANKS];
-+	unsigned char *c0dra = dra, *c1dra = &dra[I3000_RANKS_PER_CHANNEL /
-2];
-+	unsigned char *c0drb = drb, *c1drb = &drb[I3000_RANKS_PER_CHANNEL];
-+	unsigned long mchbar;
-+	void *window;
-+
-+	debugf0("MC: %s()\n", __func__);
-+
-+	pci_read_config_dword(pdev, I3000_MCHBAR, (u32 *)&mchbar);
-+	mchbar &= I3000_MCHBAR_MASK;
-+	window = ioremap_nocache(mchbar, I3000_MMR_WINDOW_SIZE);
-+	if (!window) {
-+		printk(KERN_ERR "i3000: cannot map mmio space at 0x%lx\n", mchbar);
-+		return -ENODEV;
-+	}
-+
-+	c0dra[0] = readb(window + I3000_C0DRA + 0); /* ranks 0,1 */
-+	c0dra[1] = readb(window + I3000_C0DRA + 1); /* ranks 2,3 */
-+	c1dra[0] = readb(window + I3000_C1DRA + 0); /* ranks 0,1 */
-+	c1dra[1] = readb(window + I3000_C1DRA + 1); /* ranks 2,3 */
-+
-+	for (i = 0; i < I3000_RANKS_PER_CHANNEL; i++) {
-+		c0drb[i] = readb(window + I3000_C0DRB + i);
-+		c1drb[i] = readb(window + I3000_C1DRB + i);
-+	}
-+
-+	iounmap(window);
-+
-+	/* Figure out how many channels we have.
-+	 *
-+	 * If we have what the datasheet calls "asymmetric channels"
-+	 * (essentially the same as what was called "virtual single
-+	 * channel mode" in the i82875) then it's a single channel as
-+	 * far as EDAC is concerned.
-+	 */
-+	interleaved = i3000_is_interleaved(c0dra, c1dra, c0drb, c1drb);
-+	nr_channels = interleaved ? 2 : 1;
-+	mci = edac_mc_alloc(0, I3000_RANKS / nr_channels, nr_channels);
-+	if (!mci)
-+		return -ENOMEM;
-+
-+	debugf3("MC: %s(): init mci\n", __func__);
-+
-+	mci->dev = &pdev->dev;
-+	mci->mtype_cap = MEM_FLAG_DDR2;
-+
-+	mci->edac_ctl_cap = EDAC_FLAG_SECDED;
-+	mci->edac_cap = EDAC_FLAG_SECDED;
-+
-+	mci->mod_name = EDAC_MOD_STR;
-+	mci->mod_ver = I3000_REVISION;
-+	mci->ctl_name = i3000_devs[dev_idx].ctl_name;
-+	mci->dev_name = pci_name(pdev);
-+	mci->edac_check = i3000_check;
-+	mci->ctl_page_to_phys = NULL;
++	/* Only poll controllers that are running polled and have a check */
++	if (edac_mc_assert_error_check_and_clear() && (mci->edac_check !=
+NULL))
++		mci->edac_check(mci);
 +
 +	/*
-+	 * The dram rank boundary (DRB) reg values are boundary addresses
-+	 * for each DRAM rank with a granularity of 32MB.  DRB regs are
-+	 * cumulative; the last one will contain the total memory
-+	 * contained in all ranks.
-+	 *
-+	 * If we're in interleaved mode then we're only walking through
-+	 * the ranks of controller 0, so we double all the values we see.
++	 * FIXME: temp place holder for PCI checks,
++	 * goes away when we break out PCI
 +	 */
-+	for (last_cumul_size = i = 0; i < mci->nr_csrows; i++) {
-+		u8 value;
-+		u32 cumul_size;
-+		struct csrow_info *csrow = &mci->csrows[i];
++	edac_pci_do_parity_check();
 +
-+		value = drb[i];
-+		cumul_size = value << (I3000_DRB_SHIFT - PAGE_SHIFT);
-+		if (interleaved)
-+			cumul_size <<= 1;
-+		debugf3("MC: %s(): (%d) cumul_size 0x%x\n",
-+			__func__, i, cumul_size);
-+		if (cumul_size == last_cumul_size) {
-+			csrow->mtype = MEM_EMPTY;
-+			continue;
-+		}
++	mutex_unlock(&mem_ctls_mutex);
 +
-+		csrow->first_page = last_cumul_size;
-+		csrow->last_page = cumul_size - 1;
-+		csrow->nr_pages = cumul_size - last_cumul_size;
-+		last_cumul_size = cumul_size;
-+		csrow->grain = I3000_DEAP_GRAIN;
-+		csrow->mtype = MEM_DDR2;
-+		csrow->dtype = DEV_UNKNOWN;
-+		csrow->edac_mode = EDAC_UNKNOWN;
-+	}
-+
-+	/* Clear any error bits.
-+	 * (Yes, we really clear bits by writing 1 to them.)
-+	 */
-+	pci_write_bits16(pdev, I3000_ERRSTS, I3000_ERRSTS_BITS,
-I3000_ERRSTS_BITS);
-+
-+	rc = -ENODEV;
-+	if (edac_mc_add_mc(mci, 0)) {
-+		debugf3("MC: %s(): failed edac_mc_add_mc()\n", __func__);
-+		goto fail;
-+	}
-+
-+	/* get this far and it's successful */
-+	debugf3("MC: %s(): success\n", __func__);
-+	return 0;
-+
-+      fail:
-+	if (mci)
-+		edac_mc_free(mci);
-+
-+	return rc;
++	/* Reschedule */
++	queue_delayed_work(edac_workqueue, &mci->work,
+edac_mc_get_poll_msec());
 +}
 +
-+/* returns count (>= 0), or negative on error */
-+static int __devinit i3000_init_one(struct pci_dev *pdev,
-+				      const struct pci_device_id *ent)
++/*
++ * edac_mc_workq_setup
++ *	initialize a workq item for this mci
++ *	passing in the new delay period in msec
++ */
++void edac_mc_workq_setup(struct mem_ctl_info *mci, unsigned msec)
 +{
-+	int rc;
-+
-+	debugf0("MC: %s()\n", __func__);
-+
-+	if (pci_enable_device(pdev) < 0)
-+		return -EIO;
-+
-+	rc = i3000_probe1(pdev, ent->driver_data);
-+	if (mci_pdev == NULL)
-+		mci_pdev = pci_dev_get(pdev);
-+
-+	return rc;
-+}
-+
-+static void __devexit i3000_remove_one(struct pci_dev *pdev)
-+{
-+	struct mem_ctl_info *mci;
-+
 +	debugf0("%s()\n", __func__);
 +
-+	if ((mci = edac_mc_del_mc(&pdev->dev)) == NULL)
-+		return;
-+
-+	edac_mc_free(mci);
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20))
++	INIT_DELAYED_WORK(&mci->work, edac_mc_workq_function);
++#else
++	INIT_WORK(&mci->work, edac_mc_workq_function, mci);
++#endif
++	queue_delayed_work(edac_workqueue, &mci->work,
+msecs_to_jiffies(msec));
 +}
 +
-+static const struct pci_device_id i3000_pci_tbl[] __devinitdata = {
-+	{
-+		PCI_VEND_DEV(INTEL, 3000_HB), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+	 	I3000
-+	},
-+	{
-+		0,
-+	}	/* 0 terminated list. */
-+};
-+
-+MODULE_DEVICE_TABLE(pci, i3000_pci_tbl);
-+
-+static struct pci_driver i3000_driver = {
-+	.name = EDAC_MOD_STR,
-+	.probe = i3000_init_one,
-+	.remove = __devexit_p(i3000_remove_one),
-+	.id_table = i3000_pci_tbl,
-+};
-+
-+static int __init i3000_init(void)
++/*
++ * edac_mc_workq_teardown
++ *	stop the workq processing on this mci
++ */
++void edac_mc_workq_teardown(struct mem_ctl_info *mci)
 +{
-+	int pci_rc;
++	int status;
 +
-+	debugf3("MC: %s()\n", __func__);
-+	pci_rc = pci_register_driver(&i3000_driver);
-+	if (pci_rc < 0)
-+		goto fail0;
-+
-+	if (mci_pdev == NULL) {
-+		i3000_registered = 0;
-+		mci_pdev = pci_get_device(PCI_VENDOR_ID_INTEL,
-+					  PCI_DEVICE_ID_INTEL_3000_HB, NULL);
-+		if (!mci_pdev) {
-+			debugf0("i3000 pci_get_device fail\n");
-+			pci_rc = -ENODEV;
-+			goto fail1;
-+		}
-+
-+		pci_rc = i3000_init_one(mci_pdev, i3000_pci_tbl);
-+		if (pci_rc < 0) {
-+			debugf0("i3000 init fail\n");
-+			pci_rc = -ENODEV;
-+			goto fail1;
-+		}
-+	}
-+
-+	return 0;
-+
-+fail1:
-+	pci_unregister_driver(&i3000_driver);
-+
-+fail0:
-+	if (mci_pdev)
-+		pci_dev_put(mci_pdev);
-+
-+	return pci_rc;
-+}
-+
-+static void __exit i3000_exit(void)
-+{
-+	debugf3("MC: %s()\n", __func__);
-+
-+	pci_unregister_driver(&i3000_driver);
-+	if (!i3000_registered) {
-+		i3000_remove_one(mci_pdev);
-+		pci_dev_put(mci_pdev);
++	status = cancel_delayed_work(&mci->work);
++	if (status == 0) {
++		/* workq instance might be running, wait for it */
++		flush_workqueue(edac_workqueue);
 +	}
 +}
 +
-+module_init(i3000_init);
-+module_exit(i3000_exit);
++/*
++ * edac_reset_delay_period
++ */
 +
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Akamai Technologies Arthur Ulfeldt/Jason Uhlenkott");
-+MODULE_DESCRIPTION("MC support for Intel 3000 memory hub
-controllers");
-Index: linux-2.6.22-rc1/drivers/edac/Kconfig
-===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/Kconfig
-+++ linux-2.6.22-rc1/drivers/edac/Kconfig
-@@ -84,6 +84,13 @@ config EDAC_I82875P
- 	  Support for error detection and correction on the Intel
- 	  DP82785P and E7210 server chipsets.
- 
-+config EDAC_I3000
-+	tristate "Intel 3000/3010"
-+	depends on EDAC_MM_EDAC && PCI && X86_32
-+	help
-+	  Support for error detection and correction on the Intel
-+	  3000 and 3010 server chipsets.
++void edac_reset_delay_period(struct mem_ctl_info *mci, unsigned long
+value)
++{
++	mutex_lock(&mem_ctls_mutex);
 +
- config EDAC_I82860
- 	tristate "Intel 82860"
- 	depends on EDAC_MM_EDAC && PCI && X86_32
-Index: linux-2.6.22-rc1/drivers/edac/Makefile
-===================================================================
---- linux-2.6.22-rc1.orig/drivers/edac/Makefile
-+++ linux-2.6.22-rc1/drivers/edac/Makefile
-@@ -20,6 +20,7 @@ obj-$(CONFIG_EDAC_E7XXX)		+= e7xxx_edac.
- obj-$(CONFIG_EDAC_E752X)		+= e752x_edac.o
- obj-$(CONFIG_EDAC_I82443BXGX)		+= i82443bxgx_edac.o
- obj-$(CONFIG_EDAC_I82875P)		+= i82875p_edac.o
-+obj-$(CONFIG_EDAC_I3000)		+= i3000_edac.o
- obj-$(CONFIG_EDAC_I82860)		+= i82860_edac.o
- obj-$(CONFIG_EDAC_R82600)		+= r82600_edac.o
++	/* cancel the current workq request */
++	edac_mc_workq_teardown(mci);
++
++	/* restart the workq request, with new delay value */
++	edac_mc_workq_setup(mci, value);
++
++	mutex_unlock(&mem_ctls_mutex);
++}
++
+ /* Return 0 on success, 1 on failure.
+  * Before calling this function, caller must
+  * assign a unique value to mci->mc_idx.
+@@ -351,6 +454,16 @@ int edac_mc_add_mc(struct mem_ctl_info *
+ 		goto fail1;
+ 	}
  
-Index: linux-2.6.22-rc1/include/linux/pci_ids.h
++	/* If there IS a check routine, then we are running POLLED */
++	if (mci->edac_check != NULL) {
++		/* This instance is NOW RUNNING */
++		mci->op_state = OP_RUNNING_POLL;
++
++		edac_mc_workq_setup(mci, edac_mc_get_poll_msec());
++	} else {
++		mci->op_state = OP_RUNNING_INTERRUPT;
++	}
++
+ 	/* Report action taken */
+ 	edac_mc_printk(mci, KERN_INFO, "Giving out device to %s %s: DEV
+%s\n",
+ 		mci->mod_name, mci->ctl_name, dev_name(mci));
+@@ -386,6 +499,12 @@ struct mem_ctl_info * edac_mc_del_mc(str
+ 		return NULL;
+ 	}
+ 
++	/* marking MCI offline */
++	mci->op_state = OP_OFFLINE;
++
++	/* flush workq processes */
++	edac_mc_workq_teardown(mci);
++
+ 	edac_remove_sysfs_mci_device(mci);
+ 	del_mc_from_global_list(mci);
+ 	mutex_unlock(&mem_ctls_mutex);
+Index: linux-2.6.21.1/drivers/edac/edac_module.h
 ===================================================================
---- linux-2.6.22-rc1.orig/include/linux/pci_ids.h
-+++ linux-2.6.22-rc1/include/linux/pci_ids.h
-@@ -2235,6 +2235,7 @@
- #define PCI_DEVICE_ID_INTEL_82915GM_IG	0x2592
- #define PCI_DEVICE_ID_INTEL_82945G_HB	0x2770
- #define PCI_DEVICE_ID_INTEL_82945G_IG	0x2772
-+#define PCI_DEVICE_ID_INTEL_3000_HB	0x2778
- #define PCI_DEVICE_ID_INTEL_82945GM_HB	0x27A0
- #define PCI_DEVICE_ID_INTEL_82945GM_IG	0x27A2
- #define PCI_DEVICE_ID_INTEL_ICH6_0	0x2640
+--- linux-2.6.21.1.orig/drivers/edac/edac_module.h
++++ linux-2.6.21.1/drivers/edac/edac_module.h
+@@ -28,6 +28,7 @@ extern int edac_get_log_ue(void);
+ extern int edac_get_log_ce(void);
+ extern int edac_get_panic_on_ue(void);
+ extern int edac_get_poll_msec(void);
++extern int edac_mc_get_poll_msec(void);
+ 
+ extern int edac_device_create_sysfs(struct edac_device_ctl_info
+*edac_dev);
+ extern void edac_device_remove_sysfs(struct edac_device_ctl_info
+*edac_dev);
+@@ -35,9 +36,9 @@ extern struct sysdev_class *edac_get_eda
+ 
+ /* edac core workqueue: single CPU mode */
+ extern struct workqueue_struct *edac_workqueue;
+-extern void edac_workq_setup(struct edac_device_ctl_info *edac_dev,
++extern void edac_device_workq_setup(struct edac_device_ctl_info
+*edac_dev,
+ 				unsigned msec);
+-extern void edac_workq_teardown(struct edac_device_ctl_info
+*edac_dev);
++extern void edac_device_workq_teardown(struct edac_device_ctl_info
+*edac_dev);
+ extern void edac_device_reset_delay_period(
+ 			struct edac_device_ctl_info *edac_dev,
+ 			unsigned long value);
+Index: linux-2.6.21.1/drivers/edac/edac_module.c
+===================================================================
+--- linux-2.6.21.1.orig/drivers/edac/edac_module.c
++++ linux-2.6.21.1/drivers/edac/edac_module.c
+@@ -1,6 +1,14 @@
+-
+-#include <linux/freezer.h>
+-#include <linux/kthread.h>
++/*
++ * edac_module.c
++ *
++ * (C) 2007 www.douglaskthompson.com
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2. This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ *
++ * Author: Doug Thompson <norsk5@xmission.com>
++ *
++ */
+ #include <linux/edac.h>
+ 
+ #include "edac_core.h"
+@@ -17,10 +25,6 @@ EXPORT_SYMBOL_GPL(edac_debug_level);
+ /* scope is to module level only */
+ struct workqueue_struct *edac_workqueue;
+ 
+-/* private to this file */
+-static struct task_struct *edac_thread;
+-
+-
+ /*
+  * sysfs object: /sys/devices/system/edac
+  *	need to export to other files in this modules
+@@ -84,63 +88,6 @@ static void edac_unregister_sysfs_edac_n
+ 	edac_class_valid = 0;
+ }
+ 
+-
+-/*
+- * Check MC status every edac_get_poll_msec().
+- * Check PCI status every edac_get_poll_msec() as well.
+- *
+- * This where the work gets done for edac.
+- *
+- * SMP safe, doesn't use NMI, and auto-rate-limits.
+- */
+-static void do_edac_check(void)
+-{
+-	debugf3("%s()\n", __func__);
+-
+-	/* perform the poll activities */
+-	edac_check_mc_devices();
+-	edac_pci_do_parity_check();
+-}
+-
+-/*
+- * handler for EDAC to check if NMI type handler has asserted
+interrupt
+- */
+-static int edac_assert_error_check_and_clear(void)
+-{
+-	int vreg;
+-
+-	if(edac_op_state == EDAC_OPSTATE_POLL)
+-		return 1;
+-
+-	vreg = atomic_read(&edac_err_assert);
+-	if(vreg) {
+-		atomic_set(&edac_err_assert, 0);
+-		return 1;
+-	}
+-
+-	return 0;
+-}
+-
+-/*
+- * Action thread for EDAC to perform the POLL operations
+- */
+-static int edac_kernel_thread(void *arg)
+-{
+-	int msec;
+-
+-	while (!kthread_should_stop()) {
+-		if(edac_assert_error_check_and_clear())
+-			do_edac_check();
+-
+-		/* goto sleep for the interval */
+-		msec = (HZ * edac_get_poll_msec()) / 1000;
+-		schedule_timeout_interruptible(msec);
+-		try_to_freeze();
+-	}
+-
+-	return 0;
+-}
+-
+ /*
+  * edac_workqueue_setup
+  *	initialize the edac work queue for polling operations
+@@ -221,19 +168,9 @@ static int __init edac_init(void)
+ 		goto error_pci;
+ 	}
+ 
+-	/* create our kernel thread */
+-	edac_thread = kthread_run(edac_kernel_thread, NULL, "kedac");
+-
+-	if (IS_ERR(edac_thread)) {
+-		err = PTR_ERR(edac_thread);
+-		goto error_work;
+-	}
+-
+ 	return 0;
+ 
+ 	/* Error teardown stack */
+-error_work:
+-	edac_workqueue_teardown();
+ error_pci:
+ 	edac_sysfs_pci_teardown();
+ error_mem:
+@@ -251,7 +188,6 @@ error:
+ static void __exit edac_exit(void)
+ {
+ 	debugf0("%s()\n", __func__);
+-	kthread_stop(edac_thread);
+ 
+ 	/* tear down the various subsystems*/
+ 	edac_workqueue_teardown();
+Index: linux-2.6.21.1/drivers/edac/edac_mc_sysfs.c
+===================================================================
+--- linux-2.6.21.1.orig/drivers/edac/edac_mc_sysfs.c
++++ linux-2.6.21.1/drivers/edac/edac_mc_sysfs.c
+@@ -22,22 +22,28 @@ static int panic_on_ue;
+ static int poll_msec = 1000;
+ 
+ /* Getter functions for above */
+-int edac_get_log_ue()
++int edac_get_log_ue(void)
+ {
+ 	return log_ue;
+ }
+ 
+-int edac_get_log_ce()
++int edac_get_log_ce(void)
+ {
+ 	return log_ce;
+ }
+ 
+-int edac_get_panic_on_ue()
++int edac_get_panic_on_ue(void)
+ {
+ 	return panic_on_ue;
+ }
+ 
+-int edac_get_poll_msec()
++/* this is temporary */
++int edac_mc_get_poll_msec(void)
++{
++	return edac_get_poll_msec();
++}
++
++int edac_get_poll_msec(void)
+ {
+ 	return poll_msec;
+ }
 
