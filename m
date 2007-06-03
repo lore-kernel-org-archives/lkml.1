@@ -1,52 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbXFCRI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbXFCRSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755916AbXFCRI1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 13:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbXFCRIT
+	id S1756190AbXFCRSe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 13:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbXFCRS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 13:08:19 -0400
-Received: from earth.simplelists.com ([81.3.86.41]:3231 "EHLO
-	earth.simplelists.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbXFCRIS (ORCPT
+	Sun, 3 Jun 2007 13:18:27 -0400
+Received: from web50112.mail.re2.yahoo.com ([206.190.39.149]:27277 "HELO
+	web50112.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754069AbXFCRS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 13:08:18 -0400
-X-Greylist: delayed 471 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jun 2007 13:08:18 EDT
-Subject: Re: [PATCH 1/2] xt_connlimit (kernel) - connection limiting
-From: Andrew Beverley <andy@andybev.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Netfilter Developer Mailing List 
-	<netfilter-devel@lists.netfilter.org>,
-       Netfilter Mailing List <netfilter@lists.netfilter.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0706031312450.10578@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0706031248290.10578@yvahk01.tjqt.qr>
-	 <Pine.LNX.4.61.0706031312450.10578@yvahk01.tjqt.qr>
-Content-Type: text/plain
-Date: Sun, 03 Jun 2007 18:00:22 +0100
-Message-Id: <1180890022.6601.6.camel@andybev>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Jun 2007 13:18:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=lRHKhtUOEn0w+kKlSjGciIU8kdy5ijwYRYdNaxGUCz9W2tLa5aLtuGO2XAb7T++6RDVNch15fPK/ntoBsdeL0tRbA0A/yZe8w7aJlRfp8Lji0tqF3q7nWcEzaIjeRjFsTSZDFz2U9Fq3I66sZ161C6/mCHkalQ/a5dd0uXCMJoA=;
+X-YMail-OSG: FLUJkrYVM1mNFSkLdSDp4WdsUcTd4PIfDsQoMIBMe5PXXmQMLU7szP.U6g8rzdog9A--
+Date: Sun, 3 Jun 2007 10:18:25 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: [PATCH 23/36] drivers edac Lindent amd76x driver
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <527777.7062.qm@web50112.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-03 at 13:12 +0200, Jan Engelhardt wrote:
-> Adds the connlimit match that has been in POM-NG for a long time.
-> 
->     *	works with 2.6.22, xtables'ified and all that
-> 
->     *	will request nf_conntrack_ipv4 upon load
-> 	(otherwise it hotdrops every packet - a glitch that goes back
-> 	to at least 2.6.20.2)
+From:	Douglas Thompson <dougthompson@xmission.com>
 
-Excellent! This has been at the back of my mind for a while.
+Run this driver through Lindent for cleanup purposes
 
-Is there any chance of getting UDP flows added as well as TCP
-connections? I use connlimit for detecting p2p software, but some p2p
-software now uses UDP instead.
+Signed-off-by: Dave Jiang <djiang@mvista.com>
+Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
+---
+ amd76x_edac.c |   54
++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 25 insertions(+), 29 deletions(-)
+---
 
-Thanks,
-
-Andy Beverley
-
+Index: linux-2.6.22-rc1/drivers/edac/amd76x_edac.c
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/edac/amd76x_edac.c
++++ linux-2.6.22-rc1/drivers/edac/amd76x_edac.c
+@@ -86,11 +86,9 @@ struct amd76x_dev_info {
+ 
+ static const struct amd76x_dev_info amd76x_devs[] = {
+ 	[AMD761] = {
+-		.ctl_name = "AMD761"
+-	},
++		    .ctl_name = "AMD761"},
+ 	[AMD762] = {
+-		.ctl_name = "AMD762"
+-	},
++		    .ctl_name = "AMD762"},
+ };
+ 
+ /**
+@@ -102,21 +100,21 @@ static const struct amd76x_dev_info amd7
+  *	on the chip so that further errors will be reported
+  */
+ static void amd76x_get_error_info(struct mem_ctl_info *mci,
+-		struct amd76x_error_info *info)
++				  struct amd76x_error_info *info)
+ {
+ 	struct pci_dev *pdev;
+ 
+ 	pdev = to_pci_dev(mci->dev);
+ 	pci_read_config_dword(pdev, AMD76X_ECC_MODE_STATUS,
+-				&info->ecc_mode_status);
++			      &info->ecc_mode_status);
+ 
+ 	if (info->ecc_mode_status & BIT(8))
+ 		pci_write_bits32(pdev, AMD76X_ECC_MODE_STATUS,
+-				(u32) BIT(8), (u32) BIT(8));
++				 (u32) BIT(8), (u32) BIT(8));
+ 
+ 	if (info->ecc_mode_status & BIT(9))
+ 		pci_write_bits32(pdev, AMD76X_ECC_MODE_STATUS,
+-				(u32) BIT(9), (u32) BIT(9));
++				 (u32) BIT(9), (u32) BIT(9));
+ }
+ 
+ /**
+@@ -130,7 +128,8 @@ static void amd76x_get_error_info(struct
+  *	then attempt to handle and clean up after the error
+  */
+ static int amd76x_process_error_info(struct mem_ctl_info *mci,
+-		struct amd76x_error_info *info, int handle_errors)
++				     struct amd76x_error_info *info,
++				     int handle_errors)
+ {
+ 	int error_found;
+ 	u32 row;
+@@ -138,7 +137,7 @@ static int amd76x_process_error_info(str
+ 	error_found = 0;
+ 
+ 	/*
+-	 *	Check for an uncorrectable error
++	 *      Check for an uncorrectable error
+ 	 */
+ 	if (info->ecc_mode_status & BIT(8)) {
+ 		error_found = 1;
+@@ -146,12 +145,12 @@ static int amd76x_process_error_info(str
+ 		if (handle_errors) {
+ 			row = (info->ecc_mode_status >> 4) & 0xf;
+ 			edac_mc_handle_ue(mci, mci->csrows[row].first_page, 0,
+-				row, mci->ctl_name);
++					  row, mci->ctl_name);
+ 		}
+ 	}
+ 
+ 	/*
+-	 *	Check for a correctable error
++	 *      Check for a correctable error
+ 	 */
+ 	if (info->ecc_mode_status & BIT(9)) {
+ 		error_found = 1;
+@@ -159,7 +158,7 @@ static int amd76x_process_error_info(str
+ 		if (handle_errors) {
+ 			row = info->ecc_mode_status & 0xf;
+ 			edac_mc_handle_ce(mci, mci->csrows[row].first_page, 0,
+-				0, row, 0, mci->ctl_name);
++					  0, row, 0, mci->ctl_name);
+ 		}
+ 	}
+ 
+@@ -182,7 +181,7 @@ static void amd76x_check(struct mem_ctl_
+ }
+ 
+ static void amd76x_init_csrows(struct mem_ctl_info *mci, struct
+pci_dev *pdev,
+-		enum edac_type edac_mode)
++			       enum edac_type edac_mode)
+ {
+ 	struct csrow_info *csrow;
+ 	u32 mba, mba_base, mba_mask, dms;
+@@ -193,8 +192,7 @@ static void amd76x_init_csrows(struct me
+ 
+ 		/* find the DRAM Chip Select Base address and mask */
+ 		pci_read_config_dword(pdev,
+-				      AMD76X_MEM_BASE_ADDR + (index * 4),
+-				      &mba);
++				      AMD76X_MEM_BASE_ADDR + (index * 4), &mba);
+ 
+ 		if (!(mba & BIT(0)))
+ 			continue;
+@@ -249,7 +247,7 @@ static int amd76x_probe1(struct pci_dev 
+ 	mci->mtype_cap = MEM_FLAG_RDDR;
+ 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
+ 	mci->edac_cap = ems_mode ?
+-			(EDAC_FLAG_EC | EDAC_FLAG_SECDED) : EDAC_FLAG_NONE;
++	    (EDAC_FLAG_EC | EDAC_FLAG_SECDED) : EDAC_FLAG_NONE;
+ 	mci->mod_name = EDAC_MOD_STR;
+ 	mci->mod_ver = AMD76X_REVISION;
+ 	mci->ctl_name = amd76x_devs[dev_idx].ctl_name;
+@@ -258,12 +256,12 @@ static int amd76x_probe1(struct pci_dev 
+ 	mci->ctl_page_to_phys = NULL;
+ 
+ 	amd76x_init_csrows(mci, pdev, ems_modes[ems_mode]);
+-	amd76x_get_error_info(mci, &discard);  /* clear counters */
++	amd76x_get_error_info(mci, &discard);	/* clear counters */
+ 
+ 	/* Here we assume that we will never see multiple instances of this
+ 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+ 	 */
+-	if (edac_mc_add_mc(mci,0)) {
++	if (edac_mc_add_mc(mci, 0)) {
+ 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+ 		goto fail;
+ 	}
+@@ -272,14 +270,14 @@ static int amd76x_probe1(struct pci_dev 
+ 	debugf3("%s(): success\n", __func__);
+ 	return 0;
+ 
+-fail:
++      fail:
+ 	edac_mc_free(mci);
+ 	return -ENODEV;
+ }
+ 
+ /* returns count (>= 0), or negative on error */
+ static int __devinit amd76x_init_one(struct pci_dev *pdev,
+-		const struct pci_device_id *ent)
++				     const struct pci_device_id *ent)
+ {
+ 	debugf0("%s()\n", __func__);
+ 
+@@ -309,16 +307,14 @@ static void __devexit amd76x_remove_one(
+ 
+ static const struct pci_device_id amd76x_pci_tbl[] __devinitdata = {
+ 	{
+-		PCI_VEND_DEV(AMD, FE_GATE_700C), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+-		AMD762
+-	},
++	 PCI_VEND_DEV(AMD, FE_GATE_700C), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++	 AMD762},
+ 	{
+-		PCI_VEND_DEV(AMD, FE_GATE_700E), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+-		AMD761
+-	},
++	 PCI_VEND_DEV(AMD, FE_GATE_700E), PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++	 AMD761},
+ 	{
+-		0,
+-	}	/* 0 terminated list. */
++	 0,
++	 }			/* 0 terminated list. */
+ };
+ 
+ MODULE_DEVICE_TABLE(pci, amd76x_pci_tbl);
 
