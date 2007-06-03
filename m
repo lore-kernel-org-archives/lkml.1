@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbXFCUpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbXFCUp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbXFCUpo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 16:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXFCUpM
+	id S1753050AbXFCUp6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 16:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXFCUp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 16:45:12 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:54181 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbXFCUpK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 16:45:10 -0400
-X-IronPort-AV: i="4.16,378,1175497200"; 
-   d="scan'208"; a="158235323:sNHT44714169"
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: thockin@google.com, Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Kconfig variable "COBALT" is not defined anywhere
-X-Message-Flag: Warning: May contain useful information
-References: <Pine.LNX.4.64.0706031315230.23477@localhost.localdomain>
-	<20070603132309.508738b7.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0706031630030.26035@localhost.localdomain>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sun, 03 Jun 2007 13:45:08 -0700
-In-Reply-To: <Pine.LNX.4.64.0706031630030.26035@localhost.localdomain> (Robert P. J. Day's message of "Sun, 3 Jun 2007 16:31:08 -0400 (EDT)")
-Message-ID: <adazm3glqcr.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
+	Sun, 3 Jun 2007 16:45:26 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:55861 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752178AbXFCUpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 16:45:24 -0400
+Date: Sun, 3 Jun 2007 22:46:26 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net
+Subject: [PATCH 06/19] kbuild: suppress modpost warnings for references from the .toc section as used by powerpc
+Message-ID: <20070603204626.GF9240@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 03 Jun 2007 20:45:08.0743 (UTC) FILETIME=[12C54170:01C7A620]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > >   there is no Kconfig file which defines the selectable option
- > > > "COBALT", which means that this snippet from drivers/char/nvram.c:
- > > >
- > > > #  if defined(CONFIG_COBALT)
- > > > #    include <linux/cobalt-nvram.h>
- > > > #    define MACH COBALT
- > > > #  else
- > > > #    define MACH PC
- > > > #  endif
- > > > never evaluates to true, therefore making <linux/cobalt-nvram.h>
- > > > fairly useless, at least under the circumstances.
+Subject: [PATCH 06/19] kbuild: suppress modpost warnings for references from the .toc section as used by powerpc
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 24 May 2007 14:16:13 +1000
 
- > > Maybe it should be MIPS_COBALT ?
+We should do better here by effetively "dereferencing" references to
+the .toc (or the .got2) section, but that is much harder.
 
- > that's the first thing that occurred to me, but that header file is
- > copyright sun microsystems and says nothing about MIPS, so that didn't
- > really settle the issue.  that's why i'd rather someone else resolve
- > this one way or the other.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ scripts/mod/modpost.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Actually, looking through the old kernel history, it looks like this
-was added by Tim Hockin's (CCed) patch "Add Cobalt Networks support to
-nvram driver".  Which added this to drivers/cobalt:
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 760b2b3..f6bae03 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -870,9 +870,12 @@ static void warn_sec_mismatch(const char *modname, const char *fromsec,
+ 		return;
+ 
+ 	/* fromsec whitelist - without a valid 'before'
+-	 * powerpc has a GOT table in .got2 section */
++	 * powerpc has a GOT table in .got2 section
++	 * and also a .toc section */
+ 	if (strcmp(fromsec, ".got2") == 0)
+ 		return;
++	if (strcmp(fromsec, ".toc") == 0)
++		return;
+ 
+ 	if (before && after) {
+ 		warn("%s(%s+0x%llx): Section mismatch: reference to %s:%s "
+-- 
+1.5.1.rc3.1544.g8a923
 
-+bool 'Support for Cobalt Networks x86 servers' CONFIG_COBALT
 
-I guess Tim can clear up what's intended...
+----- End forwarded message -----
