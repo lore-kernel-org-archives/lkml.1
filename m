@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752273AbXFCVTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751855AbXFCVU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752273AbXFCVTm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 17:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbXFCVTh
+	id S1751855AbXFCVU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 17:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbXFCVUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 17:19:37 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:57078 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751135AbXFCVTg (ORCPT
+	Sun, 3 Jun 2007 17:20:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:52714 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbXFCVUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 17:19:36 -0400
-Message-ID: <46633047.1020707@cosmosbay.com>
-Date: Sun, 03 Jun 2007 23:19:03 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Sun, 3 Jun 2007 17:20:14 -0400
+From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+References: <878xb35sje.fsf@goat.bogus.local> <200706012340.54394.rjw@sisk.pl>
+	<87hcpr2ubl.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl>
+Date: Sun, 03 Jun 2007 23:20:41 +0200
+Message-ID: <87wsykpweu.fsf@goat.bogus.local>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 1/2] ufd v1 - unsequential O(1) fdmap core
-References: <send-serie.davidel@xmailserver.org.24319.1180825145.1>
-In-Reply-To: <send-serie.davidel@xmailserver.org.24319.1180825145.1>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 03 Jun 2007 23:19:12 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX18nGP3z6t/cOR0CuGIPGebIixXizqsJMS3WETY
+ JPX9NQZz3ERNul+pYEL4oLpbXQDgeV+2rxGDCXbyBDSUxqxn0+
+ /ieeC1MqAv5tL/yPFT3Zg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi a écrit :
-> Core code for the unsequential fdmap implementation. Random allocation,
-> exact allocation, de-allocation and lookup are all O(1) operations.
-> The only operation that is O(N) is the strict from-N-up kind of allocation,
-> but that only used by F_DUPFD and it's definitely not frequently used
-> (and current code is O(N) too).
-> Like the "struct fdtable", the unsequential fdmap is RCU friendly too.
-> 
-> 
-> 
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Could you please provide a diffstat ?
+> Second, you can use PM_TRACE (Documentation/power/s2ram.txt) to find the
+> place where it really fails.
 
-Me think : "Huge patch, and icache pressure for what exact gain ?"
+First I augmented my minimal config kernel with some TRACE_RESUME()s:
 
-File descriptor allocation is dust compared to socket setup costs and network 
-stuf. (Not speaking of close() wich is O(1) obviously)
+--- a/kernel/power/main.c	2007-05-27 23:48:05.000000000 +0200
++++ b/kernel/power/main.c	2007-06-03 22:28:46.000000000 +0200
+@@ -223,6 +223,7 @@
+ 	pr_debug("PM: Finishing wakeup.\n");
+ 	suspend_finish(state);
+  Unlock:
++	TRACE_RESUME(error);
+ 	mutex_unlock(&pm_mutex);
+ 	return error;
+ }
+@@ -303,6 +304,7 @@
+ 		error = enter_state(state);
+ 	else
+ 		error = -EINVAL;
++	TRACE_RESUME(error);
+ 	return error ? error : n;
+ }
+ 
+With this test script:
 
-If we want a different file descriptor allocation, why should we use a 
-parallel structure, and adding one level of complexity ?
+#! /bin/sh
 
-Instead of finding the first zero bit in a bitmap, we could just use a cyclic 
-allocation, ie finding a zero bit from a 'last' position. Keeping fd_count 
-would help not atempting a findzerobit in the case all bits are known to be set.
+sync
+echo 1 >/sys/power/pm_trace
+echo mem >/sys/power/state
+shutdown -rn now
 
+I got alternating
+  hash matches drivers/base/power/resume.c:58
+and
+  hash matches kernel/power/main.c:307
 
+> First, you can check if the patch
+>
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/20-ACPI-preserve-the-ebx-value-in-acpi_copy_wakeup_routine.patch
+
+Then I applied this patch, but it doesn't change anything.
+
+But either way the script never reaches "shutdown -rn now". So, it
+seems, that my laptop does a full resume every other reboot, but it
+never returns to userspace.
+
+> Also, please read Documentation/power/basic-pm-debugging.txt .
+
+Regards, Olaf.
