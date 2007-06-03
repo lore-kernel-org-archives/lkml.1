@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbXFCOw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbXFCOyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759424AbXFCOw3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 10:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbXFCOpo
+	id S1757915AbXFCOyd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 10:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbXFCOyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 10:45:44 -0400
-Received: from xenotime.net ([66.160.160.81]:33772 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756818AbXFCOpn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 10:45:43 -0400
-Date: Sun, 3 Jun 2007 07:45:52 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, rdunlap@xenotime.net,
-       akpm@linux-foundation.org, Chen Li-jun <cljun@xiyou.edu.cn>,
-       Wang Ya-gang <lazy_linux@126.com>
-Subject: Re: [RFC] Documentation/CodingStyle: Add rules for goto labels
-Message-Id: <20070603074552.430c3d02.rdunlap@xenotime.net>
-In-Reply-To: <20070603142939.GW4095@ftp.linux.org.uk>
-References: <20070603142450.GA4230@localhost.localdomain>
-	<20070603142939.GW4095@ftp.linux.org.uk>
-Organization: YPO4
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Jun 2007 10:54:24 -0400
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:35880 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752167AbXFCOyX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 10:54:23 -0400
+Date: Sun, 3 Jun 2007 16:55:32 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Message-ID: <20070603145529.GC3879@enneenne.com>
+References: <20070530165705.GD29337@enneenne.com> <4662AE11.70107@drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4662AE11.70107@drzeus.cx>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: mmc0: unrecognised SCR structure version 1
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Jun 2007 15:29:39 +0100 Al Viro wrote:
-
-> On Sun, Jun 03, 2007 at 10:24:50PM +0800, WANG Cong wrote:
->   
-> > +Do care when you use Lindent to indent your code, since it may use spaces
-> > +instead of tabs before a goto label and it may also align the label in a
-> > +wrong position. A goto label should be aligned in the column that is 8
-> > +characters ahead of the statement just below this label. Please fix it manually
-> > +if you find Lindent is wrong.
+On Sun, Jun 03, 2007 at 02:03:29PM +0200, Pierre Ossman wrote:
 > 
-> Lindent is wrong, but the style you are advocating is, at the very
-> least, not universal.  Equally (if not more) common is putting label
-> in column 1, period.  Regardless of indentation level of the statement
-> following it.
+> To my knowledge, no such version exists. So either your card is broken or you
+> have some transfer problem on your board. What's the name of this card and have
+> you tried any others?
 
-ack Al's style.
+I suppose the same... but this is the only cards who gives me such
+problems! What do you think it could be the problem? Maybe some PXA
+MMC special settings?
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+The card is a 512MB MiniSD by Viking InterWorks.
+
+Thanks,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
