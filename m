@@ -1,35 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbXFCJk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761038AbXFCJlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760640AbXFCJk4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 05:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760141AbXFCJkq
+	id S1761038AbXFCJlb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 05:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbXFCJlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 05:40:46 -0400
-Received: from web50101.mail.re2.yahoo.com ([206.190.38.29]:37736 "HELO
-	web50101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758573AbXFCJkp (ORCPT
+	Sun, 3 Jun 2007 05:41:21 -0400
+Received: from web50106.mail.re2.yahoo.com ([206.190.38.34]:47711 "HELO
+	web50106.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756374AbXFCJlU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 05:40:45 -0400
+	Sun, 3 Jun 2007 05:41:20 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=1jxRlmEZUk7RmwDaLjOEwadvSBSVooHxO8AHkA+ivrQTUKuNt7dMIWjG9L9Vn3PEbzNhq0ihvzack/Xd6gZwbPFiltQOOCGhNEZ2w0hWNYv9aO5UarY2uQ5NCF/ooyKmEaPKfDj4O5TXHjA4t6glB15O5wycVmoogxBIFBM6TJs=;
-X-YMail-OSG: X6wny4UVM1mJmg6__MaQLDyTcbpuF_uCKxN2LndhemHaTRG2bfAY4XMjH8sEXJDihuJ7.gOO0svw4746GN3AX6g8wsS29ZSLoqyF9lqwfqBKTlPNSHlx0LAyYSWDJgE4t2QmfBFHmIY-
-Date: Sun, 3 Jun 2007 02:34:03 -0700 (PDT)
+  b=HOFoq8e9HDNY1mv8PB8B5f4W1uek4OtHtOCApTOkMwLfxxR7sk3WLlqENdXTdFQ8fMGj3oXPLBp+b5qiacRfi5tUTu6zhmMuKFz0LgrLOgLLIqiqzaBkdW6u1UqDggVhINvDoU+TKeDNj5jIKzbniEJStce4M+76Ubs390TTm3Y=;
+X-YMail-OSG: 9JGER4UVM1nvxjTemeMN6.OaARlOMy4qYNeaMxEHabXy0diaYyaNvFK.UGPgJ5aFdSYDr2CsZyrVetiAkrh7tc8yGo2K_nsnyuUHmyB.BHL.p2XzQdbnlQgDmqKDduH1hg0EKWyDTTRTAL9pBJ7KfGIWK3p36hoBxg--
+Date: Sun, 3 Jun 2007 02:34:38 -0700 (PDT)
 From: Doug Thompson <norsk5@yahoo.com>
-Subject: [PATCH 23/36] drivers edac Lindent amd76x driver
+Subject: [PATCH 23/36] drivers edac Lindent amd76x memory driver
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <325199.9497.qm@web50101.mail.re2.yahoo.com>
+Message-ID: <347123.91502.qm@web50106.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From:	Douglas Thompson <dougthompson@xmission.com>
 
-Run this driver through Lindent for cleanup
+Run this driver through Lindent for cleanup purposes
 
 Signed-off-by: Dave Jiang <djiang@mvista.com>
 Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
