@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbXFCIls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758573AbXFCInV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759069AbXFCIls (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 04:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbXFCIlk
+	id S1758573AbXFCInV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 04:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbXFCInO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 04:41:40 -0400
-Received: from lucidpixels.com ([75.144.35.66]:52957 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753030AbXFCIlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 04:41:39 -0400
-Date: Sun, 3 Jun 2007 04:41:38 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.22-rc3 safe to migrate to?
-In-Reply-To: <46627579.3040507@goop.org>
-Message-ID: <Pine.LNX.4.64.0706030441280.30622@p34.internal.lan>
-References: <Pine.LNX.4.64.0706021723480.22318@p34.internal.lan> 
- <4661F511.4070207@goop.org> <6bffcb0e0706030059o3e53e647uf3ae1aa3f16609d8@mail.gmail.com>
- <46627579.3040507@goop.org>
+	Sun, 3 Jun 2007 04:43:14 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:42406 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753030AbXFCInN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 04:43:13 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Sun, 3 Jun 2007 04:41:44 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: __get_free_pages:  can GFP_DMA omit GFP_KERNEL and GFP_ATOMIC?
+Message-ID: <Pine.LNX.4.64.0706030435130.14627@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+a two-parter:
 
-On Sun, 3 Jun 2007, Jeremy Fitzhardinge wrote:
+  first, can a call to __get_free_pages to allocate DMA-able memory
+omit specifying either of GFP_KERNEL or GFP_ATOMIC?  love's book on
+kernel development strongly suggests you need to specify one or the
+other, but there are a few instances in the tree like this:
 
-> Michal Piotrowski wrote:
->> It's already merged into mainline
->>
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=df3c7244264f1d12562413aa32d56be802486516
->>
->
-> Oh, good.  I hadn't read through the last couple of days of commits.
->
->    J
->
->
+drivers/s390/net/claw.c:                        (void *)__get_free_pages(__GFP_DMA,
+drivers/s390/net/claw.c:                   p_buff=(void *)__get_free_pages(__GFP_DMA,
 
-Nice, any word on the USB bug?
+where you can see that the only type flag is __GFP_DMA.  is that
+meaningful?
 
+  and, second, i only noticed this as i was going to submit a short
+patch to replace __get_free_pages calls for DMA-able memory with the
+existing equivalent macro __get_dma_pages.  is that still considered a
+worthwhile cleanup?  there's not that many examples of it, and it
+would just make things consistent.
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
