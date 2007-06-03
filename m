@@ -1,232 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751173AbXFCSH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750932AbXFCSHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751173AbXFCSH0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 14:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbXFCSHS
+	id S1750932AbXFCSHw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 14:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbXFCSHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 14:07:18 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:60563 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750831AbXFCSHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 14:07:16 -0400
-Date: Sun, 3 Jun 2007 20:07:08 +0200 (CEST)
-From: Jan Kratochvil <honza@jikos.cz>
-To: Richard Purdie <rpurdie@rpsys.net>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Support for controlling leds on xbox 360 pad.
-In-Reply-To: <alpine.LRH.0.98.0706031959170.22353@twin.jikos.cz>
-Message-ID: <alpine.LRH.0.98.0706032004070.22353@twin.jikos.cz>
-References: <alpine.LRH.0.98.0705292250430.22353@twin.jikos.cz> 
- <alpine.LRH.0.98.0705292312150.22353@twin.jikos.cz> 
- <1180474885.5822.94.camel@localhost.localdomain> 
- <d120d5000705300756t24d4a58ey1f4130bef22f8309@mail.gmail.com>
- <1180542740.5835.135.camel@localhost.localdomain>
- <alpine.LRH.0.98.0705302334580.22353@twin.jikos.cz>
- <alpine.LRH.0.98.0706031959170.22353@twin.jikos.cz>
+	Sun, 3 Jun 2007 14:07:42 -0400
+Received: from stinky.trash.net ([213.144.137.162]:49711 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751150AbXFCSHl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 14:07:41 -0400
+Message-ID: <466302DC.3030300@trash.net>
+Date: Sun, 03 Jun 2007 20:05:16 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
+To: Strobl Anton <a.strobl@aws-it.at>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: OOPS iproute2/tc/u32_destroy in 2.6.22-rc3-git6
+References: <20070603161814.q5x2jsq8dck4gcgw@bigboss.aws-it.at>	<4662D881.5080600@googlemail.com> <4662EE12.1080400@trash.net> <20070603194856.9eyyeukhesgw0owg@bigboss.aws-it.at>
+In-Reply-To: <20070603194856.9eyyeukhesgw0owg@bigboss.aws-it.at>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------030902040603010707060109"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  the previous patch made led support dependent on force feedback. Which 
-doesn't make sense from user point of view. So this patch removes this odd 
-dependency. I made it in separate patch to make my changes easier to 
-review.
+This is a multi-part message in MIME format.
+--------------030902040603010707060109
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-Led support of xbox 360 now doesn't depend on force feedback.
+Strobl Anton wrote:
+> Patch for sch_cbq.c works perfect - no more kernel panic!
+> (sch_atm.c => im not able to test atm shaping, sorry)
 
-Signed-off-by: Jan Kratochvil <honza@jikos.cz>
+
+Thanks Anton. Dave, please apply.
+
+
+--------------030902040603010707060109
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+[NET_SCHED]: Fix filter double free
+
+cbq and atm destroy their filters twice when destroying inner classes
+during qdisc destruction.
+
+Reported-and-tested-by: Strobl Anton <a.strobl@aws-it.at>
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+
 ---
-  drivers/input/joystick/Kconfig |    2 +-
-  drivers/input/joystick/xpad.c  |   87 ++++++++++++++++++++++------------------
-  2 files changed, 49 insertions(+), 40 deletions(-)
+commit ea1601c50bf23af25094511e2a9ce1b755ab9669
+tree a4b8b9f3675606ff935d2422e26b24adf6c1ad3c
+parent 1df4e603136d09c0aee78102a05fb960be3764bb
+author Patrick McHardy <kaber@trash.net> Sun, 03 Jun 2007 18:35:09 +0200
+committer Patrick McHardy <kaber@trash.net> Sun, 03 Jun 2007 20:04:21 +0200
 
-diff --git a/drivers/input/joystick/Kconfig b/drivers/input/joystick/Kconfig
-index 2098ab6..e6c7560 100644
---- a/drivers/input/joystick/Kconfig
-+++ b/drivers/input/joystick/Kconfig
-@@ -276,7 +276,7 @@ config JOYSTICK_XPAD_FF
+ net/sched/sch_atm.c |    1 +
+ net/sched/sch_cbq.c |    8 +++++---
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-  config JOYSTICK_XPAD_LEDS
-  	bool "LED Support for Xbox360 controller 'BigX' LED"
--	depends on LEDS_CLASS && JOYSTICK_XPAD_FF
-+	depends on LEDS_CLASS && JOYSTICK_XPAD
-  	---help---
-  	  This option enables support for the LED which surrounds the Big X on
-  	  XBox 360 controller.
-diff --git a/drivers/input/joystick/xpad.c b/drivers/input/joystick/xpad.c
-index 4a51d6f..b51229f 100644
---- a/drivers/input/joystick/xpad.c
-+++ b/drivers/input/joystick/xpad.c
-@@ -194,7 +194,7 @@ struct usb_xpad {
-  	unsigned char *idata;		/* input data */
-  	dma_addr_t idata_dma;
-
--#ifdef CONFIG_JOYSTICK_XPAD_FF
-+#if defined(CONFIG_JOYSTICK_XPAD_FF) || defined(CONFIG_JOYSTICK_XPAD_LEDS)
-  	struct urb *irq_out;		/* urb for interrupt out report */
-  	unsigned char *odata;		/* output data */
-  	dma_addr_t odata_dma;
-@@ -358,7 +358,7 @@ exit:
-  		     __FUNCTION__, retval);
-  }
-
--#ifdef CONFIG_JOYSTICK_XPAD_FF
-+#if defined(CONFIG_JOYSTICK_XPAD_FF) || defined(CONFIG_JOYSTICK_XPAD_LEDS)
-  static void xpad_irq_out(struct urb *urb)
-  {
-  	int retval;
-@@ -385,28 +385,7 @@ exit:
-  		   __FUNCTION__, retval);
-  }
-
--int xpad_play_effect(struct input_dev *dev, void *data, struct ff_effect *effect)
--{
--	struct usb_xpad *xpad = input_get_drvdata(dev);
+diff --git a/net/sched/sch_atm.c b/net/sched/sch_atm.c
+index be7d299..d1c383f 100644
+--- a/net/sched/sch_atm.c
++++ b/net/sched/sch_atm.c
+@@ -599,6 +599,7 @@ static void atm_tc_destroy(struct Qdisc *sch)
+ 	/* races ? */
+ 	while ((flow = p->flows)) {
+ 		tcf_destroy_chain(flow->filter_list);
++		flow->filter_list = NULL;
+ 		if (flow->ref > 1)
+ 			printk(KERN_ERR "atm_destroy: %p->ref = %d\n",flow,
+ 			    flow->ref);
+diff --git a/net/sched/sch_cbq.c b/net/sched/sch_cbq.c
+index a294542..ee2d596 100644
+--- a/net/sched/sch_cbq.c
++++ b/net/sched/sch_cbq.c
+@@ -1748,10 +1748,12 @@ cbq_destroy(struct Qdisc* sch)
+ 	 * classes from root to leafs which means that filters can still
+ 	 * be bound to classes which have been destroyed already. --TGR '04
+ 	 */
+-	for (h = 0; h < 16; h++)
+-		for (cl = q->classes[h]; cl; cl = cl->next)
++	for (h = 0; h < 16; h++) {
++		for (cl = q->classes[h]; cl; cl = cl->next) {
+ 			tcf_destroy_chain(cl->filter_list);
 -
--	if (effect->type == FF_RUMBLE) {
--		__u16 strong = effect->u.rumble.strong_magnitude;
--		__u16 weak = effect->u.rumble.weak_magnitude;
--		xpad->odata[0] = 0x00;
--		xpad->odata[1] = 0x08;
--		xpad->odata[2] = 0x00;
--		xpad->odata[3] = strong / 256;
--		xpad->odata[4] = weak / 256;
--		xpad->odata[5] = 0x00;
--		xpad->odata[6] = 0x00;
--		xpad->odata[7] = 0x00;
--		usb_submit_urb(xpad->irq_out, GFP_KERNEL);
--	}
--
--	return 0;
--}
--
--static int xpad_init_ff(struct usb_interface *intf, struct usb_xpad *xpad)
-+static int xpad_init_output(struct usb_interface *intf, struct usb_xpad *xpad)
-  {
-  	struct usb_endpoint_descriptor *ep_irq_out;
-  	int error = -ENOMEM;
-@@ -433,25 +412,19 @@ static int xpad_init_ff(struct usb_inter
-  	xpad->irq_out->transfer_dma = xpad->odata_dma;
-  	xpad->irq_out->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
-
--	input_set_capability(xpad->dev, EV_FF, FF_RUMBLE);
--
--	error = input_ff_create_memless(xpad->dev, NULL, xpad_play_effect);
--	if (error)
--		goto fail2;
--
-  	return 0;
-
-   fail2:	usb_buffer_free(xpad->udev, XPAD_PKT_LEN, xpad->odata, xpad->odata_dma);
-   fail1:	return error;
-  }
-
--static void xpad_stop_ff(struct usb_xpad *xpad)
-+static void xpad_stop_output(struct usb_xpad *xpad)
-  {
-  	if (xpad->xtype == XTYPE_XBOX360)
-  		usb_kill_urb(xpad->irq_out);
-  }
-
--static void xpad_deinit_ff(struct usb_xpad *xpad)
-+static void xpad_deinit_output(struct usb_xpad *xpad)
-  {
-  	if (xpad->xtype == XTYPE_XBOX360) {
-  		usb_free_urb(xpad->irq_out);
-@@ -459,11 +432,43 @@ static void xpad_deinit_ff(struct usb_xp
-  				xpad->odata, xpad->odata_dma);
-  	}
-  }
-+#else
-+static int xpad_init_output(struct usb_interface *intf, struct usb_xpad *xpad) { return 0; }
-+static void xpad_deinit_output(struct usb_xpad *xpad) {}
-+static void xpad_stop_output(struct usb_xpad *xpad) {}
-+#endif
-+
-+#ifdef CONFIG_JOYSTICK_XPAD_FF
-+int xpad_play_effect(struct input_dev *dev, void *data, struct ff_effect *effect)
-+{
-+	struct usb_xpad *xpad = input_get_drvdata(dev);
-+
-+	if (effect->type == FF_RUMBLE) {
-+		__u16 strong = effect->u.rumble.strong_magnitude;
-+		__u16 weak = effect->u.rumble.weak_magnitude;
-+		xpad->odata[0] = 0x00;
-+		xpad->odata[1] = 0x08;
-+		xpad->odata[2] = 0x00;
-+		xpad->odata[3] = strong / 256;
-+		xpad->odata[4] = weak / 256;
-+		xpad->odata[5] = 0x00;
-+		xpad->odata[6] = 0x00;
-+		xpad->odata[7] = 0x00;
-+		usb_submit_urb(xpad->irq_out, GFP_KERNEL);
++			cl->filter_list = NULL;
++		}
 +	}
-+
-+	return 0;
-+}
-+
-+static int xpad_init_ff(struct usb_xpad *xpad)
-+{
-+	input_set_capability(xpad->dev, EV_FF, FF_RUMBLE);
-+
-+	return input_ff_create_memless(xpad->dev, NULL, xpad_play_effect);
-+}
+ 	for (h = 0; h < 16; h++) {
+ 		struct cbq_class *next;
+ 
 
-  #else
--static int xpad_init_ff(struct usb_interface *intf, struct usb_xpad *xpad) { return 0; }
--static void xpad_stop_ff(struct usb_xpad *xpad) { }
--static void xpad_deinit_ff(struct usb_xpad *xpad) { }
-+static int xpad_init_ff(struct usb_xpad *xpad) { return 0; }
-  #endif
-
-  #if defined(CONFIG_JOYSTICK_XPAD_LEDS) 
-@@ -599,7 +604,7 @@ static void xpad_close(struct input_dev
-  	struct usb_xpad *xpad = input_get_drvdata(dev);
-
-  	usb_kill_urb(xpad->irq_in);
--	xpad_stop_ff(xpad);
-+	xpad_stop_output(xpad);
-  }
-
-  static void xpad_set_up_abs(struct input_dev *input_dev, signed short abs)
-@@ -691,10 +696,14 @@ static int xpad_probe(struct usb_interfa
-  		for (i = 0; xpad_abs_pad[i] >= 0; i++)
-  		    xpad_set_up_abs(input_dev, xpad_abs_pad[i]);
-
--	error = xpad_init_ff(intf, xpad);
-+	error = xpad_init_output(intf, xpad);
-  	if (error)
-  		goto fail2;
-
-+	error = xpad_init_ff(xpad);
-+	if (error)
-+		goto fail3;
-+
-  	error = xpad_led_probe(xpad);
-  	if (error)
-  		goto fail3;
-@@ -715,7 +724,7 @@ static int xpad_probe(struct usb_interfa
-  	return 0;
-
-  fail4:	usb_free_urb(xpad->irq_in);
--fail3:	xpad_deinit_ff(xpad);
-+fail3:	xpad_deinit_output(xpad);
-  fail2:	usb_buffer_free(udev, XPAD_PKT_LEN, xpad->idata, xpad->idata_dma);
-  fail1:	input_free_device(input_dev);
-  	kfree(xpad);
-@@ -731,7 +740,7 @@ static void xpad_disconnect(struct usb_i
-  	if (xpad) {
-  		xpad_led_disconnect(xpad);
-  		input_unregister_device(xpad->dev);
--		xpad_deinit_ff(xpad);
-+		xpad_deinit_output(xpad);
-  		usb_free_urb(xpad->irq_in);
-  		usb_buffer_free(xpad->udev, XPAD_PKT_LEN,
-  				xpad->idata, xpad->idata_dma);
--- 
-1.4.3.4
-
-
-
+--------------030902040603010707060109--
