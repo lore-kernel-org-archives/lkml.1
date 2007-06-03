@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751874AbXFCUpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbXFCUpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751874AbXFCUpW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 16:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbXFCUpE
+	id S1752777AbXFCUpo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 16:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXFCUpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 16:45:04 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55829 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750987AbXFCUpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 16:45:02 -0400
-Date: Sun, 3 Jun 2007 22:46:03 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net
-Subject: [PATCH 05/19] kbuild: document cc-fullversion
-Message-ID: <20070603204603.GE9240@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Sun, 3 Jun 2007 16:45:12 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:54181 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbXFCUpK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 16:45:10 -0400
+X-IronPort-AV: i="4.16,378,1175497200"; 
+   d="scan'208"; a="158235323:sNHT44714169"
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: thockin@google.com, Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Kconfig variable "COBALT" is not defined anywhere
+X-Message-Flag: Warning: May contain useful information
+References: <Pine.LNX.4.64.0706031315230.23477@localhost.localdomain>
+	<20070603132309.508738b7.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0706031630030.26035@localhost.localdomain>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sun, 03 Jun 2007 13:45:08 -0700
+In-Reply-To: <Pine.LNX.4.64.0706031630030.26035@localhost.localdomain> (Robert P. J. Day's message of "Sun, 3 Jun 2007 16:31:08 -0400 (EDT)")
+Message-ID: <adazm3glqcr.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+X-OriginalArrivalTime: 03 Jun 2007 20:45:08.0743 (UTC) FILETIME=[12C54170:01C7A620]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH 05/19] kbuild: document cc-fullversion
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 28 May 2007 22:26:55 +0200
+ > > >   there is no Kconfig file which defines the selectable option
+ > > > "COBALT", which means that this snippet from drivers/char/nvram.c:
+ > > >
+ > > > #  if defined(CONFIG_COBALT)
+ > > > #    include <linux/cobalt-nvram.h>
+ > > > #    define MACH COBALT
+ > > > #  else
+ > > > #    define MACH PC
+ > > > #  endif
+ > > > never evaluates to true, therefore making <linux/cobalt-nvram.h>
+ > > > fairly useless, at least under the circumstances.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- Documentation/kbuild/makefiles.txt |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+ > > Maybe it should be MIPS_COBALT ?
 
-diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
-index bb5306e..c6d9a35 100644
---- a/Documentation/kbuild/makefiles.txt
-+++ b/Documentation/kbuild/makefiles.txt
-@@ -501,6 +501,20 @@ more details, with real examples.
- 	The third parameter may be a text as in this example, but it may also
- 	be an expanded variable or a macro.
- 
-+    cc-fullversion
-+	cc-fullversion is usefull when the exact version of gcc is needed.
-+	One typical use-case is when a specific GCC version is broken.
-+	cc-fullversion points out a more specific version than cc-version does.
-+
-+	Example:
-+		#arch/powerpc/Makefile
-+		$(Q)if test "$(call cc-fullversion)" = "040200" ; then \
-+			echo -n '*** GCC-4.2.0 cannot compile the 64-bit powerpc ' ; \
-+			false ; \
-+		fi
-+
-+	In this example for a specific GCC version the build will error out explaining
-+	the user why it stops.
- 
- === 4 Host Program support
- 
--- 
-1.5.1.rc3.1544.g8a923
+ > that's the first thing that occurred to me, but that header file is
+ > copyright sun microsystems and says nothing about MIPS, so that didn't
+ > really settle the issue.  that's why i'd rather someone else resolve
+ > this one way or the other.
 
+Actually, looking through the old kernel history, it looks like this
+was added by Tim Hockin's (CCed) patch "Add Cobalt Networks support to
+nvram driver".  Which added this to drivers/cobalt:
 
------ End forwarded message -----
++bool 'Support for Cobalt Networks x86 servers' CONFIG_COBALT
+
+I guess Tim can clear up what's intended...
