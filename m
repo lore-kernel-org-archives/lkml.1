@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbXFCIlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbXFCIls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbXFCIlZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 04:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbXFCIlS
+	id S1759069AbXFCIls (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 04:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbXFCIlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 04:41:18 -0400
-Received: from mx33.mail.ru ([194.67.23.194]:31513 "EHLO mx33.mail.ru"
+	Sun, 3 Jun 2007 04:41:40 -0400
+Received: from lucidpixels.com ([75.144.35.66]:52957 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751651AbXFCIlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 04:41:17 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-kernel@vger.kernel.org
-Subject: pnputils still maintained?
-Date: Sun, 3 Jun 2007 12:41:14 +0400
-User-Agent: KMail/1.9.7
+	id S1753030AbXFCIlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 04:41:39 -0400
+Date: Sun, 3 Jun 2007 04:41:38 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.22-rc3 safe to migrate to?
+In-Reply-To: <46627579.3040507@goop.org>
+Message-ID: <Pine.LNX.4.64.0706030441280.30622@p34.internal.lan>
+References: <Pine.LNX.4.64.0706021723480.22318@p34.internal.lan> 
+ <4661F511.4070207@goop.org> <6bffcb0e0706030059o3e53e647uf3ae1aa3f16609d8@mail.gmail.com>
+ <46627579.3040507@goop.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart33743051.PfqsRD7YpO";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706031241.14673.arvidjaar@mail.ru>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart33743051.PfqsRD7YpO
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-{pts/1}% sudo setpnp 0a on
-lspnp: /proc/bus/pnp not available
 
-pnputils were not updated since 2006-07 and was not the purpose exactly to =
-use=20
-sysfs instead of proc?
+On Sun, 3 Jun 2007, Jeremy Fitzhardinge wrote:
 
-=2Dandrey
+> Michal Piotrowski wrote:
+>> It's already merged into mainline
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=df3c7244264f1d12562413aa32d56be802486516
+>>
+>
+> Oh, good.  I hadn't read through the last couple of days of commits.
+>
+>    J
+>
+>
 
---nextPart33743051.PfqsRD7YpO
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Nice, any word on the USB bug?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGYn6qR6LMutpd94wRAmzMAJ9U9x7Akh3jKiVEa46T4JktMSm9jwCgttX5
-3x7cHRqM7pNk9YdUN2P1FSQ=
-=LrFv
------END PGP SIGNATURE-----
-
---nextPart33743051.PfqsRD7YpO--
