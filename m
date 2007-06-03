@@ -1,120 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbXFCJ4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbXFCKF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759287AbXFCJ4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 05:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbXFCJ4B
+	id S1759941AbXFCKF6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 06:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbXFCKFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 05:56:01 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:38548 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753097AbXFCJ4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 05:56:00 -0400
-Date: Sun, 3 Jun 2007 11:55:50 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: Kernel 2.6.22-rc3 breaks USB: Unable to get HID descriptor (error
- sending control message: Operation not permitted)
-In-Reply-To: <Pine.LNX.4.64.0706021841520.3376@p34.internal.lan>
-Message-ID: <Pine.LNX.4.64.0706031151090.29896@twin.jikos.cz>
-References: <Pine.LNX.4.64.0706021841520.3376@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 3 Jun 2007 06:05:49 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:63940 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754579AbXFCKFs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 06:05:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=XQ0+KYOml4cTbQOKITGh+t3A7Dj/pHoX3oFZ0Z/CZDyiOCRAykvUYCzzWoIyyH5hNlVghZ0LS405XF46DipfTloujCIL7yap99gxDReXsgASgK5bhT0DV2SAxmJSQ5ypsDUJGCrr/xQ26YErgnShsIyfapSY/j5uqhYt5SV+IxU=
+Date: Sun, 3 Jun 2007 18:06:11 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Doug Thompson <norsk5@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 23/36] drivers edac Lindent amd76x driver
+Message-ID: <20070603100611.GC2467@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: Doug Thompson <norsk5@yahoo.com>,
+	linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <325199.9497.qm@web50101.mail.re2.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <325199.9497.qm@web50101.mail.re2.yahoo.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have looked into NUT source and it seems that this error message is 
-output after interaction with libusb, not hiddev. It looks like libusb's 
-usb_claim_interface() or usb_control_msg() in in 2.6.22-rc3 is failing 
-with -EPERM.
+On Sun, Jun 03, 2007 at 02:34:03AM -0700, Doug Thompson wrote:
+>From:	Douglas Thompson <dougthompson@xmission.com>
+>
+>Run this driver through Lindent for cleanup
+>
+>Signed-off-by: Dave Jiang <djiang@mvista.com>
+>Signed-off-by: Douglas Thompson <dougthompson@xmission.com>
+>---
+> amd76x_edac.c |   54
+>+++++++++++++++++++++++++-----------------------------
+> 1 file changed, 25 insertions(+), 29 deletions(-)
+>---
+>
+>Index: linux-2.6.22-rc1/drivers/edac/amd76x_edac.c
+>===================================================================
+>--- linux-2.6.22-rc1.orig/drivers/edac/amd76x_edac.c
+>+++ linux-2.6.22-rc1/drivers/edac/amd76x_edac.c
+>@@ -86,11 +86,9 @@ struct amd76x_dev_info {
+> 
+> static const struct amd76x_dev_info amd76x_devs[] = {
+> 	[AMD761] = {
+>-		.ctl_name = "AMD761"
+>-	},
+>+		    .ctl_name = "AMD761"},
+> 	[AMD762] = {
+>-		.ctl_name = "AMD762"
+>-	},
+>+		    .ctl_name = "AMD762"},
+> };
+> 
+> /**
+>@@ -102,21 +100,21 @@ static const struct amd76x_dev_info amd7
+>  *	on the chip so that further errors will be reported
+>  */
+> static void amd76x_get_error_info(struct mem_ctl_info *mci,
+>-		struct amd76x_error_info *info)
+>+				  struct amd76x_error_info *info)
+> {
+> 	struct pci_dev *pdev;
+> 
+> 	pdev = to_pci_dev(mci->dev);
+> 	pci_read_config_dword(pdev, AMD76X_ECC_MODE_STATUS,
+>-				&info->ecc_mode_status);
+>+			      &info->ecc_mode_status);
+> 
+> 	if (info->ecc_mode_status & BIT(8))
+> 		pci_write_bits32(pdev, AMD76X_ECC_MODE_STATUS,
+>-				(u32) BIT(8), (u32) BIT(8));
+>+				 (u32) BIT(8), (u32) BIT(8));
+> 
+> 	if (info->ecc_mode_status & BIT(9))
+> 		pci_write_bits32(pdev, AMD76X_ECC_MODE_STATUS,
+>-				(u32) BIT(9), (u32) BIT(9));
+>+				 (u32) BIT(9), (u32) BIT(9));
+> }
+> 
+> /**
+>@@ -130,7 +128,8 @@ static void amd76x_get_error_info(struct
+>  *	then attempt to handle and clean up after the error
+>  */
+> static int amd76x_process_error_info(struct mem_ctl_info *mci,
+>-		struct amd76x_error_info *info, int handle_errors)
+>+				     struct amd76x_error_info *info,
+>+				     int handle_errors)
+> {
+> 	int error_found;
+> 	u32 row;
+>@@ -138,7 +137,7 @@ static int amd76x_process_error_info(str
+> 	error_found = 0;
+> 
+> 	/*
+>-	 *	Check for an uncorrectable error
+>+	 *      Check for an uncorrectable error
+> 	 */
+> 	if (info->ecc_mode_status & BIT(8)) {
+> 		error_found = 1;
+>@@ -146,12 +145,12 @@ static int amd76x_process_error_info(str
+> 		if (handle_errors) {
+> 			row = (info->ecc_mode_status >> 4) & 0xf;
+> 			edac_mc_handle_ue(mci, mci->csrows[row].first_page, 0,
+>-				row, mci->ctl_name);
+>+					  row, mci->ctl_name);
+> 		}
+> 	}
+> 
+> 	/*
+>-	 *	Check for a correctable error
+>+	 *      Check for a correctable error
+> 	 */
+> 	if (info->ecc_mode_status & BIT(9)) {
+> 		error_found = 1;
+>@@ -159,7 +158,7 @@ static int amd76x_process_error_info(str
+> 		if (handle_errors) {
+> 			row = info->ecc_mode_status & 0xf;
+> 			edac_mc_handle_ce(mci, mci->csrows[row].first_page, 0,
+>-				0, row, 0, mci->ctl_name);
+>+					  0, row, 0, mci->ctl_name);
+> 		}
+> 	}
+> 
+>@@ -182,7 +181,7 @@ static void amd76x_check(struct mem_ctl_
+> }
+> 
+> static void amd76x_init_csrows(struct mem_ctl_info *mci, struct
+>pci_dev *pdev,
+>-		enum edac_type edac_mode)
+>+			       enum edac_type edac_mode)
+> {
+> 	struct csrow_info *csrow;
+> 	u32 mba, mba_base, mba_mask, dms;
+>@@ -193,8 +192,7 @@ static void amd76x_init_csrows(struct me
+> 
+> 		/* find the DRAM Chip Select Base address and mask */
+> 		pci_read_config_dword(pdev,
+>-				      AMD76X_MEM_BASE_ADDR + (index * 4),
+>-				      &mba);
+>+				      AMD76X_MEM_BASE_ADDR + (index * 4), &mba);
+> 
+> 		if (!(mba & BIT(0)))
+> 			continue;
+>@@ -249,7 +247,7 @@ static int amd76x_probe1(struct pci_dev 
+> 	mci->mtype_cap = MEM_FLAG_RDDR;
+> 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
+> 	mci->edac_cap = ems_mode ?
+>-			(EDAC_FLAG_EC | EDAC_FLAG_SECDED) : EDAC_FLAG_NONE;
+>+	    (EDAC_FLAG_EC | EDAC_FLAG_SECDED) : EDAC_FLAG_NONE;
+> 	mci->mod_name = EDAC_MOD_STR;
+> 	mci->mod_ver = AMD76X_REVISION;
+> 	mci->ctl_name = amd76x_devs[dev_idx].ctl_name;
+>@@ -258,12 +256,12 @@ static int amd76x_probe1(struct pci_dev 
+> 	mci->ctl_page_to_phys = NULL;
+> 
+> 	amd76x_init_csrows(mci, pdev, ems_modes[ems_mode]);
+>-	amd76x_get_error_info(mci, &discard);  /* clear counters */
+>+	amd76x_get_error_info(mci, &discard);	/* clear counters */
+> 
+> 	/* Here we assume that we will never see multiple instances of this
+> 	 * type of memory controller.  The ID is therefore hardcoded to 0.
+> 	 */
+>-	if (edac_mc_add_mc(mci,0)) {
+>+	if (edac_mc_add_mc(mci, 0)) {
+> 		debugf3("%s(): failed edac_mc_add_mc()\n", __func__);
+> 		goto fail;
+> 	}
+>@@ -272,14 +270,14 @@ static int amd76x_probe1(struct pci_dev 
+> 	debugf3("%s(): success\n", __func__);
+> 	return 0;
+> 
+>-fail:
+>+      fail:
+> 	edac_mc_free(mci);
+> 	return -ENODEV;
+> }
+> 
 
-So I am adding USB devel mailinglist into CC and leaving the original 
-message below for reference.
+I wonder whether Lindent is always use whitespaces, not tabs, before a label.
 
-On Sat, 2 Jun 2007, Justin Piszcz wrote:
+I think this should be fixed manually. And it seems that there shouldn't be any spaces before the label 'fail' in this context.
 
-> I use nut-2.0.4-4 with a UPS attached via USB and from 2.6.21.3 -> 2.6.22-rc3
-> it stops working, see below.  My .config is attached.
-> 
-> 2.6.21.3:
-> 
-> p34:~# /lib/nut/newhidups -u nut -DDDDDD auto
-> Checking device (050D/0912) (005/002)
-> - VendorID: 050d
-> - ProductID: 0912
-> - Manufacturer:
-> - Product: UPS
-> - Serial Number: unknown
-> - Bus: 005
-> Trying to match device
-> Device matches
-> HID descriptor retrieved (Reportlen = 820)
-> Size read for the report descriptor: 820
-> Report descriptor retrieved (Reportlen = 820)
-> Found HID device
-> Network UPS Tools: New USB/HID UPS driver 0.28 (2.0.4)
-> 
-> Report Descriptor size = 820
-> Report Descriptor: (200 bytes) => 05 84 09 04 A1 01 05 86 09 26 A1 02 85 01 75
-> 08
-> Detected a UPS:        /UPS
-> Using subdriver: Belkin HID 0.1
-> Looking up 00840004
-> Looking up 00860026
-> Looking up 00860040
-> entering string_to_path()
-> parsing UPS
-> Looking up UPS
-> hid_lookup_usage: found 840004
-> parsing BELKINConfig
-> Looking up BELKINConfig
-> hid_lookup_usage: found 860026
-> parsing BELKINConfigVoltage
-> Looking up BELKINConfigVoltage
-> hid_lookup_usage: found 860040
-> Path depth = 3
-> 0: UPage(84), Usage(4)
-> 1: UPage(86), Usage(26)
-> 2: UPage(86), Usage(40)
-> Entering libusb_get_report
-> =>> Before exponent: 120, 0/0)
-> =>> After conversion: 120.000000 (120), 0/0)
-> Report : (8 bytes) => 01 78 80 00 00 00 00 00
-> Path: UPS.BELKINConfig.BELKINConfigVoltage, Type: Feature, Value: 120.000000
-> Looking up 00840004
-> Looking up 00860026
-> Looking up 00860042
-> 
-> (works fine)
-> 
-> 2.6.22-rc3:
-> 
-> p34:~# /lib/nut/newhidups -u nut -DDDDDD auto
-> Checking device (050D/0912) (005/002)
-> - VendorID: 050d
-> - ProductID: 0912
-> - Manufacturer: unknown
-> - Product: unknown
-> - Serial Number: unknown
-> - Bus: 005
-> Trying to match device
-> Device matches
-> failed to claim USB device, trying 2 more time(s)...
-> detaching kernel driver from USB device...
-> failed to detach kernel driver from USB device...
-> trying again to claim USB device...
-> failed to claim USB device, trying 1 more time(s)...
-> detaching kernel driver from USB device...
-> failed to detach kernel driver from USB device...
-> trying again to claim USB device...
-> failed to claim USB device, trying 0 more time(s)...
-> detaching kernel driver from USB device...
-> failed to detach kernel driver from USB device...
-> trying again to claim USB device...
-> Unable to get HID descriptor (error sending control message: Operation not
-> permitted)
-> 
-> 
+Regards!
 
--- 
-Jiri Kosina
+
+WANG Cong
+
