@@ -1,149 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764097AbXFCA1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763773AbXFCBMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764097AbXFCA1c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jun 2007 20:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762995AbXFCA10
+	id S1763773AbXFCBMg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jun 2007 21:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760616AbXFCBM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jun 2007 20:27:26 -0400
-Received: from lucidpixels.com ([75.144.35.66]:42035 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760616AbXFCA1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jun 2007 20:27:25 -0400
-Date: Sat, 2 Jun 2007 20:27:22 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Christian Kujau <lists@nerdbynature.de>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.22-rc3 safe to migrate to?
-In-Reply-To: <alpine.DEB.0.99.0706030115410.16496@sheep.housecafe.de>
-Message-ID: <Pine.LNX.4.64.0706022026570.10213@p34.internal.lan>
-References: <Pine.LNX.4.64.0706021723480.22318@p34.internal.lan>
- <4661F511.4070207@goop.org> <Pine.LNX.4.64.0706021855260.3376@p34.internal.lan>
- <alpine.DEB.0.99.0706030115410.16496@sheep.housecafe.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 2 Jun 2007 21:12:29 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:32963 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758519AbXFCBM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jun 2007 21:12:28 -0400
+Subject: Re: 2.6.22-rc3-mm1 reiser4 bug
+From: Zan Lynx <zlynx@acm.org>
+To: "Berck E. Nash" <flyboy@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       reiserfs-dev@namesys.com
+In-Reply-To: <4661C0DA.7040308@gmail.com>
+References: <4661C0DA.7040308@gmail.com>
+Content-Type: multipart/signed; micalg=sha1; protocol="application/x-pkcs7-signature"; boundary="=-8LHACtYBcncauxGcMk/b"
+Date: Sun, 03 Jun 2007 01:12:18 +0000
+Message-Id: <1180833139.7501.4.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-Envelope-From: zlynx@acm.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-8LHACtYBcncauxGcMk/b
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature";
+	boundary="=-xOB1vbpi7+pyMOeGoGIi"
 
-On Sun, 3 Jun 2007, Christian Kujau wrote:
 
-> On Sat, 2 Jun 2007, Justin Piszcz wrote:
->> On Sat, 2 Jun 2007, Jeremy Fitzhardinge wrote:
->>> XFS currently has a data-corrupting bug, where files which were appended
->>> by small amounts may lose their updates on umount - I see this
->>> corrupting hg repos. There's a patch which works for me, and is in
->>> 2.6.22-rc3-mm1, but it hasn't been merged upstream yet.
->
-> Just for the record, you mean this one:
-> http://lkml.org/lkml/2007/5/12/93   ..right? (haven't been bitten by this 
-> one...yet)
->
->> Ah that's it- and USB appears to be broken as well, I'll stick with 
->> 2.6.21.3 for now.
->
-> Got any pointers? I'm using USB right now, one is i386 with 2.6.22-rc3, 
-> another one is powerpc, tracking -git and USB seems to work.
->
-> C.
-> -- 
-> BOFH excuse #15:
->
-> temporary routing anomaly
->
+--=-xOB1vbpi7+pyMOeGoGIi
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Sent this in another e-mail to LKML, it breaks support for my UPS:
+On Sat, 2007-06-02 at 13:11 -0600, Berck E. Nash wrote:
+> All appears to work fine, until I try to boot a kernel with a Reiser4 /
+> partition.  Then I get endless errors of the sort:
+>=20
+> [  206.349450] sd 1:0:0:0: [sdc] Result: hostbyte=3DDID_BAD_TARGET
+> driverbyte=3DDRIVER_OK,SUGGEST_OK
+>=20
+> (See attached dmesg for more, I only sent the first 1,000 lines, it goes
+> on until a hard reboot.)
+>=20
+> The same partition and the same kernel work great as long as that
+> partition isn't the current system root.  The same kernel and the same
+> hard drive works fine as long as the partition is formatted ReiserFS.
 
->From jpiszcz@lucidpixels.com Sat Jun  2 18:43:52 2007
-Date: Sat, 2 Jun 2007 18:43:52 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel 2.6.22-rc3 breaks USB: Unable to get HID descriptor (error sending control message: Operation not permitted)
+It can't be a simple bug, because I am running 2.6.22-rc3-mm1 and
+Reiser4 on / right now, and it works well for me.
 
-I use nut-2.0.4-4 with a UPS attached via USB and from 2.6.21.3 -> 2.6.22-rc3 it
-stops working, see below.  My .config is attached.
+I am using a busybox initramfs that does the actual mounting.  I don't
+know if that makes a difference.
+--=20
+Zan Lynx <zlynx@acm.org>
 
-2.6.21.3:
+--=-xOB1vbpi7+pyMOeGoGIi
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: quoted-printable
 
-p34:~# /lib/nut/newhidups -u nut -DDDDDD auto
-Checking device (050D/0912) (005/002)
-- VendorID: 050d
-- ProductID: 0912
-- Manufacturer:
-- Product: UPS
-- Serial Number: unknown
-- Bus: 005
-Trying to match device
-Device matches
-HID descriptor retrieved (Reportlen = 820)
-Size read for the report descriptor: 820
-Report descriptor retrieved (Reportlen = 820)
-Found HID device
-Network UPS Tools: New USB/HID UPS driver 0.28 (2.0.4)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
 
-Report Descriptor size = 820
-Report Descriptor: (200 bytes) => 05 84 09 04 A1 01 05 86 09 26 A1 02 85 01 75
-08
-Detected a UPS:        /UPS
-Using subdriver: Belkin HID 0.1
-Looking up 00840004
-Looking up 00860026
-Looking up 00860040
-entering string_to_path()
-parsing UPS
-Looking up UPS
-hid_lookup_usage: found 840004
-parsing BELKINConfig
-Looking up BELKINConfig
-hid_lookup_usage: found 860026
-parsing BELKINConfigVoltage
-Looking up BELKINConfigVoltage
-hid_lookup_usage: found 860040
-Path depth = 3
-0: UPage(84), Usage(4)
-1: UPage(86), Usage(26)
-2: UPage(86), Usage(40)
-Entering libusb_get_report
-=>> Before exponent: 120, 0/0)
-=>> After conversion: 120.000000 (120), 0/0)
-Report : (8 bytes) => 01 78 80 00 00 00 00 00
-Path: UPS.BELKINConfig.BELKINConfigVoltage, Type: Feature, Value: 120.000000
-Looking up 00840004
-Looking up 00860026
-Looking up 00860042
+iD8DBQBGYhVsG8fHaOLTWwgRAja9AJ4r5EXMxibfhvoBu8ccxWENkV1oTQCfcz2X
+ppwzEbChjdodm0w8/fKNAhc=3D
+=3DIlQB
+-----END PGP SIGNATURE-----
 
-(works fine)
+--=-xOB1vbpi7+pyMOeGoGIi--
 
-2.6.22-rc3:
+--=-8LHACtYBcncauxGcMk/b
+Content-Type: application/x-pkcs7-signature; name=smime.p7s
+Content-Disposition: attachment; filename=smime.p7s
+Content-Transfer-Encoding: base64
 
-p34:~# /lib/nut/newhidups -u nut -DDDDDD auto
-Checking device (050D/0912) (005/002)
-- VendorID: 050d
-- ProductID: 0912
-- Manufacturer: unknown
-- Product: unknown
-- Serial Number: unknown
-- Bus: 005
-Trying to match device
-Device matches
-failed to claim USB device, trying 2 more time(s)...
-detaching kernel driver from USB device...
-failed to detach kernel driver from USB device...
-trying again to claim USB device...
-failed to claim USB device, trying 1 more time(s)...
-detaching kernel driver from USB device...
-failed to detach kernel driver from USB device...
-trying again to claim USB device...
-failed to claim USB device, trying 0 more time(s)...
-detaching kernel driver from USB device...
-failed to detach kernel driver from USB device...
-trying again to claim USB device...
-Unable to get HID descriptor (error sending control message: Operation not
-permitted)
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIII8zCCAtQw
+ggI9oAMCAQICEBmv7WBciYMnO0zg9KmbGQUwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
+JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQ
+ZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA3MDUyMjE5NDYxOVoXDTA4MDUyMTE5NDYx
+OVowPzEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEcMBoGCSqGSIb3DQEJARYNemx5
+bnhAYWNtLm9yZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALi7cy1U27KrA5lA/KVg
+o6U8a8v5gCfscOX8i2dMvknRvug1jE/P+Tqkv/R8+ThgWNtCLxG3siF2+ZTNqbv+9wOYemwjcjiG
+zPxcz8AguL/eTLmShf/JNGus6M0wxtW94u6Ghmu2q6nWfE5WSaiLugPItk4zZzqJsQN7S0sIGetG
+WjJGo18ZKu58CMHHhHEnmPi8uQfPkxnjktSBM78DdbBYhnFssmhC4yaItPJlla0Cxg5TZe74cNwt
+3KTfE+F3R9IQ+/hPlXMnheifTJdK5Hh/Uy4/wgvV4RvvnLerKjA9bLzSnkth+Kp0Qq/uBL+NG5uw
+cKu1/f9pYm2eo5OinU0CAwEAAaMqMCgwGAYDVR0RBBEwD4ENemx5bnhAYWNtLm9yZzAMBgNVHRMB
+Af8EAjAAMA0GCSqGSIb3DQEBBQUAA4GBAMGVms8JNsdEQWxf5ubEqUmtqseXSOkWOc06LQ1WWgDF
+9rGw3toh+Uupx7QXiF0BszZ65p16TdmwgrTYN8OznlGlbQFlYO1gQhgbqBpJAiVocRiVAAaLlJ76
+ESZC/oQJ5Yk2RX+IKJOwtUuOVVt/XPJpqyKSX+QduzAfzt9rIB2tMIIC1DCCAj2gAwIBAgIQGa/t
+YFyJgyc7TOD0qZsZBTANBgkqhkiG9w0BAQUFADBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhh
+d3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVt
+YWlsIElzc3VpbmcgQ0EwHhcNMDcwNTIyMTk0NjE5WhcNMDgwNTIxMTk0NjE5WjA/MR8wHQYDVQQD
+ExZUaGF3dGUgRnJlZW1haWwgTWVtYmVyMRwwGgYJKoZIhvcNAQkBFg16bHlueEBhY20ub3JnMIIB
+IjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuLtzLVTbsqsDmUD8pWCjpTxry/mAJ+xw5fyL
+Z0y+SdG+6DWMT8/5OqS/9Hz5OGBY20IvEbeyIXb5lM2pu/73A5h6bCNyOIbM/FzPwCC4v95MuZKF
+/8k0a6zozTDG1b3i7oaGa7arqdZ8TlZJqIu6A8i2TjNnOomxA3tLSwgZ60ZaMkajXxkq7nwIwceE
+cSeY+Ly5B8+TGeOS1IEzvwN1sFiGcWyyaELjJoi08mWVrQLGDlNl7vhw3C3cpN8T4XdH0hD7+E+V
+cyeF6J9Ml0rkeH9TLj/CC9XhG++ct6sqMD1svNKeS2H4qnRCr+4Ev40bm7Bwq7X9/2libZ6jk6Kd
+TQIDAQABoyowKDAYBgNVHREEETAPgQ16bHlueEBhY20ub3JnMAwGA1UdEwEB/wQCMAAwDQYJKoZI
+hvcNAQEFBQADgYEAwZWazwk2x0RBbF/m5sSpSa2qx5dI6RY5zTotDVZaAMX2sbDe2iH5S6nHtBeI
+XQGzNnrmnXpN2bCCtNg3w7OeUaVtAWVg7WBCGBuoGkkCJWhxGJUABouUnvoRJkL+hAnliTZFf4go
+k7C1S45VW39c8mmrIpJf5B27MB/O32sgHa0wggM/MIICqKADAgECAgENMA0GCSqGSIb3DQEBBQUA
+MIHRMQswCQYDVQQGEwJaQTEVMBMGA1UECBMMV2VzdGVybiBDYXBlMRIwEAYDVQQHEwlDYXBlIFRv
+d24xGjAYBgNVBAoTEVRoYXd0ZSBDb25zdWx0aW5nMSgwJgYDVQQLEx9DZXJ0aWZpY2F0aW9uIFNl
+cnZpY2VzIERpdmlzaW9uMSQwIgYDVQQDExtUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgQ0ExKzAp
+BgkqhkiG9w0BCQEWHHBlcnNvbmFsLWZyZWVtYWlsQHRoYXd0ZS5jb20wHhcNMDMwNzE3MDAwMDAw
+WhcNMTMwNzE2MjM1OTU5WjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRp
+bmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3Vpbmcg
+Q0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMSmPFVzVftOucqZWh5owHUEcJ3f6f+jHuy9
+zfVb8hp2vX8MOmHyv1HOAdTlUAow1wJjWiyJFXCO3cnwK4Vaqj9xVsuvPAsH5/EfkTYkKhPPK9Xz
+gnc9A74r/rsYPge/QIACZNenprufZdHFKlSFD0gEf6e20TxhBEAeZBlyYLf7AgMBAAGjgZQwgZEw
+EgYDVR0TAQH/BAgwBgEB/wIBADBDBgNVHR8EPDA6MDigNqA0hjJodHRwOi8vY3JsLnRoYXd0ZS5j
+b20vVGhhd3RlUGVyc29uYWxGcmVlbWFpbENBLmNybDALBgNVHQ8EBAMCAQYwKQYDVR0RBCIwIKQe
+MBwxGjAYBgNVBAMTEVByaXZhdGVMYWJlbDItMTM4MA0GCSqGSIb3DQEBBQUAA4GBAEiM0VCD6gsu
+zA2jZqxnD3+vrL7CF6FDlpSdf0whuPg2H6otnzYvwPQcUCCTcDz9reFhYsPZOhl+hLGZGwDFGguC
+dJ4lUJRix9sncVcljd2pnDmOjCBPZV+V2vf3h9bGCE6u9uo05RAaWzVNd+NWIXiC3CEZNd4ksdMd
+Rv9dX2VPMYIDEDCCAwwCAQEwdjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1
+bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3Vp
+bmcgQ0ECEBmv7WBciYMnO0zg9KmbGQUwCQYFKw4DAhoFAKCCAW8wGAYJKoZIhvcNAQkDMQsGCSqG
+SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMDcwNjAzMDExMjEyWjAjBgkqhkiG9w0BCQQxFgQUnjK1
+dL0/FdxJ0tOrZqRfaiYzKuUwgYUGCSsGAQQBgjcQBDF4MHYwYjELMAkGA1UEBhMCWkExJTAjBgNV
+BAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25h
+bCBGcmVlbWFpbCBJc3N1aW5nIENBAhAZr+1gXImDJztM4PSpmxkFMIGHBgsqhkiG9w0BCRACCzF4
+oHYwYjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4x
+LDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAhAZr+1gXImDJztM
+4PSpmxkFMA0GCSqGSIb3DQEBAQUABIIBAFBT7Qg2pyV+iQwRAOZdV1hfbiIciv8AouKWMvBUZnh2
+qzmr4jm6ACfufqy+B2KYdvzPi+SZ0Hx6BGvGIryeSGPMM71hUvacwAU2qKfZt413CJbvuIbIE+5k
+oFiJxnxEh0rPVlMiQaqCJVil7BF1/R+gYkYzvUdWq8GobhAj0zecPHPMTw79AyZBBOk7suteNsU3
+27ondvy0ORSUYsrXqdZ7OZq4Ca/nTpH/qwTJDoZ+jWQzA0NUtG/jZiqPHAy/Wbtb4BMmMHEGyz74
+i4LVq3MDVgnr/Qg3dVTkknJ6zLup+hDHXWVJrUWT5gdl0bckOfz0lIxkDCXEKIht85dphmcAAAAA
+AAA=
 
-     [ Part 2, ""  Application/OCTET-STREAM (Name: "config-2.6.22-rc3.bz2") ]
-     [ 10KB. ]
-     [ Unable to print this part. ]
+
+--=-8LHACtYBcncauxGcMk/b--
 
