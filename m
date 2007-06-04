@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758412AbXFDPi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbXFDPkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758412AbXFDPi5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758088AbXFDPiF
+	id S1757880AbXFDPkl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 11:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbXFDPkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:38:05 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:44976 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757177AbXFDPiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:38:03 -0400
-Subject: [PATCH -mm 5/5] swap: Catch pages with errors and mark as bad
-From: Richard Purdie <rpurdie@openedhand.com>
-To: akpm <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Mon, 04 Jun 2007 16:37:07 +0100
-Message-Id: <1180971427.6313.77.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 4 Jun 2007 11:40:33 -0400
+Received: from outbound-mail-16.bluehost.com ([69.89.20.231]:49187 "HELO
+	outbound-mail-16.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755441AbXFDPkc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 11:40:32 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Matt Keenan <tank.en.mate@gmail.com>
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
+Date: Mon, 4 Jun 2007 08:40:21 -0700
+User-Agent: KMail/1.9.6
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, Andi Kleen <andi@firstfloor.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <Pine.LNX.4.64.0706021610210.19116@p34.internal.lan> <4662869A.9030700@gmail.com>
+In-Reply-To: <4662869A.9030700@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706040840.21593.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check for pages with errors within shrink_page_list() and if found, try
-to unuse them which will trigger the functions to mark the page bad. The
-page will then be allocated a new swap page.
+On Sunday, June 3, 2007 2:15:06 Matt Keenan wrote:
+> Justin Piszcz wrote:
+> > On Sat, 2 Jun 2007, Andi Kleen wrote:
+> >>> I feel, having a silent/transparent workaround is not a good idea.
+> >>> With that
+> >>
+> >> If enough RAM is chopped off users will notice. They tend to complain
+> >> when they miss RAM.  I don't like panic very much because for many
+> >> users it will be a show stopper (even when they are not blessed
+> >> with "quiet" boots like some distributions do)
+> >>
+> >> The message in dmesg could be also emphasized a bit with a little
+> >> ASCII art (but no <blink> tag in there)
+> >>
+> >> The problem I'm more worried about is if the system will be really
+> >> stable --- could it be that the memory controller is still
+> >> misconfigured and cause other stability issues? (we've had such
+> >> cases in the past). Also I'm not sure we can handle the case of
+> >> the MTRR wrong not at the end of memory but at the hole sanely.
+> >>
+> >> -Andi
+> >
+> > So far I have been booting with mem=8832M and have run stress/loaded
+> > the memory subsystem pretty good; what other tests should I run?
+> >
+> > It'd be nice if we could pose some sort of solution/warning for the
+> > future so other people do not have to experience the same problems.
+> >
+> > What are the next steps?
+>
+> Wouldn't it be possible for the e820/MTRR set up code detect the problem
+> and suggest a mem=xxxx that would fix the problem (while also
+> complaining that the BIOS is broken)?
 
-If a swap page write error occurs, don't disable page reclaim.
+Yes, that should be fairly easy, though as Andi points out, if there are holes 
+in the MTRR setup, things get a little trickier (I had an earlier patch to 
+deal with this, but ended up with too many early boot issues).
 
-Based on a patch by Nick Piggin and some of my own changes as discussed
-on LKML.
+Maybe what Venki suggested would be best:  just detect the condition and 
+panic, with a string telling the user to use mem=xxx (we can figure that out) 
+and/or upgrade their BIOS.
 
-Signed-off-by: Richard Purdie <rpurdie@openedhand.com>
+I'll spin a new patch to do that today.
 
----
- mm/page_io.c |    3 ---
- mm/vmscan.c  |    9 +++++++++
- 2 files changed, 9 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.21/mm/page_io.c
-===================================================================
---- linux-2.6.21.orig/mm/page_io.c	2007-06-04 09:49:06.000000000 +0100
-+++ linux-2.6.21/mm/page_io.c	2007-06-04 11:40:24.000000000 +0100
-@@ -60,15 +60,12 @@ static int end_swap_bio_write(struct bio
- 		 * Re-dirty the page in order to avoid it being reclaimed.
- 		 * Also print a dire warning that things will go BAD (tm)
- 		 * very quickly.
--		 *
--		 * Also clear PG_reclaim to avoid rotate_reclaimable_page()
- 		 */
- 		set_page_dirty(page);
- 		printk(KERN_ALERT "Write-error on swap-device (%u:%u:%Lu)\n",
- 				imajor(bio->bi_bdev->bd_inode),
- 				iminor(bio->bi_bdev->bd_inode),
- 				(unsigned long long)bio->bi_sector);
--		ClearPageReclaim(page);
- 	}
- 	end_page_writeback(page);
- 	bio_put(bio);
-Index: linux-2.6.21/mm/vmscan.c
-===================================================================
---- linux-2.6.21.orig/mm/vmscan.c	2007-06-04 11:39:23.000000000 +0100
-+++ linux-2.6.21/mm/vmscan.c	2007-06-04 11:40:24.000000000 +0100
-@@ -477,6 +477,15 @@ static unsigned long shrink_page_list(st
- 
- #ifdef CONFIG_SWAP
- 		/*
-+		 * Encountered an error last time? Try to remove the
-+		 * page from its current position, which will notice
-+		 * the error and mark that swap entry bad. Then we can
-+		 * try allocating another swap entry.
-+		 */
-+		if (PageSwapCache(page) && unlikely(PageError(page)))
-+			try_to_unuse_page_entry(page);
-+
-+		/*
- 		 * Anonymous process memory has backing store?
- 		 * Try to allocate it some swap space here.
- 		 */
-
+Jesse
