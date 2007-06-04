@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbXFDFW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbXFDFWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753100AbXFDFW3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 01:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXFDFWW
+	id S1753325AbXFDFWl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 01:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbXFDFWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 4 Jun 2007 01:22:23 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:40231 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751711AbXFDFWW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Jun 2007 01:22:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38012 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751769AbXFDFWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 01:22:22 -0400
-Message-ID: <4663A180.8050506@redhat.com>
-Date: Sun, 03 Jun 2007 22:22:08 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 2/2] ufd v1 - use unsequential O(1) fdmap
-References: <send-serie.davidel@xmailserver.org.24319.1180825146.2> <4663067C.9050002@redhat.com> <Pine.LNX.4.64.0706031127220.13247@alien.or.mcafeemobile.com> <466319DB.80800@redhat.com> <Pine.LNX.4.64.0706031311490.13247@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0706032210040.23741@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706032210040.23741@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: Re: A kexec approach to hibernation
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: vgoyal@in.ibm.com
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20070604044041.GB10206@in.ibm.com>
+References: <878xb3l888.fsf@jbms.ath.cx> <200706012339.06379.rjw@sisk.pl>
+	 <87zm3j9usv.fsf@jbms.ath.cx> <200706020114.37245.rjw@sisk.pl>
+	 <87odjz9qo9.fsf@jbms.ath.cx>  <20070604044041.GB10206@in.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qDlbX9bzJsBAGRUwdseW"
+Date: Mon, 04 Jun 2007 15:22:20 +1000
+Message-Id: <1180934540.1169.31.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Linus Torvalds wrote:
-> I actually think that a new system call is _hugely_ messy. It means that 
-> anybody who wants to use a new feature needs to have a new glibc.
+--=-qDlbX9bzJsBAGRUwdseW
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Strange definition of "messy".  Have you looked at the proposed dup2
-extension?  Magic value, semantics which don't match what the function
-does today.  That's messy.
+Hi.
 
-The private descriptors are something new, programs have to be adjusted.
- The open() extension will allow them to be used naturally without
-additional interfaces.  This leaves converting normal descriptors into
-private ones.  If the new syscall isn't yet available it's easy enough
-to use the syscall() function.  The parameters are simple integer so no
-tricks needed.
+I can see that the idea of writing a kernel image from using another
+kernel sounds nice and clean initially, but the more we get into the
+details (yes, I am listening, even though I said nothing before now),
+the more it's sounding like the cure is worse than the disease.
 
-I don't think the requirement for a new glibc should cloud the judgement
-when it comes to cleanliness of the API.  The new syscall wins there
-clearly, I hope you agree.  Even the dup2() approach requires program to
-either be compiled with headers which have the definitions (i.e., a new
-glibc) or programs have to carry their own definitions of the magic
-constants and O_NONSEQ.  I really cannot see any advantage of
-misappropriating dup2.
+To get rid of process freezing, we're talking about:
+* making hibernation depend on depriving the user of 32 or 64M of
+otherwise perfectly usable memory (thereby making hibernation on
+machines with less memory impossible)
+* requiring them to set up kexec or kdump (I don't understand the
+difference, sorry) or some new variation
+* adding interfaces to tell kexec/dump/whatever what pages need to be
+saved and reloaded
+* adding convolutions in which at resume time we boot one kernel, switch
+to another kernel to do the loading and then switch back again to the
+resumed kernel (assuming I understand what you're suggesting).
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+It all sounds terribly complicated and confusing to me, and that's
+before I even begin to think about how this second kernel could possibly
+write the image to an encrypted device or LVM or such like that the
+first kernel knows about and might use now.
+
+Can't we just get the freezer right and be done with it?
+
+Regards,
+
+Nigel
+
+--=-qDlbX9bzJsBAGRUwdseW
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGY6GA2ijCOnn/RHQRAtQ1AJ4+dDIgeBKlggt4U+lyZnDfQJZ/VQCfRbG4
-0FtGWqlLOWFlspMJ9S3xQ7E=
-=jrG1
+iD8DBQBGY6GMN0y+n1M3mo0RAvWtAKCzU0OD+ZS0NTGYMwBOnNYFd8lSuQCgiWi2
+uhBXxQKkSwQUjUhHnw26TpA=
+=s9jv
 -----END PGP SIGNATURE-----
+
+--=-qDlbX9bzJsBAGRUwdseW--
+
