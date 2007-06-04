@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762003AbXFEAtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761685AbXFEAxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762003AbXFEAtX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 20:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbXFEAtQ
+	id S1761685AbXFEAxj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 20:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbXFEAxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 20:49:16 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:34425 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756218AbXFEAtP (ORCPT
-	<rfc822;Linux-Kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 20:49:15 -0400
-Date: Mon, 04 Jun 2007 18:49:10 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: DMI_MATCH patch in reboot.c for SFF Dell OptiPlex 745 - fixes hang
- on reboot
-In-reply-to: <fa./cH7AY3hv2QMikoTK1P7fAVvbdI@ifi.uio.no>
-To: James Jarvis <James.Jarvis@ed.ac.uk>
-Cc: Riley@Williams.Name, Linux-Kernel@vger.kernel.org, graham.newton@ed.ac.uk,
-       kenneth.macdonald@ed.ac.uk
-Message-id: <4664B306.5000107@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa./cH7AY3hv2QMikoTK1P7fAVvbdI@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Mon, 4 Jun 2007 20:53:31 -0400
+Received: from relay2.nomadix.net ([63.150.145.199]:56355 "EHLO
+	relay2.nomadix.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753822AbXFEAxa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 20:53:30 -0400
+X-Greylist: delayed 1654 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jun 2007 20:53:30 EDT
+Date: Mon, 4 Jun 2007 13:19:52 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Christoph Hellwig <hch@infradead.org>, David Miller <davem@davemloft.net>,
+       mroos@linux.ee, linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070604171952.GA3437@dhcp83-182.boston.redhat.com>
+References: <Pine.SOC.4.64.0706032314590.20033@math> <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070604074719.GB15390@infradead.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Jarvis wrote:
-> I trust this is the right list...
-> 
-> The following patch enables reboot through BIOS on the Dell Optiplex 745 
-> Small Form Factor base, on which reboot hangs. The larger form factor 
-> does not require this, hence the match on DMI_BOARD_NAME.
-> 
-> --- arch/i386/kernel/reboot.c.orig      2007-06-01 12:22:53.000000000 +0100
-> +++ arch/i386/kernel/reboot.c   2007-06-04 16:53:36.000000000 +0100
-> @@ -104,6 +104,15 @@
->                        DMI_MATCH(DMI_PRODUCT_NAME, "PowerEdge 300/"),
->                },
->        },
-> +       {       /* Handle problems with rebooting on Dell Optiplex 745's 
-> SFF*/
-> +               .callback = set_bios_reboot,
-> +               .ident = "Dell OptiPlex 745",
-> +               .matches = {
-> +                       DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-> +                       DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 745"),
-> +                       DMI_MATCH(DMI_BOARD_NAME, "0WF810"),
-> +               },
-> +       },
->        {       /* Handle problems with rebooting on Dell 2400's */
->                .callback = set_bios_reboot,
->                .ident = "Dell PowerEdge 2400",
+On Mon, Jun 04, 2007 at 08:47:19AM +0100, Christoph Hellwig wrote:
+> The right fix is the depend on the new HAS_DMA (or whatever it's called)
 
-This blacklist seems to be growing. Isn't there something better we can 
-do here? Can we just reboot through the BIOS by default, is that really 
-broken on some systems?
+ACK...  if the platform truly does not do DMA.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+
+> symbol.  The proper long-term fix is to move calln to the dam mapping
+> functions from the core libata files into the drivers responsibility with
+> a default implementation for the typical cases.
+
+NAK
+
+We have generic devices and generic DMA mapping.  libata already uses
+the generic stuff.  Now fix the platform...
+
+	Jeff
+
+
 
