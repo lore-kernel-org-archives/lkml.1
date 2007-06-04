@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbXFDTb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbXFDTcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762058AbXFDTb7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 15:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759076AbXFDTbw
+	id S1762261AbXFDTcU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 15:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760906AbXFDTb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 15:31:52 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:36810 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757191AbXFDTbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 15:31:51 -0400
-Date: Mon, 4 Jun 2007 15:31:50 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/15] x86-64: Calgary - abstract how we find the iommu_table for a device
-Message-ID: <20070604193150.GC20299@havoc.gtf.org>
-References: <11798211643534-git-send-email-muli@il.ibm.com> <11798211643659-git-send-email-muli@il.ibm.com> <11798211643144-git-send-email-muli@il.ibm.com> <11798211663773-git-send-email-muli@il.ibm.com> <1179821166685-git-send-email-muli@il.ibm.com> <11798211661041-git-send-email-muli@il.ibm.com> <20070604113344.0e71ca8c.akpm@linux-foundation.org> <20070604190654.GA20299@havoc.gtf.org> <20070604191346.GL4556@rhun.ibm.com>
+	Mon, 4 Jun 2007 15:31:56 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41894 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760846AbXFDTbz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 15:31:55 -0400
+Date: Mon, 4 Jun 2007 12:31:51 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: menage@google.com, akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
+       haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+       cpw@sgi.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       mbligh@google.com, rohitseth@google.com, devel@openvz.org
+Subject: Re: [PATCH 00/10] Containers(V10): Generic Process Containers
+Message-Id: <20070604123151.4db007a6.pj@sgi.com>
+In-Reply-To: <20070604191412.GA901@sergelap.austin.ibm.com>
+References: <20070529130104.461765000@menage.corp.google.com>
+	<20070604191412.GA901@sergelap.austin.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070604191346.GL4556@rhun.ibm.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 10:13:46PM +0300, Muli Ben-Yehuda wrote:
-> It's already being used in mainline by both NUMA and Calgary (but in
-> such a way that both work. Magic). Clearly the solution is what we did
-> for pciseg, have a struct sysdata that is extensible, but those pciseg
-> bits don't seem any closer to going upstream?
+What you describe, Serge, sounds like semantics carried over from cpusets.
 
-You are missing:
+Serge wrote:
+> A task can't join a cpuset unless 'cpus' and 'mems' are set.
 
-* allocation code in arch/i386/pci/common.c
-* use of the more-generic pci_iommu() wrapper in Calgary code
-* ditto in arch/x86_64/kernel/tce.c
-* pci_sysdata initialization in arch/x86_64/pci/k8-bus.c
-* definition of pci_sysdata in include/asm-i386/pci.h
-* bug fix in include/asm-i386/topology.h
-* definition of pci_sysdata in include/asm-x86_64/pci.h
-* bug fix in include/asm-x86_64/topology.h
+Yup - don't want to run a task in a cpuset that lacks cpu, or lacks
+memory.  Hard to run without those.
 
-You need to take the obviously relevant, non-PCI-domain code from
-#pciseg and push it upstream.
+> These don't seem to automatically inherit the parent's values
 
-	Jeff
+Yup - early in the life of cpusets, a created cpuset inherited the cpus
+and mems of its parent.  But that broke the exclusive property big
+time.  You will recall that a cpu_exclusive or mem_exclusive cpuset
+cannot overlap the cpus or memory, respectively, of any of its sibling
+cpusets.
 
+So we changed it to creating new cpusets empty of cpus or memory.
 
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
