@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762170AbXFDVds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759625AbXFDVgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762170AbXFDVds (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 17:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758937AbXFDVdc
+	id S1759625AbXFDVgR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 17:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXFDVgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 17:33:32 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:60253 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757761AbXFDVdb (ORCPT
+	Mon, 4 Jun 2007 17:36:06 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:41686 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750793AbXFDVgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 17:33:31 -0400
-Subject: Re: [PATCH -mm 2/2] PM: Disable usermode helper before hibernation
-	and suspend
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <200706042328.27887.rjw@sisk.pl>
-References: <200706042325.28965.rjw@sisk.pl>
-	 <200706042328.27887.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZDolyB5CLNrYJ4atn8uO"
-Date: Tue, 05 Jun 2007 07:33:32 +1000
-Message-Id: <1180992812.4356.52.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 4 Jun 2007 17:36:05 -0400
+Message-ID: <46648561.4000106@zytor.com>
+Date: Mon, 04 Jun 2007 14:34:25 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Al Viro <viro@ftp.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+Subject: Re: [RFC] Documentation/CodingStyle: Add rules for goto labels
+References: <20070603142450.GA4230@localhost.localdomain> <20070603142939.GW4095@ftp.linux.org.uk> <20070603074552.430c3d02.rdunlap@xenotime.net> <4662DFCF.3010606@garzik.org> <20070604045857.GE2161@localhost.localdomain> <4663B84E.2060103@goop.org> <46644B99.1060304@zytor.com> <46646164.3010406@goop.org>
+In-Reply-To: <46646164.3010406@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> goto labels are scoped in one sense: they are only reachable from inside
+>> the block they are defined in, so I would disagree with this statement.
+>>   
+> 
+> Erm, no I think you're wrong there 
 
---=-ZDolyB5CLNrYJ4atn8uO
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yeah, I realized I was talking out of my ass there when Viro pointed
+this out.  I has inadvertently generalized the rule "no skipping
+automatics" to "no jump into blocks."
 
-Ack.
-
-Regards,
-
-Nigel
-
---=-ZDolyB5CLNrYJ4atn8uO
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGZIUsN0y+n1M3mo0RAhEVAJ9MzDeBtTl+RfulMVpzg/fo0mTPcgCgtKTl
-c3FVUpo4dn1MlVKqmD15TUo=
-=B8lc
------END PGP SIGNATURE-----
-
---=-ZDolyB5CLNrYJ4atn8uO--
-
+	-hpa
