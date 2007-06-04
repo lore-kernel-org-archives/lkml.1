@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbXFDUhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbXFDUjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbXFDUhk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 16:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbXFDUhc
+	id S1756306AbXFDUjM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 16:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXFDUi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 16:37:32 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45090 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751447AbXFDUhb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 16:37:31 -0400
-Date: Mon, 4 Jun 2007 13:37:29 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: serue@us.ibm.com, akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru,
-       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, cpw@sgi.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-Subject: Re: [PATCH 00/10] Containers(V10): Generic Process Containers
-Message-Id: <20070604133729.9b4e8886.pj@sgi.com>
-In-Reply-To: <6599ad830706041330q1802ebf2n2bac63f706a73a50@mail.gmail.com>
-References: <20070529130104.461765000@menage.corp.google.com>
-	<20070604191412.GA901@sergelap.austin.ibm.com>
-	<20070604123151.4db007a6.pj@sgi.com>
-	<6599ad830706041330q1802ebf2n2bac63f706a73a50@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 16:38:58 -0400
+Received: from snowcat.de ([89.31.32.98]:2352 "EHLO snowcat.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751841AbXFDUi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 16:38:57 -0400
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: stallion driver dmesg notice
+Organization: Disorganized
+From: Ingo Korb <usenet@mail.snowcat.de>
+In-Reply-To: <uvee458fa.fsf@dragon.akana.de> (Ingo Korb's message of "Mon,
+ 04 Jun 2007 12:19:05 +0200")
+References: <46633BC8.3838.43FB8257@ml.akana.de> <304615082222625376@wsc.cz>
+	<304615082222625376@wsc.cz> <21118142571565213847@wsc.cz>
+	<uvee458fa.fsf@dragon.akana.de>
+Date: Mon, 04 Jun 2007 22:38:53 +0200
+Message-ID: <ulkez5uaq.fsf@dragon.akana.de>
+User-Agent: Gnus/5.1002 (Gnus v5.10.2) Emacs/21.3 (windows-nt)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Hashcash: 1:21:070604:linux-kernel@vger.kernel.org::GJCEeJFw9QYOOd0P:000000000
+	0000000000000000000000003pMD
+X-Hashcash: 1:21:070604:jirislaby@gmail.com::MujdFZRT1AYMc5UD:000000000000000000
+	0000000000000000000000000vdl
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> Maybe we could make it a per-cpuset option whether children should
-> inherit mems/cpus or not?
+Ingo Korb <usenet@mail.snowcat.de> writes:
 
-I suppose, if those needing inherited mems/cpus need it bad enough.
+> Loads find and seems to work with basic tests (and no character loss,
+> yay!). I'll try 8-link bonded ppp when I've set up a second box.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Update: The driver now survives 7-link[1] bonded ppp without problems
+with both UART types. IIRC it previously died with CD1400 and stopped
+to transmit suddenly with 26C198 ("XP" panels).
+
+Thanks!
+
+-ik
+[1] One port didn't work, but that looks like a hardware problem on the
+receiving side which isn't stallion-driven.
+
