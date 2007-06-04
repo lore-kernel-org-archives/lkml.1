@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbXFDKzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbXFDK4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753718AbXFDKzn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 06:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXFDKzd
+	id S1753994AbXFDK4B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 06:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbXFDKzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 06:55:33 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50164 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751707AbXFDKzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 06:55:32 -0400
-Date: Mon, 4 Jun 2007 12:55:26 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
-Message-ID: <20070604105526.GE4363@elf.ucw.cz>
-References: <20070514110607.549397248@suse.de> <20070514110621.316630438@suse.de> <20070515091443.GD6816@ucw.cz> <200705231816.46197.agruen@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705231816.46197.agruen@suse.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Mon, 4 Jun 2007 06:55:52 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:35123 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752689AbXFDKzw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 06:55:52 -0400
+Subject: Re: gmail is a bit too popular..
+From: David Woodhouse <dwmw2@infradead.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Matti Aarnio <matti.aarnio@zmailer.org>,
+       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070508064316.GF4226@stusta.de>
+References: <20070507145555.GG3883@mea-ext.zmailer.org>
+	 <alpine.DEB.0.98.0705071101510.6512@sigma.j-a-k-j.com>
+	 <20070507153511.GH3883@mea-ext.zmailer.org>
+	 <20070508064316.GF4226@stusta.de>
+Content-Type: text/plain
+Date: Mon, 04 Jun 2007 11:55:32 +0100
+Message-Id: <1180954532.25232.252.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2007-05-23 18:16:45, Andreas Gruenbacher wrote:
-> On Tuesday 15 May 2007 11:14, Pavel Machek wrote:
-> > Why is this configurable? 
-> 
-> The maximum length of a pathname is an arbitrary limit: we don't want to 
-> allocate arbitrary amounts of of kernel memory for pathnames so we introduce 
-> this limit and set it to a reasonable value. In the unlikely case that 
-> someone uses insanely long pathnames, this limit can be increased.
+On Tue, 2007-05-08 at 08:43 +0200, Adrian Bunk wrote:
+> BTW (not related to gmail):
+> Are there any news regarding the buggy 451 handling in zmailer I'm 
+> reporting again and again that regularly results in every single 
+> linux-kernel message sent to me being delayed by up to 13 hours? 
 
-vfs does not have configurable pathname limit, and I do not see what
-is so special about AA to require this kind of uglyness.
+Er, you're giving it a 451 response to _every_ message? Why?
 
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+dwmw2
+
