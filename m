@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbXFDNFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbXFDNJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752943AbXFDNFb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 09:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbXFDNFY
+	id S1753490AbXFDNJS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 09:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbXFDNJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 09:05:24 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3588 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbXFDNFX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 09:05:23 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 4 Jun 2007 06:05:22 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 1/2] ufd v1 - unsequential O(1) fdmap core
-In-Reply-To: <20070604014759.aaa3b051.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706040533210.30231@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.24319.1180825145.1>
- <46633047.1020707@cosmosbay.com> <Pine.LNX.4.64.0706031536000.13247@alien.or.mcafeemobile.com>
- <20070603230859.5000424d.akpm@linux-foundation.org> <20070604080537.GA22898@elte.hu>
- <20070604080941.GA23537@elte.hu> <20070604013449.ea3acca8.akpm@linux-foundation.org>
- <20070604084227.GA29446@elte.hu> <20070604014759.aaa3b051.akpm@linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 4 Jun 2007 09:09:11 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33315 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751119AbXFDNJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 09:09:10 -0400
+Date: Mon, 4 Jun 2007 15:09:03 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
+Message-ID: <20070604130903.GC1971@elf.ucw.cz>
+References: <20070604112426.GA2707@elf.ucw.cz> <Pine.LNX.4.64.0706041434040.29896@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706041434040.29896@twin.jikos.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jun 2007, Andrew Morton wrote:
-
-> a) Were IDR trees evaluated and if so, why were they rejected?
+On Mon 2007-06-04 14:35:23, Jiri Kosina wrote:
+> On Mon, 4 Jun 2007, Pavel Machek wrote:
 > 
-> b) it's a bit disappointing that this new allocator is only usable for
->    one specific application.  We have a *lot* of places in the kernel which
->    want allocators of this type.  Many of them are open-coded and crappy. 
->    Some use IDR trees.
+> > I started getting blinking capslock leds in 2.6.22-somewhere. Every 5 
+> > seconds or so, capslock led toggles on thinkpad x60. Ouch. I also get 
+> > some stuck keys I was not getting before. I hope my userland did not go 
+> > crazy...
 > 
->    If we're going to go and add a complete new allocator, it would be
->    good to position it as a library thing if poss.
+> Hi Pavel,
+> 
+> what does
+> 
+> 	grep BLINK .config
+> show.
 
-Thank you for pointing me to that, Andrew. I didn't know about it (IDR 
-trees).
-It does not fit AFAICS. Locking should be handled extarnally (the files 
-struct), must be RCU friendly (proper barriers) since it's used in 
-lockless code, and must have flags associated to an allocation. And I'm 
-leaving out the O(1) part, that for something like this, is just silly not 
-to have it. This is really an array.
+CONFIG_BLINK=y
+
+OOps. WTF is that?
+
+config BLINK
+	tristate "Keyboard blink driver"
+	help
+	  Driver that when loaded will blink the keyboard LEDs
+continuously.
+	  This is useful for debugging and for kernels that cannot
+necessarily
+	  output something to the screen like kexec kernels to give
+the user
+	  a visual indication that the kernel is doing something.
 
 
+..does it need "default n"? Why does it make keys stuck sometimes?
+								Pavel
 
-- Davide
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
