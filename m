@@ -1,55 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbXFDMiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbXFDMi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164AbXFDMiR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 08:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbXFDMiJ
+	id S1754216AbXFDMi3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 08:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbXFDMiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 08:38:09 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:45406 "EHLO relay.sw.ru"
+	Mon, 4 Jun 2007 08:38:18 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:59964 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751119AbXFDMiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 08:38:07 -0400
-Message-ID: <466408C2.3000406@openvz.org>
-Date: Mon, 04 Jun 2007 16:42:42 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	id S1752919AbXFDMiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 08:38:17 -0400
+Date: Mon, 4 Jun 2007 14:38:12 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Indan Zupancic <indan@nul.nu>
+cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       dtor@insightbb.com
+Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
+In-Reply-To: <4945.81.207.0.53.1180960534.squirrel@secure.samage.net>
+Message-ID: <Pine.LNX.4.64.0706041437030.29896@twin.jikos.cz>
+References: <20070604112426.GA2707@elf.ucw.cz> <4945.81.207.0.53.1180960534.squirrel@secure.samage.net>
 MIME-Version: 1.0
-To: akpm@osdl.org
-CC: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org,
-       devel@openvz.org
-Subject: Re: [PATCH -mm] Fix /proc/slab_allocators re seq_list_next() conversion
-References: <20070604122616.GA6155@localhost.sw.ru>
-In-Reply-To: <20070604122616.GA6155@localhost.sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> Wrong pointer was used as kmem_cache pointer.
-> 
-> [Here /proc/slab_allocators appears as empty file, but it's just me, probably]
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+On Mon, 4 Jun 2007, Indan Zupancic wrote:
 
-Acked-by: Pavel Emelianov <xemul@openvz.org>
+> > I also get some stuck keys I was not getting before. I hope my
+> > userland did not go crazy...
+> I get that too, and wasn't sure about it either. It happens irregularly,
+> so it's hard to debug, but often enough to be annoying.
 
-> ---
-> 
->  mm/slab.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/mm/slab.c
-> +++ b/mm/slab.c
-> @@ -4401,7 +4401,7 @@ static void show_symbol(struct seq_file *m, unsigned long address)
->  
->  static int leaks_show(struct seq_file *m, void *p)
->  {
-> -	struct kmem_cache *cachep = p;
-> +	struct kmem_cache *cachep = list_entry(p, struct kmem_cache, next);
->  	struct slab *slabp;
->  	struct kmem_list3 *l3;
->  	const char *name;
-> 
-> 
+What kind of keyboards are they? I guess the x60 case is serio/ps2, what 
+keyboard do you experience this with, Indan?
 
+-- 
+Jiri Kosina
