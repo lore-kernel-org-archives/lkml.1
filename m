@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbXFDIGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbXFDIHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753294AbXFDIGG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 04:06:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbXFDIFz
+	id S1753423AbXFDIHb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 04:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbXFDIHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 04:05:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53470 "EHLO mx2.mail.elte.hu"
+	Mon, 4 Jun 2007 04:07:16 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:5370 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752253AbXFDIFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 04:05:54 -0400
-Date: Mon, 4 Jun 2007 10:05:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 1/2] ufd v1 - unsequential O(1) fdmap core
-Message-ID: <20070604080537.GA22898@elte.hu>
-References: <send-serie.davidel@xmailserver.org.24319.1180825145.1> <46633047.1020707@cosmosbay.com> <Pine.LNX.4.64.0706031536000.13247@alien.or.mcafeemobile.com> <20070603230859.5000424d.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	id S1752253AbXFDIHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 04:07:15 -0400
+Date: Mon, 4 Jun 2007 10:05:35 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org, cotte@de.ibm.com, hugh@veritas.com,
+       neilb@suse.de, zanussi@us.ibm.com, hch@infradead.org
+Subject: Re: [PATCH] sendfile removal
+Message-ID: <20070604080535.GP32105@kernel.dk>
+References: <20070601054120.GI32105@kernel.dk> <465FB3AD.5030807@zytor.com> <465FC92C.50608@cosmosbay.com> <466040C1.6030004@zytor.com> <alpine.LFD.0.98.0706010904110.3957@woody.linux-foundation.org> <20070602150104.GH32105@kernel.dk> <alpine.LFD.0.98.0706020836360.23741@woody.linux-foundation.org> <20070603130507.GA11170@mail.ustc.edu.cn> <20070603142931.GA5916@mail.ustc.edu.cn> <20070604004647.GA8076@mail.ustc.edu.cn>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070603230859.5000424d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070604004647.GA8076@mail.ustc.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> I must say that it's not really clear to me why this fdmap thing was 
-> created.  Exactly what problem is it solving, and what properties is 
-> it designed to have?
+On Mon, Jun 04 2007, Fengguang Wu wrote:
+> Hi Jens,
 > 
-> Could not a (prehaps suitably modified) IDR tree have adequately 
-> provided those properties?
-> 
-> I'm sure it's good stuff, but the patches were presented as if we all 
-> know what they're for.  But I don't.  Maybe I was asleep at the time.
+> This is another try, still not in a comfortable state though.
+> //Busy waiting is possible for interleaved reads.
 
-i think this sums it up:
+A few random comments...
 
- http://www.uwsg.iu.edu/hypermail/linux/kernel/0705.3/2490.html
+Adding an internal flag is fine, but please put it at the upper end of
+the spectrum. So, use (1 << 31) for that flag.
 
-and some more, with a benchmark as well:
+And please work on the #splice branch of the block repo, not -mm. There
+are quite a few things pending for inclusion in there, and I'm sure your
+patch as-is wont apply.
 
- http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-05/msg13685.html
+-- 
+Jens Axboe
 
-( blame Google for picking up two different lkml archives for the two
-  searches i did :-)
-
-	Ingo
