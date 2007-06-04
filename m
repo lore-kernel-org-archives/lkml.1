@@ -1,87 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbXFDWYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbXFDW01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbXFDWYf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 18:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbXFDWY2
+	id S1758733AbXFDW01 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 18:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbXFDW0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 18:24:28 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:10534 "EHLO
-	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753007AbXFDWY1 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 18:24:27 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Subject: RE: [PATCH] x86_64: remove check for CONSTANT_TSC from time.c
-Date: Mon, 4 Jun 2007 17:23:01 -0500
-Message-ID: <249EE4DE927F114DBDC077FFA4A34DC701B3C700@SAUSEXMB3.amd.com>
-In-Reply-To: <20070604204157.GB22013@amd.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] x86_64: remove check for CONSTANT_TSC from time.c
-thread-index: Acem6M4Hr/u5DBf9RsO96HSR7BtOPAADXngw
-From: "Nagendra, Bhavana" <bhavana.nagendra@amd.com>
-To: "Roedel, Joerg" <Joerg.Roedel@amd.com>, "Andi Kleen" <ak@suse.de>
-cc: linux-kernel@vger.kernel.org, "Deguara, Joachim" <joachim.deguara@amd.com>
-X-OriginalArrivalTime: 04 Jun 2007 22:23:39.0257 (UTC)
- FILETIME=[001FDE90:01C7A6F7]
-X-WSS-ID: 6A7A4F611GC4072208-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+	Mon, 4 Jun 2007 18:26:20 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:56477 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753102AbXFDW0T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 18:26:19 -0400
+Date: Mon, 4 Jun 2007 18:26:16 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Matt Mackall <mpm@selenic.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/9] Conditional Calls - Hash Table
+Message-ID: <20070604222616.GC1169@Krystal>
+References: <20070530140227.398040643@polymtl.ca> <p731wgxds85.fsf@bingen.suse.de> <20070601160802.GL11166@waste.org> <20070601164623.GB4112@Krystal> <20070601170739.GA11115@waste.org> <20070601174510.GG7217@one.firstfloor.org> <20070601180654.GB7641@Krystal> <20070601193558.GH7217@one.firstfloor.org> <20070601203306.GA14316@Krystal> <20070601204434.GN7217@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070601204434.GN7217@one.firstfloor.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:21:17 up 7 days,  6:59,  3 users,  load average: 0.57, 0.43, 0.38
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Yes, the attached patch works for me.  Andi, is this patch acceptable?  
-
-Regards,
---
-Bhavana Nagendra
-AMD, Inc
- 
- 
-
------Original Message-----
-From: Joerg Roedel [mailto:joerg.roedel@amd.com] 
-Sent: Monday, June 04, 2007 4:42 PM
-To: Andi Kleen
-Cc: linux-kernel@vger.kernel.org; Deguara, Joachim; Nagendra, Bhavana
-Subject: Re: [PATCH] x86_64: remove check for CONSTANT_TSC from time.c
-
-On Mon, Jun 04, 2007 at 08:02:40PM +0200, Andi Kleen wrote:
-> On Monday 04 June 2007 19:49, Joerg Roedel wrote:
-> > From: Joerg Roedel <joerg.roedel@amd.com>
-> >
-> > This patch removes the check for the CONSTANT_TSC cpu flag from
-time.c
-> > on the x86_64 architecture. At the time this flag is checked at boot
-the
-> > cpu init code was yet not executed and thus the check fails. At this
-> > point the check for VENDOR_AMD and cpu family 0x10 is sufficient.
+* Andi Kleen (andi@firstfloor.org) wrote:
+> On Fri, Jun 01, 2007 at 04:33:06PM -0400, Mathieu Desnoyers wrote:
+> > * Andi Kleen (andi@firstfloor.org) wrote:
+> > > > Yes, but as you have probably understood, I want to have everything
+> > > > embedded at the cond_call() site rather than polluting the rest of the
+> > > > code with declarations.
+> > > 
+> > > A cond call is essentially a fancy variable. And the Linux kernel
+> > > is written in C and in C you declare variables before you use them.
+> > > Also it would allow compile time checking against typos and 
+> > > allow removing some nasty hash table code. The proposal sounds like a 
+> > > clear winner to me. 
+> > > 
+> > 
+> > You could not declare in advance a structure that would contain pointers
+> > to every load immediate instruction of the optimized cond_calls. Unless
 > 
-> Wrong fix. The bit just needs to be set earlier in early cpu detect.
-Otherwise 
-> there is a problem again with the next constant TSC AMD CPU.
-> I will do that.
+> To find them you just walk the sections.  Changing cond call is a slow
+> path operation. That is similar to how the smp lock switching
+> works today.
 > 
-> -Andi
+> > I understand that if we limit ourselves to applications like the two
+> > toy examples I proposed (enabling profiling and bug fixups), it could
+> > make sense to try to declare a variable somewhere and later use it in
+> > the body of functions (except the fact that it cannot work, due to
+> > incapacity to declare pointers to each load immediate instruction, as
+> > stated above). Even if it would work, the main purpose here is to
+> > support the Linux Kernel Markers, where the goal is to provide the
+> > ability to declare a marker within the body of a function without
+> > requiring more hassle than a printk, but with less performance impact
+> > than the latter. Also, we would not want the whole kernel to recompile
+> > simply because someone chose to add one or two marker in his own driver
+> > to extract some more information and had to add them to some globally
+> > included header file.
+> 
+> Sounds similar to config.h then when Kconfig keeps track of those
+> dependencies for the CONFIG_*s and only recompiles what is needed. Perhaps 
+> this infrastructure could be reused.
+> 
 
-Ok. But I assume you are meaning something like the attached diff?
+I took time to think about your proposal, and it's all good. the
+cond_calls will now depend on a variable address and feed a if()
+statement.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+If conditional calls CONFIG_* option is disabled, the variable (an
+integer) will feed the if().
+
+If enabled, the optimized version will feed the if() with the load
+immediate. The generic version will give the integer variable to the if.
+(I document that this variable should be declared __read_mostly).
+
+The markers, however, will declare this variable by themselves in their
+macro, so it is transparent to the programmer.
+
+All this will be implemented in the next release. Thanks for your
+insightful comments!
+
+Mathieu
 
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe,
-Thomas McCoy
-
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
