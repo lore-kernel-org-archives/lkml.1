@@ -1,236 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbXFDPVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbXFDPZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbXFDPVo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbXFDPVh
+	id S1756846AbXFDPZJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 11:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXFDPY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:21:37 -0400
-Received: from gw-e.panasas.com ([65.194.124.178]:47792 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750795AbXFDPVh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:21:37 -0400
-Message-ID: <46642DE6.4010705@panasas.com>
-Date: Mon, 04 Jun 2007 18:21:10 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 4 Jun 2007 11:24:58 -0400
+Received: from spatial.ca ([66.11.172.77]:12906 "EHLO fawkes.spatial.ca"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750795AbXFDPY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 11:24:57 -0400
+X-Greylist: delayed 613 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jun 2007 11:24:57 EDT
+Message-ID: <46642EC7.2050407@spatial.ca>
+Date: Mon, 04 Jun 2007 11:24:55 -0400
+From: Tom Moore <tmoore@spatial.ca>
+Reply-To: tmoore@spatial.ca
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       Benjamin Pineau <benjamin_pineau@zouh.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc3 : "BUG: scheduling while atomic: swapper/0x00000100/0"
-References: <20070604135514.GA14426@zouh.org> <20070604143925.GA3363@atjola.homenet> <20070604144101.GB3363@atjola.homenet>
-In-Reply-To: <20070604144101.GB3363@atjola.homenet>
-Content-Type: multipart/mixed;
- boundary="------------010205090806020707080904"
-X-OriginalArrivalTime: 04 Jun 2007 15:21:18.0291 (UTC) FILETIME=[FFBB5230:01C7A6BB]
+To: linux-kernel@vger.kernel.org
+Subject: eSATA errors
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Sanitizer: Advosys mail filter
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010205090806020707080904
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Hi
 
-Björn Steinbrink wrote:
-> On 2007.06.04 16:39:25 +0200, Björn Steinbrink wrote:
->> On 2007.06.04 15:55:14 +0200, Benjamin Pineau wrote:
->>> lspci -vv, lspci -vn, /proc/config.gz, /proc/timer_list, lsmod,
->>> /proc/interrupts, /proc/vmstat, ps auxf, and dmesg (with and 
->>> without the bug's logs) outputs at
->>> http://oshima.zouh.org/~ben/2.6.23-rc3_bug_details.txt
->> To save somebody else from guessing, that's HIRoshima, i.e. the correct
->> URL is http://hiroshima.zouh.org/~ben/2.6.23-rc3_bug_details.txt
-> 
-> Hmpf, about a second later the original URL also started to work...
-> 
-> Confused,
-> Björn
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I have system running the 2.6.20 kernel, and I am trying to use an eSATA 
+disk with it.  The hardware in question is a 'NexStar-3' eSATA 
+enclosure, and inside it is a Seagate Barracuda 7200.10 750Gb SATA drive.
 
-I get something reproducible when using a setup that worked up until 2.6.22-rc2.
-I did not report it because the authors of the projects involved do not like that I
-use the particular setup that I do.
-The setup is using iSCSI Initiator from kernel with iscsi enterprise Target (IET)
-which is an out-of-tree kernel module. Both run on the same machine.
+I am hooking this up to an ASUS M2N-MX motherboard using the SATA to 
+eSATA bracket that comes with the enclosure.
 
-(The iet project do not like that I run on the same machine with the Initiator, and
-they are probably right, just that it worked perfectly well up to 2.6.21, The first
-2.6.22 patches broke the iet over files, and now I have above brakege also when
-using iet-over-block-io)
+When I boot up the machine the disk is recognized, but it immediately 
+has device errors and 'slow to respond' errors.  When I use fdisk to 
+write a partition table it seems to give up entirely.  Is this a known 
+problem, or is there something I can try?
 
-Do I need to bisect this over my setup?
+I am not subscribed to the mailing list so I would appreciate a CC on 
+any replies.
 
-Some dmesg prints:
+Thanks,
 
+Tom
 
+Relevant lines from syslog...
 
---------------010205090806020707080904
-Content-Type: text/plain;
- name="dmsg-scheduling-while-atomic.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dmsg-scheduling-while-atomic.txt"
+Jun  3 15:33:57 fawkes Uniform Multi-Platform E-IDE driver Revision: 
+7.00alpha2
+Jun  3 15:33:57 fawkes ide: Assuming 33MHz system bus speed for PIO 
+modes; override with idebus=xx
+Jun  3 15:33:57 fawkes NFORCE-MCP61: IDE controller at PCI slot 0000:00:06.0
+Jun  3 15:33:57 fawkes NFORCE-MCP61: chipset revision 162
+Jun  3 15:33:57 fawkes NFORCE-MCP61: not 100% native mode: will probe 
+irqs later
+Jun  3 15:33:57 fawkes NFORCE-MCP61: BIOS didn't set cable bits 
+correctly. Enabling workaround.
+Jun  3 15:33:57 fawkes NFORCE-MCP61: 0000:00:06.0 (rev a2) UDMA133 
+controller
+Jun  3 15:33:57 fawkes ide0: BM-DMA at 0xffa0-0xffa7, BIOS settings: 
+hda:DMA, hdb:pio
+Jun  3 15:33:57 fawkes Probing IDE interface ide0...
+Jun  3 15:33:57 fawkes hda: WDC WD2500JB-00GVA0, ATA DISK drive
+Jun  3 15:33:57 fawkes ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+Jun  3 15:33:57 fawkes Probing IDE interface ide1...
+Jun  3 15:33:57 fawkes hda: max request size: 512KiB
+Jun  3 15:33:57 fawkes hda: 488397168 sectors (250059 MB) w/8192KiB 
+Cache, CHS=30401/255/63<6>hda: hw_config=604d
+Jun  3 15:33:57 fawkes , UDMA(100)
+Jun  3 15:33:57 fawkes hda: cache flushes supported
+Jun  3 15:33:57 fawkes hda: hda1 hda2 hda3 hda4 < hda5 hda6 >
+Jun  3 15:33:57 fawkes 3ware Storage Controller device driver for Linux 
+v1.26.02.002.
+Jun  3 15:33:57 fawkes sata_nv 0000:00:08.0: version 3.2
+Jun  3 15:33:57 fawkes ACPI: PCI Interrupt Link [LSA0] enabled at IRQ 22
+Jun  3 15:33:57 fawkes ACPI: PCI Interrupt 0000:00:08.0[A] -> Link 
+[LSA0] -> GSI 22 (level, low) -> IRQ 18
+Jun  3 15:33:57 fawkes PCI: Setting latency timer of device 0000:00:08.0 
+to 64
+Jun  3 15:33:57 fawkes ata1: SATA max UDMA/133 cmd 0xD400 ctl 0xD082 
+bmdma 0xC880 irq 18
+Jun  3 15:33:57 fawkes ata2: SATA max UDMA/133 cmd 0xD000 ctl 0xCC02 
+bmdma 0xC888 irq 18
+Jun  3 15:33:57 fawkes scsi0 : sata_nv
+Jun  3 15:33:57 fawkes ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 
+300)
+Jun  3 15:33:57 fawkes ata1.00: ATA-7, max UDMA/133, 1465149168 sectors: 
+LBA48 NCQ (depth 0/32)
+Jun  3 15:33:57 fawkes ata1.00: ata1: dev 0 multi count 16
+Jun  3 15:33:57 fawkes ata1.00: configured for UDMA/133
+Jun  3 15:33:57 fawkes scsi1 : sata_nv
+Jun  3 15:33:57 fawkes ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 
+300)
+Jun  3 15:33:57 fawkes ata2.00: ATA-7, max UDMA/133, 1465149168 sectors: 
+LBA48 NCQ (depth 0/32)
+Jun  3 15:33:57 fawkes ata2.00: ata2: dev 0 multi count 16
+Jun  3 15:33:57 fawkes ata2.00: configured for UDMA/133
+Jun  3 15:33:57 fawkes scsi 0:0:0:0: Direct-Access     ATA      
+ST3750640AS      3.AA PQ: 0 ANSI: 5
+Jun  3 15:33:57 fawkes SCSI device sda: 1465149168 512-byte hdwr sectors 
+(750156 MB)
+Jun  3 15:33:57 fawkes sda: Write Protect is off
+Jun  3 15:33:57 fawkes sda: Mode Sense: 00 3a 00 00
+Jun  3 15:33:57 fawkes SCSI device sda: write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Jun  3 15:33:57 fawkes SCSI device sda: 1465149168 512-byte hdwr sectors 
+(750156 MB)
+Jun  3 15:33:57 fawkes sda: Write Protect is off
+Jun  3 15:33:57 fawkes sda: Mode Sense: 00 3a 00 00
+Jun  3 15:33:57 fawkes SCSI device sda: write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Jun  3 15:33:57 fawkes sda: sda1 sda2 sda3 sda4 < sda5 >
+Jun  3 15:33:57 fawkes sd 0:0:0:0: Attached scsi disk sda
+Jun  3 15:33:57 fawkes sd 0:0:0:0: Attached scsi generic sg0 type 0
+Jun  3 15:33:57 fawkes scsi 1:0:0:0: Direct-Access     ATA      
+ST3750640AS      3.AA PQ: 0 ANSI: 5
+Jun  3 15:33:57 fawkes SCSI device sdb: 1465149168 512-byte hdwr sectors 
+(750156 MB)
+Jun  3 15:33:57 fawkes sdb: Write Protect is off
+Jun  3 15:33:57 fawkes sdb: Mode Sense: 00 3a 00 00
+Jun  3 15:33:57 fawkes SCSI device sdb: write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Jun  3 15:33:57 fawkes SCSI device sdb: 1465149168 512-byte hdwr sectors 
+(750156 MB)
+Jun  3 15:33:57 fawkes sdb: Write Protect is off
+Jun  3 15:33:57 fawkes sdb: Mode Sense: 00 3a 00 00
+Jun  3 15:33:57 fawkes SCSI device sdb: write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Jun  3 15:33:57 fawkes sdb: sdb1
+Jun  3 15:33:57 fawkes sd 1:0:0:0: Attached scsi disk sdb
+Jun  3 15:33:57 fawkes sd 1:0:0:0: Attached scsi generic sg1 type 0
+Jun  3 15:33:57 fawkes ACPI: PCI Interrupt Link [LSA1] enabled at IRQ 21
+Jun  3 15:33:57 fawkes ACPI: PCI Interrupt 0000:00:08.1[B] -> Link 
+[LSA1] -> GSI 21 (level, low) -> IRQ 19
+Jun  3 15:33:57 fawkes PCI: Setting latency timer of device 0000:00:08.1 
+to 64
+Jun  3 15:33:57 fawkes ata3: SATA max UDMA/133 cmd 0xC800 ctl 0xC482 
+bmdma 0xC000 irq 19
+Jun  3 15:33:57 fawkes ata4: SATA max UDMA/133 cmd 0xC400 ctl 0xC082 
+bmdma 0xC008 irq 19
+Jun  3 15:33:57 fawkes scsi2 : sata_nv
+Jun  3 15:33:57 fawkes ata3: port is slow to respond, please be patient 
+(Status 0xd0)
+Jun  3 15:33:57 fawkes ata3: port failed to respond (30 secs, Status 0xd0)
+Jun  3 15:33:57 fawkes ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 
+300)
+Jun  3 15:33:57 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:33:57 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:33:57 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:33:57 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:33:57 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:33:57 fawkes ata3.00: ATA-7, max UDMA/133, 1465149168 sectors: 
+LBA48 NCQ (depth 0/32)
+Jun  3 15:33:57 fawkes ata3.00: ata3: dev 0 multi count 16
+Jun  3 15:33:57 fawkes ata3.00: Drive reports diagnostics failure. This 
+may indicate a drive
+Jun  3 15:33:57 fawkes ata3.00: fault or invalid emulation. Contact 
+drive vendor for information.
+Jun  3 15:33:57 fawkes ata3.00: configured for UDMA/133
+Jun  3 15:33:57 fawkes scsi3 : sata_nv
+Jun  3 15:33:57 fawkes ata4: SATA link down (SStatus 0 SControl 300)
+Jun  3 15:33:57 fawkes ATA: abnormal status 0x7F on port 0xC407
+Jun  3 15:33:57 fawkes scsi 2:0:0:0: Direct-Access     ATA      
+ST3750640AS      3.AA PQ: 0 ANSI: 5
+Jun  3 15:33:57 fawkes SCSI device sdc: 1465149168 512-byte hdwr sectors 
+(750156 MB)
+Jun  3 15:33:57 fawkes sdc: Write Protect is off
+Jun  3 15:33:57 fawkes sdc: Mode Sense: 00 3a 00 00
+Jun  3 15:33:57 fawkes SCSI device sdc: write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Jun  3 15:33:57 fawkes SCSI device sdc: 1465149168 512-byte hdwr sectors 
+(750156 MB)
+Jun  3 15:33:57 fawkes sdc: Write Protect is off
+Jun  3 15:33:57 fawkes sdc: Mode Sense: 00 3a 00 00
+Jun  3 15:33:57 fawkes SCSI device sdc: write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Jun  3 15:33:57 fawkes sdc: unknown partition table
+Jun  3 15:33:57 fawkes sd 2:0:0:0: Attached scsi disk sdc
+Jun  3 15:33:57 fawkes sd 2:0:0:0: Attached scsi generic sg2 type 0
 
-Jun  4 15:41:12 bh-testlin2 kernel: BUG: sleeping function called from invalid context at include2/asm/semaphore.h:105
-Jun  4 15:41:12 bh-testlin2 kernel: in_atomic():1, irqs_disabled():0
-Jun  4 15:41:12 bh-testlin2 kernel:
-Jun  4 15:41:12 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:12 bh-testlin2 kernel:  [<ffffffff802216e1>] __might_sleep+0xb5/0xb7
-Jun  4 15:41:12 bh-testlin2 kernel:  [<ffffffff881d3943>] :iscsi_trgt:target_lock+0x4f/0x68
-Jun  4 15:41:12 bh-testlin2 kernel:  [<ffffffff881d1333>] :iscsi_trgt:istd+0xa5/0xc3f
-Jun  4 15:41:12 bh-testlin2 kernel:  [<ffffffff80223e04>] __wake_up_common+0x42/0x61
-Jun  4 15:41:12 bh-testlin2 kernel:  [<ffffffff881d128e>] :iscsi_trgt:istd+0x0/0xc3f
-Jun  4 15:41:12 bh-testlin2 kernel:  [<ffffffff80239f4c>] kthread+0x3d/0x63
-Jun  4 15:41:12 bh-testlin2 kernel:  [<ffffffff8020a0b8>] child_rip+0xa/0x12
-Jun  4 15:41:12 bh-testlin2 kernel:  [<ffffffff80239f0f>] kthread+0x0/0x63
-Jun  4 15:41:12 bh-testlin2 kernel:  [<ffffffff8020a0ae>] child_rip+0x0/0x12
-Jun  4 15:41:12 bh-testlin2 kernel:
-Jun  4 15:41:12 bh-testlin2 kernel: BUG: scheduling while atomic: istd1/0x00000018/3561
-Jun  4 15:41:12 bh-testlin2 kernel:
-Jun  4 15:41:12 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:13 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:13 bh-testlin2 kernel:  [<ffffffff80223e58>] __wake_up+0x35/0x4b
-Jun  4 15:41:13 bh-testlin2 kernel:  [<ffffffff8037aa78>] release_sock+0x10/0xae
-Jun  4 15:41:13 bh-testlin2 kernel:  [<ffffffff803e57b0>] _spin_unlock_bh+0x6/0x11
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803a7187>] tcp_ioctl+0x131/0x13a
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803a7190>] tcp_sendpage+0x0/0x66b
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881d12fc>] :iscsi_trgt:istd+0x6e/0xc3f
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80223e04>] __wake_up_common+0x42/0x61
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881d128e>] :iscsi_trgt:istd+0x0/0xc3f
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80239f4c>] kthread+0x3d/0x63
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8020a0b8>] child_rip+0xa/0x12
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80239f0f>] kthread+0x0/0x63
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8020a0ae>] child_rip+0x0/0x12
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: >] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881ceaae>] :iscsi_trgt:iscsi_cmnd_remove+0x157/0x177
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e57b0>] _spin_unlock_bh+0x6/0x11
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803a7190>] tcp_sendpage+0x0/0x66b
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881d12fc>] :iscsi_trgt:istd+0x6e/0xc3f
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80223e04>] __wake_up_common+0x42/0x61
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881d128e>] :iscsi_trgt:istd+0x0/0xc3f
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80239f4c>] kthread+0x3d/0x63
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8020a0b8>] child_rip+0xa/0x12
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80239f0f>] kthread+0x0/0x63
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8020a0ae>] child_rip+0x0/0x12
-Jun  4 15:41:14 bh-testlin2 kernel: BUG: scheduling while atomic: swapper/0x00000083/0
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff802079ce>] default_idle+0x0/0x3d
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80207b81>] cpu_idle+0x6e/0x70
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80500772>] start_kernel+0x29c/0x2a5
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80500151>] _sinittext+0x151/0x158
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: BUG: scheduling while atomic: istd1/0x00000100/3561
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80223e58>] __wake_up+0x35/0x4b
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8037aa78>] release_sock+0x10/0xae
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e57b0>] _spin_unlock_bh+0x6/0x11
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803a7187>] tcp_ioctl+0x131/0x13a
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803a7190>] tcp_sendpage+0x0/0x66b
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881d12fc>] :iscsi_trgt:istd+0x6e/0xc3f
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80223e04>] __wake_up_common+0x42/0x61
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881d128e>] :iscsi_trgt:istd+0x0/0xc3f
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80239f4c>] kthread+0x3d/0x63
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8020a0b8>] child_rip+0xa/0x12
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80239f0f>] kthread+0x0/0x63
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8020a0ae>] child_rip+0x0/0x12
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: BUG: scheduling while atomic: swapper/0x00000083/0
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff802079ce>] default_idle+0x0/0x3d
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80207b81>] cpu_idle+0x6e/0x70
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80500772>] start_kernel+0x29c/0x2a5
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80500151>] _sinittext+0x151/0x158
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: BUG: scheduling while atomic: istd1/0x00000100/3561
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881ceaae>] :iscsi_trgt:iscsi_cmnd_remove+0x157/0x177
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e57b0>] _spin_unlock_bh+0x6/0x11
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803a7190>] tcp_sendpage+0x0/0x66b
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881d12fc>] :iscsi_trgt:istd+0x6e/0xc3f
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80223e04>] __wake_up_common+0x42/0x61
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff881d128e>] :iscsi_trgt:istd+0x0/0xc3f
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80239f4c>] kthread+0x3d/0x63
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8020a0b8>] child_rip+0xa/0x12
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80239f0f>] kthread+0x0/0x63
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8020a0ae>] child_rip+0x0/0x12
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: BUG: scheduling while atomic: swapper/0x00000084/0
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff802079ce>] default_idle+0x0/0x3d
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80207b81>] cpu_idle+0x6e/0x70
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80500772>] start_kernel+0x29c/0x2a5
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80500151>] _sinittext+0x151/0x158
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: BUG: scheduling while atomic: istd1/0x00000100/3561
-Jun  4 15:41:14 bh-testlin2 kernel:
-Jun  4 15:41:14 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff80223e58>] __wake_up+0x35/0x4b
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff8037aa78>] release_sock+0x10/0xae
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803e57b0>] _spin_unlock_bh+0x6/0x11
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803a7187>] tcp_ioctl+0x131/0x13a
-Jun  4 15:41:14 bh-testlin2 kernel:  [<ffffffff803a7190>] tcp_sendpage+0x0/0x66b
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff881d12fc>] :iscsi_trgt:istd+0x6e/0xc3f
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80223e04>] __wake_up_common+0x42/0x61
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff881d128e>] :iscsi_trgt:istd+0x0/0xc3f
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80239f4c>] kthread+0x3d/0x63
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff8020a0b8>] child_rip+0xa/0x12
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80239f0f>] kthread+0x0/0x63
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff8020a0ae>] child_rip+0x0/0x12
-Jun  4 15:41:15 bh-testlin2 kernel:
-Jun  4 15:41:15 bh-testlin2 kernel: BUG: scheduling while atomic: swapper/0x00000084/0
-Jun  4 15:41:15 bh-testlin2 kernel:
-Jun  4 15:41:15 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff802079ce>] default_idle+0x0/0x3d
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80207b81>] cpu_idle+0x6e/0x70
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80500772>] start_kernel+0x29c/0x2a5
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80500151>] _sinittext+0x151/0x158
-Jun  4 15:41:15 bh-testlin2 kernel:
-Jun  4 15:41:15 bh-testlin2 kernel: BUG: scheduling while atomic: istd1/0x00000100/3561
-Jun  4 15:41:15 bh-testlin2 kernel:
-Jun  4 15:41:15 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff881ceaae>] :iscsi_trgt:iscsi_cmnd_remove+0x157/0x177
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff803e57b0>] _spin_unlock_bh+0x6/0x11
-Jun  4 15:41:15 bh-testlin2 kernel: /0x00000100/3561
-Jun  4 15:41:15 bh-testlin2 kernel:
-Jun  4 15:41:15 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff881ceaae>] :iscsi_trgt:iscsi_cmnd_remove+0x157/0x177
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff803e57b0>] _spin_unlock_bh+0x6/0x11
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff881d12fc>] :iscsi_trgt:istd+0x6e/0xc3f
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80223e04>] __wake_up_common+0x42/0x61
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff881d128e>] :iscsi_trgt:istd+0x0/0xc3f
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80239f4c>] kthread+0x3d/0x63
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff8020a0b8>] child_rip+0xa/0x12
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80239f0f>] kthread+0x0/0x63
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff8020a0ae>] child_rip+0x0/0x12
-Jun  4 15:41:15 bh-testlin2 kernel:
-Jun  4 15:41:15 bh-testlin2 kernel: BUG: scheduling while atomic: swapper/0x000000b5/0
-Jun  4 15:41:15 bh-testlin2 kernel:
-Jun  4 15:41:15 bh-testlin2 kernel: Call Trace:
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff803e34ef>] __sched_text_start+0x5f/0x7ce
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff802079ce>] default_idle+0x0/0x3d
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80207b81>] cpu_idle+0x6e/0x70
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80500772>] start_kernel+0x29c/0x2a5
-Jun  4 15:41:15 bh-testlin2 kernel:  [<ffffffff80500151>] _sinittext+0x151/0x158
-Jun  4 15:41:15 bh-testlin2 kernel:
+later after trying to write new partition information...
 
---------------010205090806020707080904--
+Jun  3 15:35:58 fawkes ata3: port failed to respond (30 secs, Status 0xd0)
+Jun  3 15:35:58 fawkes ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 
+300)
+Jun  3 15:35:58 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:35:58 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:35:58 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:35:58 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:35:58 fawkes ATA: abnormal status 0xD0 on port 0xC807
+Jun  3 15:36:28 fawkes ata3.00: qc timeout (cmd 0xec)
+Jun  3 15:36:28 fawkes ata3.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+Jun  3 15:36:28 fawkes ata3.00: revalidation failed (errno=-5)
+Jun  3 15:36:28 fawkes ata3: failed to recover some devices, retrying in 
+5 secs
+Jun  3 15:36:33 fawkes ata3: hard resetting port
+Jun  3 15:36:40 fawkes ata3: port is slow to respond, please be patient 
+(Status 0xd0)
+
