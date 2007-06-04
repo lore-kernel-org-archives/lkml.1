@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752253AbXFDD5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752348AbXFDElP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752253AbXFDD5U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 23:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbXFDD5M
+	id S1752348AbXFDElP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 00:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbXFDElB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 23:57:12 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:8096 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbXFDD5L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 23:57:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=H79HQvCtSRY6u4M1fNWa0+cQG/P70bxRtp2W9NlguNA+XRBzYQQcYoxjx6Nvc/XSGUUg+/KCrNCVEXh5xcKC2zWqH7UYBUPCFcCEvQ8i8Rs185KNq3l9KnTmIYH/ZumJrJV7WPCR1sRCxP8Iuc8ZGv19rXESYMEcYTMZTeagXaQ=
-Message-ID: <787b0d920706032057q2ed5fa06yc05907990cb2c0f0@mail.gmail.com>
-Date: Sun, 3 Jun 2007 23:57:11 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: linux-kernel@vger.kernel.org, davids@webmaster.com, epiphani@gmail.com,
-       viro@ftp.linux.org.uk
-Subject: RE: slow open() calls and o_nonblock
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 00:41:01 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:52022 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751508AbXFDElA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 00:41:00 -0400
+Date: Mon, 4 Jun 2007 10:10:41 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: A kexec approach to hibernation
+Message-ID: <20070604044041.GB10206@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <878xb3l888.fsf@jbms.ath.cx> <200706012339.06379.rjw@sisk.pl> <87zm3j9usv.fsf@jbms.ath.cx> <200706020114.37245.rjw@sisk.pl> <87odjz9qo9.fsf@jbms.ath.cx>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <87odjz9qo9.fsf@jbms.ath.cx>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Schwartz writes:
-> [Aaron Wiebe]
+On Fri, Jun 01, 2007 at 07:54:30PM -0400, Jeremy Maitin-Shepard wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > On Saturday, 2 June 2007 00:25, Jeremy Maitin-Shepard wrote:
+> 
+> [snip]
+> 
+> >> Just before jumping into the new kernel, with interrupts disabled, the
+> >> old kernel could either prepare a data structure that specifies what
+> >> pages are allocated, or alternatively simply provide a pointer to the
+> >> relevant data structure in the old kernel.
+> 
+> > But for this purpose the old kernel will actually need to do what is currently
+> > done in swsusp while the image is being created (the only difference is that
+> > we allocate memory in the process, but that's a detail only).
+> 
+> Okay, but creating a list of pages should be extremely easy.
+> Alternatively, with the "save kernel" might be able to read the existing
+> data structures directly.
+> 
 
->> open("/somefile", O_WRONLY|O_NONBLOCK|O_CREAT, 0644) = 1621 <0.415147>
->
-> How could they make any difference? I can't think of any
-> conceivable way they could.
->
->> Now, I'm a userspace guy so I can be pretty dense, but shouldn't a
->> call with a nonblocking flag return EAGAIN if its going to take
->> anywhere near 415ms?  Is there a way I can force opens to EAGAIN if
->> they take more than 10ms?
->
-> There is no way you can re-try the request. The open must either
-> succeed or not return a handle. It is not like a 'read' operation
-> that has an "I didn't do anything, and you can retry this request"
-> option.
->
-> If 'open' returns a file handle, you can't retry it (since it must
-> succeed in order to do that, failure must not return a handle).
-> If you 'open' doesn't return a file handle, you can't retry it
-> (because, without a handle, there is no way to associate a future
-> request with this one, if it creates a file, the file must not be
-> created if you don't call 'open' again).
->
-> The 'open' function must, at minimum, confirm that the file exists
-> (or doesn't exist and can be created, or whatever). This takes
-> however long it takes on NFS.
+Can't we do it Kdump way? Kdump creates ELF headers and stores these in 
+memory. Address of these elf headers is passed to second kernel through
+command line parameter. These ELF headers contain the information regarding
+what memory areas need to be captured by the second kernel.
 
-This is not the case, though we might need to allocate a new
-flag to avoid breaking things.
+Can't we adopt similar raw approach for hibernation? Reserve a memory
+area for second kernel (This is not used by first kernel). During hibernation,
+load second kernel in reserved memory area which will also determine
+what physical memory needs to be saved (possibly reading /proc/iomem) and
+create ELF headers and then second kernel can parse these headers and save
+the memory. The output file can possibly be and ELF image again so that
+restoring back becomes easier.
 
-Let open() with O_UNCHECKED always return a file descriptor,
-except perhaps when failure can be identified without doing IO.
-The "real" open then proceeds in the background.
+I am just thinking that do we have to create a list of pages etc? Can't we
+just copy the raw memory to disk and restore it back. Information regarding
+where a chunk of memory should go back will be provided by the ELF header.
 
->From poll() or select(), you can see that the file descriptor
-is not ready for anything. Eventually it becomes ready for IO
-or reports an error condition. Both select() and poll() are
-capable of reporting errors. If the "real" (background) open()
-fails, then the only valid operation is close(). Attempts to
-do anything else get EBADFD or ESTALE.
+One fall side would be that problem of reserving a memory area constantly
+and this memory area is currently reserved at first kernel boot time. Can we
+somehow make this reservation dynamic? Something like using hugepage support
+so that we can allocate big chunks of contiguous physical memory from user
+space (32MB or 64MB) at run time.
 
-You'll also need a background close().
+Thanks
+Vivek
