@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbXFDIHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbXFDIIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbXFDIHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 04:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbXFDIHQ
+	id S1753604AbXFDIIV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 04:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbXFDIIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 04:07:16 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:5370 "EHLO kernel.dk"
+	Mon, 4 Jun 2007 04:08:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37757 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752253AbXFDIHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 04:07:15 -0400
-Date: Mon, 4 Jun 2007 10:05:35 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org, cotte@de.ibm.com, hugh@veritas.com,
-       neilb@suse.de, zanussi@us.ibm.com, hch@infradead.org
-Subject: Re: [PATCH] sendfile removal
-Message-ID: <20070604080535.GP32105@kernel.dk>
-References: <20070601054120.GI32105@kernel.dk> <465FB3AD.5030807@zytor.com> <465FC92C.50608@cosmosbay.com> <466040C1.6030004@zytor.com> <alpine.LFD.0.98.0706010904110.3957@woody.linux-foundation.org> <20070602150104.GH32105@kernel.dk> <alpine.LFD.0.98.0706020836360.23741@woody.linux-foundation.org> <20070603130507.GA11170@mail.ustc.edu.cn> <20070603142931.GA5916@mail.ustc.edu.cn> <20070604004647.GA8076@mail.ustc.edu.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752339AbXFDIIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 04:08:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+Date: Mon, 4 Jun 2007 10:13:48 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <878xb35sje.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl> <87wsykpweu.fsf@goat.bogus.local>
+In-Reply-To: <87wsykpweu.fsf@goat.bogus.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070604004647.GA8076@mail.ustc.edu.cn>
+Message-Id: <200706041013.49428.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04 2007, Fengguang Wu wrote:
-> Hi Jens,
+On Sunday, 3 June 2007 23:20, Olaf Dietsche wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> This is another try, still not in a comfortable state though.
-> //Busy waiting is possible for interleaved reads.
+> > Second, you can use PM_TRACE (Documentation/power/s2ram.txt) to find the
+> > place where it really fails.
+> 
+> First I augmented my minimal config kernel with some TRACE_RESUME()s:
+> 
+> --- a/kernel/power/main.c	2007-05-27 23:48:05.000000000 +0200
+> +++ b/kernel/power/main.c	2007-06-03 22:28:46.000000000 +0200
+> @@ -223,6 +223,7 @@
+>  	pr_debug("PM: Finishing wakeup.\n");
+>  	suspend_finish(state);
+>   Unlock:
+> +	TRACE_RESUME(error);
+>  	mutex_unlock(&pm_mutex);
+>  	return error;
+>  }
+> @@ -303,6 +304,7 @@
+>  		error = enter_state(state);
+>  	else
+>  		error = -EINVAL;
+> +	TRACE_RESUME(error);
+>  	return error ? error : n;
+>  }
+>  
+> With this test script:
+> 
+> #! /bin/sh
+> 
+> sync
+> echo 1 >/sys/power/pm_trace
+> echo mem >/sys/power/state
+> shutdown -rn now
+> 
+> I got alternating
+>   hash matches drivers/base/power/resume.c:58
+> and
+>   hash matches kernel/power/main.c:307
+> 
+> > First, you can check if the patch
+> >
+> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/20-ACPI-preserve-the-ebx-value-in-acpi_copy_wakeup_routine.patch
+> 
+> Then I applied this patch, but it doesn't change anything.
+> 
+> But either way the script never reaches "shutdown -rn now". So, it
+> seems, that my laptop does a full resume every other reboot, but it
+> never returns to userspace.
 
-A few random comments...
+I'm still suspecting that the problem is related to your graphics adapter.
 
-Adding an internal flag is fine, but please put it at the upper end of
-the spectrum. So, use (1 << 31) for that flag.
+What graphics adapter do you have in the box?
 
-And please work on the #splice branch of the block repo, not -mm. There
-are quite a few things pending for inclusion in there, and I'm sure your
-patch as-is wont apply.
+Rafael
+
 
 -- 
-Jens Axboe
-
+"Premature optimization is the root of all evil." - Donald Knuth
