@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbXFDLH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbXFDLQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754481AbXFDLH4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 07:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbXFDLHt
+	id S1754065AbXFDLQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 07:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbXFDLQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 07:07:49 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34754 "EHLO amd.ucw.cz"
+	Mon, 4 Jun 2007 07:16:18 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42296 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753267AbXFDLHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 07:07:48 -0400
-Date: Mon, 4 Jun 2007 13:07:43 +0200
+	id S1752631AbXFDLQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 07:16:17 -0400
+Date: Mon, 4 Jun 2007 13:16:10 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: Valdis.Kletnieks@vt.edu,
-       David Wagner <daw-usenet@taverner.cs.berkeley.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
-Message-ID: <20070604110743.GN4363@elf.ucw.cz>
-References: <653438.15244.qm@web36612.mail.mud.yahoo.com> <20070529144518.GD5840@ucw.cz> <Pine.LNX.4.64.0705291622430.31474@asgard.lang.hm> <20070529233041.GC24200@elf.ucw.cz> <f3il25$pcp$1@taverner.cs.berkeley.edu> <20070524144726.GB3920@ucw.cz> <12508.1180719875@turing-police.cc.vt.edu> <Pine.LNX.4.64.0706011048550.25896@asgard.lang.hm>
+To: Len Brown <lenb@kernel.org>
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
+Message-ID: <20070604111610.GR4363@elf.ucw.cz>
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705171842.44134.lenb@kernel.org> <20070521121139.GB8332@elf.ucw.cz> <200705312246.11576.lenb@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706011048550.25896@asgard.lang.hm>
+In-Reply-To: <200705312246.11576.lenb@kernel.org>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2007-06-01 11:00:50, david@lang.hm wrote:
-> On Fri, 1 Jun 2007, Valdis.Kletnieks@vt.edu wrote:
+On Thu 2007-05-31 22:46:11, Len Brown wrote:
+> On Monday 21 May 2007 08:11, Pavel Machek wrote:
+> > On Thu 2007-05-17 18:42:43, Len Brown wrote:
+> > > > Something similar happened to me on XE3, yes.
+> > > > 
+> > > > (Actual values were different; BIOS specified critical temperature at
+> > > > cca 95C, but hw killed the power at cca 83C. Setting critical trip
+> > > > point at 80C made the problem go away.)
+> > > 
+> > > Great, please file a bug and include the acpidump from the XE3
+> > > and we'll fix it, rather than supporting a bogus (manual) workaround for it.
+> > 
+> > It is few years since I do not have that XE3 machine.
+> > 
+> > > Of course if your system is running at 80*C and the hardware shuts
+> > > off at 83*C, you may have a broken fan, or one clogged with dust...
+> > 
+> > It _did_ have broken fan. It also had broken trip points.
 > 
-> >On Thu, 24 May 2007 14:47:27 -0000, Pavel Machek said:
-> >>Yes, if there's significantly more remote bad guys than local bad
-> >>guys, and if remote bad guys can't just get some local user first, AA
-> >>still has some value.
-> >
-> >Experience over on the Windows side of the fence indicates that "remote bad
-> >guys get some local user first" is a *MAJOR* part of the current real-world
-> >threat model - the vast majority of successful attacks on end-user boxes 
-> >these
-> >days start off with either "Get user to (click on link|open attachment)" or
-> >"Subvert the path to a website (either by hacking the real site or 
-> >hijacking
-> >the DNS) and deliver a drive-by fruiting when the user visits the page".
-> 
-> and if your local non-root user can create a hard link to /etc/shadow and 
-> access it they own your box anyway (they can just set the root password to 
-> anything they want). 
+> Thanks for clarifying this, Pavel.
+> If you come upon an XE3 where Linux-2.6.22 doesn't work as well
+> as Windows, please let me know.
 
-I think you need to look how unix security works:
-
-pavel@amd:/tmp$ ln /etc/shadow .
-pavel@amd:/tmp$ cat shadow
-cat: shadow: Permission denied
-pavel@amd:/tmp$
-
-Yes, regular users are permitted to hardlink shadow, no, it is not a
-security hole, yes, it is a problem for AA.
+"work as well as windows" is not good enough goal as far as I'm
+concerned. Please don't break working setups.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
