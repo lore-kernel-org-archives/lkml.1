@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759379AbXFDU4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759855AbXFDU5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759379AbXFDU4e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 16:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbXFDU40
+	id S1759855AbXFDU5T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 16:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbXFDU5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 16:56:26 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:18469 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755419AbXFDU4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 16:56:25 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=qWaz5/QjMeEsZ8e9QNM+H6Os654ESjzsFBWYakEkC0bm5l28FOsVgVty5hPUXHjyU
-	BkKTdHApLKj1N+qS0OJcQ==
-Message-ID: <6599ad830706041356r5a031dd5w2eeb3ff4c7c64b72@mail.gmail.com>
-Date: Mon, 4 Jun 2007 13:56:12 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH 00/10] Containers(V10): Generic Process Containers
-Cc: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, vatsa@in.ibm.com,
-       ebiederm@xmission.com, haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com,
-       balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-In-Reply-To: <20070604205106.GA31530@sergelap.austin.ibm.com>
+	Mon, 4 Jun 2007 16:57:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40684 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753882AbXFDU5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 16:57:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Olaf Dietsche <olaf.dietsche@olafdietsche.de>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+Date: Mon, 4 Jun 2007 23:02:45 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <878xb35sje.fsf@goat.bogus.local> <200706041013.49428.rjw@sisk.pl> <87hcpnpt4k.fsf@goat.bogus.local>
+In-Reply-To: <87hcpnpt4k.fsf@goat.bogus.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070529130104.461765000@menage.corp.google.com>
-	 <20070604191412.GA901@sergelap.austin.ibm.com>
-	 <6599ad830706041332o718acb60ve0b5e38c2ca82c62@mail.gmail.com>
-	 <20070604205106.GA31530@sergelap.austin.ibm.com>
+Message-Id: <200706042302.45628.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/4/07, Serge E. Hallyn <serue@us.ibm.com> wrote:
-> root@linuz11 root]# rm -rf /containers/1
+On Monday, 4 June 2007 18:43, Olaf Dietsche wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > On Sunday, 3 June 2007 23:20, Olaf Dietsche wrote:
+> >
+> >> But either way the script never reaches "shutdown -rn now". So, it
+> >> seems, that my laptop does a full resume every other reboot, but it
+> >> never returns to userspace.
+> >
+> > I'm still suspecting that the problem is related to your graphics adapter.
+> 
+> Maybe it's the most common problem, but why do you think so? Even with
+> a black screen the kernel should return to userspace.
 
-Just use "rmdir /containers/1" here.
+Not necessarily.  I have a test box that just crashes if the graphics card is
+not posted.
+ 
+> > What graphics adapter do you have in the box?
+> 
+> 0000:01:00.0 VGA compatible controller: nVidia Corporation: Unknown device 0148 (rev a2) (prog-if 00 [VGA])
+> 	Subsystem: QUANTA Computer Inc: Unknown device 0729
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+> 	Latency: 0, Cache Line Size: 0x08 (32 bytes)
+> 	Interrupt: pin A routed to IRQ 10
+> 	Region 0: Memory at c4000000 (32-bit, non-prefetchable) [size=64M]
+> 	Region 1: Memory at d0000000 (64-bit, prefetchable) [size=128M]
+> 	Region 3: Memory at c1000000 (64-bit, non-prefetchable) [size=16M]
+> 	Expansion ROM at c2000000 [disabled] [size=128K]
+> 	Capabilities: [60] Power Management version 2
+> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Capabilities: [68] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+> 		Address: 0000000000000000  Data: 0000
+> 	Capabilities: [78] #10 [0001]
 
->
-> Ah, I see the second time I typed 'ls /containers/1/tasks' instead of
-> cat.  When I then used cat, the file was empty, and I got an oops just
-> like Pavel reported.  I bet if I solve the problem he reported, then I
-> solve my problem  :)
->
+You may try to use 's2ram --force --vbe_post --vbe_mode', if you haven't tried
+that already.
 
-As far as I could see, Pavel's problem wasn't actually an Oops, it was
-a WARN_ON() when allocating a zero length chunk of memory. There's
-ongoing discussion as to whether this counts as a problem with the
-allocators or the kmalloc() code, since it used to be OK to allocate a
-zero-length chunk.
+Still, if the card is a 7300 or higher, that need not work (at present we don't
+know what magic is required to make these cards work).
 
-Paul
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
