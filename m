@@ -1,395 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762215AbXFDWdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762312AbXFDWeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762215AbXFDWdm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 18:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761365AbXFDWbz
+	id S1762312AbXFDWeA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 18:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759066AbXFDWcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 18:31:55 -0400
-Received: from mga05.intel.com ([192.55.52.89]:1270 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761356AbXFDWbx (ORCPT
+	Mon, 4 Jun 2007 18:32:05 -0400
+Received: from mga06.intel.com ([134.134.136.21]:56368 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759911AbXFDWcD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 18:31:53 -0400
+	Mon, 4 Jun 2007 18:32:03 -0400
 X-ExtLoopCount2: 2 from 172.25.110.8
 X-IronPort-AV: E=Sophos;i="4.16,382,1175497200"; 
-   d="scan'208";a="253154395"
+   d="scan'208";a="250776922"
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,382,1175497200"; 
-   d="scan'208";a="93415311"
-Message-Id: <20070604210644.672651000@askeshav-devel.jf.intel.com>
+   d="scan'208";a="253128029"
+Message-Id: <20070604210644.722217000@askeshav-devel.jf.intel.com>
 References: <20070604210242.079459000@askeshav-devel.jf.intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 04 Jun 2007 14:02:50 -0700
+Date: Mon, 04 Jun 2007 14:02:51 -0700
 From: anil.s.keshavamurthy@intel.com
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
        asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
        anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
        ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
-Subject: [Intel-IOMMU 08/10] DMAR fault handling support
-Content-Disposition: inline; filename=dmar_fault_handling_support.patch
-X-OriginalArrivalTime: 04 Jun 2007 21:24:02.0635 (UTC) FILETIME=[AC4AA9B0:01C7A6EE]
+Subject: [Intel-IOMMU 09/10] Iommu Gfx workaround
+Content-Disposition: inline; filename=gfx_wrkaround.patch
+X-OriginalArrivalTime: 04 Jun 2007 21:23:59.0696 (UTC) FILETIME=[AA8A3500:01C7A6EE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	MSI interrupt handler registrations and fault handling support
-for Intel-IOMMU hadrware.
+When we fix all the opensource gfx drivers to use the DMA api's,
+at that time we can yank this config options out.
 
 Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
 ---
- Documentation/Intel-IOMMU.txt |   17 +++
- arch/x86_64/kernel/io_apic.c  |   59 ++++++++++++
- drivers/pci/intel-iommu.c     |  194 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/dmar.h          |   12 ++
- 4 files changed, 281 insertions(+), 1 deletion(-)
+ Documentation/Intel-IOMMU.txt |    5 +++++
+ arch/x86_64/Kconfig           |   11 +++++++++++
+ arch/x86_64/kernel/e820.c     |   19 +++++++++++++++++++
+ drivers/pci/intel-iommu.c     |   32 ++++++++++++++++++++++++++++++++
+ 4 files changed, 67 insertions(+)
 
 Index: linux-2.6.22-rc3/Documentation/Intel-IOMMU.txt
 ===================================================================
---- linux-2.6.22-rc3.orig/Documentation/Intel-IOMMU.txt	2007-06-04 12:40:29.000000000 -0700
-+++ linux-2.6.22-rc3/Documentation/Intel-IOMMU.txt	2007-06-04 12:40:58.000000000 -0700
-@@ -63,6 +63,15 @@
- The same is true for peer to peer transactions. Hence we reserve the
- address from PCI MMIO ranges so they are not allocated for IOVA addresses.
+--- linux-2.6.22-rc3.orig/Documentation/Intel-IOMMU.txt	2007-06-04 12:40:58.000000000 -0700
++++ linux-2.6.22-rc3/Documentation/Intel-IOMMU.txt	2007-06-04 12:41:11.000000000 -0700
+@@ -57,6 +57,11 @@
+ If you encounter issues with graphics devices, you can try adding
+ option intel_iommu=igfx_off to turn off the integrated graphics engine.
  
++If it happens to be a PCI device included in the INCLUDE_ALL Engine,
++then try enabling CONFIG_DMAR_GFX_WA to setup a 1-1 map. We hear
++graphics drivers may be in process of using DMA api's in the near
++future and at that time this option can be yanked out.
 +
-+Fault reporting
-+---------------
-+When errors are reported, the DMA engine signals via an interrupt. The fault
-+reason and device that caused it with fault reason is printed on console.
-+
-+See below for sample.
-+
-+
- Boot Message Sample
- -------------------
- 
-@@ -85,6 +94,14 @@
- 
- PCI-DMA: Using DMAR IOMMU
- 
-+Fault reporting
-+---------------
-+
-+DMAR:[DMA Write] Request device [00:02.0] fault addr 6df084000
-+DMAR:[fault reason 05] PTE Write access is not set
-+DMAR:[DMA Write] Request device [00:02.0] fault addr 6df084000
-+DMAR:[fault reason 05] PTE Write access is not set
-+
- TBD
- ----
- 
-Index: linux-2.6.22-rc3/arch/x86_64/kernel/io_apic.c
+ Some exceptions to IOVA
+ -----------------------
+ Interrupt ranges are not address translated, (0xfee00000 - 0xfeefffff).
+Index: linux-2.6.22-rc3/arch/x86_64/Kconfig
 ===================================================================
---- linux-2.6.22-rc3.orig/arch/x86_64/kernel/io_apic.c	2007-06-04 12:19:13.000000000 -0700
-+++ linux-2.6.22-rc3/arch/x86_64/kernel/io_apic.c	2007-06-04 12:40:58.000000000 -0700
-@@ -31,6 +31,7 @@
- #include <linux/sysdev.h>
- #include <linux/msi.h>
- #include <linux/htirq.h>
-+#include <linux/dmar.h>
- #ifdef CONFIG_ACPI
- #include <acpi/acpi_bus.h>
- #endif
-@@ -1972,8 +1973,64 @@
- 	destroy_irq(irq);
+--- linux-2.6.22-rc3.orig/arch/x86_64/Kconfig	2007-06-04 12:35:19.000000000 -0700
++++ linux-2.6.22-rc3/arch/x86_64/Kconfig	2007-06-04 12:41:11.000000000 -0700
+@@ -727,6 +727,17 @@
+ 	  and includes pci device scope covered by these DMA
+ 	  remapping device.
+ 
++config DMAR_GFX_WA
++	bool "Support for Graphics workaround"
++	depends on DMAR
++	default y
++	help
++	 Current Graphics drivers tend to use physical address
++	 for DMA and avoid using DMA api's. Setting this config
++	 option permits the IOMMU driver to set a unity map for
++	 all the OS visible memory. Hence the driver can continue
++	 to use physical addresses for DMA.
++
+ source "drivers/pci/pcie/Kconfig"
+ 
+ source "drivers/pci/Kconfig"
+Index: linux-2.6.22-rc3/arch/x86_64/kernel/e820.c
+===================================================================
+--- linux-2.6.22-rc3.orig/arch/x86_64/kernel/e820.c	2007-06-04 12:19:13.000000000 -0700
++++ linux-2.6.22-rc3/arch/x86_64/kernel/e820.c	2007-06-04 12:41:11.000000000 -0700
+@@ -717,3 +717,22 @@
+ 	printk(KERN_INFO "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
+ 		pci_mem_start, gapstart, gapsize);
  }
- 
--#endif /* CONFIG_PCI_MSI */
-+#ifdef CONFIG_DMAR
-+#ifdef CONFIG_SMP
-+static void dmar_msi_set_affinity(unsigned int irq, cpumask_t mask)
++
++int __init arch_get_ram_range(int slot, u64 *addr, u64 *size)
 +{
-+	struct irq_cfg *cfg = irq_cfg + irq;
-+	struct msi_msg msg;
-+	unsigned int dest;
-+	cpumask_t tmp;
++	int i;
 +
-+	cpus_and(tmp, mask, cpu_online_map);
-+	if (cpus_empty(tmp))
-+		return;
-+
-+	if (assign_irq_vector(irq, mask))
-+		return;
-+
-+	cpus_and(tmp, cfg->domain, mask);
-+	dest = cpu_mask_to_apicid(tmp);
-+
-+	dmar_msi_read(irq, &msg);
-+
-+	msg.data &= ~MSI_DATA_VECTOR_MASK;
-+	msg.data |= MSI_DATA_VECTOR(cfg->vector);
-+	msg.address_lo &= ~MSI_ADDR_DEST_ID_MASK;
-+	msg.address_lo |= MSI_ADDR_DEST_ID(dest);
-+
-+	dmar_msi_write(irq, &msg);
-+	irq_desc[irq].affinity = mask;
++	if (slot < 0 || slot >= e820.nr_map)
++		return -1;
++	for (i = slot; i < e820.nr_map; i++) {
++		if(e820.map[i].type != E820_RAM)
++			continue;
++		break;
++	}
++	if (i == e820.nr_map || e820.map[i].addr > (max_pfn << PAGE_SHIFT))
++		return -1;
++	*addr = e820.map[i].addr;
++	*size = min_t(u64, e820.map[i].size + e820.map[i].addr,
++		max_pfn << PAGE_SHIFT) - *addr;
++	return i + 1;
 +}
-+#endif /* CONFIG_SMP */
-+
-+struct irq_chip dmar_msi_type = {
-+	.name = "DMAR_MSI",
-+	.unmask = dmar_msi_unmask,
-+	.mask = dmar_msi_mask,
-+	.ack = ack_apic_edge,
-+#ifdef CONFIG_SMP
-+	.set_affinity = dmar_msi_set_affinity,
-+#endif
-+	.retrigger = ioapic_retrigger_irq,
-+};
-+
-+int arch_setup_dmar_msi(unsigned int irq)
-+{
-+	int ret;
-+	struct msi_msg msg;
-+
-+	ret = msi_compose_msg(NULL, irq, &msg);
-+	if (ret < 0)
-+		return ret;
-+	dmar_msi_write(irq, &msg);
-+	set_irq_chip_and_handler_name(irq, &dmar_msi_type, handle_edge_irq,
-+		"edge");
-+	return 0;
-+}
-+#endif
- 
-+#endif /* CONFIG_PCI_MSI */
- /*
-  * Hypertransport interrupt support
-  */
 Index: linux-2.6.22-rc3/drivers/pci/intel-iommu.c
 ===================================================================
---- linux-2.6.22-rc3.orig/drivers/pci/intel-iommu.c	2007-06-04 12:40:41.000000000 -0700
-+++ linux-2.6.22-rc3/drivers/pci/intel-iommu.c	2007-06-04 12:40:58.000000000 -0700
-@@ -684,6 +684,196 @@
- 	return 0;
+--- linux-2.6.22-rc3.orig/drivers/pci/intel-iommu.c	2007-06-04 12:40:58.000000000 -0700
++++ linux-2.6.22-rc3/drivers/pci/intel-iommu.c	2007-06-04 12:41:11.000000000 -0700
+@@ -1556,6 +1556,34 @@
+ 		rmrr->end_address + 1);
  }
  
-+/* iommu interrupt handling. Most stuff are MSI-like. */
-+
-+static char *fault_reason_strings[] =
++#ifdef CONFIG_DMAR_GFX_WA
++extern int arch_get_ram_range(int slot, u64 *addr, u64 *size);
++static void __init iommu_prepare_gfx_mapping(void)
 +{
-+	"Software",
-+	"Present bit in root entry is clear",
-+	"Present bit in context entry is clear",
-+	"Invalid context entry",
-+	"Access beyond MGAW",
-+	"PTE Write access is not set",
-+	"PTE Read access is not set",
-+	"Next page table ptr is invalid",
-+	"Root table address invalid",
-+	"Context table ptr is invalid",
-+	"non-zero reserved fields in RTP",
-+	"non-zero reserved fields in CTP",
-+	"non-zero reserved fields in PTE",
-+	"Unknown"
-+};
-+#define MAX_FAULT_REASON_IDX 	ARRAY_SIZE(fault_reason_strings)
++	struct pci_dev *pdev = NULL;
++	u64 base, size;
++	int slot;
++	int ret;
 +
-+char *dmar_get_fault_reason(u8 fault_reason)
-+{
-+	if (fault_reason > MAX_FAULT_REASON_IDX)
-+		return fault_reason_strings[MAX_FAULT_REASON_IDX];
-+	else
-+		return fault_reason_strings[fault_reason];
-+}
-+
-+void dmar_msi_unmask(unsigned int irq)
-+{
-+	struct intel_iommu *iommu = get_irq_data(irq);
-+	unsigned long flag;
-+
-+	/* unmask it */
-+	spin_lock_irqsave(&iommu->register_lock, flag);
-+	dmar_writel(iommu->reg, DMAR_FECTL_REG, 0);
-+	/* Read a reg to force flush the post write */
-+	dmar_readl(iommu->reg, DMAR_FECTL_REG);
-+	spin_unlock_irqrestore(&iommu->register_lock, flag);
-+}
-+
-+void dmar_msi_mask(unsigned int irq)
-+{
-+	unsigned long flag;
-+	struct intel_iommu *iommu = get_irq_data(irq);
-+
-+	/* mask it */
-+	spin_lock_irqsave(&iommu->register_lock, flag);
-+	dmar_writel(iommu->reg, DMAR_FECTL_REG, DMA_FECTL_IM);
-+	/* Read a reg to force flush the post write */
-+	dmar_readl(iommu->reg, DMAR_FECTL_REG);
-+	spin_unlock_irqrestore(&iommu->register_lock, flag);
-+}
-+
-+void dmar_msi_write(int irq, struct msi_msg *msg)
-+{
-+	struct intel_iommu *iommu = get_irq_data(irq);
-+	unsigned long flag;
-+
-+	spin_lock_irqsave(&iommu->register_lock, flag);
-+	dmar_writel(iommu->reg, DMAR_FEDATA_REG, msg->data);
-+	dmar_writel(iommu->reg, DMAR_FEADDR_REG, msg->address_lo);
-+	dmar_writel(iommu->reg, DMAR_FEUADDR_REG, msg->address_hi);
-+	spin_unlock_irqrestore(&iommu->register_lock, flag);
-+}
-+
-+void dmar_msi_read(int irq, struct msi_msg *msg)
-+{
-+	struct intel_iommu *iommu = get_irq_data(irq);
-+	unsigned long flag;
-+
-+	spin_lock_irqsave(&iommu->register_lock, flag);
-+	msg->data = dmar_readl(iommu->reg, DMAR_FEDATA_REG);
-+	msg->address_lo = dmar_readl(iommu->reg, DMAR_FEADDR_REG);
-+	msg->address_hi = dmar_readl(iommu->reg, DMAR_FEUADDR_REG);
-+	spin_unlock_irqrestore(&iommu->register_lock, flag);
-+}
-+
-+static int iommu_page_fault_do_one(struct intel_iommu *iommu, int type,
-+		u8 fault_reason, u16 source_id, u64 addr)
-+{
-+	char *reason;
-+
-+	reason = dmar_get_fault_reason(fault_reason);
-+
-+	printk(KERN_ERR
-+		"DMAR:[%s] Request device [%02x:%02x.%d] "
-+		"fault addr %llx \n"
-+		"DMAR:[fault reason %02d] %s\n",
-+		(type ? "DMA Read" : "DMA Write"),
-+		(source_id >> 8), PCI_SLOT(source_id & 0xFF),
-+		PCI_FUNC(source_id & 0xFF), addr, fault_reason, reason);
-+	return 0;
-+}
-+
-+#define PRIMARY_FAULT_REG_LEN (16)
-+static irqreturn_t iommu_page_fault(int irq, void *dev_id)
-+{
-+	struct intel_iommu *iommu = dev_id;
-+	int reg, fault_index;
-+	u32 fault_status;
-+	unsigned long flag;
-+
-+	spin_lock_irqsave(&iommu->register_lock, flag);
-+	fault_status = dmar_readl(iommu->reg, DMAR_FSTS_REG);
-+
-+	/* TBD: ignore advanced fault log currently */
-+	if (!(fault_status & DMA_FSTS_PPF))
-+		goto clear_overflow;
-+
-+	fault_index = dma_fsts_fault_record_index(fault_status);
-+	reg = cap_fault_reg_offset(iommu->cap);
-+	while (1) {
-+		u8 fault_reason;
-+		u16 source_id;
-+		u64 guest_addr;
-+		int type;
-+		u32 data;
-+
-+		/* highest 32 bits */
-+		data = dmar_readl(iommu->reg, reg +
-+				fault_index * PRIMARY_FAULT_REG_LEN + 12);
-+		if (!(data & DMA_FRCD_F))
-+			break;
-+
-+		fault_reason = dma_frcd_fault_reason(data);
-+		type = dma_frcd_type(data);
-+
-+		data = dmar_readl(iommu->reg, reg +
-+				fault_index * PRIMARY_FAULT_REG_LEN + 8);
-+		source_id = dma_frcd_source_id(data);
-+
-+		guest_addr = dmar_readq(iommu->reg, reg +
-+				fault_index * PRIMARY_FAULT_REG_LEN);
-+		guest_addr = dma_frcd_page_addr(guest_addr);
-+		/* clear the fault */
-+		dmar_writel(iommu->reg, reg +
-+			fault_index * PRIMARY_FAULT_REG_LEN + 12, DMA_FRCD_F);
-+
-+		spin_unlock_irqrestore(&iommu->register_lock, flag);
-+
-+		iommu_page_fault_do_one(iommu, type, fault_reason,
-+				source_id, guest_addr);
-+
-+		fault_index++;
-+		if (fault_index > cap_num_fault_regs(iommu->cap))
-+			fault_index = 0;
-+		spin_lock_irqsave(&iommu->register_lock, flag);
++	for_each_pci_dev(pdev) {
++		if (pdev->sysdata == DUMMY_DEVICE_DOMAIN_INFO ||
++				!IS_GFX_DEVICE(pdev))
++			continue;
++		printk(KERN_INFO "IOMMU: gfx device %s 1-1 mapping\n",
++			pci_name(pdev));
++		slot = 0;
++		while ((slot = arch_get_ram_range(slot, &base, &size)) >= 0) {
++			ret = iommu_prepare_identity_map(pdev, base, base + size);
++			if (ret)
++				goto error;
++		}
++		continue;
++error:
++		printk(KERN_ERR "IOMMU: mapping reserved region failed\n");
 +	}
-+clear_overflow:
-+	/* clear primary fault overflow */
-+	fault_status = dmar_readl(iommu->reg, DMAR_FSTS_REG);
-+	if (fault_status & DMA_FSTS_PFO)
-+		dmar_writel(iommu->reg, DMAR_FSTS_REG, DMA_FSTS_PFO);
-+
-+	spin_unlock_irqrestore(&iommu->register_lock, flag);
-+	return IRQ_HANDLED;
 +}
++#endif
 +
-+int dmar_set_interrupt(struct intel_iommu *iommu)
-+{
-+	int irq, ret;
-+
-+	irq = create_irq();
-+	if (!irq) {
-+		printk(KERN_ERR "IOMMU: no free vectors\n");
-+		return -EINVAL;
-+	}
-+
-+	set_irq_data(irq, iommu);
-+	iommu->irq = irq;
-+
-+	ret = arch_setup_dmar_msi(irq);
-+	if (ret) {
-+		set_irq_data(irq, NULL);
-+		iommu->irq = 0;
-+		destroy_irq(irq);
-+		return 0;
-+	}
-+
-+	/* Force fault register is cleared */
-+	iommu_page_fault(irq, iommu);
-+
-+	ret = request_irq(irq, iommu_page_fault, 0, iommu->name, iommu);
-+	if (ret)
-+		printk(KERN_ERR "IOMMU: can't request irq\n");
-+	return ret;
-+}
-+
- static int iommu_init_domains(struct intel_iommu *iommu)
+ int __init init_dmars(void)
  {
- 	unsigned long ndomains;
-@@ -1436,6 +1626,10 @@
+ 	struct dmar_drhd_unit *drhd;
+@@ -1611,6 +1639,10 @@
+ 			printk(KERN_ERR "IOMMU: mapping reserved region failed\n");
+ 	end_for_each_rmrr_device(rmrr, pdev)
  
- 		iommu_flush_write_buffer(iommu);
- 
-+		ret = dmar_set_interrupt(iommu);
-+		if (ret)
-+			goto error;
++#ifdef CONFIG_DMAR_GFX_WA
++	iommu_prepare_gfx_mapping();
++#endif
 +
- 		iommu_set_root_entry(iommu);
- 
- 		iommu_flush_context_global(iommu, 0);
-Index: linux-2.6.22-rc3/include/linux/dmar.h
-===================================================================
---- linux-2.6.22-rc3.orig/include/linux/dmar.h	2007-06-04 12:40:29.000000000 -0700
-+++ linux-2.6.22-rc3/include/linux/dmar.h	2007-06-04 12:40:58.000000000 -0700
-@@ -28,6 +28,18 @@
- 
- struct intel_iommu;
- 
-+extern char *dmar_get_fault_reason(u8 fault_reason);
-+
-+/* Can't use the common MSI interrupt functions
-+ * since DMAR is not a pci device
-+ */
-+extern void dmar_msi_unmask(unsigned int irq);
-+extern void dmar_msi_mask(unsigned int irq);
-+extern void dmar_msi_read(int irq, struct msi_msg *msg);
-+extern void dmar_msi_write(int irq, struct msi_msg *msg);
-+extern int dmar_set_interrupt(struct intel_iommu *iommu);
-+extern int arch_setup_dmar_msi(unsigned int irq);
-+
- /* Intel IOMMU detection and initialization functions */
- extern void detect_intel_iommu(void);
- extern int intel_iommu_init(void);
+ 	/*
+ 	 * for each drhd
+ 	 *   enable fault log
 
 -- 
