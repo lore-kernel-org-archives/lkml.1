@@ -1,92 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbXFDPyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbXFDPyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757256AbXFDPyb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbXFDPyY
+	id S1758129AbXFDPyp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 11:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757567AbXFDPyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:54:24 -0400
-Received: from outbound-mail-56.bluehost.com ([69.89.20.36]:50264 "HELO
-	outbound-mail-56.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753893AbXFDPyX (ORCPT
+	Mon, 4 Jun 2007 11:54:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:22658 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754882AbXFDPyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:54:23 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
-Date: Mon, 4 Jun 2007 08:54:07 -0700
-User-Agent: KMail/1.9.6
-Cc: "Matt Keenan" <tank.en.mate@gmail.com>,
-       "Justin Piszcz" <jpiszcz@lucidpixels.com>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <200706040840.21593.jbarnes@virtuousgeek.org> <2c0942db0706040848y1d1c2ce9p521c65117244edf1@mail.gmail.com>
-In-Reply-To: <2c0942db0706040848y1d1c2ce9p521c65117244edf1@mail.gmail.com>
+	Mon, 4 Jun 2007 11:54:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=LhNgeiAx8uWkYVIB3cSFEHmzuMHgyA3W6U5GgJZ+fkVRVcHBGZjc5fmBBP8dCJJNdjepyiQPPzjiofsH/K25FW+UFnC8UK9zZIkmS13wdBJfosborv4xnnWj/3QKob//zCPf7lWNS9EcsksoKqNsxEqnfGgDMLpbPbfyDZeE0Ro=
+Date: Mon, 4 Jun 2007 19:53:16 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Eric Sandeen <sandeen@sandeen.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
+Message-ID: <20070604155316.GA10438@cvg>
+References: <20070524165935.GB19709@duck.suse.cz> <20070524170554.GC19709@duck.suse.cz> <20070524203653.GA7693@duck.suse.cz> <465DF0B4.2050203@sandeen.net> <20070601211036.GA23975@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706040854.07712.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20070601211036.GA23975@duck.suse.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, June 4, 2007 8:48:37 Ray Lee wrote:
-> On 6/4/07, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > On Sunday, June 3, 2007 2:15:06 Matt Keenan wrote:
-> > > Justin Piszcz wrote:
-> > > > On Sat, 2 Jun 2007, Andi Kleen wrote:
-> > > >>> I feel, having a silent/transparent workaround is not a good idea.
-> > > >>> With that
-> > > >>
-> > > >> If enough RAM is chopped off users will notice. They tend to
-> > > >> complain when they miss RAM.  I don't like panic very much because
-> > > >> for many users it will be a show stopper (even when they are not
-> > > >> blessed with "quiet" boots like some distributions do)
-> > > >>
-> > > >> The message in dmesg could be also emphasized a bit with a little
-> > > >> ASCII art (but no <blink> tag in there)
-> > > >>
-> > > >> The problem I'm more worried about is if the system will be really
-> > > >> stable --- could it be that the memory controller is still
-> > > >> misconfigured and cause other stability issues? (we've had such
-> > > >> cases in the past). Also I'm not sure we can handle the case of
-> > > >> the MTRR wrong not at the end of memory but at the hole sanely.
-> > > >>
-> > > >> -Andi
-> > > >
-> > > > So far I have been booting with mem=8832M and have run stress/loaded
-> > > > the memory subsystem pretty good; what other tests should I run?
-> > > >
-> > > > It'd be nice if we could pose some sort of solution/warning for the
-> > > > future so other people do not have to experience the same problems.
-> > > >
-> > > > What are the next steps?
-> > >
-> > > Wouldn't it be possible for the e820/MTRR set up code detect the
-> > > problem and suggest a mem=xxxx that would fix the problem (while also
-> > > complaining that the BIOS is broken)?
-> >
-> > Yes, that should be fairly easy, though as Andi points out, if there are
-> > holes in the MTRR setup, things get a little trickier (I had an earlier
-> > patch to deal with this, but ended up with too many early boot issues).
-> >
-> > Maybe what Venki suggested would be best:  just detect the condition and
-> > panic, with a string telling the user to use mem=xxx (we can figure that
-> > out) and/or upgrade their BIOS.
->
-> Ick. Systems that used to boot fine would then panic on a kernel
-> upgrade. That's rather rude for a condition that's merely an
-> optimization (using all memory), rather than one of correctness. A
-> panic seems entirely inappropriate.
+[Jan Kara - Fri, Jun 01, 2007 at 11:10:36PM +0200]
+| On Wed 30-05-07 16:46:28, Eric Sandeen wrote:
+| > Jan Kara wrote:
+| > >   Hello,
+| > > 
+| > > On Thu 24-05-07 19:05:54, Jan Kara wrote:
+| > >>   Hello,
+| > >>
+| > >>   attached is a patch that fixes possible leakage of free blocks / use of
+| > >> free blocks in UDF (which spilled nice assertion failures I've added in my
+| > >> first round of patches). More details in the changelog. Andrew, please apply.
+| > >> Both changes have survived some time of fsx and fsstress testing so they
+| > >> should be reasonably safe.
+| > >   Sorry for replying to myself but this patch had a minor problem of
+| > > printing some bogus warnings when directories were deleted (I wonder why
+| > > fsstress didn't find it). Attached is a new version of the patch without
+| > > this problem.
+| > 
+| > Jan, something seems busted here.  I'm getting lockups when testing udf
+| > on a single cpu with this last patch in place...
+|   Hmm, strange, I was also testing on UP and without problems. And I didn't
+| change any locking...
+| 
+| > I think it's the BKL stumbling on itself.
+| > 
+| > for example...
+| > 
+| > static int udf_symlink(struct inode * dir, struct dentry * dentry, const
+| > char * symname)
+| > {
+| > ...
+| >         lock_kernel();
+| > ...
+| > out:
+| >         unlock_kernel();
+| >         return err;
+| > 
+| > out_no_entry:
+| >         inode_dec_link_count(inode);
+| >         iput(inode);
+| >         goto out;
+| > }
+| > 
+| > but iput goes
+| > iput->iput_final->drop_inode->udf_drop_inode->lock_kernel() again
+|   As Andrew already wrote, BKL is free to recurse...
+| 
+| > looking for the right way around it but figured I'd ping you early :)
+|   Thanks for info - I'm now mostly out of email for a few days but I'll
+| have a look at it as soon as I return.
+| 
+| 								Honza
+| -- 
+| Jan Kara <jack@suse.cz>
+| SuSE CR Labs
+| 
 
-No, existing kernels would have been so slow as to be nearly unusable on 
-machines with this problem.  Reducing the amount of available memory 
-automatically might work in most cases, but as Venki pointed out, people will 
-have to check their logs to notice that anything is wrong.
+Hi Jan,
 
-But I don't have a strong preference, maybe just a boot time message (with 
-suitably obnoxious ascii art) would be sufficient.
+why can't we combine udf_delete_inode() with udf_drop_inode()?
+It'll avoid deadlock.
 
-Jesse
+		Cyrill
+
