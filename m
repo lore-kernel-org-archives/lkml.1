@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbXFDQCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbXFDQI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbXFDQCV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbXFDQCK
+	id S1757347AbXFDQI7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbXFDQIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:02:10 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:45513 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755017AbXFDQCJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:02:09 -0400
-Date: Mon, 4 Jun 2007 09:01:19 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jesse Huang <jesse@icplus.com.tw>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, akpm@osdl.org,
-       jgarzik@pobox.com, jeff@garzik.org
-Subject: Re: [PATCH] sundance: PHY address form 0, only for device ID 0x0200
- (IP100A)
-Message-Id: <20070604090119.488a2588.randy.dunlap@oracle.com>
-In-Reply-To: <1180991079.15274.1.camel@localhost.localdomain>
-References: <1180991079.15274.1.camel@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Mon, 4 Jun 2007 12:08:51 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:35016 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752378AbXFDQIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 12:08:50 -0400
+Date: Mon, 4 Jun 2007 18:07:10 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net
+Subject: Re: [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long
+ lines
+In-Reply-To: <20070603204700.GH9240@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.61.0706041805560.20829@yvahk01.tjqt.qr>
+References: <20070603204700.GH9240@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 04 Jun 2007 17:04:39 -0400 Jesse Huang wrote:
 
-> From: Jesse Huang <jesse@icplus.com.tw>
-> 
-> Change Logs:
-> Search PHY address form 0, only for device ID 0x0200 (IP100A). Other device are from PHY address 1.
-> 
-> Signed-off-by: Jesse Huang <jesse@icplus.com.tw>
-> ---
-> 
->  drivers/net/sundance.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> 5724a72722dfc9cafbb8f273cb82dbf577bd9ad0
-> diff --git a/drivers/net/sundance.c b/drivers/net/sundance.c
-> index e1f912d..914ab29 100644
-> --- a/drivers/net/sundance.c
-> +++ b/drivers/net/sundance.c
-> @@ -562,7 +562,9 @@ #endif
->  	 * It seems some phys doesn't deal well with address 0 being accessed
->  	 * first, so leave address zero to the end of the loop (32 & 31).
->  	 */
-> -	for (phy = 1; phy <= 32 && phy_idx < MII_CNT; phy++) {
-> +	if(sundance_pci_tbl[np->chip_id].device == 0x0200) phy = 0;
+On Jun 3 2007 22:47, Sam Ravnborg wrote:
+>
+>Make the "cleanfile" and "cleanpatch" script warn about long lines,
+>by default lines whose visual width exceeds 79 characters.
 
-kernel style:
-	if (sundance_pci_tbl[np->chip_id].device == 0x0200)
-		phy = 0;
-	else
-		phy = 1;
+Nice, nice. But, am I asking too much if tabs and kernel codestyle
+could be used? (/me hides..., but see scripts/checkpatch.pl :-)
 
-> +	else phy = 1;
-> +	for (; phy <= 32 && phy_idx < MII_CNT; phy++) {
->  		int phyx = phy & 0x1f;
->  		int mii_status = mdio_read(dev, phyx, MII_BMSR);
->  		if (mii_status != 0xffff  &&  mii_status != 0x0000) {
-> -- 
+>+# Compute the visual width of a string
+>+sub strwidth($) {
+>+    no bytes;			# Tab alignment depends on characters
+>+
+>+    my($li) = @_;
+>+    my($c, $i);
+>+    my $pos = 0;
+>+    my $mlen = 0;
+>+
+>+    for ($i = 0; $i < length($li); $i++) {
+>+	$c = substr($li,$i,1);
+>+	if ($c eq "\t") {
+>+	    $pos = ($pos+8) & ~7;
+>+	} elsif ($c eq "\n") {
+>+	    $mlen = $pos if ($pos > $mlen);
+>+	    $pos = 0;
+>+	} else {
+>+	    $pos++;
+>+	}
+>+    }
+>+
+>+    $mlen = $pos if ($pos > $mlen);
+>+    return $mlen;
+>+}
+>+
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+	Jan
+-- 
