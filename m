@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbXFDJ3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbXFDJdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbXFDJ3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 05:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbXFDJ3F
+	id S1753808AbXFDJdm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 05:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbXFDJde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 05:29:05 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:25044 "EHLO
-	outbound8-sin-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752711AbXFDJ3D (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 05:29:03 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-From: "Joachim Deguara" <joachim.deguara@amd.com>
-Organization: AMD
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: patch-2.6.21.3-rt9 misnamed?
-Date: Mon, 4 Jun 2007 11:27:36 +0200
-User-Agent: KMail/1.9.6
-cc: "Ingo Molnar" <mingo@elte.hu>, "K.R. Foley" <kr@cybsft.com>,
-       Linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>
-References: <465EE33B.4070502@cybsft.com>
- <20070531200109.GA8715@elte.hu> <20070601161111.GM11166@waste.org>
-In-Reply-To: <20070601161111.GM11166@waste.org>
+	Mon, 4 Jun 2007 05:33:34 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:33740 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752436AbXFDJdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 05:33:32 -0400
+Date: Mon, 4 Jun 2007 10:17:47 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: =?utf-8?q?J=C3=B6rn_Engel?= <joern@lazybastard.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       David Weinehall <tao@acc.umu.se>, Willy Tarreau <w@1wt.eu>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Dongjun Shin <djshin90@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>, Bill Davidsen <davidsen@tmr.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: [Patch 05/18] fs/logfs/logfs.h
+In-Reply-To: <200706032350.57556.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.61.0706041017270.20829@yvahk01.tjqt.qr>
+References: <20070603183845.GA8952@lazybastard.org> <20070603184303.GF8952@lazybastard.org>
+ <200706032350.57556.arnd@arndb.de>
 MIME-Version: 1.0
-Message-ID: <200706041127.37244.joachim.deguara@amd.com>
-X-OriginalArrivalTime: 04 Jun 2007 09:28:24.0008 (UTC)
- FILETIME=[B2E02480:01C7A68A]
-X-WSS-ID: 6A7D04B120G3965910-01-01
-Content-Type: text/plain;
- charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 June 2007 18:11:11 Matt Mackall wrote:
-> On Thu, May 31, 2007 at 10:01:09PM +0200, Ingo Molnar wrote:
-> > * K.R. Foley <kr@cybsft.com> wrote:
-> > > Ingo Molnar wrote:
-> > > > * K.R. Foley <kr@cybsft.com> wrote:
-> > > >> Ingo,
-> > > >>
-> > > >> I believe that patch-2.6.21.3-rt9 is misnamed. It applies cleanly to
-> > > >> 2.6.21 but seems to contain stuff that is already in 2.6.21.3.
-> > > >
-> > > > yes - it includes all of 2.6.21.3.
-> > > >
-> > > > 	Ingo
-> > >
-> > > So actually it is not really misnamed, it's just done a bit
-> > > differently than previous versions. Sorry.
-> >
-> > yeah. Maybe we should make the 2.6.21.3 -rt patches relative to 2.6.21.3
-> > - but that would be one extra patching step for people who already have
-> > a 2.6.21 tree. But ... maybe that makes the most sense after all.
+
+>On Sunday 03 June 2007, Jörn Engel wrote:
+>> +/**
+>> + * struct logfs_device_ops - device access operations
+>> + *
+>> + * @read:                      read from the device
+>> + * @write:                     write to the device
+>> + * @erase:                     erase part of the device
+>> + */
+>> +struct logfs_device_ops {
+>> +       int (*read)(struct super_block *sb, loff_t ofs, size_t len, void *buf);
+>> +       int (*write)(struct super_block *sb, loff_t ofs, size_t len, void *buf);
+>> +       int (*erase)(struct super_block *sb, loff_t ofs, size_t len);
+>> +};
 >
-> Including 2.6.21.3 in your patch will break ketchup.
+>I wonder if there is a way to document the prototypes of these function
+>pointers with kerneldoc, other than having a typedef for each.
+>
+>What brought me to this point is that I first assumed they would return
+>the number of bytes transferred, like read/write file operations, where
+>your functions return zero on success.
 
-ketchup already breaks with the current rt9 patch. 
-
-lapdog{rt}$ ketchup -n 2.6-rt
-None -> 2.6.21.3-rt9
-Unpacking linux-2.6.21.tar.bz2
-Applying patch-2.6.21.3.bz2
-Applying patch-2.6.21.3-rt9
-lapdog{rt}$ head `which ketchup`
-#!/usr/bin/python
-#
-# ketchup 0.9.8
-# http://selenic.com/ketchup/wiki
-
-As noted before rt9 is based one 2.6.21 so after ketchup brings the directory 
-to 2.6.21.3 then applying rt9 fails.
-
-I would appreciate it if you base the rtX patch on the kernel you list as a 
-prefix of that patch.  It helps us that use ketchup and it just makes sense.
-
--Joachim
+read/write functions returning bytes written would return ssize_t,
+just as vfs_read and vfs_write do.
 
 
+
+	Jan
+-- 
