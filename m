@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbXFDM1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbXFDMfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbXFDM1V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 08:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXFDM1N
+	id S1753234AbXFDMfr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 08:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbXFDMfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 08:27:13 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53232 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752427AbXFDM1N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 08:27:13 -0400
-Date: Mon, 4 Jun 2007 14:27:16 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Matti Aarnio <matti.aarnio@zmailer.org>,
-       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: gmail is a bit too popular..
-Message-ID: <20070604122716.GU5500@stusta.de>
-References: <20070507145555.GG3883@mea-ext.zmailer.org> <alpine.DEB.0.98.0705071101510.6512@sigma.j-a-k-j.com> <20070507153511.GH3883@mea-ext.zmailer.org> <20070508064316.GF4226@stusta.de> <1180954532.25232.252.camel@pmac.infradead.org>
+	Mon, 4 Jun 2007 08:35:39 -0400
+Received: from neon.samage.net ([85.17.153.66]:52909 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751022AbXFDMfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 08:35:38 -0400
+Message-ID: <4945.81.207.0.53.1180960534.squirrel@secure.samage.net>
+In-Reply-To: <20070604112426.GA2707@elf.ucw.cz>
+References: <20070604112426.GA2707@elf.ucw.cz>
+Date: Mon, 4 Jun 2007 14:35:34 +0200 (CEST)
+Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Pavel Machek" <pavel@ucw.cz>
+Cc: jikos@jikos.cz, "kernel list" <linux-kernel@vger.kernel.org>,
+       dtor@insightbb.com
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1180954532.25232.252.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: a07cf4f22b7e0347d98fbeb4081a69be
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 11:55:32AM +0100, David Woodhouse wrote:
-> On Tue, 2007-05-08 at 08:43 +0200, Adrian Bunk wrote:
-> > BTW (not related to gmail):
-> > Are there any news regarding the buggy 451 handling in zmailer I'm 
-> > reporting again and again that regularly results in every single 
-> > linux-kernel message sent to me being delayed by up to 13 hours? 
-> 
-> Er, you're giving it a 451 response to _every_ message? Why?
+On Mon, June 4, 2007 13:24, Pavel Machek wrote:
+> I also get some stuck keys I was not getting before. I hope my
+> userland did not go crazy...
 
-Not me, a MTA 4 hops away on the way to me.
+I get that too, and wasn't sure about it either. It happens irregularly,
+so it's hard to debug, but often enough to be annoying.
 
-And not on _every_ message, it is more like "randomly one out of 
-100 messages gets an 451 4.3.2 system not accepting network messages".
+My mouse pointer tends to warp too in the same irregular way,
+no idea if that's related (it seemed to happen in an earlier kernel
+version than the sticky key thing, but not sure, as I don't have this
+mouse that long.)
 
-That's a perfectly legal behaviour considering that RFC 3463 gives 
-"immanent shutdown, excessive load, or system maintenance" (which are 
-for the sending MTA equal to "random") as example causes for this 
-response.
+Greetings,
 
-The problem is really that Zmailer on vger under some circumstances 
-never retries to send these emails for days, on one occasion the emails 
-bounced after 5 days without any retry.
+Indan
 
-> dwmw2
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
