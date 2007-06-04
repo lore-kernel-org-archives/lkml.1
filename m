@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbXFDITT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752267AbXFDIfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbXFDITT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 04:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbXFDITN
+	id S1752267AbXFDIfo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 04:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbXFDIfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 04:19:13 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:45033 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbXFDITM (ORCPT
+	Mon, 4 Jun 2007 04:35:37 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40286 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752253AbXFDIfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 04:19:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Zewvm1cae/HS5doUGNAScmGaQfa4iMk/6blXH7pJO04lnr/Mh02XrFmEkPZkC6ByakaeodoCE+G0VYc1TaoRh8MtRNwicBQ17TeuqdAk+k4vb58NzopedOiGRUYWKOEZRxZm69oVQnHh/IxsI9iLVfeGbRGDsjg1ZXAA3mmruxA=
-Date: Mon, 4 Jun 2007 16:19:38 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Al Viro <viro@ftp.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, Chen Li-jun <cljun@xiyou.edu.cn>,
-       Wang Ya-gang <lazy_linux@126.com>
-Subject: [RFC] Documentation/CodingStyle: Add rules for goto labels (-v2)
-Message-ID: <20070604081938.GC2074@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-Mail-Followup-To: Jeremy Fitzhardinge <jeremy@goop.org>,
-	Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
-	Al Viro <viro@ftp.linux.org.uk>,
-	LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-	Chen Li-jun <cljun@xiyou.edu.cn>, Wang Ya-gang <lazy_linux@126.com>
-References: <20070603142450.GA4230@localhost.localdomain> <20070603142939.GW4095@ftp.linux.org.uk> <20070603074552.430c3d02.rdunlap@xenotime.net> <4662DFCF.3010606@garzik.org> <20070604045857.GE2161@localhost.localdomain> <4663B84E.2060103@goop.org>
+	Mon, 4 Jun 2007 04:35:36 -0400
+Date: Mon, 4 Jun 2007 01:34:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch 1/2] ufd v1 - unsequential O(1) fdmap core
+Message-Id: <20070604013449.ea3acca8.akpm@linux-foundation.org>
+In-Reply-To: <20070604080941.GA23537@elte.hu>
+References: <send-serie.davidel@xmailserver.org.24319.1180825145.1>
+	<46633047.1020707@cosmosbay.com>
+	<Pine.LNX.4.64.0706031536000.13247@alien.or.mcafeemobile.com>
+	<20070603230859.5000424d.akpm@linux-foundation.org>
+	<20070604080537.GA22898@elte.hu>
+	<20070604080941.GA23537@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4663B84E.2060103@goop.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 4 Jun 2007 10:09:41 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-Lindent gets wrong when it meets goto labels. This should be fixed manually.
-And kernel's CodingStyle doesn't specify the indentation for goto labels explicitly.
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > i think this sums it up:
+> > 
+> >  http://www.uwsg.iu.edu/hypermail/linux/kernel/0705.3/2490.html
+> 
+> i mean this mail started it:
+> 
+>   http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-05/msg13070.html
+> 
+> > and some more, with a benchmark as well:
+> > 
+> >  http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-05/msg13685.html
+> 
 
-This patch adds specifications on those things about goto labels in CodingStyle. And it is
-against -rc3 source tree.
+Yeah, I remember all that but I don't think it provides a suitable
+description of what all this code is there for - what problem it is
+solving and how it solves it.
 
-Thanks to Al Viro, Randy Dunlap, Jeff Garzik and Jeremy Fitzhardinge for their comments!
+If we just want some pseudo-private fd space for glibc to use then I'd have
+thought that the existing code could be tweaked to do that: top-down
+allocation, start at some high offset, etc.  But apparently there's more
+to it than this.
 
-Regards!
-
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-
----
- CodingStyle |    7 +++++++
- 1 file changed, 7 insertions(+)
-
---- linux-2.6.22-rc3/Documentation/CodingStyle.orig	2007-06-04 15:53:58.000000000 +0800
-+++ linux-2.6.22-rc3/Documentation/CodingStyle	2007-06-04 16:04:31.000000000 +0800
-@@ -66,6 +66,13 @@ something to hide:
- Don't put multiple assignments on a single line either.  Kernel coding style
- is super simple.  Avoid tricky expressions.
- 
-+Do care when you use Lindent to indent your code, since it may use spaces
-+instead of tabs before a goto label and it may also align the label in a
-+wrong position. Generally speaking, a goto label should be always aligned in
-+the first column. However, it might make sense to indent a label deeper if
-+you've actually declared it local (__label__). Please fix it manually if you
-+find Lindent is wrong.
-+
- Outside of comments, documentation and except in Kconfig, spaces are never
- used for indentation, and the above example is deliberately broken.
- 
 
