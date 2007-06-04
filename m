@@ -1,137 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbXFDQWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbXFDQ0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbXFDQWr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758363AbXFDQWh
+	id S1758037AbXFDQ0Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbXFDQ0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:22:37 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36545 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756427AbXFDQWf (ORCPT
+	Mon, 4 Jun 2007 12:26:18 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:45351 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755094AbXFDQ0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:22:35 -0400
-Date: Mon, 4 Jun 2007 09:09:18 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Maximilian Engelhardt <maxi@daemonizer.de>, Michael Buesch <mb@bu3sch.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: b44: regression in 2.6.22 (resend)
-Message-ID: <20070604090918.42386fbb@freepuppy>
-In-Reply-To: <1180939188.4404.5.camel@chaos>
-References: <20070525172431.60affaca@freepuppy>
-	<200705281944.05030.maxi@daemonizer.de>
-	<1180380230.3657.3.camel@chaos>
-	<200706031826.06891.maxi@daemonizer.de>
-	<1180939188.4404.5.camel@chaos>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 Jun 2007 12:26:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=o39VJjCwzEqlu38Xw1pzEw32q2DUUJ3MEjwp5nJJ52MThOY9aS+fZFnEYgMW3HYpH+dVY8WSghi9aYY47DHcHCA6GnMP0MkkGcRucVyrpKny0cHF0hZXE5lDFI3sISMO8JkPgdzrOhmcHyakL2BWjNOJkjZoZHRGczNrsHcSFF0=
+Message-ID: <e7ca40f70706040926i737cc0dax3f35d89e9fb0104f@mail.gmail.com>
+Date: Mon, 4 Jun 2007 12:26:16 -0400
+From: "Aaron Wiebe" <epiphani@gmail.com>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Subject: Re: slow open() calls and o_nonblock
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <e7ca40f70706040859g323d813fy3d7e741de8f190dc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
+	 <e7ca40f70706040720k48aae8efg7a4997ce1d6f2450@mail.gmail.com>
+	 <1180971726.17737.36.camel@heimdal.trondhjem.org>
+	 <e7ca40f70706040859g323d813fy3d7e741de8f190dc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 04 Jun 2007 08:39:48 +0200
-Thomas Gleixner <tglx@linutronix.de> wrote:
+Actually, lets see if I can summarize this more generically... I
+realize I'm suggesting something that probably would be a massive
+undertaking, but ..
 
-> On Sun, 2007-06-03 at 18:26 +0200, Maximilian Engelhardt wrote:
-> > > Is there any other strange behavior of the high res enabled kernel than
-> > > the b44 problem ?
-> > 
-> > I didn't notice anything in the past (as I wrote). But today I did some tests 
-> > for an updated version of the p54 mac80211 wlan driver and I noticed exactly 
-> > the same problem:
-> > 
-> > when booting with highres=off everything is fine.
-> > But when I boot an highres enabled kernel and I do the iperf-test with the p54 
-> > driver, my systems becomes unresponsive during the test. It seems to be 
-> > exactly the same problem I have with the b44 driver.
-> > So this might not be a bug in the b44 code but a bug somewhere in the linux 
-> > networking code.
-> > 
-> > I did the test with an 2.6.22-rc3-git4 kernel and the p54 driver built 
-> > external as module. 
-> 
-> Can you look at iperf to figure out, whether it does some weird timer
-> stuff (high frequency interval timer or such) ? Either check the code or
-> strace it.
-> 
-> 	tglx
-> 
-> 
+Regular files are the only interface that requires an application to
+wait.  With any other case, the nonblocking interfaces are fairly
+complete and easy to work with.  If userspace could treat regular
+files in the same fashion as sockets, life would be good.
 
+I admittedly do not understand internal kernel semantics in the
+differences between a socket and a regular file.  Why couldn't we just
+have a different 'socket type' like PF_FILE or something like this?
 
-It is the receiver doing a tight loop doing gettimeofday/recv calls.
+Abstracting any IO through the existing interfaces provided to sockets
+would be ideal from my perspective.  The code required to use a file
+through these interfaces would be more complex in userspace, but the
+abstraction of the current open() itself could simply be an aggregate
+of these interfaces without a nonblocking flag.
 
+It would, however, fix problems around issues with event-based
+applications handling events from both disk and sockets.  I can't
+trigger disk read/write events in the same event handlers I use for
+sockets (ie, poll or epoll).  I end up having two separate event
+handlers - one for disk (currently using glibc's aio thread kludge),
+and one for sockets.
 
-sendto(-1227715616, 0xc, 3085438964, 0, {...}, 3067249832) = 0
-gettimeofday({1180973726, 981615}, NULL) = 0
-gettimeofday({1180973726, 981751}, NULL) = 0
-futex(0x8055c64, 0x5 /* FUTEX_??? */, 1) = 1
-futex(0x8055c90, FUTEX_WAKE, 1) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 982754}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 983790}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 984355}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 984706}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 985111}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 985499}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 986088}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 986436}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 986916}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 987397}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 987872}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 988440}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 988823}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 989314}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 990029}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 990890}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 991803}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 992616}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 993105}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 993585}, NULL) = 0
-recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-gettimeofday({1180973726, 994014}, NULL) = 0
-...
+I'm sure this isn't a new idea.  Coming from my own development
+backround that had little to do with disk, I was actually surprised
+when I first discovered that I couldn't edge-trigger disk IO through
+poll().
 
-recv(4, "45678901234567890123456789012345"..., 8192, 0) = 1448
-gettimeofday({1180973757, 172437}, NULL) = 0
-recv(4, "23456789012345678901234567890123"..., 8192, 0) = 1448
-gettimeofday({1180973757, 172576}, NULL) = 0
-recv(4, "01234567890123456789012345678901"..., 8192, 0) = 1632
-gettimeofday({1180973757, 172752}, NULL) = 0
-recv(4, "", 8192, 0)                    = 0
-gettimeofday({1180973757, 172797}, NULL) = 0
-gettimeofday({1180973757, 172817}, NULL) = 0
-nanosleep({0, 0}, NULL) = 0
-nanosleep({0, 0}, NULL)                 = 0
-close(4)                     = 0
-futex(0x8055d04, 0x5 /* FUTEX_??? */, 1) = 1
-futex(0x8055d30, FUTEX_WAKE, 1) = 0
-_exit(0)
+Thoughts, comments?
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+-Aaron
+
+On 6/4/07, Aaron Wiebe <epiphani@gmail.com> wrote:
+> On 6/4/07, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> >
+> > So exactly how would you expect a nonblocking open to work? Should it be
+> > starting I/O? What if that involves blocking? How would you know when to
+> > try again?
+>
+> Well, theres a bunch of options - some have been suggested in the
+> thread already.  The idea of an open with O_NONBLOCK (or a different
+> flag) returning a handle immediately, and subsequent calls returning
+> EAGAIN if the open is incomplete, or ESTALE if it fails (with some
+> auxiliary method of getting the reason why it failed) are not too far
+> a stretch from my perspective.
+>
+> The other option that comes to mind would be to add an interface that
+> behaves like sockets - get a handle from one system call, set it
+> nonblocking using fcntl, and use another call to attach it to a
+> regular file.  This method would make the most sense to me - but its
+> also because I've worked with sockets in the past far far more than
+> with regular files.
+>
+> The one that would take the least amount of work from the application
+> perspective would be to simply reply to the nonblocking open call with
+> EAGAIN (or something), and when an open on the same file is performed,
+> the kernel could have performed its work in the background.  I can
+> understand, given the fact that there is no handle provided to the
+> application, that this idea could be sloppy.
+>
+> I'm still getting caught up on some of the other suggestions (I'm
+> currently reading about the syslets work that Zach and Ingo are
+> doing), and it sounds like this is a common complaint that is being
+> addressed through a number of initiatives.  I'm looking forward to
+> seeing where that work goes.
+>
+> -Aaron
+>
