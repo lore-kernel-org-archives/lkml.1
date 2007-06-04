@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbXFDHkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbXFDHqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752826AbXFDHkP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 03:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXFDHkB
+	id S1752986AbXFDHqh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 03:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbXFDHqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 03:40:01 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:64626 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbXFDHj7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 03:39:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=GKNwlZHF4CrH5ulNmiYq8qBMTAfFGxyEUPpQwZL+uvIEmo+QJYG+JMdbjB4olsXgbSFYBhnRwzwpy6APeGpgHVQ1+Ek2Q7FkF+u+kYy0d8mPC6CeZeTLCpGDsZGGmMqqdvwe9tUCWiGRhFXDLeKBiDJ+3nbwKKQamB80NFkP3Zc=
-Message-ID: <4663C1C1.5000009@gmail.com>
-Date: Mon, 04 Jun 2007 16:39:45 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Mon, 4 Jun 2007 03:46:30 -0400
+Received: from 64-142-28-230.dsl.static.sonic.net ([64.142.28.230]:57298 "EHLO
+	Angel.zoy.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752013AbXFDHq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 03:46:29 -0400
+X-Greylist: delayed 1368 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jun 2007 03:46:29 EDT
+Date: Mon, 4 Jun 2007 00:23:40 -0700
+From: Michel Lespinasse <walken@zoy.org>
+To: linux-kernel@vger.kernel.org
+Cc: trond.myklebust@fys.uio.no
+Subject: nfsroot and locking
+Message-ID: <20070604072340.GC3315@zoy.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: David Chinner <dgc@sgi.com>, david@lang.hm,
-       Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
-   and dm/md.
-References: <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com> <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm> <20070531002011.GC85884050@sgi.com> <20070531062644.GI32105@kernel.dk> <20070531070307.GK85884050@sgi.com> <20070531070656.GK32105@kernel.dk> <465F8F71.20302@gmail.com> <20070601082140.GP32105@kernel.dk> <46613666.7010800@gmail.com> <20070602143438.GB32105@kernel.dk>
-In-Reply-To: <20070602143438.GB32105@kernel.dk>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Sat, Jun 02 2007, Tejun Heo wrote:
->> Hello,
->>
->> Jens Axboe wrote:
->>>> Would that be very different from issuing barrier and not waiting for
->>>> its completion?  For ATA and SCSI, we'll have to flush write back cache
->>>> anyway, so I don't see how we can get performance advantage by
->>>> implementing separate WRITE_ORDERED.  I think zero-length barrier
->>>> (haven't looked at the code yet, still recovering from jet lag :-) can
->>>> serve as genuine barrier without the extra write tho.
->>> As always, it depends :-)
->>>
->>> If you are doing pure flush barriers, then there's no difference. Unless
->>> you only guarantee ordering wrt previously submitted requests, in which
->>> case you can eliminate the post flush.
->>>
->>> If you are doing ordered tags, then just setting the ordered bit is
->>> enough. That is different from the barrier in that we don't need a flush
->>> of FUA bit set.
->> Hmmm... I'm feeling dense.  Zero-length barrier also requires only one
->> flush to separate requests before and after it (haven't looked at the
->> code yet, will soon).  Can you enlighten me?
-> 
-> Yeah, that's what the zero-length barrier implementation I posted does.
-> Not sure if you have a question beyond that, if so fire away :-)
+Hi,
 
-I thought you were talking about adding BIO_RW_ORDERED instead of
-exposing zero length BIO_RW_BARRIER.  Sorry about the confusion.  :-)
+I have a quick question about nfsroot in linux: Is there any way to
+use nfsv3 in the nfsroot (nolock is OK there), and then mount other
+directories with locking enabled ?
+
+The default nfs options when using nfsroot are to use nfsv2 without locking.
+After booting, one can mount other filesystems which will default to
+nfsv3 with locking.
+
+By passing extra options in the nfsroot parameter, one can boot with nfs3
+if desired. For example v3,tcp,rsize=131072,wsize=131072,intr set the
+same options in nfsroot than would otherwise be the after-boot default,
+except that locking stays disabled (I understand lockd can not be started
+as portmap is not running during boot).
+
+However after starting the nfsroot with nfsv3, I am unable to mount any
+other shares with locking. Passing the 'lock' option to mount will add
+'lock' in /etc/mtab, but /proc/mounts will still show the share with 'nolock'
+and rpcinfo shows that lockd was not started.
+
+Is there a reason for this, or an easy workaround ?
+
+for reference, I'm currently running debian etch with a 2.6.20.12 kernel.
+Also I'd appreciate to be copied on replies as I'm not on the list.
+
+Thanks,
 
 -- 
-tejun
+Michel "Walken" Lespinasse
+"Bill Gates is a monocle and a Persian cat away from being the villain
+in a James Bond movie." -- Dennis Miller
