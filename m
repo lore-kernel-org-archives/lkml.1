@@ -1,42 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbXFDPmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbXFDPss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758529AbXFDPmu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbXFDPmS
+	id S1756914AbXFDPss (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 11:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXFDPsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:42:18 -0400
-Received: from pat.uio.no ([129.240.10.15]:46027 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756914AbXFDPmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:42:17 -0400
-Subject: Re: slow open() calls and o_nonblock
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Aaron Wiebe <epiphani@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <e7ca40f70706040720k48aae8efg7a4997ce1d6f2450@mail.gmail.com>
-References: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
-	 <e7ca40f70706040720k48aae8efg7a4997ce1d6f2450@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 04 Jun 2007 11:42:06 -0400
-Message-Id: <1180971726.17737.36.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 4 Jun 2007 11:48:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:13306 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbXFDPsl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 11:48:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=pWR9s8xtnaAJhtHh9fQFNFYMIL/aKi8J7c6lbzFd4Jfnn34qu0AI1bJuHGlXN1e6uOuWNa9My+oh0nj12EhxEAgzviQycOlyX3HyXovf/W1gZQR1mE6Zq8NkHmXHwYIgbJRgrqjb5YqaTjkF97ejE93aMDrl1oMxcd6qa7eda0s=
+Message-ID: <2c0942db0706040848y1d1c2ce9p521c65117244edf1@mail.gmail.com>
+Date: Mon, 4 Jun 2007 08:48:37 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
+Cc: "Matt Keenan" <tank.en.mate@gmail.com>,
+       "Justin Piszcz" <jpiszcz@lucidpixels.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200706040840.21593.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.124)
-X-UiO-Scanned: 1CD9113152E98DBD1C486075C051A6266C95F655
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 819 total 2154507 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
+	 <Pine.LNX.4.64.0706021610210.19116@p34.internal.lan>
+	 <4662869A.9030700@gmail.com>
+	 <200706040840.21593.jbarnes@virtuousgeek.org>
+X-Google-Sender-Auth: cf9629fbcf7c0b44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-04 at 10:20 -0400, Aaron Wiebe wrote:
-> I understand, but this is exactly the situation that I'm complaining
-> about.  There is no functionality to provide a nonblocking open - no
-> ability to come back around and retry a given open call.
+On 6/4/07, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Sunday, June 3, 2007 2:15:06 Matt Keenan wrote:
+> > Justin Piszcz wrote:
+> > > On Sat, 2 Jun 2007, Andi Kleen wrote:
+> > >>> I feel, having a silent/transparent workaround is not a good idea.
+> > >>> With that
+> > >>
+> > >> If enough RAM is chopped off users will notice. They tend to complain
+> > >> when they miss RAM.  I don't like panic very much because for many
+> > >> users it will be a show stopper (even when they are not blessed
+> > >> with "quiet" boots like some distributions do)
+> > >>
+> > >> The message in dmesg could be also emphasized a bit with a little
+> > >> ASCII art (but no <blink> tag in there)
+> > >>
+> > >> The problem I'm more worried about is if the system will be really
+> > >> stable --- could it be that the memory controller is still
+> > >> misconfigured and cause other stability issues? (we've had such
+> > >> cases in the past). Also I'm not sure we can handle the case of
+> > >> the MTRR wrong not at the end of memory but at the hole sanely.
+> > >>
+> > >> -Andi
+> > >
+> > > So far I have been booting with mem=8832M and have run stress/loaded
+> > > the memory subsystem pretty good; what other tests should I run?
+> > >
+> > > It'd be nice if we could pose some sort of solution/warning for the
+> > > future so other people do not have to experience the same problems.
+> > >
+> > > What are the next steps?
+> >
+> > Wouldn't it be possible for the e820/MTRR set up code detect the problem
+> > and suggest a mem=xxxx that would fix the problem (while also
+> > complaining that the BIOS is broken)?
+>
+> Yes, that should be fairly easy, though as Andi points out, if there are holes
+> in the MTRR setup, things get a little trickier (I had an earlier patch to
+> deal with this, but ended up with too many early boot issues).
+>
+> Maybe what Venki suggested would be best:  just detect the condition and
+> panic, with a string telling the user to use mem=xxx (we can figure that out)
+> and/or upgrade their BIOS.
 
-So exactly how would you expect a nonblocking open to work? Should it be
-starting I/O? What if that involves blocking? How would you know when to
-try again?
+Ick. Systems that used to boot fine would then panic on a kernel
+upgrade. That's rather rude for a condition that's merely an
+optimization (using all memory), rather than one of correctness. A
+panic seems entirely inappropriate.
 
-  Trond
-
+Ray
