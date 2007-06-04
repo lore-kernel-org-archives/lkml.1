@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbXFDNQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbXFDNQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754665AbXFDNQT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 09:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbXFDNQH
+	id S1755254AbXFDNQm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 09:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXFDNQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 09:16:07 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:32684 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbXFDNQE (ORCPT
+	Mon, 4 Jun 2007 09:16:34 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:44615 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752200AbXFDNQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 09:16:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=NWZogC07RRprz0WmL7F9pey04HUMFuU53YjBkDHy4FybQbwrOo1d6Ef1pmjbBUxcTtX17mTPtYeTTuL0u9JvYnuacP+0C8TJvhRSHzwhSdcIrkDPBTA9g6bopdf9FWUjpKbbrA2CZmQ+q7dymDptHkoFSBZGPEfdLruLSsi4UFU=
-Message-ID: <46641092.3040009@gmail.com>
-Date: Mon, 04 Jun 2007 15:16:02 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 4 Jun 2007 09:16:33 -0400
+Date: Mon, 4 Jun 2007 14:16:24 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>
+Message-ID: <20070604131624.GA27565@srcf.ucam.org>
+References: <878xb3l888.fsf@jbms.ath.cx> <200706020114.37245.rjw@sisk.pl> <87odjz9qo9.fsf@jbms.ath.cx> <200706020233.44509.rjw@sisk.pl> <87k5un9l4n.fsf@jbms.ath.cx> <20070604104621.GB4405@elf.ucw.cz> <20070604122054.GB26615@srcf.ucam.org> <20070604131000.GD1971@elf.ucw.cz>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Korb <ml@akana.de>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
-References: <20601315171560711667@wsc.cz> <46640ABA.7010308@ru.mvista.com> <46640C30.9050808@gmail.com> <46641050.1030901@ru.mvista.com>
-In-Reply-To: <46641050.1030901@ru.mvista.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070604131000.GD1971@elf.ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: A kexec approach to hibernation
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov napsal(a):
-> Hello.
+On Mon, Jun 04, 2007 at 03:10:00PM +0200, Pavel Machek wrote:
+> On Mon 2007-06-04 13:20:54, Matthew Garrett wrote:
+> > On Mon, Jun 04, 2007 at 12:46:21PM +0200, Pavel Machek wrote:
+> > 
+> > > sync is perfectly safe way of telling the fs to store data on disk.
+> > 
+> > On disk, yes. On the filesystem, no. It's valid for the data to be left 
+> > in the journal, for instance.
+> 
+> Yep... then grub needs to grok the journal. It does for ext3, IIRC.
 
-Hi.
-
->    Sorry -- I thought it was a part of kernel style, but it appeared to
-> be my aesthetical preference only. :-)
-
-Ok, anyway thanks for reviewing,
+No, it only supports ext2 (and reading ext3 as if it's ext2). Right now, 
+the assumption that syncing during suspend will cause data to hit 
+something grub can read isn't a safe one.
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Matthew Garrett | mjg59@srcf.ucam.org
