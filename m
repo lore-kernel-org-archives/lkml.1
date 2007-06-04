@@ -1,58 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbXFDGkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbXFDG7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752634AbXFDGkG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 02:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXFDGjx
+	id S1752789AbXFDG7q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 02:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXFDG7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 02:39:53 -0400
-Received: from www.osadl.org ([213.239.205.134]:58345 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751944AbXFDGjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 02:39:51 -0400
-Subject: Re: b44: regression in 2.6.22 (resend)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Maximilian Engelhardt <maxi@daemonizer.de>
-Cc: Michael Buesch <mb@bu3sch.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200706031826.06891.maxi@daemonizer.de>
-References: <20070525172431.60affaca@freepuppy>
-	 <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
-	 <200706031826.06891.maxi@daemonizer.de>
-Content-Type: text/plain
-Date: Mon, 04 Jun 2007 08:39:48 +0200
-Message-Id: <1180939188.4404.5.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Mon, 4 Jun 2007 02:59:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:38969 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752076AbXFDG7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 02:59:37 -0400
+Message-ID: <4663B84E.2060103@goop.org>
+Date: Sun, 03 Jun 2007 23:59:26 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Al Viro <viro@ftp.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org, Chen Li-jun <cljun@xiyou.edu.cn>,
+       Wang Ya-gang <lazy_linux@126.com>
+Subject: Re: [RFC] Documentation/CodingStyle: Add rules for goto labels
+References: <20070603142450.GA4230@localhost.localdomain> <20070603142939.GW4095@ftp.linux.org.uk> <20070603074552.430c3d02.rdunlap@xenotime.net> <4662DFCF.3010606@garzik.org> <20070604045857.GE2161@localhost.localdomain>
+In-Reply-To: <20070604045857.GE2161@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-03 at 18:26 +0200, Maximilian Engelhardt wrote:
-> > Is there any other strange behavior of the high res enabled kernel than
-> > the b44 problem ?
-> 
-> I didn't notice anything in the past (as I wrote). But today I did some tests 
-> for an updated version of the p54 mac80211 wlan driver and I noticed exactly 
-> the same problem:
-> 
-> when booting with highres=off everything is fine.
-> But when I boot an highres enabled kernel and I do the iperf-test with the p54 
-> driver, my systems becomes unresponsive during the test. It seems to be 
-> exactly the same problem I have with the b44 driver.
-> So this might not be a bug in the b44 code but a bug somewhere in the linux 
-> networking code.
-> 
-> I did the test with an 2.6.22-rc3-git4 kernel and the p54 driver built 
-> external as module. 
+WANG Cong wrote:
+> I just wonder, if a goto label is nested in a while/for/if/switch block, aligning it in
+> the first column maybe a bit ugly. (I know mostly it is not in any while/for/if/switch block.)
+>   
 
-Can you look at iperf to figure out, whether it does some weird timer
-stuff (high frequency interval timer or such) ? Either check the code or
-strace it.
+In general goto labels are not scoped, so there's no point in pretending
+they are.  It might make sense to indent a label deeper if you've
+actually declared it local (__label__).
 
-	tglx
-
-
+    J
