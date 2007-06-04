@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbXFDLnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258AbXFDLtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754698AbXFDLnS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 07:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXFDLnB
+	id S1754258AbXFDLtK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 07:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbXFDLs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 07:43:01 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60490 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753441AbXFDLnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 07:43:00 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs, Novell
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
-Date: Mon, 4 Jun 2007 13:42:42 +0200
-User-Agent: KMail/1.9.5
-Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20070514110607.549397248@suse.de> <200706041325.30817.agruen@suse.de> <20070604113519.GA6710@elf.ucw.cz>
-In-Reply-To: <20070604113519.GA6710@elf.ucw.cz>
+	Mon, 4 Jun 2007 07:48:58 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53211 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753229AbXFDLs5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 07:48:57 -0400
+Date: Mon, 4 Jun 2007 13:49:00 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
+Subject: Re: [PATCH] Fix roundup_pow_of_two(1)
+Message-ID: <20070604114900.GS5500@stusta.de>
+References: <200705172356.57620.eike-kernel@sf-tec.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200706041342.42178.agruen@suse.de>
+In-Reply-To: <200705172356.57620.eike-kernel@sf-tec.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 June 2007 13:35, Pavel Machek wrote:
-> On Mon 2007-06-04 13:25:30, Andreas Gruenbacher wrote:
-> > On Monday 04 June 2007 12:55, Pavel Machek wrote:
-> > > On Wed 2007-05-23 18:16:45, Andreas Gruenbacher wrote:
-> > > > On Tuesday 15 May 2007 11:14, Pavel Machek wrote:
-> > > > > Why is this configurable?
-> > > >
-> > > > The maximum length of a pathname is an arbitrary limit: we don't want
-> > > > to allocate arbitrary amounts of of kernel memory for pathnames so we
-> > > > introduce this limit and set it to a reasonable value. In the
-> > > > unlikely case that someone uses insanely long pathnames, this limit
-> > > > can be increased.
-> > >
-> > > vfs does not have configurable pathname limit, and I do not see what
-> > > is so special about AA to require this kind of uglyness.
-> >
-> > You very well know that the vfs has a limit of PATH_MAX characters (4096)
-> > for pathnames. This means that at most that many characters can be passed
-> > at once.
+On Thu, May 17, 2007 at 11:56:56PM +0200, Rolf Eike Beer wrote:
+> Fix roundup_pow_of_two(1)
+> 
+> 1 is a power of two, therefore roundup_pow_of_two(1) should return 1. It does
+> in case the argument is a variable but in case it's a constant it behaves
+> wrong and returns 0. Probably nobody ever did it so this was never noticed.
 
-What users can do is something like this:
+I'm not getting the problem.
+2^0 = 1
 
-  chdir("some/long/path");
-  chdir("some/even/longer/path");
-  ...
+> Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+> 
+> ---
+> commit 01ceeffac83011f0b5021013cc4abd1c4f291df5
+> tree 7da59df51617d7cebd55e4361019181645a17e10
+> parent ab35916f807eb4f2019a208e96cb0bddbb91dfc3
+> author Rolf Eike Beer <eike-kernel@sf-tec.de> Thu, 17 May 2007 23:43:54 +0200
+> committer Rolf Eike Beer <eike-kernel@sf-tec.de> Thu, 17 May 2007 23:43:54 +0200
+> 
+>  include/linux/log2.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/log2.h b/include/linux/log2.h
+> index 57e641e..1b8a2c1 100644
+> --- a/include/linux/log2.h
+> +++ b/include/linux/log2.h
+> @@ -159,7 +159,7 @@ unsigned long __roundup_pow_of_two(unsigned long n)
+>  #define roundup_pow_of_two(n)			\
+>  (						\
+>  	__builtin_constant_p(n) ? (		\
+> -		(n == 1) ? 0 :			\
+> +		(n == 1) ? 1 :			\
+>  		(1UL << (ilog2((n) - 1) + 1))	\
+>  				   ) :		\
+>  	__roundup_pow_of_two(n)			\
 
-and the total length of the path can then exceed PATH_MAX characters. We can 
-only accept pathnames up to some upper limit, and we need to somehow define 
-what that limit is supposed to be. We could use PATH_MAX or some other 
-arbitrary number. In most situations PATH_MAX will be fine, but that's not 
-always guaranteed to be the case. So what's wrong about making this 
-configurable for special situations that we might run into? Module parameters 
-are *really* dead cheap.
+cu
+Adrian
 
-Andreas
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
