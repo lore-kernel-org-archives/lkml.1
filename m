@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760782AbXFDTB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbXFDTBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760782AbXFDTB3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 15:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759980AbXFDTBF
+	id S1760887AbXFDTBo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 15:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760286AbXFDTBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 4 Jun 2007 15:01:08 -0400
+Received: from www.osadl.org ([213.239.205.134]:46992 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759969AbXFDTBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Jun 2007 15:01:05 -0400
-Received: from gw.goop.org ([64.81.55.164]:48705 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759712AbXFDTBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 15:01:04 -0400
-Message-ID: <46646164.3010406@goop.org>
-Date: Mon, 04 Jun 2007 12:00:52 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Al Viro <viro@ftp.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: [RFC] Documentation/CodingStyle: Add rules for goto labels
-References: <20070603142450.GA4230@localhost.localdomain> <20070603142939.GW4095@ftp.linux.org.uk> <20070603074552.430c3d02.rdunlap@xenotime.net> <4662DFCF.3010606@garzik.org> <20070604045857.GE2161@localhost.localdomain> <4663B84E.2060103@goop.org> <46644B99.1060304@zytor.com>
-In-Reply-To: <46644B99.1060304@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: iperf: performance regression (was b44 driver problem?)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Ulrich Drepper <drepper@gmail.com>,
+       Maximilian Engelhardt <maxi@daemonizer.de>,
+       Michael Buesch <mb@bu3sch.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20070604105158.31ede1f5@freepuppy>
+References: <20070525172431.60affaca@freepuppy>
+	 <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
+	 <200706031826.06891.maxi@daemonizer.de> <1180939188.4404.5.camel@chaos>
+	 <20070604090918.42386fbb@freepuppy> <1180974958.4404.24.camel@chaos>
+	 <20070604095924.651d91c8@freepuppy> <1180978368.4404.29.camel@chaos>
+	 <20070604105158.31ede1f5@freepuppy>
+Content-Type: text/plain
+Date: Mon, 04 Jun 2007 21:00:47 +0200
+Message-Id: <1180983647.4404.38.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> goto labels are scoped in one sense: they are only reachable from inside
-> the block they are defined in, so I would disagree with this statement.
->   
+On Mon, 2007-06-04 at 10:51 -0700, Stephen Hemminger wrote:
+> > I doubt that. This is in the iperf code itself.
+> > 
+> > void thread_rest ( void ) {
+> > #if defined( HAVE_THREAD )
+> > #if defined( HAVE_POSIX_THREAD )
+> >     // TODO add checks for sched_yield or pthread_yield and call that
+> >     // if available
+> >     usleep( 0 );
+> > 
+> > ----------^^^^
+> > 
+> > It results in a nanosleep({0,0}, NULL)
+> > 
+> > 	tglx
+> > 
+> 
+> Yes, the following patch makes iperf work better than ever.
+> But are other broken applications going to have same problem.
+> Sounds like the old "who runs first" fork() problems.
 
-Erm, no I think you're wrong there (or we're talking at cross
-purposes).  They're visible to the whole function they're defined in,
-regardless of what block scope happens to be current at the time.  You
-need to use the gcc "__label__" extension to make a locally-scoped
-label.  Otherwise this wouldn't work:
+Not really. The fork() "who runs first" problem is nowhere specified.
 
-	if (a_failed)
-		goto cleanup;
-	[...]
-	if (b_failed) {
-cleanup:
-		cleanup();
-	}
+usleep(0) is well defined:
+
+.... If the value of useconds is 0, then the call has no effect.
+
+So the call into the kernel has been wrong for quite a time.
+
+	tglx
 
 
-    J
