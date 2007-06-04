@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbXFDNQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbXFDNR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbXFDNQm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 09:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXFDNQe
+	id S1755253AbXFDNR2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 09:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbXFDNRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 09:16:34 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:44615 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752200AbXFDNQd (ORCPT
+	Mon, 4 Jun 2007 09:17:21 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53263 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751119AbXFDNRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 09:16:33 -0400
-Date: Mon, 4 Jun 2007 14:16:24 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>
-Message-ID: <20070604131624.GA27565@srcf.ucam.org>
-References: <878xb3l888.fsf@jbms.ath.cx> <200706020114.37245.rjw@sisk.pl> <87odjz9qo9.fsf@jbms.ath.cx> <200706020233.44509.rjw@sisk.pl> <87k5un9l4n.fsf@jbms.ath.cx> <20070604104621.GB4405@elf.ucw.cz> <20070604122054.GB26615@srcf.ucam.org> <20070604131000.GD1971@elf.ucw.cz>
+	Mon, 4 Jun 2007 09:17:20 -0400
+Date: Mon, 4 Jun 2007 15:17:24 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
+Subject: Re: [PATCH] Fix roundup_pow_of_two(1)
+Message-ID: <20070604131723.GV5500@stusta.de>
+References: <200705172356.57620.eike-kernel@sf-tec.de> <20070604114900.GS5500@stusta.de> <200706041413.20477.eike-kernel@sf-tec.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070604131000.GD1971@elf.ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: A kexec approach to hibernation
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <200706041413.20477.eike-kernel@sf-tec.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 03:10:00PM +0200, Pavel Machek wrote:
-> On Mon 2007-06-04 13:20:54, Matthew Garrett wrote:
-> > On Mon, Jun 04, 2007 at 12:46:21PM +0200, Pavel Machek wrote:
-> > 
-> > > sync is perfectly safe way of telling the fs to store data on disk.
-> > 
-> > On disk, yes. On the filesystem, no. It's valid for the data to be left 
-> > in the journal, for instance.
+On Mon, Jun 04, 2007 at 02:13:11PM +0200, Rolf Eike Beer wrote:
+> Adrian Bunk wrote:
+> > On Thu, May 17, 2007 at 11:56:56PM +0200, Rolf Eike Beer wrote:
+> > > Fix roundup_pow_of_two(1)
+> > >
+> > > 1 is a power of two, therefore roundup_pow_of_two(1) should return 1. It
+> > > does in case the argument is a variable but in case it's a constant it
+> > > behaves wrong and returns 0. Probably nobody ever did it so this was
+> > > never noticed.
+> >
+> > I'm not getting the problem.
+> > 2^0 = 1
 > 
-> Yep... then grub needs to grok the journal. It does for ext3, IIRC.
+> Yes. But it returned 0 (not 1 << 0).
 
-No, it only supports ext2 (and reading ext3 as if it's ext2). Right now, 
-the assumption that syncing during suspend will cause data to hit 
-something grub can read isn't a safe one.
+Sorry, I had a thinko and you are right.
+
+> Eike
+
+cu
+Adrian
+
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
