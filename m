@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758930AbXFDQec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbXFDQgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758930AbXFDQec (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757566AbXFDQeN
+	id S1758627AbXFDQgU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbXFDQgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:34:13 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:53286 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756457AbXFDQeM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:34:12 -0400
-X-Sasl-enc: eGk6QlEyCEjZvWZ7XgPM2mMBWZ2YA1SVgZVKGd1GX9ib 1180974850
-Date: Mon, 4 Jun 2007 13:34:06 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Andi Kleen <ak@suse.de>,
-       Jiri Kosina <jikos@jikos.cz>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
-Message-ID: <20070604163406.GA1120@khazad-dum.debian.net>
-References: <20070604112426.GA2707@elf.ucw.cz> <20070604130903.GC1971@elf.ucw.cz> <Pine.LNX.4.64.0706041511010.29896@twin.jikos.cz> <200706041543.49071.ak@suse.de> <20070604135427.GA19466@elf.ucw.cz> <d120d5000706040702q3b5251e8oc5e9f3c198f060bd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000706040702q3b5251e8oc5e9f3c198f060bd@mail.gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 4 Jun 2007 12:36:06 -0400
+Received: from www.osadl.org ([213.239.205.134]:39626 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751134AbXFDQgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 12:36:04 -0400
+Subject: Re: b44: regression in 2.6.22 (resend)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Maximilian Engelhardt <maxi@daemonizer.de>, Michael Buesch <mb@bu3sch.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070604090918.42386fbb@freepuppy>
+References: <20070525172431.60affaca@freepuppy>
+	 <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
+	 <200706031826.06891.maxi@daemonizer.de> <1180939188.4404.5.camel@chaos>
+	 <20070604090918.42386fbb@freepuppy>
+Content-Type: text/plain
+Date: Mon, 04 Jun 2007 18:35:58 +0200
+Message-Id: <1180974958.4404.24.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 04 Jun 2007, Dmitry Torokhov wrote:
-> >...but I'm not quite sure it is a buggy keyboard. It happens _way_ too
-> >often. Launch the line above and try to do some typing...
+On Mon, 2007-06-04 at 09:09 -0700, Stephen Hemminger wrote:
+> > > I did the test with an 2.6.22-rc3-git4 kernel and the p54 driver built 
+> > > external as module. 
+> > 
+> > Can you look at iperf to figure out, whether it does some weird timer
+> > stuff (high frequency interval timer or such) ? Either check the code or
+> > strace it.
+>
+> It is the receiver doing a tight loop doing gettimeofday/recv calls.
 > 
-> This used to work fine on my box last time I tried it (the switch
-> itself is offloaded to a keventd and shoud not get in the way) but
-> then they push all kind of ACPI/SMM crap together with KBC so who
-> knows... I should try it again when I get home.
+> 
+> sendto(-1227715616, 0xc, 3085438964, 0, {...}, 3067249832) = 0
+> gettimeofday({1180973726, 981615}, NULL) = 0
+> gettimeofday({1180973726, 981751}, NULL) = 0
+> futex(0x8055c64, 0x5 /* FUTEX_??? */, 1) = 1
+> futex(0x8055c90, FUTEX_WAKE, 1) = 0
+> recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
+> gettimeofday({1180973726, 982754}, NULL) = 0
+> recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
+> gettimeofday({1180973726, 983790}, NULL) = 0
 
-Err... in laptops, almost *always* the KDC is emulated by the embedded
-controller, so I bet you're right on the money, there.  It is not "a buggy
-KDC", it is a buggy EC firmware and/or buggy SMBIOS which is a lot more
-common.
+Well, gettimeofday() is not affected by the highres code, but
 
-And DoS'ing the EC is very high on the Don't Do That list on a laptop.  If
-the X60 is only losing keypresses and producing no bigger fireworks, that's
-outstanding behavior (as far as I trust ThinkPad firmware, anyway).
+> nanosleep({0, 0}, NULL) = 0
+> nanosleep({0, 0}, NULL) = 0
 
-So please throttle anything that might access the KDC way too much (as
-compared to normal keyboard operation by an user).
+is. The nanosleep call with a relative timeout of 0 returns immediately
+with highres enabled, while it sleeps at least until the next tick
+arrives when highres is off. Are there more of those stupid sleeps in
+the code ?
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+	tglx
+
+
