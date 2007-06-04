@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753039AbXFDHvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbXFDHvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753039AbXFDHvT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 03:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbXFDHvL
+	id S1753505AbXFDHvb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 03:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbXFDHvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 03:51:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37693 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752238AbXFDHvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 03:51:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 1/2] PM: Introduce hibernation and suspend notifiers
-Date: Mon, 4 Jun 2007 09:56:53 +0200
-User-Agent: KMail/1.9.5
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>
-References: <200705272229.21263.rjw@sisk.pl> <200706040038.54161.rjw@sisk.pl> <20070603225903.GC2971@elf.ucw.cz>
-In-Reply-To: <20070603225903.GC2971@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 03:51:23 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:27581 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753204AbXFDHvV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 03:51:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=NR3F5ICTa0CHxkotvWHmgF1P0vOQH6jWB7R7zSwspD3eFh/tkaM1/wkcmFwROSjz8P1MfYbD8A1RtP7b28+ndseK80q0Xb9CjLVvQAE2mbMxiE+wpBm01aNefpZtou4LvFIaFwL21eXsEO/mQM1/WPZ/W8XnyZOaBpVnXR0Wm7w=
+Date: Mon, 4 Jun 2007 15:51:53 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Al Viro <viro@ftp.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org, Chen Li-jun <cljun@xiyou.edu.cn>,
+       Wang Ya-gang <lazy_linux@126.com>
+Subject: Re: [RFC] Documentation/CodingStyle: Add rules for goto labels
+Message-ID: <20070604075153.GB2074@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: Jeremy Fitzhardinge <jeremy@goop.org>,
+	Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
+	Al Viro <viro@ftp.linux.org.uk>,
+	LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+	Chen Li-jun <cljun@xiyou.edu.cn>, Wang Ya-gang <lazy_linux@126.com>
+References: <20070603142450.GA4230@localhost.localdomain> <20070603142939.GW4095@ftp.linux.org.uk> <20070603074552.430c3d02.rdunlap@xenotime.net> <4662DFCF.3010606@garzik.org> <20070604045857.GE2161@localhost.localdomain> <4663B84E.2060103@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706040956.54292.rjw@sisk.pl>
+In-Reply-To: <4663B84E.2060103@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 4 June 2007 00:59, Pavel Machek wrote:
-> On Mon 2007-06-04 00:38:53, Rafael J. Wysocki wrote:
-> > On Sunday, 3 June 2007 18:41, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > Make it possible to register hibernation and suspend notifiers, so that
-> > > > subsystems can perform hibernation-related or suspend-related operations that
-> > > > should not be carried out by device drivers' .suspend() and .resume() routines.
-> > > 
-> > > One more question: what will we call in suspend-to-both case? I do not
-> > > think we can call SUSPEND_PREPARE with frozen tasks, so just one call
-> > > to HIBERNATION_PREPARE?
-> > 
-> > Yes, right now it should work this way.
-> 
-> (Should it be mentioned in docuementation?)
+On Sun, Jun 03, 2007 at 11:59:26PM -0700, Jeremy Fitzhardinge wrote:
+>WANG Cong wrote:
+>> I just wonder, if a goto label is nested in a while/for/if/switch block, aligning it in
+>> the first column maybe a bit ugly. (I know mostly it is not in any while/for/if/switch block.)
+>>   
+>
+>In general goto labels are not scoped, so there's no point in pretending
+>they are.  It might make sense to indent a label deeper if you've
+>actually declared it local (__label__).
+>
+>    J
 
-Eventually, yes.  Still, for now, the STR code in user.c is outdated and needs
-fixing.  I'll take care of it later this week.
+OK. Thank you. I will take your advice.
 
-Greetings,
-Rafael
+A new version of this patch will come  soon. ;)
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
