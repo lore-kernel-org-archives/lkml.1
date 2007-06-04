@@ -1,35 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbXFDQ3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbXFDQcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758584AbXFDQ3g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbXFDQ32
+	id S1758221AbXFDQcj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756372AbXFDQca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:29:28 -0400
-Received: from rtr.ca ([64.26.128.89]:1392 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754899AbXFDQ31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:29:27 -0400
-Message-ID: <46643DE5.3080904@rtr.ca>
-Date: Mon, 04 Jun 2007 12:29:25 -0400
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: David Greaves <david@dgreaves.com>
-Cc: Tejun Heo <htejun@gmail.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       IDE Linux <linux-ide@vger.kernel.org>, ballen@gravity.phys.uwm.edu
-Subject: Re: 2.6.22-rc3 hibernate(?) disables SMART on ide
-References: <46609290.5030701@dgreaves.com> <46613C53.8010205@gmail.com> <4661E6CA.1080203@dgreaves.com>
-In-Reply-To: <4661E6CA.1080203@dgreaves.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 4 Jun 2007 12:32:30 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:41276 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755961AbXFDQc3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 12:32:29 -0400
+Subject: [GIT PATCH] SCSI fixes for 2.6.22-rc3
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 04 Jun 2007 11:32:27 -0500
+Message-Id: <1180974747.3711.13.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Greaves wrote:
-> I have 2 ide disks. If I enable SMART and hibernate/suspend2disk, SMART is
-> disabled when I resume.
+This is just a slew of assorted bug fixes for 2.6.22-rc3.  The patch is
+available here:
 
-Just a thought:  This *may* be fixable at the drive, with "hdparm -K1".
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-Cheers 
+The short changelog is:
+
+Bill Nottingham (1):
+      qla2xxx: fix timeout in qla2x00_down_timeout
+
+David S. Miller (1):
+      JAZZ ESP and SUN ESP need SPI_ATTRS
+
+Hugh Dickins (1):
+      fix CONFIG_SCSI_WAIT_SCAN=m
+
+Michael Schmitz (1):
+      atari_NCR5380: update_timeout removal
+
+Salyzyn, Mark (1):
+      aacraid: fix shutdown handler to also disable interrupts.
+
+
+And the diffstat:
+
+ Kconfig          |    2 ++
+ aacraid/linit.c  |   22 ++++++++++++----------
+ atari_NCR5380.c  |   44 ++------------------------------------------
+ qla2xxx/qla_os.c |    2 +-
+ scsi_scan.c      |    9 +++++++++
+ 5 files changed, 26 insertions(+), 53 deletions(-)
+
+James
+
+
