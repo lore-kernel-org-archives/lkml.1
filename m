@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbXFDFNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbXFDFTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752921AbXFDFNP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 01:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbXFDFNB
+	id S1752811AbXFDFTc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 01:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbXFDFTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 01:13:01 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:20941 "EHLO
-	asav07.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbXFDFNA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 01:13:00 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvUoAPw7Y0ZKhRO4UGdsb2JhbACHM4g1AQEbDQYRAQ
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Input updates for 2.6.22-rc3
-Date: Mon, 4 Jun 2007 01:12:52 -0400
-User-Agent: KMail/1.9.3
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Mon, 4 Jun 2007 01:19:23 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:2230 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750792AbXFDFTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 01:19:22 -0400
+Message-ID: <4663A0BF.9010008@sw.ru>
+Date: Mon, 04 Jun 2007 09:18:55 +0400
+From: Vasily Averin <vvs@sw.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, devel@openvz.org,
+       linux-ext4@vger.kernel.org, Stephen Tweedie <sct@redhat.com>,
+       adilger@clusterfs.com
+Subject: [PATCH ext3/ext4] orphan list check on destroy_inode
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706040112.52821.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Customers claims to ext3-related errors, investigation showed that ext3 orphan list has been corrupted and have the reference to non-ext3 inode. The following debug helps to understand the reasons of this issue.
 
-Please consider pulling from:
+Signed-off-by:	Vasily Averin <vvs@sw.ru>
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+index 6e30629..46e2fa6 100644
+--- a/fs/ext3/super.c
++++ b/fs/ext3/super.c
+@@ -459,6 +459,21 @@ static struct inode *ext3_alloc_inode(struct super_block *sb)
+ 
+ static void ext3_destroy_inode(struct inode *inode)
+ {
++	if (!list_empty(&(EXT3_I(inode)->i_orphan))) {
++		int i, imax;
++		unsigned int *p;
++
++		p = (unsigned int *)EXT3_I(inode);
++		imax = sizeof(struct ext3_inode_info) / sizeof(unsigned int);
++		printk("Inode %p: orphan list check failed!\n", EXT3_I(inode));
++		for (i = 0; i < imax; i++) {
++			if (i && ((i % 8) == 0))
++				printk("\n");
++			printk("%08x ", *p++);
++		}
++		printk("\n");
++		dump_stack();
++	}
+ 	kmem_cache_free(ext3_inode_cachep, EXT3_I(inode));
+ }
+ 
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index cb9afdd..f86e0ac 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -510,6 +510,21 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
+ 
+ static void ext4_destroy_inode(struct inode *inode)
+ {
++	if (!list_empty(&(EXT4_I(inode)->i_orphan))) {
++		int i, imax;
++		unsigned int *p;
++
++		p = (unsigned int *)EXT4_I(inode);
++		imax = sizeof(struct ext4_inode_info) / sizeof(unsigned int);
++		printk("Inode %p: orphan list check failed!\n", EXT4_I(inode));
++		for (i = 0; i < imax; i++) {
++			if (i && ((i % 8) == 0))
++				printk("\n");
++			printk("%08x ", *p++);
++		}
++		printk("\n");
++		dump_stack();
++	}
+ 	kmem_cache_free(ext4_inode_cachep, EXT4_I(inode));
+ }
+ 
 
-or
-        master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-to receive updates for input subsystem.
-
-Changelog:
-----------
-
-Dmitry Torokhov (3):
-      Input: db9 - do not ignore dev2 module parameter
-      Input: ucb1x00 - do not access input_dev->private directly
-      Input: reduce raciness when input handlers disconnect
-
-Uwe Bugla (1):
-      Input: logips2pp - fix typo in Kconfig
-
-Diffstat:
----------
-
- drivers/input/evdev.c        |    2 +-
- drivers/input/joydev.c       |    2 +-
- drivers/input/joystick/db9.c |    2 +-
- drivers/input/mouse/Kconfig  |    2 +-
- drivers/input/mousedev.c     |    2 +-
- drivers/input/tsdev.c        |    2 +-
- drivers/mfd/ucb1x00-ts.c     |    7 ++++---
- 7 files changed, 10 insertions(+), 9 deletions(-)
-
--- 
-Dmitry
