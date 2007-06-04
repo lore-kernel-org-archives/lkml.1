@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762175AbXFDTtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761075AbXFDTwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762175AbXFDTtL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 15:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759617AbXFDTsy
+	id S1761075AbXFDTwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 15:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758848AbXFDTwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 15:48:54 -0400
-Received: from daemonizer.de ([87.230.16.230]:37992 "EHLO daemonizer.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753483AbXFDTsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 15:48:52 -0400
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: iperf: performance regression (was b44 driver problem?)
-Date: Mon, 4 Jun 2007 21:47:59 +0200
-User-Agent: KMail/1.9.7
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ulrich Drepper <drepper@gmail.com>, Michael Buesch <mb@bu3sch.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20070525172431.60affaca@freepuppy> <20070604105158.31ede1f5@freepuppy> <20070604193206.GA13271@elte.hu>
-In-Reply-To: <20070604193206.GA13271@elte.hu>
+	Mon, 4 Jun 2007 15:52:13 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37954 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758049AbXFDTwN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 15:52:13 -0400
+Date: Mon, 4 Jun 2007 12:52:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ethan Solomita <solo@google.com>
+cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@google.com>, a.p.zijlstra@chello.nl
+Subject: Re: [RFC 1/7] cpuset write dirty map
+In-Reply-To: <46646A33.6090107@google.com>
+Message-ID: <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com>
+References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com>
+ <46646A33.6090107@google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1294756.CnZEpMUT4R";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706042148.02450.maxi@daemonizer.de>
-X-Spam-Score: -4.1 (----)
-X-Spam-Report: No, hits=-4.1 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.3 AWL AWL: From: address is in the auto white-list
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1294756.CnZEpMUT4R
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, 4 Jun 2007, Ethan Solomita wrote:
 
-On Monday 04 June 2007, Ingo Molnar wrote:
-> * Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > Yes, the following patch makes iperf work better than ever. But are
-> > other broken applications going to have same problem. Sounds like the
-> > old "who runs first" fork() problems.
->
-> this is the first such app and really, and even for this app: i've been
-> frequently running iperf on -rt kernels for _years_ and never noticed
-> how buggy its 'locking' code was, and that it would under some
-> circumstances use up the whole CPU on high-res timers.
+> > You should preserve my Signed-off-by: since I wrote most of this. Is there 
+> > a changelog?
+> > 
+> 
+> 	I wasn't sure of the etiquette -- I'd thought that by saying you had
+> signed it off that meant you were accepting my modifications, and didn't
+> want to presume. But I will change it if you like. No slight intended.
+> 
+> 	Unfortunately I don't have a changelog, and since I've since forward
+> ported the changes it would be hard to produce. If you want to review it
+> you should probably review it all, because the forward porting may have
+> introduced issues.
 
-I must admit I don't know much about that topic, but there is one thing I=20
-don't understand. Why is iperf (even if it's buggy) able to use up the whol=
-e=20
-cpu? I didn't run it as root but as my normal user so it should have limite=
-d=20
-rights. Shouldn't the linux scheduler distribute cpu time among all running=
-=20
-processes?
+I glanced over it and it looks okay. Please cc me on future submissions.
 
-Maxi
+What testing was done? Would you include the results of tests in your next 
+post?
 
---nextPart1294756.CnZEpMUT4R
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBGZGxyOimwv528XGERAslBAKDFEN/kVetmUZatC669/yQ+Gds8LQCg0ce3
-j/jrso2q5DkyFYTWaCF8fjw=
-=e1os
------END PGP SIGNATURE-----
-
---nextPart1294756.CnZEpMUT4R--
