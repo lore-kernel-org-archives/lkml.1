@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbXFDRW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbXFDRXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759314AbXFDRW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 13:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbXFDRWT
+	id S1758316AbXFDRXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 13:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756448AbXFDRXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 13:22:19 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40229 "EHLO e4.ny.us.ibm.com"
+	Mon, 4 Jun 2007 13:23:03 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:48111 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755818AbXFDRWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 13:22:19 -0400
-Message-ID: <46644A48.4090300@austin.ibm.com>
-Date: Mon, 04 Jun 2007 12:22:16 -0500
-From: jschopp <jschopp@austin.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	id S1755818AbXFDRXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 13:23:01 -0400
+Message-ID: <46644A71.7060300@dgreaves.com>
+Date: Mon, 04 Jun 2007 18:22:57 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.03
-References: <0a25fd03117c678f17006c5fcefaaed0@pinky> <466434A1.4040905@austin.ibm.com> <4664430C.1070909@shadowen.org>
-In-Reply-To: <4664430C.1070909@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mark Lord <liml@rtr.ca>
+Cc: Tejun Heo <htejun@gmail.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       IDE Linux <linux-ide@vger.kernel.org>, ballen@gravity.phys.uwm.edu
+Subject: Re: 2.6.22-rc3 hibernate(?) disables SMART on ide
+References: <46609290.5030701@dgreaves.com> <46613C53.8010205@gmail.com> <4661E6CA.1080203@dgreaves.com> <46643DE5.3080904@rtr.ca>
+In-Reply-To: <46643DE5.3080904@rtr.ca>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The original suggestion was to count them and only complain if there
-> were "lots".  I had thought though that the general consensus was that
-> #ifdef in C files was pretty much frowned upon.  I must admit to working
-> to the "you must be able to justify all winges in the output" rather
-> than expecting the result to be empty necessarily.
+Mark Lord wrote:
+> David Greaves wrote:
+>> I have 2 ide disks. If I enable SMART and hibernate/suspend2disk,
+>> SMART is
+>> disabled when I resume.
+> 
+> Just a thought:  This *may* be fixable at the drive, with "hdparm -K1".
 
-I really think we should work towards, "if you see an error the odds are overwhelming that 
-we aren't wasting your time and you should fix this." rather than, "every time you send a 
-patch you will get a couple false positives that you will have to think about and justify 
-to yourself, slowing down your sending the patch out and making more work for you".  I'm 
-not saying we have to have 100% accuracy, but I want it well in the 90s.
+Thanks Mark, good idea.
+Just tried and it didn't help though :(
 
-Now back to the ifdef's.  I don't think we can really even say a lot or a little is broken 
-(short patch can do 1 ifdef that is stupid, long patch could do several that are good).  I 
-think we'll either have to let that one go or put it under a non-default flag.    We do 
-still have humans reviewing code who can make judgement calls like if you #ifdefs are good 
-or not.
+in fact, hda gave
+cu:~# hdparm -K1 /dev/hda
 
-What we can check for is #if 0 code.  I hate that one.
+/dev/hda:
+ setting drive keep features to 1 (on)
+ HDIO_DRIVE_CMD(keepsettings) failed: Input/output error
 
-> We've not talked about how the tool might grow.  My thought was that
-> soon we would enable the robot replies on linux-mm (say) and use the
-> feedback from that to tune what we do and do not report.  I have been
-> pushing all of the contributions to -mm for sometime through it and
-> cirtainly the #ifdef one once of the more common ones (other than white
-> space dammage and >80 character lines).
+and in dmesg:
+hda: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
+hda: drive_cmd: error=0x04 { DriveStatusError }
+ide: failed opcode was: 0xef
 
-If you have reasonably good SPAM filters on your list and make the robot so it is very 
-good about only picking up mail that really are patches then this could be a very good 
-idea. Just be careful.  I could send out a bunch of mail with fake headers saying it was 
-from say Andy Whitcroft, then the robot replies and you got a bunch of junk mail.
+The drive, FWIW, is:
+=== START OF INFORMATION SECTION ===
+Model Family:     Seagate Barracuda ATA II family
+Device Model:     ST320420A
+Serial Number:    3CL04RKY
+Firmware Version: 3.21
+User Capacity:    20,404,101,120 bytes
+Device is:        In smartctl database [for details use: -P show]
+ATA Version is:   4
+ATA Standard is:  Exact ATA specification draft version not indicated
+Local Time is:    Mon Jun  4 18:20:46 2007 BST
+SMART support is: Available - device has SMART capability.
+SMART support is: Enabled
 
-User feedback is really useful, both for us and for the user.  Based on user feedback from 
-the very small number of users I had I tweaked a lot of regular expressions, added some 
-new checks, and removed some I could never get right.
 
--Joel
+David
