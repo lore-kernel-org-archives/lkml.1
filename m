@@ -1,117 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbXFDRGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbXFDROL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758893AbXFDRGU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 13:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbXFDRGN
+	id S1758738AbXFDROL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 13:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbXFDRNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 13:06:13 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:57363 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753958AbXFDRGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 13:06:11 -0400
-Date: Mon, 4 Jun 2007 10:07:39 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Dependent CPU core speed reporting not updated withCPUFREQ_SHARED_TYPE_HW?
-Message-ID: <20070604170738.GB12782@tree.beaverton.ibm.com>
-References: <20070602064325.GB7445@redhat.com> <653FFBB4508B9042B5D43DC9E18836F5F5B144@scsmsx415.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
-Content-Disposition: inline
-In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5F5B144@scsmsx415.amr.corp.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 4 Jun 2007 13:13:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60126 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755719AbXFDRNw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 13:13:52 -0400
+Date: Mon, 4 Jun 2007 09:59:24 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ulrich Drepper <drepper@gmail.com>
+Cc: Maximilian Engelhardt <maxi@daemonizer.de>, Michael Buesch <mb@bu3sch.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: iperf: performance regression (was b44 driver problem?)
+Message-ID: <20070604095924.651d91c8@freepuppy>
+In-Reply-To: <1180974958.4404.24.camel@chaos>
+References: <20070525172431.60affaca@freepuppy>
+	<200705281944.05030.maxi@daemonizer.de>
+	<1180380230.3657.3.camel@chaos>
+	<200706031826.06891.maxi@daemonizer.de>
+	<1180939188.4404.5.camel@chaos>
+	<20070604090918.42386fbb@freepuppy>
+	<1180974958.4404.24.camel@chaos>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 04 Jun 2007 18:35:58 +0200
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
---J2SCkAp4GZ/dPZZf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On Mon, 2007-06-04 at 09:09 -0700, Stephen Hemminger wrote:
+> > > > I did the test with an 2.6.22-rc3-git4 kernel and the p54 driver built 
+> > > > external as module. 
+> > > 
+> > > Can you look at iperf to figure out, whether it does some weird timer
+> > > stuff (high frequency interval timer or such) ? Either check the code or
+> > > strace it.
+> >
+> > It is the receiver doing a tight loop doing gettimeofday/recv calls.
+> > 
+> > 
+> > sendto(-1227715616, 0xc, 3085438964, 0, {...}, 3067249832) = 0
+> > gettimeofday({1180973726, 981615}, NULL) = 0
+> > gettimeofday({1180973726, 981751}, NULL) = 0
+> > futex(0x8055c64, 0x5 /* FUTEX_??? */, 1) = 1
+> > futex(0x8055c90, FUTEX_WAKE, 1) = 0
+> > recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
+> > gettimeofday({1180973726, 982754}, NULL) = 0
+> > recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
+> > gettimeofday({1180973726, 983790}, NULL) = 0
+> 
+> Well, gettimeofday() is not affected by the highres code, but
+> 
+> > nanosleep({0, 0}, NULL) = 0
+> > nanosleep({0, 0}, NULL) = 0
+> 
+> is. The nanosleep call with a relative timeout of 0 returns immediately
+> with highres enabled, while it sleeps at least until the next tick
+> arrives when highres is off. Are there more of those stupid sleeps in
+> the code ?
 
-On Sat, Jun 02, 2007 at 07:19:03AM -0700, Pallipadi, Venkatesh wrote:
+GLIBC pthread_mutex does it, YES it is a problem!
+Looks like the old behavior is required for ABI compatibility.
 
-> The problem here is that with hardware coordination, kernel need not
-> do what we do for affected_cpus today. Kernel can manage each CPU
-> independently in terms of setting freq as underlying hardware
-> guarantees to do the coordination (picking up the highest freq
-> among a group of dependent cpus). So ideally we can just manage cpu
-> frequencies as we do today without affected_cpus. But, in this case
-> there is a fyi from hardware which says even though OS is thinking that
-> CPUs are independent, hardware is doing the coordination across these
-> CPUs.
+iperf server has several threads. One thread is using pthread_mutex_lock
+to wait for the other thread.  It looks like pthread_mutex_lock is using
+nanosleep as yield().
 
-Yes, and ... it appears that (at least on Intel CPUs), writing
-IA32_PERF_CTL on any core in the package causes the speed of all CPUs to
-be set to the max of all CPU cores.  Here's what I see when
-reading/writing the performance control MSRs:
+Multi-thread strace shows how this could kill performance.
+These are with old 2.6.20 kernel that doesn't have the problem:
 
-This is with all CPUs set to 2.6GHz.  0x198 = IA32_PERF_STATUS, 0x199 =
-IA32_PERF_CTL.
+sendto(-1210930208, 0xc, 3085438964, 0, {...}, 3084035240) = 0
+socket(PF_INET, SOCK_STREAM, IPPROTO_IP) = 3
+setsockopt(3, SOL_SOCKET, SO_REUSEADDR, [1], 4)         = 0
+bind(3, {sa_family=AF_INET, sin_port=htons(5001), sin_addr=inet_addr("0.0.0.0")}, 16)   = 0
+listen(3, 5)                            = 0
+futex(0x8055c64, 0x5 /* FUTEX_??? */, 1) = 1
+accept(3, {sa_family=AF_INET, sin_port=htons(49973), sin_addr=inet_addr("192.168.0.14")}, [16]) = 4
+getsockname(4, {sa_family=AF_INET, sin_port=htons(5001), sin_addr=inet_addr("192.168.0.12")}, [16]) = 0
+recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 24, 0) = 24
+mmap2(NULL, 8392704, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb6528000
+mprotect(0xb6528000, 4096, PROT_NONE)   = 0
+clone(child_stack=0xb6d284a4, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|CLONE_DETACHED, parent_tidptr=0xb6d28bd8, {entry_number:6, base_addr:0xb6d28b90, limit:1048575, seg_32bit:1, contents:0, read_exec_only:0, limit_in_pages:1, seg_not_present:0, useable:1}, child_tidptr=0xb6d28bd8) = 5622
+accept(3, 0x8058b98, [128]) = ? ERESTARTSYS (To be restarted)
 
-root@elm3a188:/mnt/src/msr/msr-20060208# ./msr -n 0x198 0x199
-CPU 0:
-   0x00000198 = 0x0828082806000828
-   0x00000199 = 0x0000000000000828
-CPU 1:
-   0x00000198 = 0x0828082806000828
-   0x00000199 = 0x0000000000000828
+==============
 
-Now, we set scaling_max_freq of CPU 0 to 2GHz:
-root@elm3a188:/mnt/src/msr/msr-20060208# ./msr -n 0x198 0x199
-CPU 0:
-   0x00000198 = 0x0828082806000828
-   0x00000199 = 0x000000000000061a
-CPU 1:
-   0x00000198 = 0x0828082806000828
-   0x00000199 = 0x0000000000000828
+sendto(-1219322912, 0xc, 3085438964, 0, {...}, 3075642536) = 0
+futex(0x8055d04, 0x5 /* FUTEX_??? */, 1) = 1
+futex(0x8055d30, FUTEX_WAKE, 1) = 1
+futex(0x8055c64, FUTEX_WAIT, 1, NULL) = 0
+futex(0x8055d04, 0x5 /* FUTEX_??? */, 1) = 1
+futex(0x8055d30, FUTEX_WAKE, 1)         = 1
+futex(0x8055c90, FUTEX_WAKE, 1)         = 0
+getsockopt(3, SOL_SOCKET, SO_RCVBUF, [87380], [4]) = 0
+fstat64(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 0), ...}) = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7fb0000
+write(1, "--------------------------------"..., 61) = 61
+write(1, "Server listening on TCP port 500"..., 34) = 34
+write(1, "TCP window size: 85.3 KByte (def"..., 38) = 38
+write(1, "--------------------------------"..., 61) = 61
+nanosleep({0, 0}, NULL)                 = 0
+futex(0x8055d04, 0x5 /* FUTEX_??? */, 1) = 1
+futex(0x8055d30, FUTEX_WAKE, 1)         = 1
+futex(0x8055c64, FUTEX_WAIT, 3, NULL) = 0
+futex(0x8055c90, FUTEX_WAIT, 2, NULL)         = -1 EAGAIN (Resource temporarily unavailable)
+futex(0x8055d04, 0x5 /* FUTEX_??? */, 1)                               = 1
+futex(0x8055d30, FUTEX_WAKE, 1)                          = 0
+futex(0x8055c90, FUTEX_WAKE, 1)                               = 0
+write(1, "[  4] local 192.168.0.12 port 50"..., 74)                          = 74
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL)                      = 0
+nanosleep({0, 0}, NULL)                           = 0
+nanosleep({0, 0}, NULL) = 0
 
-And now likewise for CPU 1:
-root@elm3a188:/mnt/src/msr/msr-20060208# ./msr -n 0x198 0x199
-CPU 0:
-   0x00000198 = 0x082808280600061a
-   0x00000199 = 0x000000000000061a
-CPU 1:
-   0x00000198 = 0x082808280600061a
-   0x00000199 = 0x000000000000061a
+...
 
-Notice that we've written the slower speed to the control register but
-the status register says that we're still running at the higher speed.
-This seems to corroborate my finding that the power use does not drop
-until _both_ cores are lowered.  Unfortunately, in that middle step we
-are reporting an incorrect frequency for CPU 0--sysfs says 2GHz but the
-hardware itself says 2.6.  This is clearly a bad thing, because I just
-set scaling_max_cpufreq on CPU0 to 2GHz, yet it is running 667MHz faster
-than it ought to be because CPU1 wants to go faster.
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL)                 = 0
+write(1, "[  4]  0.0-30.2 sec    336 MByte"..., 50)                     = 50
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+futex(0x8055d04, 0x5 /* FUTEX_??? */, 1) = 1
+futex(0x8055d30, FUTEX_WAKE, 1) = 0
+futex(0x8055c64, FUTEX_WAIT, 5, NULL) = -1 EINTR (Interrupted system call)
 
-How about this: When hardware coordination is specified in _PSD,
-scaling_{min,max}_freq between CPUs in a cpufreq domain are tied
-together so that we can be sure that our caps are being followed.
-Requests to change speed can be done as they always have, but
-afterwards the value of scaling_cur_freq for all CPUs in the cpufreq
-domain  will be determined by reading the speed value from hardware
-since we can't really be sure how the hardware decided to coordinate
-things anyway.  When it becomes the case that individual cores on a
-package can run at different speeds, we can drop the _PSD entries.  Does
-this scheme sound reasonable?
+===============
 
-We might, however, want another sysfs file to tell userspace what kind
-of coordination is taking place.
+sendto(-1227715616, 0xc, 3085438964, 0, {...}, 3067249832) = 0
+gettimeofday({1180973726, 981615}, NULL) = 0
+gettimeofday({1180973726, 981751}, NULL) = 0
+futex(0x8055c64, 0x5 /* FUTEX_??? */, 1) = 1
+futex(0x8055c90, FUTEX_WAKE, 1) = 0
+recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
+gettimeofday({1180973726, 982754}, NULL) = 0
+recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
+gettimeofday({1180973726, 983790}, NULL) = 0
+recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
+gettimeofday({1180973726, 984355}, NULL) = 0
+recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
 
---D
+...
 
---J2SCkAp4GZ/dPZZf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+gettimeofday({1180973757, 172338}, NULL) = 0
+recv(4, "45678901234567890123456789012345"..., 8192, 0) = 1448
+gettimeofday({1180973757, 172437}, NULL) = 0
+recv(4, "23456789012345678901234567890123"..., 8192, 0) = 1448
+gettimeofday({1180973757, 172576}, NULL) = 0
+recv(4, "01234567890123456789012345678901"..., 8192, 0) = 1632
+gettimeofday({1180973757, 172752}, NULL) = 0
+recv(4, "", 8192, 0)                    = 0
+gettimeofday({1180973757, 172797}, NULL) = 0
+gettimeofday({1180973757, 172817}, NULL) = 0
+nanosleep({0, 0}, NULL) = 0
+nanosleep({0, 0}, NULL)                 = 0
+close(4)                     = 0
+futex(0x8055d04, 0x5 /* FUTEX_??? */, 1) = 1
+futex(0x8055d30, FUTEX_WAKE, 1) = 0
+_exit(0)                                = ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGZEbaa6vRYYgWQuURAqpBAJwM2NqUXBQCu3neUEt00BxRTLipQQCgphVH
-xjNQT8K503eTyoMxam3cNrc=
-=Q3u1
------END PGP SIGNATURE-----
 
---J2SCkAp4GZ/dPZZf--
