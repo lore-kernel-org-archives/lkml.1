@@ -1,63 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbXFDQnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759185AbXFDQoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759274AbXFDQnc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758654AbXFDQnR
+	id S1759185AbXFDQoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbXFDQoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:43:17 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:60604 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758370AbXFDQnP (ORCPT
+	Mon, 4 Jun 2007 12:44:08 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:41808 "EHLO
+	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756618AbXFDQoG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:43:15 -0400
-From: Olaf Dietsche <olaf.dietsche@olafdietsche.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-References: <878xb35sje.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl>
-	<87wsykpweu.fsf@goat.bogus.local> <200706041013.49428.rjw@sisk.pl>
-Date: Mon, 04 Jun 2007 18:43:55 +0200
-Message-ID: <87hcpnpt4k.fsf@goat.bogus.local>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+	Mon, 4 Jun 2007 12:44:06 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Message-ID: <466441B8.30502@amd.com>
+Date: Mon, 04 Jun 2007 18:45:44 +0200
+From: "Markus Rechberger" <markus.rechberger@amd.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX18dfs1JFxjY6cbBif/vNQQv4lyvRBIOblGCi/Z
- lsfsJlNy43Jmcv+rLRk0dDfoJSZDrFg6RaMfBKUu9nMDbQOfVa
- N+PpbCMH8T1Y4x3OerfXA==
+To: linux-kernel@vger.kernel.org, gregkh@suse.de, cornelia.huck@de.ibm.com
+Subject: [patch] remove orphaned Email
+X-OriginalArrivalTime: 04 Jun 2007 16:43:55.0241 (UTC)
+ FILETIME=[8A4DDD90:01C7A6C7]
+X-WSS-ID: 6A7A9EC41GC4040378-01-01
+Content-Type: multipart/mixed;
+ boundary=------------020803070507060605000205
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+This is a multi-part message in MIME format.
+--------------020803070507060605000205
+Content-Type: text/plain;
+ charset=iso-8859-1;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 
-> On Sunday, 3 June 2007 23:20, Olaf Dietsche wrote:
->
->> But either way the script never reaches "shutdown -rn now". So, it
->> seems, that my laptop does a full resume every other reboot, but it
->> never returns to userspace.
->
-> I'm still suspecting that the problem is related to your graphics adapter.
+Manuel Estrada Sainz passed away on May 9th 2004, his email account got 
+deactivated. He was in charge of the firmware_class code, and still got 
+CC'ed in recent discussions about it.
 
-Maybe it's the most common problem, but why do you think so? Even with
-a black screen the kernel should return to userspace.
+Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
 
-> What graphics adapter do you have in the box?
+--------------020803070507060605000205
+Content-Type: text/x-patch;
+ name=remove_email_firmware_class.diff
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename=remove_email_firmware_class.diff
 
-0000:01:00.0 VGA compatible controller: nVidia Corporation: Unknown device 0148 (rev a2) (prog-if 00 [VGA])
-	Subsystem: QUANTA Computer Inc: Unknown device 0729
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 0x08 (32 bytes)
-	Interrupt: pin A routed to IRQ 10
-	Region 0: Memory at c4000000 (32-bit, non-prefetchable) [size=64M]
-	Region 1: Memory at d0000000 (64-bit, prefetchable) [size=128M]
-	Region 3: Memory at c1000000 (64-bit, non-prefetchable) [size=16M]
-	Expansion ROM at c2000000 [disabled] [size=128K]
-	Capabilities: [60] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [68] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
-		Address: 0000000000000000  Data: 0000
-	Capabilities: [78] #10 [0001]
+diff --git a/Documentation/firmware_class/README b/Documentation/firmware_class/README
+index e9cc8bb..d19eb19 100644
+--- a/Documentation/firmware_class/README
++++ b/Documentation/firmware_class/README
+@@ -1,7 +1,7 @@
+ 
+  request_firmware() hotplug interface:
+  ------------------------------------
+-	Copyright (C) 2003 Manuel Estrada Sainz <ranty@debian.org>
++	Copyright (C) 2003 Manuel Estrada Sainz (passed away on May 9th 2004 at a car accident) 
+ 
+  Why:
+  ---
+diff --git a/Documentation/firmware_class/firmware_sample_driver.c b/Documentation/firmware_class/firmware_sample_driver.c
+index 87feccd..3d4a877 100644
+--- a/Documentation/firmware_class/firmware_sample_driver.c
++++ b/Documentation/firmware_class/firmware_sample_driver.c
+@@ -1,7 +1,7 @@
+ /*
+  * firmware_sample_driver.c -
+  *
+- * Copyright (c) 2003 Manuel Estrada Sainz <ranty@debian.org>
++ * Copyright (c) 2003 Manuel Estrada Sainz (passed away on May 9th 2004 at a car accident)
+  *
+  * Sample code on how to use request_firmware() from drivers.
+  *
+diff --git a/Documentation/firmware_class/firmware_sample_firmware_class.c b/Documentation/firmware_class/firmware_sample_firmware_class.c
+index 9e1b0e4..678b050 100644
+--- a/Documentation/firmware_class/firmware_sample_firmware_class.c
++++ b/Documentation/firmware_class/firmware_sample_firmware_class.c
+@@ -1,7 +1,7 @@
+ /*
+  * firmware_sample_firmware_class.c -
+  *
+- * Copyright (c) 2003 Manuel Estrada Sainz <ranty@debian.org>
++ * Copyright (c) 2003 Manuel Estrada Sainz (passed away on May 9th 2004 at a car accident)
+  *
+  * NOTE: This is just a probe of concept, if you think that your driver would
+  * be well served by this mechanism please contact me first.
+@@ -19,7 +19,7 @@
+ #include <linux/firmware.h>
+ 
+ 
+-MODULE_AUTHOR("Manuel Estrada Sainz <ranty@debian.org>");
++MODULE_AUTHOR("Manuel Estrada Sainz");
+ MODULE_DESCRIPTION("Hackish sample for using firmware class directly");
+ MODULE_LICENSE("GPL");
+ 
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index 97ab5bd..672c221 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -1,7 +1,7 @@
+ /*
+  * firmware_class.c - Multi purpose firmware loading support
+  *
+- * Copyright (c) 2003 Manuel Estrada Sainz <ranty@debian.org>
++ * Copyright (c) 2003 Manuel Estrada Sainz (passed away on May 9th 2004 at a car accident)
+  *
+  * Please see Documentation/firmware_class/ for more information.
+  *
+@@ -23,7 +23,7 @@
+ 
+ #define to_dev(obj) container_of(obj, struct device, kobj)
+ 
+-MODULE_AUTHOR("Manuel Estrada Sainz <ranty@debian.org>");
++MODULE_AUTHOR("Manuel Estrada Sainz");
+ MODULE_DESCRIPTION("Multi purpose firmware loading support");
+ MODULE_LICENSE("GPL");
+ 
 
-Regards, Olaf.
+--------------020803070507060605000205--
+
+
