@@ -1,94 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbXFDPtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbXFDPuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbXFDPtu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbXFDPtn
+	id S1756272AbXFDPuW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 11:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757874AbXFDPuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:49:43 -0400
-Received: from lucidpixels.com ([75.144.35.66]:41295 "EHLO lucidpixels.com"
+	Mon, 4 Jun 2007 11:50:04 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:37851 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755070AbXFDPtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:49:43 -0400
-Date: Mon, 4 Jun 2007 11:49:41 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Ray Lee <ray-lk@madrabbit.org>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matt Keenan <tank.en.mate@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't
- the kernel realize the BIOS has problems and re-map appropriately?
-In-Reply-To: <2c0942db0706040848y1d1c2ce9p521c65117244edf1@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706041149160.18306@p34.internal.lan>
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> 
- <Pine.LNX.4.64.0706021610210.19116@p34.internal.lan>  <4662869A.9030700@gmail.com>
-  <200706040840.21593.jbarnes@virtuousgeek.org>
- <2c0942db0706040848y1d1c2ce9p521c65117244edf1@mail.gmail.com>
+	id S1757864AbXFDPuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 11:50:01 -0400
+Message-ID: <466434A1.4040905@austin.ibm.com>
+Date: Mon, 04 Jun 2007 10:49:53 -0500
+From: jschopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.03
+References: <0a25fd03117c678f17006c5fcefaaed0@pinky>
+In-Reply-To: <0a25fd03117c678f17006c5fcefaaed0@pinky>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> This version brings a host of changes to cure false positives and
+> bugs detected on patches submitted to lkml and -mm.  It also brings
+> a number of new tests in response to reviews, of particular note:
+> 
+>   - catch use of volatile
+>   - allow deprecated functions to be listed in feature-removal-schedule.txt
+>   - warn about #ifdef's in c files
 
 
-On Mon, 4 Jun 2007, Ray Lee wrote:
+I think the design philosophy of the style checker should be to err on the side of being 
+quiet.  It shouldn't report things that aren't problems.  There are plenty of valid uses 
+of #ifdefs in c files.  #ifdefs may be abused often.  If we start bothering every author 
+that uses #ifdefs with an annoying note it detracts from the usefulness of our tool.
 
-> On 6/4/07, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
->> On Sunday, June 3, 2007 2:15:06 Matt Keenan wrote:
->> > Justin Piszcz wrote:
->> > > On Sat, 2 Jun 2007, Andi Kleen wrote:
->> > >>> I feel, having a silent/transparent workaround is not a good idea.
->> > >>> With that
->> > >>
->> > >> If enough RAM is chopped off users will notice. They tend to complain
->> > >> when they miss RAM.  I don't like panic very much because for many
->> > >> users it will be a show stopper (even when they are not blessed
->> > >> with "quiet" boots like some distributions do)
->> > >>
->> > >> The message in dmesg could be also emphasized a bit with a little
->> > >> ASCII art (but no <blink> tag in there)
->> > >>
->> > >> The problem I'm more worried about is if the system will be really
->> > >> stable --- could it be that the memory controller is still
->> > >> misconfigured and cause other stability issues? (we've had such
->> > >> cases in the past). Also I'm not sure we can handle the case of
->> > >> the MTRR wrong not at the end of memory but at the hole sanely.
->> > >>
->> > >> -Andi
->> > >
->> > > So far I have been booting with mem=8832M and have run stress/loaded
->> > > the memory subsystem pretty good; what other tests should I run?
->> > >
->> > > It'd be nice if we could pose some sort of solution/warning for the
->> > > future so other people do not have to experience the same problems.
->> > >
->> > > What are the next steps?
->> >
->> > Wouldn't it be possible for the e820/MTRR set up code detect the problem
->> > and suggest a mem=xxxx that would fix the problem (while also
->> > complaining that the BIOS is broken)?
->> 
->> Yes, that should be fairly easy, though as Andi points out, if there are 
->> holes
->> in the MTRR setup, things get a little trickier (I had an earlier patch to
->> deal with this, but ended up with too many early boot issues).
->> 
->> Maybe what Venki suggested would be best:  just detect the condition and
->> panic, with a string telling the user to use mem=xxx (we can figure that 
->> out)
->> and/or upgrade their BIOS.
->
-> Ick. Systems that used to boot fine would then panic on a kernel
-> upgrade. That's rather rude for a condition that's merely an
-> optimization (using all memory), rather than one of correctness. A
-> panic seems entirely inappropriate.
->
-> Ray
->
+If we really want to complain about #ifdefs we should add a flag to the script so it isn't 
+a default.  -potential or something.  We could put all the "this often is an error" type 
+warnings under it.
 
-While I am unsure of the 'best' solution, if they boot and it does not 
-panic but takes 10 minutes to boot, people are going to seriously wonder 
-what is going on?
+The rest of the patch looks fine.
 
-Justin.
+-Joel
