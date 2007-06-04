@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbXFDO3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbXFDObU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbXFDO3J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 10:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXFDO25
+	id S1755812AbXFDObU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 10:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbXFDObJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 10:28:57 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:45401 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751774AbXFDO24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 10:28:56 -0400
-Date: Mon, 4 Jun 2007 16:28:55 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 1/2] ufd v1 - unsequential O(1) fdmap core
-Message-Id: <20070604162855.f98d1698.dada1@cosmosbay.com>
-In-Reply-To: <Pine.LNX.4.64.0706040633360.30231@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.24319.1180825145.1>
-	<46633047.1020707@cosmosbay.com>
-	<Pine.LNX.4.64.0706031536000.13247@alien.or.mcafeemobile.com>
-	<20070603230859.5000424d.akpm@linux-foundation.org>
-	<20070604080537.GA22898@elte.hu>
-	<20070604080941.GA23537@elte.hu>
-	<20070604013449.ea3acca8.akpm@linux-foundation.org>
-	<20070604122857.1399e3fc.dada1@cosmosbay.com>
-	<Pine.LNX.4.64.0706040523150.30231@alien.or.mcafeemobile.com>
-	<20070604152540.985c186a.dada1@cosmosbay.com>
-	<Pine.LNX.4.64.0706040633360.30231@alien.or.mcafeemobile.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 10:31:09 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:51776 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753519AbXFDObH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 10:31:07 -0400
+Date: Mon, 04 Jun 2007 08:31:05 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: hisax isdn card (Sedlbauer Speed Fax+) does not get an interrupt
+In-reply-to: <Pine.LNX.4.63.0706041033140.17261@er-systems.de>
+To: Thomas Voegtle <tv@lio96.de>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <46642229.6070107@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-15; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa./GDxiXMgfJlsQXnkvKu3TibPJV8@ifi.uio.no>
+ <465EDDC0.6090601@shaw.ca> <Pine.LNX.4.63.0706041033140.17261@er-systems.de>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jun 2007 06:35:16 -0700 (PDT)
-Davide Libenzi <davidel@xmailserver.org> wrote:
-
-> On Mon, 4 Jun 2007, Eric Dumazet wrote:
+Thomas Voegtle wrote:
+> Thx for your answer. Unfortunately, it didn't help us yet in finding a fix 
+> for the problem.
 > 
-> > You add conditional branches on very hot spots.
+> The first IRQs are received after the call to pci_enable_device, but 
+> before the IRQ handler itself is registered (register_irq). The IRQs seem 
+> to be triggered by the write operations to the card registers 
+> (byteout()/outb() calls around lines 676ff in sedlbauer.c); the IRQ 
+> handler is registered much later, though. The dump above suggests that the 
+> kernel relays the interrupts to the USB handler (on the same IRQ) instead 
+> - which obviously is wrong.
 > 
-> Keep BS for the ones you argue usually, and that are not able to reply.
-> You *still* two bitmaps, because allocation spaces are far apart. So the 
-> "if" will still be there.
+> In short:
+> * pci_enable_device
+> * writing to card registers -> triggering interrupts
+>   (handler not yet installed -> error)
+> * register interrupt -> fails, as it already was disabled due to the 
+>   errors
+> 
+> Again: thx for your comments. Do you have any further ideas/advice on how 
+> to get the driver running?
 
-I actually read your patches and spent time to see the pros and cons.
+Presumably whatever writes the driver is doing there are enabling the 
+card to generate interrupts - in this case the IRQ handler needs to be 
+registered before this point, and not after..
 
-If you dont need reviewers, please dont post your patches on lkml.
-
-If I am not mistaken, you added a test in fget()/fget_light(), which is a known hot point for said huge processes.
-
-fget() dont need to access the bitmap at all. Using fd_slots means less (50%) file pointers per cache line.
-
-On my machines, there is a ratio of 100/1 in cpu time for fget(),fget_light() against get_unused_fd().
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
