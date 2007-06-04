@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbXFDV3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761014AbXFDVdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761371AbXFDV3f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 17:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbXFDV32
+	id S1761014AbXFDVdg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 17:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbXFDVd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 17:29:28 -0400
-Received: from gw.goop.org ([64.81.55.164]:52563 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752055AbXFDV31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 17:29:27 -0400
-Message-ID: <4664841A.8040802@goop.org>
-Date: Mon, 04 Jun 2007 14:28:58 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] Re: [PATCH] xen: use iret directly where possible
-References: <46646662.9020707@goop.org> <200706042145.30339.ak@suse.de> <4664772A.20602@goop.org> <200706042305.05340.ak@suse.de>
-In-Reply-To: <200706042305.05340.ak@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 17:33:29 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1196 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750793AbXFDVd2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 17:33:28 -0400
+Date: Tue, 5 Jun 2007 07:33:05 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] the ASYNC_* options shouldn't be user visible
+Message-ID: <20070604213305.GA6852@gondor.apana.org.au>
+References: <0C7297FA1D2D244A9C7F6959C0BF1E5201F0351F@azsmsx413.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E5201F0351F@azsmsx413.amr.corp.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> If you stay cli you don't need that. Why is it that it has to enable 
-> interrupts?
->   
+On Mon, Jun 04, 2007 at 11:25:02AM -0700, Williams, Dan J wrote:
+> 
+> Herbert can I move async_tx under crypto since the engines I am working
+> with have support for algorithms like CRC32C and Galois Field Multiply
+> (raid6 p+q)?
 
-Bear in mind we're talking about running paravirt under Xen in ring 1.
+Sure that's fine by me.  Although as Adrian said it's probably better
+to use something other than alphabetical order :)
 
-The cli/sti instructions don't control the event mask, so they're
-effectively expensive no-ops (they trap into the hypervisor, are
-emulated as no-ops). But if you mean cli as a general term for
-"events/interrupts masked", then they can't remain masked when you
-return to usermode.   iret normally sets the current eflags IF state
-from the on-stack IF, but that's irrelevent to Xen; we need to extract
-eflags.IF from the on-stack eflags, and put that into the vcpu's event
-mask.  That's inherently non-atomic with respect to iret.
-
->> In your sequence, the event may become pending after "check again", even
->> though it won't be delivered. 
->>     
->
-> sti only takes affect one instruction after it. So if you can make 
-> it that small it would also work. But that might not help you.
-
-No, it doesn't.  sti can't be run directly in ring1, and trapping into
-Xen is exactly what this patch is trying to avoid.  Even if it did, Xen
-treats it as a no-op, and it has no effect on the event mask state. 
-Even if Xen did use it to control the event mask state, it would lose
-the 1-instruction shadow because it trapped into the hypervisor, and a
-new event may be pending as it comes out.
-
-
-    J
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
