@@ -1,38 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbXFDG7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbXFDH25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752789AbXFDG7q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 02:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXFDG7i
+	id S1752641AbXFDH25 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 03:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbXFDH2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 02:59:38 -0400
-Received: from gw.goop.org ([64.81.55.164]:38969 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbXFDG7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 02:59:37 -0400
-Message-ID: <4663B84E.2060103@goop.org>
-Date: Sun, 03 Jun 2007 23:59:26 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Al Viro <viro@ftp.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, Chen Li-jun <cljun@xiyou.edu.cn>,
-       Wang Ya-gang <lazy_linux@126.com>
-Subject: Re: [RFC] Documentation/CodingStyle: Add rules for goto labels
-References: <20070603142450.GA4230@localhost.localdomain> <20070603142939.GW4095@ftp.linux.org.uk> <20070603074552.430c3d02.rdunlap@xenotime.net> <4662DFCF.3010606@garzik.org> <20070604045857.GE2161@localhost.localdomain>
-In-Reply-To: <20070604045857.GE2161@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 03:28:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35057 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbXFDH2q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 03:28:46 -0400
+Date: Mon, 4 Jun 2007 08:28:39 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Christoph Hellwig <hch@lst.de>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] m68k: Atari SCSI driver update_timeout removal
+Message-ID: <20070604072839.GA15390@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+	Christoph Hellwig <hch@lst.de>,
+	"James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+	linux-scsi@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/m68k <linux-m68k@vger.kernel.org>
+References: <Pine.LNX.4.64.0706031250190.9351@anakin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706031250190.9351@anakin>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WANG Cong wrote:
-> I just wonder, if a goto label is nested in a while/for/if/switch block, aligning it in
-> the first column maybe a bit ugly. (I know mostly it is not in any while/for/if/switch block.)
->   
+On Sun, Jun 03, 2007 at 12:55:04PM +0200, Geert Uytterhoeven wrote:
+> From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+> 
+> Atari SCSI driver fixes: remove update_timeout kludge
 
-In general goto labels are not scoped, so there's no point in pretending
-they are.  It might make sense to indent a label deeper if you've
-actually declared it local (__label__).
+Looks good. James, can you send this on for 2.6.22 so the accidentally
+added cludge doesn't end up in any release version?
 
-    J
+> Signed-off-by: Michael Schmitz <schmitz@debian.org>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Christoph Hellwig <hch@lst.de>
+> ---
+> This removes the timeout kludge in commit
+> fb810d121bceb945c5e576356bccba11cbfad7e3 that was NAK'ed by Christoph.
+> 
+>  drivers/scsi/atari_NCR5380.c |   44 +------------------------------------------
+>  1 file changed, 2 insertions(+), 42 deletions(-)
+> 
+> --- a/drivers/scsi/atari_NCR5380.c
+> +++ b/drivers/scsi/atari_NCR5380.c
+> @@ -894,45 +894,6 @@ static int NCR5380_init(struct Scsi_Host
+>  }
+>  
+>  /*
+> - * our own old-style timeout update
+> - */
+> -/*
+> - * The strategy is to cause the timer code to call scsi_times_out()
+> - * when the soonest timeout is pending.
+> - * The arguments are used when we are queueing a new command, because
+> - * we do not want to subtract the time used from this time, but when we
+> - * set the timer, we want to take this value into account.
+> - */
+> -
+> -int atari_scsi_update_timeout(Scsi_Cmnd * SCset, int timeout)
+> -{
+> -	int rtn;
+> -
+> -	/*
+> -	 * We are using the new error handling code to actually register/deregister
+> -	 * timers for timeout.
+> -	 */
+> -
+> -	if (!timer_pending(&SCset->eh_timeout))
+> -		rtn = 0;
+> -	else
+> -		rtn = SCset->eh_timeout.expires - jiffies;
+> -
+> -	if (timeout == 0) {
+> -		del_timer(&SCset->eh_timeout);
+> -		SCset->eh_timeout.data = (unsigned long)NULL;
+> -		SCset->eh_timeout.expires = 0;
+> -	} else {
+> -		if (SCset->eh_timeout.data != (unsigned long)NULL)
+> -			del_timer(&SCset->eh_timeout);
+> -		SCset->eh_timeout.data = (unsigned long)SCset;
+> -		SCset->eh_timeout.expires = jiffies + timeout;
+> -		add_timer(&SCset->eh_timeout);
+> -	}
+> -	return rtn;
+> -}
+> -
+> -/*
+>   * Function : int NCR5380_queue_command (Scsi_Cmnd *cmd,
+>   *	void (*done)(Scsi_Cmnd *))
+>   *
+> @@ -956,7 +917,6 @@ static int NCR5380_queue_command(Scsi_Cm
+>  	Scsi_Cmnd *tmp;
+>  	int oldto;
+>  	unsigned long flags;
+> -	// extern int update_timeout(Scsi_Cmnd * SCset, int timeout);
+>  
+>  #if (NDEBUG & NDEBUG_NO_WRITE)
+>  	switch (cmd->cmnd[0]) {
+> @@ -1029,9 +989,9 @@ static int NCR5380_queue_command(Scsi_Cm
+>  	 * alter queues and touch the lock.
+>  	 */
+>  	if (!IS_A_TT()) {
+> -		oldto = atari_scsi_update_timeout(cmd, 0);
+> +		/* perhaps stop command timer here */
+>  		falcon_get_lock();
+> -		atari_scsi_update_timeout(cmd, oldto);
+> +		/* perhaps restart command timer here */
+>  	}
+>  	if (!(hostdata->issue_queue) || (cmd->cmnd[0] == REQUEST_SENSE)) {
+>  		LIST(cmd, hostdata->issue_queue);
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---end quoted text---
