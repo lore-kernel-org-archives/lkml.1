@@ -1,106 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbXFDUme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbXFDUqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756743AbXFDUme (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 16:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757517AbXFDUmR
+	id S1756898AbXFDUqW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 16:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbXFDUqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 16:42:17 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:60192 "EHLO
-	outbound3-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757468AbXFDUmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 16:42:16 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Date: Mon, 4 Jun 2007 22:41:57 +0200
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Andi Kleen" <ak@suse.de>
-cc: linux-kernel@vger.kernel.org, "Joachim Deguara" <joachim.deguara@amd.com>,
-       "Nagendra, Bhavana" <bhavana.nagendra@amd.com>
-Subject: Re: [PATCH] x86_64: remove check for CONSTANT_TSC from time.c
-Message-ID: <20070604204157.GB22013@amd.com>
-References: <20070604174926.GA22013@amd.com>
- <200706042002.41091.ak@suse.de>
-MIME-Version: 1.0
-In-Reply-To: <200706042002.41091.ak@suse.de>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 04 Jun 2007 20:41:58.0591 (UTC)
- FILETIME=[CBD81CF0:01C7A6E8]
-X-WSS-ID: 6A7AA6901GC4064069-01-01
-Content-Type: multipart/mixed;
- boundary=neYutvxvOLaeuPCA
-Content-Disposition: inline
+	Mon, 4 Jun 2007 16:46:16 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:52895 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751907AbXFDUqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 16:46:15 -0400
+Subject: Re: [PATCH -mm 0/5] LZO and swap write failure patches for -mm
+From: Richard Purdie <rpurdie@openedhand.com>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: akpm <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh@veritas.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Nitin Gupta <nitingupta910@gmail.com>
+In-Reply-To: <200706041337.51563.dhazelton@enter.net>
+References: <1180971378.6313.72.camel@localhost.localdomain>
+	 <200706041214.38017.dhazelton@enter.net>
+	 <1180975976.6313.133.camel@localhost.localdomain>
+	 <200706041337.51563.dhazelton@enter.net>
+Content-Type: text/plain
+Date: Mon, 04 Jun 2007 21:45:55 +0100
+Message-Id: <1180989955.6313.168.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-06-04 at 13:37 -0400, Daniel Hazelton wrote:
+> Yes - most of that work, IIRC, is related to the alignment issues that Herr 
+> Oberhumer noted. As it stands, the alternative does work well for a large 
+> number of the platforms that the kernel supports. With a little Kconfig magic 
+> it could be made available *only* for those platforms that it currently 
+> supports. Then people can help work on the alignment issues - possibly by 
+> providing platform conditional code.
 
---neYutvxvOLaeuPCA
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+My patch was actually written with ARM machines in mind and has been
+extremely well tested on it. A version which doesn't run on ARM is not
+acceptable. Its also ironic that "platform conditional code" is what a
+lot of that bloat you're so keen to remove is about.
 
-On Mon, Jun 04, 2007 at 08:02:40PM +0200, Andi Kleen wrote:
-> On Monday 04 June 2007 19:49, Joerg Roedel wrote:
-> > From: Joerg Roedel <joerg.roedel@amd.com>
-> >
-> > This patch removes the check for the CONSTANT_TSC cpu flag from time.c
-> > on the x86_64 architecture. At the time this flag is checked at boot the
-> > cpu init code was yet not executed and thus the check fails. At this
-> > point the check for VENDOR_AMD and cpu family 0x10 is sufficient.
-> 
-> Wrong fix. The bit just needs to be set earlier in early cpu detect. Otherwise 
-> there is a problem again with the next constant TSC AMD CPU.
-> I will do that.
-> 
-> -Andi
+> I'm not familiar with the zlib code, but it was included a long time ago - 
+> since zlib was included I'm pretty certain that if it had been proposed today 
+> it would have been NACK'd for the style violations and bloat.
 
-Ok. But I assume you are meaning something like the attached diff?
+Adrian's covered this. I also know how hard updating something like zlib
+is (I was the last person to do it).
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> You can take the time to produce a patch and spread FUD about the speed of a 
+> competing patches code but you don't have the time to work on fixing a 
+> cleaner implementation? I'll admit that actually working on fixing problems 
+> in code can take more time, but still - the time taken for those pursuits 
+> *could* have been spent actually working on fixing the problems.
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+I *have* spent some time on it.
 
---neYutvxvOLaeuPCA
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: attachment;
- filename=gh-tsc-fix-fix.patch
-Content-Transfer-Encoding: 7bit
+My speed comments were actually pretty positive. Yes, I screwed up one
+of the benchmarks (as have others proving its easily done) but I did
+admit to it. My others were fair comment and some issues were addressed
+as a result (but not all).
 
-diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
-index eb6524f..d16f7c2 100644
---- a/arch/x86_64/kernel/setup.c
-+++ b/arch/x86_64/kernel/setup.c
-@@ -806,6 +806,7 @@ void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c)
- 			c->x86_model += ((tfms >> 16) & 0xF) << 4;
- 		if (c->x86_capability[0] & (1<<19)) 
- 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
-+		c->extended_cpuid_level = cpuid_eax(0x80000000);
- 	} else {
- 		/* Have CPUID level 0 only - unheard of */
- 		c->x86 = 4;
-@@ -814,6 +815,12 @@ void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c)
- #ifdef CONFIG_SMP
- 	c->phys_proc_id = (cpuid_ebx(1) >> 24) & 0xff;
- #endif
-+
-+	/* power flags are 8000_0007 edx. Bit 8 is constant TSC */
-+	if ((c->x86_vendor == X86_VENDOR_AMD) &&
-+	    (c->extended_cpuid_level >= 0x80000007) &&
-+	    (cpuid_edx(0x80000007) & (1<<8)))
-+		set_bit(X86_FEATURE_CONSTANT_TSC, &c->x86_capability);
- }
- 
- /*
+I'm going to stop here. I don't agree with the rest of your email and
+you've a distorted view of whats been said.
 
---neYutvxvOLaeuPCA--
+Regards,
 
+Richard
 
