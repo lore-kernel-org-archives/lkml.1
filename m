@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761832AbXFDT0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762158AbXFDT0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761832AbXFDT0g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 15:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759132AbXFDT00
+	id S1762158AbXFDT0t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 15:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761396AbXFDT0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 15:26:26 -0400
-Received: from www.osadl.org ([213.239.205.134]:55554 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758829AbXFDT0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 15:26:24 -0400
-Subject: Re: iperf: performance regression (was b44 driver problem?)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Ulrich Drepper <drepper@gmail.com>,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       Michael Buesch <mb@bu3sch.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1180983647.4404.38.camel@chaos>
-References: <20070525172431.60affaca@freepuppy>
-	 <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
-	 <200706031826.06891.maxi@daemonizer.de> <1180939188.4404.5.camel@chaos>
-	 <20070604090918.42386fbb@freepuppy> <1180974958.4404.24.camel@chaos>
-	 <20070604095924.651d91c8@freepuppy> <1180978368.4404.29.camel@chaos>
-	 <20070604105158.31ede1f5@freepuppy>  <1180983647.4404.38.camel@chaos>
-Content-Type: text/plain
-Date: Mon, 04 Jun 2007 21:26:18 +0200
-Message-Id: <1180985178.4404.48.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Mon, 4 Jun 2007 15:26:33 -0400
+Received: from mail-dub.bigfish.com ([213.199.154.10]:14386 "EHLO
+	mail49-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757177AbXFDT0c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 15:26:32 -0400
+X-Greylist: delayed 1082 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jun 2007 15:26:32 EDT
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <46646389.7090101@am.sony.com>
+Date: Mon, 04 Jun 2007 12:10:01 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: linux kernel <linux-kernel@vger.kernel.org>
+Subject: Problem with http URL for stable git tree?
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Jun 2007 19:08:25.0972 (UTC) FILETIME=[BA766B40:01C7A6DB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-04 at 21:00 +0200, Thomas Gleixner wrote:
-> > 
-> > Yes, the following patch makes iperf work better than ever.
-> > But are other broken applications going to have same problem.
-> > Sounds like the old "who runs first" fork() problems.
-> 
-> Not really. The fork() "who runs first" problem is nowhere specified.
-> 
-> usleep(0) is well defined:
-> 
-> .... If the value of useconds is 0, then the call has no effect.
-> 
-> So the call into the kernel has been wrong for quite a time.
-> 
+Greg,
 
-Just for clarification: I'm not saying that we should break the (broken)
-user space ABI. I'm going to work out a patch which prints out a warning
-(limited number per boot) and emulating the old behavior by a call to
-yield() along with an entry into (mis)feature-removal.txt.
+I'm having problems cloning the stable git tree for 2.6.21.
+Here's what I get:
 
-	tglx
+$ git clone http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.21.y.git stable-2.6.21.y
+Cannot get remote repository information.
+Perhaps git-update-server-info needs to be run there?
 
+------
+I believe I cloned this tree a few weeks ago successfully.
+Did something break?
+
+Thanks,
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
