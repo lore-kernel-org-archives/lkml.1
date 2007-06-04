@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbXFDJgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbXFDJh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbXFDJgA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 05:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbXFDJfr
+	id S1753941AbXFDJh3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 05:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXFDJhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 05:35:47 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:34306 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753733AbXFDJfq (ORCPT
+	Mon, 4 Jun 2007 05:37:23 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4207 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbXFDJhW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 05:35:46 -0400
-Date: Mon, 4 Jun 2007 11:35:18 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: RTC_DRV_CMOS can break userspace interface
-Message-ID: <20070604093518.GA29240@dose.home.local>
-Mail-Followup-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <8pwhX-46n-3@gated-at.bofh.it> <8pCQo-5QL-7@gated-at.bofh.it> <87abvogbdp.fsf@buer.dfakt.de> <200705281406.57396.david-b@pacbell.net> <20070531043229.GA30888@dose.home.local> <20070531102603.GA16719@srcf.ucam.org> <20070601074606.GA6060@dose.home.local> <20070601125422.GA12204@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070601125422.GA12204@srcf.ucam.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 4 Jun 2007 05:37:22 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] update feature-removal-schedule.txt to include deprecated functions
+References: <0a25fd03117c678f17006c5fcefaaed0@pinky>
+InReply-To: <0a25fd03117c678f17006c5fcefaaed0@pinky>
+Message-ID: <9dc34d13d99565d2aa2f56c5d112e788@pinky>
+Date: Mon, 04 Jun 2007 10:55:56 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 01, 2007 at 13:54:23 +0100, Matthew Garrett wrote:
-> On Fri, Jun 01, 2007 at 09:46:06AM +0200, Tino Keitel wrote:
-> > Yes, you are right. I think this issue should be covered by Kconfig.
-> > 
-> > However:
-> > 
-> > $ cat wakealarm 
-> > cat: wakealarm: Input/output error
-> > 
-> > It worked with /proc/acpi/alarm before.
-> 
-> Can you do 
-> 
-> for i in /sys/bus/pnp/devices/*; do if [ "$(cat $i/id)" = PNP0b00 ]; 
-> then cat $i/resources; echo options; cat $i/options; fi; done
 
-Here it is:
+Now that deprecated functions are detected out of
+Documentation/feature-removal-schedule.txt update this to include
+kernel_thread.
 
-state = active
-io 0x70-0x77
-options
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
 
-Regards,
-Tino
+	This was missed from the update to checkpatch.pl version
+	0.03 patch, and probabally should be folded into there.
+---
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index e88baca..bc366cb 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -87,6 +87,7 @@ Who:	Mauro Carvalho Chehab <mchehab@brturbo.com.br>
+ What:	remove EXPORT_SYMBOL(kernel_thread)
+ When:	August 2006
+ Files:	arch/*/kernel/*_ksyms.c
++Funcs:	kernel_thread
+ Why:	kernel_thread is a low-level implementation detail.  Drivers should
+         use the <linux/kthread.h> API instead which shields them from
+ 	implementation details and provides a higherlevel interface that
