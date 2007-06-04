@@ -1,49 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbXFDNNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbXFDNNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbXFDNNU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 09:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbXFDNNF
+	id S1755175AbXFDNNi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 09:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXFDNN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 09:13:05 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:33540 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754233AbXFDNNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 09:13:01 -0400
-Date: Mon, 4 Jun 2007 15:12:57 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Pavel Machek <pavel@ucw.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
-In-Reply-To: <20070604130903.GC1971@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0706041511010.29896@twin.jikos.cz>
-References: <20070604112426.GA2707@elf.ucw.cz> <Pine.LNX.4.64.0706041434040.29896@twin.jikos.cz>
- <20070604130903.GC1971@elf.ucw.cz>
+	Mon, 4 Jun 2007 09:13:28 -0400
+Received: from h155.mvista.com ([63.81.120.155]:8499 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752427AbXFDNN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 09:13:26 -0400
+Message-ID: <46641050.1030901@ru.mvista.com>
+Date: Mon, 04 Jun 2007 17:14:56 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Korb <ml@akana.de>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
+References: <20601315171560711667@wsc.cz> <46640ABA.7010308@ru.mvista.com> <46640C30.9050808@gmail.com>
+In-Reply-To: <46640C30.9050808@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jun 2007, Pavel Machek wrote:
+Hello.
 
-> CONFIG_BLINK=y
-> OOps. WTF is that?
-> 
-> config BLINK
-> 	tristate "Keyboard blink driver"
-> 	help
-> 	  Driver that when loaded will blink the keyboard LEDs
-> continuously.
-> 	  This is useful for debugging and for kernels that cannot
-> necessarily
-> 	  output something to the screen like kexec kernels to give
-> the user
-> 	  a visual indication that the kernel is doing something.
-> ..does it need "default n"? Why does it make keys stuck sometimes?
+Jiri Slaby wrote:
 
-Are you sure that it's this dummy blink driver that makes the kernel 
-stuck? I can't see how it could be causing any hogs - see commit f038f9.
+>>>diff --git a/drivers/ide/pci/generic.c b/drivers/ide/pci/generic.c
+>>>index f2c5a14..0d51a11 100644
+>>>--- a/drivers/ide/pci/generic.c
+>>>+++ b/drivers/ide/pci/generic.c
+>>>@@ -198,32 +198,41 @@ static ide_pci_device_t generic_chipsets[]
+>>>__devinitdata = {
+>>> static int __devinit generic_init_one(struct pci_dev *dev, const
+>>>struct pci_device_id *id)
+>>> {
+>>>     ide_pci_device_t *d = &generic_chipsets[id->driver_data];
+>>>-    u16 command;
+>>>     int ret = -ENODEV;
+>>> 
+>>>     /* Don't use the generic entry unless instructed to do so */
+>>>     if (id->driver_data == 0 && ide_generic_all == 0)
+>>>             goto out;
+>>> 
+>>>-    if (dev->vendor == PCI_VENDOR_ID_UMC &&
+>>>-        dev->device == PCI_DEVICE_ID_UMC_UM8886A &&
+>>>-        (!(PCI_FUNC(dev->devfn) & 1)))
+>>>-        goto out; /* UM8886A/BF pair */
+>>>-
+>>>-    if (dev->vendor == PCI_VENDOR_ID_OPTI &&
+>>>-        dev->device == PCI_DEVICE_ID_OPTI_82C558 &&
+>>>-        (!(PCI_FUNC(dev->devfn) & 1)))
+>>>-        goto out;
+>>>-
+>>>-    if (dev->vendor == PCI_VENDOR_ID_JMICRON) {
+>>>-        if (dev->device != PCI_DEVICE_ID_JMICRON_JMB368 &&
+>>>PCI_FUNC(dev->devfn) != 1)
+>>>+    switch (dev->vendor) {
+>>>+    case PCI_VENDOR_ID_UMC:
+>>>+        if (dev->device == PCI_DEVICE_ID_UMC_UM8886A &&
+>>>+                !(PCI_FUNC(dev->devfn) & 1))
+>>>+            goto out; /* UM8886A/BF pair */
+>>>+        break;
+>>>+    case PCI_VENDOR_ID_OPTI:
+>>>+        if (dev->device == PCI_DEVICE_ID_OPTI_82C558 &&
+>>>+                !(PCI_FUNC(dev->devfn) & 1))
+>>>+            goto out;
+>>>+        break;
+>>>+    case PCI_VENDOR_ID_JMICRON:
+>>>+        if (dev->device != PCI_DEVICE_ID_JMICRON_JMB368 &&
+>>>+                PCI_FUNC(dev->devfn) != 1)
+>>>+            goto out;
+>>>+        break;
+>>>+    case PCI_VENDOR_ID_NS:
+>>>+        if (dev->device == PCI_DEVICE_ID_NS_87410 &&
+>>>+                (dev->class >> 8) != PCI_CLASS_STORAGE_IDE)
+>>>             goto out;
+>>>+        break;
+>>>     }
 
-Anyway, added Andi to CC.
+>>  Could you intend the if() conditions carried to another line the way
+>>they were intended before?
 
--- 
-Jiri Kosina
+> I could, if you tell me the reason.
+
+    Sorry -- I thought it was a part of kernel style, but it appeared to be my 
+aesthetical preference only. :-)
+
+> regards,
+
+MBR, Sergei
