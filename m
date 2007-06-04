@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbXFDORn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbXFDOR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755415AbXFDORn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 10:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbXFDORg
+	id S1756204AbXFDOR6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 10:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbXFDORu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 10:17:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43576 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751736AbXFDORf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 10:17:35 -0400
-Date: Mon, 4 Jun 2007 16:17:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: James Morris <jmorris@namei.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       James Carter <jwcart2@tycho.nsa.gov>, Paul Moore <paul.moore@hp.com>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [bug] very high non-preempt latency in
-	context_struct_compute_av()
-Message-ID: <20070604141718.GA29674@elte.hu>
-References: <20070604112745.GA26350@elte.hu> <Line.LNX.4.64.0706040924040.11109@d.namei>
+	Mon, 4 Jun 2007 10:17:50 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:34360 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754665AbXFDORt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 10:17:49 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Line.LNX.4.64.0706040924040.11109@d.namei>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+Message-ID: <18020.7945.364135.889997@stoffel.org>
+Date: Mon, 4 Jun 2007 10:17:45 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: "Aaron Wiebe" <epiphani@gmail.com>
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: slow open() calls and o_nonblock
+In-Reply-To: <e7ca40f70706040704w450dd609g46b6e7a3689ff11@mail.gmail.com>
+References: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
+	<20070604144918.42354235@the-village.bc.nu>
+	<e7ca40f70706040704w450dd609g46b6e7a3689ff11@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>>>> "Aaron" == Aaron Wiebe <epiphani@gmail.com> writes:
 
-* James Morris <jmorris@namei.org> wrote:
+Aaron> On 6/4/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> 
+>> > Now, I'm a userspace guy so I can be pretty dense, but shouldn't a
+>> > call with a nonblocking flag return EAGAIN if its going to take
+>> > anywhere near 415ms?
+>> 
+>> Violation of causality. We don't know it will block for 415ms until 415ms
+>> have elapsed.
 
-> > the latency is caused by a _very_ long loop in the SELinux code:
-> > 
-> >     sshd-4828  0.N.. 465894us : avtab_search_node (context_struct_compute_av)
-> 
-> What do the 0DNs fields mean and what did you use to create this 
-> trace?
+Aaron> Understood - but what I'm getting at is more the fact that
+Aaron> there really doesn't appear to be any real implementation of
+Aaron> nonblocking open().  On the socket side of the fence, I would
+Aaron> consider a regular file open() to be equivalent to a connect()
+Aaron> call - the difference obviously being that we already have a
+Aaron> handle for the socket.
 
-i used the latency tracer from -rt. Here's the meaning of the fields:
+Aaron> The end result, however, is roughly the same.  We have a file
+Aaron> descriptor with the endpoint established.  In the socket world,
+Aaron> we assume that a nonblocking request will always return
+Aaron> immediately and the application is expected to come back around
+Aaron> and see if the request has completed.  Regular files have no
+Aaron> equivalent.
 
-                  _------=> CPU#
-                 / _-----=> irqs-off
-                | / _----=> need-resched 
-                || / _---=> hardirq/softirq
-                ||| / _--=> preempt-depth
-                |||| /
-                |||||     delay
-    cmd     pid ||||| time  |   caller
-       \   /    |||||   \   |   /
- trace-it-4751  0D...    0us : __next_cpu (user_trace_start)
+So how many files are in the directory where you're seeing the delays?
+And what's the average size of the files in there?  
 
-it's very easy to interpret: it traces all the function calls the kernel 
-executes, and puts the symbolic function name (and its parent function) 
-into the trace, time ordered. So it's a proper execution trace. Normally 
-you can ignore the 'DN' type of flags - what matters in this case is the 
-observed 130 msecs latency and the functions that were called while that 
-latency happened.
-
-	Ingo
+John
