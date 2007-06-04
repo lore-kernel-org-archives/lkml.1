@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbXFDPMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbXFDPM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbXFDPMR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbXFDPMF
+	id S1757475AbXFDPM3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 11:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756748AbXFDPMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:12:05 -0400
-Received: from allen.werkleitz.de ([80.190.251.108]:57301 "EHLO
-	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755306AbXFDPMD (ORCPT
+	Mon, 4 Jun 2007 11:12:08 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:37711 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755533AbXFDPMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:12:03 -0400
-Date: Mon, 4 Jun 2007 17:11:54 +0200
-From: Johannes Stezenbach <js@linuxtv.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andi Kleen <ak@suse.de>,
-       Jiri Kosina <jikos@jikos.cz>,
-       kernel list <linux-kernel@vger.kernel.org>
-Message-ID: <20070604151154.GA25493@linuxtv.org>
-References: <20070604112426.GA2707@elf.ucw.cz> <20070604130903.GC1971@elf.ucw.cz> <Pine.LNX.4.64.0706041511010.29896@twin.jikos.cz> <200706041543.49071.ak@suse.de> <20070604135427.GA19466@elf.ucw.cz> <d120d5000706040702q3b5251e8oc5e9f3c198f060bd@mail.gmail.com> <20070604141345.GB2059@elf.ucw.cz>
+	Mon, 4 Jun 2007 11:12:07 -0400
+Message-ID: <46642B0C.6070003@gmail.com>
+Date: Mon, 04 Jun 2007 17:09:00 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070604141345.GB2059@elf.ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 84.190.135.130
-Subject: Re: thinkpad testers wanted (was Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?)
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
+To: Jens Axboe <axboe@suse.de>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Q] Bio traversal trouble?
+References: <4663DE68.5030200@gmail.com> <46642AB3.1000907@gmail.com>
+In-Reply-To: <46642AB3.1000907@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007, Pavel Machek wrote:
+On 06/04/2007 05:07 PM, Rene Herman wrote:
+
+>> Call Trace:
+>>  [<c486504d>] __mitsumi_get_frame+0xc/0x16 [mitsumi]
+>>  [<c4865ab7>] mitsumi_get_frame+0x120/0x134 [mitsumi]
+>>  [<c1015f7b>] lock_timer_base+0x15/0x2f
+>>  [<c10a0531>] cfq_set_request+0x0/0x144
 > 
-> > >> Hmm, in theory it could be triggering bugs in some buggy keyboard
-> > >> controller. But then a
-> > >>
-> > >> while true ; do setleds +caps +numlock ; sleep 1 ; setleds -caps -numlock ; sleep 1 ; done
-> > >>
-> > >> should trigger it too.
-> > >
-> > >...and it does.
-> > >
-> > >pavel@amd:~$ while true; do setleds +num; setleds -num; done
-> > >Hm,m so thiis  iis  a teest of fkeyboarad behaviour  under lloadd.
-> > >
-> > >pavel@amd:~$
-> > >
-> > >...but I'm not quite sure it is a buggy keyboard. It happens _way_ too
-> > >often. Launch the line above and try to do some typing...
-> > 
-> > This used to work fine on my box last time I tried it (the switch
-> > itself is offloaded to a keventd and shoud not get in the way) but
-> > then they push all kind of ACPI/SMM crap together with KBC so who
-> > knows... I should try it again when I get home.
-> 
-> Hmm, this needs to be ran from console (not X). Can someone with
-> thinkpad try this?
+> Perhaps interesting (and perhaps not) -- I've been unable to reproduce 
+> the OOPS after rebooting with elevator=as.
 
-I see the same thing with a 2.6.21 kernel on a T42p.
+Kernel is vanilla 2.6.21.3.
 
+Rene.
 
-HTH,
-Johannes
