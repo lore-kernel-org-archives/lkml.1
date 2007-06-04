@@ -1,98 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbXFDIOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbXFDIQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494AbXFDIOm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 04:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbXFDIOf
+	id S1753510AbXFDIQq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 04:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbXFDIQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 04:14:35 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:56517 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752075AbXFDIOf (ORCPT
+	Mon, 4 Jun 2007 04:16:40 -0400
+Received: from smtp-101-monday.nerim.net ([62.4.16.101]:56182 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752300AbXFDIQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 04:14:35 -0400
-Subject: Re: A kexec approach to hibernation
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: vgoyal@in.ibm.com, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <200706041005.42092.rjw@sisk.pl>
-References: <878xb3l888.fsf@jbms.ath.cx> <20070604044041.GB10206@in.ibm.com>
-	 <1180934540.1169.31.camel@nigel.suspend2.net>
-	 <200706041005.42092.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-W99FbfwHIh7h3Sf4yFA/"
-Date: Mon, 04 Jun 2007 18:14:34 +1000
-Message-Id: <1180944874.27018.2.camel@nigel.suspend2.net>
+	Mon, 4 Jun 2007 04:16:39 -0400
+Date: Mon, 4 Jun 2007 10:15:35 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org
+Subject: Re: [-mm patch] drivers/i2c/chips/ds1682.c: make code static
+Message-ID: <20070604101535.3913bf3b@hyperion.delvare>
+In-Reply-To: <20070603205417.GP5500@stusta.de>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+	<20070603205417.GP5500@stusta.de>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Adrian,
 
---=-W99FbfwHIh7h3Sf4yFA/
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Sun, 3 Jun 2007 22:54:17 +0200, Adrian Bunk wrote:
+> This patch makes some needlessly global code static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
+> 
+>  drivers/i2c/chips/ds1682.c |   12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
+> --- linux-2.6.22-rc3-mm1/drivers/i2c/chips/ds1682.c.old	2007-06-03 22:18:53.000000000 +0200
+> +++ linux-2.6.22-rc3-mm1/drivers/i2c/chips/ds1682.c	2007-06-03 22:21:07.000000000 +0200
+> @@ -121,12 +121,12 @@
+>  /*
+>   * Simple register attributes
+>   */
+> -SENSOR_DEVICE_ATTR_2(elapsed_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
+> -		     4, DS1682_REG_ELAPSED);
+> -SENSOR_DEVICE_ATTR_2(alarm_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
+> -		     4, DS1682_REG_ALARM);
+> -SENSOR_DEVICE_ATTR_2(event_count, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
+> -		     2, DS1682_REG_EVT_CNTR);
+> +static SENSOR_DEVICE_ATTR_2(elapsed_time, S_IRUGO | S_IWUSR, ds1682_show,
+> +			    ds1682_store, 4, DS1682_REG_ELAPSED);
+> +static SENSOR_DEVICE_ATTR_2(alarm_time, S_IRUGO | S_IWUSR, ds1682_show,
+> +			    ds1682_store, 4, DS1682_REG_ALARM);
+> +static SENSOR_DEVICE_ATTR_2(event_count, S_IRUGO | S_IWUSR, ds1682_show,
+> +			    ds1682_store, 2, DS1682_REG_EVT_CNTR);
+>  
+>  static const struct attribute_group ds1682_group = {
+>  	.attrs = (struct attribute *[]) {
 
-Hi again.
+Good catch. I've folded this fix into i2c-ds1628-new-driver.patch,
+thanks for reporting.
 
-On Mon, 2007-06-04 at 10:05 +0200, Rafael J. Wysocki wrote:
-> On Monday, 4 June 2007 07:22, Nigel Cunningham wrote:
-> > Hi.
-> >=20
-> > I can see that the idea of writing a kernel image from using another
-> > kernel sounds nice and clean initially, but the more we get into the
-> > details (yes, I am listening, even though I said nothing before now),
-> > the more it's sounding like the cure is worse than the disease.
-> >=20
-> > To get rid of process freezing, we're talking about:
-> > * making hibernation depend on depriving the user of 32 or 64M of
-> > otherwise perfectly usable memory (thereby making hibernation on
-> > machines with less memory impossible)
-> > * requiring them to set up kexec or kdump (I don't understand the
-> > difference, sorry) or some new variation
-> > * adding interfaces to tell kexec/dump/whatever what pages need to be
-> > saved and reloaded
-> > * adding convolutions in which at resume time we boot one kernel, switc=
-h
-> > to another kernel to do the loading and then switch back again to the
-> > resumed kernel (assuming I understand what you're suggesting).
-> >=20
-> > It all sounds terribly complicated and confusing to me, and that's
-> > before I even begin to think about how this second kernel could possibl=
-y
-> > write the image to an encrypted device or LVM or such like that the
-> > first kernel knows about and might use now.
-> >=20
-> > Can't we just get the freezer right and be done with it?
->=20
-> My feelings about this are pretty much the same. :-)
->=20
-> At least, there still is room for improvements within the current approac=
-h,
-> so first I'd like to improve it as much as reasonably possible and then t=
-o
-> think of alternatives, if need be.
-
-Agreed. I'm not for a moment denying that the current freezer could be
-better, but biffing it out the window just doesn't seem to be the
-appropriate solution at the moment.
-
-Regards,
-
-Nigel
-
---=-W99FbfwHIh7h3Sf4yFA/
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGY8nqN0y+n1M3mo0RAnPyAJ0a3eFhAsx2aMYfXMHhU6ABFIcz2ACfcuRn
-hgFttmxTT74u7LOShvUnlW0=
-=cVu1
------END PGP SIGNATURE-----
-
---=-W99FbfwHIh7h3Sf4yFA/--
-
+-- 
+Jean Delvare
