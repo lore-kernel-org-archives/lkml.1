@@ -1,43 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbXFDKri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbXFDKxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbXFDKri (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 06:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXFDKrc
+	id S1753536AbXFDKxN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 06:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbXFDKw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 06:47:32 -0400
-Received: from snowcat.de ([89.31.32.98]:2686 "EHLO snowcat.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752294AbXFDKrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 06:47:31 -0400
-X-Greylist: delayed 1701 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jun 2007 06:47:31 EDT
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: stallion driver dmesg notice
-Organization: Disorganized
-From: Ingo Korb <usenet@mail.snowcat.de>
-In-Reply-To: <21118142571565213847@wsc.cz> (Jiri Slaby's message of "Mon,  4
- Jun 2007 10:44:17 +0200 (CEST)")
-References: <46633BC8.3838.43FB8257@ml.akana.de> <304615082222625376@wsc.cz>
-	<304615082222625376@wsc.cz> <21118142571565213847@wsc.cz>
-Date: Mon, 04 Jun 2007 12:19:05 +0200
-Message-ID: <uvee458fa.fsf@dragon.akana.de>
-User-Agent: Gnus/5.1002 (Gnus v5.10.2) Emacs/21.3 (windows-nt)
+	Mon, 4 Jun 2007 06:52:59 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51952 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752293AbXFDKw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 06:52:58 -0400
+Date: Mon, 4 Jun 2007 12:52:51 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ed Sweetman <safemode2@comcast.net>
+Cc: Daniel Drake <dsd@gentoo.org>, davej@redhat.com, duaneg@dghda.com,
+       prakash@punnoor.de, jhoblitt@ifa.hawaii.edu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powernow-k8: depend on acpi-processor for SMP systems
+Message-ID: <20070604105251.GB4363@elf.ucw.cz>
+References: <20070516235050.9B4237B409F@zog.reactivated.net> <20070517090227.GB3975@ucw.cz> <464C2D56.6030402@comcast.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Hashcash: 1:21:070604:linux-kernel@vger.kernel.org::NKGRYbY1b/TT0F3x:000000000
-	00000000000000000000000069Wx
-X-Hashcash: 1:21:070604:jirislaby@gmail.com::w5ess/liW58h3GRT:000000000000000000
-	0000000000000000000000004tXx
+Content-Disposition: inline
+In-Reply-To: <464C2D56.6030402@comcast.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
+On Thu 2007-05-17 06:24:22, Ed Sweetman wrote:
+> Pavel Machek wrote:
+> >Hi!
+> >
+> >  
+> >>powernow-k8 uses PSB BIOS tables to read frequency info on UP systems, but
+> >>on SMP it requires the acpi-processor driver. Kconfig should be updated
+> >>accordingly to avoid the issues that users are running into.
+> >>
+> >>http://bugzilla.kernel.org/show_bug.cgi?id=8075
+> >>https://bugs.gentoo.org/show_bug.cgi?id=178585
+> >>
+> >>Signed-off-by: Daniel Drake <dsd@gentoo.org>
+> >>
+> >>Index: linux/arch/i386/kernel/cpu/cpufreq/Kconfig
+> >>===================================================================
+> >>--- linux.orig/arch/i386/kernel/cpu/cpufreq/Kconfig
+> >>+++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig
+> >>@@ -81,6 +81,7 @@ config X86_POWERNOW_K7_ACPI
+> >> config X86_POWERNOW_K8
+> >> 	tristate "AMD Opteron/Athlon64 PowerNow!"
+> >> 	select CPU_FREQ_TABLE
+> >>+	select ACPI_PROCESSOR if SMP
+> >> 	depends on EXPERIMENTAL
+> >> 	help
+> >> 	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 
+> >> 	  processors.
+> >>    
+> >
+> >It is still possible to run SMP kernel on UP machine -- so this sounds
+> >wrong.
+> 
+> It's possible to run a kernel with drivers for hardware you dont have.  
+> But not having the dependencies correct for those drivers for that 
+> hardware you dont have just because it's possible you can run a kernel 
+> with those drivers without that hardware isn't correct. Got it?
 
-> Okay, tty alloc after pci init, attached patch should fix it. Could you
-> retest?
+Breaking working configs is not fine, got it? We are having the thing
+called "stable release" here. Feel free to fix code to decide during
+runtime.
 
-Loads find and seems to work with basic tests (and no character loss,
-yay!). I'll try 8-link bonded ppp when I've set up a second box.
+									Pavel
 
--ik
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
