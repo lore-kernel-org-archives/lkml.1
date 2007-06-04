@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbXFDFMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbXFDFNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752647AbXFDFMM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 01:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXFDFL7
+	id S1752921AbXFDFNP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 01:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbXFDFNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 01:11:59 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:51511 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750792AbXFDFL6 (ORCPT
+	Mon, 4 Jun 2007 01:13:01 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:20941 "EHLO
+	asav07.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751538AbXFDFNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 01:11:58 -0400
-Date: Sun, 3 Jun 2007 22:11:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 2/2] ufd v1 - use unsequential O(1) fdmap
-In-Reply-To: <Pine.LNX.4.64.0706031311490.13247@alien.or.mcafeemobile.com>
-Message-ID: <alpine.LFD.0.98.0706032210040.23741@woody.linux-foundation.org>
-References: <send-serie.davidel@xmailserver.org.24319.1180825146.2>
- <4663067C.9050002@redhat.com> <Pine.LNX.4.64.0706031127220.13247@alien.or.mcafeemobile.com>
- <466319DB.80800@redhat.com>
- <Pine.LNX.4.64.0706031311490.13247@alien.or.mcafeemobile.com>
+	Mon, 4 Jun 2007 01:13:00 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvUoAPw7Y0ZKhRO4UGdsb2JhbACHM4g1AQEbDQYRAQ
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Input updates for 2.6.22-rc3
+Date: Mon, 4 Jun 2007 01:12:52 -0400
+User-Agent: KMail/1.9.3
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706040112.52821.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
+Please consider pulling from:
 
-On Sun, 3 Jun 2007, Davide Libenzi wrote:
-> 
-> Agreed, a new syscall looks less messy. I'll make sys_dup2() to allow 
-> installing in the non-sequential area, only if there's an fd already 
-> allocated. F_DUPFD will remain unchanged (that is, not allow 
-> non-sequential fds allocations).
+        git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-I actually think that a new system call is _hugely_ messy. It means that 
-anybody who wants to use a new feature needs to have a new glibc. Not 
-nice, not nice at all. I'd much rather see a totally transparent extension 
-that doesn't require any new user space what-so-ever to be used...
+or
+        master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-		Linus
+to receive updates for input subsystem.
+
+Changelog:
+----------
+
+Dmitry Torokhov (3):
+      Input: db9 - do not ignore dev2 module parameter
+      Input: ucb1x00 - do not access input_dev->private directly
+      Input: reduce raciness when input handlers disconnect
+
+Uwe Bugla (1):
+      Input: logips2pp - fix typo in Kconfig
+
+Diffstat:
+---------
+
+ drivers/input/evdev.c        |    2 +-
+ drivers/input/joydev.c       |    2 +-
+ drivers/input/joystick/db9.c |    2 +-
+ drivers/input/mouse/Kconfig  |    2 +-
+ drivers/input/mousedev.c     |    2 +-
+ drivers/input/tsdev.c        |    2 +-
+ drivers/mfd/ucb1x00-ts.c     |    7 ++++---
+ 7 files changed, 10 insertions(+), 9 deletions(-)
+
+-- 
+Dmitry
