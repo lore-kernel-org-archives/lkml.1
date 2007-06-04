@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbXFDH7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbXFDIGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbXFDH7v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 03:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbXFDH7n
+	id S1753294AbXFDIGG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 04:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbXFDIFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 03:59:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37726 "EHLO ogre.sisk.pl"
+	Mon, 4 Jun 2007 04:05:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53470 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752282AbXFDH7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 03:59:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
-Subject: Re: A kexec approach to hibernation
-Date: Mon, 4 Jun 2007 10:05:41 +0200
-User-Agent: KMail/1.9.5
-Cc: vgoyal@in.ibm.com, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <878xb3l888.fsf@jbms.ath.cx> <20070604044041.GB10206@in.ibm.com> <1180934540.1169.31.camel@nigel.suspend2.net>
-In-Reply-To: <1180934540.1169.31.camel@nigel.suspend2.net>
+	id S1752253AbXFDIFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 04:05:54 -0400
+Date: Mon, 4 Jun 2007 10:05:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch 1/2] ufd v1 - unsequential O(1) fdmap core
+Message-ID: <20070604080537.GA22898@elte.hu>
+References: <send-serie.davidel@xmailserver.org.24319.1180825145.1> <46633047.1020707@cosmosbay.com> <Pine.LNX.4.64.0706031536000.13247@alien.or.mcafeemobile.com> <20070603230859.5000424d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706041005.42092.rjw@sisk.pl>
+In-Reply-To: <20070603230859.5000424d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Monday, 4 June 2007 07:22, Nigel Cunningham wrote:
-> Hi.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> I must say that it's not really clear to me why this fdmap thing was 
+> created.  Exactly what problem is it solving, and what properties is 
+> it designed to have?
 > 
-> I can see that the idea of writing a kernel image from using another
-> kernel sounds nice and clean initially, but the more we get into the
-> details (yes, I am listening, even though I said nothing before now),
-> the more it's sounding like the cure is worse than the disease.
+> Could not a (prehaps suitably modified) IDR tree have adequately 
+> provided those properties?
 > 
-> To get rid of process freezing, we're talking about:
-> * making hibernation depend on depriving the user of 32 or 64M of
-> otherwise perfectly usable memory (thereby making hibernation on
-> machines with less memory impossible)
-> * requiring them to set up kexec or kdump (I don't understand the
-> difference, sorry) or some new variation
-> * adding interfaces to tell kexec/dump/whatever what pages need to be
-> saved and reloaded
-> * adding convolutions in which at resume time we boot one kernel, switch
-> to another kernel to do the loading and then switch back again to the
-> resumed kernel (assuming I understand what you're suggesting).
-> 
-> It all sounds terribly complicated and confusing to me, and that's
-> before I even begin to think about how this second kernel could possibly
-> write the image to an encrypted device or LVM or such like that the
-> first kernel knows about and might use now.
-> 
-> Can't we just get the freezer right and be done with it?
+> I'm sure it's good stuff, but the patches were presented as if we all 
+> know what they're for.  But I don't.  Maybe I was asleep at the time.
 
-My feelings about this are pretty much the same. :-)
+i think this sums it up:
 
-At least, there still is room for improvements within the current approach,
-so first I'd like to improve it as much as reasonably possible and then to
-think of alternatives, if need be.
+ http://www.uwsg.iu.edu/hypermail/linux/kernel/0705.3/2490.html
 
-Greetings,
-Rafael
+and some more, with a benchmark as well:
 
+ http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-05/msg13685.html
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+( blame Google for picking up two different lkml archives for the two
+  searches i did :-)
+
+	Ingo
