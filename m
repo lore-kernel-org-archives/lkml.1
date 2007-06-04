@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760424AbXFDTjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761131AbXFDTk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760424AbXFDTjP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 15:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758964AbXFDTjB
+	id S1761131AbXFDTk4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 15:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758995AbXFDTku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 15:39:01 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:44421 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758933AbXFDTjA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 15:39:00 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=J5wo76pWvWKp6nvJ6TmpPzSHffYcoyov+tQirdUoHChyTgwGAG5yW14oEXAnA9xoJ
-	ZD1Cx585miRjAcPnh3Jsw==
-Message-ID: <46646A33.6090107@google.com>
-Date: Mon, 04 Jun 2007 12:38:27 -0700
-From: Ethan Solomita <solo@google.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Mon, 4 Jun 2007 15:40:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58837 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758315AbXFDTkt (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 15:40:49 -0400
+Date: Mon, 4 Jun 2007 21:40:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       Linux-kernel@vger.kernel.org
+Subject: Re: Interesting interaction between lguest and CFS
+Message-ID: <20070604194038.GA15782@elte.hu>
+References: <20070604173710.GR11166@waste.org> <20070604181151.GA1745@elte.hu> <20070604184224.GH11115@waste.org> <20070604191229.GA12444@elte.hu> <20070604192755.GI11115@waste.org>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@google.com>, a.p.zijlstra@chello.nl
-Subject: Re: [RFC 1/7] cpuset write dirty map
-References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070604192755.GI11115@waste.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 31 May 2007, Ethan Solomita wrote:
-> 
->> The dirty map is only cleared (or freed) when the inode is cleared.
->> At that point no pages are attached to the inode anymore and therefore it can
->> be done without any locking. The dirty map therefore records all nodes that
->> have been used for dirty pages by that inode until the inode is no longer
->> used.
->>
->> Originally by Christoph Lameter <clameter@sgi.com>
-> 
-> You should preserve my Signed-off-by: since I wrote most of this. Is there 
-> a changelog?
-> 
 
-	I wasn't sure of the etiquette -- I'd thought that by saying you had
-signed it off that meant you were accepting my modifications, and didn't
-want to presume. But I will change it if you like. No slight intended.
+* Matt Mackall <mpm@selenic.com> wrote:
 
-	Unfortunately I don't have a changelog, and since I've since forward
-ported the changes it would be hard to produce. If you want to review it
-you should probably review it all, because the forward porting may have
-introduced issues.
-	-- Ethan
+> > ah, so both the shell and the 'competing' CPU hog was running within 
+> > the same lguest instance?
+> 
+> No.
+> 
+> The CPU hog is running in the host. A single instance of lguest using 
+> busybox is started in another shell. When it reaches a shell prompt, 
+> -that- shell is occassionally unresponsive for long stretches.
+
+so the shell within lguest is affected by the CPU hog outside? Could you 
+send me the sched-debug stats of the CPU hog and of the lguest host 
+process as well? (or were those amongst the ones you already sent?)
+
+	Ingo
