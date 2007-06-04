@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760326AbXFDWMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbXFDWNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760326AbXFDWMw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 18:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXFDWMm
+	id S1760690AbXFDWNK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 18:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760684AbXFDWMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 18:12:42 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:53819 "EHLO
+	Mon, 4 Jun 2007 18:12:55 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53824 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752104AbXFDWMl (ORCPT
+	with ESMTP id S1760699AbXFDWMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 18:12:41 -0400
-Date: Tue, 5 Jun 2007 00:12:44 +0200
+	Mon, 4 Jun 2007 18:12:54 -0400
+Date: Tue, 5 Jun 2007 00:12:57 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Oruba <peter.oruba@amd.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>, cramerj@intel.com,
-       john.ronciak@intel.com, jesse.brandeburg@intel.com,
-       jeffrey.t.kirsher@intel.com, auke-jan.h.kok@intel.com,
-       jgarzik@pobox.com
-Cc: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-Subject: [-mm patch] e1000: #if 0 two functions
-Message-ID: <20070604221244.GC5500@stusta.de>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] drivers/video/pm3fb.c: possible cleanups
+Message-ID: <20070604221257.GD5500@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-e1000_{read,write}_pci_cfg() are no longer used.
+This patch contains the following possible cleanups:
+- remove the empty pm3fb_setup() and corresponding code
+- pm3fb_init() can become static
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/net/e1000/e1000_hw.h   |    2 --
- drivers/net/e1000/e1000_main.c |    4 ++++
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/video/pm3fb.c |   31 +------------------------------
+ 1 file changed, 1 insertion(+), 30 deletions(-)
 
---- linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_hw.h.old	2007-06-04 22:03:05.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_hw.h	2007-06-04 22:03:14.000000000 +0200
-@@ -421,8 +421,6 @@ void e1000_tbi_adjust_stats(struct e1000
- void e1000_get_bus_info(struct e1000_hw *hw);
- void e1000_pci_set_mwi(struct e1000_hw *hw);
- void e1000_pci_clear_mwi(struct e1000_hw *hw);
--void e1000_read_pci_cfg(struct e1000_hw *hw, uint32_t reg, uint16_t * value);
--void e1000_write_pci_cfg(struct e1000_hw *hw, uint32_t reg, uint16_t * value);
- int32_t e1000_read_pcie_cap_reg(struct e1000_hw *hw, uint32_t reg, uint16_t *value);
- void e1000_pcix_set_mmrbc(struct e1000_hw *hw, int mmrbc);
- int e1000_pcix_get_mmrbc(struct e1000_hw *hw);
---- linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_main.c.old	2007-06-04 22:03:24.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_main.c	2007-06-04 22:03:40.000000000 +0200
-@@ -4888,6 +4888,8 @@ e1000_pci_clear_mwi(struct e1000_hw *hw)
- 	pci_clear_mwi(adapter->pdev);
+--- linux-2.6.22-rc3-mm1/drivers/video/pm3fb.c.old	2007-06-04 22:49:25.000000000 +0200
++++ linux-2.6.22-rc3-mm1/drivers/video/pm3fb.c	2007-06-04 22:52:54.000000000 +0200
+@@ -380,8 +380,6 @@ static void pm3fb_write_mode(struct fb_i
+ /*
+  * hardware independent functions
+  */
+-int pm3fb_init(void);
+-
+ static int pm3fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	u32 lpitch;
+@@ -935,35 +933,8 @@ static struct pci_driver pm3fb_driver = 
+ 
+ MODULE_DEVICE_TABLE(pci, pm3fb_id_table);
+ 
+-#ifndef MODULE
+-	/*
+-	 *  Setup
+-	 */
+-
+-/*
+- * Only necessary if your driver takes special options,
+- * otherwise we fall back on the generic fb_setup().
+- */
+-static int __init pm3fb_setup(char *options)
++static int __init pm3fb_init(void)
+ {
+-	/* Parse user speficied options (`video=pm3fb:') */
+-	return 0;
+-}
+-#endif /* MODULE */
+-
+-int __init pm3fb_init(void)
+-{
+-	/*
+-	 *  For kernel boot options (in 'video=pm3fb:<options>' format)
+-	 */
+-#ifndef MODULE
+-	char *option = NULL;
+-
+-	if (fb_get_options("pm3fb", &option))
+-		return -ENODEV;
+-	pm3fb_setup(option);
+-#endif
+-
+ 	return pci_register_driver(&pm3fb_driver);
  }
  
-+#if 0
-+
- void
- e1000_read_pci_cfg(struct e1000_hw *hw, uint32_t reg, uint16_t *value)
- {
-@@ -4904,6 +4906,8 @@ e1000_write_pci_cfg(struct e1000_hw *hw,
- 	pci_write_config_word(adapter->pdev, reg, *value);
- }
- 
-+#endif  /*  0  */
-+
- int
- e1000_pcix_get_mmrbc(struct e1000_hw *hw)
- {
 
