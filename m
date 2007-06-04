@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbXFDQgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbXFDQhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758627AbXFDQgU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbXFDQgG
+	id S1758879AbXFDQhR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbXFDQhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:36:06 -0400
-Received: from www.osadl.org ([213.239.205.134]:39626 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751134AbXFDQgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:36:04 -0400
-Subject: Re: b44: regression in 2.6.22 (resend)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Maximilian Engelhardt <maxi@daemonizer.de>, Michael Buesch <mb@bu3sch.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070604090918.42386fbb@freepuppy>
-References: <20070525172431.60affaca@freepuppy>
-	 <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
-	 <200706031826.06891.maxi@daemonizer.de> <1180939188.4404.5.camel@chaos>
-	 <20070604090918.42386fbb@freepuppy>
-Content-Type: text/plain
-Date: Mon, 04 Jun 2007 18:35:58 +0200
-Message-Id: <1180974958.4404.24.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Mon, 4 Jun 2007 12:37:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:41195 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756372AbXFDQhD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 12:37:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=rBMqsvQ3cSTGa82LUAH/ipjJFenBPHmYDOPexcKE1syAOBfc1AlNgz8HjMa1nkGQ4OhF4PGgMnnxBO2YX6U1kQGuhFyJ2TFAmBZhCaNLP1wGEGGUsGSZzzl4gjkjF6XMHxk9LhdVEMmPw1MC3vk3wnIwgIAdrIiVuuKexfmkrmc=
+Message-ID: <84144f020706040937xb06535em543fa887ad65ee8f@mail.gmail.com>
+Date: Mon, 4 Jun 2007 19:37:01 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, jeremy@goop.org
+In-Reply-To: <alpine.LFD.0.98.0706040924070.23741@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
+	 <20070601204141.f84ad72f.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com>
+	 <20070601213117.1178e8e0.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0706012139480.11577@schroedinger.engr.sgi.com>
+	 <84144f020706040808t4882f961t80b8d8eb145bfa50@mail.gmail.com>
+	 <Pine.LNX.4.64.0706040916090.23191@schroedinger.engr.sgi.com>
+	 <84144f020706040922v56cb10eg5a730b4abe9d5251@mail.gmail.com>
+	 <alpine.LFD.0.98.0706040924070.23741@woody.linux-foundation.org>
+X-Google-Sender-Auth: 774b40f83daef432
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-04 at 09:09 -0700, Stephen Hemminger wrote:
-> > > I did the test with an 2.6.22-rc3-git4 kernel and the p54 driver built 
-> > > external as module. 
-> > 
-> > Can you look at iperf to figure out, whether it does some weird timer
-> > stuff (high frequency interval timer or such) ? Either check the code or
-> > strace it.
->
-> It is the receiver doing a tight loop doing gettimeofday/recv calls.
-> 
-> 
-> sendto(-1227715616, 0xc, 3085438964, 0, {...}, 3067249832) = 0
-> gettimeofday({1180973726, 981615}, NULL) = 0
-> gettimeofday({1180973726, 981751}, NULL) = 0
-> futex(0x8055c64, 0x5 /* FUTEX_??? */, 1) = 1
-> futex(0x8055c90, FUTEX_WAKE, 1) = 0
-> recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-> gettimeofday({1180973726, 982754}, NULL) = 0
-> recv(4, "\0\0\0\0\0\0\0\1\0\0\23\211\0\0\0\0\0\0\0\0\377\377\364"..., 8192, 0) = 8192
-> gettimeofday({1180973726, 983790}, NULL) = 0
+On 6/4/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> Well, the red-zones won't catch readers, and more importantly, even for
+> writers they are *really* inconvenient, because it will just tell you
+> something bad happened, it won't tell you *where* it happened.
 
-Well, gettimeofday() is not affected by the highres code, but
+True.
 
-> nanosleep({0, 0}, NULL) = 0
-> nanosleep({0, 0}, NULL) = 0
+On 6/4/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> Since comparing the addresses of two zero-sized allocations is insane and
+> not done _anyway_, it's just much better to return an invalid address.
 
-is. The nanosleep call with a relative timeout of 0 returns immediately
-with highres enabled, while it sleeps at least until the next tick
-arrives when highres is off. Are there more of those stupid sleeps in
-the code ?
-
-	tglx
-
-
+Then we might as well return your regular NULL pointer for zero-length
+allocations as you can't do anything sane with ZERO_SIZE_PTR either.
