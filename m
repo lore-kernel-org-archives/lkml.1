@@ -1,135 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbXFDOzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbXFDO7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbXFDOzZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 10:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXFDOzL
+	id S1755293AbXFDO7u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 10:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbXFDO7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 10:55:11 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:8524 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbXFDOzJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 10:55:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=iFsqYEbE4l1Pw5gjrU+ravBkTClXaOwSPzYHpraZsDPAs0jGZw5+Eeb+fcfCWoJp/
-	GeMeUNe1YUSO+yucs0zgw==
-Date: Mon, 4 Jun 2007 07:50:27 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Stephane Eranian <eranian@frankl.hpl.hp.com>
-cc: linux-kernel@vger.kernel.org, eranian@hpl.hp.com
-Subject: Re: [PATCH 10/22] 2.6.22-rc3 perfmon2 : PMU context switch support
-In-Reply-To: <200705291348.l4TDmOkk019736@frankl.hpl.hp.com>
-Message-ID: <alpine.DEB.0.99.0706040749170.11881@chino.kir.corp.google.com>
-References: <200705291348.l4TDmOkk019736@frankl.hpl.hp.com>
+	Mon, 4 Jun 2007 10:59:43 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:39484 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750795AbXFDO7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 10:59:42 -0400
+Date: Mon, 4 Jun 2007 16:58:41 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Anand Jahagirdar <anandjigar@gmail.com>
+cc: Daniel Hazelton <dhazelton@enter.net>, Nix <nix@esperi.org.uk>,
+       Jens Axboe <jens.axboe@oracle.com>, security@kernel.org,
+       linux-kernel@vger.kernel.org, Kedar Sovani <kedar@dreamzgroup.com>
+Subject: Re: Patch related with Fork Bombing Atack
+In-Reply-To: <25ae38200706040749o1eb3b7bbs64a09e6c2e4d7331@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706041652130.24237@twin.jikos.cz>
+References: <25ae38200705310645n5e913a91weaa14521908f7989@mail.gmail.com> 
+ <20070601073020.GL32105@kernel.dk> <87odjw8wxq.fsf@hades.wkstn.nix> 
+ <200706032129.29088.dhazelton@enter.net> <25ae38200706040749o1eb3b7bbs64a09e6c2e4d7331@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007, Stephane Eranian wrote:
+On Mon, 4 Jun 2007, Anand Jahagirdar wrote:
 
-> --- linux-2.6.22.base/perfmon/perfmon_ctxsw.c	1969-12-31 16:00:00.000000000 -0800
-> +++ linux-2.6.22/perfmon/perfmon_ctxsw.c	2007-05-29 03:24:14.000000000 -0700
-> @@ -0,0 +1,341 @@
-> +/*
-> + * perfmon_cxtsw.c: perfmon2 context switch code
-> + *
-> + * This file implements the perfmon2 interface which
-> + * provides access to the hardware performance counters
-> + * of the host processor.
-> + *
-> + * The initial version of perfmon.c was written by
-> + * Ganesh Venkitachalam, IBM Corp.
-> + *
-> + * Then it was modified for perfmon-1.x by Stephane Eranian and
-> + * David Mosberger, Hewlett Packard Co.
-> + *
-> + * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
-> + * by Stephane Eranian, Hewlett Packard Co.
-> + *
-> + * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
-> + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-> + *                David Mosberger-Tang <davidm@hpl.hp.com>
-> + *
-> + * More information about perfmon available at:
-> + * 	http://perfmon2.sf.net
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of version 2 of the GNU General Public
-> + * License as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-> + * 02111-1307 USA
-> + */
-> +#include <linux/kernel.h>
-> +#include <linux/perfmon.h>
-> +
-> +/*
-> + * used only in UP mode
-> + */
-> +void pfm_save_prev_context(struct pfm_context *ctxp)
-> +{
+>            I am forwarding one improved patch related with Fork Bombing 
+> Attack. This patch prints a message (only once) which alerts 
+> administrator/root user about fork bombing attack. I created this patch 
+> to implement my idea of informing administrator about fork bombing 
+> attack on his machine only once.
+>    This patch overcomes all drawbacks of my previous patch related with 
+> fork bombing attack and helps administrator. added comments will 
+> definitely help developers.
 
-Is this comment still valid even though there's a call to this function in 
-the self-monitoring case in __pfm_load_context()?
-
-> +	struct pfm_event_set *set;
-> +
 > +	/*
-> +	 * in UP per-thread, due to lazy save
-> +	 * there could be a context from another
-> +	 * task. We need to push it first before
-> +	 * installing our new state
+> +	 * following code prints a message which alerts administrator/root 		 * user about fork bombing Attack
 > +	 */
-> +	set = ctxp->active_set;
-> +	pfm_modview_begin(set);
-> +	pfm_save_pmds(ctxp, set);
-> +	set->view->set_status &= ~PFM_SETVFL_ACTIVE;
-> +	pfm_modview_end(set);
-> +	/*
-> +	 * do not clear ownership because we rewrite
-> +	 * right away
-> +	 */
-> +}
-> +
-> +void pfm_save_pmds(struct pfm_context *ctx, struct pfm_event_set *set)
-> +{
-> +	u64 val, hw_val, *pmds, ovfl_mask;
-> +	u64 *used_mask, *cnt_mask;
-> +	u16 i, num;
-> +
-> +	ovfl_mask = pfm_pmu_conf->ovfl_mask;
-> +	num = set->nused_pmds;
-> +	cnt_mask = pfm_pmu_conf->cnt_pmds;
-> +	used_mask = set->used_pmds;
-> +	pmds = set->view->set_pmds;
-> +
-> +	for (i = 0; num; i++) {
+> +	if ((atomic_read(&p->user->processes) >= (p->signal->rlim	[RLIMIT_NPROC].rlim_cur - 1)) && (atomic_read(&p->user->processes) < p->signal->rlim[RLIMIT_NPROC].rlim_cur)) {
 
-This should probably be "i++, num--".
+Did this get malformed somehow? Looks like some successive lines got 
+pasted together, or something.
 
-> +		if (test_bit(i, ulp(used_mask))) {
-> +			hw_val = val = pfm_read_pmd(ctx, i);
-> +			if (likely(test_bit(i, ulp(cnt_mask))))
-> +				val = (pmds[i] & ~ovfl_mask) |
-> +					(hw_val & ovfl_mask);
-> +			pmds[i] = val;
-> +			num--;
-> +		}
+> +        	if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE) && p->user != &root_user) {
+> +        		printk(KERN_CRIT"User with uid %d is crossing its Process limit\n",p->user->uid);
+> +        	}
 > +	}
-> +}
 
-You can elimiate the hw_val automatic by eliminating its assignment and 
-replacing its use with val.
+Why not printk_ratelimit() here? Otherwise we have looped back to the 
+possibility of user flooding the system logs, which has been already 
+discussed in this thread, right? 
 
-		David
+Also the { and } braces seem redundant.
+
+Thanks,
+
+-- 
+Jiri Kosina
