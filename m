@@ -1,287 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760754AbXFDWbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761031AbXFDWbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760754AbXFDWbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 18:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbXFDWa3
+	id S1761031AbXFDWbf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 18:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759308AbXFDWah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 18:30:29 -0400
-Received: from mga07.intel.com ([143.182.124.22]:20096 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758698AbXFDWaZ (ORCPT
+	Mon, 4 Jun 2007 18:30:37 -0400
+Received: from mga05.intel.com ([192.55.52.89]:22013 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759274AbXFDWaf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 18:30:25 -0400
+	Mon, 4 Jun 2007 18:30:35 -0400
 X-ExtLoopCount2: 2 from 172.25.110.8
 X-IronPort-AV: E=Sophos;i="4.16,382,1175497200"; 
-   d="scan'208";a="235483415"
+   d="scan'208";a="253153849"
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,382,1175497200"; 
-   d="scan'208";a="93415256"
-Message-Id: <20070604210644.156875000@askeshav-devel.jf.intel.com>
+   d="scan'208";a="93415250"
+Message-Id: <20070604210644.237004000@askeshav-devel.jf.intel.com>
 References: <20070604210242.079459000@askeshav-devel.jf.intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 04 Jun 2007 14:02:44 -0700
+Date: Mon, 04 Jun 2007 14:02:45 -0700
 From: anil.s.keshavamurthy@intel.com
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
        asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
        anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
        ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
-Subject: [Intel-IOMMU 02/10] Library routines for handling pre-allocated pool of objects
-Content-Disposition: inline; filename=resource_pool.patch
-X-OriginalArrivalTime: 04 Jun 2007 21:23:58.0056 (UTC) FILETIME=[A98FF680:01C7A6EE]
+Subject: [Intel-IOMMU 03/10] PCI generic helper function
+Content-Disposition: inline; filename=pcie_port_type.patch
+X-OriginalArrivalTime: 04 Jun 2007 21:23:57.0821 (UTC) FILETIME=[A96C1AD0:01C7A6EE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	This patch provides a common interface for pre allocating and 
-managing pool of objects.
+When devices are under a p2p bridge, upstream
+transactions get replaced by the device id of the bridge as it owns the
+PCIE transaction. Hence its necessary to setup translations on behalf of the
+bridge as well. Due to this limitation all devices under a p2p share the same
+domain in a DMAR.
+
+We just cache the type of device, if its a native PCIe device
+or not for later use.
 
 Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
 ---
- include/linux/respool.h |   43 +++++++++++
- lib/Makefile            |    1 
- lib/respool.c           |  176 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 220 insertions(+)
+ drivers/pci/pci.h    |    1 +
+ drivers/pci/probe.c  |   14 ++++++++++++++
+ drivers/pci/search.c |   30 ++++++++++++++++++++++++++++++
+ include/linux/pci.h  |    2 ++
+ 4 files changed, 47 insertions(+)
 
-Index: linux-2.6.22-rc3/include/linux/respool.h
+Index: linux-2.6.22-rc3/drivers/pci/pci.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22-rc3/include/linux/respool.h	2007-06-04 12:36:17.000000000 -0700
-@@ -0,0 +1,43 @@
-+/*
-+ * respool.c - library routines for handling generic pre-allocated pool of objects
-+ *
-+ * Copyright (c) 2006, Intel Corporation.
-+ *
-+ * This file is released under the GPLv2.
-+ *
-+ * Copyright (C) 2006 Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-+ *
-+ */
-+
-+#ifndef _RESPOOL_H_
-+#define _RESPOOL_H_
-+
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/workqueue.h>
-+
-+typedef void *(*rpool_alloc_t)(unsigned int, gfp_t);
-+typedef void (*rpool_free_t)(void *, unsigned int);
-+
-+struct resource_pool {
-+	struct work_struct work;
-+	spinlock_t	pool_lock;	/* pool lock to walk the pool_head */
-+	struct list_head pool_head;	/* pool objects list head	*/
-+	unsigned int	min_count;	/* min count to maintain	*/
-+	unsigned int	grow_count;	/* grow by count when time to grow */
-+	unsigned int	curr_count;	/* count of current free objects */
-+	unsigned int	alloc_size;	/* objects size			*/
-+	rpool_alloc_t 	alloc_mem;	/* pool mem alloc function pointer */
-+	rpool_free_t 	free_mem;	/* pool mem free function pointer */
-+};
-+
-+void *get_resource_pool_obj(struct resource_pool *ppool);
-+void put_resource_pool_obj(void * vaddr, struct resource_pool *ppool);
-+void destroy_resource_pool(struct resource_pool *ppool);
-+int init_resource_pool(struct resource_pool *res,
-+	unsigned int min_count, unsigned int alloc_size,
-+	unsigned int grow_count, rpool_alloc_t alloc_fn,
-+	rpool_free_t free_fn);
-+
-+#endif
-Index: linux-2.6.22-rc3/lib/Makefile
-===================================================================
---- linux-2.6.22-rc3.orig/lib/Makefile	2007-06-04 12:28:10.000000000 -0700
-+++ linux-2.6.22-rc3/lib/Makefile	2007-06-04 12:36:17.000000000 -0700
-@@ -58,6 +58,7 @@
- obj-$(CONFIG_AUDIT_GENERIC) += audit.o
+--- linux-2.6.22-rc3.orig/drivers/pci/pci.h	2007-06-04 12:27:34.000000000 -0700
++++ linux-2.6.22-rc3/drivers/pci/pci.h	2007-06-04 12:36:31.000000000 -0700
+@@ -92,3 +92,4 @@
+ 	return NULL;
+ }
  
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
-+obj-$(CONFIG_DMAR) += respool.o
- obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
- 
- lib-$(CONFIG_GENERIC_BUG) += bug.o
-Index: linux-2.6.22-rc3/lib/respool.c
++struct pci_dev *pci_find_upstream_pcie_bridge(struct pci_dev *pdev);
+Index: linux-2.6.22-rc3/drivers/pci/probe.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22-rc3/lib/respool.c	2007-06-04 12:36:17.000000000 -0700
-@@ -0,0 +1,176 @@
-+/*
-+ * respool.c - library routines for handling generic pre-allocated pool of objects
-+ *
-+ * Copyright (c) 2006, Intel Corporation.
-+ *
-+ * This file is released under the GPLv2.
-+ *
-+ * Copyright (C) 2006 Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-+ */
-+
-+#include <linux/respool.h>
-+
-+/**
-+ * get_resource_pool_obj - gets an object from the pool
-+ * @ppool - resource pool in question
-+ * This function gets an object from the pool and
-+ * if the pool count drops below min_count, this
-+ * function schedules work to grow the pool. If
-+ * no elements are fount in the pool then this function
-+ * tries to get memory from kernel.
-+ */
-+void * get_resource_pool_obj(struct resource_pool *ppool)
+--- linux-2.6.22-rc3.orig/drivers/pci/probe.c	2007-06-04 12:27:34.000000000 -0700
++++ linux-2.6.22-rc3/drivers/pci/probe.c	2007-06-04 12:36:31.000000000 -0700
+@@ -803,6 +803,19 @@
+ 	kfree(pci_dev);
+ }
+ 
++static void set_pcie_port_type(struct pci_dev *pdev)
 +{
-+	unsigned long	flags;
-+	struct list_head *plist;
-+	bool queue_work = 0;
++	int pos;
++	u16 reg16;
 +
-+	spin_lock_irqsave(&ppool->pool_lock, flags);
-+	if (!list_empty(&ppool->pool_head)) {
-+		plist = ppool->pool_head.next;
-+		list_del(plist);
-+		ppool->curr_count--;
-+	} else {
-+		/*Making sure that curr_count is 0 when list is empty */
-+		plist = NULL;
-+		BUG_ON(ppool->curr_count != 0);
-+	}
-+
-+	/* Check if pool needs to grow */
-+	if (ppool->curr_count <= ppool->min_count)
-+		queue_work = 1;
-+	spin_unlock_irqrestore(&ppool->pool_lock, flags);
-+
-+	if (queue_work)
-+		schedule_work(&ppool->work); /* queue work to grow the pool */
-+
-+
-+	if (plist) {
-+		memset(plist, 0, ppool->alloc_size); /* Zero out memory */
-+		return plist;
-+	}
-+
-+	/* Out of luck, try to get memory from kernel */
-+	plist = (struct list_head *)ppool->alloc_mem(ppool->alloc_size,
-+			GFP_ATOMIC);
-+
-+	return plist;
++	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
++	if (!pos)
++		return;
++	pdev->is_pcie = 1;
++	pci_read_config_word(pdev, pos + PCI_EXP_FLAGS, &reg16);
++	pdev->pcie_type = (reg16 & PCI_EXP_FLAGS_TYPE) >> 4;
 +}
 +
-+/**
-+ * put_resource_pool_obj - puts an object back to the pool
-+ * @vaddr - object's address
-+ * @ppool - resource pool in question.
-+ * This function puts an object back to the pool.
+ /**
+  * pci_cfg_space_size - get the configuration space size of the PCI device.
+  * @dev: PCI device
+@@ -917,6 +930,7 @@
+ 	dev->device = (l >> 16) & 0xffff;
+ 	dev->cfg_size = pci_cfg_space_size(dev);
+ 	dev->error_state = pci_channel_io_normal;
++	set_pcie_port_type(dev);
+ 
+ 	/* Assume 32-bit PCI; let 64-bit PCI cards (which are far rarer)
+ 	   set this higher, assuming the system even supports it.  */
+Index: linux-2.6.22-rc3/drivers/pci/search.c
+===================================================================
+--- linux-2.6.22-rc3.orig/drivers/pci/search.c	2007-06-04 12:27:34.000000000 -0700
++++ linux-2.6.22-rc3/drivers/pci/search.c	2007-06-04 12:36:31.000000000 -0700
+@@ -14,6 +14,36 @@
+ #include "pci.h"
+ 
+ DECLARE_RWSEM(pci_bus_sem);
++/*
++ * find the upstream PCIE-to-PCI bridge of a PCI device
++ * if the device is PCIE, return NULL
++ * if the device isn't connected to a PCIE bridge (that is its parent is a
++ * legacy PCI bridge and the bridge is directly connected to bus 0), return its
++ * parent
 + */
-+void put_resource_pool_obj(void * vaddr, struct resource_pool *ppool)
++struct pci_dev *
++pci_find_upstream_pcie_bridge(struct pci_dev *pdev)
 +{
-+	unsigned long	flags;
-+	struct list_head *plist = (struct list_head *)vaddr;
++	struct pci_dev *tmp = NULL;
 +
-+	BUG_ON(!vaddr);
-+	BUG_ON(!ppool);
-+
-+	spin_lock_irqsave(&ppool->pool_lock, flags);
-+	list_add(plist, &ppool->pool_head);
-+	ppool->curr_count++;
-+	spin_unlock_irqrestore(&ppool->pool_lock, flags);
-+}
-+
-+/**
-+ * grow_resource_pool - grows the given resource pool
-+ * @work - work struct
-+ * This functions gets the resource pool pointer from the
-+ * work struct and grows the resource pool by grow_count.
-+ */
-+static void
-+grow_resource_pool(struct work_struct * work)
-+{
-+	struct resource_pool *ppool;
-+	struct list_head *plist;
-+	unsigned int min_count, grow_count = 0;
-+	unsigned long	flags;
-+
-+	ppool = container_of(work, struct resource_pool, work);
-+
-+	/* compute the minimum count to grow */
-+	spin_lock_irqsave(&ppool->pool_lock, flags);
-+	min_count = ppool->min_count + ppool->grow_count;
-+	if (ppool->curr_count < min_count)
-+		grow_count = min_count - ppool->curr_count;
-+	spin_unlock_irqrestore(&ppool->pool_lock, flags);
-+
-+	while(grow_count) {
-+		plist = (struct list_head *)ppool->alloc_mem(ppool->alloc_size,
-+			GFP_KERNEL);
-+
-+		if (!plist)
++	if (pdev->is_pcie)
++		return NULL;
++	while (1) {
++		if (!pdev->bus->self)
 +			break;
-+
-+		/* Add the element to the list */
-+		spin_lock_irqsave(&ppool->pool_lock, flags);
-+		list_add(plist, &ppool->pool_head);
-+		ppool->curr_count++;
-+		spin_unlock_irqrestore(&ppool->pool_lock, flags);
-+		grow_count--;
++		pdev = pdev->bus->self;
++		/* a p2p bridge */
++		if (!pdev->is_pcie) {
++			tmp = pdev;
++			continue;
++		}
++		/* PCI device should connect to a PCIE bridge */
++		BUG_ON(pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE);
++		return pdev;
 +	}
++
++	return tmp;
 +}
-+
-+/**
-+ * destroy_resource_pool - destroys the given resource pool
-+ * @ppool - resource pool in question.
-+ * This function walks throuhg its list and frees up the
-+ * preallocated objects.
-+ */
-+void
-+destroy_resource_pool(struct resource_pool *ppool)
-+{
-+	unsigned long	flags;
-+	struct list_head *plist;
-+
-+	spin_lock_irqsave(&ppool->pool_lock, flags);
-+	while (!list_empty(&ppool->pool_head)) {
-+		plist = &ppool->pool_head;
-+		list_del(plist);
-+
-+		ppool->free_mem(plist, ppool->alloc_size);
-+
-+	}
-+	ppool->curr_count = 0;
-+	spin_unlock_irqrestore(&ppool->pool_lock, flags);
-+}
-+
-+/**
-+ * init_resource_pool - initializes the resource pool
-+ * @res: resource pool in question.
-+ * @min_count: count of objectes to pre-allocate
-+ * @alloc_size: size of each objects
-+ * @grow_count: count of objects to grow when required
-+ * @alloc_fn: function which allocates memory
-+ * @free_fn: function which frees memory
-+ *
-+ * This function initializes the given resource pool and
-+ * populates the min_count of objects to begin with.
-+ */
-+int
-+init_resource_pool(struct resource_pool *res,
-+	unsigned int min_count, unsigned int alloc_size,
-+	unsigned int grow_count, rpool_alloc_t alloc_fn,
-+	rpool_free_t free_fn)
-+{
-+	res->min_count = min_count;
-+	res->alloc_size = alloc_size;
-+	res->grow_count = grow_count;
-+	res->curr_count = 0;
-+	res->alloc_mem = alloc_fn;
-+	res->free_mem = free_fn;
-+	spin_lock_init(&res->pool_lock);
-+	INIT_LIST_HEAD(&res->pool_head);
-+	INIT_WORK(&res->work, grow_resource_pool);
-+
-+	/* grow the pool */
-+	grow_resource_pool(&res->work);
-+
-+	return (res->curr_count == 0);
-+}
-+
+ 
+ static struct pci_bus *pci_do_find_bus(struct pci_bus *bus, unsigned char busnr)
+ {
+Index: linux-2.6.22-rc3/include/linux/pci.h
+===================================================================
+--- linux-2.6.22-rc3.orig/include/linux/pci.h	2007-06-04 12:27:34.000000000 -0700
++++ linux-2.6.22-rc3/include/linux/pci.h	2007-06-04 12:36:31.000000000 -0700
+@@ -139,6 +139,7 @@
+ 	unsigned short	subsystem_device;
+ 	unsigned int	class;		/* 3 bytes: (base,sub,prog-if) */
+ 	u8		hdr_type;	/* PCI header type (`multi' flag masked out) */
++	u8		pcie_type;	/* PCI-E device/port type */
+ 	u8		rom_base_reg;	/* which config register controls the ROM */
+ 	u8		pin;  		/* which interrupt pin this device uses */
+ 
+@@ -181,6 +182,7 @@
+ 	unsigned int 	msi_enabled:1;
+ 	unsigned int	msix_enabled:1;
+ 	unsigned int	is_managed:1;
++	unsigned int	is_pcie:1;
+ 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
+ 
+ 	u32		saved_config_space[16]; /* config space saved at suspend time */
 
 -- 
