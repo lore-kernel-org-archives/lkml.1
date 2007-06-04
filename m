@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757715AbXFDQQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbXFDQUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757715AbXFDQQr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXFDQQk
+	id S1757948AbXFDQUG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbXFDQT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:16:40 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53736 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755845AbXFDQQk (ORCPT
+	Mon, 4 Jun 2007 12:19:56 -0400
+Received: from mga09.intel.com ([134.134.136.24]:12961 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755268AbXFDQTz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:16:40 -0400
-Date: Mon, 4 Jun 2007 09:16:38 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, jeremy@goop.org
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-In-Reply-To: <84144f020706040808t4882f961t80b8d8eb145bfa50@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706040916090.23191@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com> 
- <20070601204141.f84ad72f.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com> 
- <20070601213117.1178e8e0.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0706012139480.11577@schroedinger.engr.sgi.com>
- <84144f020706040808t4882f961t80b8d8eb145bfa50@mail.gmail.com>
+	Mon, 4 Jun 2007 12:19:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,381,1175497200"; 
+   d="scan'208";a="93314314"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [-mm patch] the ASYNC_* options shouldn't be user visible
+Date: Mon, 4 Jun 2007 09:19:53 -0700
+Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5201F0337F@azsmsx413.amr.corp.intel.com>
+In-Reply-To: <20070602190907.GK5500@stusta.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [-mm patch] the ASYNC_* options shouldn't be user visible
+Thread-Index: AcelSX2exxUkBaJrTpCaI5LkCr1HtwBeggWg
+From: "Williams, Dan J" <dan.j.williams@intel.com>
+To: "Adrian Bunk" <bunk@stusta.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, "Herbert Xu" <herbert@gondor.apana.org.au>
+X-OriginalArrivalTime: 04 Jun 2007 16:19:55.0086 (UTC) FILETIME=[2FE7A6E0:01C7A6C4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jun 2007, Pekka Enberg wrote:
-
-> On Fri, 1 Jun 2007, Andrew Morton wrote:
-> > > They are different instances which happen to have the same length (zero).
+> From: Adrian Bunk [mailto:bunk@stusta.de]
+> >...
+> > Changes since 2.6.22-rc2-mm1:
+> >...
+> >  git-md-accel.patch
+> >...
+> >  git trees
+> >...
 > 
-> On 6/2/07, Christoph Lameter <clameter@sgi.com> wrote:
-> > I guess one could use the slab allocators as a type of reservation
-> > ticket generator with zero sized objects. Hmmm.... But is that really a
-> > useful thing to do?
 > 
-> Can someone remind me why we can't do what mm/slab.c does for
-> zero-size allocations in slub too?
+> The ASYNC_* options are for internal helper code and should therefore
+> not be user visible.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
+> 
+> BTW: Please move the async_tx directory under drivers/ or lib/
+> 
+Yes, I was feeling somewhat exposed with the options in the top level
+config, but at least it got a few more eyes on the code.  I will fold in
+your patch and move async_tx under lib/ for now, but at some point I
+would like to investigate the potential synergies with crypto/.
 
-We are doing that right now. The problem is that people keep storing stuff 
-in memory allocated with kmalloc(0).
- 
+Thanks,
+Dan
