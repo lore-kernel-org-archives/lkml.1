@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760082AbXFDSYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759691AbXFDSZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760082AbXFDSYe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 14:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbXFDSY1
+	id S1759691AbXFDSZS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 14:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757416AbXFDSZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 14:24:27 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41646 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755833AbXFDSY0 (ORCPT
+	Mon, 4 Jun 2007 14:25:06 -0400
+Received: from mga09.intel.com ([134.134.136.24]:8026 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754416AbXFDSZE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 14:24:26 -0400
-Date: Mon, 4 Jun 2007 20:24:22 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matt Keenan <tank.en.mate@gmail.com>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
-Message-ID: <20070604182422.GA14275@one.firstfloor.org>
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <Pine.LNX.4.64.0706021610210.19116@p34.internal.lan> <4662869A.9030700@gmail.com> <200706040840.21593.jbarnes@virtuousgeek.org> <2c0942db0706040848y1d1c2ce9p521c65117244edf1@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2c0942db0706040848y1d1c2ce9p521c65117244edf1@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 4 Jun 2007 14:25:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,381,1175497200"; 
+   d="scan'208";a="93357728"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [-mm patch] the ASYNC_* options shouldn't be user visible
+Date: Mon, 4 Jun 2007 11:25:02 -0700
+Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5201F0351F@azsmsx413.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [-mm patch] the ASYNC_* options shouldn't be user visible
+Thread-Index: AcelSX2exxUkBaJrTpCaI5LkCr1HtwBeggWgAARLdHA=
+From: "Williams, Dan J" <dan.j.williams@intel.com>
+To: "Adrian Bunk" <bunk@stusta.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Herbert Xu" <herbert@gondor.apana.org.au>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 04 Jun 2007 18:25:03.0487 (UTC) FILETIME=[AB42B8F0:01C7A6D5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ick. Systems that used to boot fine would then panic on a kernel
-> upgrade. That's rather rude for a condition that's merely an
-> optimization (using all memory), rather than one of correctness. A
-> panic seems entirely inappropriate.
+> From: Williams, Dan J
+> >
+> > BTW: Please move the async_tx directory under drivers/ or lib/
+> >
+One caveat with this... md.o needs xor.o to be initialized first.
+Moving xor.o under lib/ means this assumption is broken since the
+top-level Makefile puts 'libs' after 'drivers'.
 
-No, when the MTRRs are wrong they would generally not work fine.
-As soon as something uses the uncached memory things go incredibly
-slow, slow enough to make the machine unusable. Sometimes you're
-lucky and nothing important is in there, but only sometimes.
+> Yes, I was feeling somewhat exposed with the options in the top level
+config,
+> but at least it got a few more eyes on the code.  I will fold in your
+patch
+> and move async_tx under lib/ for now, but at some point I would like
+to
+> investigate the potential synergies with crypto/.
+> 
 
-There is also no code in there currently to automatically limit
-the memory; the user has to do that with mem=...
-
-But I also don't like the panic.
-
--Andi
+Herbert can I move async_tx under crypto since the engines I am working
+with have support for algorithms like CRC32C and Galois Field Multiply
+(raid6 p+q)?
