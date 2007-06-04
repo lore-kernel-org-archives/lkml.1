@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbXFDLQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbXFDLRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065AbXFDLQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 07:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbXFDLQS
+	id S1754492AbXFDLRk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 07:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbXFDLRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 07:16:18 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42296 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752631AbXFDLQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 07:16:17 -0400
-Date: Mon, 4 Jun 2007 13:16:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Len Brown <lenb@kernel.org>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-Message-ID: <20070604111610.GR4363@elf.ucw.cz>
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705171842.44134.lenb@kernel.org> <20070521121139.GB8332@elf.ucw.cz> <200705312246.11576.lenb@kernel.org>
+	Mon, 4 Jun 2007 07:17:33 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:46775 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752951AbXFDLRc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 07:17:32 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Mon, 4 Jun 2007 07:15:58 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Remove apparently useless, commented apm_get_battery_status().
+Message-ID: <Pine.LNX.4.64.0706040715520.32191@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705312246.11576.lenb@kernel.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2007-05-31 22:46:11, Len Brown wrote:
-> On Monday 21 May 2007 08:11, Pavel Machek wrote:
-> > On Thu 2007-05-17 18:42:43, Len Brown wrote:
-> > > > Something similar happened to me on XE3, yes.
-> > > > 
-> > > > (Actual values were different; BIOS specified critical temperature at
-> > > > cca 95C, but hw killed the power at cca 83C. Setting critical trip
-> > > > point at 80C made the problem go away.)
-> > > 
-> > > Great, please file a bug and include the acpidump from the XE3
-> > > and we'll fix it, rather than supporting a bogus (manual) workaround for it.
-> > 
-> > It is few years since I do not have that XE3 machine.
-> > 
-> > > Of course if your system is running at 80*C and the hardware shuts
-> > > off at 83*C, you may have a broken fan, or one clogged with dust...
-> > 
-> > It _did_ have broken fan. It also had broken trip points.
-> 
-> Thanks for clarifying this, Pavel.
-> If you come upon an XE3 where Linux-2.6.22 doesn't work as well
-> as Windows, please let me know.
 
-"work as well as windows" is not good enough goal as far as I'm
-concerned. Please don't break working setups.
-									Pavel
+Remove the "#if 0"ed definition of apm_get_battery_status().
+
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+---
+
+diff --git a/arch/i386/kernel/apm.c b/arch/i386/kernel/apm.c
+index 4112afe..5c6da2b 100644
+--- a/arch/i386/kernel/apm.c
++++ b/arch/i386/kernel/apm.c
+@@ -1006,35 +1006,6 @@ static int apm_get_power_status(u_short *status, u_short *bat, u_short *life)
+ 	return APM_SUCCESS;
+ }
+
+-#if 0
+-static int apm_get_battery_status(u_short which, u_short *status,
+-				  u_short *bat, u_short *life, u_short *nbat)
+-{
+-	u32	eax;
+-	u32	ebx;
+-	u32	ecx;
+-	u32	edx;
+-	u32	esi;
+-
+-	if (apm_info.connection_version < 0x0102) {
+-		/* pretend we only have one battery. */
+-		if (which != 1)
+-			return APM_BAD_DEVICE;
+-		*nbat = 1;
+-		return apm_get_power_status(status, bat, life);
+-	}
+-
+-	if (apm_bios_call(APM_FUNC_GET_STATUS, (0x8000 | (which)), 0, &eax,
+-			&ebx, &ecx, &edx, &esi))
+-		return (eax >> 8) & 0xff;
+-	*status = ebx;
+-	*bat = ecx;
+-	*life = edx;
+-	*nbat = esi;
+-	return APM_SUCCESS;
+-}
+-#endif
+-
+ /**
+  *	apm_engage_power_management	-	enable PM on a device
+  *	@device: identity of device
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
