@@ -1,56 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760849AbXFDTI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761235AbXFDTIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760849AbXFDTI0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 15:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759094AbXFDTIT
+	id S1761235AbXFDTIm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 15:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759670AbXFDTIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 15:08:19 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4791 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759005AbXFDTIS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 15:08:18 -0400
-Message-ID: <4664632C.3050502@shadowen.org>
-Date: Mon, 04 Jun 2007 20:08:28 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+	Mon, 4 Jun 2007 15:08:34 -0400
+Received: from lucidpixels.com ([75.144.35.66]:39270 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759094AbXFDTId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 15:08:33 -0400
+Date: Mon, 4 Jun 2007 15:08:32 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <andi@firstfloor.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.03
-References: <0a25fd03117c678f17006c5fcefaaed0@pinky> <20070604114110.0b88fe7a.akpm@linux-foundation.org>
-In-Reply-To: <20070604114110.0b88fe7a.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't
+ the kernel realize the BIOS has problems and re-map appropriately?
+In-Reply-To: <Pine.LNX.4.64.0706041420100.25811@p34.internal.lan>
+Message-ID: <Pine.LNX.4.64.0706041508040.27826@p34.internal.lan>
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
+ <200706011407.51779.jbarnes@virtuousgeek.org> <20070601211943.GO7217@one.firstfloor.org>
+ <200706011441.57149.jbarnes@virtuousgeek.org> <m1r6orwptz.fsf@ebiederm.dsl.xmission.com>
+ <Pine.LNX.4.64.0706041420100.25811@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 04 Jun 2007 10:46:24 +0100
-> Andy Whitcroft <apw@shadowen.org> wrote:
-> 
->> This version brings a host of changes to cure false positives and
->> bugs detected on patches submitted to lkml and -mm.  It also brings
->> a number of new tests in response to reviews, of particular note:
->>
->>   - catch use of volatile
->>   - allow deprecated functions to be listed in feature-removal-schedule.txt
->>   - warn about #ifdef's in c files
->>   - check that spinlock_t and struct mutex use is commented
->>   - report on architecture specific defines being used
->>   - report memory barriers without an associated comment
-> 
-> Oy.  I ran checkpatch.pl across this patch and it failed to report upon the
-> new trailing whitespace which you just tried to add.
 
-Herm, I guess thats cause its a .pl and therefore exempt from most of
-the checks.
 
-I guess line length and white space checks make sense some degree on
-those files.  I'll sort that out and I guess we'll have anohter version.
- Sounds like the #ifdef checks are too much anyhow.
+On Mon, 4 Jun 2007, Justin Piszcz wrote:
 
--apw
+>
+>
+> On Mon, 4 Jun 2007, Eric W. Biederman wrote:
+>
+>> Jesse Barnes <jbarnes@virtuousgeek.org> writes:
+>> 
+>>> On Friday, June 1, 2007 2:19:43 Andi Kleen wrote:
+>>>> And normally the MTRRs win, don't they (if I remember the table 
+>>>> correctly)
+>>>> So if the MTRR says UC and PAT disagrees it might not actually help
+>>> 
+>>> I just checked, yes the MTRRs win for UC types.  But it sounds like the 
+>>> cases
+>>> we're talking about are actually situations where there's no MTRR 
+>>> coverage,
+>>> so the default type is used.  The manual doesn't specifically call out how
+>>> memory using the default type interacts with PAT, but it may well be that 
+>>> it
+>>> stays uncached if the default type is uncached.  Again that argues for 
+>>> fixing
+>>> the MTRR mapping problem in some way.
+>> 
+>> Last I looked PAT can only demote not promote the type of a page,
+>> except for the specific exception of UC to WC.
+>> 
+>> Normally the default type is UC so putting a pat type of WB won't
+>> help anything.  I may have missed some subtle detail but I remember
+>> looking into this in some detail a while ago and coming to that
+>> conclusion.
+>> 
+>> It is the BIOS's responsibility to mark all usable memory as WB,
+>> using the MTRRs.  If it doesn't it is a BIOS bug.
+>> 
+>> Eric
+>> 
+>
+> According to Intel it is not a BIOS bug but rather the media controller
+> hub (MCH) uses memory for various purposes, outlined in their doc:
+>
+> From their response, it sounds like the kernel needs to setup the memory 
+> properly to deal with the MCH found in the 965 motherboards?
+>
+> From their e-mail:
+>
+> Note before continuing: Debian* Linux Operating System is not an officially, 
+> validated, tested Operating System for the Intel(R) Desktop Board DG965WH 
+> (see http://downloadcenter.intel.com/Product_Filter.aspx?ProductID=2375); 
+> moreover, we do confirm that "on a system that has 8 GB of system memory 
+> installed, it is not possible to use all of the installed memory due to 
+> system address space being allocated for other system critical functions." 
+> [qtd. on page 43 of the Technical Product Specification (see 
+> http://download.intel.com/design/motherbd/wh/D5600801US.pdf)].  Thus, the
+> following suggestions are provided AS IS; we cannot guarantee the problem 
+> would be fixed afterwards:
+>
+> Therefore, they are NOT going to fix their BIOS-- and I have already received 
+> an e-mail from one or two people who are experiencing this problem, I presume 
+> it will only get worse.
+>
+> Justin.
+>
+
+Therefore, since they will NOT commit to a BIOS fix (they claim not a BIOS 
+issue) what options does that leave us with?
+
+Justin.
