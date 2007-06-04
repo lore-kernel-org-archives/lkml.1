@@ -1,95 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbXFDRqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759478AbXFDRq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758893AbXFDRqn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 13:46:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbXFDRqe
+	id S1759478AbXFDRq4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 13:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759102AbXFDRqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 13:46:34 -0400
-Received: from waste.org ([66.93.16.53]:54928 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753483AbXFDRqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 13:46:34 -0400
-Date: Mon, 4 Jun 2007 12:46:16 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: lguest rebroken in 2.6.22-rc3-mm1
-Message-ID: <20070604174616.GF11115@waste.org>
-References: <20070522223828.GV11115@waste.org> <1179876460.20705.157.camel@localhost.localdomain> <20070604171932.GE11115@waste.org> <20070604102820.a4a0ee15.akpm@linux-foundation.org>
+	Mon, 4 Jun 2007 13:46:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:27420 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759073AbXFDRqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 13:46:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=i9rKmmqPEUomweXTrzZLsj/jBfEAOGVDQdXSbibpFS4pphx/v91vVMEfUDIg6Z25TrXY5HrQxdTRGYR5C42Mes/fXExqreqB7MI5VboziMmc3uyVu/OEQ51PyY9sVAigMcqIgicjDSOdhWwE05PfMzfLt9e8valTy7N99SZs0Vo=
+Message-ID: <d120d5000706041046j1da16c6el350d9da1d74d508b@mail.gmail.com>
+Date: Mon, 4 Jun 2007 13:46:45 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Andi Kleen" <ak@suse.de>,
+       "Jiri Kosina" <jikos@jikos.cz>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070604163406.GA1120@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070604102820.a4a0ee15.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070604112426.GA2707@elf.ucw.cz>
+	 <20070604130903.GC1971@elf.ucw.cz>
+	 <Pine.LNX.4.64.0706041511010.29896@twin.jikos.cz>
+	 <200706041543.49071.ak@suse.de> <20070604135427.GA19466@elf.ucw.cz>
+	 <d120d5000706040702q3b5251e8oc5e9f3c198f060bd@mail.gmail.com>
+	 <20070604163406.GA1120@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 10:28:20AM -0700, Andrew Morton wrote:
-> On Mon, 4 Jun 2007 12:19:33 -0500 Matt Mackall <mpm@selenic.com> wrote:
-> 
-> > On Wed, May 23, 2007 at 09:27:40AM +1000, Rusty Russell wrote:
-> > > On Tue, 2007-05-22 at 17:38 -0500, Matt Mackall wrote:
-> > > > [    0.120007] EIP is at resync_sc_freq+0x4b/0x56
-> > > 
-> > > Hi Matt,
-> > > 
-> > > 	Thanks for the report!  Andrew should have these two patches queued,
-> > > but here they are again:
-> > > 
-> > > If you set tsc_disable (eg "notsc" on cmdline), sched-clock.c gives a
-> > > divide by zero on boot.
-> > > 
-> > > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> > > 
-> > > ---
-> > >  arch/i386/kernel/sched-clock.c |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > ===================================================================
-> > > --- a/arch/i386/kernel/sched-clock.c
-> > > +++ b/arch/i386/kernel/sched-clock.c
-> > > @@ -103,7 +103,7 @@ static void resync_sc_freq(struct sc_dat
-> > >  static void resync_sc_freq(struct sc_data *sc, unsigned int newfreq)
-> > >  {
-> > >  	sc->sync_base = jiffies;
-> > > -	if (!cpu_has_tsc) {
-> > > +	if (!cpu_has_tsc || tsc_disable) {
-> > >  		sc->unstable = 1;
-> > >  		return;
-> > >  	}
-> > 
-> > Looks like this one got lost in rc3-mm1.
-> > 
-> 
-> Andi said that he fixed the zero-divide by other means?
+On 6/4/07, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> On Mon, 04 Jun 2007, Dmitry Torokhov wrote:
+> > >...but I'm not quite sure it is a buggy keyboard. It happens _way_ too
+> > >often. Launch the line above and try to do some typing...
+> >
+> > This used to work fine on my box last time I tried it (the switch
+> > itself is offloaded to a keventd and shoud not get in the way) but
+> > then they push all kind of ACPI/SMM crap together with KBC so who
+> > knows... I should try it again when I get home.
+>
+> Err... in laptops, almost *always* the KDC is emulated by the embedded
+> controller, so I bet you're right on the money, there.  It is not "a buggy
+> KDC", it is a buggy EC firmware and/or buggy SMBIOS which is a lot more
+> common.
+>
+> And DoS'ing the EC is very high on the Don't Do That list on a laptop.  If
+> the X60 is only losing keypresses and producing no bigger fireworks, that's
+> outstanding behavior (as far as I trust ThinkPad firmware, anyway).
+>
+> So please throttle anything that might access the KDC way too much (as
+> compared to normal keyboard operation by an user).
 
-Got this, patch fixed it:
-
-[    0.392024] divide error: 0000 [#1]
-[    0.392024] PREEMPT 
-[    0.392024] Modules linked in:
-[    0.392024] CPU:    0
-[    0.392024] EIP:    0061:[<c010995a>]    Not tainted VLI
-[    0.392024] EFLAGS: 00010246   (2.6.22-rc3-mm1 #145)
-[    0.392024] EIP is at resync_freq+0x7a/0x85
-[    0.392024] eax: 3d090000   ebx: c1c04f70   ecx: 00000e70   edx: 00000000
-[    0.392024] esi: 00000000   edi: c1c04f80   ebp: c1c04f68   esp: c1c04f64
-[    0.392024] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0069
-[    0.392024] Process swapper (pid: 1, ti=c1c04000 task=c1c20ae0 task.ti=c1c04000)
-[    0.392024] Stack: 00000000 c1c04f84 c058eb2d 00000000 00000000 00000000 00000000 00000000 
-[    0.392024]        c1c04fe0 c058c6c4 c1c04fac c0119c22 00000000 00000002 c054c320 c1c20ae0 
-[    0.392024]        00000000 c05b2dc0 c1c20ae0 00000000 00000001 c058c608 00000000 00000000 
-[    0.392024] Call Trace:
-[    0.392024]  [<c058eb2d>] init_sched_clock+0x5c/0x90
-[    0.392024]  [<c058c6c4>] kernel_init+0xbc/0x23e
-[    0.392024]  [<c0104a6b>] kernel_thread_helper+0x7/0x10
-[    0.392024]  =======================
-[    0.392024] INFO: lockdep is turned off.
-[    0.392024] Code: 30 0c 55 c0 89 15 34 0c 55 c0 e8 75 a6 00 00 90 31 c9 89 d1 a3 28 0c 55 c0 ba 00 00 00 00 b8 00 00 09 3d 89 0d 2c 0c 55 c0 31 d2 <f7> 73 08 a3 20 0c 55 c0 5b 5d c3 55 b8 01 00 00 00 89 e5 57 56 
-[    0.392024] EIP: [<c010995a>] resync_freq+0x7a/0x85 SS:ESP 0069:c1c04f64
-[    0.392024] Kernel panic - not syncing: Attempted to kill init!
-
+What would be reasonable throttling? Once every 100 ms?
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Dmitry
