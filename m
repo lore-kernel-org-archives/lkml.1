@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbXFDMN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbXFDMPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbXFDMN2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 08:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXFDMNU
+	id S1754851AbXFDMPT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 08:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXFDMPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 08:13:20 -0400
-Received: from www.sf-tec.de ([62.27.20.187]:40594 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753540AbXFDMNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 08:13:19 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] Fix roundup_pow_of_two(1)
-Date: Mon, 4 Jun 2007 14:13:11 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
-References: <200705172356.57620.eike-kernel@sf-tec.de> <20070604114900.GS5500@stusta.de>
-In-Reply-To: <20070604114900.GS5500@stusta.de>
+	Mon, 4 Jun 2007 08:15:07 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:44121 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753446AbXFDMPF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 08:15:05 -0400
+Date: Mon, 4 Jun 2007 13:14:58 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Message-ID: <20070604121457.GA26615@srcf.ucam.org>
+References: <8pwhX-46n-3@gated-at.bofh.it> <8pCQo-5QL-7@gated-at.bofh.it> <87abvogbdp.fsf@buer.dfakt.de> <200705281406.57396.david-b@pacbell.net> <20070531043229.GA30888@dose.home.local> <20070531102603.GA16719@srcf.ucam.org> <20070601074606.GA6060@dose.home.local> <20070601125422.GA12204@srcf.ucam.org> <20070604093518.GA29240@dose.home.local>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1384675.3ayNLpsYU8";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706041413.20477.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070604093518.GA29240@dose.home.local>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: RTC_DRV_CMOS can break userspace interface
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1384675.3ayNLpsYU8
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, Jun 04, 2007 at 11:35:18AM +0200, Tino Keitel wrote:
 
-Adrian Bunk wrote:
-> On Thu, May 17, 2007 at 11:56:56PM +0200, Rolf Eike Beer wrote:
-> > Fix roundup_pow_of_two(1)
-> >
-> > 1 is a power of two, therefore roundup_pow_of_two(1) should return 1. It
-> > does in case the argument is a variable but in case it's a constant it
-> > behaves wrong and returns 0. Probably nobody ever did it so this was
-> > never noticed.
->
-> I'm not getting the problem.
-> 2^0 = 1
+(By the way, it helps if you Cc: me - it's easy to lose track of things 
+in the LKML noise)
 
-Yes. But it returned 0 (not 1 << 0).
+> Here it is:
+> 
+> state = active
+> io 0x70-0x77
+> options
 
-Eike
-
---nextPart1384675.3ayNLpsYU8
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGZAHgXKSJPmm5/E4RApOLAJ9Ei4vCfN3uZ118XpaVZGlzOQfUSQCeKnTr
-sbVgUeGt+BR6keT6x2lOs/M=
-=wBIZ
------END PGP SIGNATURE-----
-
---nextPart1384675.3ayNLpsYU8--
+Yes, there's no IRQ listed. Can you try current git?
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
