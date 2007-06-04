@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbXFDTNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761685AbXFDTOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761562AbXFDTNw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 15:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761295AbXFDTNe
+	id S1761685AbXFDTOP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 15:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761377AbXFDTNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 15:13:34 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55116 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760624AbXFDTNd (ORCPT
+	Mon, 4 Jun 2007 15:13:49 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:50592 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761528AbXFDTNs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 15:13:33 -0400
-Date: Mon, 4 Jun 2007 20:18:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't
- the kernel realize the BIOS has problems and re-map appropriately?
-Message-ID: <20070604201823.7b7cb328@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0706041420100.25811@p34.internal.lan>
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
-	<200706011407.51779.jbarnes@virtuousgeek.org>
-	<20070601211943.GO7217@one.firstfloor.org>
-	<200706011441.57149.jbarnes@virtuousgeek.org>
-	<m1r6orwptz.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0706041420100.25811@p34.internal.lan>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 15:13:48 -0400
+Date: Mon, 4 Jun 2007 15:13:47 -0400
+To: Mike Richards <mrmikerich@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Missing RAM on x86_64
+Message-ID: <20070604191347.GE10008@csclub.uwaterloo.ca>
+References: <516d7fa80706012151m32facb87nafb68811c784fa54@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <516d7fa80706012151m32facb87nafb68811c784fa54@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Therefore, they are NOT going to fix their BIOS-- and I have already 
-> received an e-mail from one or two people who are experiencing this 
-> problem, I presume it will only get worse.
+On Sat, Jun 02, 2007 at 12:51:07AM -0400, Mike Richards wrote:
+> Hi, I appear to be missing quite a bit of RAM on an x86_64 system. I
+> have 1GB installed, but 'free' only shows 878MB:
+> 
+> pokey$ free -m
+>             total       used       free     shared    buffers     cached
+> Mem:           878        571        306          0         52        332
+> -/+ buffers/cache:        186        691
+> Swap:         1023          0       1023
+> 
+> I'm used to seeing a little bit of RAM missing with 32bit systems, but
+> 146MB seems a bit much. The part of dmesg that concerns the RAM is
+> shown below. Anyone know what's up here? Is this normal for an x86_64
+> system?
 
-In which case we need to clip the memory used according to the MTRR
-registers and tell the user xxMB of memory not available due to BIOS bugs
+I you running a 64 or 32bit kernel?  If it is 32bit then it is normal
+for a kernel not configured with CONFIG_4GB or whatever it is called to
+be limited to about 900MB ram.  64bit kernels should see all the ram no
+matter what the config is.  It looks very much like you are running a
+32bit kernel though.  What does uname -a say?
 
-Alan
+--
+Len Sorensen
