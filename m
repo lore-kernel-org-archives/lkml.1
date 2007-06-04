@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbXFDDu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752253AbXFDD5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752131AbXFDDu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 23:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXFDDuV
+	id S1752253AbXFDD5U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 23:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbXFDD5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 23:50:21 -0400
-Received: from mga09.intel.com ([134.134.136.24]:41630 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751256AbXFDDuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 23:50:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,378,1175497200"; 
-   d="scan'208";a="93142614"
-Subject: Re: [PATCH] reduce AER init error information
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       us15@os.inf.tu-dresden.de, davej@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070601120429.GC7345@suse.de>
-References: <1177832284.14017.270.camel@ymzhang>
-	 <465C3446.5020603@googlemail.com> <20070529155732.GA7068@suse.de>
-	 <alpine.LFD.0.98.0705291406000.26602@woody.linux-foundation.org>
-	 <20070601120429.GC7345@suse.de>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 04 Jun 2007 11:49:40 +0800
-Message-Id: <1180928980.3068.5.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Sun, 3 Jun 2007 23:57:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:8096 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750719AbXFDD5L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 23:57:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=H79HQvCtSRY6u4M1fNWa0+cQG/P70bxRtp2W9NlguNA+XRBzYQQcYoxjx6Nvc/XSGUUg+/KCrNCVEXh5xcKC2zWqH7UYBUPCFcCEvQ8i8Rs185KNq3l9KnTmIYH/ZumJrJV7WPCR1sRCxP8Iuc8ZGv19rXESYMEcYTMZTeagXaQ=
+Message-ID: <787b0d920706032057q2ed5fa06yc05907990cb2c0f0@mail.gmail.com>
+Date: Sun, 3 Jun 2007 23:57:11 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: linux-kernel@vger.kernel.org, davids@webmaster.com, epiphani@gmail.com,
+       viro@ftp.linux.org.uk
+Subject: RE: slow open() calls and o_nonblock
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-01 at 05:04 -0700, Greg KH wrote:
-> On Tue, May 29, 2007 at 02:06:52PM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Tue, 29 May 2007, Greg KH wrote:
-> > > 
-> > > Care to forward the above patch to the stable@kernel.org address after
-> > > it goes into Linus's tree?
-> > 
-> > .. talking about going to my tree, where _is_ it? It's not in my mailbox, 
-> > at least..
-> 
-> I tried to get this to work for the last round of PCI patches that I
-> sent you yesterday, but it had build problems, which I need to spend
-> some time fixing up :(
-> 
-I fixed by patch at http://marc.info/?l=linux-kernel&m=117783233918191&w=2.
-Later on, someone found if CONFIG_ACPI=n, there is a compilation error. Then,
-I sent out a new patch to fix the compilation error, but another guy wants
-AER driver support although CONFIG_ACPI=n. He sent out the 3rd patch to fix the
-compilation error and enables AER driver when CONFIG_ACPI=n.
+David Schwartz writes:
+> [Aaron Wiebe]
 
-So pls. apply 2 patches.
+>> open("/somefile", O_WRONLY|O_NONBLOCK|O_CREAT, 0644) = 1621 <0.415147>
+>
+> How could they make any difference? I can't think of any
+> conceivable way they could.
+>
+>> Now, I'm a userspace guy so I can be pretty dense, but shouldn't a
+>> call with a nonblocking flag return EAGAIN if its going to take
+>> anywhere near 415ms?  Is there a way I can force opens to EAGAIN if
+>> they take more than 10ms?
+>
+> There is no way you can re-try the request. The open must either
+> succeed or not return a handle. It is not like a 'read' operation
+> that has an "I didn't do anything, and you can retry this request"
+> option.
+>
+> If 'open' returns a file handle, you can't retry it (since it must
+> succeed in order to do that, failure must not return a handle).
+> If you 'open' doesn't return a file handle, you can't retry it
+> (because, without a handle, there is no way to associate a future
+> request with this one, if it creates a file, the file must not be
+> created if you don't call 'open' again).
+>
+> The 'open' function must, at minimum, confirm that the file exists
+> (or doesn't exist and can be created, or whatever). This takes
+> however long it takes on NFS.
 
-1) http://marc.info/?l=linux-kernel&m=117783233918191&w=2;
-2) http://marc.info/?l=linux-mm-commits&m=118046936720790&w=2
+This is not the case, though we might need to allocate a new
+flag to avoid breaking things.
 
-When patch 2 is applied to stable kernel 2.6.21.3, there is a fuzz warning.
-It doesn't matter.
+Let open() with O_UNCHECKED always return a file descriptor,
+except perhaps when failure can be identified without doing IO.
+The "real" open then proceeds in the background.
 
-Sorry for replying so late.
+>From poll() or select(), you can see that the file descriptor
+is not ready for anything. Eventually it becomes ready for IO
+or reports an error condition. Both select() and poll() are
+capable of reporting errors. If the "real" (background) open()
+fails, then the only valid operation is close(). Attempts to
+do anything else get EBADFD or ESTALE.
 
-Yanmin
-
+You'll also need a background close().
