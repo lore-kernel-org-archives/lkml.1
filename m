@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbXFDK5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbXFDLBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbXFDK5b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 06:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbXFDK5Y
+	id S1753400AbXFDLBN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 07:01:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbXFDLA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 06:57:24 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:5643 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbXFDK5X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 06:57:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eCvL61DlT2rsxH4/NBeEADn9GAOzgrqEx/r3TlIdc/dPpknPRAUV08mWMRaIsrrAIWiuUHvfDFC/LyOlRTYloxNBdUC1wSn/9K60rEFy7EZG75gxw9Np5gcbxsrxyZ46v5Un5tA3Hls4LRKLtObPQa/MscxJgI6Tx1FSp6gDmyQ=
-Message-ID: <a790ea7a0706040357g799e8756ue758e95d5b460307@mail.gmail.com>
-Date: Mon, 4 Jun 2007 12:57:21 +0200
-From: "Antonio Mignolli" <antoniomignolli@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: lid switch hangs notebook
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-In-Reply-To: <200704131553.54787.bjorn.helgaas@hp.com>
+	Mon, 4 Jun 2007 07:00:59 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59901 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752287AbXFDLA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 07:00:58 -0400
+Date: Mon, 4 Jun 2007 13:00:52 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Message-ID: <20070604110052.GI4363@elf.ucw.cz>
+References: <20070528205727.GA5911@ucw.cz> <Pine.LNX.4.44L0.0705281719200.10323-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a790ea7a0703120753i232ace2bg7272fa479b821e32@mail.gmail.com>
-	 <20070315110606.741c2dc4.akpm@linux-foundation.org>
-	 <200704131553.54787.bjorn.helgaas@hp.com>
+In-Reply-To: <Pine.LNX.4.44L0.0705281719200.10323-100000@netrider.rowland.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-The problem reported below has not been solved,
-I tried with the last stable kernel 2.6.21.3.
+Hi!
 
-But it seems not to be an ACPI issue,
-I removed ACPI support from the kernel,
-and still have the problem.
-What else could be?
+> > > The theoretical answer is that it behaves the way we want.  The kernel 
+> > > thread does selective resumes in response to device requests.  If such 
+> > > a request comes in while the system is asleep it will awaken the 
+> > > system; so it's only logical that a request coming in while the system 
+> > > is in the process of going to sleep should abort the suspend.
+> > 
+> > I'd say that it shows ppc being broken. User wanted to suspend the
+> > system, and now unrelated task did lsusb... and system will not sleep.
+> > 
+> > AFAICT it is DoS issue -- if one of your users keeps doing lsusb, root
+> > will not be able to suspend the system.
+> 
+> This is a matter of one's philosophy.  In suspend-to-RAM, should tasks
+> be frozen or should I/O queues be frozen?
+> 
+> With the USB subsystem I have followed the approach taken by the PM
+> core, which is that tasks are frozen.  But one can -- and Linus has on
+> at least one occasion -- make a good case that tasks should be left
+> running while only I/O is frozen.  This would require the subsystem to
+> distinguish between a selective device suspend and a system-wide
+> suspend-to-RAM, so that selective resume could be enabled on demand in
+> one case but not the other.
+> 
+> It's quite doable in principle -- it's just not the technique I used.
 
-On 4/13/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> On Thursday 15 March 2007 13:06, Andrew Morton wrote:
-> > > On Mon, 12 Mar 2007 15:53:18 +0100 "Antonio Mignolli" <antoniomignolli@gmail.com> wrote:
-> > > Hi,
-> > > I'm running a slackware 10.2 on a HP/Compaq nx5000.
-> > >
-> > > With kernels <= 2.6.17.3 I didn't have problems.
-> > > Starting from 2.6.19 if I close the notebook's video,
-> > > or if I press the lid switch,
-> > > after a couple of time, or after a few seconds, the o.s. hangs
-> > > completely. The only thing to do is a brute power off
-> > > by pressing for 5 seconds the power button
-> > > (If I press for few it should do a clean shutdown -h).
-> > > I've tried 2.6.19, 2.6.19.1, 2.6.19.2, 2.6.20, 2.6.20.1, 2.6.20.2,
-> > > and all of them seem to give problems.
-> > >
-> > > I don't have KERNEL_DEBUG set, so I haven't any debug informations,
-> > > I will be happy to activate it and provide more info if someone suggests
-> > > me which debug parameters I should set.
-> > > There's nothing in /var/log/messages and /var/log/syslog,
-> > > except for the message "LID switch" added by me
-> > > with a logger command in /etc/acpi/acpi_handler.sh.
-> > > I've put it after noticing the problem, in order to be sure the event was
-> > > detected, and it was.
-> >
-> > I guess this is an ACPI think, although not necessarily.
-> >
-> > Len & co: do you think we should ask Antonio to raise a report
-> > against ACPI at bugzilla.kernel.org?
->
-> I don't see a response to this on the linux-acpi list.  Did the
-> problem get resolved?
->
+I guess we need to do that. Random user should not be able to prevent
+machine from sleeping.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
