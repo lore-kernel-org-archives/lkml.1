@@ -1,88 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbXFDOyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbXFDOzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbXFDOyP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 10:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbXFDOyB
+	id S1756533AbXFDOzZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 10:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXFDOzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 10:54:01 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:4277 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbXFDOyA (ORCPT
+	Mon, 4 Jun 2007 10:55:11 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:8524 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbXFDOzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 10:54:00 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 4 Jun 2007 07:53:55 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 1/2] ufd v1 - unsequential O(1) fdmap core
-In-Reply-To: <20070604162855.f98d1698.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0706040743060.30836@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.24319.1180825145.1>
- <46633047.1020707@cosmosbay.com> <Pine.LNX.4.64.0706031536000.13247@alien.or.mcafeemobile.com>
- <20070603230859.5000424d.akpm@linux-foundation.org> <20070604080537.GA22898@elte.hu>
- <20070604080941.GA23537@elte.hu> <20070604013449.ea3acca8.akpm@linux-foundation.org>
- <20070604122857.1399e3fc.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0706040523150.30231@alien.or.mcafeemobile.com>
- <20070604152540.985c186a.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0706040633360.30231@alien.or.mcafeemobile.com>
- <20070604162855.f98d1698.dada1@cosmosbay.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 4 Jun 2007 10:55:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=iFsqYEbE4l1Pw5gjrU+ravBkTClXaOwSPzYHpraZsDPAs0jGZw5+Eeb+fcfCWoJp/
+	GeMeUNe1YUSO+yucs0zgw==
+Date: Mon, 4 Jun 2007 07:50:27 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Stephane Eranian <eranian@frankl.hpl.hp.com>
+cc: linux-kernel@vger.kernel.org, eranian@hpl.hp.com
+Subject: Re: [PATCH 10/22] 2.6.22-rc3 perfmon2 : PMU context switch support
+In-Reply-To: <200705291348.l4TDmOkk019736@frankl.hpl.hp.com>
+Message-ID: <alpine.DEB.0.99.0706040749170.11881@chino.kir.corp.google.com>
+References: <200705291348.l4TDmOkk019736@frankl.hpl.hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jun 2007, Eric Dumazet wrote:
+On Tue, 29 May 2007, Stephane Eranian wrote:
 
-> On Mon, 4 Jun 2007 06:35:16 -0700 (PDT)
-> Davide Libenzi <davidel@xmailserver.org> wrote:
-> 
-> > On Mon, 4 Jun 2007, Eric Dumazet wrote:
-> > 
-> > > You add conditional branches on very hot spots.
-> > 
-> > Keep BS for the ones you argue usually, and that are not able to reply.
-> > You *still* two bitmaps, because allocation spaces are far apart. So the 
-> > "if" will still be there.
-> 
-> I actually read your patches and spent time to see the pros and cons.
-> 
-> If you dont need reviewers, please dont post your patches on lkml.
+> --- linux-2.6.22.base/perfmon/perfmon_ctxsw.c	1969-12-31 16:00:00.000000000 -0800
+> +++ linux-2.6.22/perfmon/perfmon_ctxsw.c	2007-05-29 03:24:14.000000000 -0700
+> @@ -0,0 +1,341 @@
+> +/*
+> + * perfmon_cxtsw.c: perfmon2 context switch code
+> + *
+> + * This file implements the perfmon2 interface which
+> + * provides access to the hardware performance counters
+> + * of the host processor.
+> + *
+> + * The initial version of perfmon.c was written by
+> + * Ganesh Venkitachalam, IBM Corp.
+> + *
+> + * Then it was modified for perfmon-1.x by Stephane Eranian and
+> + * David Mosberger, Hewlett Packard Co.
+> + *
+> + * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
+> + * by Stephane Eranian, Hewlett Packard Co.
+> + *
+> + * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
+> + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
+> + *                David Mosberger-Tang <davidm@hpl.hp.com>
+> + *
+> + * More information about perfmon available at:
+> + * 	http://perfmon2.sf.net
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of version 2 of the GNU General Public
+> + * License as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+> + * 02111-1307 USA
+> + */
+> +#include <linux/kernel.h>
+> +#include <linux/perfmon.h>
+> +
+> +/*
+> + * used only in UP mode
+> + */
+> +void pfm_save_prev_context(struct pfm_context *ctxp)
+> +{
 
-I *do like* reviews, and if you go back in all the reviews my code had 
-during the last few months for example, you'll notice that I *almost always*
-ACK the reviewers suggestions. I'm a believer that in computer science, 
-there are many ways to do the same thing, and many of those are very close 
-as far as pros&cons. So, if some reviewer suggests me something, I'm 
-inclined to ACK it, even if the solution I wrote (or that I had in mind) 
-was different.
-In this case though, your solution and mine are *really* different. You 
-are trying to fit a structure to a problem that is not meant to. And it is 
-so clearly evident, that it blows my mind how this could even be argued.
-As I said to Andrew, we can use fdmap for both allocations (fdmap already 
-supports all the allocation modes the current fdtable does - modulo adding 
-a bitmap), and cut a lot of code out.
-This is the way I'm currently heading, so all the code from fs/file.c (256 
-lines) can go. locate_fd will go. set_close_on_exec and get_close_on_exec 
-will use the existing function in fdmap.c, etc...
+Is this comment still valid even though there's a call to this function in 
+the self-monitoring case in __pfm_load_context()?
 
+> +	struct pfm_event_set *set;
+> +
+> +	/*
+> +	 * in UP per-thread, due to lazy save
+> +	 * there could be a context from another
+> +	 * task. We need to push it first before
+> +	 * installing our new state
+> +	 */
+> +	set = ctxp->active_set;
+> +	pfm_modview_begin(set);
+> +	pfm_save_pmds(ctxp, set);
+> +	set->view->set_status &= ~PFM_SETVFL_ACTIVE;
+> +	pfm_modview_end(set);
+> +	/*
+> +	 * do not clear ownership because we rewrite
+> +	 * right away
+> +	 */
+> +}
+> +
+> +void pfm_save_pmds(struct pfm_context *ctx, struct pfm_event_set *set)
+> +{
+> +	u64 val, hw_val, *pmds, ovfl_mask;
+> +	u64 *used_mask, *cnt_mask;
+> +	u16 i, num;
+> +
+> +	ovfl_mask = pfm_pmu_conf->ovfl_mask;
+> +	num = set->nused_pmds;
+> +	cnt_mask = pfm_pmu_conf->cnt_pmds;
+> +	used_mask = set->used_pmds;
+> +	pmds = set->view->set_pmds;
+> +
+> +	for (i = 0; num; i++) {
 
+This should probably be "i++, num--".
 
-> If I am not mistaken, you added a test in fget()/fget_light(), which is 
-> a known hot point for said huge processes.
+> +		if (test_bit(i, ulp(used_mask))) {
+> +			hw_val = val = pfm_read_pmd(ctx, i);
+> +			if (likely(test_bit(i, ulp(cnt_mask))))
+> +				val = (pmds[i] & ~ovfl_mask) |
+> +					(hw_val & ovfl_mask);
+> +			pmds[i] = val;
+> +			num--;
+> +		}
+> +	}
+> +}
 
-There is one "if", that you cannot avoid, since allocation areas are far 
-apart (and one of them is even random). Unless you plan to have a single 
-contiguous bitmap with *a lot* of wasted space in the middle.
+You can elimiate the hw_val automatic by eliminating its assignment and 
+replacing its use with val.
 
-
-
-- Davide
-
-
+		David
