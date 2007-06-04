@@ -1,176 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbXFDSk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbXFDSlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760172AbXFDSk3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 14:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758199AbXFDSkR
+	id S1760275AbXFDSlS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 14:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758610AbXFDSlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 14:40:17 -0400
-Received: from sicnat2.emn.fr ([193.54.76.193]:36089 "EHLO ron.emn.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754342AbXFDSkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 14:40:15 -0400
-From: Yoann Padioleau <padator@wanadoo.fr>
-To: kernel-janitors@lists.osdl.org
-Cc: matthew@wil.cx, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] old declaration ritchie style fix in arch/parisc/math-emu/
-Date: Mon, 04 Jun 2007 20:38:08 +0200
-Message-ID: <877iqjr2en.fsf@wanadoo.fr>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 4 Jun 2007 14:41:09 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:47484 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754342AbXFDSlI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 14:41:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=BajuxvVO4liLHI469jWdjo8ABOgC5TgWUaTKQMXYQdhogRPqfDNCbOUU1hoUmfln1Ku1hB+AtYPVOlZwQsSdTkGZ1j0Tbkj3NhtNDkNCNnCWTWZOTqfY34IFUVY/H2+/ijPXj22lTHhNn8NXUYMuN1TabR9BpCY1EXxaQkCJzl8=
+Message-ID: <84144f020706041141q26d0cba2u352c294d1ec90daf@mail.gmail.com>
+Date: Mon, 4 Jun 2007 21:41:07 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Rene Herman" <rene.herman@gmail.com>
+Subject: Re: [Q] Bio traversal trouble?
+Cc: "Jens Axboe" <axboe@suse.de>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4663DE68.5030200@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4663DE68.5030200@gmail.com>
+X-Google-Sender-Auth: 9566f62b88ae9f75
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Rene,
 
-Use consistent function ANSI declaration style.
+On 6/4/07, Rene Herman <rene.herman@gmail.com> wrote:
+> BUG: unable to handle kernel paging request at virtual address 8c1d2071
+>  printing eip:
+> c10a6d6f
+> *pde = 00000000
+> Oops: 0002 [#1]
+> Modules linked in: mitsumi nfsd exportfs lockd sunrpc nls_cp437 msdos
+> fat nls_base
+> CPU:    0
+> EIP:    0060:[<c10a6d6f>]    Not tainted VLI
+> EFLAGS: 00010246   (2.6.21.3 #1)
+> EIP is at ioread8_rep+0x20/0x31
 
-Signed-off-by: Yoann Padioleau <padator@wanadoo.fr> 
+[snip]
 
+On 6/4/07, Rene Herman <rene.herman@gmail.com> wrote:
+> Code: 00 00 89 c8 ef c3 0f c9 89 0a c3 57 3d ff ff 03 00 53 89 d7 89 c3
+> 89 ca 77 15 66 31 c0 3d 00 00 01 00 74 04 0f 0b eb fe 0f b7 d3 <f3> 6c
+> eb 0a 4a 78 07 8a 03 88 07 47 eb f6 5b 5f c3 57 3d ff ff
+> EIP: [<c10a6d6f>] ioread8_rep+0x20/0x31 SS:ESP 0068:c3145aec
 
+So this is the repz/insb instruction (f3 6c) in ioread8_rep() which it
+reads ECX bytes from port EDX and stores the data in ES:[EDI].
 
+Looking at the registers and stack:
 
+On 6/4/07, Rene Herman <rene.herman@gmail.com> wrote:
+> eax: 00010000   ebx: 00010300   ecx: 00000800   edx: 00000300
+> esi: c3145b30   edi: 8c1d2071   ebp: 8c1d2071   esp: c3145aec
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process dd (pid: 1770, ti=c3145000 task=c3114110 task.ti=c3145000)
+> Stack: 00000000 c3a7ad48 c486504d c4865ab7 00000006 50020034 c1015f7b
+> 00000292
+>        00000000 00520300 00000100 0007e000 00000000 c3340300 c10a0531
+> 00000000
+>        c12adf60 00000000 00000001 00000000 00000000 00000000 dead4ead
+> ffffffff
 
- dfadd.c       |   10 +++++-----
- fmpyfadd.c    |   30 ++++++++++++++++++------------
- fpudispatch.c |   22 ++++++----------------
- 3 files changed, 29 insertions(+), 33 deletions(-)
+We can see that we're reading 2048 bytes from port 0x300 and storing
+the data in memory location 0x8c1d2071 which causes the OOPS. What's
+surprising is that EBP is set to 0x8c1d2071 too which suggests stack
+corruption (note that ioread8_rep() is a fastcall so it does not
+create a stack frame of its own). What you could do here is add some
+printks and watch how dst changes over time to see if you can figure
+out a pattern.
 
+Also, assuming CFQ fiddles with the request after we've done
+elv_next_request() and dropped the lock, one thing worth trying is to
+do blk_stop_queue() before we drop it and blk_start_queue after we
+reacquire it so that we don't actually get any new I/O while we wait
+for mitsumi_get_frame() to finish.
 
-diff --git a/arch/parisc/math-emu/dfadd.c b/arch/parisc/math-emu/dfadd.c
-index e147d7d..5a7d524 100644
---- a/arch/parisc/math-emu/dfadd.c
-+++ b/arch/parisc/math-emu/dfadd.c
-@@ -45,11 +45,11 @@ #include "dbl_float.h"
- /*
-  * Double_add: add two double precision values.
-  */
--dbl_fadd(
--    dbl_floating_point *leftptr,
--    dbl_floating_point *rightptr,
--    dbl_floating_point *dstptr,
--    unsigned int *status)
-+int dbl_fadd(
-+	dbl_floating_point *leftptr,
-+	dbl_floating_point *rightptr,
-+	dbl_floating_point *dstptr,
-+	unsigned int *status)
- {
-     register unsigned int signless_upper_left, signless_upper_right, save;
-     register unsigned int leftp1, leftp2, rightp1, rightp2, extent;
-diff --git a/arch/parisc/math-emu/fmpyfadd.c b/arch/parisc/math-emu/fmpyfadd.c
-index 5dd7f93..c0a0f28 100644
---- a/arch/parisc/math-emu/fmpyfadd.c
-+++ b/arch/parisc/math-emu/fmpyfadd.c
-@@ -716,10 +716,12 @@ dbl_fmpyfadd(
-  *  Double Floating-point Multiply Negate Fused Add
-  */
- 
--dbl_fmpynfadd(src1ptr,src2ptr,src3ptr,status,dstptr)
--
--dbl_floating_point *src1ptr, *src2ptr, *src3ptr, *dstptr;
--unsigned int *status;
-+int dbl_fmpynfadd(
-+	dbl_floating_point *src1ptr,
-+	dbl_floating_point *src2ptr,
-+	dbl_floating_point *src3ptr,
-+	unsigned int *status,
-+	dbl_floating_point *dstptr)
- {
- 	unsigned int opnd1p1, opnd1p2, opnd2p1, opnd2p2, opnd3p1, opnd3p2;
- 	register unsigned int tmpresp1, tmpresp2, tmpresp3, tmpresp4;
-@@ -1374,10 +1376,12 @@ unsigned int *status;
-  *  Single Floating-point Multiply Fused Add
-  */
- 
--sgl_fmpyfadd(src1ptr,src2ptr,src3ptr,status,dstptr)
--
--sgl_floating_point *src1ptr, *src2ptr, *src3ptr, *dstptr;
--unsigned int *status;
-+int sgl_fmpyfadd(
-+	sgl_floating_point *src1ptr,
-+	sgl_floating_point *src2ptr,
-+	sgl_floating_point *src3ptr,
-+	unsigned int *status,
-+	sgl_floating_point *dstptr)
- {
- 	unsigned int opnd1, opnd2, opnd3;
- 	register unsigned int tmpresp1, tmpresp2;
-@@ -2015,10 +2019,12 @@ unsigned int *status;
-  *  Single Floating-point Multiply Negate Fused Add
-  */
- 
--sgl_fmpynfadd(src1ptr,src2ptr,src3ptr,status,dstptr)
--
--sgl_floating_point *src1ptr, *src2ptr, *src3ptr, *dstptr;
--unsigned int *status;
-+int sgl_fmpynfadd(
-+	sgl_floating_point *src1ptr,
-+	sgl_floating_point *src2ptr,
-+	sgl_floating_point *src3ptr,
-+	unsigned int *status,
-+	sgl_floating_point *dstptr)
- {
- 	unsigned int opnd1, opnd2, opnd3;
- 	register unsigned int tmpresp1, tmpresp2;
-diff --git a/arch/parisc/math-emu/fpudispatch.c b/arch/parisc/math-emu/fpudispatch.c
-index 6e28f9f..f8fa3f9 100644
---- a/arch/parisc/math-emu/fpudispatch.c
-+++ b/arch/parisc/math-emu/fpudispatch.c
-@@ -701,9 +701,7 @@ decode_0c(u_int ir, u_int class, u_int s
- }
- 
- static u_int
--decode_0e(ir,class,subop,fpregs)
--u_int ir,class,subop;
--u_int fpregs[];
-+decode_0e(u_int ir, u_int class, u_int subop, u_int fpregs[])
- {
- 	u_int r1,r2,t;		/* operand register offsets */
- 	u_int fmt;		/* also sf for class 1 conversions */
-@@ -1113,9 +1111,7 @@ u_int fpregs[];
-  * routine to decode the 06 (FMPYADD and FMPYCFXT) instruction
-  */
- static u_int
--decode_06(ir,fpregs)
--u_int ir;
--u_int fpregs[];
-+decode_06(u_int ir,u_int fpregs[])
- {
- 	u_int rm1, rm2, tm, ra, ta; /* operands */
- 	u_int fmt;
-@@ -1253,9 +1249,7 @@ u_int fpregs[];
-  * routine to decode the 26 (FMPYSUB) instruction
-  */
- static u_int
--decode_26(ir,fpregs)
--u_int ir;
--u_int fpregs[];
-+decode_26(u_int ir,u_int fpregs[])
- {
- 	u_int rm1, rm2, tm, ra, ta; /* operands */
- 	u_int fmt;
-@@ -1344,9 +1338,7 @@ u_int fpregs[];
-  * routine to decode the 2E (FMPYFADD,FMPYNFADD) instructions
-  */
- static u_int
--decode_2e(ir,fpregs)
--u_int ir;
--u_int fpregs[];
-+decode_2e(u_int ir, u_int fpregs[])
- {
- 	u_int rm1, rm2, ra, t; /* operands */
- 	u_int fmt;
-@@ -1410,10 +1402,8 @@ u_int fpregs[];
-  *	of FCMP is being emulated.
-  */
- static void
--update_status_cbit(status, new_status, fpu_type, y_field)
--u_int *status, new_status;
--u_int fpu_type;
--u_int y_field;
-+update_status_cbit(u_int *status, u_int new_status, u_int fpu_type, 
-+		   u_int y_field)
- {
- 	/*
- 	 * For PA89 FPU's which implement the Compare Queue and
-
+				Pekka
