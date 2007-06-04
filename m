@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752942AbXFDJAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbXFDJGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752942AbXFDJAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 05:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbXFDJAV
+	id S1753141AbXFDJGU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 05:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbXFDJGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 05:00:21 -0400
-Received: from lazybastard.de ([212.112.238.170]:59536 "EHLO
+	Mon, 4 Jun 2007 05:06:08 -0400
+Received: from lazybastard.de ([212.112.238.170]:55183 "EHLO
 	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbXFDJAT (ORCPT
+	with ESMTP id S1750877AbXFDJGG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 05:00:19 -0400
-Date: Mon, 4 Jun 2007 10:54:48 +0200
+	Mon, 4 Jun 2007 05:06:06 -0400
+Date: Mon, 4 Jun 2007 11:01:26 +0200
 From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
 To: Arnd Bergmann <arnd@arndb.de>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -30,42 +30,54 @@ Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Roland Dreier <rdreier@cisco.com>,
        Ondrej Zajicek <santiago@crfreenet.org>,
        Ulisses Furquim <ulissesf@gmail.com>
-Subject: Re: [Patch 06/18] fs/logfs/compr.c
-Message-ID: <20070604085447.GA14823@lazybastard.org>
-References: <20070603183845.GA8952@lazybastard.org> <20070603184355.GG8952@lazybastard.org> <200706032358.44870.arnd@arndb.de>
+Subject: Re: [Patch 09/18] fs/logfs/gc.c
+Message-ID: <20070604090126.GB14823@lazybastard.org>
+References: <20070603183845.GA8952@lazybastard.org> <20070603184604.GJ8952@lazybastard.org> <200706040007.38578.arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <200706032358.44870.arnd@arndb.de>
+In-Reply-To: <200706040007.38578.arnd@arndb.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 June 2007 23:58:43 +0200, Arnd Bergmann wrote:
+On Mon, 4 June 2007 00:07:36 +0200, Arnd Bergmann wrote:
 > On Sunday 03 June 2007, Jörn Engel wrote:
-> > +#define COMPR_LEVEL 3
+> > +static long decay(long t0, long t, long theta)
+> > +{
+> > +       long shift, fac;
 > > +
-> > +static DEFINE_MUTEX(compr_mutex);
-> > +static struct z_stream_s stream;
+> > +       if (t >= 32*theta)
+> > +               return 0;
+> > +
+> > +       shift = t/theta;
+> > +       fac = theta - (t%theta)/2;
+> > +       return (t0 >> shift) * fac / theta;
+> > +}
 > 
-> Is there a particular reason to choose '3' as the only compression
-> level? Should this perhaps be a per-superblock option instead?
+> I think it's confusion to work with 'long' arguments
+> here. If you actually allow larger than 32 bit arguments,
+> that means that the gc logic behaves differently on
+> 32 and 64 bit CPUs, which I don't think is what you
+> intended.
 
-There is no particular reason.  '3' should be a reasonable value for
-most people.  If actual users want to change this value, I can make it a
-mount option as well.  Right now I'm just lazy and doubt the merits.
+Different behaviour would be fine.  This function will be used to pick
+good candidates for garbage collection.  If one segment will get chosen
+over another depending on BITS_PER_LONG, either one would have been a
+good candidate anyway.
 
-> Also, I thought I saw discussion about making the mutex and
-> stream per-superblock, but don't remember if the idea was discarded.
-> If it was, you might want to add it to the won't-happen list.
+Hmm.  Maybe I should s/32/BITS_PER_LONG/ in the function.
 
-It was more or less discarded.  As long as the sweet spot for LogFS is
-small systems, saving memory is more important than multithreaded
-performance.  Will add it to the list.
+> Also, can any of the arguments be negative? How about
+> making them all explicit u32 and u64 variables?
+
+That would make sense, yes.
 
 Jörn
 
 -- 
-Joern's library part 2:
-http://www.art.net/~hopkins/Don/unix-haters/tirix/embarrassing-memo.html
+I've never met a human being who would want to read 17,000 pages of
+documentation, and if there was, I'd kill him to get him out of the
+gene pool.
+-- Joseph Costello
