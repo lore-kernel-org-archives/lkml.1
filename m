@@ -1,85 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbXFDPmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbXFDPmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758219AbXFDPmf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbXFDPmN
+	id S1758529AbXFDPmu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 11:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbXFDPmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:42:13 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:57225 "EHLO atlrel8.hp.com"
+	Mon, 4 Jun 2007 11:42:18 -0400
+Received: from pat.uio.no ([129.240.10.15]:46027 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755812AbXFDPmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:42:11 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Antonio Mignolli" <antoniomignolli@gmail.com>
-Subject: Re: lid switch hangs notebook
-Date: Mon, 4 Jun 2007 09:42:07 -0600
-User-Agent: KMail/1.9.6
+	id S1756914AbXFDPmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 11:42:17 -0400
+Subject: Re: slow open() calls and o_nonblock
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Aaron Wiebe <epiphani@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-References: <a790ea7a0703120753i232ace2bg7272fa479b821e32@mail.gmail.com> <200704131553.54787.bjorn.helgaas@hp.com> <a790ea7a0706040357g799e8756ue758e95d5b460307@mail.gmail.com>
-In-Reply-To: <a790ea7a0706040357g799e8756ue758e95d5b460307@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <e7ca40f70706040720k48aae8efg7a4997ce1d6f2450@mail.gmail.com>
+References: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
+	 <e7ca40f70706040720k48aae8efg7a4997ce1d6f2450@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 04 Jun 2007 11:42:06 -0400
+Message-Id: <1180971726.17737.36.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706040942.07661.bjorn.helgaas@hp.com>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.124)
+X-UiO-Scanned: 1CD9113152E98DBD1C486075C051A6266C95F655
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 819 total 2154507 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 June 2007 04:57:21 am Antonio Mignolli wrote:
-> The problem reported below has not been solved,
-> I tried with the last stable kernel 2.6.21.3.
-> 
-> But it seems not to be an ACPI issue,
-> I removed ACPI support from the kernel,
-> and still have the problem.
-> What else could be?
+On Mon, 2007-06-04 at 10:20 -0400, Aaron Wiebe wrote:
+> I understand, but this is exactly the situation that I'm complaining
+> about.  There is no functionality to provide a nonblocking open - no
+> ability to come back around and retry a given open call.
 
-The lid switch event is probably reported via ACPI.  But the
-fact that you see your "LID switch" message from /etc/acpi/acpi_handler.sh
-means the switch event is getting through.
+So exactly how would you expect a nonblocking open to work? Should it be
+starting I/O? What if that involves blocking? How would you know when to
+try again?
 
-What else does the acpi_handler.sh script do?  Can you add more
-log messages in it and any related scripts?
-
-If all else fails, you could try git-bisect to isolate a changeset
-that broke it.  That's tedious but usually effective.
-
-Bjorn
-
-> On 4/13/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > On Thursday 15 March 2007 13:06, Andrew Morton wrote:
-> > > > On Mon, 12 Mar 2007 15:53:18 +0100 "Antonio Mignolli" <antoniomignolli@gmail.com> wrote:
-> > > > Hi,
-> > > > I'm running a slackware 10.2 on a HP/Compaq nx5000.
-> > > >
-> > > > With kernels <= 2.6.17.3 I didn't have problems.
-> > > > Starting from 2.6.19 if I close the notebook's video,
-> > > > or if I press the lid switch,
-> > > > after a couple of time, or after a few seconds, the o.s. hangs
-> > > > completely. The only thing to do is a brute power off
-> > > > by pressing for 5 seconds the power button
-> > > > (If I press for few it should do a clean shutdown -h).
-> > > > I've tried 2.6.19, 2.6.19.1, 2.6.19.2, 2.6.20, 2.6.20.1, 2.6.20.2,
-> > > > and all of them seem to give problems.
-> > > >
-> > > > I don't have KERNEL_DEBUG set, so I haven't any debug informations,
-> > > > I will be happy to activate it and provide more info if someone suggests
-> > > > me which debug parameters I should set.
-> > > > There's nothing in /var/log/messages and /var/log/syslog,
-> > > > except for the message "LID switch" added by me
-> > > > with a logger command in /etc/acpi/acpi_handler.sh.
-> > > > I've put it after noticing the problem, in order to be sure the event was
-> > > > detected, and it was.
-> > >
-> > > I guess this is an ACPI think, although not necessarily.
-> > >
-> > > Len & co: do you think we should ask Antonio to raise a report
-> > > against ACPI at bugzilla.kernel.org?
-> >
-> > I don't see a response to this on the linux-acpi list.  Did the
-> > problem get resolved?
-> >
-> 
-
+  Trond
 
