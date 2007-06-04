@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbXFDVTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbXFDVVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758731AbXFDVTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 17:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbXFDVTf
+	id S1760210AbXFDVVc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 17:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbXFDVVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 17:19:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36533 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752748AbXFDVTf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 17:19:35 -0400
-Date: Mon, 4 Jun 2007 14:13:59 -0700
-From: Greg KH <greg@kroah.com>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Problem with http URL for stable git tree?
-Message-ID: <20070604211359.GA2046@kroah.com>
-References: <46646389.7090101@am.sony.com>
+	Mon, 4 Jun 2007 17:21:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60088 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751907AbXFDVVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 17:21:24 -0400
+From: Andi Kleen <ak@suse.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [Xen-devel] Re: [PATCH] xen: use iret directly where possible
+Date: Mon, 4 Jun 2007 23:05:04 +0200
+User-Agent: KMail/1.9.1
+Cc: Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <46646662.9020707@goop.org> <200706042145.30339.ak@suse.de> <4664772A.20602@goop.org>
+In-Reply-To: <4664772A.20602@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46646389.7090101@am.sony.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-Id: <200706042305.05340.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 12:10:01PM -0700, Tim Bird wrote:
-> Greg,
-> 
-> I'm having problems cloning the stable git tree for 2.6.21.
-> Here's what I get:
-> 
-> $ git clone http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.21.y.git stable-2.6.21.y
-> Cannot get remote repository information.
-> Perhaps git-update-server-info needs to be run there?
+On Monday 04 June 2007 22:33, Jeremy Fitzhardinge wrote:
 
-Ick, don't clone by "http://", please use the git protocol instead:
-	git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.21.y.git
+> Hm, yes, I guess so.  I'd assumed that softirq was in the WORK_NEEDED
+> path of entry.S without checking; but anything which can set one of the
+> WORK_NEEDED flags is an issue.
 
-that should work better.
+For interrupts it can be only signals or rescheduling.
 
-thanks,
+> >>  - If the interrupt causes a signal to be delivered to the current
+> >> process, the signal will be marked pending on the process, but it will
+> >> not get delivered because we're past the point where pending signals are
+> >> detected.  Again, it could be an unbounded amount of time before the
+> >> signal gets delivered.
+> >
+> > It's still not clear to me why you can't do cli ; check again ;
+> > iret-equivalent to handle this.
+>
+> Well, we use the real iret instruction to actually transition into
+> userspace; obviously we can't do anything after that, and there's always
+> going to be an open window before it because we can't do anything
+> instruction-level atomic.
 
-greg k-h
+If you stay cli you don't need that. Why is it that it has to enable 
+interrupts?
+
+> In your sequence, the event may become pending after "check again", even
+> though it won't be delivered. 
+
+sti only takes affect one instruction after it. So if you can make 
+it that small it would also work. But that might not help you.
+
+-Andi
