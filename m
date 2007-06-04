@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbXFDP7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbXFDQBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbXFDP7a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbXFDP7X
+	id S1757375AbXFDQBS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbXFDQBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:59:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:7175 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697AbXFDP7X (ORCPT
+	Mon, 4 Jun 2007 12:01:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:32811 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755017AbXFDQBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:59:23 -0400
+	Mon, 4 Jun 2007 12:01:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JDEym4CjKIcIj+Ss1ddGQdDx1O55mvFaJix7Qwic3mkysx8QOqOlwVUPcB2WaJzwEnKuqBE0WChAp8yHLQfFzzPo/QxFN+9sM5npCSaYDTmv5+w0kaABqZomofGlvgB1NMeXajhQApppE9u4hoycsGNbYX+A8QTayZZZF0zLOL4=
-Message-ID: <e7ca40f70706040859g323d813fy3d7e741de8f190dc@mail.gmail.com>
-Date: Mon, 4 Jun 2007 11:59:22 -0400
-From: "Aaron Wiebe" <epiphani@gmail.com>
-To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Subject: Re: slow open() calls and o_nonblock
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1180971726.17737.36.camel@heimdal.trondhjem.org>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=l3RvfykleHUri7ar0hC7++CoeIejYHrmK8VYLK+n8ZjP5rJvHR5UbBX6LE3MckKh7h52pAiIKh/3C9OX31KXqUVQrT1xsdaoB1lbw1O/3kogTvVi388VWUveiJcQ2GYzYB0n6rFFMob6UUn3Zi5VNqU5B1ZpLnhO3ikaCIG1JVw=
+Message-ID: <2c0942db0706040901n473afb20x800cb489e3f7732b@mail.gmail.com>
+Date: Mon, 4 Jun 2007 09:01:06 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
+Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Matt Keenan" <tank.en.mate@gmail.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0706041149160.18306@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
-	 <e7ca40f70706040720k48aae8efg7a4997ce1d6f2450@mail.gmail.com>
-	 <1180971726.17737.36.camel@heimdal.trondhjem.org>
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
+	 <Pine.LNX.4.64.0706021610210.19116@p34.internal.lan>
+	 <4662869A.9030700@gmail.com>
+	 <200706040840.21593.jbarnes@virtuousgeek.org>
+	 <2c0942db0706040848y1d1c2ce9p521c65117244edf1@mail.gmail.com>
+	 <Pine.LNX.4.64.0706041149160.18306@p34.internal.lan>
+X-Google-Sender-Auth: 1c72fef7f5d08a66
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/4/07, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+On 6/4/07, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+> On Mon, 4 Jun 2007, Ray Lee wrote:
+> > Ick. Systems that used to boot fine would then panic on a kernel
+> > upgrade. That's rather rude for a condition that's merely an
+> > optimization (using all memory), rather than one of correctness. A
+> > panic seems entirely inappropriate.
 >
-> So exactly how would you expect a nonblocking open to work? Should it be
-> starting I/O? What if that involves blocking? How would you know when to
-> try again?
+> While I am unsure of the 'best' solution, if they boot and it does not
+> panic but takes 10 minutes to boot, people are going to seriously wonder
+> what is going on?
 
-Well, theres a bunch of options - some have been suggested in the
-thread already.  The idea of an open with O_NONBLOCK (or a different
-flag) returning a handle immediately, and subsequent calls returning
-EAGAIN if the open is incomplete, or ESTALE if it fails (with some
-auxiliary method of getting the reason why it failed) are not too far
-a stretch from my perspective.
+<goes and re-reads thread more carefully> Oh, hmm.
 
-The other option that comes to mind would be to add an interface that
-behaves like sockets - get a handle from one system call, set it
-nonblocking using fcntl, and use another call to attach it to a
-regular file.  This method would make the most sense to me - but its
-also because I've worked with sockets in the past far far more than
-with regular files.
+I think a big fat warning with asterisks in the bootup is a good
+thing, but panicking when there's no need is never a good idea. If the
+system takes that long to boot up, I'm certain the first thing they'll
+do is to type dmesg | less to look for anomalies.
 
-The one that would take the least amount of work from the application
-perspective would be to simply reply to the nonblocking open call with
-EAGAIN (or something), and when an open on the same file is performed,
-the kernel could have performed its work in the background.  I can
-understand, given the fact that there is no handle provided to the
-application, that this idea could be sloppy.
-
-I'm still getting caught up on some of the other suggestions (I'm
-currently reading about the syslets work that Zach and Ingo are
-doing), and it sounds like this is a common complaint that is being
-addressed through a number of initiatives.  I'm looking forward to
-seeing where that work goes.
-
--Aaron
+Ray
