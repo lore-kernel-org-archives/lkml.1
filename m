@@ -1,88 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbXFDSlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbXFDSln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760275AbXFDSlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 14:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758610AbXFDSlJ
+	id S1760448AbXFDSln (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 14:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbXFDSld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 14:41:09 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:47484 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754342AbXFDSlI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 14:41:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=BajuxvVO4liLHI469jWdjo8ABOgC5TgWUaTKQMXYQdhogRPqfDNCbOUU1hoUmfln1Ku1hB+AtYPVOlZwQsSdTkGZ1j0Tbkj3NhtNDkNCNnCWTWZOTqfY34IFUVY/H2+/ijPXj22lTHhNn8NXUYMuN1TabR9BpCY1EXxaQkCJzl8=
-Message-ID: <84144f020706041141q26d0cba2u352c294d1ec90daf@mail.gmail.com>
-Date: Mon, 4 Jun 2007 21:41:07 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: [Q] Bio traversal trouble?
-Cc: "Jens Axboe" <axboe@suse.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4663DE68.5030200@gmail.com>
+	Mon, 4 Jun 2007 14:41:33 -0400
+Received: from waste.org ([66.93.16.53]:59510 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754779AbXFDSlc (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 14:41:32 -0400
+Date: Mon, 4 Jun 2007 13:41:06 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       Linux-kernel@vger.kernel.org
+Subject: Re: Interesting interaction between lguest and CFS
+Message-ID: <20070604184106.GG11115@waste.org>
+References: <20070604173710.GR11166@waste.org> <20070604175436.GC30274@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4663DE68.5030200@gmail.com>
-X-Google-Sender-Auth: 9566f62b88ae9f75
+In-Reply-To: <20070604175436.GC30274@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rene,
+On Mon, Jun 04, 2007 at 07:54:36PM +0200, Ingo Molnar wrote:
+> 
+> * Matt Mackall <mpm@selenic.com> wrote:
+> 
+> > With 2.6.22-rc3-mm1, I've got a long-running video transcoding going 
+> > on. In other windows, I'm compiling, reading email, etc. with no 
+> > noticeable problems.
+> > 
+> > If I fire up lguest and leave it sitting at a shell prompt for a 
+> > couple moments, when I return to type something at the prompt, it can 
+> > take 2-3 seconds for my input to echo. Once it starts responding, 
+> > typing latency disappears. Suspend the other app and the latency 
+> > disappears.
+> > 
+> > The system isn't swapping and has basically no I/O load.
+> 
+> could you send me the /proc/PID/sched file of that task which shows this 
+> 2-3 seconds delay? (if it's a shell and a graphical terminal then please 
+> send the sched-debug file of both.) I suspect the latency goes away if 
+> you strace -f the shell task(s)? If not then please send the strace 
+> output too.
 
-On 6/4/07, Rene Herman <rene.herman@gmail.com> wrote:
-> BUG: unable to handle kernel paging request at virtual address 8c1d2071
->  printing eip:
-> c10a6d6f
-> *pde = 00000000
-> Oops: 0002 [#1]
-> Modules linked in: mitsumi nfsd exportfs lockd sunrpc nls_cp437 msdos
-> fat nls_base
-> CPU:    0
-> EIP:    0060:[<c10a6d6f>]    Not tainted VLI
-> EFLAGS: 00010246   (2.6.21.3 #1)
-> EIP is at ioread8_rep+0x20/0x31
+Not sure why the shell task (bash) is interesting here?
 
-[snip]
+gnome-terminal(4177)->bash(4409)->lg(24934)->lguest(24936)->lguest(24944)
 
-On 6/4/07, Rene Herman <rene.herman@gmail.com> wrote:
-> Code: 00 00 89 c8 ef c3 0f c9 89 0a c3 57 3d ff ff 03 00 53 89 d7 89 c3
-> 89 ca 77 15 66 31 c0 3d 00 00 01 00 74 04 0f 0b eb fe 0f b7 d3 <f3> 6c
-> eb 0a 4a 78 07 8a 03 88 07 47 eb f6 5b 5f c3 57 3d ff ff
-> EIP: [<c10a6d6f>] ioread8_rep+0x20/0x31 SS:ESP 0068:c3145aec
+(lg is a shell script to launch lguest)
 
-So this is the repz/insb instruction (f3 6c) in ioread8_rep() which it
-reads ECX bytes from port EDX and stores the data in ES:[EDI].
+/proc/4177/sched 
+wait_start               :                   0
+wait_start_fair          :                   0
+exec_start               :                   0
+sleep_start              :   53594838106004537
+sleep_start_fair         :   53575815099165186
+block_start              :                   0
+sleep_max                :         57476665627
+block_max                :   18014060106626075
+exec_max                 :             4021419
+wait_max                 :           557161172
+last_ran                 :                   0
+wait_runtime             :            23552233
+wait_runtime_overruns    :             1864716
+wait_runtime_underruns   :                 310
+sum_exec_runtime         :        678350336100
+clock-delta              :                  94
 
-Looking at the registers and stack:
+cat /proc/4409/sched 
+wait_start               :                   0
+wait_start_fair          :                   0
+exec_start               :                   0
+sleep_start              :   53593602868366272
+sleep_start_fair         :   53575146154577161
+block_start              :                   0
+sleep_max                :       2006065218683
+block_max                :           457256091
+exec_max                 :             3995741
+wait_max                 :           107832482
+last_ran                 :                   0
+wait_runtime             :            23634554
+wait_runtime_overruns    :                 316
+wait_runtime_underruns   :                   9
+sum_exec_runtime         :           289263702
+clock-delta              :                  83
 
-On 6/4/07, Rene Herman <rene.herman@gmail.com> wrote:
-> eax: 00010000   ebx: 00010300   ecx: 00000800   edx: 00000300
-> esi: c3145b30   edi: 8c1d2071   ebp: 8c1d2071   esp: c3145aec
-> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> Process dd (pid: 1770, ti=c3145000 task=c3114110 task.ti=c3145000)
-> Stack: 00000000 c3a7ad48 c486504d c4865ab7 00000006 50020034 c1015f7b
-> 00000292
->        00000000 00520300 00000100 0007e000 00000000 c3340300 c10a0531
-> 00000000
->        c12adf60 00000000 00000001 00000000 00000000 00000000 dead4ead
-> ffffffff
+/proc/24936/sched 
+wait_start               :                   0
+wait_start_fair          :                   0
+exec_start               :                   0
+sleep_start              :   53594765858891273
+sleep_start_fair         :   53575748785282138
+block_start              :                   0
+sleep_max                :            21492554
+block_max                :            27044576
+exec_max                 :             4008057
+wait_max                 :          1253670288
+last_ran                 :                   0
+wait_runtime             :            23955448
+wait_runtime_overruns    :              270678
+wait_runtime_underruns   :                   1
+sum_exec_runtime         :         36978464446
+clock-delta              :                  81
 
-We can see that we're reading 2048 bytes from port 0x300 and storing
-the data in memory location 0x8c1d2071 which causes the OOPS. What's
-surprising is that EBP is set to 0x8c1d2071 too which suggests stack
-corruption (note that ioread8_rep() is a fastcall so it does not
-create a stack frame of its own). What you could do here is add some
-printks and watch how dst changes over time to see if you can figure
-out a pattern.
+/proc/24944/sched 
+wait_start               :                   0
+wait_start_fair          :                   0
+exec_start               :                   0
+sleep_start              :   53594628265104224
+sleep_start_fair         :   53575623092295018
+block_start              :                   0
+sleep_max                :        223179035512
+block_max                :                   0
+exec_max                 :             3960054
+wait_max                 :          4334838886
+last_ran                 :                   0
+wait_runtime             :            23959470
+wait_runtime_overruns    :                1243
+wait_runtime_underruns   :                  15
+sum_exec_runtime         :            17872418
+clock-delta              :                  81
 
-Also, assuming CFQ fiddles with the request after we've done
-elv_next_request() and dropped the lock, one thing worth trying is to
-do blk_stop_queue() before we drop it and blk_start_queue after we
-reacquire it so that we don't actually get any new I/O while we wait
-for mitsumi_get_frame() to finish.
+strace -f doesn't kill the latency, here's an strace:
 
-				Pekka
+24936 13:39:44.469329 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:44.469572 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:44.469677 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:44.469765 read(7, 0xbfe6c010, 8) = -1 EINTR (Interrupted system call)
+24936 13:39:48.699490 --- SIGUSR1 (User defined signal 1) @ 0 (0) ---
+24936 13:39:48.699655 sigreturn()       = ? (mask now [])
+24936 13:39:48.699842 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.699939 select(4, [0 3], NULL, NULL, {0, 0}) = 1 (in [0], left {0, 0})
+24936 13:39:48.700063 write(7, "\1\0\0\0\0\0\0\0", 8) = 5675552
+24936 13:39:48.700168 readv(0, [{"sdfsdfsdfsdfsdon\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 256}], 1) = 14
+24936 13:39:48.700360 write(7, "\2\0\0\0\3\0\0\0", 8) = 0
+24936 13:39:48.700451 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.700547 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.700635 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.700872 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.700962 writev(1, [{"s", 1}], 1) = 1
+24936 13:39:48.701200 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.701297 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.701385 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.701495 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.701584 writev(1, [{"d", 1}], 1) = 1
+24936 13:39:48.701773 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.701870 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.701957 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.702061 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.702149 writev(1, [{"f", 1}], 1) = 1
+24936 13:39:48.702336 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.702431 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.702519 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.702622 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.702710 writev(1, [{"s", 1}], 1) = 1
+24936 13:39:48.702898 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.702993 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.703157 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.703264 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.703352 writev(1, [{"d", 1}], 1) = 1
+24936 13:39:48.703541 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.703636 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.703724 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.703828 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.703916 writev(1, [{"f", 1}], 1) = 1
+24936 13:39:48.704103 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.704198 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.704285 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.704389 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.704476 writev(1, [{"s", 1}], 1) = 1
+24936 13:39:48.704662 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.704758 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.704845 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.704948 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.705036 writev(1, [{"d", 1}], 1) = 1
+24936 13:39:48.705222 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.705317 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.705405 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.705508 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.705595 writev(1, [{"f", 1}], 1) = 1
+24936 13:39:48.705781 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.705877 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.705964 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.706068 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.706155 writev(1, [{"s", 1}], 1) = 1
+24936 13:39:48.706341 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.706483 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.706571 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.706675 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.706763 writev(1, [{"d", 1}], 1) = 1
+24936 13:39:48.706950 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.707045 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.707221 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.707325 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.707414 writev(1, [{"f", 1}], 1) = 1
+24936 13:39:48.707600 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.707695 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.707800 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.707904 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.707992 writev(1, [{"s", 1}], 1) = 1
+24936 13:39:48.708177 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.708273 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.708360 read(7, "P\216\304\2\0\0\0\0", 8) = 8
+24936 13:39:48.708463 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.708551 writev(1, [{"d", 1}], 1) = 1
+24936 13:39:48.708736 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.708832 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.708919 read(7, 0xbfe6c010, 8) = -1 EINTR (Interrupted system call)
+24936 13:39:48.951555 --- SIGUSR1 (User defined signal 1) @ 0 (0) ---
+24936 13:39:48.951697 sigreturn()       = ? (mask now [])
+24936 13:39:48.951884 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.951983 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
+24936 13:39:48.952092 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
+24936 13:39:48.952184 read(7,  <unfinished ...>
+
+
+
+-- 
+Mathematics is the supreme nostalgia of our time.
