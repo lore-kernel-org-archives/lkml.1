@@ -1,135 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbXFDWN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761328AbXFDWNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761626AbXFDWN5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 18:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbXFDWNr
+	id S1761328AbXFDWNi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 18:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbXFDWN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 18:13:47 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53834 "EHLO
+	Mon, 4 Jun 2007 18:13:29 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:53830 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756925AbXFDWNq (ORCPT
+	with ESMTP id S1754204AbXFDWN2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 18:13:46 -0400
-Date: Tue, 5 Jun 2007 00:13:49 +0200
+	Mon, 4 Jun 2007 18:13:28 -0400
+Date: Tue, 5 Jun 2007 00:13:31 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, drzeus-mmc@drzeus.cx
+To: "Antonino A. Daplas" <adaplas@gmail.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] drivers/mmc/core/core.{h,c}: cleanups
-Message-ID: <20070604221349.GF5500@stusta.de>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+Subject: [2.6 patch] drivers/video/vt8623fb.c: make code static
+Message-ID: <20070604221331.GE5500@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 11:58:23PM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.22-rc2-mm1:
->...
->  git-mmc.patch
->...
->  git trees
->...
+This patch makes needlessly global code static.
 
-This patch contains the following cleanups:
-- make the following needlessly global functions static:
-  - core.c: mmc_schedule_delayed_work()
-  - core.c: mmc_flush_scheduled_work()
-- removes the prototope of the following non-existing function:
-  - core.h: mmc_schedule_work()
-- proper prototypes for three functions from core.c in core.h
- 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/mmc/core/core.c |   37 +++++++++++++++++++------------------
- drivers/mmc/core/core.h |    6 +++---
- drivers/mmc/core/host.c |    4 ----
- 3 files changed, 22 insertions(+), 25 deletions(-)
+ drivers/video/vt8623fb.c |   40 +++++++++++++++++++--------------------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
---- linux-2.6.22-rc3-mm1/drivers/mmc/core/core.h.old	2007-06-04 21:53:42.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/mmc/core/core.h	2007-06-04 23:19:44.000000000 +0200
-@@ -64,9 +64,9 @@ static inline void mmc_delay(unsigned in
- 	}
- }
+--- linux-2.6.22-rc3-mm1/drivers/video/vt8623fb.c.old	2007-06-04 22:56:01.000000000 +0200
++++ linux-2.6.22-rc3-mm1/drivers/video/vt8623fb.c	2007-06-04 23:02:06.000000000 +0200
+@@ -68,26 +68,26 @@ static const struct svga_pll vt8623_pll 
  
--int mmc_schedule_work(struct work_struct *work);
--int mmc_schedule_delayed_work(struct delayed_work *work, unsigned long delay);
--void mmc_flush_scheduled_work(void);
-+void mmc_rescan(struct work_struct *work);
-+void mmc_start_host(struct mmc_host *host);
-+void mmc_stop_host(struct mmc_host *host);
+ /* CRT timing register sets */
  
- #endif
- 
---- linux-2.6.22-rc3-mm1/drivers/mmc/core/core.c.old	2007-06-04 21:54:46.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/mmc/core/core.c	2007-06-04 21:57:38.000000000 +0200
-@@ -37,6 +37,25 @@
- extern int mmc_attach_mmc(struct mmc_host *host, u32 ocr);
- extern int mmc_attach_sd(struct mmc_host *host, u32 ocr);
- 
-+static struct workqueue_struct *workqueue;
-+
-+/*
-+ * Internal function. Schedule delayed work in the MMC work queue.
-+ */
-+static int mmc_schedule_delayed_work(struct delayed_work *work,
-+				     unsigned long delay)
-+{
-+	return queue_delayed_work(workqueue, work, delay);
-+}
-+
-+/*
-+ * Internal function. Flush all scheduled work from the MMC work queue.
-+ */
-+static void mmc_flush_scheduled_work(void)
-+{
-+	flush_workqueue(workqueue);
-+}
-+
- /**
-  *	mmc_request_done - finish processing an MMC request
-  *	@host: MMC host which completed request
-@@ -640,24 +659,6 @@ EXPORT_SYMBOL(mmc_resume_host);
- 
- #endif
- 
--static struct workqueue_struct *workqueue;
+-struct vga_regset vt8623_h_total_regs[]       = {{0x00, 0, 7}, {0x36, 3, 3}, VGA_REGSET_END};
+-struct vga_regset vt8623_h_display_regs[]     = {{0x01, 0, 7}, VGA_REGSET_END};
+-struct vga_regset vt8623_h_blank_start_regs[] = {{0x02, 0, 7}, VGA_REGSET_END};
+-struct vga_regset vt8623_h_blank_end_regs[]   = {{0x03, 0, 4}, {0x05, 7, 7}, {0x33, 5, 5}, VGA_REGSET_END};
+-struct vga_regset vt8623_h_sync_start_regs[]  = {{0x04, 0, 7}, {0x33, 4, 4}, VGA_REGSET_END};
+-struct vga_regset vt8623_h_sync_end_regs[]    = {{0x05, 0, 4}, VGA_REGSET_END};
 -
--/*
-- * Internal function. Schedule delayed work in the MMC work queue.
-- */
--int mmc_schedule_delayed_work(struct delayed_work *work, unsigned long delay)
--{
--	return queue_delayed_work(workqueue, work, delay);
--}
+-struct vga_regset vt8623_v_total_regs[]       = {{0x06, 0, 7}, {0x07, 0, 0}, {0x07, 5, 5}, {0x35, 0, 0}, VGA_REGSET_END};
+-struct vga_regset vt8623_v_display_regs[]     = {{0x12, 0, 7}, {0x07, 1, 1}, {0x07, 6, 6}, {0x35, 2, 2}, VGA_REGSET_END};
+-struct vga_regset vt8623_v_blank_start_regs[] = {{0x15, 0, 7}, {0x07, 3, 3}, {0x09, 5, 5}, {0x35, 3, 3}, VGA_REGSET_END};
+-struct vga_regset vt8623_v_blank_end_regs[]   = {{0x16, 0, 7}, VGA_REGSET_END};
+-struct vga_regset vt8623_v_sync_start_regs[]  = {{0x10, 0, 7}, {0x07, 2, 2}, {0x07, 7, 7}, {0x35, 1, 1}, VGA_REGSET_END};
+-struct vga_regset vt8623_v_sync_end_regs[]    = {{0x11, 0, 3}, VGA_REGSET_END};
 -
--/*
-- * Internal function. Flush all scheduled work from the MMC work queue.
-- */
--void mmc_flush_scheduled_work(void)
--{
--	flush_workqueue(workqueue);
--}
--
- static int __init mmc_init(void)
+-struct vga_regset vt8623_offset_regs[]        = {{0x13, 0, 7}, {0x35, 5, 7}, VGA_REGSET_END};
+-struct vga_regset vt8623_line_compare_regs[]  = {{0x18, 0, 7}, {0x07, 4, 4}, {0x09, 6, 6}, {0x33, 0, 2}, {0x35, 4, 4}, VGA_REGSET_END};
+-struct vga_regset vt8623_fetch_count_regs[]   = {{0x1C, 0, 7}, {0x1D, 0, 1}, VGA_REGSET_END};
+-struct vga_regset vt8623_start_address_regs[] = {{0x0d, 0, 7}, {0x0c, 0, 7}, {0x34, 0, 7}, {0x48, 0, 1}, VGA_REGSET_END};
++static struct vga_regset vt8623_h_total_regs[]       = {{0x00, 0, 7}, {0x36, 3, 3}, VGA_REGSET_END};
++static struct vga_regset vt8623_h_display_regs[]     = {{0x01, 0, 7}, VGA_REGSET_END};
++static struct vga_regset vt8623_h_blank_start_regs[] = {{0x02, 0, 7}, VGA_REGSET_END};
++static struct vga_regset vt8623_h_blank_end_regs[]   = {{0x03, 0, 4}, {0x05, 7, 7}, {0x33, 5, 5}, VGA_REGSET_END};
++static struct vga_regset vt8623_h_sync_start_regs[]  = {{0x04, 0, 7}, {0x33, 4, 4}, VGA_REGSET_END};
++static struct vga_regset vt8623_h_sync_end_regs[]    = {{0x05, 0, 4}, VGA_REGSET_END};
++
++static struct vga_regset vt8623_v_total_regs[]       = {{0x06, 0, 7}, {0x07, 0, 0}, {0x07, 5, 5}, {0x35, 0, 0}, VGA_REGSET_END};
++static struct vga_regset vt8623_v_display_regs[]     = {{0x12, 0, 7}, {0x07, 1, 1}, {0x07, 6, 6}, {0x35, 2, 2}, VGA_REGSET_END};
++static struct vga_regset vt8623_v_blank_start_regs[] = {{0x15, 0, 7}, {0x07, 3, 3}, {0x09, 5, 5}, {0x35, 3, 3}, VGA_REGSET_END};
++static struct vga_regset vt8623_v_blank_end_regs[]   = {{0x16, 0, 7}, VGA_REGSET_END};
++static struct vga_regset vt8623_v_sync_start_regs[]  = {{0x10, 0, 7}, {0x07, 2, 2}, {0x07, 7, 7}, {0x35, 1, 1}, VGA_REGSET_END};
++static struct vga_regset vt8623_v_sync_end_regs[]    = {{0x11, 0, 3}, VGA_REGSET_END};
++
++static struct vga_regset vt8623_offset_regs[]        = {{0x13, 0, 7}, {0x35, 5, 7}, VGA_REGSET_END};
++static struct vga_regset vt8623_line_compare_regs[]  = {{0x18, 0, 7}, {0x07, 4, 4}, {0x09, 6, 6}, {0x33, 0, 2}, {0x35, 4, 4}, VGA_REGSET_END};
++static struct vga_regset vt8623_fetch_count_regs[]   = {{0x1C, 0, 7}, {0x1D, 0, 1}, VGA_REGSET_END};
++static struct vga_regset vt8623_start_address_regs[] = {{0x0d, 0, 7}, {0x0c, 0, 7}, {0x34, 0, 7}, {0x48, 0, 1}, VGA_REGSET_END};
+ 
+-struct svga_timing_regs vt8623_timing_regs     = {
++static struct svga_timing_regs vt8623_timing_regs     = {
+ 	vt8623_h_total_regs, vt8623_h_display_regs, vt8623_h_blank_start_regs,
+ 	vt8623_h_blank_end_regs, vt8623_h_sync_start_regs, vt8623_h_sync_end_regs,
+ 	vt8623_v_total_regs, vt8623_v_display_regs, vt8623_v_blank_start_regs,
+@@ -903,7 +903,7 @@ static void __exit vt8623fb_cleanup(void
+ 
+ /* Driver Initialisation */
+ 
+-int __init vt8623fb_init(void)
++static int __init vt8623fb_init(void)
  {
- 	int ret;
---- linux-2.6.22-rc3-mm1/drivers/mmc/core/host.c.old	2007-06-04 23:18:35.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/mmc/core/host.c	2007-06-04 23:19:25.000000000 +0200
-@@ -23,10 +23,6 @@
  
- #define cls_dev_to_mmc_host(d)	container_of(d, struct mmc_host, class_dev)
- 
--extern void mmc_rescan(struct work_struct *work);
--extern void mmc_start_host(struct mmc_host *host);
--extern void mmc_stop_host(struct mmc_host *host);
--
- static void mmc_host_classdev_release(struct device *dev)
- {
- 	struct mmc_host *host = cls_dev_to_mmc_host(dev);
+ #ifndef MODULE
 
