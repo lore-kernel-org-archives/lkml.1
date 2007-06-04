@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbXFDQ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbXFDRCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759542AbXFDQ5T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759345AbXFDQ5J
+	id S1759365AbXFDRCT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 13:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbXFDRCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:57:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46160 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759201AbXFDQ5H (ORCPT
+	Mon, 4 Jun 2007 13:02:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:31077 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756785AbXFDRCK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:57:07 -0400
-Date: Mon, 4 Jun 2007 09:56:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 1/2] ufd v1 - unsequential O(1) fdmap core
-Message-Id: <20070604095605.66e04153.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706040533210.30231@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.24319.1180825145.1>
-	<46633047.1020707@cosmosbay.com>
-	<Pine.LNX.4.64.0706031536000.13247@alien.or.mcafeemobile.com>
-	<20070603230859.5000424d.akpm@linux-foundation.org>
-	<20070604080537.GA22898@elte.hu>
-	<20070604080941.GA23537@elte.hu>
-	<20070604013449.ea3acca8.akpm@linux-foundation.org>
-	<20070604084227.GA29446@elte.hu>
-	<20070604014759.aaa3b051.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706040533210.30231@alien.or.mcafeemobile.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 Jun 2007 13:02:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=tsLNHrCdZcjAn0BBJJtOsHNA+muP0Pc+1ldMEEFVh/+Nhxfp/WKzME+UwkppatV7AfyRjEExvyZr1qnb0PgahBsKBv623BxFkJFXsDW4TUCpdV/nLUJORG3QiYVH6dGZ5daVkLfZC9FXlVzaML2EKtDSAdKZHhn5oJxYUykvYMQ=
+Message-ID: <84144f020706041002t39142548l29cff861461dd7d7@mail.gmail.com>
+Date: Mon, 4 Jun 2007 20:02:09 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, jeremy@goop.org
+In-Reply-To: <ada6463llgr.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com>
+	 <20070601213117.1178e8e0.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0706012139480.11577@schroedinger.engr.sgi.com>
+	 <84144f020706040808t4882f961t80b8d8eb145bfa50@mail.gmail.com>
+	 <Pine.LNX.4.64.0706040916090.23191@schroedinger.engr.sgi.com>
+	 <84144f020706040922v56cb10eg5a730b4abe9d5251@mail.gmail.com>
+	 <alpine.LFD.0.98.0706040924070.23741@woody.linux-foundation.org>
+	 <84144f020706040937xb06535em543fa887ad65ee8f@mail.gmail.com>
+	 <ada6463llgr.fsf@cisco.com>
+X-Google-Sender-Auth: 013bd1156cf9c526
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jun 2007 06:05:22 -0700 (PDT) Davide Libenzi <davidel@xmailserver.org> wrote:
+On 6/4/07, Roland Dreier <rdreier@cisco.com> wrote:
+> No, because as was mentioned earlier in the thread, we want code to be
+> able to handle 0-sized allocations without special cases.  The goal is
+> that code like
+>
+>         buf = kmalloc(nobj * obj_size);
+>         if (buf == NULL)
+>                 return -ENOMEM;
+>
+> should work fine if nobj happens to be 0.  But we do want to get an
+> oops if the code actually tries to read or write *buf.
 
-> On Mon, 4 Jun 2007, Andrew Morton wrote:
-> 
-> > a) Were IDR trees evaluated and if so, why were they rejected?
-> > 
-> > b) it's a bit disappointing that this new allocator is only usable for
-> >    one specific application.  We have a *lot* of places in the kernel which
-> >    want allocators of this type.  Many of them are open-coded and crappy. 
-> >    Some use IDR trees.
-> > 
-> >    If we're going to go and add a complete new allocator, it would be
-> >    good to position it as a library thing if poss.
-> 
-> Thank you for pointing me to that, Andrew. I didn't know about it (IDR 
-> trees).
-> It does not fit AFAICS.
-> Locking should be handled extarnally (the files 
-> struct),
-
-Yeah, that's already a problem in IDR and I'm hoping sometime someone will
-be inspired to redo it, move it to caller-provided locking.
-
-> must be RCU friendly (proper barriers) since it's used in 
-> lockless code,
-
-Haven't looked at that.
-
-> and must have flags associated to an allocation.
-
-Don't understand that.
-
-> And I'm 
-> leaving out the O(1) part, that for something like this, is just silly not 
-> to have it. This is really an array.
-
-Having to walk down a tree in fget_light() would kinda suck.
-
-What about my b)?
+Aah, missed that part of the discussion. Sorry for the noise ;-)
