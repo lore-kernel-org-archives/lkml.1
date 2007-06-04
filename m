@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbXFDIQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbXFDITT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753510AbXFDIQq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 04:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbXFDIQk
+	id S1753497AbXFDITT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 04:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbXFDITN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 04:16:40 -0400
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:56182 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752300AbXFDIQj (ORCPT
+	Mon, 4 Jun 2007 04:19:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:45033 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752321AbXFDITM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 04:16:39 -0400
-Date: Mon, 4 Jun 2007 10:15:35 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org
-Subject: Re: [-mm patch] drivers/i2c/chips/ds1682.c: make code static
-Message-ID: <20070604101535.3913bf3b@hyperion.delvare>
-In-Reply-To: <20070603205417.GP5500@stusta.de>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
-	<20070603205417.GP5500@stusta.de>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Mon, 4 Jun 2007 04:19:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Zewvm1cae/HS5doUGNAScmGaQfa4iMk/6blXH7pJO04lnr/Mh02XrFmEkPZkC6ByakaeodoCE+G0VYc1TaoRh8MtRNwicBQ17TeuqdAk+k4vb58NzopedOiGRUYWKOEZRxZm69oVQnHh/IxsI9iLVfeGbRGDsjg1ZXAA3mmruxA=
+Date: Mon, 4 Jun 2007 16:19:38 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Al Viro <viro@ftp.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org, Chen Li-jun <cljun@xiyou.edu.cn>,
+       Wang Ya-gang <lazy_linux@126.com>
+Subject: [RFC] Documentation/CodingStyle: Add rules for goto labels (-v2)
+Message-ID: <20070604081938.GC2074@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: Jeremy Fitzhardinge <jeremy@goop.org>,
+	Jeff Garzik <jeff@garzik.org>, Randy Dunlap <rdunlap@xenotime.net>,
+	Al Viro <viro@ftp.linux.org.uk>,
+	LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+	Chen Li-jun <cljun@xiyou.edu.cn>, Wang Ya-gang <lazy_linux@126.com>
+References: <20070603142450.GA4230@localhost.localdomain> <20070603142939.GW4095@ftp.linux.org.uk> <20070603074552.430c3d02.rdunlap@xenotime.net> <4662DFCF.3010606@garzik.org> <20070604045857.GE2161@localhost.localdomain> <4663B84E.2060103@goop.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4663B84E.2060103@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
 
-On Sun, 3 Jun 2007 22:54:17 +0200, Adrian Bunk wrote:
-> This patch makes some needlessly global code static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> ---
-> 
->  drivers/i2c/chips/ds1682.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> --- linux-2.6.22-rc3-mm1/drivers/i2c/chips/ds1682.c.old	2007-06-03 22:18:53.000000000 +0200
-> +++ linux-2.6.22-rc3-mm1/drivers/i2c/chips/ds1682.c	2007-06-03 22:21:07.000000000 +0200
-> @@ -121,12 +121,12 @@
->  /*
->   * Simple register attributes
->   */
-> -SENSOR_DEVICE_ATTR_2(elapsed_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
-> -		     4, DS1682_REG_ELAPSED);
-> -SENSOR_DEVICE_ATTR_2(alarm_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
-> -		     4, DS1682_REG_ALARM);
-> -SENSOR_DEVICE_ATTR_2(event_count, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
-> -		     2, DS1682_REG_EVT_CNTR);
-> +static SENSOR_DEVICE_ATTR_2(elapsed_time, S_IRUGO | S_IWUSR, ds1682_show,
-> +			    ds1682_store, 4, DS1682_REG_ELAPSED);
-> +static SENSOR_DEVICE_ATTR_2(alarm_time, S_IRUGO | S_IWUSR, ds1682_show,
-> +			    ds1682_store, 4, DS1682_REG_ALARM);
-> +static SENSOR_DEVICE_ATTR_2(event_count, S_IRUGO | S_IWUSR, ds1682_show,
-> +			    ds1682_store, 2, DS1682_REG_EVT_CNTR);
->  
->  static const struct attribute_group ds1682_group = {
->  	.attrs = (struct attribute *[]) {
+Lindent gets wrong when it meets goto labels. This should be fixed manually.
+And kernel's CodingStyle doesn't specify the indentation for goto labels explicitly.
 
-Good catch. I've folded this fix into i2c-ds1628-new-driver.patch,
-thanks for reporting.
+This patch adds specifications on those things about goto labels in CodingStyle. And it is
+against -rc3 source tree.
 
--- 
-Jean Delvare
+Thanks to Al Viro, Randy Dunlap, Jeff Garzik and Jeremy Fitzhardinge for their comments!
+
+Regards!
+
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+---
+ CodingStyle |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- linux-2.6.22-rc3/Documentation/CodingStyle.orig	2007-06-04 15:53:58.000000000 +0800
++++ linux-2.6.22-rc3/Documentation/CodingStyle	2007-06-04 16:04:31.000000000 +0800
+@@ -66,6 +66,13 @@ something to hide:
+ Don't put multiple assignments on a single line either.  Kernel coding style
+ is super simple.  Avoid tricky expressions.
+ 
++Do care when you use Lindent to indent your code, since it may use spaces
++instead of tabs before a goto label and it may also align the label in a
++wrong position. Generally speaking, a goto label should be always aligned in
++the first column. However, it might make sense to indent a label deeper if
++you've actually declared it local (__label__). Please fix it manually if you
++find Lindent is wrong.
++
+ Outside of comments, documentation and except in Kconfig, spaces are never
+ used for indentation, and the above example is deliberately broken.
+ 
+
