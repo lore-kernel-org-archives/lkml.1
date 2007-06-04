@@ -1,40 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbXFDK41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbXFDK5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbXFDK41 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 06:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbXFDK4Q
+	id S1753994AbXFDK5b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 06:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbXFDK5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 06:56:16 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:5213 "EHLO
+	Mon, 4 Jun 2007 06:57:24 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:5643 "EHLO
 	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752938AbXFDK4O (ORCPT
+	with ESMTP id S1752202AbXFDK5X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 06:56:14 -0400
+	Mon, 4 Jun 2007 06:57:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=G2H5irhRFupYg0ACV2YwMaRXjq4ifSKYRzwxMU9QpLdcuC/beiTZedXkK6UQRnIKeT7YDtElbPG0EbaONRCnVDgwvAvlOsCzo4EBx1FYD5bZpvWJZ7Ra2yr4tDZ6J9/JT/L5FJ12URMVAVcR8VizaH2oAqbq/CdriI8Dw/GgaDU=
-Message-ID: <b6fcc0a0706040356x7cad92ecl51f4d1aec6a85624@mail.gmail.com>
-Date: Mon, 4 Jun 2007 14:56:14 +0400
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
-To: Biker <biker@villagepeople.it>
-Subject: Re: WARNING: at mm/slab.c:777 __find_general_cachep() in 2.6.22-rc3
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200706041229.37779.biker@villagepeople.it>
+        b=eCvL61DlT2rsxH4/NBeEADn9GAOzgrqEx/r3TlIdc/dPpknPRAUV08mWMRaIsrrAIWiuUHvfDFC/LyOlRTYloxNBdUC1wSn/9K60rEFy7EZG75gxw9Np5gcbxsrxyZ46v5Un5tA3Hls4LRKLtObPQa/MscxJgI6Tx1FSp6gDmyQ=
+Message-ID: <a790ea7a0706040357g799e8756ue758e95d5b460307@mail.gmail.com>
+Date: Mon, 4 Jun 2007 12:57:21 +0200
+From: "Antonio Mignolli" <antoniomignolli@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: lid switch hangs notebook
+Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
+In-Reply-To: <200704131553.54787.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200706041229.37779.biker@villagepeople.it>
+References: <a790ea7a0703120753i232ace2bg7272fa479b821e32@mail.gmail.com>
+	 <20070315110606.741c2dc4.akpm@linux-foundation.org>
+	 <200704131553.54787.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/4/07, Biker <biker@villagepeople.it> wrote:
-> WARNING: at mm/slab.c:777 __find_general_cachep()
->  [<c016e0c4>]  [<f943288c>]  [<f9112bfa>]  [<f90f8546>]  [<c0104c90>]
-> [<c033702e>]  [<f90f15dd>]  [<f911de1d>]  [<f911e123>]  [<c01714d7>]
-> [<f911ba7c>]  [<f94300c9>]  [<f943016f>]  [<f9430157>]  [<c017d0bb>]
-> [<c0172741>]  [<c017d17c>]  [<c017d3fd>]  [<c01041c2>]
+Hi.
+The problem reported below has not been solved,
+I tried with the last stable kernel 2.6.21.3.
 
-Please, enable CONFIG_DEBUG_BUGVERBOSE, or decipher addresses
-into function calls yourself.
+But it seems not to be an ACPI issue,
+I removed ACPI support from the kernel,
+and still have the problem.
+What else could be?
+
+On 4/13/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> On Thursday 15 March 2007 13:06, Andrew Morton wrote:
+> > > On Mon, 12 Mar 2007 15:53:18 +0100 "Antonio Mignolli" <antoniomignolli@gmail.com> wrote:
+> > > Hi,
+> > > I'm running a slackware 10.2 on a HP/Compaq nx5000.
+> > >
+> > > With kernels <= 2.6.17.3 I didn't have problems.
+> > > Starting from 2.6.19 if I close the notebook's video,
+> > > or if I press the lid switch,
+> > > after a couple of time, or after a few seconds, the o.s. hangs
+> > > completely. The only thing to do is a brute power off
+> > > by pressing for 5 seconds the power button
+> > > (If I press for few it should do a clean shutdown -h).
+> > > I've tried 2.6.19, 2.6.19.1, 2.6.19.2, 2.6.20, 2.6.20.1, 2.6.20.2,
+> > > and all of them seem to give problems.
+> > >
+> > > I don't have KERNEL_DEBUG set, so I haven't any debug informations,
+> > > I will be happy to activate it and provide more info if someone suggests
+> > > me which debug parameters I should set.
+> > > There's nothing in /var/log/messages and /var/log/syslog,
+> > > except for the message "LID switch" added by me
+> > > with a logger command in /etc/acpi/acpi_handler.sh.
+> > > I've put it after noticing the problem, in order to be sure the event was
+> > > detected, and it was.
+> >
+> > I guess this is an ACPI think, although not necessarily.
+> >
+> > Len & co: do you think we should ask Antonio to raise a report
+> > against ACPI at bugzilla.kernel.org?
+>
+> I don't see a response to this on the linux-acpi list.  Did the
+> problem get resolved?
+>
