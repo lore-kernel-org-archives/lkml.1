@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbXFDQU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXFDQWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbXFDQU1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbXFDQUL
+	id S1758205AbXFDQWR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756421AbXFDQWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:20:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41328 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757746AbXFDQUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:20:09 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18XyJoWQsQXsPKk2pbquLUZsvFOX6WrLwhJHvNqWW
-	n2IYJmbPYj3U29
-Date: Mon, 4 Jun 2007 18:20:08 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andi Kleen <ak@suse.de>,
-       Jiri Kosina <jikos@jikos.cz>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: thinkpad testers wanted (was Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?)
-Message-ID: <20070604162008.GA16530@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Pavel Machek <pavel@ucw.cz>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Andi Kleen <ak@suse.de>, Jiri Kosina <jikos@jikos.cz>,
-	kernel list <linux-kernel@vger.kernel.org>
-References: <20070604112426.GA2707@elf.ucw.cz> <20070604130903.GC1971@elf.ucw.cz> <Pine.LNX.4.64.0706041511010.29896@twin.jikos.cz> <200706041543.49071.ak@suse.de> <20070604135427.GA19466@elf.ucw.cz> <d120d5000706040702q3b5251e8oc5e9f3c198f060bd@mail.gmail.com> <20070604141345.GB2059@elf.ucw.cz> <20070604150613.GC3363@atjola.homenet> <20070604151025.GD2059@elf.ucw.cz>
+	Mon, 4 Jun 2007 12:22:07 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:32266 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756221AbXFDQWF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 12:22:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=IFO1Sdy4WE8IpgcVxgmKKRJV7FmBHHzEbn7Hc8KEJZikGsZqZtf3mgnAkaXrZBjEMaWXPpR5BIOoyz30F7nh6L3XXCY0BlPbuH9TGDIRU+X2AKIA8ItiKIaxOds3M96uvEVlE4htyImZCvdApqHq2P/i/5xPTPFCdNpREWdA0LU=
+Message-ID: <84144f020706040922v56cb10eg5a730b4abe9d5251@mail.gmail.com>
+Date: Mon, 4 Jun 2007 19:22:03 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, jeremy@goop.org
+In-Reply-To: <Pine.LNX.4.64.0706040916090.23191@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070604151025.GD2059@elf.ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
+	 <20070601204141.f84ad72f.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com>
+	 <20070601213117.1178e8e0.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0706012139480.11577@schroedinger.engr.sgi.com>
+	 <84144f020706040808t4882f961t80b8d8eb145bfa50@mail.gmail.com>
+	 <Pine.LNX.4.64.0706040916090.23191@schroedinger.engr.sgi.com>
+X-Google-Sender-Auth: 1f535dc7d853169b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.04 17:10:25 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > >pavel@amd:~$ while true; do setleds +num; setleds -num; done
-> > > > >Hm,m so thiis  iis  a teest of fkeyboarad behaviour  under lloadd.
-> > > > >
-> > > > >pavel@amd:~$
-> > > > >
-> > > > >...but I'm not quite sure it is a buggy keyboard. It happens _way_ too
-> > > > >often. Launch the line above and try to do some typing...
-> > > > 
-> > > > This used to work fine on my box last time I tried it (the switch
-> > > > itself is offloaded to a keventd and shoud not get in the way) but
-> > > > then they push all kind of ACPI/SMM crap together with KBC so who
-> > > > knows... I should try it again when I get home.
-> > > 
-> > > Hmm, this needs to be ran from console (not X). Can someone with
-> > > thinkpad try this?
-> > 
-> > The version that doesn't sleep totally messes up keyboard input on my
-> > T43. Some keypresses are totally ignored and the keys that are part of
-> > the "numpad" sometimes generate crap, e.g. holding down "j"
-> > results in j, 1 or ^[[4~
-> 
-> Ok, I did not want to focus on "numpad" keys. Even normal keys
-> misbehave for me, like being lost or duplicated. Strange.
+On 6/4/07, Christoph Lameter <clameter@sgi.com> wrote:
+> We are doing that right now. The problem is that people keep storing stuff
+> in memory allocated with kmalloc(0).
 
-That also happens here. The numpad keys were a special case, sorry if I
-didn't make that clear enough.
-
-Björn
+Ok, makes sense. I guess I might as well throw my suggestion in the
+mix. Lets create a new kmalloc cache for zero-length objects where
+object size is zero but there are regular red-zones on both sides.
