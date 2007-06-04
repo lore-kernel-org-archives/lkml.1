@@ -1,85 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbXFDWNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbXFDWN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760690AbXFDWNK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 18:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760684AbXFDWMz
+	id S1761626AbXFDWN5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 18:13:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbXFDWNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 18:12:55 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53824 "EHLO
+	Mon, 4 Jun 2007 18:13:47 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53834 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760699AbXFDWMy (ORCPT
+	with ESMTP id S1756925AbXFDWNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 18:12:54 -0400
-Date: Tue, 5 Jun 2007 00:12:57 +0200
+	Mon, 4 Jun 2007 18:13:46 -0400
+Date: Tue, 5 Jun 2007 00:13:49 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>, Antonino Daplas <adaplas@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, drzeus-mmc@drzeus.cx
 Cc: linux-kernel@vger.kernel.org
-Subject: [RFC: 2.6 patch] drivers/video/pm3fb.c: possible cleanups
-Message-ID: <20070604221257.GD5500@stusta.de>
+Subject: [-mm patch] drivers/mmc/core/core.{h,c}: cleanups
+Message-ID: <20070604221349.GF5500@stusta.de>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the following possible cleanups:
-- remove the empty pm3fb_setup() and corresponding code
-- pm3fb_init() can become static
+On Wed, May 30, 2007 at 11:58:23PM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.22-rc2-mm1:
+>...
+>  git-mmc.patch
+>...
+>  git trees
+>...
 
+This patch contains the following cleanups:
+- make the following needlessly global functions static:
+  - core.c: mmc_schedule_delayed_work()
+  - core.c: mmc_flush_scheduled_work()
+- removes the prototope of the following non-existing function:
+  - core.h: mmc_schedule_work()
+- proper prototypes for three functions from core.c in core.h
+ 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/video/pm3fb.c |   31 +------------------------------
- 1 file changed, 1 insertion(+), 30 deletions(-)
+ drivers/mmc/core/core.c |   37 +++++++++++++++++++------------------
+ drivers/mmc/core/core.h |    6 +++---
+ drivers/mmc/core/host.c |    4 ----
+ 3 files changed, 22 insertions(+), 25 deletions(-)
 
---- linux-2.6.22-rc3-mm1/drivers/video/pm3fb.c.old	2007-06-04 22:49:25.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/drivers/video/pm3fb.c	2007-06-04 22:52:54.000000000 +0200
-@@ -380,8 +380,6 @@ static void pm3fb_write_mode(struct fb_i
- /*
-  * hardware independent functions
-  */
--int pm3fb_init(void);
--
- static int pm3fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	u32 lpitch;
-@@ -935,35 +933,8 @@ static struct pci_driver pm3fb_driver = 
- 
- MODULE_DEVICE_TABLE(pci, pm3fb_id_table);
- 
--#ifndef MODULE
--	/*
--	 *  Setup
--	 */
--
--/*
-- * Only necessary if your driver takes special options,
-- * otherwise we fall back on the generic fb_setup().
-- */
--static int __init pm3fb_setup(char *options)
-+static int __init pm3fb_init(void)
- {
--	/* Parse user speficied options (`video=pm3fb:') */
--	return 0;
--}
--#endif /* MODULE */
--
--int __init pm3fb_init(void)
--{
--	/*
--	 *  For kernel boot options (in 'video=pm3fb:<options>' format)
--	 */
--#ifndef MODULE
--	char *option = NULL;
--
--	if (fb_get_options("pm3fb", &option))
--		return -ENODEV;
--	pm3fb_setup(option);
--#endif
--
- 	return pci_register_driver(&pm3fb_driver);
+--- linux-2.6.22-rc3-mm1/drivers/mmc/core/core.h.old	2007-06-04 21:53:42.000000000 +0200
++++ linux-2.6.22-rc3-mm1/drivers/mmc/core/core.h	2007-06-04 23:19:44.000000000 +0200
+@@ -64,9 +64,9 @@ static inline void mmc_delay(unsigned in
+ 	}
  }
  
+-int mmc_schedule_work(struct work_struct *work);
+-int mmc_schedule_delayed_work(struct delayed_work *work, unsigned long delay);
+-void mmc_flush_scheduled_work(void);
++void mmc_rescan(struct work_struct *work);
++void mmc_start_host(struct mmc_host *host);
++void mmc_stop_host(struct mmc_host *host);
+ 
+ #endif
+ 
+--- linux-2.6.22-rc3-mm1/drivers/mmc/core/core.c.old	2007-06-04 21:54:46.000000000 +0200
++++ linux-2.6.22-rc3-mm1/drivers/mmc/core/core.c	2007-06-04 21:57:38.000000000 +0200
+@@ -37,6 +37,25 @@
+ extern int mmc_attach_mmc(struct mmc_host *host, u32 ocr);
+ extern int mmc_attach_sd(struct mmc_host *host, u32 ocr);
+ 
++static struct workqueue_struct *workqueue;
++
++/*
++ * Internal function. Schedule delayed work in the MMC work queue.
++ */
++static int mmc_schedule_delayed_work(struct delayed_work *work,
++				     unsigned long delay)
++{
++	return queue_delayed_work(workqueue, work, delay);
++}
++
++/*
++ * Internal function. Flush all scheduled work from the MMC work queue.
++ */
++static void mmc_flush_scheduled_work(void)
++{
++	flush_workqueue(workqueue);
++}
++
+ /**
+  *	mmc_request_done - finish processing an MMC request
+  *	@host: MMC host which completed request
+@@ -640,24 +659,6 @@ EXPORT_SYMBOL(mmc_resume_host);
+ 
+ #endif
+ 
+-static struct workqueue_struct *workqueue;
+-
+-/*
+- * Internal function. Schedule delayed work in the MMC work queue.
+- */
+-int mmc_schedule_delayed_work(struct delayed_work *work, unsigned long delay)
+-{
+-	return queue_delayed_work(workqueue, work, delay);
+-}
+-
+-/*
+- * Internal function. Flush all scheduled work from the MMC work queue.
+- */
+-void mmc_flush_scheduled_work(void)
+-{
+-	flush_workqueue(workqueue);
+-}
+-
+ static int __init mmc_init(void)
+ {
+ 	int ret;
+--- linux-2.6.22-rc3-mm1/drivers/mmc/core/host.c.old	2007-06-04 23:18:35.000000000 +0200
++++ linux-2.6.22-rc3-mm1/drivers/mmc/core/host.c	2007-06-04 23:19:25.000000000 +0200
+@@ -23,10 +23,6 @@
+ 
+ #define cls_dev_to_mmc_host(d)	container_of(d, struct mmc_host, class_dev)
+ 
+-extern void mmc_rescan(struct work_struct *work);
+-extern void mmc_start_host(struct mmc_host *host);
+-extern void mmc_stop_host(struct mmc_host *host);
+-
+ static void mmc_host_classdev_release(struct device *dev)
+ {
+ 	struct mmc_host *host = cls_dev_to_mmc_host(dev);
 
