@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbXFDKxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbXFDKzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbXFDKxN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 06:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbXFDKw7
+	id S1753718AbXFDKzn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 06:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXFDKzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 06:52:59 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51952 "EHLO amd.ucw.cz"
+	Mon, 4 Jun 2007 06:55:33 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50164 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752293AbXFDKw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 06:52:58 -0400
-Date: Mon, 4 Jun 2007 12:52:51 +0200
+	id S1751707AbXFDKzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 06:55:32 -0400
+Date: Mon, 4 Jun 2007 12:55:26 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Ed Sweetman <safemode2@comcast.net>
-Cc: Daniel Drake <dsd@gentoo.org>, davej@redhat.com, duaneg@dghda.com,
-       prakash@punnoor.de, jhoblitt@ifa.hawaii.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powernow-k8: depend on acpi-processor for SMP systems
-Message-ID: <20070604105251.GB4363@elf.ucw.cz>
-References: <20070516235050.9B4237B409F@zog.reactivated.net> <20070517090227.GB3975@ucw.cz> <464C2D56.6030402@comcast.net>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
+Message-ID: <20070604105526.GE4363@elf.ucw.cz>
+References: <20070514110607.549397248@suse.de> <20070514110621.316630438@suse.de> <20070515091443.GD6816@ucw.cz> <200705231816.46197.agruen@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <464C2D56.6030402@comcast.net>
+In-Reply-To: <200705231816.46197.agruen@suse.de>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2007-05-17 06:24:22, Ed Sweetman wrote:
-> Pavel Machek wrote:
-> >Hi!
-> >
-> >  
-> >>powernow-k8 uses PSB BIOS tables to read frequency info on UP systems, but
-> >>on SMP it requires the acpi-processor driver. Kconfig should be updated
-> >>accordingly to avoid the issues that users are running into.
-> >>
-> >>http://bugzilla.kernel.org/show_bug.cgi?id=8075
-> >>https://bugs.gentoo.org/show_bug.cgi?id=178585
-> >>
-> >>Signed-off-by: Daniel Drake <dsd@gentoo.org>
-> >>
-> >>Index: linux/arch/i386/kernel/cpu/cpufreq/Kconfig
-> >>===================================================================
-> >>--- linux.orig/arch/i386/kernel/cpu/cpufreq/Kconfig
-> >>+++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig
-> >>@@ -81,6 +81,7 @@ config X86_POWERNOW_K7_ACPI
-> >> config X86_POWERNOW_K8
-> >> 	tristate "AMD Opteron/Athlon64 PowerNow!"
-> >> 	select CPU_FREQ_TABLE
-> >>+	select ACPI_PROCESSOR if SMP
-> >> 	depends on EXPERIMENTAL
-> >> 	help
-> >> 	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 
-> >> 	  processors.
-> >>    
-> >
-> >It is still possible to run SMP kernel on UP machine -- so this sounds
-> >wrong.
+On Wed 2007-05-23 18:16:45, Andreas Gruenbacher wrote:
+> On Tuesday 15 May 2007 11:14, Pavel Machek wrote:
+> > Why is this configurable? 
 > 
-> It's possible to run a kernel with drivers for hardware you dont have.  
-> But not having the dependencies correct for those drivers for that 
-> hardware you dont have just because it's possible you can run a kernel 
-> with those drivers without that hardware isn't correct. Got it?
+> The maximum length of a pathname is an arbitrary limit: we don't want to 
+> allocate arbitrary amounts of of kernel memory for pathnames so we introduce 
+> this limit and set it to a reasonable value. In the unlikely case that 
+> someone uses insanely long pathnames, this limit can be increased.
 
-Breaking working configs is not fine, got it? We are having the thing
-called "stable release" here. Feel free to fix code to decide during
-runtime.
+vfs does not have configurable pathname limit, and I do not see what
+is so special about AA to require this kind of uglyness.
 
 									Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
