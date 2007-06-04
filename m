@@ -1,64 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbXFDNa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbXFDNar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752838AbXFDNa0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 09:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbXFDNaS
+	id S1755777AbXFDNar (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 09:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbXFDNai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 09:30:18 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51676 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753733AbXFDNaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 09:30:17 -0400
-Date: Mon, 4 Jun 2007 14:30:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: mroos@linux.ee, linux-kernel@vger.kernel.org
-Subject: Re: libata & no PCI: dma_[un]map_single undefined
-Message-ID: <20070604143005.1b0e3c66@the-village.bc.nu>
-In-Reply-To: <20070603.174010.41894721.davem@davemloft.net>
-References: <Pine.SOC.4.64.0706032314590.20033@math>
-	<20070603.174010.41894721.davem@davemloft.net>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 Jun 2007 09:30:38 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:1550 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752617AbXFDNah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 09:30:37 -0400
+Message-ID: <466414B7.2020900@openvz.org>
+Date: Mon, 04 Jun 2007 17:33:43 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+CC: Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH 4/8] Scanner changes needed to implement per-container scanner
+References: <466412C5.1060104@openvz.org>
+In-Reply-To: <466412C5.1060104@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > CONFIG_PCI=n
-> > CONFIG_ATA=m
-> > 
-> > This seems to be a valid configuration since libata can drive non-PCI 
-> > devices too?
+The core change is that the isolate_lru_pages() call is
+replaced with struct scan_controll->isolate_pages() call.
 
-Yep.
+Other changes include exporting __isolate_lru_page() for
+per-container isolator and handling variable-to-pointer
+changes in try_to_free_pages().
 
-> It really makes no sense to allow this on Sparc, there are no
-> non-PCI Sparc ATA controllers.
+This makes possible to use different isolation routines
+for per-container page reclamation. This will be used by
+the following patch.
 
-There are PCMCIA controllers and PCI/PCMCIA/Cardbus adapters for the
-Sparc platform I thought ?
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
-> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-> index b4a8d60..7d893a6 100644
-> --- a/drivers/ata/Kconfig
-> +++ b/drivers/ata/Kconfig
-> @@ -8,6 +8,7 @@ menuconfig ATA
->  	depends on BLOCK
->  	depends on !(M32R || M68K) || BROKEN
->  	depends on !SUN4 || BROKEN
-> +	depends on !(SPARC64 && !PCI)
+---
 
+diff -upr linux-2.6.22-rc2-mm1.orig/include/linux/swap.h linux-2.6.22-rc2-mm1-2/include/linux/swap.h
+--- linux-2.6.22-rc2-mm1.orig/include/linux/swap.h	2007-05-30 12:32:36.000000000 +0400
++++ linux-2.6.22-rc2-mm1-2/include/linux/swap.h	2007-06-01 16:35:13.000000000 +0400
+@@ -192,6 +192,11 @@ extern void swap_setup(void);
+ /* linux/mm/vmscan.c */
+ extern unsigned long try_to_free_pages(struct zone **zones, int order,
+ 					gfp_t gfp_mask);
++
++struct rss_container;
++extern unsigned long try_to_free_pages_in_container(struct rss_container *);
++int __isolate_lru_page(struct page *page, int mode);
++
+ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+ extern int remove_mapping(struct address_space *mapping, struct page *page);
+diff -upr linux-2.6.22-rc2-mm1.orig/mm/vmscan.c linux-2.6.22-rc2-mm1-2/mm/vmscan.c
+--- linux-2.6.22-rc2-mm1.orig/mm/vmscan.c	2007-05-30 12:32:36.000000000 +0400
++++ linux-2.6.22-rc2-mm1-2/mm/vmscan.c	2007-06-01 16:35:15.000000000 +0400
+@@ -47,6 +47,8 @@
+ 
+ #include "internal.h"
+ 
++#include <linux/rss_container.h>
++
+ struct scan_control {
+ 	/* Incremented by the number of inactive pages that were scanned */
+ 	unsigned long nr_scanned;
+@@ -70,6 +72,13 @@ struct scan_control {
+ 	int all_unreclaimable;
+ 
+ 	int order;
++
++	struct rss_container *container;
++
++	unsigned long (*isolate_pages)(unsigned long nr, struct list_head *dst,
++			unsigned long *scanned, int order, int mode,
++			struct zone *zone, struct rss_container *cont,
++			int active);
+ };
+ 
+ #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
+@@ -622,7 +631,7 @@ keep:
+  *
+  * returns 0 on success, -ve errno on failure.
+  */
+-static int __isolate_lru_page(struct page *page, int mode)
++int __isolate_lru_page(struct page *page, int mode)
+ {
+ 	int ret = -EINVAL;
+ 
+@@ -774,6 +783,19 @@ static unsigned long clear_active_flags(
+ 	return nr_active;
+ }
+ 
++static unsigned long isolate_pages_global(unsigned long nr,
++		struct list_head *dst, unsigned long *scanned,
++		int order, int mode, struct zone *z,
++		struct rss_container *cont, int active)
++{
++	if (active)
++		return isolate_lru_pages(nr, &z->active_list,
++				dst, scanned, order, mode);
++	else
++		return isolate_lru_pages(nr, &z->inactive_list,
++				dst, scanned, order, mode);
++}
++
+ /*
+  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+  * of reclaimed pages
+@@ -797,11 +819,11 @@ static unsigned long shrink_inactive_lis
+ 		unsigned long nr_freed;
+ 		unsigned long nr_active;
+ 
+-		nr_taken = isolate_lru_pages(sc->swap_cluster_max,
+-			     &zone->inactive_list,
+-			     &page_list, &nr_scan, sc->order,
+-			     (sc->order > PAGE_ALLOC_COSTLY_ORDER)?
+-					     ISOLATE_BOTH : ISOLATE_INACTIVE);
++		nr_taken = sc->isolate_pages(sc->swap_cluster_max, &page_list,
++				&nr_scan, sc->order,
++				(sc->order > PAGE_ALLOC_COSTLY_ORDER) ?
++					ISOLATE_BOTH : ISOLATE_INACTIVE,
++				zone, sc->container, 0);
+ 		nr_active = clear_active_flags(&page_list);
+ 
+ 		__mod_zone_page_state(zone, NR_ACTIVE, -nr_active);
+@@ -950,8 +975,8 @@ force_reclaim_mapped:
+ 
+ 	lru_add_drain();
+ 	spin_lock_irq(&zone->lru_lock);
+-	pgmoved = isolate_lru_pages(nr_pages, &zone->active_list,
+-			    &l_hold, &pgscanned, sc->order, ISOLATE_ACTIVE);
++	pgmoved = sc->isolate_pages(nr_pages, &l_hold, &pgscanned,
++			sc->order, ISOLATE_ACTIVE, zone, sc->container, 1);
+ 	zone->pages_scanned += pgscanned;
+ 	__mod_zone_page_state(zone, NR_ACTIVE, -pgmoved);
+ 	spin_unlock_irq(&zone->lru_lock);
+@@ -1142,7 +1169,8 @@ static unsigned long shrink_zones(int pr
+  * holds filesystem locks which prevent writeout this might not work, and the
+  * allocation attempt will fail.
+  */
+-unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
++unsigned long do_try_to_free_pages(struct zone **zones, gfp_t gfp_mask,
++		struct scan_control *sc)
+ {
+ 	int priority;
+ 	int ret = 0;
+@@ -1151,14 +1179,6 @@ unsigned long try_to_free_pages(struct z
+ 	struct reclaim_state *reclaim_state = current->reclaim_state;
+ 	unsigned long lru_pages = 0;
+ 	int i;
+-	struct scan_control sc = {
+-		.gfp_mask = gfp_mask,
+-		.may_writepage = !laptop_mode,
+-		.swap_cluster_max = SWAP_CLUSTER_MAX,
+-		.may_swap = 1,
+-		.swappiness = vm_swappiness,
+-		.order = order,
+-	};
+ 
+ 	delay_swap_prefetch();
+ 	count_vm_event(ALLOCSTALL);
+@@ -1174,17 +1194,23 @@ unsigned long try_to_free_pages(struct z
+ 	}
+ 
+ 	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
+-		sc.nr_scanned = 0;
++		sc->nr_scanned = 0;
+ 		if (!priority)
+ 			disable_swap_token();
+-		nr_reclaimed += shrink_zones(priority, zones, &sc);
+-		shrink_slab(sc.nr_scanned, gfp_mask, lru_pages);
++		nr_reclaimed += shrink_zones(priority, zones, sc);
++		if (sc->container == NULL)
++			/*
++			 * we do not shrink slabs as this won't unmap any
++			 * pages from user and thus won't help him to charge
++			 * more pages  --xemul
++			 */
++			shrink_slab(sc->nr_scanned, gfp_mask, lru_pages);
+ 		if (reclaim_state) {
+ 			nr_reclaimed += reclaim_state->reclaimed_slab;
+ 			reclaim_state->reclaimed_slab = 0;
+ 		}
+-		total_scanned += sc.nr_scanned;
+-		if (nr_reclaimed >= sc.swap_cluster_max) {
++		total_scanned += sc->nr_scanned;
++		if (nr_reclaimed >= sc->swap_cluster_max) {
+ 			ret = 1;
+ 			goto out;
+ 		}
+@@ -1196,18 +1222,23 @@ unsigned long try_to_free_pages(struct z
+ 		 * that's undesirable in laptop mode, where we *want* lumpy
+ 		 * writeout.  So in laptop mode, write out the whole world.
+ 		 */
+-		if (total_scanned > sc.swap_cluster_max +
+-					sc.swap_cluster_max / 2) {
++		if (total_scanned > sc->swap_cluster_max +
++					sc->swap_cluster_max / 2) {
+ 			wakeup_pdflush(laptop_mode ? 0 : total_scanned);
+-			sc.may_writepage = 1;
++			sc->may_writepage = 1;
+ 		}
+ 
+ 		/* Take a nap, wait for some writeback to complete */
+-		if (sc.nr_scanned && priority < DEF_PRIORITY - 2)
++		if (sc->nr_scanned && priority < DEF_PRIORITY - 2)
+ 			congestion_wait(WRITE, HZ/10);
+ 	}
+-	/* top priority shrink_caches still had more to do? don't OOM, then */
+-	if (!sc.all_unreclaimable)
++	/*
++	 * top priority shrink_caches still had more to do? don't OOM, then
++	 *
++	 * we cannot hope shrink_caches to help us in case we are trying
++	 * to shrink container pages  --xemul
++	 */
++	if (!sc->all_unreclaimable && sc->container == NULL)
+ 		ret = 1;
+ out:
+ 	/*
+@@ -1230,6 +1261,22 @@ out:
+ 	return ret;
+ }
+ 
++unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
++{
++	struct scan_control sc = {
++		.gfp_mask = gfp_mask,
++		.may_writepage = !laptop_mode,
++		.swap_cluster_max = SWAP_CLUSTER_MAX,
++		.may_swap = 1,
++		.swappiness = vm_swappiness,
++		.order = order,
++		.container = NULL,
++		.isolate_pages = isolate_pages_global,
++	};
++
++	return do_try_to_free_pages(zones, gfp_mask, &sc);
++}
++
+ /*
+  * For kswapd, balance_pgdat() will work across all this node's zones until
+  * they are all at pages_high.
+@@ -1265,6 +1347,8 @@ static unsigned long balance_pgdat(pg_da
+ 		.swap_cluster_max = SWAP_CLUSTER_MAX,
+ 		.swappiness = vm_swappiness,
+ 		.order = order,
++		.container = NULL,
++		.isolate_pages = isolate_pages_global,
+ 	};
+ 	/*
+ 	 * temp_priority is used to remember the scanning priority at which
+@@ -1604,6 +1688,8 @@ unsigned long shrink_all_memory(unsigned
+ 		.swap_cluster_max = nr_pages,
+ 		.may_writepage = 1,
+ 		.swappiness = vm_swappiness,
++		.container = NULL,
++		.isolate_pages = isolate_pages_global,
+ 	};
+ 
+ 	delay_swap_prefetch();
+@@ -1789,6 +1875,8 @@ static int __zone_reclaim(struct zone *z
+ 					SWAP_CLUSTER_MAX),
+ 		.gfp_mask = gfp_mask,
+ 		.swappiness = vm_swappiness,
++		.container = NULL,
++		.isolate_pages = isolate_pages_global,
+ 	};
+ 	unsigned long slab_reclaimable;
+ 
 
-NAK - this is the wrong approach. PCI=n ATA=m should compile. Sparc is
-not the only problem case. The DMA handling bits of libata are fairly
-nicely split out but they are stuck in the same file and unconditionally
-compiled in.
-
-I'll have a poke at this when I get a bit of time if Jeff doesn't.
-
-Alan
