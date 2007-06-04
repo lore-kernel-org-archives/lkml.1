@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbXFDNoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbXFDNof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbXFDNoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 09:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbXFDNoM
+	id S1756166AbXFDNof (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 09:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbXFDNoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 4 Jun 2007 09:44:12 -0400
-Received: from mail.suse.de ([195.135.220.2]:47282 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751044AbXFDNoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 09:44:10 -0400
-From: Andi Kleen <ak@suse.de>
-To: Jiri Kosina <jikos@jikos.cz>
-Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
-Date: Mon, 4 Jun 2007 15:43:48 +0200
-User-Agent: KMail/1.9.1
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>
-References: <20070604112426.GA2707@elf.ucw.cz> <20070604130903.GC1971@elf.ucw.cz> <Pine.LNX.4.64.0706041511010.29896@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0706041511010.29896@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200706041543.49071.ak@suse.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40597 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752391AbXFDNoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 09:44:11 -0400
+Date: Mon, 4 Jun 2007 14:49:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Aaron Wiebe" <epiphani@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: slow open() calls and o_nonblock
+Message-ID: <20070604144918.42354235@the-village.bc.nu>
+In-Reply-To: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
+References: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 June 2007 15:12, Jiri Kosina wrote:
+> Now, I'm a userspace guy so I can be pretty dense, but shouldn't a
+> call with a nonblocking flag return EAGAIN if its going to take
+> anywhere near 415ms?  
 
-> Are you sure that it's this dummy blink driver that makes the kernel
-> stuck? I can't see how it could be causing any hogs - see commit f038f9.
->
-> Anyway, added Andi to CC.
+Violation of causality. We don't know it will block for 415ms until 415ms
+have elapsed. 
 
-Hmm, in theory it could be triggering bugs in some buggy keyboard
-controller. But then a 
-
-while true ; do setleds +caps +numlock ; sleep 1 ; setleds -caps -numlock ; 
-sleep 1 ; done
-
-should trigger it too.
-
- Anyways; it is normally only intended for special
-case kdump or other debugging kernels which tend to not get 
-much interaction; you shouldn't really set it anywhere else.
-
-I've been also considering to make it always dependent on
-a command line option, but that is not done yet.
-
--Andi
+Alan
