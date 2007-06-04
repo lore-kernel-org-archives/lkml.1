@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbXFDJXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbXFDJX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783AbXFDJXq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 05:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXFDJXh
+	id S1753951AbXFDJX5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 05:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbXFDJXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 05:23:37 -0400
-Received: from ns.suse.de ([195.135.220.2]:50348 "EHLO mx1.suse.de"
+	Mon, 4 Jun 2007 05:23:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50366 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751554AbXFDJXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 05:23:36 -0400
-Date: Mon, 4 Jun 2007 11:02:01 +0200
+	id S1752946AbXFDJXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 05:23:40 -0400
+Date: Mon, 4 Jun 2007 11:13:31 +0200
 From: Stefan Seyfried <seife@suse.de>
-To: Len Brown <lenb@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
-       len.brown@intel.com, Maciej Rutecki <maciej.rutecki@gmail.com>,
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Len Brown <lenb@kernel.org>,
+       trenn@suse.de, Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
 Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-Message-ID: <20070604090201.GA4802@suse.de>
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705171517.14087.lenb@kernel.org> <20070517215203.GB7336@elf.ucw.cz> <200705171835.49176.lenb@kernel.org>
+Message-ID: <20070604091331.GB4802@suse.de>
+References: <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org> <20070522090636.GO10714@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <200705171835.49176.lenb@kernel.org>
+In-Reply-To: <20070522090636.GO10714@elf.ucw.cz>
 X-Operating-System: openSUSE 10.3 (i586) Alpha4, Kernel 2.6.21-10-default
 User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 06:35:48PM -0400, Len Brown wrote:
+On Tue, May 22, 2007 at 11:06:36AM +0200, Pavel Machek wrote:
  
-> Yes, SuSE enables polling mode by default, but that is just
-> distro specific "value add" that should eventually be fixed.
+> We need to ignore trip point updates from BIOS, and we need to poll
+> thermals when use overrides trip points. That's expected. Plus I've
+> yet to see platform actually updating the trip points.
 
-I will do that for openSUSE FACTORY.
+Thinkpad 600, whenever a trip point is crossed, all trip points are updated.
+I think they implemented hysteresis that way.
+ISTR that hp nx5000 did something similar, but i might be wrong on this one.
 -- 
 Stefan Seyfried
 QA / R&D Team Mobile Devices        |              "Any ideas, John?"
