@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbXFDPM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbXFDPNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757475AbXFDPM3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756748AbXFDPMI
+	id S1757405AbXFDPNS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 11:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbXFDPNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:12:08 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:37711 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755533AbXFDPMH (ORCPT
+	Mon, 4 Jun 2007 11:13:09 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:10523 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754575AbXFDPNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:12:07 -0400
-Message-ID: <46642B0C.6070003@gmail.com>
-Date: Mon, 04 Jun 2007 17:09:00 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Mon, 4 Jun 2007 11:13:07 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=yeFi+HXVuuQJ3IciyiX3NV3n/g/cBV6b/ySCydCHrmwY6OgrIbwoqM0TB7GU4i4RQ
+	917D7Ol/J2Tx0QTuzunqA==
+Date: Mon, 4 Jun 2007 08:08:21 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Stephane Eranian <eranian@frankl.hpl.hp.com>
+cc: linux-kernel@vger.kernel.org, eranian@hpl.hp.com
+Subject: Re: [PATCH 15/22] 2.6.22-rc3 perfmon2 : modified i386 files
+In-Reply-To: <200705291348.l4TDmTxN019801@frankl.hpl.hp.com>
+Message-ID: <alpine.DEB.0.99.0706040807520.11881@chino.kir.corp.google.com>
+References: <200705291348.l4TDmTxN019801@frankl.hpl.hp.com>
 MIME-Version: 1.0
-To: Jens Axboe <axboe@suse.de>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Q] Bio traversal trouble?
-References: <4663DE68.5030200@gmail.com> <46642AB3.1000907@gmail.com>
-In-Reply-To: <46642AB3.1000907@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/04/2007 05:07 PM, Rene Herman wrote:
+On Tue, 29 May 2007, Stephane Eranian wrote:
 
->> Call Trace:
->>  [<c486504d>] __mitsumi_get_frame+0xc/0x16 [mitsumi]
->>  [<c4865ab7>] mitsumi_get_frame+0x120/0x134 [mitsumi]
->>  [<c1015f7b>] lock_timer_base+0x15/0x2f
->>  [<c10a0531>] cfq_set_request+0x0/0x144
-> 
-> Perhaps interesting (and perhaps not) -- I've been unable to reproduce 
-> the OOPS after rebooting with elevator=as.
+> diff --exclude=.git -urp linux-2.6.22.base/include/asm-i386/unistd.h linux-2.6.22/include/asm-i386/unistd.h
+> --- linux-2.6.22.base/include/asm-i386/unistd.h	2007-05-29 03:17:41.000000000 -0700
+> +++ linux-2.6.22/include/asm-i386/unistd.h	2007-05-29 03:24:14.000000000 -0700
+> @@ -329,10 +329,22 @@
+>  #define __NR_signalfd		321
+>  #define __NR_timerfd		322
+>  #define __NR_eventfd		323
+> +#define __NR_pfm_create_context	324
+> +#define __NR_pfm_write_pmcs	(__NR_pfm_create_context+1)
+> +#define __NR_pfm_write_pmds	(__NR_pfm_create_context+2)
+> +#define __NR_pfm_read_pmds	(__NR_pfm_create_context+3)
+> +#define __NR_pfm_load_context	(__NR_pfm_create_context+4)
+> +#define __NR_pfm_start		(__NR_pfm_create_context+5)
+> +#define __NR_pfm_stop		(__NR_pfm_create_context+6)
+> +#define __NR_pfm_restart	(__NR_pfm_create_context+7)
+> +#define __NR_pfm_create_evtsets	(__NR_pfm_create_context+8)
+> +#define __NR_pfm_getinfo_evtsets (__NR_pfm_create_context+9)
+> +#define __NR_pfm_delete_evtsets (__NR_pfm_create_context+10)
+> +#define __NR_pfm_unload_context	(__NR_pfm_create_context+11)
+>  
+>  #ifdef __KERNEL__
+>  
+> -#define NR_syscalls 324
+> +#define NR_syscalls 335
+>  
 
-Kernel is vanilla 2.6.21.3.
 
-Rene.
-
+Should be 336.
