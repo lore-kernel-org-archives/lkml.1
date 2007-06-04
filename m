@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760499AbXFDS4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbXFDS52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760499AbXFDS4i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 14:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758176AbXFDS4a
+	id S1759705AbXFDS52 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 14:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759044AbXFDS5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 14:56:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57761 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757139AbXFDS43 (ORCPT
+	Mon, 4 Jun 2007 14:57:21 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:51236 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757704AbXFDS5U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 14:56:29 -0400
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Thierry Merle <thierry.merle@free.fr>
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-In-Reply-To: <466131CB.20301@free.fr>
-References: <2172422218943432279@wsc.cz>
-	 <1180364420.21547.160.camel@localhost>
-	 <d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>
-	 <1180378677.21547.189.camel@localhost>
-	 <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>
-	 <1180383071.21547.230.camel@localhost> <465B49EB.4080204@free.fr>
-	 <465BBAFB.30906@free.fr> <1180448712.21547.314.camel@localhost>
-	 <465C7920.2080203@free.fr> <1180467116.9509.73.camel@localhost>
-	 <465F3361.106@free.fr> <1180739401.3904.50.camel@localhost>
-	 <466131CB.20301@free.fr>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 04 Jun 2007 15:55:04 -0300
-Message-Id: <1180983304.10894.19.camel@gaivota>
+	Mon, 4 Jun 2007 14:57:20 -0400
+Date: Mon, 4 Jun 2007 20:57:19 +0200
+From: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
+To: Antonio Mignolli <antoniomignolli@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: lid switch hangs notebook
+Message-ID: <20070604185719.GA25527@rhlx01.hs-esslingen.de>
+References: <a790ea7a0703120753i232ace2bg7272fa479b821e32@mail.gmail.com> <20070315110606.741c2dc4.akpm@linux-foundation.org> <200704131553.54787.bjorn.helgaas@hp.com> <a790ea7a0706040357g799e8756ue758e95d5b460307@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a790ea7a0706040357g799e8756ue758e95d5b460307@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-Priority: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sáb, 2007-06-02 às 11:00 +0200, Thierry Merle escreveu:
+Hi,
+
+On Mon, Jun 04, 2007 at 12:57:21PM +0200, Antonio Mignolli wrote:
+> Hi.
+> The problem reported below has not been solved,
+> I tried with the last stable kernel 2.6.21.3.
 > 
-> Mauro Carvalho Chehab a écrit :
-> >>> This seems to be an interesting approach.
-> >>>
-> >>>   
-> >>>       
-> >> Interesting but impossible to do for ioctl calls.
-> >> When the application does a ioctl(fd_of_mnt_video0,VIDIOC_G_FMT,&arg) 
-> >> for example, there is no way for the userspace helper to catch this ioctl.
-> >> The application could only open/read from the userspace helper's file 
-> >> /mnt/video0.
-> >> ioctl would still have to be done on the kernel device driver.
-> >> I thought also about a /proc interface for decompression algorithms (a 
-> >> helper would listen on a /proc file and write on another /proc file) but 
-> >> /proc is not designed for that kind of thing.
-> >> A separate library seems to be the simplest solution.
-> >>     
-> >
-> > There are some ways for this to work. For example, you may create a
-> > helper device for the daemon driver to bind, even requiring it to have
-> > root permission.
-> >
-> >   
-> Right, but I am afraid that complex userspace/kernelspace context 
-> changes breaks performance.
-Yes, there's a risk.
+> But it seems not to be an ACPI issue,
+> I removed ACPI support from the kernel,
+> and still have the problem.
+> What else could be?
 
-> Nevertheless, I will start to specify the framework.
-> The helper daemon would link to the v4l2-apps/lib.
+Have you enabled local APIC ("lapic" command line) since?
+Enabling local APIC is known to cause just these issues on some
+machines (HARD lockup on AC power/screen dimming/Fn keys change),
+and I'm currently trying to nail what exactly the problem is.
+People say it's a broken BIOS (probably one which doesn't contain support
+for local APIC despite the CPU offering one), but I'm not willing to assume
+this yet, it may just as well be incomplete APIC IRQ routing setup
+or so).
+OTOH I'm not entirely sure whether "lapic" use is fully independent
+from ACPI support (which you disabled), but I think it is, so my reasoning
+may be valid.
 
-Ok, thanks!
--- 
-Cheers,
-Mauro
+find /sys -name "*lapic*"
+should reveal whether local APIC is currently active or not and thus
+whether this might be responsible or not.
 
+Andreas Mohr
