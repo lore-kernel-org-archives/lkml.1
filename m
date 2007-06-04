@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762325AbXFDUQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbXFDUVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762325AbXFDUQP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 16:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761876AbXFDUP5
+	id S1752836AbXFDUVE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 16:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbXFDUUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 16:15:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57812 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760236AbXFDUPz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 16:15:55 -0400
-Date: Mon, 4 Jun 2007 13:02:25 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Maximilian Engelhardt <maxi@daemonizer.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Ulrich Drepper <drepper@gmail.com>, Michael Buesch <mb@bu3sch.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: iperf: performance regression (was b44 driver problem?)
-Message-ID: <20070604130225.08e45b72@freepuppy>
-In-Reply-To: <200706042148.02450.maxi@daemonizer.de>
-References: <20070525172431.60affaca@freepuppy>
-	<20070604105158.31ede1f5@freepuppy>
-	<20070604193206.GA13271@elte.hu>
-	<200706042148.02450.maxi@daemonizer.de>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 16:20:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60533 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751377AbXFDUUy (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 16:20:54 -0400
+Date: Mon, 4 Jun 2007 22:20:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       Linux-kernel@vger.kernel.org
+Subject: Re: Interesting interaction between lguest and CFS
+Message-ID: <20070604202039.GA27149@elte.hu>
+References: <20070604173710.GR11166@waste.org> <20070604181151.GA1745@elte.hu> <20070604184224.GH11115@waste.org> <20070604191229.GA12444@elte.hu> <20070604192755.GI11115@waste.org> <20070604194038.GA15782@elte.hu> <20070604195951.GJ11115@waste.org> <20070604201300.GB21261@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070604201300.GB21261@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jun 2007 21:47:59 +0200
-Maximilian Engelhardt <maxi@daemonizer.de> wrote:
 
-> On Monday 04 June 2007, Ingo Molnar wrote:
-> > * Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > > Yes, the following patch makes iperf work better than ever. But are
-> > > other broken applications going to have same problem. Sounds like the
-> > > old "who runs first" fork() problems.
-> >
-> > this is the first such app and really, and even for this app: i've been
-> > frequently running iperf on -rt kernels for _years_ and never noticed
-> > how buggy its 'locking' code was, and that it would under some
-> > circumstances use up the whole CPU on high-res timers.
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > I suggest you try this yourself [...]
 > 
-> I must admit I don't know much about that topic, but there is one thing I 
-> don't understand. Why is iperf (even if it's buggy) able to use up the whole 
-> cpu? I didn't run it as root but as my normal user so it should have limited 
-> rights. Shouldn't the linux scheduler distribute cpu time among all running 
-> processes?
+> yep, i know how to use lguest and i'm already running it :) But i 
+> cannot trigger the problem, that's why i was curious about your 
+> host-side stats.
 
-In this case, there are two threads. One is receiving data and the other
-is spinning checking on progress. If the spinning thread doesn't yield,
-it will end up using it's whole quantum (10ms at 100hz), before the
-scheduler lets the receiver run again. If the receiving thread doesn't
-get to run then on a UP the performance stinks.
+i can run a hundred CPU hogs on the host and the lguest instance is 
+still usable under CFS:
 
-The problem only showed up laptop because most of my other systems are
-SMP (or fake SMP/HT), and usually set HZ to 1000 not 100.
+ @%@%> time ls
+ bin         home        lost+found  proc        sys         var
+ dev         lib         mnt         root        tmp
+ etc         linuxrc     opt         sbin        usr
+ real    0m 0.33s
+ user    0m 0.00s
+ sys     0m 0.00s
 
-It kind of reminds me of the family road trip with the kids in the back
-seat going "Are we there yet?"
+i'm wondering whether the delay goes away if you boot with maxcpus=1? 
+(if you have multiple cpus/cores on your box)
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+	Ingo
