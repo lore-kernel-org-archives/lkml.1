@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbXFDOFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbXFDOHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbXFDOFA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 10:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbXFDOEx
+	id S1754619AbXFDOHQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 10:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbXFDOHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 10:04:53 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:30223 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752273AbXFDOEw (ORCPT
+	Mon, 4 Jun 2007 10:07:01 -0400
+Received: from lazybastard.de ([212.112.238.170]:59991 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753160AbXFDOHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 10:04:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tnh4oTDglU/fAwKhAu37J+KQ/zh10nS0pTtqCFpihFEaGEHmqNFYglOzc1jFRNtLNY+Kiwu0I6OwcnUE5NE1TlS/5wBl4g1o+DeE5Km81+O87wyor+kERH/eGUITltWMXrCto9UgWSsPJcXh02ZRiLyprOi5fWefJJiGnnGZeqc=
-Message-ID: <e7ca40f70706040704w450dd609g46b6e7a3689ff11@mail.gmail.com>
-Date: Mon, 4 Jun 2007 10:04:52 -0400
-From: "Aaron Wiebe" <epiphani@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: slow open() calls and o_nonblock
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070604144918.42354235@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 10:07:00 -0400
+Date: Mon, 4 Jun 2007 16:02:13 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+       akpm@osdl.org, Sam Ravnborg <sam@ravnborg.org>,
+       John Stoffel <john@stoffel.org>, Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       David Weinehall <tao@acc.umu.se>, Willy Tarreau <w@1wt.eu>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Dongjun Shin <djshin90@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>, Bill Davidsen <davidsen@tmr.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: [Patch 04/18] include/linux/logfs.h
+Message-ID: <20070604140212.GA15926@lazybastard.org>
+References: <20070603183845.GA8952@lazybastard.org> <20070603184205.GE8952@lazybastard.org> <200706032342.27252.arnd@arndb.de> <20070604091245.GF14823@lazybastard.org> <1180964303.25232.358.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
-	 <20070604144918.42354235@the-village.bc.nu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1180964303.25232.358.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/4/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->
-> > Now, I'm a userspace guy so I can be pretty dense, but shouldn't a
-> > call with a nonblocking flag return EAGAIN if its going to take
-> > anywhere near 415ms?
->
-> Violation of causality. We don't know it will block for 415ms until 415ms
-> have elapsed.
+On Mon, 4 June 2007 14:38:23 +0100, David Woodhouse wrote:
+> On Mon, 2007-06-04 at 11:12 +0200, Jörn Engel wrote:
+> > On Sun, 3 June 2007 23:42:25 +0200, Arnd Bergmann wrote:
+> > > On Sunday 03 June 2007, Jörn Engel wrote:
+> > > > +struct logfs_je_spillout {
+> > > > +       __be64  so_segment[0];
+> > > > +}__packed;
+> > > 
+> > > All the on-disk data structures you define in this file have naturally
+> > > aligned members, so the __packed attribute is not needed.
+> > 
+> > Amen.  It is purely paranoia and I don't even know who is out to get me.
+> 
+> You can _never_ know who is out to get you, or what architecture we'll
+> be ported to next week.
+> 
+> The advice "don't tell the compiler what you want unless you _know_
+> it'll do the wrong thing otherwise" runs counter to everything we've
+> learned, slowly and painfully, over the last few years.
+> 
+> We should never rely on compiler behaviour which is undocumented and
+> unrequired. Even if you know that the ABI forces it to continue to do
+> the right thing on the platforms you _currently_ care about, it might
+> not do it on new platforms (or existing platforms you didn't manage to
+> test).
+> 
+> It would be better if GCC had a 'nopadding' attribute which gave us what
+> we need without the _extra_ implications about alignment. In the absence
+> of that, though, you should at _least_ have a check on the size of the
+> structure if you're doing to drop the packed attribute.
 
-Understood - but what I'm getting at is more the fact that there
-really doesn't appear to be any real implementation of nonblocking
-open().  On the socket side of the fence, I would consider a regular
-file open() to be equivalent to a connect() call - the difference
-obviously being that we already have a handle for the socket.
+Adding a size check is simple enough.  But given all this I'll put it to
+the very end of my todo list.  There are many other optimizations
+remaining.
 
-The end result, however, is roughly the same.  We have a file
-descriptor with the endpoint established.  In the socket world, we
-assume that a nonblocking request will always return immediately and
-the application is expected to come back around and see if the request
-has completed.  Regular files have no equivalent.
+Jörn
 
--Aaron
+-- 
+Joern's library part 14:
+http://www.sandpile.org/
