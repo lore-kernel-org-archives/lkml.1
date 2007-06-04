@@ -1,197 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbXFDIo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbXFDIst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403AbXFDIo1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 04:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbXFDIoU
+	id S1752800AbXFDIst (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 04:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbXFDIsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 04:44:20 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:43506 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751634AbXFDIoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 04:44:19 -0400
-Message-id: <21118142571565213847@wsc.cz>
-From: Jiri Slaby <jirislaby@gmail.com>
-To: "Ingo Korb" <ingo@akana.de>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: stallion driver dmesg notice
-In-reply-to: <466362EA.6369.44946011@ingo.akana.de>
-References: <46633BC8.3838.43FB8257@ml.akana.de>, <304615082222625376@wsc.cz> <304615082222625376@wsc.cz>
-Date: Mon,  4 Jun 2007 10:44:17 +0200 (CEST)
+	Mon, 4 Jun 2007 04:48:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48892 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751037AbXFDIsm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 04:48:42 -0400
+Date: Mon, 4 Jun 2007 01:47:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch 1/2] ufd v1 - unsequential O(1) fdmap core
+Message-Id: <20070604014759.aaa3b051.akpm@linux-foundation.org>
+In-Reply-To: <20070604084227.GA29446@elte.hu>
+References: <send-serie.davidel@xmailserver.org.24319.1180825145.1>
+	<46633047.1020707@cosmosbay.com>
+	<Pine.LNX.4.64.0706031536000.13247@alien.or.mcafeemobile.com>
+	<20070603230859.5000424d.akpm@linux-foundation.org>
+	<20070604080537.GA22898@elte.hu>
+	<20070604080941.GA23537@elte.hu>
+	<20070604013449.ea3acca8.akpm@linux-foundation.org>
+	<20070604084227.GA29446@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Korb wrote:
-> > > Should I test it with an EC8/64-PCI? The /32 (ab)uses an IDE controller 
-> > > chip as PCI interface, the /64 uses a PLX PCI9050.
-> > 
-> > I don't undestand this. IDE grabs the device? This is possible and if yes,
-> > I'll fix the IDE driver.
+On Mon, 4 Jun 2007 10:42:27 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> Yes, IDE (specifically: generic IDE PCI support, generic.ko - not 
-> compiled into my kernel) can grab the device. It's using an IDE 
-> controller chip that reports itself as such, so that's not completely 
-> unreasonable.
-
-Good, thanks for the info.
-
-> > Could you please try the patch below?
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Oopsed:
+> > If we just want some pseudo-private fd space for glibc to use then I'd 
+> > have thought that the existing code could be tweaked to do that: 
+> > top-down allocation, start at some high offset, etc.  But apparently 
+> > there's more to it than this.
 > 
-> === Cut ===
-> Unloading Stallion Multiport Serial Driver: version 5.6.0
-> Stallion Multiport Serial Driver: version 5.6.0
-> stallion 0000:00:0b.0: please, report this to LKML: 100b/d001/ffffff
-> STALLION: EC8/32-PCI found, board=0 io=d200 irq=17 nrpanels=1 nrports=8
-> BUG: unable to handle kernel NULL pointer dereference at virtual address 
-> 00000074
+> top-down has the problem of rlimits: 'where is top' is a variable 
+> notion.
 
-Okay, tty alloc after pci init, attached patch should fix it. Could you
-retest?
+Well, sort-of.  rlimits affect the number of open files, not the actual fd
+indices.  But whatever.
 
-> > stallion, don't fail with less than max panels
-> 
-> I could try with more than one panel if neccecary - I think I have four 8-
-> Port-Panels, one 8-Port-XP-Panel (different UART) and one 16-Port-Panel 
-> stored somewhere.
+> start-at-high-offset using the existing scheme has a 'bitmap size' 
+> problem: even at 2^28 the bitmap size would be 32+ MB. per process (!). 
+> The bitmap could be allocated on demand, but that slows down the current 
+> code, uglifies it, and it would still end up somewhere looking a bit 
+> like Davide's clean new code.
 
-Doesn't matter, needs fix anyway.
+OK, so the existing code doesn't support a holey bitmap.
 
---
+> so, instead of trying to mesh this thing into the old fd data structures 
+> which are very much centered around and tailored to the 
+> continuous-allocation usage model, Davide cleanly separated it out into 
+> a separate data structure that fits this independently-allocated usage 
+> model well and leaves the original data structure alone. I'm strongly in 
+> favor of such clean data structure separations.
 
-stallion, alloc tty before pci devices init
+a) Were IDR trees evaluated and if so, why were they rejected?
 
-this causes oops, because pci prboe function calls tty_register_device for
-each device found.
+b) it's a bit disappointing that this new allocator is only usable for
+   one specific application.  We have a *lot* of places in the kernel which
+   want allocators of this type.  Many of them are open-coded and crappy. 
+   Some use IDR trees.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+   If we're going to go and add a complete new allocator, it would be
+   good to position it as a library thing if poss.
 
----
-commit f6d5d1877b0f7ac82f5e1fec2ead0429eeb069c8
-tree 31beaaee84ef718acc5401b3cb07a7f2e340f0fe
-parent a6c3fb453e98ba32291a4fc5a7d843fb27359182
-author Jiri Slaby <jirislaby@gmail.com> Mon, 04 Jun 2007 10:39:41 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Mon, 04 Jun 2007 10:39:41 +0200
-
- drivers/char/stallion.c |   73 ++++++++++++++++++++++-------------------------
- 1 files changed, 34 insertions(+), 39 deletions(-)
-
-diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
-index 9820f49..45bf2a2 100644
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -4714,6 +4714,29 @@ static int __init stallion_module_init(void)
- 	spin_lock_init(&stallion_lock);
- 	spin_lock_init(&brd_lock);
- 
-+	stl_serial = alloc_tty_driver(STL_MAXBRDS * STL_MAXPORTS);
-+	if (!stl_serial) {
-+		retval = -ENOMEM;
-+		goto err;
-+	}
-+
-+	stl_serial->owner = THIS_MODULE;
-+	stl_serial->driver_name = stl_drvname;
-+	stl_serial->name = "ttyE";
-+	stl_serial->major = STL_SERIALMAJOR;
-+	stl_serial->minor_start = 0;
-+	stl_serial->type = TTY_DRIVER_TYPE_SERIAL;
-+	stl_serial->subtype = SERIAL_TYPE_NORMAL;
-+	stl_serial->init_termios = stl_deftermios;
-+	stl_serial->flags = TTY_DRIVER_REAL_RAW | TTY_DRIVER_DYNAMIC_DEV;
-+	tty_set_operations(stl_serial, &stl_ops);
-+
-+	retval = tty_register_driver(stl_serial);
-+	if (retval) {
-+		printk("STALLION: failed to register serial driver\n");
-+		goto err_frtty;
-+	}
-+
- /*
-  *	Find any dynamically supported boards. That is via module load
-  *	line options.
-@@ -4743,13 +4766,9 @@ static int __init stallion_module_init(void)
- 
- 	/* this has to be _after_ isa finding because of locking */
- 	retval = pci_register_driver(&stl_pcidriver);
--	if (retval && stl_nrbrds == 0)
--		goto err;
--
--	stl_serial = alloc_tty_driver(STL_MAXBRDS * STL_MAXPORTS);
--	if (!stl_serial) {
--		retval = -ENOMEM;
--		goto err_pcidr;
-+	if (retval && stl_nrbrds == 0) {
-+		printk(KERN_ERR "STALLION: can't register pci driver\n");
-+		goto err_unrtty;
- 	}
- 
- /*
-@@ -4760,43 +4779,18 @@ static int __init stallion_module_init(void)
- 		printk("STALLION: failed to register serial board device\n");
- 
- 	stallion_class = class_create(THIS_MODULE, "staliomem");
--	if (IS_ERR(stallion_class)) {
--		retval = PTR_ERR(stallion_class);
--		goto err_reg;
--	}
-+	if (IS_ERR(stallion_class))
-+		printk("STALLION: failed to create class\n");
- 	for (i = 0; i < 4; i++)
- 		class_device_create(stallion_class, NULL,
- 				    MKDEV(STL_SIOMEMMAJOR, i), NULL,
- 				    "staliomem%d", i);
- 
--	stl_serial->owner = THIS_MODULE;
--	stl_serial->driver_name = stl_drvname;
--	stl_serial->name = "ttyE";
--	stl_serial->major = STL_SERIALMAJOR;
--	stl_serial->minor_start = 0;
--	stl_serial->type = TTY_DRIVER_TYPE_SERIAL;
--	stl_serial->subtype = SERIAL_TYPE_NORMAL;
--	stl_serial->init_termios = stl_deftermios;
--	stl_serial->flags = TTY_DRIVER_REAL_RAW | TTY_DRIVER_DYNAMIC_DEV;
--	tty_set_operations(stl_serial, &stl_ops);
--
--	retval = tty_register_driver(stl_serial);
--	if (retval) {
--		printk("STALLION: failed to register serial driver\n");
--		goto err_clsdev;
--	}
--
- 	return 0;
--err_clsdev:
--	for (i = 0; i < 4; i++)
--		class_device_destroy(stallion_class, MKDEV(STL_SIOMEMMAJOR, i));
--	class_destroy(stallion_class);
--err_reg:
--	unregister_chrdev(STL_SIOMEMMAJOR, "staliomem");
-+err_unrtty:
-+	tty_unregister_driver(stl_serial);
-+err_frtty:
- 	put_tty_driver(stl_serial);
--err_pcidr:
--	pci_unregister_driver(&stl_pcidriver);
--	stl_free_isabrds();
- err:
- 	return retval;
- }
-@@ -4825,8 +4819,6 @@ static void __exit stallion_module_exit(void)
- 			tty_unregister_device(stl_serial,
- 				brdp->brdnr * STL_MAXPORTS + j);
- 	}
--	tty_unregister_driver(stl_serial);
--	put_tty_driver(stl_serial);
- 
- 	for (i = 0; i < 4; i++)
- 		class_device_destroy(stallion_class, MKDEV(STL_SIOMEMMAJOR, i));
-@@ -4838,6 +4830,9 @@ static void __exit stallion_module_exit(void)
- 	pci_unregister_driver(&stl_pcidriver);
- 
- 	stl_free_isabrds();
-+
-+	tty_unregister_driver(stl_serial);
-+	put_tty_driver(stl_serial);
- }
- 
- module_init(stallion_module_init);
