@@ -1,73 +1,542 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbXFDWaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbXFDWal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582AbXFDWaU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 18:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbXFDWaG
+	id S1759488AbXFDWal (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 18:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbXFDWaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 18:30:06 -0400
-Received: from mga09.intel.com ([134.134.136.24]:20883 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752736AbXFDWaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 18:30:04 -0400
+	Mon, 4 Jun 2007 18:30:18 -0400
+Received: from mga06.intel.com ([134.134.136.21]:11460 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756474AbXFDWaO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 18:30:14 -0400
 X-ExtLoopCount2: 2 from 172.25.110.8
 X-IronPort-AV: E=Sophos;i="4.16,382,1175497200"; 
-   d="scan'208";a="93439055"
+   d="scan'208";a="250776099"
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,382,1175497200"; 
-   d="scan'208";a="235457426"
-Message-Id: <20070604210242.079459000@askeshav-devel.jf.intel.com>
+   d="scan'208";a="93415248"
+Message-Id: <20070604210644.076940000@askeshav-devel.jf.intel.com>
+References: <20070604210242.079459000@askeshav-devel.jf.intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 04 Jun 2007 14:02:42 -0700
+Date: Mon, 04 Jun 2007 14:02:43 -0700
 From: anil.s.keshavamurthy@intel.com
 To: linux-kernel@vger.kernel.org
-Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com
-Cc: asit.k.mallick@intel.com, suresh.b.siddha@intel.com
-Cc: anil.s.keshavamurthy@intel.com, arjan@linux.intel.com
-Cc: ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
-Subject: [Intel-IOMMU 00/10] Intel IOMMU support
-X-OriginalArrivalTime: 04 Jun 2007 21:23:58.0057 (UTC) FILETIME=[A9901D90:01C7A6EE]
+Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
+Subject: [Intel-IOMMU 01/10] DMAR detection and parsing logic
+Content-Disposition: inline; filename=dmar_detection.patch
+X-OriginalArrivalTime: 04 Jun 2007 21:23:57.0454 (UTC) FILETIME=[A9341AE0:01C7A6EE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-	We are pleased to announce the revised version of
-the Intel IOMMU driver. This driver incorporates several
-feedback received from Anid Kleen, David Miller and 
-several others.
+This patch adds support for early detection and parsing of DMAR's
+reported to OS via ACPI tables.
 
-Most notable changes from previous postings (apart from
-general code cleanup) are
+Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+---
+ arch/x86_64/Kconfig   |   11 +
+ drivers/pci/Makefile  |    3 
+ drivers/pci/dmar.c    |  318 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/acpi/actbl1.h |   27 +++-
+ include/linux/dmar.h  |   52 ++++++++
+ 5 files changed, 404 insertions(+), 7 deletions(-)
 
-1) Replaced linear linked list with RB tree to manage IOVA's.
+Index: linux-2.6.22-rc3/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6.22-rc3.orig/arch/x86_64/Kconfig	2007-06-04 12:28:13.000000000 -0700
++++ linux-2.6.22-rc3/arch/x86_64/Kconfig	2007-06-04 12:33:15.000000000 -0700
+@@ -716,6 +716,17 @@
+ 	bool "Support mmconfig PCI config space access"
+ 	depends on PCI && ACPI
+ 
++config DMAR
++	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
++	depends on PCI_MSI && ACPI && EXPERIMENTAL
++	default y
++	help
++	  DMA remapping(DMAR) devices support enables independent address
++	  translations for Direct Memory Access(DMA) from Devices.
++	  These DMA remapping devices are reported via ACPI tables
++	  and includes pci device scope covered by these DMA
++	  remapping device.
++
+ source "drivers/pci/pcie/Kconfig"
+ 
+ source "drivers/pci/Kconfig"
+Index: linux-2.6.22-rc3/drivers/pci/Makefile
+===================================================================
+--- linux-2.6.22-rc3.orig/drivers/pci/Makefile	2007-06-04 12:28:13.000000000 -0700
++++ linux-2.6.22-rc3/drivers/pci/Makefile	2007-06-04 12:33:15.000000000 -0700
+@@ -20,6 +20,9 @@
+ # Build the Hypertransport interrupt support
+ obj-$(CONFIG_HT_IRQ) += htirq.o
+ 
++# Build Intel IOMMU support
++obj-$(CONFIG_DMAR) += dmar.o
++
+ #
+ # Some architectures use the generic PCI setup functions
+ #
+Index: linux-2.6.22-rc3/drivers/pci/dmar.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.22-rc3/drivers/pci/dmar.c	2007-06-04 12:33:15.000000000 -0700
+@@ -0,0 +1,318 @@
++/*
++ * Copyright (c) 2006, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
++ * Place - Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * 	Copyright (C) Ashok Raj <ashok.raj@intel.com>
++ *	Copyright (C) Shaohua Li <shaohua.li@intel.com>
++ *
++ * 	This file implements early detection/parsing of DMA Remapping Devices
++ * reported to OS through BIOS via DMA remapping reporting (DMAR) ACPI
++ * tables.
++ */
++
++#include <linux/pci.h>
++#include <linux/dmar.h>
++
++#undef PREFIX
++#define PREFIX "DMAR:"
++
++/* No locks are needed as DMA remapping hardware unit
++ * list is constructed at boot time and hotplug of
++ * these units are not supported by the architecture.
++ */
++LIST_HEAD(dmar_drhd_units);
++LIST_HEAD(dmar_rmrr_units);
++
++static struct acpi_table_header * __initdata dmar_tbl;
++
++static void __init dmar_register_drhd_unit(struct dmar_drhd_unit *drhd)
++{
++	/*
++	 * add INCLUDE_ALL at the tail, so scan the list will find it at
++	 * the very end.
++	 */
++	if (drhd->include_all)
++		list_add_tail(&drhd->list, &dmar_drhd_units);
++	else
++		list_add(&drhd->list, &dmar_drhd_units);
++}
++
++static void __init dmar_register_rmrr_unit(struct dmar_rmrr_unit *rmrr)
++{
++	list_add(&rmrr->list, &dmar_rmrr_units);
++}
++
++static int __init dmar_parse_one_dev_scope(struct acpi_dmar_device_scope *scope,
++					   struct pci_dev **dev, u16 segment)
++{
++	struct pci_bus *bus;
++	struct pci_dev *pdev = NULL;
++	struct acpi_dmar_pci_path *path;
++	int count;
++
++	bus = pci_find_bus(segment, scope->bus);
++	path = (struct acpi_dmar_pci_path *)(scope + 1);
++	count = (scope->length - sizeof(struct acpi_dmar_device_scope))
++		/sizeof(struct acpi_dmar_pci_path);
++
++	while (count) {
++		if (pdev)
++			pci_dev_put(pdev);
++		/*
++		 * Some BIOSes list non-exist devices in DMAR table, just
++		 * ignore it
++		 */
++		if (!bus) {
++			printk(KERN_WARNING
++			PREFIX "Device scope bus [%d] not found\n",
++			scope->bus);
++			break;
++		}
++		pdev = pci_get_slot(bus, PCI_DEVFN(path->dev, path->fn));
++		if (!pdev) {
++			printk(KERN_WARNING PREFIX
++			"Device scope device [%04x:%02x:%02x.%02x] not found\n",
++				segment, bus->number, path->dev, path->fn);
++			break;
++		}
++		path ++;
++		count --;
++		bus = pdev->subordinate;
++	}
++	if (!pdev) {
++		printk(KERN_WARNING PREFIX
++		"Device scope device [%04x:%02x:%02x.%02x] not found\n",
++		segment, scope->bus, path->dev, path->fn);
++		*dev = NULL;
++		return 0;
++	}
++	if ((scope->entry_type == ACPI_DMAR_SCOPE_TYPE_ENDPOINT && pdev->subordinate)
++	   || (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_BRIDGE && !pdev->subordinate)) {
++		pci_dev_put(pdev);
++		printk(KERN_WARNING PREFIX "Device scope type does not match for %s\n", pci_name(pdev));
++		return -EINVAL;
++	}
++	*dev = pdev;
++	return 0;
++}
++
++static int __init dmar_parse_dev_scope(void *start, void *end, int *cnt,
++				       struct pci_dev ***devices, u16 segment)
++{
++	struct acpi_dmar_device_scope *scope;
++	void * tmp = start;
++	int index;
++	int ret;
++
++	*cnt = 0;
++	while (start < end) {
++		scope = start;
++		if (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_ENDPOINT ||
++		    scope->entry_type == ACPI_DMAR_SCOPE_TYPE_BRIDGE)
++			(*cnt)++;
++		else
++			printk(KERN_WARNING PREFIX "Unsupported device scope\n");
++		start += scope->length;
++	}
++	if (*cnt == 0)
++		return 0;
++
++	*devices = kcalloc(*cnt, sizeof(struct pci_dev *), GFP_KERNEL);
++	if (!*devices)
++		return -ENOMEM;
++
++	start = tmp;
++	index = 0;
++	while (start < end) {
++		scope = start;
++		if (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_ENDPOINT ||
++		    scope->entry_type == ACPI_DMAR_SCOPE_TYPE_BRIDGE) {
++			ret = dmar_parse_one_dev_scope(scope,
++				&(*devices)[index], segment);
++			if (ret) {
++				kfree(*devices);
++				return ret;
++			}
++			index ++;
++		}
++		start += scope->length;
++	}
++
++	return 0;
++}
++
++/**
++ * dmar_parse_one_drhd - parses exactly one DMA remapping hardware definition
++ * structure which uniquely represent one DMA remapping hardware unit
++ * present in the platform
++ */
++static int __init
++dmar_parse_one_drhd(struct acpi_dmar_header *header)
++{
++	struct acpi_dmar_hardware_unit * drhd = (struct acpi_dmar_hardware_unit *)header;
++	struct dmar_drhd_unit *dmaru;
++	int ret = 0;
++	static int include_all;
++
++	dmaru = kzalloc(sizeof(*dmaru), GFP_KERNEL);
++	if (!dmaru)
++		return -ENOMEM;
++
++	dmaru->reg_base_addr = drhd->address;
++	dmaru->include_all = drhd->flags & 0x1; /* BIT0: INCLUDE_ALL */
++
++	if (!dmaru->include_all)
++		ret = dmar_parse_dev_scope((void *)(drhd + 1),
++				((void *)drhd) + header->length,
++				&dmaru->devices_cnt, &dmaru->devices,
++				drhd->segment);
++	else {
++		/* Only allow one INCLUDE_ALL */
++		if (include_all) {
++			printk(KERN_WARNING PREFIX "Only one INCLUDE_ALL "
++				"device scope is allowed\n");
++			ret = -EINVAL;
++		}
++		include_all = 1;
++	}
++
++	if (ret || (dmaru->devices_cnt == 0 && !dmaru->include_all))
++		kfree(dmaru);
++	else
++		dmar_register_drhd_unit(dmaru);
++	return ret;
++}
++
++static int __init
++dmar_parse_one_rmrr(struct acpi_dmar_header *header)
++{
++	struct acpi_dmar_reserved_memory *rmrr = (struct acpi_dmar_reserved_memory *)header;
++	struct dmar_rmrr_unit *rmrru;
++	int ret = 0;
++
++	rmrru = kzalloc(sizeof(*rmrru), GFP_KERNEL);
++	if (!rmrru)
++		return -ENOMEM;
++
++	rmrru->base_address = rmrr->base_address;
++	rmrru->end_address = rmrr->end_address;
++	ret = dmar_parse_dev_scope((void *)(rmrr + 1),
++		((void*)rmrr) + header->length,
++		&rmrru->devices_cnt, &rmrru->devices, rmrr->segment);
++
++	if (ret || (rmrru->devices_cnt == 0))
++		kfree(rmrru);
++	else
++		dmar_register_rmrr_unit(rmrru);
++	return ret;
++}
++
++static void __init
++dmar_table_print_dmar_entry(struct acpi_dmar_header *header)
++{
++	struct acpi_dmar_hardware_unit *drhd;
++	struct acpi_dmar_reserved_memory *rmrr;
++
++	switch (header->type) {
++	case ACPI_DMAR_TYPE_HARDWARE_UNIT:
++		drhd = (struct acpi_dmar_hardware_unit *)header;
++		printk (KERN_INFO PREFIX
++			"DRHD (flags: 0x%08x)base: 0x%016Lx\n",
++			drhd->flags, drhd->address);
++		break;
++	case ACPI_DMAR_TYPE_RESERVED_MEMORY:
++		rmrr = (struct acpi_dmar_reserved_memory *)header;
++
++		printk (KERN_INFO PREFIX
++			"RMRR base: 0x%016Lx end: 0x%016Lx\n",
++			rmrr->base_address, rmrr->end_address);
++		break;
++	}
++}
++
++/**
++ * parse_dmar_table - parses the DMA reporting table
++ */
++static int __init
++parse_dmar_table(void)
++{
++	struct acpi_table_dmar *dmar;
++	struct acpi_dmar_header *entry_header;
++	int ret = 0;
++
++	dmar = (struct acpi_table_dmar *)dmar_tbl;
++
++	if (!dmar->width) {
++		printk (KERN_WARNING PREFIX "Zero: Invalid DMAR haw\n");
++		return -EINVAL;
++	}
++
++	printk (KERN_INFO PREFIX "Host address width %d\n",
++		dmar->width + 1);
++
++	entry_header = (struct acpi_dmar_header *)(dmar + 1);
++	while (((unsigned long)entry_header) < (((unsigned long)dmar) + dmar_tbl->length)) {
++		dmar_table_print_dmar_entry(entry_header);
++
++		switch (entry_header->type) {
++		case ACPI_DMAR_TYPE_HARDWARE_UNIT:
++			ret = dmar_parse_one_drhd(entry_header);
++			break;
++		case ACPI_DMAR_TYPE_RESERVED_MEMORY:
++			ret = dmar_parse_one_rmrr(entry_header);
++			break;
++		default:
++			printk(KERN_WARNING PREFIX "Unknown DMAR structure type\n");
++			ret = 0; /* for forward compatibility */
++			break;
++		}
++		if (ret)
++			break;
++
++		entry_header = ((void *)entry_header + entry_header->length);
++	}
++	return ret;
++}
++
++
++int __init dmar_table_init(void)
++{
++
++	parse_dmar_table();
++	if (list_empty(&dmar_drhd_units)) {
++		printk(KERN_ERR PREFIX "No DMAR devices found\n");
++		return -ENODEV;
++	}
++	return 0;
++}
++
++/**
++ * early_dmar_detect - checks to see if the platform supports DMAR devices
++ */
++int __init early_dmar_detect(void)
++{
++	acpi_status status = AE_OK;
++
++	/* if we could find DMAR table, then there are DMAR devices */
++	status = acpi_get_table(ACPI_SIG_DMAR, 0,
++				(struct acpi_table_header **)&dmar_tbl);
++
++	if (ACPI_SUCCESS(status) && !dmar_tbl) {
++		printk (KERN_WARNING PREFIX "Unable to map DMAR\n");
++		status = AE_NOT_FOUND;
++	}
++
++	return (ACPI_SUCCESS(status) ? 1 : 0);
++}
+Index: linux-2.6.22-rc3/include/acpi/actbl1.h
+===================================================================
+--- linux-2.6.22-rc3.orig/include/acpi/actbl1.h	2007-06-04 12:28:13.000000000 -0700
++++ linux-2.6.22-rc3/include/acpi/actbl1.h	2007-06-04 12:33:15.000000000 -0700
+@@ -257,7 +257,8 @@
+ struct acpi_table_dmar {
+ 	struct acpi_table_header header;	/* Common ACPI table header */
+ 	u8 width;		/* Host Address Width */
+-	u8 reserved[11];
++	u8 flags;
++	u8 reserved[10];
+ };
+ 
+ /* DMAR subtable header */
+@@ -265,8 +266,6 @@
+ struct acpi_dmar_header {
+ 	u16 type;
+ 	u16 length;
+-	u8 flags;
+-	u8 reserved[3];
+ };
+ 
+ /* Values for subtable type in struct acpi_dmar_header */
+@@ -274,13 +273,15 @@
+ enum acpi_dmar_type {
+ 	ACPI_DMAR_TYPE_HARDWARE_UNIT = 0,
+ 	ACPI_DMAR_TYPE_RESERVED_MEMORY = 1,
+-	ACPI_DMAR_TYPE_RESERVED = 2	/* 2 and greater are reserved */
++	ACPI_DMAR_TYPE_ATSR = 2,
++	ACPI_DMAR_TYPE_RESERVED = 3	/* 3 and greater are reserved */
+ };
+ 
+ struct acpi_dmar_device_scope {
+ 	u8 entry_type;
+ 	u8 length;
+-	u8 segment;
++	u16 reserved;
++	u8 enumeration_id;
+ 	u8 bus;
+ };
+ 
+@@ -290,7 +291,14 @@
+ 	ACPI_DMAR_SCOPE_TYPE_NOT_USED = 0,
+ 	ACPI_DMAR_SCOPE_TYPE_ENDPOINT = 1,
+ 	ACPI_DMAR_SCOPE_TYPE_BRIDGE = 2,
+-	ACPI_DMAR_SCOPE_TYPE_RESERVED = 3	/* 3 and greater are reserved */
++	ACPI_DMAR_SCOPE_TYPE_IOAPIC = 3,
++	ACPI_DMAR_SCOPE_TYPE_HPET = 4,
++	ACPI_DMAR_SCOPE_TYPE_RESERVED = 5	/* 5 and greater are reserved */
++};
++
++struct acpi_dmar_pci_path {
++	u8 dev;
++	u8 fn;
+ };
+ 
+ /*
+@@ -301,6 +309,9 @@
+ 
+ struct acpi_dmar_hardware_unit {
+ 	struct acpi_dmar_header header;
++	u8 flags;
++	u8 reserved;
++	u16 segment;
+ 	u64 address;		/* Register Base Address */
+ };
+ 
+@@ -312,7 +323,9 @@
+ 
+ struct acpi_dmar_reserved_memory {
+ 	struct acpi_dmar_header header;
+-	u64 address;		/* 4_k aligned base address */
++	u16 reserved;
++	u16 segment;
++	u64 base_address;		/* 4_k aligned base address */
+ 	u64 end_address;	/* 4_k aligned limit address */
+ };
+ 
+Index: linux-2.6.22-rc3/include/linux/dmar.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.22-rc3/include/linux/dmar.h	2007-06-04 12:33:15.000000000 -0700
+@@ -0,0 +1,52 @@
++/*
++ * Copyright (c) 2006, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
++ * Place - Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * Copyright (C) Ashok Raj <ashok.raj@intel.com>
++ * Copyright (C) Shaohua Li <shaohua.li@intel.com>
++ */
++
++#ifndef __DMAR_H__
++#define __DMAR_H__
++
++#include <linux/acpi.h>
++#include <linux/types.h>
++
++
++extern int dmar_table_init(void);
++extern int early_dmar_detect(void);
++
++extern struct list_head dmar_drhd_units;
++extern struct list_head dmar_rmrr_units;
++
++struct dmar_drhd_unit {
++	struct list_head list;		/* list of drhd units	*/
++	u64	reg_base_addr;		/* register base address*/
++	struct	pci_dev **devices; 	/* target device array	*/
++	int	devices_cnt;		/* target device count	*/
++	u8	ignored:1; 		/* ignore drhd		*/
++	u8	include_all:1;
++	struct intel_iommu *iommu;
++};
++
++struct dmar_rmrr_unit {
++	struct list_head list;		/* list of rmrr units	*/
++	u64	base_address;		/* reserved base address*/
++	u64	end_address;		/* reserved end address */
++	struct pci_dev **devices;	/* target devices */
++	int	devices_cnt;		/* target device count */
++};
++
++#endif /* __DMAR_H__ */
 
-2) IOVA address is now being allocated from the cards MAX DMA address capability or 
-DMA32bit limit which ever is lower. This allowed us to get rid of having to
-preserve certain address range when multiple cards of different DMA address
-capabilities share the same domain.
-
-3)Implements generic pre-allocated pools a.k.a. resource pool to allocate
-memory for IOVA's and for vt-d page tables. This resource pools grows
-automagically in the background (work queued to keventd) based
-on the demand.
-
-4) Did some tuning in terms of locking for iova allocation and freeing.
-
-5) Changed command line options for isa and gfx workaround to CONFIG options,
-so that when we have all the components adhere to PCI-DMA api's we can
-easily yank this workarounds.
-
-With all the above changes, the performance greatly improved and
-the results showed that performance with IOMMU was comparable to 
-without IOMMU configured.
-
-
-Once again, thanks for providing valuable feedback, please
-apply this set of patches to MM if you have no further objections.
-
-
-Cheers,
--Anil Keshavmaurthy
-e-mail: anil.s.keshavamurthy@intel.com
-Open Source Technology Center
-Intel Corp.
 -- 
