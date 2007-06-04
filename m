@@ -1,97 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbXFDBGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbXFDBHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752824AbXFDBGJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 21:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXFDBFx
+	id S1752386AbXFDBHw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 21:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbXFDBHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 21:05:53 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:16716 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbXFDBFw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 21:05:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RMbKfzujefgd18xsIPMgPcDqdIwZZNLPow+eNriRQwseP/3XXADzqInJ3wLeKH7hLqzC2rDOCIquV1RBb85g6YGBj93r2Jb+1kgONLwO/sLRnDzhhhHYdhI7Q4Q0loTwV8JAETbELhW38GLQFHu8TAXF6FYSlYP0HI6eZYDCr3o=
-Message-ID: <e7ca40f70706031805h56da4c3ag2dd0e902430785cc@mail.gmail.com>
-Date: Sun, 3 Jun 2007 21:05:51 -0400
-From: "Aaron Wiebe" <epiphani@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: slow open() calls and o_nonblock
-Cc: "John Stoffel" <john@stoffel.org>
-In-Reply-To: <18019.21781.470399.393340@stoffel.org>
+	Sun, 3 Jun 2007 21:07:45 -0400
+Received: from mga02.intel.com ([134.134.136.20]:41699 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751397AbXFDBHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 21:07:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,378,1175497200"; 
+   d="scan'208";a="250414621"
+From: Sheng Yang <sheng.yang@intel.com>
+Organization: intel
+To: Dave Jones <davej@redhat.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH]Multi-threaded Initcall with dependence support
+Date: Mon, 4 Jun 2007 09:06:39 +0800
+User-Agent: KMail/1.9.5
+References: <200705281503.10918.sheng.yang@intel.com> <200705290947.53881.sheng.yang@intel.com> <20070531202655.GD31153@redhat.com>
+In-Reply-To: <20070531202655.GD31153@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <e7ca40f70706031152q4e9630aq3c29623bd56fe0e5@mail.gmail.com>
-	 <18019.21781.470399.393340@stoffel.org>
+Message-Id: <200706040906.39594.sheng.yang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John, thanks for responding.  I'm using kernel 2.6.20 on a
-home-grown distro.
-
-I've responded to a few specific points inline - but as a whole,
-Davide directed me to work that is being done specifically to address
-these issues in the kernel, as well as a userspace implementation that
-would allow me to sidestep this failing for the time being.
-
-
-On 6/3/07, John Stoffel <john@stoffel.org> wrote:
+On Friday 01 June 2007 04:26, Dave Jones wrote:
+> On Tue, May 29, 2007 at 09:47:53AM +0800, Yang Sheng wrote:
+>  > On Tuesday 29 May 2007 06:52, Randy Dunlap wrote:
+>  > > On Mon, 28 May 2007 15:03:10 +0800 Yang Sheng wrote:
+>  > > > Why we need this:
+>  > > >
+>  > > > It can speed up the calling of initcalls, especially useful for some
+>  > > > embed device.
+>  > >
+>  > > Can you give concrete example(s) of why we need this?
+>  > > Any real configs/hardware where it helps and how much it helps.
+>  >
+>  > We didn't got the precise data at hand now, because we should build a
+>  > complete stable initcall dependence relationship for it, but we can't do
+>  > it now.
+>  >
+>  > But we have done a relative stable test in a common x86_64 machine, with
+>  > 2 threads and one dependence relation(pnpacpi_init depends on pnp_init
+>  > and acpi_init). The result is the time spending on initcall calling
+>  > reducing from about _5s_ to _2s_ (make the kernel with the defconfig).
+>  > We analyzed the dmesg and found the most of time was save by run
+>  > ide_generic_init and piix_init in parallel.
+>  >
+>  > Of course the dependence in the test case is not sufficient, but the
+>  > effect is shown.
+>  >
+>  > We think this patch would be very useful in some embed deviced which
+>  > requires fast boot speed. Some server may benefit too because of it's
+>  > long time for device initiation.
 >
-> How large are these files?  Are they all in a single directory?  How
-> many files are in the directory?
->
-> Ugh. Why don't you just write to a DB instead?  It sounds like you're
-> writing small records, with one record to a file.  It can work, but
-> when you're doing thousands per-minute, the open/close overhead is
-> starting to dominate.  Can you just amortize that overhead across a
-> bunch of writes instead by writing to a single file which is more
-> structured for your needs?
+> If we decide to do this, we should also introduce a way to disable it
+> at runtime with initcall=noparallel or something.  Why?
 
-In short, I'm distributing logs in realtime for about 600,000
-websites.  The sources of the logs (http, ftp, realmedia, etc) are
-flexible, however the base framework was build around a large cluster
-of webservers.  The output can be to several hundred thousand files
-across about two dozen filers for user consumption - some can be very
-active, some can be completely inactive.
 
-> Netapps usually scream for NFS writes and such, so it sounds to me
-> that you've blown out the NVRAM cache on the box.  Can you elaborate
-> more on your hardware & Network & Netapp setup?
+> Because right now when people say "my computer hangs during bootup"
+> we can ask them to boot with initcall_debug and usually find out
+> the last thing it did before it locked up.   If we parallelise this,
+> the output will be a lot harder to decipher.
 
-You're totally correct here - Netapp has told us as much about our
-filesystem design, we use too much ram on the filer itself.  Its true
-that the application would handle just fine if our filesystem
-structure were redesigned - I am approaching this from an application
-perspective though.  These units are capable of the raw IO, its the
-simple fact that open calls are taking a while.  If I were to thread
-off the application (which Davide has been kind enough to provide some
-libraries which will make that substantially easier), the problem
-wouldn't exist.
+Thank you for the advice. I will introduce a parameter to do this. 
 
-> The problem is that O_NONBLOCK on files open doesn't make sense.  You
-> either open it, or you don't.  How long it takes to comlete isn't part
-> of the spec.
+But what's about idea itself? I don't know whether people like this... It 
+required a little more work on initcall writing. 
 
-You can certainly open the file, but not block on the call to do it.
-What confuses me is why the kernel would "block" for 415ms on an open
-call.  Thats an eternity to suspend a process that has to distribute
-data such as this.
+Maybe we could limit the multithread part in device_initcall? For it seems the 
+most time consumed here, and the others in total just less than 1s(at least 
+on my machine). 
 
-> But in this case, I think you're doing something hokey with your data
-> design.  You should be opening just a handful of files and then
-> streaming your writes to those files.   You'll get much more
-> performance.
-
-Except I cant very well keep 600,000 files open over NFS.  :)  Pool
-and queue, and cycle through the pool.  I've managed to achieve a
-balance in my production deployment with this method - my email was
-more of a rant after months of trying to work around a problem (caused
-by a limitation in system calls), only to have it present an order of
-magnitude worse than I expected.  Sorry for not giving more
-information off the line - and thanks for your time.
-
--Aaron
+Thanks. 
+-- 
+regards
+Yang, Sheng
