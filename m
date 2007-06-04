@@ -1,46 +1,400 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbXFDPN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbXFDPQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757577AbXFDPN7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 11:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXFDPNv
+	id S1757353AbXFDPQp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 11:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbXFDPQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 11:13:51 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52643 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755017AbXFDPNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 11:13:51 -0400
-Date: Mon, 4 Jun 2007 17:13:43 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Indan Zupancic <indan@nul.nu>
-Cc: Jiri Kosina <jikos@jikos.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
-Message-ID: <20070604151343.GE2059@elf.ucw.cz>
-References: <20070604112426.GA2707@elf.ucw.cz> <Pine.LNX.4.64.0706041434040.29896@twin.jikos.cz> <20070604130903.GC1971@elf.ucw.cz> <Pine.LNX.4.64.0706041511010.29896@twin.jikos.cz> <2204.81.207.0.53.1180969821.squirrel@secure.samage.net>
+	Mon, 4 Jun 2007 11:16:37 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:11084 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755040AbXFDPQg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 11:16:36 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=oMQ/XnHlRkDRHUX7KOckwvMhepe7MsY8vhuiwgdY+dPykJJ7a3SJN33GrzcJNnHM2
+	MAxSZRhH0GRcGq49Li8DA==
+Date: Mon, 4 Jun 2007 08:16:12 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Stephane Eranian <eranian@frankl.hpl.hp.com>
+cc: linux-kernel@vger.kernel.org, eranian@hpl.hp.com
+Subject: Re: [PATCH 08/22] 2.6.22-rc3 perfmon2 : session allocation
+In-Reply-To: <200705291348.l4TDmMt9019710@frankl.hpl.hp.com>
+Message-ID: <alpine.DEB.0.99.0706040814030.11881@chino.kir.corp.google.com>
+References: <200705291348.l4TDmMt9019710@frankl.hpl.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2204.81.207.0.53.1180969821.squirrel@secure.samage.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 29 May 2007, Stephane Eranian wrote:
 
-> > Are you sure that it's this dummy blink driver that makes the kernel
-> > stuck? I can't see how it could be causing any hogs - see commit f038f9.
-> 
-> To make it clear, I'm not using the blink driver and get the stuck
-> key problem too. (And also a warpy PS/2 mouse.)
-> 
-> Wildly guessing: As the problem doesn't seem to be widespread,
-> perhaps it's suspend to ram related. I'll try running a while without
-> suspending and see if it crops up too then.
+> --- linux-2.6.22.base/perfmon/perfmon_res.c	1969-12-31 16:00:00.000000000 -0800
+> +++ linux-2.6.22/perfmon/perfmon_res.c	2007-05-29 03:24:14.000000000 -0700
+> @@ -0,0 +1,344 @@
+> +/*
+> + * perfmon_res.c:  perfmon2 resource allocations
+> + *
+> + * This file implements the perfmon2 interface which
+> + * provides access to the hardware performance counters
+> + * of the host processor.
+> + *
+> + * The initial version of perfmon.c was written by
+> + * Ganesh Venkitachalam, IBM Corp.
+> + *
+> + * Then it was modified for perfmon-1.x by Stephane Eranian and
+> + * David Mosberger, Hewlett Packard Co.
+> + *
+> + * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
+> + * by Stephane Eranian, Hewlett Packard Co.
+> + *
+> + * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
+> + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
+> + *                David Mosberger-Tang <davidm@hpl.hp.com>
+> + *
+> + * More information about perfmon available at:
+> + * 	http://perfmon2.sf.net
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of version 2 of the GNU General Public
+> + * License as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+> + * 02111-1307 USA
+> + */
+> +#include <linux/spinlock.h>
+> +#include <linux/perfmon.h>
+> +#include <linux/module.h>
+> +
+> +/*
+> + * global information about all sessions
+> + * mostly used to synchronize between system wide and per-process
+> + */
+> +struct pfm_sessions {
+> +	u32		pfs_task_sessions;/* #num loaded per-thread sessions */
+> +	size_t		pfs_smpl_buffer_mem_cur; /* current smpl buf mem usage */
+> +	cpumask_t	pfs_sys_cpumask;  /* bitmask of used cpus (system-wide) */
+> +};
+> +
+> +static struct pfm_sessions pfm_sessions;
+> +
+> +static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_sessions_lock);
+> +
+> +/*
+> + * sampling buffer allocated by perfmon must be
+> + * checked against max usage thresholds for security
+> + * reasons.
+> + *
+> + * The first level check is against the system wide limit
+> + * as indicated by the system administrator in /proc/sys/kernel/perfmon
+> + *
+> + * The second level check is on a per-process basis using
+> + * RLIMIT_MEMLOCK limit.
+> + *
+> + * Operating on the current task only.
+> + */
+> +int pfm_reserve_buf_space(size_t size)
+> +{
+> +	struct mm_struct *mm;
+> +	unsigned long locked;
+> +	unsigned long buf_mem, buf_mem_max;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&pfm_sessions_lock, flags);
+> +
+> +	/*
+> +	 * check against global buffer limit
+> +	 */
+> +	buf_mem_max = pfm_controls.smpl_buffer_mem_max;
+> +	buf_mem = pfm_sessions.pfs_smpl_buffer_mem_cur + size;
+> +
+> +	if (buf_mem <= buf_mem_max) {
+> +		pfm_sessions.pfs_smpl_buffer_mem_cur = buf_mem;
+> +
+> +		PFM_DBG("buf_mem_max=%lu current_buf_mem=%lu",
+> +			buf_mem_max,
+> +			buf_mem);
+> +	}
+> +	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
+> +
+> +	if (buf_mem > buf_mem_max) {
+> +		PFM_DBG("smpl buffer memory threshold reached");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	/*
+> +	 * check against RLIMIT_MEMLOCK
+> +	 */
+> +	mm = get_task_mm(current);
+> +
+> +	down_write(&mm->mmap_sem);
+> +
+> +	locked  = mm->locked_vm << PAGE_SHIFT;
+> +	locked += size;
+> +
+> +	if (locked > current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur) {
+> +
+> +		PFM_DBG("RLIMIT_MEMLOCK reached ask_locked=%lu rlim_cur=%lu",
+> +			locked,
+> +			current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur);
+> +
+> +		up_write(&mm->mmap_sem);
+> +		mmput(mm);
+> +		goto unres;
+> +	}
+> +
+> +	mm->locked_vm = locked >> PAGE_SHIFT;
+> +
+> +	up_write(&mm->mmap_sem);
+> +
+> +	mmput(mm);
+> +
+> +	return 0;
+> +
+> +unres:
+> +	/*
+> +	 * remove global buffer memory allocation
+> +	 */
+> +	spin_lock_irqsave(&pfm_sessions_lock, flags);
+> +
+> +	pfm_sessions.pfs_smpl_buffer_mem_cur -= size;
+> +
+> +	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
+> +
+> +	return -ENOMEM;
+> +}
+> +/*
+> + *There exist multiple paths leading to this function. We need to
+> + * be very careful withlokcing on the mmap_sem as it may already be
+> + * held by the time we come here.
+> + * The following paths exist:
+> + *
+> + * exit path:
+> + * sys_exit_group
+> + *    do_group_exit
+> + *     do_exit
+> + *      exit_mm
+> + *       mmput
+> + *        exit_mmap
+> + *         remove_vma
+> + *          fput
+> + *           __fput
+> + *            pfm_close
+> + *             __pfm_close
+> + *              pfm_context_free
+> + * 	         pfm_release_buf_space
+> + * munmap path:
+> + * sys_munmap
+> + *  do_munmap
+> + *   remove_vma
+> + *    fput
+> + *     __fput
+> + *      pfm_close
+> + *       __pfm_close
+> + *        pfm_context_free
+> + *         pfm_release_buf_space
+> + *
+> + * close path:
+> + * sys_close
+> + *  filp_close
+> + *   fput
+> + *    __fput
+> + *     pfm_close
+> + *      __pfm_close
+> + *       pfm_context_free
+> + *        pfm_release_buf_space
+> + *
+> + * The issue is that on the munmap() path, the mmap_sem is already held
+> + * in write-mode by the time we come here. To avoid the deadlock, we need
+> + * to know where we are coming from and skip down_write(). If is fairly
+> + * difficult to know this because of the lack of good hooks and
+> + * the fact that, there may not have been any mmap() of the sampling buffer
+> + * (i.e. create_context() followed by close() or exit()).
+> + *
+> + * We use a set flag ctx->flags.mmap_nlock which is toggle in the vm_ops
+> + * callback in remove_vma() which is called systematically for the call, so
+> + * on all but the pure close() path. The exit path does not already hold
+> + * the lock but this is exit so there is no task->mm by the time we come here.
+> + *
+> + * The mmap_nlock is set only when unmapping and this is the LAST reference
+> + * to the file (i.e., close() followed by munmap()).
+> + */
+> +void pfm_release_buf_space(struct pfm_context *ctx, size_t size)
+> +{
+> +	unsigned long flags;
+> +	struct mm_struct *mm;
+> +
+> +	mm = get_task_mm(current);
+> +	if (mm) {
+> +		if (ctx->flags.mmap_nlock == 0) {
+> +			PFM_DBG("doing down_write");
+> +			down_write(&mm->mmap_sem);
+> +		}
+> +
+> +		mm->locked_vm -= size >> PAGE_SHIFT;
+> +
+> +		PFM_DBG("locked_vm=%lu size=%zu", mm->locked_vm, size);
+> +
+> +		if (ctx->flags.mmap_nlock == 0)
+> +			up_write(&mm->mmap_sem);
 
-It is not suspend related -- at least on my machine anyway.
-									Pavel
+No chance of ctx->flags.mmap_nlock getting changed between down_write() 
+and up_write() for mm->mmap_sem, correct?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> +
+> +		mmput(mm);
+> +	}
+> +
+> +	spin_lock_irqsave(&pfm_sessions_lock, flags);
+> +
+> +	pfm_sessions.pfs_smpl_buffer_mem_cur -= size;
+> +
+> +	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
+> +}
+> +
+> +int pfm_reserve_session(int is_system, u32 cpu)
+> +{
+> +	unsigned long flags;
+> +	u32 nsys_cpus;
+
+int ret = 0;
+
+> +
+> +	/*
+> +	 * validy checks on cpu_mask have been done upstream
+> +	 */
+> +	spin_lock_irqsave(&pfm_sessions_lock, flags);
+> +
+> +	nsys_cpus = cpus_weight(pfm_sessions.pfs_sys_cpumask);
+> +
+> +	PFM_DBG("in  sys=%u task=%u is_sys=%d cpu=%u",
+> +		nsys_cpus,
+> +		pfm_sessions.pfs_task_sessions,
+> +		is_system,
+> +		cpu);
+> +
+> +	if (is_system) {
+> +		/*
+> +		 * cannot mix system wide and per-task sessions
+> +		 */
+> +		if (pfm_sessions.pfs_task_sessions > 0) {
+> +			PFM_DBG("%u conflicting task_sessions",
+> +			  	pfm_sessions.pfs_task_sessions);
+
+ret = -EBUSY;
+
+> +			goto abort;
+> +		}
+> +
+> +		if (cpu_isset(cpu, pfm_sessions.pfs_sys_cpumask)) {
+> +			PFM_DBG("conflicting session on CPU%u", cpu);
+
+ret = -EBUSY;
+
+> +			goto abort;
+> +		}
+> +
+> +		PFM_DBG("reserved session on CPU%u", cpu);
+> +
+> +		cpu_set(cpu, pfm_sessions.pfs_sys_cpumask);
+> +		nsys_cpus++;
+> +	} else {
+> +		if (nsys_cpus)
+> +			goto abort;
+
+if (nsys_cpus) {
+	ret = -EBUSY;
+	goto abort;
+}
+
+> +		pfm_sessions.pfs_task_sessions++;
+> +	}
+> +
+> +	PFM_DBG("out sys=%u task=%u is_sys=%d cpu=%u",
+> +		nsys_cpus,
+> +		pfm_sessions.pfs_task_sessions,
+> +		is_system,
+> +		cpu);
+> +
+> +	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
+> +
+> +	return 0;
+
+Get rid of those two lines.
+
+> +
+> +abort:
+> +	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
+> +
+> +	return -EBUSY;
+
+return ret;
+
+> +}
+> +
+> +/*
+> + * called from __pfm_unload_context()
+> + */
+> +int pfm_release_session(int is_system, u32 cpu)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&pfm_sessions_lock, flags);
+> +
+> +	PFM_DBG("in sys_sessions=%u task_sessions=%u syswide=%d cpu=%u",
+> +		cpus_weight(pfm_sessions.pfs_sys_cpumask),
+> +		pfm_sessions.pfs_task_sessions,
+> +		is_system, cpu);
+> +
+> +	if (is_system)
+> +		cpu_clear(cpu, pfm_sessions.pfs_sys_cpumask);
+> +	else
+> +		pfm_sessions.pfs_task_sessions--;
+> +
+> +	PFM_DBG("out sys_sessions=%u task_sessions=%u syswide=%d cpu=%u",
+> +		cpus_weight(pfm_sessions.pfs_sys_cpumask),
+> +		pfm_sessions.pfs_task_sessions,
+> +		is_system, cpu);
+> +
+> +	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
+> +	return 0;
+> +}
+> +
+> +/*
+> + * called from perfmon_sysfs.c:
+> + *  what=0 : pfs_task_sessions
+> + *  what=1 : cpus_weight(pfs_sys_cpumask)
+> + *  what=2 : smpl_buffer_mem_cur
+> + *  what=3 : pmu model name
+> + *
+> + * return number of bytes written into buf (up to sz)
+> + */
+> +ssize_t pfm_sysfs_session_show(char *buf, size_t sz, int what)
+> +{
+> +	unsigned long flags;
+> +
+> +	if (pfm_pmu_conf) {
+> +		spin_lock_irqsave(&pfm_sessions_lock, flags);
+> +		switch (what) {
+> +		case 0: snprintf(buf, sz, "%u\n", pfm_sessions.pfs_task_sessions);
+> +			break;
+> +		case 1: snprintf(buf, sz, "%d\n", cpus_weight(pfm_sessions.pfs_sys_cpumask));
+> +			break;
+> +		case 2: snprintf(buf, sz, "%zu\n", pfm_sessions.pfs_smpl_buffer_mem_cur);
+> +			break;
+> +		case 3:
+> +			snprintf(buf, sz, "%s\n", pfm_pmu_conf->pmu_name);
+> +		}
+
+These values need associated enums and used in patch 4.
+
+		David
