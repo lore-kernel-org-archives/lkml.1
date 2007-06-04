@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXFDDQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbXFDDu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751998AbXFDDQA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jun 2007 23:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbXFDDPw
+	id S1752131AbXFDDu3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jun 2007 23:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXFDDuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jun 2007 23:15:52 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:55934 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbXFDDPw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jun 2007 23:15:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=WDFJRvqCXErqPrHmnTVuP/RupVfJ+8/23FkUu235iF1f8UKO7jr6YoKw/1QjFyFBAO6tMXYUNrWAOIkjYvXB6OixFVEBw4vUbovjEGhcERuPktSdAr6StbrSU1V5l1f99kk0giXKr6jB3yrCGb3QI/s74bKS28BmhfBdOX5iA4g=
-Message-ID: <b3ece790706032015u28966876x7bee35ea24e81fe5@mail.gmail.com>
-Date: Sun, 3 Jun 2007 20:15:50 -0700
-From: "Tim Hockin" <thockin@hockin.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: Kconfig variable "COBALT" is not defined anywhere
-Cc: "Tim Hockin" <thockin@google.com>, "Roland Dreier" <rdreier@cisco.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0706031747190.23873@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 3 Jun 2007 23:50:21 -0400
+Received: from mga09.intel.com ([134.134.136.24]:41630 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751256AbXFDDuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jun 2007 23:50:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,378,1175497200"; 
+   d="scan'208";a="93142614"
+Subject: Re: [PATCH] reduce AER init error information
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       us15@os.inf.tu-dresden.de, davej@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070601120429.GC7345@suse.de>
+References: <1177832284.14017.270.camel@ymzhang>
+	 <465C3446.5020603@googlemail.com> <20070529155732.GA7068@suse.de>
+	 <alpine.LFD.0.98.0705291406000.26602@woody.linux-foundation.org>
+	 <20070601120429.GC7345@suse.de>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 04 Jun 2007 11:49:40 +0800
+Message-Id: <1180928980.3068.5.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0706031315230.23477@localhost.localdomain>
-	 <20070603132309.508738b7.randy.dunlap@oracle.com>
-	 <Pine.LNX.4.64.0706031630030.26035@localhost.localdomain>
-	 <adazm3glqcr.fsf@cisco.com>
-	 <cc96a5040706031408i54116922m7a83c7e0b07181e6@mail.gmail.com>
-	 <Pine.LNX.4.64.0706031714070.19004@localhost.localdomain>
-	 <cc96a5040706031438o667e4df0wb18bdd071f48e246@mail.gmail.com>
-	 <Pine.LNX.4.64.0706031747190.23873@localhost.localdomain>
-X-Google-Sender-Auth: 27ce7cb54a413078
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That sounds correct.
+On Fri, 2007-06-01 at 05:04 -0700, Greg KH wrote:
+> On Tue, May 29, 2007 at 02:06:52PM -0700, Linus Torvalds wrote:
+> > 
+> > 
+> > On Tue, 29 May 2007, Greg KH wrote:
+> > > 
+> > > Care to forward the above patch to the stable@kernel.org address after
+> > > it goes into Linus's tree?
+> > 
+> > .. talking about going to my tree, where _is_ it? It's not in my mailbox, 
+> > at least..
+> 
+> I tried to get this to work for the last round of PCI patches that I
+> sent you yesterday, but it had build problems, which I need to spend
+> some time fixing up :(
+> 
+I fixed by patch at http://marc.info/?l=linux-kernel&m=117783233918191&w=2.
+Later on, someone found if CONFIG_ACPI=n, there is a compilation error. Then,
+I sent out a new patch to fix the compilation error, but another guy wants
+AER driver support although CONFIG_ACPI=n. He sent out the 3rd patch to fix the
+compilation error and enables AER driver when CONFIG_ACPI=n.
 
-On 6/3/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> On Sun, 3 Jun 2007, Tim Hockin wrote:
->
-> > I think the nvram is the only place left that uses CONFIG_COBALT
->
-> sure, but once you remove this snippet near the top of
-> drivers/char/nvram.c:
->
-> ...
-> #  if defined(CONFIG_COBALT)
-> #    include <linux/cobalt-nvram.h>
-> #    define MACH COBALT
-> #  else
-> #    define MACH PC
-> #  endif
-> ...
->
-> then everything else COBALT-related in that file should be tossed as
-> well, which would include stuff conditional on:
->
->   #if MACH == COBALT
->
-> and so on.  just making sure that what you're saying is that *all*
-> COBALT-related content in that file can be thrown out.  i'll submit a
-> patch shortly and you can pass judgment.
->
-> rday
-> --
-> ========================================================================
-> Robert P. J. Day
-> Linux Consulting, Training and Annoying Kernel Pedantry
-> Waterloo, Ontario, CANADA
->
-> http://fsdev.net/wiki/index.php?title=Main_Page
-> ========================================================================
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
+So pls. apply 2 patches.
+
+1) http://marc.info/?l=linux-kernel&m=117783233918191&w=2;
+2) http://marc.info/?l=linux-mm-commits&m=118046936720790&w=2
+
+When patch 2 is applied to stable kernel 2.6.21.3, there is a fuzz warning.
+It doesn't matter.
+
+Sorry for replying so late.
+
+Yanmin
+
