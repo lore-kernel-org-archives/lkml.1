@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXFDJP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbXFDJRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbXFDJP4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 05:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbXFDJPs
+	id S1753676AbXFDJRc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 05:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXFDJRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 05:15:48 -0400
-Received: from lazybastard.de ([212.112.238.170]:56795 "EHLO
+	Mon, 4 Jun 2007 05:17:24 -0400
+Received: from lazybastard.de ([212.112.238.170]:56804 "EHLO
 	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbXFDJPr (ORCPT
+	with ESMTP id S1751514AbXFDJRX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 05:15:47 -0400
-Date: Mon, 4 Jun 2007 11:11:06 +0200
+	Mon, 4 Jun 2007 05:17:23 -0400
+Date: Mon, 4 Jun 2007 11:12:45 +0200
 From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
 To: Arnd Bergmann <arnd@arndb.de>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -30,47 +30,41 @@ Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Roland Dreier <rdreier@cisco.com>,
        Ondrej Zajicek <santiago@crfreenet.org>,
        Ulisses Furquim <ulissesf@gmail.com>
-Subject: Re: [Patch 05/18] fs/logfs/logfs.h
-Message-ID: <20070604091106.GE14823@lazybastard.org>
-References: <20070603183845.GA8952@lazybastard.org> <20070603184303.GF8952@lazybastard.org> <200706032350.57556.arnd@arndb.de>
+Subject: Re: [Patch 04/18] include/linux/logfs.h
+Message-ID: <20070604091245.GF14823@lazybastard.org>
+References: <20070603183845.GA8952@lazybastard.org> <20070603184205.GE8952@lazybastard.org> <200706032342.27252.arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <200706032350.57556.arnd@arndb.de>
+In-Reply-To: <200706032342.27252.arnd@arndb.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 June 2007 23:50:55 +0200, Arnd Bergmann wrote:
+On Sun, 3 June 2007 23:42:25 +0200, Arnd Bergmann wrote:
 > On Sunday 03 June 2007, Jörn Engel wrote:
-> > +/**
-> > + * struct logfs_device_ops - device access operations
-> > + *
-> > + * @read:                      read from the device
-> > + * @write:                     write to the device
-> > + * @erase:                     erase part of the device
-> > + */
-> > +struct logfs_device_ops {
-> > +       int (*read)(struct super_block *sb, loff_t ofs, size_t len, void *buf);
-> > +       int (*write)(struct super_block *sb, loff_t ofs, size_t len, void *buf);
-> > +       int (*erase)(struct super_block *sb, loff_t ofs, size_t len);
-> > +};
+> > +struct logfs_je_spillout {
+> > +       __be64  so_segment[0];
+> > +}__packed;
 > 
-> I wonder if there is a way to document the prototypes of these function
-> pointers with kerneldoc, other than having a typedef for each.
-> 
-> What brought me to this point is that I first assumed they would return
-> the number of bytes transferred, like read/write file operations, where
-> your functions return zero on success.
+> All the on-disk data structures you define in this file have naturally
+> aligned members, so the __packed attribute is not needed.
 
-I can just add a comment about the return code in the struct
-documentation.  For the foreseeable future there will be exactly two
-instances of this structure.  It's not as if every driver would
-implement this.
+Amen.  It is purely paranoia and I don't even know who is out to get me.
+
+> However, I think it causes gcc to generate larger and slower code
+> on some architectures, because now it has to assume that the data
+> structure itself has no more than byte alignment.
+> 
+> I'd simply remove all instances of __packed therefore. In order
+> to verify that you got it right in all cases, build with
+> '-Wpadded -Wpacked'.
+
+Fine with me.  Will do.
 
 Jörn
 
 -- 
-A defeated army first battles and then seeks victory.
--- Sun Tzu
+Ninety percent of everything is crap.
+-- Sturgeon's Law
