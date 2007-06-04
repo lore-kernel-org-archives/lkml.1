@@ -1,107 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbXFDUxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbXFDUya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757863AbXFDUxm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 16:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbXFDUxc
+	id S1758757AbXFDUya (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 16:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbXFDUyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 16:53:32 -0400
-Received: from daemonizer.de ([87.230.16.230]:38432 "EHLO daemonizer.de"
+	Mon, 4 Jun 2007 16:54:22 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:37346 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752736AbXFDUxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 16:53:30 -0400
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: iperf: performance regression (was b44 driver problem?)
-Date: Mon, 4 Jun 2007 22:52:36 +0200
-User-Agent: KMail/1.9.7
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Ulrich Drepper <drepper@gmail.com>, Michael Buesch <mb@bu3sch.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20070525172431.60affaca@freepuppy> <200706042148.02450.maxi@daemonizer.de> <20070604130225.08e45b72@freepuppy>
-In-Reply-To: <20070604130225.08e45b72@freepuppy>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1781395.qdN5C00hYe";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706042252.40025.maxi@daemonizer.de>
-X-Spam-Score: -4.2 (----)
-X-Spam-Report: No, hits=-4.2 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.2 AWL AWL: From: address is in the auto white-list
+	id S1751841AbXFDUyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 16:54:20 -0400
+Date: Mon, 4 Jun 2007 16:54:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patch] libata fix
+Message-ID: <20070604205416.GG20299@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1781395.qdN5C00hYe
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Monday 04 June 2007, Stephen Hemminger wrote:
-> On Mon, 4 Jun 2007 21:47:59 +0200
->
-> Maximilian Engelhardt <maxi@daemonizer.de> wrote:
-> > On Monday 04 June 2007, Ingo Molnar wrote:
-> > > * Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > > > Yes, the following patch makes iperf work better than ever. But are
-> > > > other broken applications going to have same problem. Sounds like t=
-he
-> > > > old "who runs first" fork() problems.
-> > >
-> > > this is the first such app and really, and even for this app: i've be=
-en
-> > > frequently running iperf on -rt kernels for _years_ and never noticed
-> > > how buggy its 'locking' code was, and that it would under some
-> > > circumstances use up the whole CPU on high-res timers.
-> >
-> > I must admit I don't know much about that topic, but there is one thing=
- I
-> > don't understand. Why is iperf (even if it's buggy) able to use up the
-> > whole cpu? I didn't run it as root but as my normal user so it should
-> > have limited rights. Shouldn't the linux scheduler distribute cpu time
-> > among all running processes?
->
-> In this case, there are two threads. One is receiving data and the other
-> is spinning checking on progress. If the spinning thread doesn't yield,
-> it will end up using it's whole quantum (10ms at 100hz), before the
-> scheduler lets the receiver run again. If the receiving thread doesn't
-> get to run then on a UP the performance stinks.
->
-Ok, let's see if I got this right:
-If there are other processes that want cpu time they will get it after the=
-=20
-quantum for the iperf thread is used up. So cpu time will be distributed=20
-among other processes, but it takes some time until they get it and this=20
-increases latency.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-> The problem only showed up laptop because most of my other systems are
-> SMP (or fake SMP/HT), and usually set HZ to 1000 not 100.
+to receive the following updates:
 
-Hm, on my laptop (Pentium M) I have configured CONFIG_HZ_300 and CONFIG_NO_=
-HZ.
-On my desktop PC (Athlon 2000+, also UP) I also have CONFIG_HZ_300 and=20
-CONFIG_NO_HZ but didn't notice the problem.
+ drivers/ata/libata-core.c |   13 ++++---------
+ drivers/ata/pata_via.c    |   12 ++++++------
+ include/linux/libata.h    |    1 -
+ 3 files changed, 10 insertions(+), 16 deletions(-)
 
-Maxi
+Tejun Heo (1):
+      libata: always use polling SETXFER
 
---nextPart1781395.qdN5C00hYe
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGZHuXOimwv528XGERArEsAKDgMGu94r/glT+KaM30/ryWhocb3QCgsxPc
-ENx/hbwtIaDWZCeEcpHEjRk=
-=Yhkf
------END PGP SIGNATURE-----
-
---nextPart1781395.qdN5C00hYe--
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index af62514..4733f00 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3933,10 +3933,13 @@ static unsigned int ata_dev_set_xfermode(struct ata_device *dev)
+ 	/* set up set-features taskfile */
+ 	DPRINTK("set features - xfer mode\n");
+ 
++	/* Some controllers and ATAPI devices show flaky interrupt
++	 * behavior after setting xfer mode.  Use polling instead.
++	 */
+ 	ata_tf_init(dev, &tf);
+ 	tf.command = ATA_CMD_SET_FEATURES;
+ 	tf.feature = SETFEATURES_XFER;
+-	tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
++	tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE | ATA_TFLAG_POLLING;
+ 	tf.protocol = ATA_PROT_NODATA;
+ 	tf.nsect = dev->xfer_mode;
+ 
+@@ -5414,14 +5417,6 @@ unsigned int ata_qc_issue_prot(struct ata_queued_cmd *qc)
+ 		}
+ 	}
+ 
+-	/* Some controllers show flaky interrupt behavior after
+-	 * setting xfer mode.  Use polling instead.
+-	 */
+-	if (unlikely(qc->tf.command == ATA_CMD_SET_FEATURES &&
+-		     qc->tf.feature == SETFEATURES_XFER) &&
+-	    (ap->flags & ATA_FLAG_SETXFER_POLLING))
+-		qc->tf.flags |= ATA_TFLAG_POLLING;
+-
+ 	/* select the device */
+ 	ata_dev_select(ap, qc->dev->devno, 1, 0);
+ 
+diff --git a/drivers/ata/pata_via.c b/drivers/ata/pata_via.c
+index a8462f1..63eca29 100644
+--- a/drivers/ata/pata_via.c
++++ b/drivers/ata/pata_via.c
+@@ -452,7 +452,7 @@ static int via_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	/* Early VIA without UDMA support */
+ 	static const struct ata_port_info via_mwdma_info = {
+ 		.sht = &via_sht,
+-		.flags = ATA_FLAG_SLAVE_POSS | ATA_FLAG_SETXFER_POLLING,
++		.flags = ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask = 0x1f,
+ 		.mwdma_mask = 0x07,
+ 		.port_ops = &via_port_ops
+@@ -460,7 +460,7 @@ static int via_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	/* Ditto with IRQ masking required */
+ 	static const struct ata_port_info via_mwdma_info_borked = {
+ 		.sht = &via_sht,
+-		.flags = ATA_FLAG_SLAVE_POSS | ATA_FLAG_SETXFER_POLLING,
++		.flags = ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask = 0x1f,
+ 		.mwdma_mask = 0x07,
+ 		.port_ops = &via_port_ops_noirq,
+@@ -468,7 +468,7 @@ static int via_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	/* VIA UDMA 33 devices (and borked 66) */
+ 	static const struct ata_port_info via_udma33_info = {
+ 		.sht = &via_sht,
+-		.flags = ATA_FLAG_SLAVE_POSS | ATA_FLAG_SETXFER_POLLING,
++		.flags = ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask = 0x1f,
+ 		.mwdma_mask = 0x07,
+ 		.udma_mask = 0x7,
+@@ -477,7 +477,7 @@ static int via_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	/* VIA UDMA 66 devices */
+ 	static const struct ata_port_info via_udma66_info = {
+ 		.sht = &via_sht,
+-		.flags = ATA_FLAG_SLAVE_POSS | ATA_FLAG_SETXFER_POLLING,
++		.flags = ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask = 0x1f,
+ 		.mwdma_mask = 0x07,
+ 		.udma_mask = 0x1f,
+@@ -486,7 +486,7 @@ static int via_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	/* VIA UDMA 100 devices */
+ 	static const struct ata_port_info via_udma100_info = {
+ 		.sht = &via_sht,
+-		.flags = ATA_FLAG_SLAVE_POSS | ATA_FLAG_SETXFER_POLLING,
++		.flags = ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask = 0x1f,
+ 		.mwdma_mask = 0x07,
+ 		.udma_mask = 0x3f,
+@@ -495,7 +495,7 @@ static int via_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	/* UDMA133 with bad AST (All current 133) */
+ 	static const struct ata_port_info via_udma133_info = {
+ 		.sht = &via_sht,
+-		.flags = ATA_FLAG_SLAVE_POSS | ATA_FLAG_SETXFER_POLLING,
++		.flags = ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask = 0x1f,
+ 		.mwdma_mask = 0x07,
+ 		.udma_mask = 0x7f,	/* FIXME: should check north bridge */
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 85f7b1b..a6a3113 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -171,7 +171,6 @@ enum {
+ 	ATA_FLAG_SKIP_D2H_BSY	= (1 << 12), /* can't wait for the first D2H
+ 					      * Register FIS clearing BSY */
+ 	ATA_FLAG_DEBUGMSG	= (1 << 13),
+-	ATA_FLAG_SETXFER_POLLING= (1 << 14), /* use polling for SETXFER */
+ 	ATA_FLAG_IGN_SIMPLEX	= (1 << 15), /* ignore SIMPLEX */
+ 	ATA_FLAG_NO_IORDY	= (1 << 16), /* controller lacks iordy */
+ 	ATA_FLAG_ACPI_SATA	= (1 << 17), /* need native SATA ACPI layout */
