@@ -1,119 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbXFDUvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbXFDUxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbXFDUvq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 16:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbXFDUve
+	id S1757863AbXFDUxm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 16:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbXFDUxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 16:51:34 -0400
-Received: from 30.mail-out.ovh.net ([213.186.62.213]:49071 "HELO
-	30.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757964AbXFDUvc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 16:51:32 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jun 2007 16:51:31 EDT
-Date: Mon, 4 Jun 2007 23:44:18 +0300
-From: Samuel Ortiz <samuel@sortiz.org>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: linux-kernel@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com,
-       bjorn.helgaas@hp.com, Linus Walleij <linus.walleij@ericsson.com>
-Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
-Message-ID: <20070604204418.GA4214@sortiz.org>
-Reply-To: Samuel Ortiz <samuel@sortiz.org>
-References: <200706031200.07514.arvidjaar@mail.ru> <200706031216.06172.arvidjaar@mail.ru> <20070603231050.GA3829@sortiz.org> <200706040634.01622.arvidjaar@mail.ru>
+	Mon, 4 Jun 2007 16:53:32 -0400
+Received: from daemonizer.de ([87.230.16.230]:38432 "EHLO daemonizer.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752736AbXFDUxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 16:53:30 -0400
+From: Maximilian Engelhardt <maxi@daemonizer.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: iperf: performance regression (was b44 driver problem?)
+Date: Mon, 4 Jun 2007 22:52:36 +0200
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Ulrich Drepper <drepper@gmail.com>, Michael Buesch <mb@bu3sch.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20070525172431.60affaca@freepuppy> <200706042148.02450.maxi@daemonizer.de> <20070604130225.08e45b72@freepuppy>
+In-Reply-To: <20070604130225.08e45b72@freepuppy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706040634.01622.arvidjaar@mail.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Ovh-Remote: 90.28.104.183 (aannecy-257-1-25-183.w90-28.abo.wanadoo.fr)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+Content-Type: multipart/signed;
+  boundary="nextPart1781395.qdN5C00hYe";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706042252.40025.maxi@daemonizer.de>
+X-Spam-Score: -4.2 (----)
+X-Spam-Report: No, hits=-4.2 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	*  0.2 AWL AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Adding Linus Walleij, who wrote part of the smsc driver, to Cc:)
+--nextPart1781395.qdN5C00hYe
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Mon, Jun 04, 2007 at 06:33:56AM +0400, Andrey Borzenkov wrote:
-> On Monday 04 June 2007, Samuel Ortiz wrote:
-> > It seems that PnP tells us that the FIR port is at 0x2e8 while we're
-> > expecting it at 0x2f8.
-> > Could you apply this patch and then send me a dmesg dump of the
-> > smsc-ircc initialisation ?
+On Monday 04 June 2007, Stephen Hemminger wrote:
+> On Mon, 4 Jun 2007 21:47:59 +0200
+>
+> Maximilian Engelhardt <maxi@daemonizer.de> wrote:
+> > On Monday 04 June 2007, Ingo Molnar wrote:
+> > > * Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+> > > > Yes, the following patch makes iperf work better than ever. But are
+> > > > other broken applications going to have same problem. Sounds like t=
+he
+> > > > old "who runs first" fork() problems.
+> > >
+> > > this is the first such app and really, and even for this app: i've be=
+en
+> > > frequently running iperf on -rt kernels for _years_ and never noticed
+> > > how buggy its 'locking' code was, and that it would under some
+> > > circumstances use up the whole CPU on high-res timers.
 > >
-> 
-> here is dmesg:
-> 
-> Detected unconfigured Toshiba laptop with ALi ISA bridge SMSC IrDA chip, 
-> pre-configuring device.
-> Activated ALi 1533 ISA bridge port 0x02e8.
-> Activated ALi 1533 ISA bridge port 0x02f8.
-> pnp: Device 00:0a activated.
-> smsc_ircc_pnp_probe(): fir 0x2e8 sir 0x100 dma 1 irq 5
-Ok, FIR and SIR are definitey mixed up. So, now could you please try Bjorn's
-patch ? I wonder if the curent code (without PnP) enables 0x2f8 as the SIR
-port through the preconfiguration code...
+> > I must admit I don't know much about that topic, but there is one thing=
+ I
+> > don't understand. Why is iperf (even if it's buggy) able to use up the
+> > whole cpu? I didn't run it as root but as my normal user so it should
+> > have limited rights. Shouldn't the linux scheduler distribute cpu time
+> > among all running processes?
+>
+> In this case, there are two threads. One is receiving data and the other
+> is spinning checking on progress. If the spinning thread doesn't yield,
+> it will end up using it's whole quantum (10ms at 100hz), before the
+> scheduler lets the receiver run again. If the receiving thread doesn't
+> get to run then on a UP the performance stinks.
+>
+Ok, let's see if I got this right:
+If there are other processes that want cpu time they will get it after the=
+=20
+quantum for the iperf thread is used up. So cpu time will be distributed=20
+among other processes, but it takes some time until they get it and this=20
+increases latency.
 
-Cheers,
-Samuel.
+> The problem only showed up laptop because most of my other systems are
+> SMP (or fake SMP/HT), and usually set HZ to 1000 not 100.
 
+Hm, on my laptop (Pentium M) I have configured CONFIG_HZ_300 and CONFIG_NO_=
+HZ.
+On my desktop PC (Athlon 2000+, also UP) I also have CONFIG_HZ_300 and=20
+CONFIG_NO_HZ but didn't notice the problem.
 
-> High: 0xef, Chip 0x1
-> smsc_ircc_present(), addr 0x02e8 - no device found!
-> pnp: Device 00:0a disabled.
-> 
-> And here is what PnP tells us:
-> {pts/1}% cat /sys/bus/pnp/devices/00:0a/options
-> port 0x100-0x130, align 0xf, size 0x8, 16-bit address decoding
-> irq 3,4,5,6,7,10,11 High-Edge
-> dma 1,2,3 16-bit compatible
-> Dependent: 01 - Priority acceptable
->    port 0x3f8-0x3f8, align 0x0, size 0x8, 16-bit address decoding
-> Dependent: 02 - Priority acceptable
->    port 0x2e8-0x2e8, align 0x0, size 0x8, 16-bit address decoding
-> Dependent: 03 - Priority acceptable
->    port 0x2f8-0x2f8, align 0x0, size 0x8, 16-bit address decoding
-> Dependent: 04 - Priority acceptable
->    port 0x3e8-0x3e8, align 0x0, size 0x8, 16-bit address decoding
-> {pts/1}% cat /sys/bus/pnp/devices/00:0a/resources
-> state = disabled
-> {pts/1}% sudo sh -c 'echo activate > /sys/bus/pnp/devices/00:0a/resources'
-> {pts/1}% cat /sys/bus/pnp/devices/00:0a/resources
-> state = active
-> io 0x100-0x107
-> io 0x2e8-0x2ef
-> irq 5
-> dma 1
-> 
-> -andrey
-> 
-> > Cheers,
-> > Samuel.
-> >
-> >
-> > diff --git a/drivers/net/irda/smsc-ircc2.c b/drivers/net/irda/smsc-ircc2.c
-> > index 9043bf4..d1d46a6 100644
-> > --- a/drivers/net/irda/smsc-ircc2.c
-> > +++ b/drivers/net/irda/smsc-ircc2.c
-> > @@ -391,6 +391,9 @@ static int __init smsc_ircc_pnp_probe(struct pnp_dev
-> > *dev, dma = pnp_dma(dev, 0);
-> >  	irq = pnp_irq(dev, 0);
-> >
-> > +	printk("%s(): fir 0x%x sir 0x%x dma %d irq %d\n",
-> > +	       __FUNCTION__, firbase, sirbase, dma, irq);
-> > +
-> >  	if (smsc_ircc_open(firbase, sirbase, dma, irq))
-> >  		return -ENODEV;
-> >
-> > @@ -655,6 +658,7 @@ static int smsc_ircc_present(unsigned int fir_base,
-> > unsigned int sir_base) irq     = (config & IRCC_INTERFACE_IRQ_MASK) >> 4;
-> >
-> >  	if (high != 0x10 || low != 0xb8 || (chip != 0xf1 && chip != 0xf2)) {
-> > +		printk("High: 0x%x, Chip 0x%x\n", high, chip);
-> >  		IRDA_WARNING("%s(), addr 0x%04x - no device found!\n",
-> >  			     __FUNCTION__, fir_base);
-> >  		goto out3;
-> 
-> 
+Maxi
 
+--nextPart1781395.qdN5C00hYe
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGZHuXOimwv528XGERArEsAKDgMGu94r/glT+KaM30/ryWhocb3QCgsxPc
+ENx/hbwtIaDWZCeEcpHEjRk=
+=Yhkf
+-----END PGP SIGNATURE-----
+
+--nextPart1781395.qdN5C00hYe--
