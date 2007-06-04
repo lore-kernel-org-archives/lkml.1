@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbXFDHqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbXFDHrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752986AbXFDHqh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 03:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbXFDHqa
+	id S1753267AbXFDHrb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 03:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXFDHrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 03:46:30 -0400
-Received: from 64-142-28-230.dsl.static.sonic.net ([64.142.28.230]:57298 "EHLO
-	Angel.zoy.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752013AbXFDHq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 03:46:29 -0400
-X-Greylist: delayed 1368 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jun 2007 03:46:29 EDT
-Date: Mon, 4 Jun 2007 00:23:40 -0700
-From: Michel Lespinasse <walken@zoy.org>
-To: linux-kernel@vger.kernel.org
-Cc: trond.myklebust@fys.uio.no
-Subject: nfsroot and locking
-Message-ID: <20070604072340.GC3315@zoy.org>
-MIME-Version: 1.0
+	Mon, 4 Jun 2007 03:47:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41742 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbXFDHrX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 03:47:23 -0400
+Date: Mon, 4 Jun 2007 08:47:19 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: mroos@linux.ee, linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070604074719.GB15390@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	David Miller <davem@davemloft.net>, mroos@linux.ee,
+	linux-kernel@vger.kernel.org
+References: <Pine.SOC.4.64.0706032314590.20033@math> <20070603.174010.41894721.davem@davemloft.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070603.174010.41894721.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Jun 03, 2007 at 05:40:10PM -0700, David Miller wrote:
+> From: Meelis Roos <mroos@linux.ee>
+> Date: Sun, 3 Jun 2007 23:23:33 +0300 (EEST)
+> 
+> > I accidentally enabled libata config options on my Sun Ultra 1 (sparc64, 
+> > UP, no PCI, only SBUS):
+> > 
+> >   MODPOST 440 modules
+> > ERROR: "dma_unmap_sg" [drivers/ata/libata.ko] undefined!
+> > ERROR: "dma_map_sg" [drivers/ata/libata.ko] undefined!
+> > ERROR: "dma_unmap_single" [drivers/ata/libata.ko] undefined!
+> > ERROR: "dma_mapping_error" [drivers/ata/libata.ko] undefined!
+> > ERROR: "dma_map_single" [drivers/ata/libata.ko] undefined!
+> > 
+> > CONFIG_PCI=n
+> > CONFIG_ATA=m
+> > 
+> > This seems to be a valid configuration since libata can drive non-PCI 
+> > devices too?
+> 
+> It really makes no sense to allow this on Sparc, there are no
+> non-PCI Sparc ATA controllers.
+> 
+> Therefore I'll fix it like this:
 
-I have a quick question about nfsroot in linux: Is there any way to
-use nfsv3 in the nfsroot (nolock is OK there), and then mount other
-directories with locking enabled ?
+The right fix is the depend on the new HAS_DMA (or whatever it's called)
+symbol.  The proper long-term fix is to move calln to the dam mapping
+functions from the core libata files into the drivers responsibility with
+a default implementation for the typical cases.
 
-The default nfs options when using nfsroot are to use nfsv2 without locking.
-After booting, one can mount other filesystems which will default to
-nfsv3 with locking.
-
-By passing extra options in the nfsroot parameter, one can boot with nfs3
-if desired. For example v3,tcp,rsize=131072,wsize=131072,intr set the
-same options in nfsroot than would otherwise be the after-boot default,
-except that locking stays disabled (I understand lockd can not be started
-as portmap is not running during boot).
-
-However after starting the nfsroot with nfsv3, I am unable to mount any
-other shares with locking. Passing the 'lock' option to mount will add
-'lock' in /etc/mtab, but /proc/mounts will still show the share with 'nolock'
-and rpcinfo shows that lockd was not started.
-
-Is there a reason for this, or an easy workaround ?
-
-for reference, I'm currently running debian etch with a 2.6.20.12 kernel.
-Also I'd appreciate to be copied on replies as I'm not on the list.
-
-Thanks,
-
--- 
-Michel "Walken" Lespinasse
-"Bill Gates is a monocle and a Persian cat away from being the villain
-in a James Bond movie." -- Dennis Miller
+> 
+> commit 6274b5c63131c3110405db5d19e71af26cbbd375
+> Author: David S. Miller <davem@sunset.davemloft.net>
+> Date:   Sun Jun 3 17:39:56 2007 -0700
+> 
+>     [ATA]: Don't allow to enable this for SPARC64 without PCI.
+>     
+>     Based upon a report from Meelis Roos.
+>     
+>     Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+> index b4a8d60..7d893a6 100644
+> --- a/drivers/ata/Kconfig
+> +++ b/drivers/ata/Kconfig
+> @@ -8,6 +8,7 @@ menuconfig ATA
+>  	depends on BLOCK
+>  	depends on !(M32R || M68K) || BROKEN
+>  	depends on !SUN4 || BROKEN
+> +	depends on !(SPARC64 && !PCI)
+>  	select SCSI
+>  	---help---
+>  	  If you want to use a ATA hard disk, ATA tape drive, ATA CD-ROM or
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+---end quoted text---
