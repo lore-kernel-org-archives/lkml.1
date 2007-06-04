@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbXFDQki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbXFDQnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759213AbXFDQki (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 12:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758654AbXFDQkR
+	id S1758977AbXFDQnU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 12:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757433AbXFDQnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 12:40:17 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:48112 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1758320AbXFDQkP (ORCPT
+	Mon, 4 Jun 2007 12:43:10 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:53782 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757280AbXFDQnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 12:40:15 -0400
-Date: Mon, 4 Jun 2007 12:31:45 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Syslets, signals, and security
-Message-ID: <20070604163145.GA7144@c2.user-mode-linux.org>
-Mime-Version: 1.0
+	Mon, 4 Jun 2007 12:43:09 -0400
+X-IronPort-AV: i="4.16,381,1175497200"; 
+   d="scan'208"; a="490351121:sNHT44752668"
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, jeremy@goop.org
+Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
+X-Message-Flag: Warning: May contain useful information
+References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
+	<20070601204141.f84ad72f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706012057580.11358@schroedinger.engr.sgi.com>
+	<20070601213117.1178e8e0.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706012139480.11577@schroedinger.engr.sgi.com>
+	<84144f020706040808t4882f961t80b8d8eb145bfa50@mail.gmail.com>
+	<Pine.LNX.4.64.0706040916090.23191@schroedinger.engr.sgi.com>
+	<84144f020706040922v56cb10eg5a730b4abe9d5251@mail.gmail.com>
+	<alpine.LFD.0.98.0706040924070.23741@woody.linux-foundation.org>
+	<84144f020706040937xb06535em543fa887ad65ee8f@mail.gmail.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 04 Jun 2007 09:43:00 -0700
+In-Reply-To: <84144f020706040937xb06535em543fa887ad65ee8f@mail.gmail.com> (Pekka Enberg's message of "Mon, 4 Jun 2007 19:37:01 +0300")
+Message-ID: <ada6463llgr.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+X-OriginalArrivalTime: 04 Jun 2007 16:43:00.0650 (UTC) FILETIME=[69C3F0A0:01C7A6C7]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Syslets seem like a fundamentally good idea to me, but the current
-implementation, using CLONE_THREAD threads, seems like a basic
-problem.
+ > Then we might as well return your regular NULL pointer for zero-length
+ > allocations as you can't do anything sane with ZERO_SIZE_PTR either.
 
-First, there are signals.  If the app has an interval timer enabled,
-every thread will inherit it and you will have 32 threads getting
-alarms, which seems surprising and wasteful.  I can imagine other
-signals (like SIGWINCH and  SIGHUP) which might be surprising to
-receive multiple times in an obstensibly single-threaded process.
+No, because as was mentioned earlier in the thread, we want code to be
+able to handle 0-sized allocations without special cases.  The goal is
+that code like
 
-Second, security.  What happens if a well-written server starts life
-as root, does some (async) I/O, and setuids to a non-root uid?  There
-will be a bunch of async threads still running as root, with the
-result that async operations (and the main thread) will more than
-occassionally regain root privs.
+	buf = kmalloc(nobj * obj_size);
+	if (buf == NULL)
+		return -ENOMEM;
 
-You can fix this by going around to all the threads in the thread
-group and changing their ->uid, but that seems somewhat kludgy.  You
-could also fix this by killing off the async threads on a setuid, and
-make the app recreate the async threads under its new uid.  However,
-the current interface has no way to give the userspace stacks back to
-the process, so this would force a memory leak on the process.
+should work fine if nobj happens to be 0.  But we do want to get an
+oops if the code actually tries to read or write *buf.
 
-There's also ptrace, which (as I think Zach already mentioned) gets
-along badly with syslets.
-
-Offhand, it seems to me that the underlying problem is that the
-threads all have their own task_structs and userspaces.
-
-If only the main thread can receive signals and exit to userspace, the
-signal surprises go away.
-
-Similarly, if they all share a task structure, the setuid problem goes
-away.
-
-There are also warts in the current interface due to all of the
-threads possibly being able to return to userspace:
-	they all need to be provided with userspace stacks
-	they need to be given an user IP to execute
-	there is a new system call for them to call when they land in
-userspace.
-
-Since the basic schedulable unit is currently a task_struct, and
-syslets would prefer to have multiple schedulable units per
-task_struct, this would imply some surgery on the task_struct and the
-scheduler.  What I think we'd want is for the basic schedulable unit
-to be not much more than a kernel stack and a register set.  A
-(non-kernel-thread) task_struct would still be associated 1-1 with a
-userspace, but could have multiple schedulable units, one of which is
-allowed to exit to userspace.
-
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+ - R.
