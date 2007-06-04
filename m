@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761416AbXFDWwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762231AbXFDWyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761416AbXFDWwu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 18:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbXFDWwm
+	id S1762231AbXFDWyR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 18:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757143AbXFDWyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 18:52:42 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:51634 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757392AbXFDWwl (ORCPT
+	Mon, 4 Jun 2007 18:54:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45205 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755853AbXFDWyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 18:52:41 -0400
-Message-ID: <466496FA.4070508@gmail.com>
-Date: Tue, 05 Jun 2007 00:49:30 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Q] Bio traversal trouble?
-References: <4663DE68.5030200@gmail.com> <84144f020706041141q26d0cba2u352c294d1ec90daf@mail.gmail.com> <4664785C.4090205@gmail.com>
-In-Reply-To: <4664785C.4090205@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 4 Jun 2007 18:54:07 -0400
+Date: Mon, 4 Jun 2007 15:53:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
+Message-Id: <20070604155355.bf29a3a8.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706041532350.27125@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
+	<alpine.LFD.0.98.0706041143240.23741@woody.linux-foundation.org>
+	<Pine.LNX.4.64.0706041200140.24550@schroedinger.engr.sgi.com>
+	<84144f020706041213x1d241794u98e9b3ca29865033@mail.gmail.com>
+	<Pine.LNX.4.64.0706041213540.24935@schroedinger.engr.sgi.com>
+	<46646747.2080803@cs.helsinki.fi>
+	<Pine.LNX.4.64.0706041532350.27125@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/04/2007 10:38 PM, Rene Herman wrote:
+On Mon, 4 Jun 2007 15:39:08 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-> On 06/04/2007 08:41 PM, Pekka Enberg wrote:
+> > Btw, if I am again missing something totally obvious, could you please be so
+> > kind to send me a batch of the same pills that the smart people take. I am all
+> > out.
 > 
-> [ Jens' email address updated to his oracle address ]
+> Heheheh.... Mind boogling isnt it? Patch duplicity....
 > 
->> We can see that we're reading 2048 bytes from port 0x300 and storing
->> the data in memory location 0x8c1d2071 which causes the OOPS. What's
->> surprising is that EBP is set to 0x8c1d2071 too which suggests stack
->> corruption (note that ioread8_rep() is a fastcall so it does not
->> create a stack frame of its own). What you could do here is add some
->> printks and watch how dst changes over time to see if you can figure
->> out a pattern.
-> 
-> Mmm, I do always run with 4K stacks, I guess I'll try that next.
+> Seriously: Andrew/Linus could you make up your mind which way we are 
+> going here? 
 
-Nope, still there with 8K stacks and not harder to trigger.
+I've no strong opinions - I'm just randomly waffling.
+ 
+> I'd say lets drop the DEVELKERNEL stuff and the warnings and go with 
+> ZERO_SIZE_PTR. The DEVELKERNEL patch has the danger that subtle changes 
+> occur at release time that we have not anticipated.
 
-Rene.
+OK.
