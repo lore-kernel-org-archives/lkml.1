@@ -1,171 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765446AbXFETfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765567AbXFEThz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765446AbXFETfs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 15:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761343AbXFETfk
+	id S1765567AbXFEThz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 15:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762839AbXFEThr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 15:35:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34115 "EHLO mx1.redhat.com"
+	Tue, 5 Jun 2007 15:37:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41104 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753359AbXFETfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 15:35:39 -0400
-Date: Tue, 5 Jun 2007 15:35:27 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: nfsv4@linux-nfs.org, nfs@lists.sourceforge.net,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [NFS] [PATCH 2/2] nfs4: on a O_EXCL OPEN make sure the SETATTR
- sets the fields holding the verifier
-Message-Id: <20070605153527.bdc6e4da.jlayton@redhat.com>
-In-Reply-To: <1181067182.7033.25.camel@heimdal.trondhjem.org>
-References: <20070605135659.8f9c2715.jlayton@redhat.com>
-	<1181067182.7033.25.camel@heimdal.trondhjem.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1762764AbXFEThq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 15:37:46 -0400
+Date: Tue, 5 Jun 2007 21:37:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Linux 2.6.22-rc4
+Message-ID: <20070605193718.GB24877@elte.hu>
+References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org> <4665B169.2030803@googlemail.com> <alpine.LFD.0.98.0706051219560.4921@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706051219560.4921@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Jun 2007 14:13:02 -0400
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-> On Tue, 2007-06-05 at 13:56 -0400, Jeff Layton wrote:
-> > The Linux NFS4 client simply skips over the bitmask in an O_EXCL open
-> > call and so it doesn't bother to reset any fields that may be holding
-> > the verifier. This patch has us save the first two words of the bitmask
-> > (which is all the current client has #defines for). The client then
-> > later checks this bitmask and turns on the appropriate flags in the
-> > sattr->ia_verify field for the following SETATTR call.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> > this looks harmless
 > > 
-> > This patch only currently checks to see if the server used the atime
-> > and mtime slots for the verifier (which is what the Linux server uses
-> > for this). I'm not sure of what other fields the server could
-> > reasonably use, but adding checks for others should be trivial.
-> > 
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > 
-> > diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-> > index 8e46e3e..34ddd66 100644
-> > --- a/fs/nfs/nfs4proc.c
-> > +++ b/fs/nfs/nfs4proc.c
-> > @@ -955,6 +955,22 @@ static struct nfs4_state *nfs4_open_delegated(struct inode *inode, int flags, st
-> >  }
-> >  
-> >  /*
-> > + * on an EXCLUSIVE create, the server should send back a bitmask with FATTR4-*
-> > + * fields corresponding to attributes that were used to store the verifier.
-> > + * Make sure we clobber those fields in the later setattr call
-> > + */
-> > +static inline void nfs4_exclusive_attrset (struct nfs4_opendata *opendata, struct iattr *sattr)
-> > +{
-> > +	if ((opendata->o_res.attrset[1] & FATTR4_WORD1_TIME_ACCESS) &&
-> > +	    !(sattr->ia_valid & ATTR_ATIME_SET))
-> > +		sattr->ia_valid |= ATTR_ATIME;
-> > +
-> > +	if ((opendata->o_res.attrset[1] & FATTR4_WORD1_TIME_MODIFY) &&
-> > +	    !(sattr->ia_valid & ATTR_MTIME_SET))
-> > +		sattr->ia_valid |= ATTR_MTIME;
-> > +}
-> > +
-> > +/*
-> >   * Returns a referenced nfs4_state
-> >   */
-> >  static int _nfs4_do_open(struct inode *dir, struct dentry *dentry, int flags, struct iattr *sattr, struct rpc_cred *cred, struct nfs4_state **res)
-> > @@ -985,6 +1001,9 @@ static int _nfs4_do_open(struct inode *dir, struct dentry *dentry, int flags, st
-> >  	if (status != 0)
-> >  		goto err_opendata_free;
-> >  
-> > +	if (opendata->o_arg.open_flags & O_EXCL)
-> > +		nfs4_exclusive_attrset(opendata, sattr);
-> > +
-> >  	status = -ENOMEM;
-> >  	state = nfs4_opendata_to_nfs4_state(opendata);
-> >  	if (state == NULL)
-> > @@ -1787,6 +1806,7 @@ nfs4_proc_create(struct inode *dir, struct dentry *dentry, struct iattr *sattr,
-> >  		status = nfs4_do_setattr(state->inode, &fattr, sattr, state);
-> >  		if (status == 0)
-> >  			nfs_setattr_update_inode(state->inode, sattr);
-> > +		nfs_refresh_inode(state->inode, &fattr);
->                   ^^^^ should be nfs_post_op_update_inode() to ensure
-> that the attribute cache gets invalidated if the server fails to return
-> the post-op attributes.
+> > [ 116.733327] PM: suspend-to-disk mode set to 'shutdown' [ 
+> > 116.738849] swsusp: Basic memory bitmaps created [ 116.745353] 
+> > Stopping tasks ... WARNING: at 
+> > /home/devel/linux-git/kernel/lockdep.c:2414 check_flags()
+
+> > [  116.755052] irq event stamp: 69
+> > [  116.755060] hardirqs last  enabled at (69): [<c04040f9>] syscall_exit_work+0x11/0x26
+> > [  116.755084] hardirqs last disabled at (68): [<c0403fdd>] syscall_exit+0x9/0x1a
+> > [  116.755109] softirqs last  enabled at (0): [<c042150c>] copy_process+0x4dd/0x1286
+> > [  116.755139] softirqs last disabled at (0): [<00000000>] 0x0
+> > [  116.945776] done.
+
+> Well, it's harmless in the sense that "yeah, the system still works", 
+> but it does seem to be a real bug. We have hardware interrupts 
+> disabled when we _think_ we should have them on, so our irq tracking 
+> is off.
 > 
+> Ingo, do you see what's up? It looks like we got a signal to a process 
+> that just got created, is the setup stuff for "tsk->hardirqs_enabled" 
+> perhaps off a bit?
 
-It looks like nfs3_proc_create() uses nfs_refresh_inode in this spot (which was
-why I initially used one here). Should it also be changed to use
-nfs_post_op_update_inode(), or is it correct as-is?
+hm. I cannot see the source of the bug at the moment, but here's my 
+analysis so far:
 
+the last event that irqtrace got was #69, and that was a 'hardirqs on' 
+in syscall_exit_work. After that we did a 'hardirqs off' without 
+properly tracking that via irqtrace. Next time we got an irqtrace event 
+(event 70) the assert caught up with us and turned off lockdep and 
+backed out of that function. This was in:
 
-> >  	}
-> >  	if (status == 0 && nd != NULL && (nd->flags & LOOKUP_OPEN))
-> >  		status = nfs4_intent_set_file(nd, dentry, state);
-> > diff --git a/fs/nfs/nfs4xdr.c b/fs/nfs/nfs4xdr.c
-> > index 4eb8a59..b281c83 100644
-> > --- a/fs/nfs/nfs4xdr.c
-> > +++ b/fs/nfs/nfs4xdr.c
-> > @@ -3313,7 +3313,7 @@ static int decode_delegation(struct xdr_stream *xdr, struct nfs_openres *res)
-> >  static int decode_open(struct xdr_stream *xdr, struct nfs_openres *res)
-> >  {
-> >          __be32 *p;
-> > -        uint32_t bmlen;
-> > +        uint32_t savewords, bmlen, i;
-> >          int status;
-> >  
-> >          status = decode_op_hdr(xdr, OP_OPEN);
-> > @@ -3331,7 +3331,15 @@ static int decode_open(struct xdr_stream *xdr, struct nfs_openres *res)
-> >                  goto xdr_error;
-> >  
-> >          READ_BUF(bmlen << 2);
-> > -        p += bmlen;
-> > +
-> > +	savewords = bmlen > NFS_OPENRES_ATTRSET_WORDS ?
-> > +			NFS_OPENRES_ATTRSET_WORDS : bmlen;
->                       ^^^^ min_t(bmlen, NFS_OPENRES_ATTRSET_WORDS, uint32_t);
-> > +
-> > +	for (i = 0; i < savewords; ++i) 
-> > +		READ32(res->attrset[i]);
-> > +
-> > +	p += (bmlen - savewords);
-> > +
-> >  	return decode_delegation(xdr, res);
-> >  xdr_error:
-> >  	dprintk("%s: Bitmap too large! Length = %u\n", __FUNCTION__, bmlen);
-> > diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
-> > index f8c55e5..f050a27 100644
-> > --- a/include/linux/nfs_xdr.h
-> > +++ b/include/linux/nfs_xdr.h
-> > @@ -133,6 +133,7 @@ struct nfs_openargs {
-> >  	__u32			claim;
-> >  };
-> >  
-> > +#define NFS_OPENRES_ATTRSET_WORDS	2
-> 
->    Could you rename this to NFS4_BITMAP_SIZE and put it into
-> include/linux/nfs4.h, please.
-> 
-> >  struct nfs_openres {
-> >  	nfs4_stateid            stateid;
-> >  	struct nfs_fh           fh;
-> > @@ -145,6 +146,7 @@ struct nfs_openres {
-> >  	nfs4_stateid		delegation;
-> >  	__u32			do_recall;
-> >  	__u64			maxsize;
-> > +	__u32			attrset[NFS_OPENRES_ATTRSET_WORDS];
-> >  };
-> >  
-> >  /*
-> > 
-> > -------------------------------------------------------------------------
-> > This SF.net email is sponsored by DB2 Express
-> > Download DB2 Express C - the FREE version of DB2 express and take
-> > control of your XML. No limits. Just data. Click to get it now.
-> > http://sourceforge.net/powerbar/db2/
-> > _______________________________________________
-> > NFS maillist  -  NFS@lists.sourceforge.net
-> > https://lists.sourceforge.net/lists/listinfo/nfs
-> 
+ > [  116.754957]  [<c043c3e5>] check_flags+0x95/0x143
+ > [  116.754967]  [<c043f158>] lock_acquire+0x29/0x82
+ > [  116.754977]  [<c06313a7>] _spin_lock+0x35/0x42
+ > [  116.754990]  [<c044894a>] refrigerator+0x14/0xc6
+ > [  116.755002]  [<c042d4b3>] get_signal_to_deliver+0x33/0x397
+ > [  116.755016]  [<c0403597>] do_notify_resume+0x94/0x6ed
+ > [  116.755029]  [<c0404099>] work_notifysig+0x13/0x1a
 
+isnt the refrigerator() suspend related? Perhaps suspend disables irqs 
+somewhere that we forgot to track?
 
--- 
-Jeff Layton <jlayton@redhat.com>
+a new thread gets its hardirqs_enabled this way:
+
+ #ifdef __ARCH_WANT_INTERRUPTS_ON_CTXSW
+         p->hardirqs_enabled = 1;
+ #else
+         p->hardirqs_enabled = 0;
+ #endif
+
+on i386 __ARCH_WANT_INTERRUPTS_ON_CTXSW is off so it starts with 0. We 
+set this up in copy_process() so there's no chance this task can run 
+without this initialized.
+
+	Ingo
