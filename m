@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764516AbXFELXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764704AbXFELYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764516AbXFELXU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 07:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762970AbXFELXM
+	id S1764704AbXFELYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 07:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762970AbXFELYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 07:23:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:63376 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757408AbXFELXL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 07:23:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=qG4eTMRVs4m9NGtylXRIqVD4+9PamGMptdJtu0d6Jhu7j52fm9cunzbnvfJgIIKlHEiuusFNhJiV3102JBvMb2d7u6N2gH+hu344aiFFAqLUwTZU6zMfqwcs/Z76PGQHrr4Muz2Gx0jWcnJ90sS5ZKcBAxKkFoov5FmuTjbiOQU=
-Message-ID: <46654796.3060800@gmail.com>
-Date: Tue, 05 Jun 2007 22:23:02 +1100
-From: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
-User-Agent: Thunderbird 1.5.0.8 (X11/20061107)
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.21.3] ppp_mppe: account for osize too small errors in
- mppe_decompress()
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=windows-1251
+	Tue, 5 Jun 2007 07:24:10 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:60353 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758205AbXFELYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 07:24:09 -0400
+Date: Tue, 5 Jun 2007 13:23:36 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Ivan Kuten <ivan.kuten@promwad.com>
+Cc: Andrew Victor <andrew@sanpeople.com>, Russell King <rmk@arm.linux.org.uk>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] atmel_serial: Fix break handling
+Message-ID: <20070605132336.3b8a9a4e@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <20070605140720.4bdf887a@newbox>
+References: <11806398911702-git-send-email-hskinnemoen@atmel.com>
+	<20070605140720.4bdf887a@newbox>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prevent mppe_decompress() from generating "osize too small" errors when checking
-for output buffer size. When receiving a packet of mru size the output buffer
-for decrypted data is 1 byte too small since mppe_decompress() tries to account
-for possible PFC, however later in code it is assumed no PFC.
+On Tue, 5 Jun 2007 14:07:20 +0300
+Ivan Kuten <ivan.kuten@promwad.com> wrote:
 
-Adjusting the check prevented there errors from occurring.
+> I tried to test your patch on AT91RM9200 with Magic SysRq sequence, unfortunately without 
+> success - SysRq still does not work. You mention "break count increments" where do you check it ? I have 
+> cat /proc/tty/driver/atmel_serial 
+> serinfo:1.0 driver revision:
+> 0: uart:ATMEL_SERIAL mmio:0xFEFFF200 irq:1 tx:8554 rx:623 fe:25 RTS|CTS|DTR|DSR|CD|RI
+> 1: uart:ATMEL_SERIAL mmio:0xFFFC0000 irq:6 tx:0 rx:0 CTS|DSR|CD|RI
+> 2: uart:ATMEL_SERIAL mmio:0xFFFC4000 irq:7 tx:0 rx:0 RI
+> 3: uart:ATMEL_SERIAL mmio:0xFFFC8000 irq:8 tx:0 rx:0 DSR|CD|RI
+> 4: uart:ATMEL_SERIAL mmio:0xFFFCC000 irq:9 tx:0 rx:0 CTS|DSR|CD|RI
+> 
+> no any break counter.
 
-Signed-off-by: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
----
---- linux-2.6.21.3/drivers/net/ppp_mppe.c.orig	2007-06-01 20:57:04.000000000 +1100
-+++ linux-2.6.21.3/drivers/net/ppp_mppe.c	2007-06-05 21:46:30.000000000 +1100
-@@ -493,14 +493,14 @@ mppe_decompress(void *arg, unsigned char
+Andrew Victor pointed out that the RM9200 DBGU doesn't support break at
+all, and the data sheet seems to agree. The break counter seems to show
+up after the first break has been received and you're probably not
+receiving any.
 
- 	/*
- 	 * Make sure we have enough room to decrypt the packet.
--	 * Note that for our test we only subtract 1 byte whereas in
--	 * mppe_compress() we added 2 bytes (+MPPE_OVHD);
--	 * this is to account for possible PFC.
-+	 * To account for possible PFC we should only subtract 1
-+	 * byte whereas in mppe_compress() we added 2 bytes (+MPPE_OVHD);
-+	 * However, we assume no PFC, thus subtracting 2 bytes.
- 	 */
--	if (osize < isize - MPPE_OVHD - 1) {
-+	if (osize < isize - MPPE_OVHD - 2) {
- 		printk(KERN_DEBUG "mppe_decompress[%d]: osize too small! "
- 		       "(have: %d need: %d)\n", state->unit,
--		       osize, isize - MPPE_OVHD - 1);
-+		       osize, isize - MPPE_OVHD - 2);
- 		return DECOMP_ERROR;
- 	}
- 	osize = isize - MPPE_OVHD - 2;	/* assume no PFC */
+Is it possible for you to try a different USART as console?
+
+Haavard
