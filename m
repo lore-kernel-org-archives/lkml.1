@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763471AbXFEIx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763610AbXFEIzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763471AbXFEIx7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 04:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761905AbXFEIxw
+	id S1763610AbXFEIzK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 04:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762077AbXFEIy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 04:53:52 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:41704 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757143AbXFEIxv (ORCPT
+	Tue, 5 Jun 2007 04:54:59 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:28139 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757143AbXFEIy6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 04:53:51 -0400
-Message-ID: <466523E0.3050605@gmail.com>
-Date: Tue, 05 Jun 2007 10:50:40 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Tue, 5 Jun 2007 04:54:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=SE3yi710sGfvygfNRCJbEfUFL4dnK4W9bj7fIEmKjs5Xi0/bzF0OZFsMfytrPgzvXGxPnHIZYGIcXBJ+7VPy9YBj4sOFIbcNJFzbMES1jpyKNwhRtr7qLpYgy0cAC0uVx99wpnijCPO7h0BBUuNa2hnINk+VuLGZVg/PF2/4V4w=
+Message-ID: <466524D3.7060806@gmail.com>
+Date: Tue, 05 Jun 2007 16:54:43 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0706041143240.23741@woody.linux-foundation.org> <Pine.LNX.4.64.0706041200140.24550@schroedinger.engr.sgi.com> <84144f020706041213x1d241794u98e9b3ca29865033@mail.gmail.com> <Pine.LNX.4.64.0706041213540.24935@schroedinger.engr.sgi.com> <46646747.2080803@cs.helsinki.fi> <Pine.LNX.4.64.0706041532350.27125@schroedinger.engr.sgi.com> <20070604155355.bf29a3a8.akpm@linux-foundation.org> <Pine.LNX.4.64.0706041607560.27346@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706041607560.27346@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] CFS scheduler, -v14
+References: <20070523120616.GA23407@elte.hu> <4658F1D6.3070706@gmail.com> <20070529061544.GA28523@elte.hu> <20070529080738.GA28657@elte.hu> <465E992C.4020601@gmail.com> <20070531095337.GA8104@elte.hu> <465FC7E7.7080804@gmail.com> <20070601192142.GA10039@elte.hu> <4664CB6D.8060507@gmail.com> <20070605080130.GA4301@elte.hu>
+In-Reply-To: <20070605080130.GA4301@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/05/2007 01:09 AM, Christoph Lameter wrote:
+Ingo Molnar wrote:
+> * Li Yu <raise.sail@gmail.com> wrote:
+>
+>   
+>> Eh, I wrong again~ I even took an experiment in last week end, this 
+>> idea is really bad! ;(
+>>
+>> I think the most inner of source of my wrong again and again is 
+>> misunderstanding virtual time. For more better understanding this, I 
+>> try to write one python script to simulate CFS behavior. However, It 
+>> can not implement the fairness as I want. I really confuse here.
+>>
+>> Would you like help me point out what's wrong in it? Any suggestion is 
+>> welcome. Thanks in advanced.
+>>     
+>
+> sorry, my python-fu is really, really weak. All i can give you at the 
+> moment is the in-kernel implementation of CFS :-)
+>
+>   
+:~)
 
-> Here a version of the patch that drops the WARN_ONs
+I changed that script to check my understanding of virtual clock. I 
+found out we really got the really fairness if allocate resource by 
+selecting the most earliest task virtual clock! this really eliminate my 
+doubt on virtual clock in much degree. for example:
 
-And now all that's done, how about yet another random person stepping in and 
-suggesting NIL or maybe NIL_PTR instead of ZERO_SIZE_PTR?
+./htucfs.py 60
 
-I understand the idea is that code need not necesarily care about zero sized 
-allocation meaning it won't (generally) need to spell it out but it's still a 
-dreadful name... :-(
+==============================
+TASK_1/C10.00 / 1.0 : 11.0 sec
+TASK_2/C10.00 / 2.0 : 20.0 sec
+TASK_3/C10.00 / 3.0 : 30.0 sec
+==============================
 
-Rene.
+It seem my haltingly english works fine when I read the introduction of 
+virtual clock ;-)
+
+The next step is find out why wait_runtime can not work normally in my 
+script. 
+
+Thanks for your quickly reply.
+
+Good luck.
+
+- Li Yu
