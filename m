@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764640AbXFEKoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764598AbXFEKqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764640AbXFEKoY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 06:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764033AbXFEKoQ
+	id S1764598AbXFEKqP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 06:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764094AbXFEKqC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 06:44:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46748 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764066AbXFEKoN (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 06:44:13 -0400
-Date: Tue, 5 Jun 2007 12:43:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
-       Linux-kernel@vger.kernel.org
-Subject: Re: Interesting interaction between lguest and CFS
-Message-ID: <20070605104353.GA7309@elte.hu>
-References: <20070604173710.GR11166@waste.org> <1181002734.25878.56.camel@localhost.localdomain> <1181010675.25878.140.camel@localhost.localdomain> <20070605041803.GO11115@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605041803.GO11115@waste.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 5 Jun 2007 06:46:02 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:11388 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764061AbXFEKqA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 06:46:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Z5vRA8UmSicg7fuQdNnEHO7/hj3smMRnAWYr+TdVGnL+hJWwLgoBby0pmSZ8q8OQfZs7iyAGVISzdHBsSiXsF+FE8uJPm6cjw7NA7iTL5mMg+Sok3UvnPqKMHWrqaVCATt7EMNG0N05dnvGVgS7rqMjOPx1dRytXIhBZfC3jFWk=
+Subject: Re: [RFC: 2.6 patch] drivers/video/pm3fb.c: possible cleanups
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070604221257.GD5500@stusta.de>
+References: <20070604221257.GD5500@stusta.de>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 18:45:54 +0800
+Message-Id: <1181040354.5023.3.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-06-05 at 00:12 +0200, Adrian Bunk wrote:
+> This patch contains the following possible cleanups:
 
-Matt, could you send me your .config too? Maybe i can reproduce it 
-with your config.
+> -
+> -int __init pm3fb_init(void)
+> -{
+> -	/*
+> -	 *  For kernel boot options (in 'video=pm3fb:<options>' format)
+> -	 */
+> -#ifndef MODULE
+> -	char *option = NULL;
+> -
+> -	if (fb_get_options("pm3fb", &option))
+> -		return -ENODEV;
 
-	Ingo
+The cleanup is good, but we should still leave the above with
+the second parameter as NULL so the driver can also listen to
+global options, such as video=pm3fb:off.
+
+I'll fix this up. Thanks.
+
+Krzysztof,
+
+I think this patch is okay.  If you need to add an option parser
+for your driver, you can always add this in the future.
+
+Tony
+
+
