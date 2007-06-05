@@ -1,44 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764323AbXFEKmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764492AbXFEKmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764323AbXFEKmA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 06:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764011AbXFEKly
+	id S1764492AbXFEKmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 06:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764011AbXFEKmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 06:41:54 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:54323 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763897AbXFEKlx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 06:41:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=eUVGCnlS9TMrXhD6kG8iryYSwm95MjACXB2ltTiW9s0ZoA9Zu7rztVUxlIlWxEbPk9tSj1CweoVv+HPQZwXKobxsPD6fKHER7QTeC64qSreCfowDfqg9YWUtE2SxLvILlCJ66SNdlC1zgLWkEtKscKGe02FuMlbc4tX/3BeT0cY=
-Message-ID: <4bcb1f700706050341j2d772fc3lbd9a637ab869ee38@mail.gmail.com>
-Date: Tue, 5 Jun 2007 16:11:52 +0530
-From: "Ratnadeep Joshi" <ratn.josh@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Documentation/atomic_ops.txt
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Tue, 5 Jun 2007 06:42:24 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:50166 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764033AbXFEKmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 06:42:23 -0400
+Date: Tue, 5 Jun 2007 12:41:44 +0200 (MEST)
+Message-Id: <200706051041.l55AfiHD025993@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: david@dgreaves.com, torvalds@linux-foundation.org
+Subject: Re: Linux 2.6.22-rc4
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a typo in Documentation/atomic_ops.txt
-Thanks,
-- Ratnadeep Joshi
+On Tue, 05 Jun 2007 10:29:43 +0100, David Greaves wrote:
+> Linus Torvalds wrote:
+> > [Linus' 2.6.22-rc4 announcement]
+>
+> Compile warnings and a new regression: hang on boot during sata_promise
+> detection... :(
 
-diff --git a/Documentation/atomic_ops.txt b/Documentation/atomic_ops.txt
-index 2a63d56..05851e9 100644
---- a/Documentation/atomic_ops.txt
-+++ b/Documentation/atomic_ops.txt
-@@ -149,7 +149,7 @@ defined which accomplish this:
-        void smp_mb__before_atomic_dec(void);
-        void smp_mb__after_atomic_dec(void);
-        void smp_mb__before_atomic_inc(void);
--       void smp_mb__after_atomic_dec(void);
-+       void smp_mb__after_atomic_inc(void);
-
- For example, smp_mb__before_atomic_dec() can be used like so:
+Please give us some details about your sata_promise problem:
+- describe your hardware (Promise chip version, mainboard, chipset, etc)
+- which was the last kernel version prior to 2.6.22-rc4 that worked
+- the kernel messages up to the hang, if you can capture them
