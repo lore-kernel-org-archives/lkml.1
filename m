@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbXFEO4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932709AbXFEO4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbXFEO4Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbXFEO4A
+	id S932709AbXFEO4m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932679AbXFEO4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:56:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38014 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932476AbXFEOz7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:55:59 -0400
-From: Russ Anderson <rja@sgi.com>
-Message-Id: <200706051455.l55Etr1N96333810@clink.americas.sgi.com>
-Subject: linux-ia64 build warning messages
-To: tony.luck@intel.com (Luck Tony)
-Date: Tue, 5 Jun 2007 09:55:53 -0500 (CDT)
-Cc: prarit@redhat.com (Prarit Bhargava), clameter@sgi.com (Christoph Lameter),
-       randy.dunlap@oracle.com (Randy Dunlap), dgc@sgi.com (David Chinner),
-       akpm@linux-foundation.org (Andrew Morton),
-       linux-kernel@vger.kernel.org (lkml), linux-ia64@vger.kernel.org,
-       sam@ravnborg.org (Sam Ravnborg)
-In-Reply-To: <617E1C2C70743745A92448908E030B2A01961AFE@scsmsx411.amr.corp.intel.com> from "Luck, Tony" at Jun 01, 2007 01:00:33 AM
-X-Mailer: ELM [version 2.5 PL2]
-MIME-Version: 1.0
+	Tue, 5 Jun 2007 10:56:07 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:42625 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932643AbXFEO4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 10:56:05 -0400
+Date: Tue, 5 Jun 2007 10:56:03 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, mroos@linux.ee,
+       linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070605145603.GF31565@havoc.gtf.org>
+References: <Pine.SOC.4.64.0706032314590.20033@math> <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org> <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu> <20070605135608.GA31565@havoc.gtf.org> <20070605141714.GA2572@flint.arm.linux.org.uk> <20070605143523.GE31565@havoc.gtf.org> <20070605145149.GB2572@flint.arm.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070605145149.GB2572@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tony Luck wrote:
+On Tue, Jun 05, 2007 at 03:51:49PM +0100, Russell King wrote:
+> On Tue, Jun 05, 2007 at 10:35:23AM -0400, Jeff Garzik wrote:
+> > 
+> > BTW, please fix your mailer.  It emits Mail-Followup-To headers that
+> > hijack everyone on the thread into the To field, breaking the normal
+> > LKML To/CC standard replying mechanism that has been working for a
+> > decade.
 > 
-> > I used the sn2_defconfig in the tree :)
+> Sorry, I will not.  My local policy (which I have the utmost right to
+> have) is that I do not wish to be CC'd on responses to replies to my
+> posts.  Additional useless CC's are a waste of my limited bandwidth
+> and resources.
 > 
-> So there is something odd happening.  Russ complained that he
-> was still seeing several errors from the sn2_defconfig build
-> too when I posted the "last fix" to Len.  But I don't see them
-> when I build.
+> It's a question of local policy required by local resource limitations.
+> 
+> So I give you a choice: you can either have the benefit of me reply and
+> put up with the follow up header, or I will arrange to never reply to
+> your messages ever again (which may involve me never reading one again).
+> Which would you prefer?
 
-An additional data point.  I have a copy of Tony's test tree
-pulled down on March 30th that builds without the warning messages.
-The copy of Tony's test tree pulled down on May 22nd does have
-warning messages.  I'm building both with the same compiler (etc).
-I'm fairly certain a tree I pulled down in April built without 
-warnings.  I've since blown away that tree.
+Your personal preference is fine with me.
 
-The trees were pulled down using 
-cg-clone git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux-2.6.git test
+Just stop hijacking -everyone else's- preferences along with it.
 
-Building the new tree with an older compiler does not make the 
-warnings go away.
+A far more community-friendly method that operates within existing email
+standards is to filter out duplicate message ids on your side.
 
-Both are built with sn2_defconfig (using all the default options).
-Using the 3/30 sn2_defconfig with the 5/22 tree (and visa-versa)
-does not change the warnings.
+	Jeff
 
-------------------------------------------------------
-  MODPOST vmlinux
-WARNING: init/built-in.o - Section mismatch: reference to .init.data: from .sdata after 'C.260.15660' (at offset 0x48)
-WARNING: init/built-in.o - Section mismatch: reference to .init.data: from .sdata after 'C.260.15660' (at offset 0x50)
-WARNING: init/built-in.o - Section mismatch: reference to .init.data:ino from .sdata after 'C.260.15660' (at offset 0x58)
-WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.text:cpu_init from .text between 'start_secondary' (at offset 0x498f2) and 'smp_prepare_boot_cpu'
-WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.text:ia64_mca_cmc_vector_setup from .text between 'start_secondary' (at offset 0x49b02) and 'smp_prepare_boot_cpu'
-WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:smp_boot_data from .sdata before 'acpi_irq_model' (at offset -0x0)
-WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:rsvd_region from .sdata between 'ia64_sal' (at offset 0x98) and 'ia64_i_cache_stride_shift'
-WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:rsvd_region from .sdata between 'ia64_sal' (at offset 0xa0) and 'ia64_i_cache_stride_shift'
-WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:smp_boot_data from .sdata between 'cpu.25245' (at offset 0x228) and 'ap_wakeup_vector'
-WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x58) and 'first_time.25893'
-WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x60) and 'first_time.25893'
-WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x78) and 'first_time.25893'
-WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 0x56f82) and 'drain_alien_cache'
-WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 0x57022) and 'drain_alien_cache'
-WARNING: mm/built-in.o - Section mismatch: reference to .init.data:early_node_map from .sdata before 'min_free_kbytes' (at offset -0x0)
-WARNING: mm/built-in.o - Section mismatch: reference to .init.data:early_node_map from .sdata before 'min_free_kbytes' (at offset -0x8)
-WARNING: mm/built-in.o - Section mismatch: reference to .init.data:early_node_map from .sdata before 'min_free_kbytes' (at offset -0x10)
-WARNING: mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hugetlb_infinity' (at offset 0x1d0) and 'slab_early_init'
-WARNING: mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .sdata between 'hugetlb_infinity' (at offset 0x1d8) and 'slab_early_init'
-WARNING: mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .sdata between 'hugetlb_infinity' (at offset 0x1e0) and 'slab_early_init'
-WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:sn_sal_console_setup from .data.rel between 'sal_console' (at offset 0x1c78) and 'ioc4_serial_submodule'
-WARNING: drivers/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'scsi_null_device_strs' (at offset 0x8c0) and 'fc_dev_loss_tmo'
-  OBJCOPY arch/ia64/hp/sim/boot/vmlinux.bin
-------------------------------------------------------
 
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+
