@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbXFELzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761550AbXFEL5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760825AbXFELzh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 07:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbXFELza
+	id S1761550AbXFEL5o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 07:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbXFEL5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 07:55:30 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:42827 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbXFELz3 (ORCPT
-	<rfc822;Linux-Kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 07:55:29 -0400
-Date: Tue, 5 Jun 2007 12:55:22 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: James Jarvis <James.Jarvis@ed.ac.uk>, Riley@Williams.Name,
-       Linux-Kernel@vger.kernel.org, graham.newton@ed.ac.uk,
-       kenneth.macdonald@ed.ac.uk
-Message-ID: <20070605115521.GA10634@srcf.ucam.org>
-References: <fa./cH7AY3hv2QMikoTK1P7fAVvbdI@ifi.uio.no> <4664B306.5000107@shaw.ca>
+	Tue, 5 Jun 2007 07:57:37 -0400
+Received: from mailgw3.ericsson.se ([193.180.251.60]:58726 "EHLO
+	mailgw3.ericsson.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755119AbXFEL5g convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 07:57:36 -0400
+X-AuditID: c1b4fb3c-a94ecbb0000073d5-90-46654faf5646 
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4664B306.5000107@shaw.ca>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: DMI_MATCH patch in reboot.c for SFF Dell OptiPlex 745 - fixes hang on reboot
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Date: Tue, 5 Jun 2007 13:57:30 +0200
+Message-ID: <A6D19A13FE030A409EC4362C172E091F016F51B1@eseldmw101.eemea.ericsson.se>
+In-Reply-To: <7VXmfiOJ.1181030230.9946640.samuel@sortiz.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Thread-Index: AcenRxsgeDt5HciGTAeDxHuJNI2+cgAIHq8A
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <7VXmfiOJ.1181030230.9946640.samuel@sortiz.org>
+From: "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>
+To: "Samuel Ortiz" <samuel@sortiz.org>, <arvidjaar@mail.ru>
+Cc: <linux-kernel@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       <ambx1@neo.rr.com>, <bjorn.helgaas@hp.com>
+X-OriginalArrivalTime: 05 Jun 2007 11:57:30.0734 (UTC) FILETIME=[B1F3F0E0:01C7A768]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 06:49:10PM -0600, Robert Hancock wrote:
+Sam wrote:
 
-> This blacklist seems to be growing. Isn't there something better we can 
-> do here? Can we just reboot through the BIOS by default, is that really 
-> broken on some systems?
+> Andrey, in addition to Bjorn's patch, could you also apply 
+> this one and try again:
+> 
+> diff --git a/drivers/net/irda/smsc-ircc2.c 
+> b/drivers/net/irda/smsc-ircc2.c index 31c6233..800562a 100644
+> --- a/drivers/net/irda/smsc-ircc2.c
+> +++ b/drivers/net/irda/smsc-ircc2.c
+> @@ -2463,7 +2463,7 @@ static struct 
+> smsc_ircc_subsystem_configuration subsystem_
+>                 .subvendor = 0x1179,
+>                 .subdevice = 0xffff, /* 0xffff is "any" */
+>                 .sir_io = 0x02e8,
+> -               .fir_io = 0x02f8,
+> +               .fir_io = 0x100,
 
-Yes, that breaks a separate set of machines. It would be interesting to 
-try resetting just by banging the keyboard controller from userspace, 
-and seeing if that fails in the same way - I suspect that on certain 
-hardware, part of the shutdown process confuses it in some way.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+You don't need to alter the defaults for the Toshiba ALi, the 
+preconfigure will respect the settings from the commandline,
+e.g. modprobe smsc-ircc2 ircc_fir=0x100,ircc_sir=0x02e8.
+
+BUT this value just won't work: we don't know how to tell the ALi 1533
+to use any other ports than 0x130,0x178,0x03f8,0x02f8 or 0x02e8.
+The code in preconfigure_ali_port() is from the smscinit tool
+and I have no idea of how that was initially developed (reverse
+engineering likely). Since 0x0130 and 0x170 seem to be the same setting,
+0x100 could be equal to one of the others as well so I would
+try feeding some different ircc_fir=x settings and see what happens.
+
+The problem is we don't have any documentation for this
+bridge and even though I've requested a datasheet from ALi they
+refuse to provide one. I even tried buying one in the grey market
+and failed, if someone has it, please forward.
+
+Linus Walleij
