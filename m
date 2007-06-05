@@ -1,40 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765031AbXFEOlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765125AbXFEOn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765031AbXFEOlI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763602AbXFEOk4
+	id S1765125AbXFEOn6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764204AbXFEOnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:40:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:54572 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761140AbXFEOkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:40:55 -0400
-Message-ID: <466575EE.70901@goop.org>
-Date: Tue, 05 Jun 2007 07:40:46 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0706041143240.23741@woody.linux-foundation.org> <Pine.LNX.4.64.0706041200140.24550@schroedinger.engr.sgi.com> <84144f020706041213x1d241794u98e9b3ca29865033@mail.gmail.com> <Pine.LNX.4.64.0706041213540.24935@schroedinger.engr.sgi.com> <46646747.2080803@cs.helsinki.fi> <Pine.LNX.4.64.0706041532350.27125@schroedinger.engr.sgi.com> <20070604155355.bf29a3a8.akpm@linux-foundation.org> <Pine.LNX.4.64.0706041607560.27346@schroedinger.engr.sgi.com> <466523E0.3050605@gmail.com> <alpine.DEB.0.99.0706050804170.27388@sigma.j-a-k-j.com> <46655CEC.7070900@gmail.com>
-In-Reply-To: <46655CEC.7070900@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 5 Jun 2007 10:43:51 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:46691 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761140AbXFEOnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 10:43:50 -0400
+Subject: Problems (a bug?) with UINT_MAX from kernel.h
+From: Richard Purdie <richard@openedhand.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 15:42:42 +0100
+Message-Id: <1181054562.6180.77.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> No, what we have is a sizeof(pointer) sized pointer pointing to an
-> object of size zero. ZERO_SIZE_PTR is butt-ugly. With a really ugly butt. 
+The kernel uses UINT_MAX defined from kernel.h in a variety of places.
 
-It doesn't matter.  It will never, ever, be used by anything except the
-kmalloc internals.  No client code should ever use the constant for
-anything.
+While looking at the behaviour of the LZO code, I noticed it seemed to
+think an int was 8 bytes large on my 32 bit i386 machine. It isn't but
+why did it think that?
 
-    J
+kernel.h says:
+
+#define INT_MAX		((int)(~0U>>1))
+#define INT_MIN		(-INT_MAX - 1)
+#define UINT_MAX	(~0U)
+#define LONG_MAX	((long)(~0UL>>1))
+#define LONG_MIN	(-LONG_MAX - 1)
+#define ULONG_MAX	(~0UL)
+#define LLONG_MAX	((long long)(~0ULL>>1))
+#define LLONG_MIN	(-LLONG_MAX - 1)
+#define ULLONG_MAX	(~0ULL)
+
+If I try to compile the code fragment below, I see the error:
+
+#define UINT_MAX	(~0U)
+#if (0xffffffffffffffff == UINT_MAX)
+  #error argh
+#endif
+
+I've tested this on several systems with a variety of gcc versions with
+the same result. I've tried various other ways of testing this all with
+the same conclusion, UINT_MAX is wrong.
+
+The *LONG* definitions above should work as gcc is forced to a certain
+type. Where just 0U is specified, I don't think it will work as intended
+as gcc seems to automatically increase the type to fit the value and
+avoid truncation ending up with a long long.
+
+If I change the above to:
+
+/* Handle GCC = 3.2 */
+#if !defined(__INT_MAX__)
+#define INT_MAX		0x7fffffff
+#else
+#define INT_MAX		(__INT_MAX__)
+#endif
+#define INT_MIN		(-INT_MAX - 1)
+#define UINT_MAX	((INT_MAX<<1)+1)
+
+I get the expected result of an int being 4 bytes long. Is there a
+better solution? Its probably better that whats there now but could
+break a machine using gcc 3.2 that doesn't have int size = 4 bytes...
+
+(gcc <= 3.2 doesn't define __INT_MAX__)
+
+Richard
+
+
