@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbXFEVFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933110AbXFEVGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932915AbXFEVFt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760775AbXFEVFl
+	id S933110AbXFEVGp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 17:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765668AbXFEVGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 17:05:41 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:39908 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758706AbXFEVFk (ORCPT
+	Tue, 5 Jun 2007 17:06:38 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:53486 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1765671AbXFEVGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 17:05:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Xo9qmkUIqCLc47RG9LLkPSOSxkl9xd4DeJKU/FQ+WhAEK7eiJbsKdjquQuD3gJHKaZHbE+R3BhiXz/z89oQ2AgCTTSvepXA7wax4XdtaSeNz1JfjgoqjTE/CpjYxYg+6iQTIubNDVkUZKyAg3lqWyJqOTVRA2DCH2x4gWl8IlnE=
-Message-ID: <a781481a0706051405n5af19f2t52bd1760f216fd59@mail.gmail.com>
-Date: Wed, 6 Jun 2007 02:35:39 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH] S390: Replace calls to __get_free_pages() with __get_dma_pages().
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       schwidefsky@de.ibm.com, "Andrew Morton" <akpm@osdl.org>,
-       linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0706051650110.19661@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jun 2007 17:06:37 -0400
+Date: Tue, 5 Jun 2007 16:57:50 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: stable@kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH] UML - Improve host PTRACE_SYSEMU check
+Message-ID: <20070605205750.GA9851@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0706051650110.19661@localhost.localdomain>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Make the PTRACE_SYSEMU checking more robust.  It will make sure that
+system call numbers are reported correctly.  If there is a problem, it
+will disable PTRACE_SYSEMU use and use PTRACE_SYSCALL instead.
 
-On 6/6/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
->
-> Replace a number of calls to __get_free_pages() with the corresponding
-> calls to __get_dma_pages().
-> [...]
->   once the __GFP_DMA argument is removed, it does look weird to see
-> the first argument of just 0.  should that be filled in with
-> GFP_ATOMIC as christopher lameter suggested?
+This fixes a hang on boot on FC6 hosts with a broken PTRACE_SYSEMU.
 
-Yes, I suppose so ... GFP_ATOMIC can dip into the emergency
-pools so would also make this code a bit more "robust" than using
-"0" (== GFP_NOWAIT) and it's not that GFP_ATOMIC "waits" on
-anything either ...
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ arch/um/os-Linux/start_up.c |   24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
-> -                       (void *)__get_free_pages(__GFP_DMA,
-> +                       (void *)__get_dma_pages(0,
-
-GFP_NOWAIT == 0, so the macro GFP_NOWAIT is the one to
-use if you really don't want any change in behaviour (and as the
-comment above GFP_NOWAIT says, it's much better to use that
-name than simply specify "0").
-
-Off-topic, but I wonder what are the valid usage cases / scenarios
-for GFP_NOWAIT? The obvious answer is somebody might want to
-be a way-too-polite citizen and stay off the emergency pools even
-from atomic context, but why would anybody want to do /that/ ...
-[ BTW there are 3 users of GFP_NOWAIT in kernel code, but there
-could be more that simply specify "0" to get same behaviour. ]
-
-Satyam
+Index: linux-2.6.17/arch/um/os-Linux/start_up.c
+===================================================================
+--- linux-2.6.17.orig/arch/um/os-Linux/start_up.c	2007-06-05 16:53:41.000000000 -0400
++++ linux-2.6.17/arch/um/os-Linux/start_up.c	2007-06-05 16:54:21.000000000 -0400
+@@ -144,9 +144,7 @@ static int stop_ptraced_child(int pid, v
+ 		int exit_with = WEXITSTATUS(status);
+ 		if (exit_with == 2)
+ 			non_fatal("check_ptrace : child exited with status 2. "
+-				  "Serious trouble happening! Try updating "
+-				  "your host skas patch!\nDisabling SYSEMU "
+-				  "support.");
++				  "\nDisabling SYSEMU support.\n");
+ 		non_fatal("check_ptrace : child exited with exitcode %d, while "
+ 			  "expecting %d; status 0x%x\n", exit_with,
+ 			  exitcode, status);
+@@ -209,6 +207,7 @@ __uml_setup("nosysemu", nosysemu_cmd_par
+ static void __init check_sysemu(void)
+ {
+ 	void *stack;
++	unsigned long regs[MAX_REG_NR];
+ 	int pid, n, status, count=0;
+ 
+ 	non_fatal("Checking syscall emulation patch for ptrace...");
+@@ -225,11 +224,20 @@ static void __init check_sysemu(void)
+ 		fatal("check_sysemu : expected SIGTRAP, got status = %d",
+ 		      status);
+ 
+-	n = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_RET_OFFSET,
+-		   os_getpid());
+-	if(n < 0)
+-		fatal_perror("check_sysemu : failed to modify system call "
+-			     "return");
++	if(ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
++		fatal_perror("check_sysemu : PTRACE_GETREGS failed");
++	if(PT_SYSCALL_NR(regs) != __NR_getpid){
++		non_fatal("check_sysemu got system call number %d, "
++			  "expected %d...", PT_SYSCALL_NR(regs), __NR_getpid);
++		goto fail;
++	}
++
++	n = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_RET_OFFSET, os_getpid());
++	if(n < 0){
++		non_fatal("check_sysemu : failed to modify system call "
++			  "return");
++		goto fail;
++	}
+ 
+ 	if (stop_ptraced_child(pid, stack, 0, 0) < 0)
+ 		goto fail_stopped;
