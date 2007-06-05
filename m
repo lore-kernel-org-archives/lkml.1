@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbXFEGRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763328AbXFEGVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714AbXFEGRb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 02:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760032AbXFEGRX
+	id S1763328AbXFEGVc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 02:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757649AbXFEGVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 02:17:23 -0400
-Received: from alnrmhc15.comcast.net ([204.127.225.95]:48025 "EHLO
-	alnrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756585AbXFEGRX (ORCPT
+	Tue, 5 Jun 2007 02:21:25 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:27625 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757482AbXFEGVZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 02:17:23 -0400
-Subject: Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other
-	woes
-From: Nicholas Miell <nmiell@comcast.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1181013756.31677.123.camel@localhost.localdomain>
-References: <1181006711.31677.97.camel@localhost.localdomain>
-	 <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org>
-	 <1181009413.31677.117.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com>
-	 <1181013756.31677.123.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 04 Jun 2007 23:09:47 -0700
-Message-Id: <1181023787.2785.14.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.0.njm.1) 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jun 2007 02:21:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=LRuxzuX9kWX1Fg3d5HcmoNKKGLCWcaszJIIKoY25S5v/Gi6o45ogKZ9hAAvpHJIsGBvJ3kVLU27HSdu4O9ti7K0XXjAfy2qUHpQUtF2fqSvbul8v0Cm0RXcF8AVJhHSQw75uZ4sKkh3fASZ5PgymrUwbCpQNDh+I//JKjCC8GQA=
+Message-ID: <86802c440706042321k4d83a33dpa0a09deb5fbd5a3a@mail.gmail.com>
+Date: Mon, 4 Jun 2007 23:21:23 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>
+Subject: [PATCH] x86_64: change dm_ioremap to ioremap
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_17055_1542349.1181024483137"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-05 at 13:22 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-06-04 at 19:38 -0700, Davide Libenzi wrote:
-> > >  - I still think there's something wrong with dequeue_signal() being
-> > > potentially called with a task different than current by signalfd, since
-> > > __dequeue_signal() (among others) mucks around with current regardless.
-> > > I'd love to just make signalfd's read() only do anything if current ==
-> > > ctx->tsk and remove the task argument from dequeue_signal... that would
-> > > fix it nicely too no ?
-> > 
-> > There's got to be a clean solution that does not limit signalfd, no? I 
-> > have no time to look at it immediately, but I can look into it in the 
-> > next few days, if someone else does not do it before...
-> 
-> Is there a real usage to dequeuing somebody else signals with signalfd ?
-> If yes, then we can do something around the lines of passing task down
-> to __dequeue_signal, though I'm not too sure waht this notifier is about
-> and wether it might rely on being called from within the affected task
-> context...
-> 
-> Ben.
-> 
+------=_Part_17055_1542349.1181024483137
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-signalfd() doesn't deliver thread-targeted signals to the wrong threads,
-does it?
+[PATCH] x86_64: change dmi_ioremap to ioremap
 
-Hmm.
+dmi_scan_machine==>dmi_present==>dmi_table==>dmi_ioremap uses
+early_ioremap in mm/init.c
+dmi_scan_machine is called after init_memory_mappings, and could use
+ioremap instead.
+also remove extra extern declaring about dmi_ioremap
 
-It looks like reading from a signalfd will give you either
-process-global signals or the thread-specific signals that are targeted
-towards the thread that originally created the signalfd (regardless of
-which thread actually calls read()).
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-Which is weird, to say the least. Definitely needs to be noted in the
-man page, which doesn't seem to exist yet.
+------=_Part_17055_1542349.1181024483137
+Content-Type: text/x-patch; name=6x.diff; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f2k00lkb
+Content-Disposition: attachment; filename="6x.diff"
 
-Is there a reason why signalfd() doesn't behave like regular signals in
-this regard?
+CmRpZmYgLS1naXQgYS9pbmNsdWRlL2FzbS14ODZfNjQvZG1pLmggYi9pbmNsdWRlL2FzbS14ODZf
+NjQvZG1pLmgKaW5kZXggOTNiMmIxNS4uZmM3YjU3NiAxMDA2NDQKLS0tIGEvaW5jbHVkZS9hc20t
+eDg2XzY0L2RtaS5oCisrKyBiL2luY2x1ZGUvYXNtLXg4Nl82NC9kbWkuaApAQCAtMywxNSArMywx
+MiBAQAogCiAjaW5jbHVkZSA8YXNtL2lvLmg+CiAKLWV4dGVybiB2b2lkICpkbWlfaW9yZW1hcCh1
+bnNpZ25lZCBsb25nIGFkZHIsIHVuc2lnbmVkIGxvbmcgc2l6ZSk7Ci1leHRlcm4gdm9pZCBkbWlf
+aW91bm1hcCh2b2lkICphZGRyLCB1bnNpZ25lZCBsb25nIHNpemUpOwotCiAjZGVmaW5lIERNSV9N
+QVhfREFUQSAyMDQ4CiAKIGV4dGVybiBpbnQgZG1pX2FsbG9jX2luZGV4OwogZXh0ZXJuIGNoYXIg
+ZG1pX2FsbG9jX2RhdGFbRE1JX01BWF9EQVRBXTsKIAotLyogVGhpcyBpcyBzbyBlYXJseSB0aGF0
+IHRoZXJlIGlzIG5vIGdvb2Qgd2F5IHRvIGFsbG9jYXRlIGR5bmFtaWMgbWVtb3J5LiAKKy8qIFRo
+aXMgaXMgc28gZWFybHkgdGhhdCB0aGVyZSBpcyBubyBnb29kIHdheSB0byBhbGxvY2F0ZSBkeW5h
+bWljIG1lbW9yeS4KICAgIEFsbG9jYXRlIGRhdGEgaW4gYW4gQlNTIGFycmF5LiAqLwogc3RhdGlj
+IGlubGluZSB2b2lkICpkbWlfYWxsb2ModW5zaWduZWQgbGVuKQogewpAQCAtMjEsNyArMTgsNyBA
+QCBzdGF0aWMgaW5saW5lIHZvaWQgKmRtaV9hbGxvYyh1bnNpZ25lZCBsZW4pCiAJcmV0dXJuIGRt
+aV9hbGxvY19kYXRhICsgaWR4OwogfQogCi0jZGVmaW5lIGRtaV9pb3JlbWFwIGVhcmx5X2lvcmVt
+YXAKLSNkZWZpbmUgZG1pX2lvdW5tYXAgZWFybHlfaW91bm1hcAorI2RlZmluZSBkbWlfaW9yZW1h
+cCBpb3JlbWFwCisjZGVmaW5lIGRtaV9pb3VubWFwKHgsbCkgaW91bm1hcCh4KQogCiAjZW5kaWYK
 
--- 
-Nicholas Miell <nmiell@comcast.net>
-
+------=_Part_17055_1542349.1181024483137--
