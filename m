@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbXFEN1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764213AbXFEN3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761562AbXFEN1D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 09:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760044AbXFEN0z
+	id S1764213AbXFEN3P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 09:29:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbXFEN3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 09:26:55 -0400
-Received: from raven.upol.cz ([158.194.120.4]:41808 "EHLO raven.upol.cz"
+	Tue, 5 Jun 2007 09:29:01 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:46697 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759619AbXFEN0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 09:26:54 -0400
-Date: Tue, 5 Jun 2007 15:38:34 +0200
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [kbuild-devel] [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
-Message-ID: <20070605133834.GO7266@flower.upol.cz>
-References: <20070603204700.GH9240@uranus.ravnborg.org> <20070605073335.GM7266@flower.upol.cz> <20070605081959.GB21991@uranus.ravnborg.org>
+	id S1758213AbXFEN3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 09:29:00 -0400
+Date: Tue, 5 Jun 2007 15:25:07 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Takashi Iwai <tiwai@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, Uwe Bugla <uwe.bugla@gmx.de>,
+       linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: BUG in 2.6.22-rc2-mm1: Parts of Alsa sound architecture broken
+In-Reply-To: <s5hlkey5zvt.wl%tiwai@suse.de>
+Message-ID: <Pine.LNX.4.61.0706051523580.20829@yvahk01.tjqt.qr>
+References: <20070524200052.234330@gmx.net> <20070524130921.8dbd3777.akpm@linux-foundation.org>
+ <s5hiragopsx.wl%tiwai@suse.de> <20070525102806.77ee9c0c.akpm@linux-foundation.org>
+ <s5h1wh4si5l.wl%tiwai@suse.de> <Pine.LNX.4.61.0705261248150.7344@yvahk01.tjqt.qr>
+ <s5hveebziom.wl%tiwai@suse.de> <Pine.LNX.4.61.0705292212120.11140@yvahk01.tjqt.qr>
+ <s5hps4a60zl.wl%tiwai@suse.de> <s5hlkey5zvt.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605081959.GB21991@uranus.ravnborg.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 10:19:59AM +0200, Sam Ravnborg wrote:
-[]
-> If on the other hand you are proposing a script to clean whitespace
-> damage in the code then git already does this nicely.
 
-I've read that too quickly, sorry. What then all that clean scripts
-are for?
+>> > >Well, I find the change of CONFIG_SND to menuconfig is fine, too.
+>> > >But CONFIG_SND_PCI_DRIVERS and others don't make much sense to me.
+>> > >How is it useful at all?
+>> > 
+>> > Hah, I just tell you some of my own experience.
+>> > In summer 2003, I bought the last new machine, and it got these
+>> > shiny new ports they like to call USB. :)
+>> > I did not have much use for it, but I left it on - you never know
+>> > what standard next is the big win of the decade. And actually,
+>> > it did not took long (well, summer 2005) to get my first USB device.
+>> > Still, I am hell as sure I do not have USB-based sound devices
+>> > anytime soon, so it would be cool to deactivate the whole usbsound
+>> > menu at once. I think I said that in the patch description, did not I?
+>> 
+>> But it's not cool to add an extra config item just for that, too.
+>> And, the structure of menuconfig-if-endif is uglier than menu-endmenu.
+>> That's why I feel a bit uneasy, although all these are a matter of
+>> taste...
+>
+>Forgot to mention about another annoying drawback.  Because of the new
+>CONFIG_SND_*_DRIVERS, you'll have to re-select all belonging
+>CONFIG_SND_*, even via config oldconfig.  Putting the dependency on
+>the top seems to reset the values defined in the old .config.
 
-> I do not recall the actual receipt but searching the git mailing list
-> should reveal it. So for whitespace cleanup we should use git but maybe
-> via a small helper script.
+Well, *I* (previously) submitted patches with  "default y", but Jens 
+Axboe [http://lkml.org/lkml/2007/5/12/164] disagreed heavily enough to 
+stop that practice.
 
-So, just to protect script from itself or similar one, here's update
-(only for those, who's interested, of course).
 
--*- clean-whitespace.sh -*-
-#!/bin/sh -e
-# stdin/stdout
-
-IFS=''
-t="`printf '\t'`" ; s=' ' ; s7='       ' ; w79=79 ;
-case $0 in *diff* | *patch*) p='+' ; s='';; esac
-
-while read line
-do case "$line" in
-   ++*) echo "$line";;
-   $p*) line="`echo \"$line\" | expand`"
-	[ ${#line} -gt $w79 ] && : ${long:=line}
-	echo "$line" | sed "/^$p/{s_ *\$__;s_^$p$s7${s}_$p${t}_;s_$s7 _${t}_g}"
-	;;
-     *) echo "$line";;
-   esac
-done
-[ -n "$long" ] && echo "at least one line, wider than $w79 chars, found" 1>&2
-
--*-
+	Jan
+-- 
