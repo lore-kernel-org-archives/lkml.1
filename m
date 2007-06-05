@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763154AbXFEGPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763296AbXFEGRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763154AbXFEGPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 02:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbXFEGPf
+	id S1763296AbXFEGRA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 02:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbXFEGQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 02:15:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35185 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755121AbXFEGPf (ORCPT
+	Tue, 5 Jun 2007 02:16:54 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:46906 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756712AbXFEGQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 02:15:35 -0400
-Date: Tue, 5 Jun 2007 07:15:22 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Richard Purdie <rpurdie@openedhand.com>
-Cc: Nitin Gupta <nitingupta910@gmail.com>,
-       Daniel Hazelton <dhazelton@enter.net>, akpm <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Hugh Dickins <hugh@veritas.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH -mm 0/5] LZO and swap write failure patches for -mm
-Message-ID: <20070605061522.GB25760@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Richard Purdie <rpurdie@openedhand.com>,
-	Nitin Gupta <nitingupta910@gmail.com>,
-	Daniel Hazelton <dhazelton@enter.net>,
-	akpm <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Hugh Dickins <hugh@veritas.com>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	David Woodhouse <dwmw2@infradead.org>
-References: <1180971378.6313.72.camel@localhost.localdomain> <200706041214.38017.dhazelton@enter.net> <1180975976.6313.133.camel@localhost.localdomain> <4cefeab80706041126y5f12402cl61b72ec101dd7915@mail.gmail.com> <1180990731.6313.179.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 5 Jun 2007 02:16:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FaTtv6h4s05kf3gZkCPgCk2mH8UmRIYyQzl9BW+lMnUWLyeSzdEGgHyu+oUo5+wGgPQqeJZ+T8k1keyPmpBincIgGYVsD8Kn0Fi426F9lQvwr3lLu241nTJIgAjuhGBRzNI9xSEroNnel0mAK70kKjpx5HJvoQkmSTCjBrBpK/8=
+Message-ID: <4ac8254d0706042316n2b78f7b1y5ed81da50b148e7a@mail.gmail.com>
+Date: Tue, 5 Jun 2007 08:16:52 +0200
+From: "Tuncer Ayaz" <tuncer.ayaz@gmail.com>
+To: "Tim Bird" <tim.bird@am.sony.com>
+Subject: Re: Problem with http URL for stable git tree?
+Cc: "linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <466488C6.3070100@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1180990731.6313.179.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <46646389.7090101@am.sony.com> <20070604211359.GA2046@kroah.com>
+	 <466488C6.3070100@am.sony.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 09:58:51PM +0100, Richard Purdie wrote:
-> On Mon, 2007-06-04 at 23:56 +0530, Nitin Gupta wrote:
-> > Yes there might still be problems - that is why I posted as RFC. I got
-> > useful comments and the code is improving. Going for such fork might
-> > be pain initially but IMHO its worth it. My idea for this 'fork' is
-> > not just clean-ups but potential optimizations that such cleanups
-> > usually bring along. I do not think there will be major overhauls in
-> > such mature de/compression implementations so I believe its okay to go
-> > for such 'fork' for sake of cleaner and perhaps faster code.
-> 
-> If you want to make cleaner and faster code, why not work on LZO
-> upstream directly? I'm sure the LZO author would welcome the speedups,
-> just as much as the kernel would. 
+On 6/4/07, Tim Bird <tim.bird@am.sony.com> wrote:
+> Greg KH wrote:
+> > On Mon, Jun 04, 2007 at 12:10:01PM -0700, Tim Bird wrote:
+> >> Greg,
+> >>
+> >> I'm having problems cloning the stable git tree for 2.6.21.
+> >> Here's what I get:
+> >>
+> >> $ git clone http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.21.y.git stable-2.6.21.y
+> >> Cannot get remote repository information.
+> >> Perhaps git-update-server-info needs to be run there?
+> >
+> > Ick, don't clone by "http://", please use the git protocol instead:
+> >       git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.21.y.git
+> >
+> > that should work better.
+>
+> I'm behind a firewall that doesn't allow it.  Luckily, the
+> firewall has some holes to allow me ssh access to a few
+> external machines.  It looks like I can use a "git:" url on a
+> box outside the firewall, then clone that to inside Sony
+> with a "git+ssh:" url.
+>
+> I'll do that, unless someone else has a better suggestion.
+> Pushes and pulls will be two steps each, but at least it works.
 
-Because it's author has shown his preference for crappy code.  Can we
-please stop this stupid 'upstream' term here?  LZO is first and most
-and algorithm.  There is a really crappy reference implementation, but
-we should not put that in but rather have a proper implementation targeted
-at the linux kernel.  Whether that implementation starts from scratch or
-by gradually improving the existing reference implementation doesn't matter.
-
+if you have :22 outbound access you could try git+ssh on git.kernel.org.
+I guess you don't have :22 outbound open, do you?
