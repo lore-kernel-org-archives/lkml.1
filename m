@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932201AbXFEIOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXFEITX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932201AbXFEIOq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 04:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761053AbXFEIOd
+	id S932095AbXFEITX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 04:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758367AbXFEITI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 04:14:33 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:33359 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758367AbXFEIOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 04:14:32 -0400
-Date: Tue, 5 Jun 2007 10:14:07 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.03
-Message-ID: <20070605081407.GA809@osiris.boeblingen.de.ibm.com>
-References: <0a25fd03117c678f17006c5fcefaaed0@pinky>
-MIME-Version: 1.0
+	Tue, 5 Jun 2007 04:19:08 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:38496 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755728AbXFEITH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 04:19:07 -0400
+Date: Tue, 5 Jun 2007 10:19:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [kbuild-devel] [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
+Message-ID: <20070605081959.GB21991@uranus.ravnborg.org>
+References: <20070603204700.GH9240@uranus.ravnborg.org> <20070605073335.GM7266@flower.upol.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0a25fd03117c678f17006c5fcefaaed0@pinky>
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <20070605073335.GM7266@flower.upol.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 10:46:24AM +0100, Andy Whitcroft wrote:
+On Tue, Jun 05, 2007 at 09:33:35AM +0200, Oleg Verych wrote:
+> Hallo.
 > 
-> This version brings a host of changes to cure false positives and
-> bugs detected on patches submitted to lkml and -mm.  It also brings
-> a number of new tests in response to reviews, of particular note:
+> On Sun, Jun 03, 2007 at 10:47:00PM +0200, Sam Ravnborg wrote:
+> > Subject: [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
+> > From: H. Peter Anvin <hpa@zytor.com>
+> > Date: Fri, 25 May 2007 17:58:26 -0700
+> > 
+> > Make the "cleanfile" and "cleanpatch" script warn about long lines,
+> > by default lines whose visual width exceeds 79 characters.
+> > 
+> > Per suggestion from Auke Kok.
+> > 
+> > Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 > 
->   - catch use of volatile
+> Thank you, Sam, for sending messages back in Kbuild list again.
+> I have ~30k backlog in LKML, so that thing is good.
+Delete them all - it only hurst a few minutes ;-)
 
-It will warn on "asm volatile (" which it shouldn't.
+> 
+> So, there are some new scripts. What if my proposition will be better,
+> so to speak? Any problems i'm willing to fix/enhance.
+> 
+> Note: only one copy of the file required. Sym-linked name *diff* or
+> *patch* will process patches. I know, that symlinks in sources isn't
+> good, thus change "$0" -> "$1" will process first parameter.
 
->   - report on architecture specific defines being used
+Sorry - but I really do not get your point here.
+Are you trying to say that current cleanpatch is not good enough
+or do you propose a new script to do something similar?
 
-We use architecture specific defines to distinguish between 32 bit and
-64 bit code in user space visible header files, since we cannot use
-CONFIG_64BIT. So this will give us false positives as well.
-Maybe don't warn for header files in include/asm-* ?
+We do not want everyones favorite patch preprocessing script
+in the kernel. So the only option is to incorporate changes in
+cleanpatch.
+
+If on the other hand you are proposing a script to clean whitespace
+damage in the code then git already does this nicely.
+I do not recall the actual receipt but searching the git mailing list
+should reveal it. So for whitespace cleanup we should use git but maybe
+via a small helper script.
+
+	Sam
