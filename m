@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763373AbXFEHT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763505AbXFEHXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763373AbXFEHT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 03:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761755AbXFEHTU
+	id S1763505AbXFEHXQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 03:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761418AbXFEHXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 03:19:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40704 "EHLO mx3.mail.elte.hu"
+	Tue, 5 Jun 2007 03:23:06 -0400
+Received: from raven.upol.cz ([158.194.120.4]:53959 "EHLO raven.upol.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751724AbXFEHTT (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 03:19:19 -0400
-Date: Tue, 5 Jun 2007 09:19:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
-       Linux-kernel@vger.kernel.org
-Subject: Re: Interesting interaction between lguest and CFS
-Message-ID: <20070605071904.GB25163@elte.hu>
-References: <20070604173710.GR11166@waste.org> <20070604175436.GC30274@elte.hu> <20070604184106.GG11115@waste.org>
+	id S1760838AbXFEHXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 03:23:04 -0400
+Date: Tue, 5 Jun 2007 09:33:35 +0200
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net
+Subject: Re: [kbuild-devel] [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
+Message-ID: <20070605073335.GM7266@flower.upol.cz>
+References: <20070603204700.GH9240@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070604184106.GG11115@waste.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070603204700.GH9240@uranus.ravnborg.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hallo.
 
-* Matt Mackall <mpm@selenic.com> wrote:
-
-> sleep_max                :         57476665627
-> block_max                :   18014060106626075
-
-hm, this block_max looks a bit suspect, it's 003fffb1359e341b. Does your 
-box make any use of cpufreq? (what CPU is it?)
-
-> strace -f doesn't kill the latency, here's an strace:
+On Sun, Jun 03, 2007 at 10:47:00PM +0200, Sam Ravnborg wrote:
+> Subject: [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
+> From: H. Peter Anvin <hpa@zytor.com>
+> Date: Fri, 25 May 2007 17:58:26 -0700
 > 
-> 24936 13:39:44.469329 rt_sigprocmask(SIG_BLOCK, [USR1], NULL, 8) = 0
-> 24936 13:39:44.469572 select(4, [0 3], NULL, NULL, {0, 0}) = 0 (Timeout)
-> 24936 13:39:44.469677 rt_sigprocmask(SIG_UNBLOCK, [USR1], NULL, 8) = 0
-> 24936 13:39:44.469765 read(7, 0xbfe6c010, 8) = -1 EINTR (Interrupted system call)
-> 24936 13:39:48.699490 --- SIGUSR1 (User defined signal 1) @ 0 (0) ---
+> Make the "cleanfile" and "cleanpatch" script warn about long lines,
+> by default lines whose visual width exceeds 79 characters.
+> 
+> Per suggestion from Auke Kok.
+> 
+> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 
-hm, this indeed implicates some wakeup problem. lguest task 24936's 
-relevant stats are:
+Thank you, Sam, for sending messages back in Kbuild list again.
+I have ~30k backlog in LKML, so that thing is good.
 
- block_start              :                   0
- sleep_max                :            21492554
- block_max                :            27044576
- exec_max                 :             4008057
- wait_max                 :          1253670288
+So, there are some new scripts. What if my proposition will be better,
+so to speak? Any problems i'm willing to fix/enhance.
 
-the wait_max means it was delayed on the runqueue for 1.2 seconds. Could 
-you try to get a /proc/sched_debug snapshot done exactly during the 
-'delay' window - it's 4 seconds so you should in theory be able to 
-trigger it by doing something like:
+Note: only one copy of the file required. Sym-linked name *diff* or
+*patch* will process patches. I know, that symlinks in sources isn't
+good, thus change "$0" -> "$1" will process first parameter.
 
-  sleep 3; cat /proc/sched_debug > sched_debug.txt
+-*- shell-script: clean-whitespace.sh -*-
 
-Click into the lguest window and trigger the delay.
+#!/bin/sh -e
+# stdin/stdout
 
-	Ingo
+case $0 in *diff* | *patch*) p='+';; esac
+t="`printf '\t'`" ; w79=79 ; IFS=''
+
+while read line
+do case "$line" in
+   ++*) echo "$line";;
+   $p*) line="`echo \"$line\" | expand`"
+	[ ${#line} -gt $w79 ] && : ${long:=line}
+	echo "$line" | sed -e "/^$p/{s_        _${t}_g;s_^$p *_${p}_;s_ *\$__}"
+	;;
+     *) echo "$line";;
+   esac
+done
+[ -n "$long" ] && echo "at least one line, wider than $w79 chars, found" 1>&2
+
+-*-
+> ---
+>  scripts/cleanfile  |   54 ++++++++++++++++++++++++++++++++++++++++++++++-
+>  scripts/cleanpatch |   58 +++++++++++++++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 107 insertions(+), 5 deletions(-)
+>  bla-bla...
+____
