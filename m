@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933218AbXFEVNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932498AbXFEVQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933218AbXFEVNT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765743AbXFEVNL
+	id S932498AbXFEVQJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 17:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765849AbXFEVP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 17:13:11 -0400
-Received: from www.osadl.org ([213.239.205.134]:44637 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765723AbXFEVNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 17:13:09 -0400
-Subject: Re: [RFC][PATCH] muptiple bugs in PI futexes
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-In-Reply-To: <20070605210028.GA10084@ms2.inr.ac.ru>
-References: <20070507144351.GA12302@ms2.inr.ac.ru>
-	 <20070523072609.GC6859@elte.hu> <20070523115159.GA30251@ms2.inr.ac.ru>
-	 <1181060711.4404.114.camel@chaos> <20070605173949.GA27618@ms2.inr.ac.ru>
-	 <1181069306.4404.145.camel@chaos> <1181070953.4404.149.camel@chaos>
-	 <20070605210028.GA10084@ms2.inr.ac.ru>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 23:13:06 +0200
-Message-Id: <1181077986.4404.165.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Tue, 5 Jun 2007 17:15:57 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:49463 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765839AbXFEVP5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 17:15:57 -0400
+Message-ID: <4665D270.2020301@zytor.com>
+Date: Tue, 05 Jun 2007 14:15:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] lguest-fix-divide-error-implement-sched_clock
+References: <20070522223828.GV11115@waste.org> <20070605090714.22bfcfd4.akpm@linux-foundation.org> <46658C41.9090105@zytor.com> <200706051837.22847.ak@suse.de>
+In-Reply-To: <200706051837.22847.ak@suse.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 01:00 +0400, Alexey Kuznetsov wrote:
-> Hello!
+Andi Kleen wrote:
 > 
-> > We actually need to do something about this, as we might loop for ever
-> > there. The robust cleanup code can fail (e.g. due to list corruption)
-> > and we would see exit_state != 0 and the OWNER_DIED bit would never be
-> > set, so we are stuck in a busy loop.
+> I don't think it's a good idea for the TSC. There are various
+> setups where it is unreliable and also often simulators don't 
+> implement it correctly. And it's always a valuable workaround
+> to be able to turn it off.
 > 
-> Yes...
-> 
-> It is possible to take read_lock(&tasklist_lock) before:
 
-We really want to avoid the tasklist_lock at all. It's not trivial, but
-I think it's doable. I send you a patch to test tomorrow morning when my
-brain recovered from looking at that code :)
+For all I can tell, if this is the case, then CONFIG_X86_TSC should be
+removed completely.  We still support the TSC when CONFIG_X86_TSC is not
+compiled in; that attribute controls if it is unconditionally required.
 
-	tglx
+(We seem to still not always use it, which may be a good indication that
+CONFIG_X86_TSC has outlived its usefulness.  Should it be removed?)
 
-
-
+	-hpa
