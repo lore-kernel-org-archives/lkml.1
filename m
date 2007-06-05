@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932699AbXFEPU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932796AbXFEPVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932699AbXFEPU1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 11:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763597AbXFEPUN
+	id S932796AbXFEPVw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 11:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932281AbXFEPVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 11:20:13 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:55103 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764685AbXFEPUL (ORCPT
+	Tue, 5 Jun 2007 11:21:43 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2317 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932153AbXFEPVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 11:20:11 -0400
-Date: Tue, 5 Jun 2007 11:20:04 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Richard Purdie <richard@openedhand.com>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Problems (a bug?) with UINT_MAX from kernel.h
-In-Reply-To: <1181054562.6180.77.camel@localhost.localdomain>
-Message-ID: <alpine.DEB.0.99.0706051111310.543@sigma.j-a-k-j.com>
-References: <1181054562.6180.77.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 5 Jun 2007 11:21:42 -0400
+Date: Tue, 5 Jun 2007 16:21:33 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, mroos@linux.ee,
+       linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070605152133.GE2572@flint.arm.linux.org.uk>
+Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Christoph Hellwig <hch@infradead.org>,
+	David Miller <davem@davemloft.net>, mroos@linux.ee,
+	linux-kernel@vger.kernel.org
+References: <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu> <20070605135608.GA31565@havoc.gtf.org> <20070605141714.GA2572@flint.arm.linux.org.uk> <20070605143523.GE31565@havoc.gtf.org> <20070605145149.GB2572@flint.arm.linux.org.uk> <20070605145603.GF31565@havoc.gtf.org> <20070605145945.GC2572@flint.arm.linux.org.uk> <20070605151104.GG31565@havoc.gtf.org> <20070605151847.GD2572@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070605151847.GD2572@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The kernel uses UINT_MAX defined from kernel.h in a variety of places.
+On Tue, Jun 05, 2007 at 04:18:47PM +0100, Russell King wrote:
+> > If you are unwilling to fix the problem and work within existing
+> > community email standards, I think it would be fair to ask vger
+> > postmaster to start excising Mail-Followup-To headers.
 > 
-> While looking at the behaviour of the LZO code, I noticed it seemed to
-> think an int was 8 bytes large on my 32 bit i386 machine. It isn't but
-> why did it think that?
+> Well, that will leave me with _no_ _choice_ but to arrange for the
+> SMTP MAIL FROM from others to receive a 550 error code to remove
+> the problem.  Is that really what you'd like me to do?
 > 
-> kernel.h says:
+> > You are NOT more important that everyone else.
 > 
-> #define INT_MAX		((int)(~0U>>1))
-> #define INT_MIN		(-INT_MAX - 1)
-> #define UINT_MAX	(~0U)
-> #define LONG_MAX	((long)(~0UL>>1))
-> #define LONG_MIN	(-LONG_MAX - 1)
-> #define ULONG_MAX	(~0UL)
-> #define LLONG_MAX	((long long)(~0ULL>>1))
-> #define LLONG_MIN	(-LLONG_MAX - 1)
-> #define ULLONG_MAX	(~0ULL)
+> That's not the issue.
 > 
-> If I try to compile the code fragment below, I see the error:
+> Since it's obvious that you don't accept my argument, it's pointless
+> discussing it further; there's nothing I can realistically do at this
+> end to resolve the issue and still remain part of this community.
 > 
-> #define UINT_MAX	(~0U)
-> #if (0xffffffffffffffff == UINT_MAX)
->   #error argh
-> #endif
-> 
-> I've tested this on several systems with a variety of gcc versions with
-> the same result. I've tried various other ways of testing this all with
-> the same conclusion, UINT_MAX is wrong.
-> 
-> The *LONG* definitions above should work as gcc is forced to a certain
-> type. Where just 0U is specified, I don't think it will work as intended
-> as gcc seems to automatically increase the type to fit the value and
-> avoid truncation ending up with a long long.
-> 
-> If I change the above to:
-> 
-> /* Handle GCC = 3.2 */
-> #if !defined(__INT_MAX__)
-> #define INT_MAX		0x7fffffff
-> #else
-> #define INT_MAX		(__INT_MAX__)
-> #endif
-> #define INT_MIN		(-INT_MAX - 1)
-> #define UINT_MAX	((INT_MAX<<1)+1)
+> I see no point in further discussion of this issue if such bigotry is
+> going to continue; any further responses on this topic will not receive
+> any replies from me.
 
-For one thing, the C standard specifies that literals fit into signed 
-before unsigned if they're not specified as unsigned in the first place. 
-Shifting signed values (INT_MAX<<1) is wrong on some architectures and 
-foolish on all. You would have to do "(unsigned int)INT_MAX << 1".
+Oh sod it, I'm unsubscribing from LKML.  Jeff, hope your happy.
 
-> I get the expected result of an int being 4 bytes long. Is there a
-> better solution? Its probably better that whats there now but could
-> break a machine using gcc 3.2 that doesn't have int size = 4 bytes...
-> 
-> (gcc <= 3.2 doesn't define __INT_MAX__)
-
-The C standard specifies that a numeric literal constant ending with "U" 
-may be interpreted as unsigned int, unsigned long int, or unsigned long 
-long int, in that order, choosing the first in which it will fit. So "~0U" 
-is correct. If it's not working, I suggest you file a compiler bug/defect 
-report.
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
