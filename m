@@ -1,43 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762726AbXFEF1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932106AbXFEFaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762726AbXFEF1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 01:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbXFEF13
+	id S932106AbXFEFaU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 01:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbXFEFaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 01:27:29 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52893 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752694AbXFEF13 (ORCPT
+	Tue, 5 Jun 2007 01:30:08 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:59966 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753993AbXFEFaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 01:27:29 -0400
-Message-ID: <4664F44C.4040206@cs.helsinki.fi>
-Date: Tue, 05 Jun 2007 08:27:40 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
+	Tue, 5 Jun 2007 01:30:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NMWEP2rNVdJbFHJgBz1dqifEVtL7xHBbRr5Kvr7Dudoo7ohpbtDoYE4rOYW+3wfY0KocZ2D2xvMdq1bexR6jOiWLgYvMpgcyq4w8m79Xlo4EFRYO6Tp5HAtVo0LiEkZxhgzoeAVSRbo3I0VogAqpeuZsBNe0eZ5PM8cQ0b61oQ4=
+Message-ID: <4cefeab80706042230u1fc7f485j30cea371d1d3117a@mail.gmail.com>
+Date: Tue, 5 Jun 2007 11:00:05 +0530
+From: "Nitin Gupta" <nitingupta910@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm 0/5] LZO and swap write failure patches for -mm
+Cc: "Richard Purdie" <rpurdie@openedhand.com>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Hugh Dickins" <hugh@veritas.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "David Woodhouse" <dwmw2@infradead.org>
+In-Reply-To: <20070604200606.GA5500@stusta.de>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0706041143240.23741@woody.linux-foundation.org> <Pine.LNX.4.64.0706041200140.24550@schroedinger.engr.sgi.com> <84144f020706041213x1d241794u98e9b3ca29865033@mail.gmail.com> <Pine.LNX.4.64.0706041213540.24935@schroedinger.engr.sgi.com> <46646747.2080803@cs.helsinki.fi> <Pine.LNX.4.64.0706041532350.27125@schroedinger.engr.sgi.com> <20070604155355.bf29a3a8.akpm@linux-foundation.org> <Pine.LNX.4.64.0706041607560.27346@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706041607560.27346@schroedinger.engr.sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1180971378.6313.72.camel@localhost.localdomain>
+	 <200706041214.38017.dhazelton@enter.net>
+	 <1180975976.6313.133.camel@localhost.localdomain>
+	 <4cefeab80706041126y5f12402cl61b72ec101dd7915@mail.gmail.com>
+	 <20070604200606.GA5500@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> SLUB: Return ZERO_SIZE_PTR for kmalloc(0) V3
-> 
-> Instead of returning the smallest available object return ZERO_SIZE_PTR.
-> 
-> A ZERO_SIZE_PTR can be legitimately used as an object pointer as long
-> as it is not deferenced. The dereference of ZERO_SIZE_PTR causes a
-> distinctive fault.
-> kfree can handle a ZERO_SIZE_PTR in the same way as NULL.
+Andrew, Andrian,
 
-FWIW, I am happy :-). We should add a comment to kmalloc() that we 
-return non-unique pointers for zero-length allocations though.
+If you really have the opinion of not going for major cleanups,
+optimizations outside of original LZO code (basically a fork), then
+there is no point in me continuing this work.
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+If you think otherwise, please let me know and I will post a newer
+version with improvements from all these feedback I got.
+
+Thanks,
+Nitin
+
+
+On 6/5/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Mon, Jun 04, 2007 at 11:56:46PM +0530, Nitin Gupta wrote:
+> > On 6/4/07, Richard Purdie <rpurdie@openedhand.com> wrote:
+> >...
+> >> The zlib code isn't kernel style and is arguably bloated, perhaps we
+> >> should remove that?
+> >
+> > I don't know - I don't use zlib.
+> > We can make LZO cleaner and perhaps faster. This will be good.
+> >...
+>
+> "cleaner" = much harder to upgrade to new upstream LZO versions -> bad
+>
+> "perhaps faster" = different from the well-known original code and
+>                    might again contain new bugs -> bad
+>
+> "perhaps faster" = if we fork LZO and actually get it faster, all the
+>                    other LZO users will not benefit -> bad
+>
+>
+> zlib and LZO are special because they are maintained userspace code
+> imported into the kernel.
+>
+>
+> > Regards,
+> > Nitin
+>
+> cu
+> Adrian
+>
+> --
+>
+>        "Is there not promise of rain?" Ling Tan asked suddenly out
+>         of the darkness. There had been need of rain for many days.
+>        "Only a promise," Lao Er said.
+>                                        Pearl S. Buck - Dragon Seed
+>
+>
