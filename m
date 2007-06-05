@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbXFETNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765261AbXFETQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932319AbXFETNt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 15:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759606AbXFETNm
+	id S1765261AbXFETQH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 15:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbXFETP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 15:13:42 -0400
-Received: from mailfe11.tele2.it ([212.247.155.77]:50020 "EHLO swip.net"
+	Tue, 5 Jun 2007 15:15:57 -0400
+Received: from www.osadl.org ([213.239.205.134]:59879 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759395AbXFETNl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 15:13:41 -0400
-X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jun 2007 15:13:40 EDT
-X-Cloudmark-Score: 0.000000 []
-Message-ID: <4665A7C8.9050707@gmail.com>
-Date: Tue, 05 Jun 2007 20:13:28 +0200
-From: Massimo Maiurana <maiurana@gmail.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] kconfig: fix typos in Makefile
-X-Enigmail-Version: 0.94.0.0
-OpenPGP: id=7044D601
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1753983AbXFETP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 15:15:56 -0400
+Subject: Re: [RFC][PATCH] muptiple bugs in PI futexes
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>
+In-Reply-To: <1181069306.4404.145.camel@chaos>
+References: <20070507144351.GA12302@ms2.inr.ac.ru>
+	 <20070523072609.GC6859@elte.hu> <20070523115159.GA30251@ms2.inr.ac.ru>
+	 <1181060711.4404.114.camel@chaos>  <20070605173949.GA27618@ms2.inr.ac.ru>
+	 <1181069306.4404.145.camel@chaos>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 21:15:53 +0200
+Message-Id: <1181070953.4404.149.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kxgettext fails generating pot file for um arch due to wrong filenames
-and related symlinks in Makefile. Fixed with the patch below.
+On Tue, 2007-06-05 at 20:48 +0200, Thomas Gleixner wrote:
+> > > This does not really explain, why you do prevent the -ESRCH return value
+> > > in the next cycle,
+> > 
+> > Because right curval is refetched, it already has FUTEX_OWNER_DIED bit set
+> > and we succesfully take the lock.
+> 
+> Ok, handle_futex_death() is punching the OWNER_DIED bit into the futex
+> without the hash bucket lock. We might as well grab the hash bucket lock
+> right there to avoid this. I look for a sane solution.
 
-Signed-off-by: Massimo Maiurana <maiurana@gmail.com>
+We actually need to do something about this, as we might loop for ever
+there. The robust cleanup code can fail (e.g. due to list corruption)
+and we would see exit_state != 0 and the OWNER_DIED bit would never be
+set, so we are stuck in a busy loop. I think I have an idea how to fix
+this.
 
----
-diff -Nru linux/scripts/kconfig/Makefile linux.new/scripts/kconfig/Makefile                                                           
---- linux/scripts/kconfig/Makefile      2007-05-06 16:35:23.000000000 +0200                                                           
-+++ linux.new/scripts/kconfig/Makefile  2007-05-11 17:53:17.000000000 +0200                                                           
-@@ -27,7 +27,7 @@
-           --add-comments --keyword=_ --keyword=N_ \                                                                                  
-           --files-from=scripts/kconfig/POTFILES.in \                                                                                 
-           --output scripts/kconfig/config.pot                                                                                        
--       $(Q)ln -fs Kconfig_i386 arch/um/Kconfig_arch                                                                                  
-+       $(Q)ln -fs Kconfig.i386 arch/um/Kconfig.arch                                                                                  
-        $(Q)for i in `ls arch/`; \                                                                                                    
-        do \                                                                                                                          
-          scripts/kconfig/kxgettext arch/$$i/Kconfig \                                                                                
-@@ -38,7 +38,7 @@
-          --output scripts/kconfig/linux_raw.pot                                                                                      
-        $(Q)msguniq --sort-by-file scripts/kconfig/linux_raw.pot \                                                                    
-            --output scripts/kconfig/linux.pot                                                                                        
--       $(Q)rm -f arch/um/Kconfig_arch                                                                                                
-+       $(Q)rm -f arch/um/Kconfig.arch                                                                                                
-        $(Q)rm -f scripts/kconfig/linux_*.pot scripts/kconfig/config.pot                                                              
-                                                                                                                                      
- PHONY += randconfig allyesconfig allnoconfig allmodconfig defconfig                                                                  
+	tglx
 
--- 
-       Massimo Maiurana         massimo<at>ragusa.linux.it
-       http://massimo.solira.org       GPG keyID #7044D601
-
-Articolo 11 - L'Italia ripudia la guerra come strumento di offesa
-alla libertà degli altri popoli e come mezzo di risoluzione delle
-controversie internazionali....
 
