@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763010AbXFEDQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762946AbXFEDWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763010AbXFEDQl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 23:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757621AbXFEDQc
+	id S1762946AbXFEDWx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 23:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbXFEDWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 23:16:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54606 "EHLO mx1.redhat.com"
+	Mon, 4 Jun 2007 23:22:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:48704 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757182AbXFEDQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 23:16:31 -0400
-Message-ID: <4664D563.5040607@redhat.com>
-Date: Mon, 04 Jun 2007 22:15:47 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
-MIME-Version: 1.0
-To: Vasily Averin <vvs@sw.ru>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, devel@openvz.org,
-       linux-ext4@vger.kernel.org, Stephen Tweedie <sct@redhat.com>,
-       adilger@clusterfs.com
-Subject: Re: [RFC PATCH ext3/ext4] orphan list corruption due bad inode
-References: <4663A0CE.102@sw.ru>
-In-Reply-To: <4663A0CE.102@sw.ru>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+	id S1756130AbXFEDWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 23:22:43 -0400
+Subject: Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other
+	woes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com>
+References: <1181006711.31677.97.camel@localhost.localdomain>
+	 <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org>
+	 <1181009413.31677.117.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 13:22:36 +1000
+Message-Id: <1181013756.31677.123.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vasily Averin wrote:
-> After ext3 orphan list check has been added into ext3_destroy_inode() (please see my previous patch) the following situation has been detected:
->  EXT3-fs warning (device sda6): ext3_unlink: Deleting nonexistent file (37901290), 0
->  Inode 00000101a15b7840: orphan list check failed!
->  00000773 6f665f00 74616d72 00000573 65725f00 06737270 66000000 616d726f
-> ...
->  Call Trace: [<ffffffff80211ea9>] ext3_destroy_inode+0x79/0x90
->   [<ffffffff801a2b16>] sys_unlink+0x126/0x1a0
->   [<ffffffff80111479>] error_exit+0x0/0x81
->   [<ffffffff80110aba>] system_call+0x7e/0x83
+On Mon, 2007-06-04 at 19:38 -0700, Davide Libenzi wrote:
+> >  - I still think there's something wrong with dequeue_signal() being
+> > potentially called with a task different than current by signalfd, since
+> > __dequeue_signal() (among others) mucks around with current regardless.
+> > I'd love to just make signalfd's read() only do anything if current ==
+> > ctx->tsk and remove the task argument from dequeue_signal... that would
+> > fix it nicely too no ?
 > 
-> First messages said that unlinked inode has i_nlink=0, then ext3_unlink() adds this inode into orphan list.
-> 
-> Second message means that this inode has not been removed from orphan list. Inode dump has showed that i_fop = &bad_file_ops and it can be set in make_bad_inode() only. Then I've found that ext3_read_inode() can call make_bad_inode() without any error/warning messages, for example in the following case:
-> ...
->         if (inode->i_nlink == 0) {
->                 if (inode->i_mode == 0 ||
->                     !(EXT3_SB(inode->i_sb)->s_mount_state & EXT3_ORPHAN_FS)) {
->                         /* this inode is deleted */
->                         brelse (bh);
->                         goto bad_inode;
-> ...
-> 
-> Bad inode can live some time, ext3_unlink can add it to orphan list, but
-> ext3_delete_inode() do not deleted this inode from orphan list. As
-> result we can have orphan list corruption detected in ext3_destroy_inode().
+> There's got to be a clean solution that does not limit signalfd, no? I 
+> have no time to look at it immediately, but I can look into it in the 
+> next few days, if someone else does not do it before...
 
-Ah, I see - so you have confirmed that this inode does have bad ops...? 
-I did notice on another orphan inode bug investigation that 
-ext3_inode_delete won't clear orphan from a bad_inode...
+Is there a real usage to dequeuing somebody else signals with signalfd ?
+If yes, then we can do something around the lines of passing task down
+to __dequeue_signal, though I'm not too sure waht this notifier is about
+and wether it might rely on being called from within the affected task
+context...
 
-> However it is not clear for me how to fix this issue correctly.
-> 
-> As far as i see is_bad_inode() is called after iget() in all places excluding ext3_lookup() and ext3_get_parent(). I believe it makes sense to add bad inode check to these functions too and call iput if bad inode detected.
+Ben.
 
-That seems reasonable to me in any case, though as Andrew said, do you 
-know for sure how the bad inodes were getting on the orphan list...?
-
-Is it possible that they were recycled after being freed while still on 
-the orphan list, as in my previous reply to your previous message?
-
--Eric
 
