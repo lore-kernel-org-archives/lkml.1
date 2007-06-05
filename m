@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763457AbXFEG4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbXFEHCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763457AbXFEG4j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 02:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761534AbXFEG4c
+	id S932173AbXFEHCn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 03:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761407AbXFEHCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 02:56:32 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:59345 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760978AbXFEG4b (ORCPT
+	Tue, 5 Jun 2007 03:02:33 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45137
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754802AbXFEHCc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 02:56:31 -0400
-Message-ID: <466507B4.2070802@linux.vnet.ibm.com>
-Date: Tue, 05 Jun 2007 12:20:28 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Maxim Uvarov <muvarov@ru.mvista.com>, LKML <linux-kernel@vger.kernel.org>,
-       Shailabh Nagar <nagar@watson.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Jay Lan <jlan@engr.sgi.com>
-Subject: Re: [PATCH] Performance Stats: Kernel patch
-References: <20070530184945.28147.50305.stgit@localhost.localdomain> <20070604121955.734de15e.akpm@linux-foundation.org>
-In-Reply-To: <20070604121955.734de15e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 5 Jun 2007 03:02:32 -0400
+Date: Tue, 05 Jun 2007 00:02:47 -0700 (PDT)
+Message-Id: <20070605.000247.18308209.davem@davemloft.net>
+To: miklos@szeredi.hu
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix race in AF_UNIX
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <E1Hv980-0006gQ-00@dorka.pomaz.szeredi.hu>
+References: <E1HubUt-0004Hb-00@dorka.pomaz.szeredi.hu>
+	<E1Hv980-0006gQ-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 30 May 2007 18:49:46 +0000
-> Maxim Uvarov <muvarov@ru.mvista.com> wrote:
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 04 Jun 2007 11:45:32 +0200
+
+> > A recv() on an AF_UNIX, SOCK_STREAM socket can race with a
+> > send()+close() on the peer, causing recv() to return zero, even though
+> > the sent data should be received.
+> > 
+> > This happens if the send() and the close() is performed between
+> > skb_dequeue() and checking sk->sk_shutdown in unix_stream_recvmsg():
+> > 
+> > process A  skb_dequeue() returns NULL, there's no data in the socket queue
+> > process B  new data is inserted onto the queue by unix_stream_sendmsg()
+> > process B  sk->sk_shutdown is set to SHUTDOWN_MASK by unix_release_sock()
+> > process A  sk->sk_shutdown is checked, unix_release_sock() returns zero
 > 
->> +void print_taskstats(struct taskstats *t)
->> +{
->> +	printf("\n\nTask   %15s%15s\n"
->> +	       "       %15lu%15lu\n",
->> +	       "voluntary", "nonvoluntary",
->> +	       t->nvcsw, t->nivcsw);
->> +}
+> This is only part of the story.  It turns out, there are other races
+> involving the garbage collector, that can throw away perfectly good
+> packets with AF_UNIX sockets in them.
 > 
-> print_task_stats versus print_taskstats is a bit confusing, but I guess it
-> doesn't matter.
+> The problems arise when a socket goes from installed to in-flight or
+> vica versa during garbage collection.  Since gc is done with a
+> spinlock held, this only shows up on SMP.
 > 
-> More significantly, the whole idea of calling it "task stats" isn't a good
-> one: it's far too general.  The whole kernel interface is called taskstats,
-> but the additions here are a tiny part of that.
+> The following patch fixes it for me, but it's possibly the wrong
+> approach.
 > 
-> Perhaps task_context_switch_rates would be more appropriate, although
-> rather a lot to type.
->
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 
-I agree, taskstats is the name given to the genetlink interface.
+I haven't seen a repost of the first patch, which is necessary because
+that first patch doesn't apply to the current tree.  Please don't
+ignore Arnaldo's feedback like that, or else I'll ignore you just the
+same. :-)
 
- 
-> The patch otherwise seems OK.  Thoughts:
-> 
-> - Do we need to increment TASKSTATS_VERSION for this?  I forget the rules
->   there.
-
-Any ABI change should result in a version bump. So the bump is ok
-
-> 
-> - The lack of context-switch accounting in taskstats is, I think, a
->   simple oversight.  It should have been included on day one.  
-> 
-
-Yes, it should have been included
-
->   There are perhaps other things which _should_ be in taskstats, but we
->   forgot to add them.  Can we think of any such things?
->
-
-I think it's worth reviewing the data exported. I thought CSA filled
-out the gaps, but it's definitely worth revisiting.
-
- 
->   We shouldn't just toss any old random stuff in there: it should be
->   things which make sense, and which Unix or Linux accounting traditionally
->   provides, and it should be something which we expect won't suddenly
->   become unsupportable if people make internal kernel changes.
-> 
-
-Yes, agreed. The interface must also be open for changes to accounting information
-that might be useful as a result of new features, like containers, etc.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
