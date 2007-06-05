@@ -1,98 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765032AbXFETdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765446AbXFETfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765032AbXFETdd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 15:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXFETdZ
+	id S1765446AbXFETfs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 15:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761343AbXFETfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 15:33:25 -0400
-Received: from pat.uio.no ([129.240.10.15]:41974 "EHLO pat.uio.no"
+	Tue, 5 Jun 2007 15:35:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34115 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756434AbXFETdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 15:33:24 -0400
-Subject: Re: [PATCH] allow file system to configure for no leases
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Peter Staubach <staubach@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <4665B50A.5020801@redhat.com>
-References: <4665B50A.5020801@redhat.com>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 15:33:20 -0400
-Message-Id: <1181072000.7033.31.camel@heimdal.trondhjem.org>
+	id S1753359AbXFETfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 15:35:39 -0400
+Date: Tue, 5 Jun 2007 15:35:27 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: nfsv4@linux-nfs.org, nfs@lists.sourceforge.net,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [NFS] [PATCH 2/2] nfs4: on a O_EXCL OPEN make sure the SETATTR
+ sets the fields holding the verifier
+Message-Id: <20070605153527.bdc6e4da.jlayton@redhat.com>
+In-Reply-To: <1181067182.7033.25.camel@heimdal.trondhjem.org>
+References: <20070605135659.8f9c2715.jlayton@redhat.com>
+	<1181067182.7033.25.camel@heimdal.trondhjem.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.103)
-X-UiO-Scanned: CAEA28D424D65B81FA5982E1BAECBC25FEDFBA3B
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 580 total 2190867 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-05 at 15:10 -0400, Peter Staubach wrote:
-> Hi.
-> 
-> Attached is a small patch to allow file systems to inform the file
-> system independent layers that they don't support file leases.
-> 
-> The problem is that some file system such as NFSv2 and NFSv3 do
-> not have sufficient support to be able to support leases correctly.
-> In particular for these two file systems, there is no over the wire
-> protocol support.
-> 
-> Currently, these two file systems fail the fcntl(F_SETLEASE) call
-> accidently, due to a reference counting difference.  These file systems
-> should fail more consciously, with a proper error to indicate that
-> the call is invalid for them.
-> 
->     Thanx...
-> 
->        ps
-> plain text document attachment (devel.tototoday)
-> --- linux-2.6.21.i686/fs/nfs/super.c.org
-> +++ linux-2.6.21.i686/fs/nfs/super.c
-> @@ -522,6 +522,9 @@ static inline void nfs_initialise_sb(str
->  
->  	sb->s_magic = NFS_SUPER_MAGIC;
->  
-> +	if (server->nfs_client->cl_nfsversion < 4)
-> +		sb->s_flags |= MS_NO_LEASES;
-> +
+On Tue, 05 Jun 2007 14:13:02 -0400
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-This should be unconditional since we have no support for "lease locks"
-under NFSv4 either. The NFSv4 concept of leases and delegations is very
-different, since it is really tied to the ability to cache data.
+> On Tue, 2007-06-05 at 13:56 -0400, Jeff Layton wrote:
+> > The Linux NFS4 client simply skips over the bitmask in an O_EXCL open
+> > call and so it doesn't bother to reset any fields that may be holding
+> > the verifier. This patch has us save the first two words of the bitmask
+> > (which is all the current client has #defines for). The client then
+> > later checks this bitmask and turns on the appropriate flags in the
+> > sattr->ia_verify field for the following SETATTR call.
+> > 
+> > This patch only currently checks to see if the server used the atime
+> > and mtime slots for the verifier (which is what the Linux server uses
+> > for this). I'm not sure of what other fields the server could
+> > reasonably use, but adding checks for others should be trivial.
+> > 
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > 
+> > diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+> > index 8e46e3e..34ddd66 100644
+> > --- a/fs/nfs/nfs4proc.c
+> > +++ b/fs/nfs/nfs4proc.c
+> > @@ -955,6 +955,22 @@ static struct nfs4_state *nfs4_open_delegated(struct inode *inode, int flags, st
+> >  }
+> >  
+> >  /*
+> > + * on an EXCLUSIVE create, the server should send back a bitmask with FATTR4-*
+> > + * fields corresponding to attributes that were used to store the verifier.
+> > + * Make sure we clobber those fields in the later setattr call
+> > + */
+> > +static inline void nfs4_exclusive_attrset (struct nfs4_opendata *opendata, struct iattr *sattr)
+> > +{
+> > +	if ((opendata->o_res.attrset[1] & FATTR4_WORD1_TIME_ACCESS) &&
+> > +	    !(sattr->ia_valid & ATTR_ATIME_SET))
+> > +		sattr->ia_valid |= ATTR_ATIME;
+> > +
+> > +	if ((opendata->o_res.attrset[1] & FATTR4_WORD1_TIME_MODIFY) &&
+> > +	    !(sattr->ia_valid & ATTR_MTIME_SET))
+> > +		sattr->ia_valid |= ATTR_MTIME;
+> > +}
+> > +
+> > +/*
+> >   * Returns a referenced nfs4_state
+> >   */
+> >  static int _nfs4_do_open(struct inode *dir, struct dentry *dentry, int flags, struct iattr *sattr, struct rpc_cred *cred, struct nfs4_state **res)
+> > @@ -985,6 +1001,9 @@ static int _nfs4_do_open(struct inode *dir, struct dentry *dentry, int flags, st
+> >  	if (status != 0)
+> >  		goto err_opendata_free;
+> >  
+> > +	if (opendata->o_arg.open_flags & O_EXCL)
+> > +		nfs4_exclusive_attrset(opendata, sattr);
+> > +
+> >  	status = -ENOMEM;
+> >  	state = nfs4_opendata_to_nfs4_state(opendata);
+> >  	if (state == NULL)
+> > @@ -1787,6 +1806,7 @@ nfs4_proc_create(struct inode *dir, struct dentry *dentry, struct iattr *sattr,
+> >  		status = nfs4_do_setattr(state->inode, &fattr, sattr, state);
+> >  		if (status == 0)
+> >  			nfs_setattr_update_inode(state->inode, sattr);
+> > +		nfs_refresh_inode(state->inode, &fattr);
+>                   ^^^^ should be nfs_post_op_update_inode() to ensure
+> that the attribute cache gets invalidated if the server fails to return
+> the post-op attributes.
+> 
 
->  	/* We probably want something more informative here */
->  	snprintf(sb->s_id, sizeof(sb->s_id),
->  		 "%x:%x", MAJOR(sb->s_dev), MINOR(sb->s_dev));
-> --- linux-2.6.21.i686/fs/locks.c.org
-> +++ linux-2.6.21.i686/fs/locks.c
-> @@ -1493,6 +1493,8 @@ int fcntl_setlease(unsigned int fd, stru
->  	error = security_file_lock(filp, arg);
->  	if (error)
->  		return error;
-> +	if (IS_NO_LEASES(inode))
-> +		return -EINVAL;
->  
->  	locks_init_lock(&fl);
->  	error = lease_init(filp, arg, &fl);
-> --- linux-2.6.21.i686/include/linux/fs.h.org
-> +++ linux-2.6.21.i686/include/linux/fs.h
-> @@ -121,6 +121,7 @@ extern int dir_notify_enable;
->  #define MS_SLAVE	(1<<19)	/* change to slave */
->  #define MS_SHARED	(1<<20)	/* change to shared */
->  #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
-> +#define MS_NO_LEASES	(1<<22)	/* fs does not support leases */
->  #define MS_ACTIVE	(1<<30)
->  #define MS_NOUSER	(1<<31)
->  
-> @@ -180,6 +181,7 @@ extern int dir_notify_enable;
->  #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
->  #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
->  #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
-> +#define IS_NO_LEASES(inode)	__IS_FLG(inode, MS_NO_LEASES)
->  
->  /* the read-only stuff doesn't really belong here, but any other place is
->     probably as bad and I don't want to create yet another include file. */
+It looks like nfs3_proc_create() uses nfs_refresh_inode in this spot (which was
+why I initially used one here). Should it also be changed to use
+nfs_post_op_update_inode(), or is it correct as-is?
 
+
+> >  	}
+> >  	if (status == 0 && nd != NULL && (nd->flags & LOOKUP_OPEN))
+> >  		status = nfs4_intent_set_file(nd, dentry, state);
+> > diff --git a/fs/nfs/nfs4xdr.c b/fs/nfs/nfs4xdr.c
+> > index 4eb8a59..b281c83 100644
+> > --- a/fs/nfs/nfs4xdr.c
+> > +++ b/fs/nfs/nfs4xdr.c
+> > @@ -3313,7 +3313,7 @@ static int decode_delegation(struct xdr_stream *xdr, struct nfs_openres *res)
+> >  static int decode_open(struct xdr_stream *xdr, struct nfs_openres *res)
+> >  {
+> >          __be32 *p;
+> > -        uint32_t bmlen;
+> > +        uint32_t savewords, bmlen, i;
+> >          int status;
+> >  
+> >          status = decode_op_hdr(xdr, OP_OPEN);
+> > @@ -3331,7 +3331,15 @@ static int decode_open(struct xdr_stream *xdr, struct nfs_openres *res)
+> >                  goto xdr_error;
+> >  
+> >          READ_BUF(bmlen << 2);
+> > -        p += bmlen;
+> > +
+> > +	savewords = bmlen > NFS_OPENRES_ATTRSET_WORDS ?
+> > +			NFS_OPENRES_ATTRSET_WORDS : bmlen;
+>                       ^^^^ min_t(bmlen, NFS_OPENRES_ATTRSET_WORDS, uint32_t);
+> > +
+> > +	for (i = 0; i < savewords; ++i) 
+> > +		READ32(res->attrset[i]);
+> > +
+> > +	p += (bmlen - savewords);
+> > +
+> >  	return decode_delegation(xdr, res);
+> >  xdr_error:
+> >  	dprintk("%s: Bitmap too large! Length = %u\n", __FUNCTION__, bmlen);
+> > diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
+> > index f8c55e5..f050a27 100644
+> > --- a/include/linux/nfs_xdr.h
+> > +++ b/include/linux/nfs_xdr.h
+> > @@ -133,6 +133,7 @@ struct nfs_openargs {
+> >  	__u32			claim;
+> >  };
+> >  
+> > +#define NFS_OPENRES_ATTRSET_WORDS	2
+> 
+>    Could you rename this to NFS4_BITMAP_SIZE and put it into
+> include/linux/nfs4.h, please.
+> 
+> >  struct nfs_openres {
+> >  	nfs4_stateid            stateid;
+> >  	struct nfs_fh           fh;
+> > @@ -145,6 +146,7 @@ struct nfs_openres {
+> >  	nfs4_stateid		delegation;
+> >  	__u32			do_recall;
+> >  	__u64			maxsize;
+> > +	__u32			attrset[NFS_OPENRES_ATTRSET_WORDS];
+> >  };
+> >  
+> >  /*
+> > 
+> > -------------------------------------------------------------------------
+> > This SF.net email is sponsored by DB2 Express
+> > Download DB2 Express C - the FREE version of DB2 express and take
+> > control of your XML. No limits. Just data. Click to get it now.
+> > http://sourceforge.net/powerbar/db2/
+> > _______________________________________________
+> > NFS maillist  -  NFS@lists.sourceforge.net
+> > https://lists.sourceforge.net/lists/listinfo/nfs
+> 
+
+
+-- 
+Jeff Layton <jlayton@redhat.com>
