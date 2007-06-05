@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761999AbXFDXyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760474AbXFEAGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761999AbXFDXyz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 19:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758733AbXFDXys
+	id S1760474AbXFEAGc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 20:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbXFEAGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 19:54:48 -0400
-Received: from mga09.intel.com ([134.134.136.24]:43047 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757962AbXFDXyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 19:54:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,382,1175497200"; 
-   d="scan'208";a="93466731"
-Date: Mon, 4 Jun 2007 16:51:05 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, akpm@osdl.org, ak@suse.de, gregkh@suse.de,
-       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routines for handling pre-allocated pool of objects
-Message-ID: <20070604235105.GA13390@linux-os.sc.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-References: <20070604210242.079459000@askeshav-devel.jf.intel.com> <20070604210644.156875000@askeshav-devel.jf.intel.com> <20070604225714.GM20299@havoc.gtf.org> <20070604230649.GB9948@linux-os.sc.intel.com> <20070604234354.GC31462@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070604234354.GC31462@havoc.gtf.org>
-User-Agent: Mutt/1.4.1i
+	Mon, 4 Jun 2007 20:06:24 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:41476 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752201AbXFEAGX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 20:06:23 -0400
+Message-ID: <4664A87C.5040609@zytor.com>
+Date: Mon, 04 Jun 2007 17:04:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: joseph@codesourcery.com, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, linux-arch@vger.kernel.org
+Subject: Re: 64-bit syscall ABI issue
+References: <Pine.LNX.4.64.0706042051280.16431@digraph.polyomino.org.uk> <20070604.142557.68139332.davem@davemloft.net>
+In-Reply-To: <20070604.142557.68139332.davem@davemloft.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 07:43:54PM -0400, Jeff Garzik wrote:
-> On Mon, Jun 04, 2007 at 04:06:49PM -0700, Keshavamurthy, Anil S wrote:
-> > On Mon, Jun 04, 2007 at 06:57:14PM -0400, Jeff Garzik wrote:
-> > > you should add logic to free resources here (or queue_work to free the
-> > > resources), if the pool grows beyond a certain size.
+David Miller wrote:
+> From: "Joseph S. Myers" <joseph@codesourcery.com>
+> Date: Mon, 4 Jun 2007 20:56:57 +0000 (UTC)
 > 
-> > Can be added as an add on, testing showed that pool 
-> > grows to a certain size and will not grow beyond that 
-> > as we tend to reuse the elements.
+> [ added linux-arch which is a great place to discuss these
+>   kinds of issues. ]
 > 
-> Yes, but is it possible?  If no, what part of the code guarantees the
-> pool is limited?
+>> What should the kernel syscall ABI be in such cases (any case where the 
+>> syscall implementations expect arguments narrower than registers, so 
+>> mainly 32-bit arguments on 64-bit platforms)?  There are two obvious 
+>> possibilities:
 > 
-> We should not merge code that allows the pool to grow without bound.
-> In-house testing certainly never covers all the cases seen in the
-> field, so I wouldn't make too many assumptions based on that.  Some
-> vendor will inevitably build a $BigNum system where the IOMMU is very
-> heavily used.
+> In general we've taken the stance that the syscall dispatch
+> should create the proper calling environment for C code
+> implementing the system calls, and this thus means properly
+> sign and zero extending the arguments as expected by the C
+> calling convention.
 
-No problem, I can add the code to free the pool element if
-the curr_count ever goes greater than (min_count + 2 * grow_count)
-then bring the curr_count to min_count + grow_count by freeing 
-some pool objects.
+This is, in fact, rather fundamental (some ABIs don't require sign or
+zero extension, e.g. x86-64); otherwise libc's job becomes a whole lot
+harder.
 
-A patch which will apply to this current patch will follow soon.
-
-Thanks Jeff for making your case stronger :)
-
--Anil
-
-
-> 
-> 	Jeff
-> 
+	-hpa
