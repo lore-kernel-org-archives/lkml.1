@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764302AbXFEKNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764286AbXFEKU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764302AbXFEKNP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 06:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763757AbXFEKNA
+	id S1764286AbXFEKU1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 06:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763486AbXFEKUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 06:13:00 -0400
-Received: from bravo.securenet-server.net ([207.210.84.244]:45544 "EHLO
-	bravo.securenet-server.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763486AbXFEKM7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 06:12:59 -0400
-X-Greylist: delayed 1189 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jun 2007 06:12:59 EDT
-From: Mircea Bardac <dev.list@mircea.bardac.net>
-To: "Peter Oruba" <peter.oruba@amd.com>
-Subject: Re: CPU off-on-off: lost CPU management?
-Date: Tue, 5 Jun 2007 12:56:44 +0300
-User-Agent: KMail/1.9.7
-Cc: stefan.prechtel@googlemail.com,
-       "Linux List" <linux-kernel@vger.kernel.org>
-References: <200706051003.29501.peter.oruba@amd.com> <200706051253.01551.dev.list@mircea.bardac.net>
-In-Reply-To: <200706051253.01551.dev.list@mircea.bardac.net>
+	Tue, 5 Jun 2007 06:20:15 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:40776 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762901AbXFEKUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 06:20:14 -0400
+Message-ID: <466538C9.8080104@sw.ru>
+Date: Tue, 05 Jun 2007 14:19:53 +0400
+From: Vasily Averin <vvs@sw.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, devel@openvz.org,
+       linux-ext4@vger.kernel.org, Stephen Tweedie <sct@redhat.com>,
+       adilger@clusterfs.com
+Subject: [PATCH] [RESEND] ext[34] orphan list check on destroy_inode
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706051256.49179.dev.list@mircea.bardac.net>
-X-PopBeforeSMTPSenders: bmi@bardac.net
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - bravo.securenet-server.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - mircea.bardac.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 June 2007 12:52:59 Mircea Bardac wrote:
-> Hi Peter,
->
-> This time with Kernel 2.6.21.3.
->
-> [...]
->
-> # echo 1 > /sys/devices/system/cpu/cpu1/online
->
-> # cat /proc/cpuinfo
-> processor       : 0
-> vendor_id       : AuthenticAMD
-> cpu family      : 15
-> model           : 72
-> model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-52
-> stepping        : 2
-> cpu MHz         : 800.000
-> cache size      : 512 KB
-> physical id     : 0
-> siblings        : 1
-> core id         : 0
-> cpu cores       : 1
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 1
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
-> rdtscp lm 3dnowext 3dnow pni cx16 lahf_lm cmp_legacy svm extapic cr8legacy
-> ts fid vid ttp tm stc
-> bogomips        : 1597.67
-> clflush size    : 64
->
-> processor       : 1
-> vendor_id       : AuthenticAMD
-> cpu family      : 15
-> model           : 72
-> model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-52
-> stepping        : 2
-> cpu MHz         : 798.015
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 1
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
-> rdtscp lm 3dnowext 3dnow pni cx16 lahf_lm cmp_legacy svm extapic cr8legacy
-> ts fid vid ttp tm stc
-> bogomips        : 1596.26
-> clflush size    : 64
+Customers claims to ext3-related errors, investigation showed that ext3 orphan
+list has been corrupted and have the reference to non-ext3 inode. The following
+debug helps to understand the reasons of this issue.
+
+Signed-off-by:	Vasily Averin <vvs@sw.ru>
+
+diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+index 6e30629..e986376 100644
+--- a/fs/ext3/super.c
++++ b/fs/ext3/super.c
+@@ -459,6 +459,13 @@ static struct inode *ext3_alloc_inode(struct super_block *sb)
+
+ static void ext3_destroy_inode(struct inode *inode)
+ {
++	if (!list_empty(&(EXT3_I(inode)->i_orphan))) {
++		printk("EXT3 Inode %p: orphan list check failed!\n",
++			EXT3_I(inode));
++		print_hex_dump(KERN_INFO, DUMP_PREFIX_ADDRESS,
++				EXT3_I(inode), sizeof(struct ext3_inode_info));
++		dump_stack();
++	}
+ 	kmem_cache_free(ext3_inode_cachep, EXT3_I(inode));
+ }
+
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index cb9afdd..935420d 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -510,6 +510,13 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
+
+ static void ext4_destroy_inode(struct inode *inode)
+ {
++	if (!list_empty(&(EXT4_I(inode)->i_orphan))) {
++		printk("EXT4 Inode %p: orphan list check failed!\n",
++			EXT4_I(inode));
++		print_hex_dump(KERN_INFO, DUMP_PREFIX_ADDRESS,
++				EXT4_I(inode), sizeof(struct ext4_inode_info));
++		dump_stack();
++	}
+ 	kmem_cache_free(ext4_inode_cachep, EXT4_I(inode));
+ }
 
 
-As a follow-up:
-
-As Stefan noticed initially, the CPU frequency of the 2nd CPU is different 
-after the CPU is brought back online.
-
-Mircea
