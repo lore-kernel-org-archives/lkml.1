@@ -1,91 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933924AbXFEVzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933182AbXFEWE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933924AbXFEVzq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbXFEVzi
+	id S933182AbXFEWE2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 18:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764122AbXFEWEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 17:55:38 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45819 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932088AbXFEVzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 17:55:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Linux 2.6.22-rc4
-Date: Wed, 6 Jun 2007 00:01:14 +0200
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org> <20070605193718.GB24877@elte.hu> <20070605201954.GB4424@elf.ucw.cz>
-In-Reply-To: <20070605201954.GB4424@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jun 2007 18:04:20 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3087 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762954AbXFEWET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 18:04:19 -0400
+Date: Tue, 5 Jun 2007 23:03:45 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+       hch@infradead.org, mroos@linux.ee, linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070605220345.GA22705@flint.arm.linux.org.uk>
+References: <20070605151104.GG31565@havoc.gtf.org> <20070605151847.GD2572@flint.arm.linux.org.uk> <20070605152133.GE2572@flint.arm.linux.org.uk> <20070605.122745.118950378.davem@davemloft.net> <20070605212523.GB18027@flint.arm.linux.org.uk> <20070605213815.GA19648@flint.arm.linux.org.uk> <20070605214830.GS31565@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706060001.15081.rjw@sisk.pl>
+In-Reply-To: <20070605214830.GS31565@havoc.gtf.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 5 June 2007 22:19, Pavel Machek wrote:
-> Hi!
+On Tue, Jun 05, 2007 at 05:48:30PM -0400, Jeff Garzik wrote:
+> On Tue, Jun 05, 2007 at 10:38:15PM +0100, Russell King wrote:
+> > There is one final point on this which I wish to make, in case anyone
+> > has decided that this is caused by some recent change at my end.
+> > 
+> > I've been adding this header to all my messages for about the last seven
+> > years.  It's only *just* become a problem because someone here made a
+> > decision that it was a problem.
 > 
-> > > > [ 116.733327] PM: suspend-to-disk mode set to 'shutdown' [ 
-> > > > 116.738849] swsusp: Basic memory bitmaps created [ 116.745353] 
-> > > > Stopping tasks ... WARNING: at 
-> > > > /home/devel/linux-git/kernel/lockdep.c:2414 check_flags()
-> > 
-> > > > [  116.755052] irq event stamp: 69
-> > > > [  116.755060] hardirqs last  enabled at (69): [<c04040f9>] syscall_exit_work+0x11/0x26
-> > > > [  116.755084] hardirqs last disabled at (68): [<c0403fdd>] syscall_exit+0x9/0x1a
-> > > > [  116.755109] softirqs last  enabled at (0): [<c042150c>] copy_process+0x4dd/0x1286
-> > > > [  116.755139] softirqs last disabled at (0): [<00000000>] 0x0
-> > > > [  116.945776] done.
-> > 
-> > > Well, it's harmless in the sense that "yeah, the system still works", 
-> > > but it does seem to be a real bug. We have hardware interrupts 
-> > > disabled when we _think_ we should have them on, so our irq tracking 
-> > > is off.
-> > > 
-> > > Ingo, do you see what's up? It looks like we got a signal to a process 
-> > > that just got created, is the setup stuff for "tsk->hardirqs_enabled" 
-> > > perhaps off a bit?
-> > 
-> > hm. I cannot see the source of the bug at the moment, but here's my 
-> > analysis so far:
-> > 
-> > the last event that irqtrace got was #69, and that was a 'hardirqs on' 
-> > in syscall_exit_work. After that we did a 'hardirqs off' without 
-> > properly tracking that via irqtrace. Next time we got an irqtrace event 
-> > (event 70) the assert caught up with us and turned off lockdep and 
-> > backed out of that function. This was in:
-> > 
-> >  > [  116.754957]  [<c043c3e5>] check_flags+0x95/0x143
-> >  > [  116.754967]  [<c043f158>] lock_acquire+0x29/0x82
-> >  > [  116.754977]  [<c06313a7>] _spin_lock+0x35/0x42
-> >  > [  116.754990]  [<c044894a>] refrigerator+0x14/0xc6
-> >  > [  116.755002]  [<c042d4b3>] get_signal_to_deliver+0x33/0x397
-> >  > [  116.755016]  [<c0403597>] do_notify_resume+0x94/0x6ed
-> >  > [  116.755029]  [<c0404099>] work_notifysig+0x13/0x1a
-> > 
-> > isnt the refrigerator() suspend related? Perhaps suspend disables irqs 
-> > somewhere that we forgot to track?
+> Search LKML for other mentions of Mail-Followup-To; this is far from the
+> first time it's been brought up.
 > 
-> refrigerator is suspend related, but I do not think it does any
-> interrupt magic. We do magic later in hibernation process.
-> 
-> This is in kernel/power/process.c, we have spinlock_irqsave there, but
-> that's pretty much it AFAICT.
+> I'm probably one of the few who actually investigated why their MUA was
+> suddenly doing weird, RFC-unfriendly things to the To/CC headers,
+> tracking it down the Mail-Followup-To header.
 
-That's correct.  We don't manipulate IRQs directly in the freezer.
+And rather than configuring your MUA to ignore the header...
 
-Greetings,
-Rafael
-
+You're using mutt, mutt can be configured so.
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
