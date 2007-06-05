@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932709AbXFEO4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932853AbXFEO73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932709AbXFEO4m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932679AbXFEO4H
+	id S932853AbXFEO73 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbXFEO7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:56:07 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:42625 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932643AbXFEO4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:56:05 -0400
-Date: Tue, 5 Jun 2007 10:56:03 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, mroos@linux.ee,
+	Tue, 5 Jun 2007 10:59:21 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:35804 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932227AbXFEO7U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 10:59:20 -0400
+Message-ID: <46657988.6060901@gmail.com>
+Date: Tue, 05 Jun 2007 16:56:08 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: libata & no PCI: dma_[un]map_single undefined
-Message-ID: <20070605145603.GF31565@havoc.gtf.org>
-References: <Pine.SOC.4.64.0706032314590.20033@math> <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org> <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu> <20070605135608.GA31565@havoc.gtf.org> <20070605141714.GA2572@flint.arm.linux.org.uk> <20070605143523.GE31565@havoc.gtf.org> <20070605145149.GB2572@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605145149.GB2572@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
+References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0706041143240.23741@woody.linux-foundation.org> <Pine.LNX.4.64.0706041200140.24550@schroedinger.engr.sgi.com> <84144f020706041213x1d241794u98e9b3ca29865033@mail.gmail.com> <Pine.LNX.4.64.0706041213540.24935@schroedinger.engr.sgi.com> <46646747.2080803@cs.helsinki.fi> <Pine.LNX.4.64.0706041532350.27125@schroedinger.engr.sgi.com> <20070604155355.bf29a3a8.akpm@linux-foundation.org> <Pine.LNX.4.64.0706041607560.27346@schroedinger.engr.sgi.com> <466523E0.3050605@gmail.com> <alpine.DEB.0.99.0706050804170.27388@sigma.j-a-k-j.com> <46655CEC.7070900@gmail.com> <466575EE.70901@goop.org>
+In-Reply-To: <466575EE.70901@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 03:51:49PM +0100, Russell King wrote:
-> On Tue, Jun 05, 2007 at 10:35:23AM -0400, Jeff Garzik wrote:
-> > 
-> > BTW, please fix your mailer.  It emits Mail-Followup-To headers that
-> > hijack everyone on the thread into the To field, breaking the normal
-> > LKML To/CC standard replying mechanism that has been working for a
-> > decade.
+On 06/05/2007 04:40 PM, Jeremy Fitzhardinge wrote:
+
+> Rene Herman wrote:
+
+>> No, what we have is a sizeof(pointer) sized pointer pointing to an
+>> object of size zero. ZERO_SIZE_PTR is butt-ugly. With a really ugly butt. 
 > 
-> Sorry, I will not.  My local policy (which I have the utmost right to
-> have) is that I do not wish to be CC'd on responses to replies to my
-> posts.  Additional useless CC's are a waste of my limited bandwidth
-> and resources.
-> 
-> It's a question of local policy required by local resource limitations.
-> 
-> So I give you a choice: you can either have the benefit of me reply and
-> put up with the follow up header, or I will arrange to never reply to
-> your messages ever again (which may involve me never reading one again).
-> Which would you prefer?
+> It doesn't matter.  It will never, ever, be used by anything except the
+> kmalloc internals.  No client code should ever use the constant for
+> anything.
 
-Your personal preference is fine with me.
+Yes, I'm aware of this (I should snip less) but I still feel it's not a good 
+name. When I read say "a 64-bit pointer" I immediately take that to mean a 
+pointer of size 64-bit, not a pointer to 64-bits and only it not making any 
+sense would stop me from interpreting "ZERO_SIZE_PTR" similarly.
 
-Just stop hijacking -everyone else's- preferences along with it.
+Yes, it's internal but given that this is open-source which, optimistically, is 
+read many more times than it's written one should still strive for code that 
+reads nice as far as I'm concerned. It's obviously also not hugely important but 
+it's just that ZERO_SIZE_PTR makes my neck hair stand up.
 
-A far more community-friendly method that operates within existing email
-standards is to filter out duplicate message ids on your side.
-
-	Jeff
-
-
+Rene.
 
