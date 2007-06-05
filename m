@@ -1,57 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765373AbXFEQll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765351AbXFEQtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765373AbXFEQll (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 12:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbXFEQle
+	id S1765351AbXFEQtS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 12:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764762AbXFEQtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 12:41:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56029 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756561AbXFEQld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 12:41:33 -0400
-From: Andi Kleen <ak@suse.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] lguest-fix-divide-error-implement-sched_clock
-Date: Tue, 5 Jun 2007 18:37:22 +0200
-User-Agent: KMail/1.9.1
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Matt Mackall <mpm@selenic.com>,
+	Tue, 5 Jun 2007 12:49:06 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:20996 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756561AbXFEQtF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 12:49:05 -0400
+Date: Tue, 5 Jun 2007 09:48:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Yoann Padioleau <padator@wanadoo.fr>
+Cc: Oliver Neukum <oneukum@suse.de>, kernel-janitors@lists.osdl.org,
        linux-kernel@vger.kernel.org
-References: <20070522223828.GV11115@waste.org> <20070605090714.22bfcfd4.akpm@linux-foundation.org> <46658C41.9090105@zytor.com>
-In-Reply-To: <46658C41.9090105@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706051837.22847.ak@suse.de>
+Subject: Re: [KJ] Re: [PATCH] bugfix GFP_KERNEL -> GFP_ATOMIC in spin_locked
+ region
+Message-Id: <20070605094835.5ada50da.randy.dunlap@oracle.com>
+In-Reply-To: <87ejkqe51t.fsf@wanadoo.fr>
+References: <87odjvu1on.fsf@wanadoo.fr>
+	<20070604210018.0eaa20a0.akpm@linux-foundation.org>
+	<87k5uimzkh.fsf@wanadoo.fr>
+	<200706051333.12219.oneukum@suse.de>
+	<87ejkqe51t.fsf@wanadoo.fr>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 June 2007 18:16, H. Peter Anvin wrote:
+On Tue, 05 Jun 2007 18:31:42 +0200 Yoann Padioleau wrote:
 
-> Yes.  Since there is now a mechanism to get a clean message out, it
-> seemed like a good idea to extend the benefit of static determination.
-> Andi already had in his tree -- and I copied it -- code to deal with
-> stuff like "cpu_has_tsc" as a compile-time constant, eliminating the
-> "else" clause.
->
-> Depending on the configuration it affects FPU, TSC, 3Dnow.
+> Oliver Neukum <oneukum@suse.de> writes:
+> 
+> > Am Dienstag, 5. Juni 2007 13:05 schrieb Yoann Padioleau:
+> >> Ok. Do you have a preference on the format ?  a <file>:<line> format  ?
+> >> 
+> >> Is there a place that gathered all those implicit programming rules 
+> >> (that copy_from_user must not be called inside a spinlock, etc) so that
+> >> I can translate them in a script for our tool.
+> >
+> > How much C does your tool understand? 
+> 
+> The tool understands almost all the C language but the analysis we do
+> for the moment are intra-procedural so when we look for 
+>  spin_lock();
+>  ...
+>  copy_from_user();
+> 
+> it can detect cases and code paths only when the two function calls
+> are in the same function. It could be extended but it would require to
+> do a full analysis of the kernel source. Maybe if some functions of
+> the library have an attribute in their prototype in the .h such as
+> 
+>  __might_sleep copy_from_user(); 
+> 
+> it could help.
+> 
+> > You might basically
+> > test for code paths that go to "might_sleep()"
+> 
+> Ok, thanks. If you know other implicit programming rules,
+> I would be glad to know them, or if you know places
+> where thus rules are written.
+> 
+> 
+> BTW at one point I think the Linux community were using advanced
+> static analysis tools such as the one made by Dawson Engler (now
+> Coverity). The communitty have stopped using such tools ? Isn't the
+> role of sparse to detect bugs such as the dangerous copy_from_user()
+> inside spinlocked region ?
+> 
 
-I don't think it's a good idea for the TSC. There are various
-setups where it is unreliable and also often simulators don't 
-implement it correctly. And it's always a valuable workaround
-to be able to turn it off.
+There are a few people who have registered for access to the
+Coverity database and occasionally go thru it looking for bugs
+and then posting fixes.
 
-Except possibly for the FPU only features used by the gcc output
-should be tested this way. For everything else it is better to 
-test at runtime.
+sparse can check for unbalanced locking, but it needs annotations
+for those AFAIK.
 
-That is x86-64 makes some more assumptions. But even it
-doesn't assume TSC. 
-
-I added the mechanism to statically evaluate mostly to share cpufeatures.h
-between 32bit and 64bit at some point -- but didn't quite finish that work 
-before the last merge.
-
--Andi
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
