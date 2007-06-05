@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764765AbXFEPIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbXFEPLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764765AbXFEPIB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 11:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755599AbXFEPHu
+	id S1764859AbXFEPLR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 11:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760229AbXFEPLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 11:07:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56230 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750837AbXFEPHt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 11:07:49 -0400
-Subject: Re: [1/2] 2.6.22-rc4: known regressions with patches
-From: David Woodhouse <dwmw2@infradead.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       Uwe Bugla <uwe.bugla@gmx.de>, Ken Chen <kenchen@google.com>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Christoph Lameter <clameter@sgi.com>, Dave Airlie <airlied@linux.ie>,
-       Andrea Righi <righiandr@users.sourceforge.net>,
-       Netdev <netdev@vger.kernel.org>, Strobl Anton <a.strobl@aws-it.at>,
-       Patrick McHardy <kaber@trash.net>
-In-Reply-To: <46657924.4010505@googlemail.com>
-References: <46657924.4010505@googlemail.com>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 16:07:42 +0100
-Message-Id: <1181056062.16089.17.camel@hades.cambridge.redhat.com>
+	Tue, 5 Jun 2007 11:11:07 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:42747 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755922AbXFEPLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 11:11:06 -0400
+Date: Tue, 5 Jun 2007 11:11:04 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, mroos@linux.ee,
+       linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070605151104.GG31565@havoc.gtf.org>
+References: <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org> <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu> <20070605135608.GA31565@havoc.gtf.org> <20070605141714.GA2572@flint.arm.linux.org.uk> <20070605143523.GE31565@havoc.gtf.org> <20070605145149.GB2572@flint.arm.linux.org.uk> <20070605145603.GF31565@havoc.gtf.org> <20070605145945.GC2572@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070605145945.GC2572@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-05 at 16:54 +0200, Michal Piotrowski wrote:
-> File systems
-> 
-> Subject    : JFFS2 issues
-> References : http://lists.infradead.org/pipermail/linux-mtd/2007-May/018426.html
-> Submitter  : Haavard Skinnemoen <hskinnemoen@atmel.com>
-> Caused-By  : commit 10731f83009e2556f98ffa5c7c2cbffe66dacfb3
->              Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> Handled-By : Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> Patch      : http://lists.infradead.org/pipermail/linux-mtd/2007-May/018453.html
-> Status     : patch available
-> 
+On Tue, Jun 05, 2007 at 03:59:46PM +0100, Russell King wrote:
+> It's the fact that I _am_ CC'd on replies, so I get one message from LKML
+> one from the original poster, maybe one via another mailing list if it's
+> also copied there.  Add that in to the mix of all the other mail hitting
+> my MTA and the probability for the machine to exhaust it's limited VM is
+> very high.
 
-This is fixed in 2.6.22-rc4 with this commit:
-http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ea55d30798ac206c9f584ac264b6b8eb093d237a
+This is an utterly ridiculous argument.  You are subscribed to LKML,
+with a message size limit of 400K.  "replies to rmk" are clearly lost
+in the noise compared to the rest of the list traffic.
 
--- 
-dwmw2
+
+> Give me a way to stop people CC'ing me on replies and I'll happily remove
+> the header.  Unfortunately there isn't, so I can't.
+
+So by fiat, you decide that gives you the right to override OTHER
+PEOPLE'S personal preferences?  Why are you so much more important
+to a thread than everyone else?
+
+If you are unwilling to fix the problem and work within existing
+community email standards, I think it would be fair to ask vger
+postmaster to start excising Mail-Followup-To headers.
+
+You are NOT more important that everyone else.
+
+Stop hijacking EVERYONE ELSE's email preferences.
+
+	Jeff
+
+
 
