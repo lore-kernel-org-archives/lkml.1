@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761631AbXFEBoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbXFEByu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761631AbXFEBoV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 21:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbXFEBoP
+	id S1760978AbXFEByu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 21:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbXFEByp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 21:44:15 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:47378 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752583AbXFEBoO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 21:44:14 -0400
-Date: Mon, 4 Jun 2007 18:44:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other
- woes
-In-Reply-To: <1181006711.31677.97.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org>
-References: <1181006711.31677.97.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 4 Jun 2007 21:54:45 -0400
+Received: from msr32.hinet.net ([168.95.4.132]:35879 "EHLO msr32.hinet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754665AbXFEByo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 21:54:44 -0400
+Subject: [PATCH] sundance: PHY address form 0, only for device ID 0x0200
+	(IP100A) (20070605)
+From: Jesse Huang <jesse@icplus.com.tw>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, akpm@osdl.org,
+       jgarzik@pobox.com, jesse@icplus.com.tw, jeff@garzik.org
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 09:50:40 -0400
+Message-Id: <1181051441.2487.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 (2.6.0-1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jesse Huang <jesse@icplus.com.tw>
 
+Change Logs:
+Search PHY address form 0, only for device ID 0x0200 (IP100A). Other device are from PHY address 1.
 
-On Tue, 5 Jun 2007, Benjamin Herrenschmidt wrote:
-> 
->  - something calls recalc_sigpending_tsk() on thread A (for example,
->    something try to sends it S2 which is blocked). There is no longer
->    an active signal and thus TIF_SIGPENDING is cleared on thread A
-
-I agree. That's unquestionably a bug. We should *never* clear sigpending 
-for somebody else.
-
-I have to say, your patch looks pretty ugly though. It also looks like 
-it's rife to be subtly buggy (ie somebody calls "recalc_sigpending_tsk()" 
-with "current" and doesn't realize the subtle rule.
-
-So I'd rather just make it more explicit, and simple, and just have 
-something really simple like the appended instead..
-
-If we want to be fancier (and avoid the unnecessary compare for the cases 
-where we statically know that we're calling it with "t" being "current"), 
-we could make it an inline function and factor things out a bit, but I'm 
-not sure how worthwhile that really is.
-
-I also wonder if we should just remove the "clear_tsk_thread_flag()" thing 
-*entirely*, and do it only in the do_sigal() path. THAT, however, is a 
-much bigger change. This one-liner seems the trivial and most obvious 
-patch.
-
-Comments?
-
-		Linus
-
+Signed-off-by: Jesse Huang <jesse@icplus.com.tw>
 ---
- kernel/signal.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/signal.c b/kernel/signal.c
-index acdfc05..61abd8d 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -105,7 +105,8 @@ static int recalc_sigpending_tsk(struct task_struct *t)
- 		set_tsk_thread_flag(t, TIF_SIGPENDING);
- 		return 1;
- 	}
--	clear_tsk_thread_flag(t, TIF_SIGPENDING);
-+	if (t == current)
-+		clear_tsk_thread_flag(t, TIF_SIGPENDING);
- 	return 0;
- }
- 
+ drivers/net/sundance.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+a093fe5e3e7b9f58458171e481b5096cc1d3abfe
+diff --git a/drivers/net/sundance.c b/drivers/net/sundance.c
+index e1f912d..23d049d 100644
+--- a/drivers/net/sundance.c
++++ b/drivers/net/sundance.c
+@@ -562,7 +562,11 @@ #endif
+ 	 * It seems some phys doesn't deal well with address 0 being accessed
+ 	 * first, so leave address zero to the end of the loop (32 & 31).
+ 	 */
+-	for (phy = 1; phy <= 32 && phy_idx < MII_CNT; phy++) {
++	if(sundance_pci_tbl[np->chip_id].device == 0x0200) 
++		phy = 0;
++	else 
++		phy = 1;
++	for (; phy <= 32 && phy_idx < MII_CNT; phy++) {
+ 		int phyx = phy & 0x1f;
+ 		int mii_status = mdio_read(dev, phyx, MII_BMSR);
+ 		if (mii_status != 0xffff  &&  mii_status != 0x0000) {
+-- 
+1.3.GIT
+
+
+
