@@ -1,88 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbXFELsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbXFELzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759396AbXFELsh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 07:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXFELsa
+	id S1760825AbXFELzh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 07:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbXFELza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 07:48:30 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:44321 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231AbXFELs3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 07:48:29 -0400
-Date: Tue, 5 Jun 2007 13:48:13 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: volatile and atomic_t/spinlock_t
-Message-ID: <20070605114813.GA17048@osiris.boeblingen.de.ibm.com>
+	Tue, 5 Jun 2007 07:55:30 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:42827 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754855AbXFELz3 (ORCPT
+	<rfc822;Linux-Kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 07:55:29 -0400
+Date: Tue, 5 Jun 2007 12:55:22 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: James Jarvis <James.Jarvis@ed.ac.uk>, Riley@Williams.Name,
+       Linux-Kernel@vger.kernel.org, graham.newton@ed.ac.uk,
+       kenneth.macdonald@ed.ac.uk
+Message-ID: <20070605115521.GA10634@srcf.ucam.org>
+References: <fa./cH7AY3hv2QMikoTK1P7fAVvbdI@ifi.uio.no> <4664B306.5000107@shaw.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <4664B306.5000107@shaw.ca>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: DMI_MATCH patch in reboot.c for SFF Dell OptiPlex 745 - fixes hang on reboot
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm just wondering why we have an inconsistency between several archs when
-it comes to the definitions of atomic_t, atomic64_t, spinlock_t and their
-accessors. Currently we have on most architectures something like
+On Mon, Jun 04, 2007 at 06:49:10PM -0600, Robert Hancock wrote:
 
-typedef struct { volatile int counter; } atomic_t;
+> This blacklist seems to be growing. Isn't there something better we can 
+> do here? Can we just reboot through the BIOS by default, is that really 
+> broken on some systems?
 
-except for i386/x86_64 which has
-
-typedef struct { int counter; } atomic_t;
-
-but then again we have (including x86_64)
-
-typedef struct { volatile long counter; } atomic64_t;
-
-In addition we have
-
-#define atomic_read(v)		((v)->counter)
-#define atomic64_read(v)	((v)->counter)
-
-So something like
-
-(1)	while (atomic_read(&v));
-
-May or may not work. Yes, I know it should be
-
-(2)	while (atomic_read(&v))
-		cpu_relax();
-
-I'm just wondering about the inconsistency between 32 and 64 bit here and if
-(1) is supposed to work or not.
-
-When it comes to spinlock_t we have (on i386):
-
-typedef struct {
-	unsigned int slock;
-} raw_spinlock_t;
-
-and
-
-static inline int __raw_spin_is_locked(raw_spinlock_t *x)
-{
-	return *(volatile signed char *)(&(x)->slock) <= 0;
-}
-
-Most other architectures have something like this
-
-typedef struct {
-	volatile unsigned int slock;
-} raw_spinlock_t;
-
-and
-
-#define __raw_spin_is_locked(x)	((x)->slock != 0)
-
-So is
-
-	while (__raw_spin_is_locked(&v));
-
-supposed to work? Or should that be 
-
-	while (__raw_spin_is_locked(&v))
-		cpu_relax();
-
-as well and all the volatiles can/should go away?
+Yes, that breaks a separate set of machines. It would be interesting to 
+try resetting just by banging the keyboard controller from userspace, 
+and seeing if that fails in the same way - I suspect that on certain 
+hardware, part of the shutdown process confuses it in some way.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
