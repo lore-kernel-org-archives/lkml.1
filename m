@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933310AbXFEVWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933549AbXFEVZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933310AbXFEVWk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXFEVWV
+	id S933549AbXFEVZm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 17:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXFEVZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 17:22:21 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:60316 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933583AbXFEVWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 17:22:20 -0400
-Message-id: <15021191752898126212@wsc.cz>
-In-reply-to: <1058130869771517818@wsc.cz>
-Subject: [PATCH 3/3] Char: stallion, proper fail return values
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Tue,  5 Jun 2007 23:22:19 +0200 (CEST)
+	Tue, 5 Jun 2007 17:25:33 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3752 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932181AbXFEVZc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 17:25:32 -0400
+Date: Tue, 5 Jun 2007 22:25:23 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: jeff@garzik.org, alan@lxorguk.ukuu.org.uk, hch@infradead.org,
+       mroos@linux.ee, linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070605212523.GB18027@flint.arm.linux.org.uk>
+References: <20070605151104.GG31565@havoc.gtf.org> <20070605151847.GD2572@flint.arm.linux.org.uk> <20070605152133.GE2572@flint.arm.linux.org.uk> <20070605.122745.118950378.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070605.122745.118950378.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-stallion, proper fail return values
+On Tue, Jun 05, 2007 at 12:27:45PM -0700, David Miller wrote:
+> From: Russell King <rmk+lkml@arm.linux.org.uk>
+> Date: Tue, 5 Jun 2007 16:21:33 +0100
+> 
+> > Oh sod it, I'm unsubscribing from LKML.  Jeff, hope your happy.
+> 
+> What an adult way for you to handle this.
 
-do not return 0 in one case and return proper values in other 2.
+Indeed; it's obvious that you're not listening to reason, so I won't
+waste my time and everyone elses trying to get through to people who
+just aren't listening.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+I've gone.  Congratulations.
 
----
-commit d62c04c8fe3271ab2089f442e04ad522a158bf8f
-tree 31beaaee84ef718acc5401b3cb07a7f2e340f0fe
-parent e7488128b7b4f61c82b6e323067d221c9397c43b
-author Jiri Slaby <jirislaby@gmail.com> Mon, 04 Jun 2007 00:07:20 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Tue, 05 Jun 2007 23:14:45 +0200
-
- drivers/char/stallion.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
-index 23ea4c8..45bf2a2 100644
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -2177,6 +2177,7 @@ static int __devinit stl_initech(struct stlbrd *brdp)
- 		if (!panelp) {
- 			printk("STALLION: failed to allocate memory "
- 				"(size=%Zd)\n", sizeof(struct stlpanel));
-+			retval = -ENOMEM;
- 			goto err_fr;
- 		}
- 		panelp->magic = STL_PANELMAGIC;
-@@ -2223,8 +2224,10 @@ static int __devinit stl_initech(struct stlbrd *brdp)
- 		brdp->nrports += panelp->nrports;
- 		brdp->panels[panelnr++] = panelp;
- 		if ((brdp->brdtype != BRD_ECHPCI) &&
--		    (ioaddr >= (brdp->ioaddr2 + brdp->iosize2)))
-+		    (ioaddr >= (brdp->ioaddr2 + brdp->iosize2))) {
-+			retval = -EINVAL;
- 			goto err_fr;
-+		}
- 	}
- 
- 	brdp->nrpanels = panelnr;
-@@ -2371,6 +2374,7 @@ static int __devinit stl_pciprobe(struct pci_dev *pdev,
- 		dev_err(&pdev->dev, "too many boards found, "
- 			"maximum supported %d\n", STL_MAXBRDS);
- 		mutex_unlock(&stl_brdslock);
-+		retval = -ENODEV;
- 		goto err_fr;
- 	}
- 	brdp->brdnr = (unsigned int)brdnr;
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
