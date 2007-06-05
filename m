@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbXFEPLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764968AbXFEPOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764859AbXFEPLR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 11:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760229AbXFEPLH
+	id S1764968AbXFEPOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 11:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbXFEPON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 11:11:07 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:42747 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755922AbXFEPLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 11:11:06 -0400
-Date: Tue, 5 Jun 2007 11:11:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, mroos@linux.ee,
-       linux-kernel@vger.kernel.org
-Subject: Re: libata & no PCI: dma_[un]map_single undefined
-Message-ID: <20070605151104.GG31565@havoc.gtf.org>
-References: <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org> <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu> <20070605135608.GA31565@havoc.gtf.org> <20070605141714.GA2572@flint.arm.linux.org.uk> <20070605143523.GE31565@havoc.gtf.org> <20070605145149.GB2572@flint.arm.linux.org.uk> <20070605145603.GF31565@havoc.gtf.org> <20070605145945.GC2572@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 5 Jun 2007 11:14:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:37167 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760229AbXFEPON (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 11:14:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WVTKeI7o/SfmXpn7KPE7oTgQhGAdUNLqu4VVJ6nHjjZRLEgdisOpITD+YV1QkTl0haLICvYqspbVwkBSCT9ydFovnUzkhxSQRlEJXvVwI2d4xL3f1JDuRN19uD544FEQQR++4Hb7dgI9coK4kB/pibCSktvnLNCxSpKqP/JBYco=
+Message-ID: <b647ffbd0706050814u1e145b82qdb344d475d9ffe93@mail.gmail.com>
+Date: Tue, 5 Jun 2007 17:14:12 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: Interesting interaction between lguest and CFS
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Rusty Russell" <rusty@rustcorp.com.au>,
+       akpm@linux-foundation.org, Linux-kernel@vger.kernel.org
+In-Reply-To: <20070605140342.GR11115@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070605145945.GC2572@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+References: <20070604173710.GR11166@waste.org> <20070604175436.GC30274@elte.hu>
+	 <20070604184106.GG11115@waste.org> <20070605071904.GB25163@elte.hu>
+	 <20070605140342.GR11115@waste.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 03:59:46PM +0100, Russell King wrote:
-> It's the fact that I _am_ CC'd on replies, so I get one message from LKML
-> one from the original poster, maybe one via another mailing list if it's
-> also copied there.  Add that in to the mix of all the other mail hitting
-> my MTA and the probability for the machine to exhaust it's limited VM is
-> very high.
+On 05/06/07, Matt Mackall <mpm@selenic.com> wrote:
+> > [...]
+> > Click into the lguest window and trigger the delay.
+>
+> I did:
+>
+> while true; do sleep 1; cat /proc/sched_debug > sched_debug.txt; done
+>
+> and got this, hopefully inside the window:
+>
+> Sched Debug Version: v0.02
+> now at 257428593818894 nsecs
+>
+> cpu: 0
+>   .nr_running            : 3
+>   .raw_weighted_load     : 2063
+>   .nr_switches           : 242830075
+>   .nr_load_updates       : 30172063
+>   .nr_uninterruptible    : 0
+>   .jiffies               : 64282148
+>   .next_balance          : 0
+>   .curr->pid             : 27182
+>   .clock                 : 125650217819008823
+>   .prev_clock_raw        : 257428516403535
 
-This is an utterly ridiculous argument.  You are subscribed to LKML,
-with a message size limit of 400K.  "replies to rmk" are clearly lost
-in the noise compared to the rest of the list traffic.
+The delta (clock - prev_clock_raw) looks insane.
+
+The current time (which doesn't depend on rq_clock() --> sched_clock() is
+" now at 257428593818894 nsecs " (right at the beginning of the output).
+
+'prev_clock_raw' is updated any time rq_clock() is called - basically
+upon any scheduling operation (e.g. enqueue/dequeue)
+
+now - prev_clock_raw == 257428593818894 - 257428516403535 == ~ 80 ms.
+
+while 'clock' reports something crazy.. that would explain why there
+wes a huge "block_max" reported earlier.. I guess, sched_clock() is
+tsc-based in your case?
+
+Any way to get it switched to jiffies-based one and repeat the test?
 
 
-> Give me a way to stop people CC'ing me on replies and I'll happily remove
-> the header.  Unfortunately there isn't, so I can't.
-
-So by fiat, you decide that gives you the right to override OTHER
-PEOPLE'S personal preferences?  Why are you so much more important
-to a thread than everyone else?
-
-If you are unwilling to fix the problem and work within existing
-community email standards, I think it would be fair to ask vger
-postmaster to start excising Mail-Followup-To headers.
-
-You are NOT more important that everyone else.
-
-Stop hijacking EVERYONE ELSE's email preferences.
-
-	Jeff
-
-
-
+-- 
+Best regards,
+Dmitry Adamushko
