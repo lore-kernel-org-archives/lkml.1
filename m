@@ -1,269 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764334AbXFELGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764495AbXFELIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764334AbXFELGn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 07:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763790AbXFELGf
+	id S1764495AbXFELIA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 07:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbXFELHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 07:06:35 -0400
-Received: from bravo.securenet-server.net ([207.210.84.244]:48469 "EHLO
-	bravo.securenet-server.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763738AbXFELGe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 07:06:34 -0400
-From: Mircea Bardac <dev.list@mircea.bardac.net>
-To: "Peter Oruba" <peter.oruba@amd.com>
-Subject: Re: CPU off-on-off: lost CPU management?
-Date: Tue, 5 Jun 2007 12:52:59 +0300
-User-Agent: KMail/1.9.7
-Cc: stefan.prechtel@googlemail.com,
-       "Linux List" <linux-kernel@vger.kernel.org>
-References: <200706051003.29501.peter.oruba@amd.com>
-In-Reply-To: <200706051003.29501.peter.oruba@amd.com>
+	Tue, 5 Jun 2007 07:07:54 -0400
+Received: from sicnat2.emn.fr ([193.54.76.193]:47400 "EHLO ron.emn.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751802AbXFELHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 07:07:53 -0400
+From: Yoann Padioleau <padator@wanadoo.fr>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@lists.osdl.org
+Subject: Re: [KJ] Re: [PATCH] bugfix GFP_KERNEL -> GFP_ATOMIC in spin_locked region
+References: <87odjvu1on.fsf@wanadoo.fr>
+	<20070604210018.0eaa20a0.akpm@linux-foundation.org>
+Date: Tue, 05 Jun 2007 13:05:18 +0200
+In-Reply-To: <20070604210018.0eaa20a0.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Mon, 4 Jun 2007 21:00:18 -0700")
+Message-ID: <87k5uimzkh.fsf@wanadoo.fr>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706051253.01551.dev.list@mircea.bardac.net>
-X-PopBeforeSMTPSenders: bmi@bardac.net
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - bravo.securenet-server.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - mircea.bardac.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-This time with Kernel 2.6.21.3.
+>> 
+>>  net/wan/lmc/lmc_main.c        |    2 +-
+>>  scsi/megaraid/megaraid_mm.c   |    2 +-
+>>  usb/serial/io_ti.c            |    2 +-
+>>  usb/serial/ti_usb_3410_5052.c |    2 +-
+>>  usb/serial/whiteheat.c        |    6 +++---
+>>  5 files changed, 7 insertions(+), 7 deletions(-)
+>
+> This patch covers three areas of maintainer responsibility, so poor old me
+> has to split it up and redo the changelogs.  Oh well.
 
-On Tuesday 05 June 2007 11:03:23 Peter Oruba wrote:
-> reagarding your Turion cpufreq issues - is that solved by now?
-> http://lkml.org/lkml/2007/4/8/59
+Sorry. 
 
+For modifications that crosscut the kernel it is not very practical to
+look each time for the maintainer. We plan to send a patch that
+replaces some calls to kmalloc/memset with kzalloc; do we have to split
+it for each maintainer ?
 
-**** /proc/cpuinfo shows half the bogomips it showed in my initial post
-**** (maybe it is right now)
+>> diff --git a/drivers/net/wan/lmc/lmc_main.c b/drivers/net/wan/lmc/lmc_main.c
+>> index ae132c1..750b3ef 100644
+>> --- a/drivers/net/wan/lmc/lmc_main.c
+>> +++ b/drivers/net/wan/lmc/lmc_main.c
+>> @@ -483,7 +483,7 @@ #endif /* end ifdef _DBG_EVENTLOG */
+>>                              break;
+>>                      }
+>>  
+>> -                    data = kmalloc(xc.len, GFP_KERNEL);
+>> +                    data = kmalloc(xc.len, GFP_ATOMIC);
+>>                      if(data == 0x0){
+>>                              printk(KERN_WARNING "%s: Failed to allocate memory for copy\n", dev->name);
+>>                              ret = -ENOMEM;
+>
+> A few lines later we do:
+>
+> 	if(copy_from_user(data, xc.data, xc.len))
+>
+> which also is illegal under spinlock.
 
-# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 72
-model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-52
-stepping        : 2
-cpu MHz         : 800.000
-cache size      : 512 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 2
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp 
-lm 3dnowext 3dnow pni cx16 lahf_lm cmp_legacy svm extapic cr8legacy ts fid 
-vid ttp tm stc
-bogomips        : 1597.67
-clflush size    : 64
+I have launched my tool to detect such situations and I get this 
+(in a diff-like format).
 
-processor       : 1
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 72
-model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-52
-stepping        : 2
-cpu MHz         : 800.000
-cache size      : 512 KB
-physical id     : 0
-siblings        : 2
-core id         : 1
-cpu cores       : 2
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp 
-lm 3dnowext 3dnow pni cx16 lahf_lm cmp_legacy svm extapic cr8legacy ts fid 
-vid ttp tm stc
-bogomips        : 1597.67
-clflush size    : 64
+--- /home/pad/kernels/git/linux-2.6/arch/cris/arch-v10/drivers/gpio.c	2007-03-27 15:12:38.000000000 +0200
++++ /tmp/output.c	2007-06-05 11:38:47.000000000 +0200
+@@ -776,7 +776,7 @@
+ 		/* bits set in *arg is set to input,
+ 		 * *arg updated with current input pins.
+ 		 */
+-		if (copy_from_user(&val, (unsigned long*)arg, sizeof(val)))
+ 		{
+ 			ret = -EFAULT;
+ 			break;
+@@ -789,7 +789,7 @@
+ 		/* bits set in *arg is set to output,
+ 		 * *arg updated with current output pins.
+ 		 */
+-		if (copy_from_user(&val, (unsigned long*)arg, sizeof(val)))
+ 		{
+ 			ret = -EFAULT;
+ 			break;
 
 
-# cpufreq-info
-cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
-Report errors and bugs to linux@brodo.de, please.
-analyzing CPU 0:
-  driver: powernow-k8
-  CPUs which need to switch frequency at the same time: 0 1
-  hardware limits: 800 MHz - 1.60 GHz
-  available frequency steps: 1.60 GHz, 800 MHz
-  available cpufreq governors: ondemand, performance
-  current policy: frequency should be within 800 MHz and 1.60 GHz.
-                  The governor "ondemand" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz (asserted by call to hardware).
-analyzing CPU 1:
-  driver: powernow-k8
-  CPUs which need to switch frequency at the same time: 0 1
-  hardware limits: 800 MHz - 1.60 GHz
-  available frequency steps: 1.60 GHz, 800 MHz
-  available cpufreq governors: ondemand, performance
-  current policy: frequency should be within 800 MHz and 1.60 GHz.
-                  The governor "ondemand" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz (asserted by call to hardware).
+--- /home/pad/kernels/git/linux-2.6/arch/mips/au1000/common/power.c	2007-03-27 15:12:41.000000000 +0200
++++ /tmp/output.c	2007-06-05 11:38:57.000000000 +0200
+@@ -330,7 +330,7 @@
+ 			spin_unlock_irqrestore(&pm_lock, flags);
+ 			return -EFAULT;
+ 		}
+-		if (copy_from_user(buf, buffer, *len)) {
+ 			spin_unlock_irqrestore(&pm_lock, flags);
+ 			return -EFAULT;
+ 		}
 
-# echo 0 > /sys/devices/system/cpu/cpu1/online
-
-**** this time the bogomips didn't drop to half of the dual-cpu bogomips
-**** mostly because the dual bogomips is now half
-**** (as I said before, don't know if this is right)
-**** the features list now shows "up"
-**** (in addition to what the features list of the dual-cpu showed)
-**** (is this right?, might have appeared in my initial post too)
-
-# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 72
-model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-52
-stepping        : 2
-cpu MHz         : 800.000
-cache size      : 512 KB
-physical id     : 0
-siblings        : 1
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp 
-lm 3dnowext 3dnow up pni cx16 lahf_lm cmp_legacy svm extapic cr8legacy ts fid 
-vid ttp tm stc
-bogomips        : 1597.67
-clflush size    : 64
+and some cases in lmc_main.c
 
 
-[root@cougar /home/mircea]# cpufreq-info
-cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
-Report errors and bugs to linux@brodo.de, please.
-analyzing CPU 0:
-  driver: powernow-k8
-  CPUs which need to switch frequency at the same time: 0
-  hardware limits: 800 MHz - 1.60 GHz
-  available frequency steps: 1.60 GHz, 800 MHz
-  available cpufreq governors: ondemand, performance
-  current policy: frequency should be within 800 MHz and 1.60 GHz.
-                  The governor "ondemand" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz (asserted by call to hardware).
+>
+>
+> Frankly, I think that a better use of this tool would be to just report on
+> the errors, let humans fix them up.
 
-**** compared to my initial post, everything below didn't change at all
-**** meaning all inconsistences are still there
-**** (like: cache size missing for the 2nd core)
-**** still can't activate powernow-k8 for the 2nd core
-**** bogomips appears to stay the same for each CPU compared to my prev
-**** post
+Ok. Do you have a preference on the format ?  a <file>:<line> format  ?
 
-# echo 1 > /sys/devices/system/cpu/cpu1/online
-
-# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 72
-model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-52
-stepping        : 2
-cpu MHz         : 800.000
-cache size      : 512 KB
-physical id     : 0
-siblings        : 1
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp 
-lm 3dnowext 3dnow pni cx16 lahf_lm cmp_legacy svm extapic cr8legacy ts fid 
-vid ttp tm stc
-bogomips        : 1597.67
-clflush size    : 64
-
-processor       : 1
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 72
-model name      : AMD Turion(tm) 64 X2 Mobile Technology TL-52
-stepping        : 2
-cpu MHz         : 798.015
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp 
-lm 3dnowext 3dnow pni cx16 lahf_lm cmp_legacy svm extapic cr8legacy ts fid 
-vid ttp tm stc
-bogomips        : 1596.26
-clflush size    : 64
+Is there a place that gathered all those implicit programming rules 
+(that copy_from_user must not be called inside a spinlock, etc) so that
+I can translate them in a script for our tool.
 
 
-# cpufreq-info
-cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
-Report errors and bugs to linux@brodo.de, please.
-analyzing CPU 0:
-  driver: powernow-k8
-  CPUs which need to switch frequency at the same time: 0
-  hardware limits: 800 MHz - 1.60 GHz
-  available frequency steps: 1.60 GHz, 800 MHz
-  available cpufreq governors: ondemand, performance
-  current policy: frequency should be within 800 MHz and 1.60 GHz.
-                  The governor "ondemand" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz (asserted by call to hardware).
-analyzing CPU 1:
-  no or unknown cpufreq driver is active on this CPU
-
-# rmmod powernow-k8
-
-# modprobe powernow-k8
-FATAL: Error inserting powernow_k8 
-(/lib/modules/2.6.21-ARCH/kernel/arch/i386/kernel/cpu/cpufreq/powernow-k8.ko): 
-No such device
-
-
-Many thanks for following this,
-Mircea
