@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXFEVBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbXFEVFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933159AbXFEVBu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbXFEVBJ
+	id S932915AbXFEVFt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 17:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760775AbXFEVFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 17:01:09 -0400
-Received: from minus.inr.ac.ru ([194.67.69.97]:42882 "HELO ms2.inr.ac.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S932891AbXFEVBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 17:01:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ms2.inr.ac.ru;
-  b=nfvifJLg3Zm0cSt82E4bevsTJAsQjSccJllITdFRBV6mrRr7WcFvnwmyLWsy3jDowQqkyp5TkPslxqnj1hTeeXXE3YvT7jFuPMhpetDB1+npIoiji9rfcVBhjdFKfoMqCvT2/+iBNXcWzGqtii2LEI3rmdIf+TUSJbztoQZ3reA=;
-Date: Wed, 6 Jun 2007 01:00:28 +0400
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [RFC][PATCH] muptiple bugs in PI futexes
-Message-ID: <20070605210028.GA10084@ms2.inr.ac.ru>
-References: <20070507144351.GA12302@ms2.inr.ac.ru> <20070523072609.GC6859@elte.hu> <20070523115159.GA30251@ms2.inr.ac.ru> <1181060711.4404.114.camel@chaos> <20070605173949.GA27618@ms2.inr.ac.ru> <1181069306.4404.145.camel@chaos> <1181070953.4404.149.camel@chaos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 5 Jun 2007 17:05:41 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:39908 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758706AbXFEVFk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 17:05:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Xo9qmkUIqCLc47RG9LLkPSOSxkl9xd4DeJKU/FQ+WhAEK7eiJbsKdjquQuD3gJHKaZHbE+R3BhiXz/z89oQ2AgCTTSvepXA7wax4XdtaSeNz1JfjgoqjTE/CpjYxYg+6iQTIubNDVkUZKyAg3lqWyJqOTVRA2DCH2x4gWl8IlnE=
+Message-ID: <a781481a0706051405n5af19f2t52bd1760f216fd59@mail.gmail.com>
+Date: Wed, 6 Jun 2007 02:35:39 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH] S390: Replace calls to __get_free_pages() with __get_dma_pages().
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       schwidefsky@de.ibm.com, "Andrew Morton" <akpm@osdl.org>,
+       linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0706051650110.19661@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1181070953.4404.149.camel@chaos>
-User-Agent: Mutt/1.5.6i
+References: <Pine.LNX.4.64.0706051650110.19661@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Hi,
 
-> We actually need to do something about this, as we might loop for ever
-> there. The robust cleanup code can fail (e.g. due to list corruption)
-> and we would see exit_state != 0 and the OWNER_DIED bit would never be
-> set, so we are stuck in a busy loop.
+On 6/6/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+>
+> Replace a number of calls to __get_free_pages() with the corresponding
+> calls to __get_dma_pages().
+> [...]
+>   once the __GFP_DMA argument is removed, it does look weird to see
+> the first argument of just 0.  should that be filled in with
+> GFP_ATOMIC as christopher lameter suggested?
 
-Yes...
+Yes, I suppose so ... GFP_ATOMIC can dip into the emergency
+pools so would also make this code a bit more "robust" than using
+"0" (== GFP_NOWAIT) and it's not that GFP_ATOMIC "waits" on
+anything either ...
 
-It is possible to take read_lock(&tasklist_lock) before:
+> -                       (void *)__get_free_pages(__GFP_DMA,
+> +                       (void *)__get_dma_pages(0,
 
-        inc_preempt_count();
-        curval = futex_atomic_cmpxchg_inatomic(uaddr, uval, newval);
-        dec_preempt_count();
+GFP_NOWAIT == 0, so the macro GFP_NOWAIT is the one to
+use if you really don't want any change in behaviour (and as the
+comment above GFP_NOWAIT says, it's much better to use that
+name than simply specify "0").
 
-and drop it after lookup_pi_state().
+Off-topic, but I wonder what are the valid usage cases / scenarios
+for GFP_NOWAIT? The obvious answer is somebody might want to
+be a way-too-polite citizen and stay off the emergency pools even
+from atomic context, but why would anybody want to do /that/ ...
+[ BTW there are 3 users of GFP_NOWAIT in kernel code, but there
+could be more that simply specify "0" to get same behaviour. ]
 
-In this case exiting task will set FUTEX_OWNER_DIED, but will
-spin in exit_notify(), we will find valid pi_state and go slow path
-taking rtmutex.
-
-Alexey
+Satyam
