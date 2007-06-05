@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765565AbXFEUI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765624AbXFEULq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765565AbXFEUI0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 16:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbXFEUIT
+	id S1765624AbXFEULq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 16:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761044AbXFEULh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 16:08:19 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:59085 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755761AbXFEUIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 16:08:18 -0400
-Date: Tue, 5 Jun 2007 13:09:54 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
-Message-ID: <20070605200954.GE12782@tree.beaverton.ibm.com>
-References: <20070601004427.GI30788@tree.beaverton.ibm.com> <20070605172310.GD17143@linux-os.sc.intel.com> <20070605173647.GC12782@tree.beaverton.ibm.com> <20070605181342.GE17143@linux-os.sc.intel.com> <20070605183300.GD12782@tree.beaverton.ibm.com> <20070605184015.GF17143@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="W5WqUoFLvi1M7tJE"
-Content-Disposition: inline
-In-Reply-To: <20070605184015.GF17143@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 5 Jun 2007 16:11:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56544
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758446AbXFEULh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 16:11:37 -0400
+Date: Tue, 05 Jun 2007 13:11:51 -0700 (PDT)
+Message-Id: <20070605.131151.82049948.davem@davemloft.net>
+To: miklos@szeredi.hu
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix race in AF_UNIX
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <E1HvTgf-0000sb-00@dorka.pomaz.szeredi.hu>
+References: <E1Hv980-0006gQ-00@dorka.pomaz.szeredi.hu>
+	<20070605.000247.18308209.davem@davemloft.net>
+	<E1HvTgf-0000sb-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 05 Jun 2007 09:42:41 +0200
 
---W5WqUoFLvi1M7tJE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> A recv() on an AF_UNIX, SOCK_STREAM socket can race with a
+> send()+close() on the peer, causing recv() to return zero, even though
+> the sent data should be received.
+> 
+> This happens if the send() and the close() is performed between
+> skb_dequeue() and checking sk->sk_shutdown in unix_stream_recvmsg():
+> 
+> process A  skb_dequeue() returns NULL, there's no data in the socket queue
+> process B  new data is inserted onto the queue by unix_stream_sendmsg()
+> process B  sk->sk_shutdown is set to SHUTDOWN_MASK by unix_release_sock()
+> process A  sk->sk_shutdown is checked, unix_release_sock() returns zero
+> 
+> I'm surprised nobody noticed this, it's not hard to trigger.  Maybe
+> it's just (un)luck with the timing.
+> 
+> It's possible to work around this bug in userspace, by retrying the
+> recv() once in case of a zero return value.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 
-On Tue, Jun 05, 2007 at 11:40:15AM -0700, Siddha, Suresh B wrote:
+Looks good, applied.
 
-> Does this problem happen only under certain stress or something simple, l=
-ike
->=20
-> boot the kernel
-> echo 2 > /proc/irq/114/smp_affinity
-> wait for irq to hit the cpu1.
-> echo 0 > /sys/devices/system/cpu/cpu1/online
->=20
-> will immmd trigger this?
-
-The system is not under any stress at all.
-
---D
-
---W5WqUoFLvi1M7tJE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGZcMSa6vRYYgWQuURAvg5AJ0ZxwBOqrXB798YrFkW+ipBFtEpiQCgkgr/
-9NIK925OUpXiQmr50SqhpHw=
-=1Lpr
------END PGP SIGNATURE-----
-
---W5WqUoFLvi1M7tJE--
+Another way to fix this would have been to take the u->readlock
+in unix_release() and unix_shutdown(), but that would have hurt
+unix_dgram_recvmsg() which doesn't need to handle this race.
