@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763093AbXFEHba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762920AbXFEHlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763093AbXFEHba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 03:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763667AbXFEHbT
+	id S1762920AbXFEHlA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 03:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbXFEHkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 03:31:19 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:15209 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763623AbXFEHbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 03:31:18 -0400
-Message-ID: <4665113E.5070908@sw.ru>
-Date: Tue, 05 Jun 2007 11:31:10 +0400
-From: Vasily Averin <vvs@sw.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	Tue, 5 Jun 2007 03:40:52 -0400
+Received: from mailgw4.ericsson.se ([193.180.251.62]:52345 "EHLO
+	mailgw4.ericsson.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXFEHkv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 03:40:51 -0400
+X-Greylist: delayed 1331 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jun 2007 03:40:51 EDT
+X-AuditID: c1b4fb3e-b1a1dbb0000061ca-6a-46650e4febd8 
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, Vasily Averin <vvs@sw.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, linux-ext4@vger.kernel.org,
-       Stephen Tweedie <sct@redhat.com>, adilger@clusterfs.com
-Subject: Re: [RFC PATCH ext3/ext4] orphan list corruption due bad inode
-References: <4663A0CE.102@sw.ru> <20070604190340.dba85bb0.akpm@linux-foundation.org> <4664FE80.4080801@sw.ru> <20070605061315.GA25760@infradead.org>
-In-Reply-To: <20070605061315.GA25760@infradead.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Date: Tue, 5 Jun 2007 09:18:38 +0200
+Message-ID: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se>
+In-Reply-To: <200706050710.41754.arvidjaar@mail.ru>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Thread-Index: AcenHx1vCK8PHGQoSCaECdu1ubDu0gAIn0cA
+References: <200706031200.07514.arvidjaar@mail.ru> <200706040634.01622.arvidjaar@mail.ru> <20070604204418.GA4214@sortiz.org> <200706050710.41754.arvidjaar@mail.ru>
+From: "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>
+To: "Andrey Borzenkov" <arvidjaar@mail.ru>, "Samuel Ortiz" <samuel@sortiz.org>
+Cc: <linux-kernel@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       <ambx1@neo.rr.com>, <bjorn.helgaas@hp.com>
+X-OriginalArrivalTime: 05 Jun 2007 07:18:38.0729 (UTC) FILETIME=[BCE69790:01C7A741]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Tue, Jun 05, 2007 at 10:11:12AM +0400, Vasily Averin wrote:
->>>>  	return d_splice_alias(inode, dentry);
->>>>  }
->>> Seems reasonable.  So this prevents the bad inodes from getting onto the
->>> orphan list in the first place?
->> make_bad_inode() is called from ext3_read_inode() that is called from iget() only.
+> > Ok, FIR and SIR are definitey mixed up. So, now could you  please
+try 
+> > Bjorn's patch ?
 > 
-> Which is artefact of using the read_inode interface.  Please switch from
-> iget to iget_locked and you can handle this case without ever inserting the
-> "bad" inode into the inode hash.
+> does not work.
 
-Sorry, I do not understand your proposal. Could you please explain your idea in
-more details?
+It looks like the purpose of the patch is to provide more printouts
+not to fix the problem, please mail your dmesg post-patch.
 
-thank you,
-	Vasily Averin
+Linus
