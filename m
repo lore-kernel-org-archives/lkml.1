@@ -1,161 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbXFEBZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbXFEBh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762214AbXFEBZa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 21:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbXFEBZX
+	id S1761240AbXFEBh2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 21:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbXFEBhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 21:25:23 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46912 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752765AbXFEBZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 21:25:22 -0400
-Subject: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other woes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 11:25:11 +1000
-Message-Id: <1181006711.31677.97.camel@localhost.localdomain>
+	Mon, 4 Jun 2007 21:37:17 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:29167 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750927AbXFEBhO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 21:37:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=hjU53/xwl6JRMFwNPMFBpZ8ztWLY432K4CzWusomWjBYH8ehoMGUIyb+Tu1ZCTpdjdw8p3UR+RIQ03z3sJRGxIrvBbXJhGj/gzlDr7V46SURfw9snvwF7cUg5bWPo0X/d+FNzoOfSubBZivI40AoYeKf4tQyNTkJgo4Es3tj5VQ=
+Date: Tue, 5 Jun 2007 09:37:36 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Jeff Garzik <jeff@garzik.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, Al Viro <viro@ftp.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       Chen Li-jun <cljun@xiyou.edu.cn>, Wang Ya-gang <lazy_linux@126.com>
+Subject: Re: [RFC] Documentation/CodingStyle: Add rules for goto labels (-v2)
+Message-ID: <20070605013735.GA2388@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: Jeremy Fitzhardinge <jeremy@goop.org>,
+	Sam Ravnborg <sam@ravnborg.org>, Jeff Garzik <jeff@garzik.org>,
+	Randy Dunlap <rdunlap@xenotime.net>,
+	Al Viro <viro@ftp.linux.org.uk>,
+	LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+	Chen Li-jun <cljun@xiyou.edu.cn>, Wang Ya-gang <lazy_linux@126.com>
+References: <20070603142450.GA4230@localhost.localdomain> <20070603142939.GW4095@ftp.linux.org.uk> <20070603074552.430c3d02.rdunlap@xenotime.net> <4662DFCF.3010606@garzik.org> <20070604045857.GE2161@localhost.localdomain> <4663B84E.2060103@goop.org> <20070604081938.GC2074@localhost.localdomain> <20070604183014.GB16187@uranus.ravnborg.org> <466461C4.2050806@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466461C4.2050806@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The story starts with...
+On Mon, Jun 04, 2007 at 12:02:28PM -0700, Jeremy Fitzhardinge wrote:
+>Sam Ravnborg wrote:
+>> If local(__label__) really so widely used in the kernel that it deserves
+>> a place in coding-style?
+>> A quick grep did not say so.
+>>   
+>
+>Probably not, and its use shouldn't be (even tacitly) encouraged.  It's
+>only really useful for defining a local label within a macro, and
+>there's probably something wrong with your macro if you need a local label.
+>
+>    J
 
-We've been seeing some occasional reports of -ERESTARTSYS and friends
-being returned to userland from syscalls like accept(). After some
-digging, we beleive that the signal code is inherently racy vs. the
-way one task (or interrupt) can cause another task TIG_SIGPENDING
-to be cleared.
-
-(And while looking at the code, found more potential issues with
-signalfd, see later for that one)
-
-The circumstances are a bit hard to trigger (and thus we haven't yet
-made a proper repro-case, the field problem happens every now and then),
-but basically, the idea is something around the lines of:
-
- - thread A does accept() or select() or some other syscall that can
-   restart upon reception of a signal. It also has signal S1 unblocked
-   and signal S2 blocked.
-
- - Something sends S1 to the process (shared signal), thread A is the
-   selected victim from the signal code and gets TIF_SIGPENDING set.
-
- - thread A decides to return -ERESTARTSYS. On the way to userland, to
-   make the race more likely, we also end up rescheduling, thus we
-   call schedule() before we actually call do_signal().
-
- - thread B has TIF_SIGPENDING set (for some other signal) and ends up
-   handling and dequeuing both that other signal and S1, thus there is
-   no more shared signal pending
-
- - something calls recalc_sigpending_tsk() on thread A (for example,
-   something try to sends it S2 which is blocked). There is no longer
-   an active signal and thus TIF_SIGPENDING is cleared on thread A
-
- - thread A gets back out of schedule(), there is no more TIF_SIGPENDING,
-   thus it goes back to userland returning -ERESTARTSYS and never restarts
-   the syscall
-
-There might be variations on the above scenario. We beleive that the
-base problem is that the only one who should ever be able to clear
-TIF_SIGPENDING is the task who has it set, nobody else, since it might
-have been "seen" by that task long enough to make decisions such as
-returning -ERESTARTSYS, at which point it must not be cleared until
-do_signal() is called.
-
-In fact, it makes a lot of sense to only ever clear that flag on yourself
-anyway.
-
-The patch below does that by making recalc_sigpending() be the only one to
-clear it, not recalc_sigpending_tsk(). I also added a WARN_ON in case
-we ever call recalc_sigpending() without the siglock since that would mean
-a race causing a potential loss of TIF_SIGPENDING.
-
-Note that the code in dequeue_signal() is a bit uglier than I would have
-liked. I would have much preferred making dequeue_signal() not take a task
-argument anymore and just always operate on "current" but that's being 
-defeated by signalfd, which seems to be only one to potentially dequeue
-signals off another task. So I leave it alone for now.
-
-However, I find that very dodgy since dequeue_signal() calls
-__dequeue_signal() which does things vs. a notifier which I don't quite
-know what it's for, but it's definitely not going to fly if dequeue_signal()
-is called for somebody else than current... and potentially cause another
-spurrious clearing of TIF_SIGPENDING.
-
-Thus, I think that signalfd probably needs fixing to only ever allow
-read() to be called from the task that created the fd in the first place
-thus only allowing a thread to dequeue itself.
-
-Any better idea ? Comments ?
-
-(Patch built & booted on a pSeries box)
-
-Cheers,
-Ben.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Index: linux-work/kernel/signal.c
-===================================================================
---- linux-work.orig/kernel/signal.c	2007-06-05 10:56:53.000000000 +1000
-+++ linux-work/kernel/signal.c	2007-06-05 11:15:14.000000000 +1000
-@@ -105,7 +105,6 @@ static int recalc_sigpending_tsk(struct 
- 		set_tsk_thread_flag(t, TIF_SIGPENDING);
- 		return 1;
- 	}
--	clear_tsk_thread_flag(t, TIF_SIGPENDING);
- 	return 0;
- }
- 
-@@ -119,9 +118,22 @@ void recalc_sigpending_and_wake(struct t
- 		signal_wake_up(t, 0);
- }
- 
-+/*
-+ * Only when recalculating on yourself are you allowed to clear TIF_SIGPENDING
-+ * never when recalculating somebody else. If you were to allow it, then
-+ * a syscall could see signal_pending(), decide to return -ERESTARTSYS, and
-+ * lose TIF_SIGPENDING before actually hitting do_signal(), thus effectively
-+ * returning -ERESTARTSYS to userland and failing to restart the syscall.
-+ */
- void recalc_sigpending(void)
- {
--	recalc_sigpending_tsk(current);
-+	/* This must be called with the siglock or we might lose
-+	 * TIF_SIGPENDING
-+	 */
-+	WARN_ON(!spin_is_locked(&current->sighand->siglock));
-+
-+	if (!recalc_sigpending_tsk(current))
-+		clear_thread_flag(TIF_SIGPENDING);
- }
- 
- /* Given the mask, find the first available signal that should be serviced. */
-@@ -385,7 +397,18 @@ int dequeue_signal(struct task_struct *t
- 			}
- 		}
- 	}
--	recalc_sigpending_tsk(tsk);
-+	/* We need to call recalc_sigpending() when recalculating ourselves
-+	 * so that TIF_SIGPENDING is cleated when appropriate. The only reason
-+	 * we actually have to compare against current rather than
-+	 * unconditionally doing recalc_sigpending() is the same that prevents
-+	 * me from removing the task argument from dequeue_signal() and is
-+	 * signalfd which can dequeue signals of another task (yuck)
-+	 */
-+	if (tsk == current)
-+		recalc_sigpending();
-+	else
-+		recalc_sigpending_tsk(tsk);
-+
- 	if (signr && unlikely(sig_kernel_stop(signr))) {
- 		/*
- 		 * Set a marker that we have dequeued a stop signal.  Our
-
+I agree. Local labels maybe useful in macros.
+If someone will use local labels in his code some day, we shouldn't force him
+to align his labels in the first column.
 
