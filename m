@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761704AbXFEFva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762174AbXFEGLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761704AbXFEFva (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 01:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbXFEFvW
+	id S1762174AbXFEGLs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 02:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbXFEGLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 01:51:22 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52120 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752338AbXFEFvW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 01:51:22 -0400
-Date: Mon, 4 Jun 2007 22:50:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-Cc: "Adrian Bunk" <bunk@stusta.de>, "Richard Purdie" <rpurdie@openedhand.com>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "David Woodhouse" <dwmw2@infradead.org>
-Subject: Re: [PATCH -mm 0/5] LZO and swap write failure patches for -mm
-Message-Id: <20070604225038.9973226b.akpm@linux-foundation.org>
-In-Reply-To: <4cefeab80706042230u1fc7f485j30cea371d1d3117a@mail.gmail.com>
-References: <1180971378.6313.72.camel@localhost.localdomain>
-	<200706041214.38017.dhazelton@enter.net>
-	<1180975976.6313.133.camel@localhost.localdomain>
-	<4cefeab80706041126y5f12402cl61b72ec101dd7915@mail.gmail.com>
-	<20070604200606.GA5500@stusta.de>
-	<4cefeab80706042230u1fc7f485j30cea371d1d3117a@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 5 Jun 2007 02:11:40 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:18585 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755121AbXFEGLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 02:11:39 -0400
+Message-ID: <4664FE80.4080801@sw.ru>
+Date: Tue, 05 Jun 2007 10:11:12 +0400
+From: Vasily Averin <vvs@sw.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       linux-ext4@vger.kernel.org, Stephen Tweedie <sct@redhat.com>,
+       adilger@clusterfs.com
+Subject: Re: [RFC PATCH ext3/ext4] orphan list corruption due bad inode
+References: <4663A0CE.102@sw.ru> <20070604190340.dba85bb0.akpm@linux-foundation.org>
+In-Reply-To: <20070604190340.dba85bb0.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jun 2007 11:00:05 +0530 "Nitin Gupta" <nitingupta910@gmail.com> wrote:
+Andrew Morton wrote:
+> On Mon, 04 Jun 2007 09:19:10 +0400 Vasily Averin <vvs@sw.ru> wrote:
+>> diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+>> index 9bb046d..e3ac8c3 100644
+>> --- a/fs/ext3/namei.c
+>> +++ b/fs/ext3/namei.c
+>> @@ -1019,6 +1019,11 @@ static struct dentry *ext3_lookup(struct inode * dir, struct dentry *dentry, str
+>>  
+>>  		if (!inode)
+>>  			return ERR_PTR(-EACCES);
+>> +
+>> +		if (is_bad_inode(inode)) {
+>> +			iput(inode);
+>> +			return ERR_PTR(-ENOENT);	
+>> +		}
+>>  	}
+>>  	return d_splice_alias(inode, dentry);
+>>  }
+> Seems reasonable.  So this prevents the bad inodes from getting onto the
+> orphan list in the first place?
 
-> Andrew, Andrian,
-> 
-> If you really have the opinion of not going for major cleanups,
-> optimizations outside of original LZO code (basically a fork), then
-> there is no point in me continuing this work.
+make_bad_inode() is called from ext3_read_inode() that is called from iget() only.
 
-err, my LZO attention span ran out 200 emails ago.
+When we found that inode is bad we will call iput ASAP. I expect it should be
+enough to exclude any chances to call any functions that can include this inode
+into orphan list.
 
-> If you think otherwise, please let me know and I will post a newer
-> version with improvements from all these feedback I got.
-> 
+ext3_lookup
+  iget
+    ext3_read_inode
+       make_bad_inode
+  is_bad_inode? --> iput
 
-I'd say go with the cleanups.  The code I've seen is going to be quite
-unmaintainable by any kernel developer.
+However am I probably err?
 
-Any fixes which come from upstream can be trivially applied by taking the
-diffs against the version of upstream we started with and manually applying
-them to our version.  If the diffs are too large and complex for that then
-a) we shouldn't be merging the code in its current state anyway and b) with
-the code as-is we couldn't effectively review or changelog those diffs, so
-we shouldn't apply them.
+Probably is better to add is_bad_inode check to ext3_orphan_add()?
 
-So just fork it and freeze it.
-
-(And please never top-post when working with kernel people).
+thank you,
+	Vasily Averin
