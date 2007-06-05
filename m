@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932758AbXFEU7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765742AbXFEU76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932758AbXFEU7l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 16:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764584AbXFEU7e
+	id S1765742AbXFEU76 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 16:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765722AbXFEU7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 16:59:34 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:53452 "EHLO
+	Tue, 5 Jun 2007 16:59:37 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53453 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760775AbXFEU7d (ORCPT
+	with ESMTP id S1765671AbXFEU7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 16:59:33 -0400
-Date: Tue, 5 Jun 2007 16:50:54 -0400
+	Tue, 5 Jun 2007 16:59:36 -0400
+Date: Tue, 5 Jun 2007 16:50:55 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 1/2] UML - Fix request->sector update
-Message-ID: <20070605205054.GA9765@c2.user-mode-linux.org>
+Subject: [PATCH 2/2] UML - Fix kernel stack size on x86_64
+Message-ID: <20070605205055.GA9770@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,60 +24,25 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ This is post-2.6.22 material - it fixes a bug, but not one that I
-think has been seen in the wild, plus an earlier version of this fix
-caused file corruption ]
+[ This is 2.6.22 material ]
 
-It is theoretically possible for a request to finish and be freed
-between writing it to the I/O thread and updating the sector count.
-In this case, the update will dereference a freed pointer.
-
-To avoid this, I delay the update until processing the next sg
-segment, when the request pointer is known to be good.
+Having KERNEL_STACK_ORDER in defconfig overrides the value provided by
+Kconfig, breaking UML/x86_64, which wants 2 page stacks.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/drivers/ubd_kern.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/um/defconfig |    1 -
+ 1 file changed, 1 deletion(-)
 
-Index: linux-2.6.21-mm/arch/um/drivers/ubd_kern.c
+Index: linux-2.6.21-mm/arch/um/defconfig
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/ubd_kern.c	2007-06-02 12:13:50.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/ubd_kern.c	2007-06-02 22:23:41.000000000 -0400
-@@ -1082,7 +1082,7 @@ static void do_ubd_request(request_queue
- {
- 	struct io_thread_req *io_req;
- 	struct request *req;
--	int n;
-+	int n, last_sectors;
+--- linux-2.6.21-mm.orig/arch/um/defconfig	2007-06-05 12:18:35.000000000 -0400
++++ linux-2.6.21-mm/arch/um/defconfig	2007-06-05 12:19:12.000000000 -0400
+@@ -86,7 +86,6 @@ CONFIG_MCONSOLE=y
+ # CONFIG_MAGIC_SYSRQ is not set
+ CONFIG_NEST_LEVEL=0
+ # CONFIG_HIGHMEM is not set
+-CONFIG_KERNEL_STACK_ORDER=0
+ CONFIG_UML_REAL_TIME_CLOCK=y
  
- 	while(1){
- 		struct ubd *dev = q->queuedata;
-@@ -1098,9 +1098,11 @@ static void do_ubd_request(request_queue
- 		}
- 
- 		req = dev->request;
-+		last_sectors = 0;
- 		while(dev->start_sg < dev->end_sg){
- 			struct scatterlist *sg = &dev->sg[dev->start_sg];
- 
-+			req->sector += last_sectors;
- 			io_req = kmalloc(sizeof(struct io_thread_req),
- 					 GFP_ATOMIC);
- 			if(io_req == NULL){
-@@ -1112,6 +1114,7 @@ static void do_ubd_request(request_queue
- 					(unsigned long long) req->sector << 9,
- 					sg->offset, sg->length, sg->page);
- 
-+			last_sectors = sg->length >> 9;
- 			n = os_write_file(thread_fd, &io_req,
- 					  sizeof(struct io_thread_req *));
- 			if(n != sizeof(struct io_thread_req *)){
-@@ -1123,7 +1126,6 @@ static void do_ubd_request(request_queue
- 				return;
- 			}
- 
--			req->sector += sg->length >> 9;
- 			dev->start_sg++;
- 		}
- 		dev->end_sg = 0;
+ #
