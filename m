@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933447AbXFEV1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933544AbXFEV3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933447AbXFEV1t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932671AbXFEV1l
+	id S933544AbXFEV3Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 17:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932281AbXFEV3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 17:27:41 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:41938 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932596AbXFEV1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 17:27:40 -0400
-Message-id: <31712116432657116505@wsc.cz>
-In-reply-to: <1058130869771517818@wsc.cz>
-Subject: [PATCH 4/3] Char: stallion, remove user class report request
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Tue,  5 Jun 2007 23:27:40 +0200 (CEST)
+	Tue, 5 Jun 2007 17:29:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42941 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932084AbXFEV3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 17:29:00 -0400
+Subject: Re: [PATCH] Protection for exploiting null dereference using mmap
+From: Eric Paris <eparis@redhat.com>
+To: Alan Cox <alan@redhat.com>
+Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, drepper@redhat.com, roland@redhat.com,
+       arjan@infradead.org, mingo@elte.hu, viro@zeniv.linux.org.uk,
+       chrisw@redhat.com, sds@tycho.nsa.gov, sgrubb@redhat.com
+In-Reply-To: <20070605211616.GE23291@devserv.devel.redhat.com>
+References: <1180561713.3633.27.camel@dhcp231-215.rdu.redhat.com>
+	 <20070603205653.GE25869@devserv.devel.redhat.com>
+	 <1180964306.14220.34.camel@moss-spartans.epoch.ncsc.mil>
+	 <1181075666.3978.31.camel@localhost.localdomain>
+	 <Line.LNX.4.64.0706051658170.23379@d.namei>
+	 <20070605211616.GE23291@devserv.devel.redhat.com>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 17:28:47 -0400
+Message-Id: <1181078927.3978.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, one more.
+On Tue, 2007-06-05 at 17:16 -0400, Alan Cox wrote:
+> On Tue, Jun 05, 2007 at 05:00:51PM -0400, James Morris wrote:
+> > This should be an unsigned long.
+> > 
+> > I wonder if the default should be for this value to be zero (i.e. preserve 
+> > existing behavior).  It could break binaries, albeit potentially insecure 
+> 
+> Agreed - DOSemu type apps and lrmi need to map at zero for vm86
 
---
+While I understand, there are a few users who will have problems with
+this default are we really better to not provide this defense in depth
+for the majority of users and let those with problems turn it off rather
+than provide no defense by default?  I could even provide a different
+default for SELinux and non-SELinux if anyone saw value in that?  But if
+others think that off default is  best I'll send another patch shortly
+with the unsigned long fix and the default set to 0.  My hope is then
+that distros will figure out to turn this on.
 
-stallion, remove user class report request
+-Eric
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-
----
-commit 400de8dd765298a11daec2a4a936a70798f428aa
-tree 81675ba379783ad98f5c0387620a59b2ff2247a7
-parent d62c04c8fe3271ab2089f442e04ad522a158bf8f
-author Jiri Slaby <jirislaby@gmail.com> Tue, 05 Jun 2007 23:26:16 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Tue, 05 Jun 2007 23:26:16 +0200
-
- drivers/char/stallion.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
-index 45bf2a2..eeb6200 100644
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -2357,9 +2357,6 @@ static int __devinit stl_pciprobe(struct pci_dev *pdev,
- 	if ((pdev->class >> 8) == PCI_CLASS_STORAGE_IDE)
- 		goto err;
- 
--	dev_info(&pdev->dev, "please, report this to LKML: %x/%x/%x\n",
--			pdev->vendor, pdev->device, pdev->class);
--
- 	retval = pci_enable_device(pdev);
- 	if (retval)
- 		goto err;
