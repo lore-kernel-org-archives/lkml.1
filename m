@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932566AbXFEUH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765565AbXFEUI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932566AbXFEUH2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 16:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758446AbXFEUHM
+	id S1765565AbXFEUI0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 16:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbXFEUIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 16:07:12 -0400
-Received: from ns2.mvista.com ([63.81.120.155]:21956 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757201AbXFEUHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 16:07:10 -0400
-Message-ID: <4665C2C8.6030903@ru.mvista.com>
-Date: Wed, 06 Jun 2007 00:08:40 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 5 Jun 2007 16:08:19 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:59085 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755761AbXFEUIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 16:08:18 -0400
+Date: Tue, 5 Jun 2007 13:09:54 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
+Message-ID: <20070605200954.GE12782@tree.beaverton.ibm.com>
+References: <20070601004427.GI30788@tree.beaverton.ibm.com> <20070605172310.GD17143@linux-os.sc.intel.com> <20070605173647.GC12782@tree.beaverton.ibm.com> <20070605181342.GE17143@linux-os.sc.intel.com> <20070605183300.GD12782@tree.beaverton.ibm.com> <20070605184015.GF17143@linux-os.sc.intel.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Geller Sandor <wildy@petra.hos.u-szeged.hu>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org
-Subject: Re: HPT374 IDE problem with 2.6.21.* kernels
-References: <Pine.LNX.4.62.0705301112170.1260@petra.hos.u-szeged.hu> <46608EFE.1030202@ru.mvista.com> <Pine.LNX.4.62.0706020035200.19399@petra.hos.u-szeged.hu> <200706030138.15353.bzolnier@gmail.com> <Pine.LNX.4.62.0706031224030.25438@petra.hos.u-szeged.hu> <4662FC30.2000602@ru.mvista.com>
-In-Reply-To: <4662FC30.2000602@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="W5WqUoFLvi1M7tJE"
+Content-Disposition: inline
+In-Reply-To: <20070605184015.GF17143@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
 
->>>> This looks promising. Using a vanilla 2.6.22-rc3 I was able to 
->>>> reproduce
->>>> the problem within a few seconds. With the above modification the 
->>>> machine
->>>> is running under heavy disk I/O without problems since 30 minutes...
+--W5WqUoFLvi1M7tJE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->>> Did it fix the problem for good?
+On Tue, Jun 05, 2007 at 11:40:15AM -0700, Siddha, Suresh B wrote:
 
->> It seems so far. There hasn't been any problem since I've applied the 
->> fix.
+> Does this problem happen only under certain stress or something simple, l=
+ike
+>=20
+> boot the kernel
+> echo 2 > /proc/irq/114/smp_affinity
+> wait for irq to hit the cpu1.
+> echo 0 > /sys/devices/system/cpu/cpu1/online
+>=20
+> will immmd trigger this?
 
->>> Sergei, do we need to disallow UDMA6 completely on HPT734 or
->>> is it only an issue with some problematic devices (=> blacklist)?
+The system is not under any stress at all.
 
->    Note that I didn't change what the old code was doing in this regard 
-> -- although the HPT374 spec does *not* say that UDMA6 is supported, it 
-> had been enabled. What have *really* changed for HPT374 was:
+--D
 
-    No, I've lied (my memory haven't served and I've finally forgot to check 
-myself).  It was me who enabled it by default (that there should have been no 
-option to do this is another question). :-<
+--W5WqUoFLvi1M7tJE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> - in 2.6.20-rc1, the driver switched to using the actual 33 MHz timing 
-> table
->   instead of the old one, matching 50 MHz (and so, severely underclocked);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-> - in 2.6.2-rc1, the driver switched from 33 MHz PCI to 66 MHz DPLL clock.
+iD8DBQFGZcMSa6vRYYgWQuURAvg5AJ0ZxwBOqrXB798YrFkW+ipBFtEpiQCgkgr/
+9NIK925OUpXiQmr50SqhpHw=
+=1Lpr
+-----END PGP SIGNATURE-----
 
->    Disallowing UDMA6 would clock the chip with 50 MHz DPLL, howewer, the 
-> original report claimed that something has changed to worse between 
-> 2.6.21.1 and .3 but nothing changed in drivers/ide/ between those 
-> releases...
-
->>> Either way we need to fix it somehow for 2.6.22.
-
->> For the record: this HTP374 is running with a quite outdated firmware 
->> (1.22) - maybe newer firmwares work correctly. I'm going to upgrade 
->> the firmware to the latest one (which was released in 2004...), but 
->> unfortunately in the upcoming 2-3 weeks I won't have access to this 
->> machine, so I can't check the case within the release cycle of 2.6.22. 
->> If you were interested I would post the result of the firmware upgrade.
-
->    I don't think this will matter...
-
->> Regards,
->>   Sandor
-
-MBR, Sergei
+--W5WqUoFLvi1M7tJE--
