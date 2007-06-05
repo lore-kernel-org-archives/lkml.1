@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764759AbXFEOMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764807AbXFEONg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764759AbXFEOMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760024AbXFEOLy
+	id S1764807AbXFEONg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764274AbXFEONW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:11:54 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:44481 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755879AbXFEOLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:11:53 -0400
-Date: Tue, 5 Jun 2007 16:12:54 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [kbuild-devel] [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
-Message-ID: <20070605141254.GA24722@uranus.ravnborg.org>
-References: <20070603204700.GH9240@uranus.ravnborg.org> <20070605073335.GM7266@flower.upol.cz> <20070605081959.GB21991@uranus.ravnborg.org> <20070605133834.GO7266@flower.upol.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605133834.GO7266@flower.upol.cz>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 5 Jun 2007 10:13:22 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:18856 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763495AbXFEONR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 10:13:17 -0400
+Message-ID: <46656FD6.6030305@ru.mvista.com>
+Date: Tue, 05 Jun 2007 18:14:46 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Geller Sandor <wildy@petra.hos.u-szeged.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: HPT374 IDE problem with 2.6.21.* kernels
+References: <Pine.LNX.4.62.0705301112170.1260@petra.hos.u-szeged.hu> <Pine.LNX.4.62.0706031224030.25438@petra.hos.u-szeged.hu> <4662FC30.2000602@ru.mvista.com> <200706050300.56079.bzolnier@gmail.com> <46655AEA.4020906@ru.mvista.com>
+In-Reply-To: <46655AEA.4020906@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 03:38:34PM +0200, Oleg Verych wrote:
-> On Tue, Jun 05, 2007 at 10:19:59AM +0200, Sam Ravnborg wrote:
-> []
-> > If on the other hand you are proposing a script to clean whitespace
-> > damage in the code then git already does this nicely.
-> 
-> I've read that too quickly, sorry. What then all that clean scripts
-> are for?
-cleanfile compress spaces to tabs where appropriate. It does more
-than just warn about too long lines and remove leading whitespace.
+Hello, I wrote:
 
-Please look at latest -git tree if you are trying to improve
-the clean* scripts or add counterparts.
+>> I felt inspired by this explanation (thanks!) and took a look at
+>> hpt374-opensource-v2.10 vendor driver.  Here is something interesting:
 
-Thanks,
-	Sam
+>> glbdata.c:
+
+>> ...
+>> #ifdef CLOCK_66MHZ
+>> ULONG setting370_66[] = {
+>>         0xd029d5e,  0xd029d26,  0xc829ca6,  0xc829c84,  0xc829c62,
+>>         0x2c829d2c, 0x2c829c66, 0x2c829c62,
+>>         0x1c829c62, 0x1c9a9c62, 0x1c929c62, 0x1c8e9c62, 0x1c8a9c62,
+>>         0x1c8a9c62/*0x1cae9c62*/, 0x1c869c62, 0x1c869c62,
+>> };
+>> ...
+
+>> hpt366.c:
+
+>> ...
+>> static u32 sixty_six_base_hpt37x[] = {
+>>         /* XFER_UDMA_6 */       0x1c869c62,
+>>         /* XFER_UDMA_5 */       0x1cae9c62,     /* 0x1c8a9c62 */
+>> ...
+
+>> So we are using Dual ATA Clock for UDMA5 whereas vendor driver doesn't
+
+>    This is so in all other HPT drivers (and HPT371N datasheet has the 
+> same figures -- this chip is the only one supporting UDMA6 and having 
+> the default DPLL clock > 50 MHz).
+
+    What I meant to say was the only one I have a datasheet for. :-)
+
+MBR, Sergei
+
