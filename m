@@ -1,113 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbXFEL2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbXFELch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757359AbXFEL2v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 07:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbXFEL2o
+	id S1756450AbXFELch (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 07:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbXFELc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 07:28:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:65000 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231AbXFEL2n (ORCPT
+	Tue, 5 Jun 2007 07:32:29 -0400
+Received: from 42.242.232.72.static.reverse.layeredtech.com ([72.232.242.42]:49568
+	"EHLO secure.poehali.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750837AbXFELc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 07:28:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=dfBHHRVHYkRdowRH8LvAVDnxc8XvWzVt3H2Yf4ZDZZqFUSOB1ruoX+1xauE8NhlLIPrxouJ5IJ7enOMwKaqdqcLUylNMwFGxVIDhoeWcC9m6NEBlKQ1aUqscSbcwc9tz1qeBYfYv12qVGC3INr/t7eQcKPRc4Uf6QA/sUQ6H/RU=
-Message-ID: <4665446D.9020703@gmail.com>
-Date: Tue, 05 Jun 2007 19:09:33 +0800
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
-MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, kernel@stable.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Tero Roponen <teanropo@jyu.fi>
-Subject: [PATCH] neofb: Fix pseudo_palette array overrun in neofb_setcolreg
-References: <465C188F.9000900@googlemail.com>	 <465C222A.8060003@googlemail.com>	 <alpine.LFD.0.98.0705301922560.26602@woody.linux-foundation.org>	 <1180587109.4570.25.camel@daplas> <Pine.LNX.4.64.0705310852400.8734@jalava.cc.jyu.fi>
-In-Reply-To: <Pine.LNX.4.64.0705310852400.8734@jalava.cc.jyu.fi>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 5 Jun 2007 07:32:28 -0400
+X-Greylist: delayed 1642 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jun 2007 07:32:28 EDT
+Date: Tue, 5 Jun 2007 14:07:20 +0300
+From: Ivan Kuten <ivan.kuten@promwad.com>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Andrew Victor <andrew@sanpeople.com>, Russell King <rmk@arm.linux.org.uk>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] atmel_serial: Fix break handling
+Message-ID: <20070605140720.4bdf887a@newbox>
+In-Reply-To: <11806398911702-git-send-email-hskinnemoen@atmel.com>
+References: <11806398911702-git-send-email-hskinnemoen@atmel.com>
+Organization: Promwad
+X-Mailer: Sylpheed-Claws 1.9.100cvs93 (GTK+ 2.8.7; i586-alt-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Assp-Whitelisted: Yes
+X-Assp-Envelope-From: ivan.kuten@promwad.com
+X-Assp-Intended-For: hskinnemoen@atmel.com andrew@sanpeople.com
+	rmk@arm.linux.org.uk nicolas.ferre@rfo.atmel.com patrice.vilchez@rfo.atmel.com
+	linux-kernel@vger.kernel.org hskinnemoen@atmel.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - secure.poehali.org
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - promwad.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The pseudo_palette has room for 16 entries only, but in truecolor mode, it
-attempts to write 256.
+On Thu, 31 May 2007 21:31:31 +0200
+Haavard Skinnemoen wrote:
 
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-Acked-by: Tero Roponen <teanropo@jyu.fi>
----
-This fixes the following regression/bug reported as follows:
+> It's been almost a year since the last patch I sent attempting to fix
+> this. Sorry for not following up any sooner.
+> 
+> Anyway, here's a new attempt. It should work even if we miss some
+> interrupts, and it should not break break handling by ignoring the
+> return value from uart_handle_break() as Russell pointed out.
+> 
+> There may be cases which aren't handled well: If you send two breaks
+> with no characters in between and we miss an interrupt on the first
+> one, the driver probably gets a bit confused. I don't see any way to
+> fix this, but the driver should get un-confused upon reception of the
+> next character.
+> 
+> I've tested this with Magic SysRq on ATSTK1000: It works with this
+> patch but not without. Ivan Kuten reported in a different thread that
+> SysRq didn't work on AT91RM9200 and I very much doubt it works on
+> AT91SAM926x.
+> 
+> The break count in /proc/tty/driver/atmel_serial also makes more sense
+> with this patch applied; without it, the break count increments by two
+> every time I send a break.
+> 
+>  drivers/serial/atmel_serial.c |   32 ++++++++++++++++++++++++++++++--
+>  1 files changed, 30 insertions(+), 2 deletions(-)
+> 
 
-Subject    : tty-related oops in latest kernel(s)
-References : http://lkml.org/lkml/2007/5/27/104
-Submitter  : Tero Roponen <teanropo@jyu.fi>
-Status     : problem is being debugged
+Hi Haavard, 
 
-According to Tero, this is also reproducible with 2.6.21.3.
+I tried to test your patch on AT91RM9200 with Magic SysRq sequence, unfortunately without 
+success - SysRq still does not work. You mention "break count increments" where do you check it ? I have 
+cat /proc/tty/driver/atmel_serial 
+serinfo:1.0 driver revision:
+0: uart:ATMEL_SERIAL mmio:0xFEFFF200 irq:1 tx:8554 rx:623 fe:25 RTS|CTS|DTR|DSR|CD|RI
+1: uart:ATMEL_SERIAL mmio:0xFFFC0000 irq:6 tx:0 rx:0 CTS|DSR|CD|RI
+2: uart:ATMEL_SERIAL mmio:0xFFFC4000 irq:7 tx:0 rx:0 RI
+3: uart:ATMEL_SERIAL mmio:0xFFFC8000 irq:8 tx:0 rx:0 DSR|CD|RI
+4: uart:ATMEL_SERIAL mmio:0xFFFCC000 irq:9 tx:0 rx:0 CTS|DSR|CD|RI
 
-Tony
+no any break counter.
 
- drivers/video/neofb.c |   30 ++++++++++++++++--------------
- 1 files changed, 16 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/video/neofb.c b/drivers/video/neofb.c
-index bd30aba..731d7a5 100644
---- a/drivers/video/neofb.c
-+++ b/drivers/video/neofb.c
-@@ -1286,34 +1286,36 @@ static int neofb_setcolreg(u_int regno, 
- 	if (regno >= fb->cmap.len || regno > 255)
- 		return -EINVAL;
- 
--	switch (fb->var.bits_per_pixel) {
--	case 8:
-+	if (fb->var.bits_per_pixel <= 8) {
- 		outb(regno, 0x3c8);
- 
- 		outb(red >> 10, 0x3c9);
- 		outb(green >> 10, 0x3c9);
- 		outb(blue >> 10, 0x3c9);
--		break;
--	case 16:
--		((u32 *) fb->pseudo_palette)[regno] =
-+	} else if (regno < 16) {
-+		switch (fb->var.bits_per_pixel) {
-+		case 16:
-+			((u32 *) fb->pseudo_palette)[regno] =
- 				((red & 0xf800)) | ((green & 0xfc00) >> 5) |
- 				((blue & 0xf800) >> 11);
--		break;
--	case 24:
--		((u32 *) fb->pseudo_palette)[regno] =
-+			break;
-+		case 24:
-+			((u32 *) fb->pseudo_palette)[regno] =
- 				((red & 0xff00) << 8) | ((green & 0xff00)) |
- 				((blue & 0xff00) >> 8);
--		break;
-+			break;
- #ifdef NO_32BIT_SUPPORT_YET
--	case 32:
--		((u32 *) fb->pseudo_palette)[regno] =
-+		case 32:
-+			((u32 *) fb->pseudo_palette)[regno] =
- 				((transp & 0xff00) << 16) | ((red & 0xff00) << 8) |
- 				((green & 0xff00)) | ((blue & 0xff00) >> 8);
--		break;
-+			break;
- #endif
--	default:
--		return 1;
-+		default:
-+			return 1;
-+		}
- 	}
-+
- 	return 0;
- }
- 
+BR,
+Ivan
 
 
 
