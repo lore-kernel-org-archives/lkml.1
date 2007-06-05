@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763458AbXFEIM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932201AbXFEIOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763458AbXFEIM0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 04:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758367AbXFEIMM
+	id S932201AbXFEIOq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 04:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761053AbXFEIOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 04:12:12 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:45756 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752241AbXFEIML (ORCPT
+	Tue, 5 Jun 2007 04:14:33 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:33359 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758367AbXFEIOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 04:12:11 -0400
-To: davem@davemloft.net
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <20070605.005521.28788982.davem@davemloft.net> (message from
-	David Miller on Tue, 05 Jun 2007 00:55:21 -0700 (PDT))
-Subject: Re: [PATCH] fix race in AF_UNIX
-References: <E1Hv980-0006gQ-00@dorka.pomaz.szeredi.hu>
-	<20070605.000247.18308209.davem@davemloft.net>
-	<E1HvTgf-0000sb-00@dorka.pomaz.szeredi.hu> <20070605.005521.28788982.davem@davemloft.net>
-Message-Id: <E1HvU8y-0000xG-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 05 Jun 2007 10:11:56 +0200
+	Tue, 5 Jun 2007 04:14:32 -0400
+Date: Tue, 5 Jun 2007 10:14:07 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.03
+Message-ID: <20070605081407.GA809@osiris.boeblingen.de.ibm.com>
+References: <0a25fd03117c678f17006c5fcefaaed0@pinky>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0a25fd03117c678f17006c5fcefaaed0@pinky>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I just want to win the "who's laziest?" league.  It would take me
-> > about 5 minutes to get the netdev tree and test compile the change.
-> > Of which 5 seconds would be actually updating the patch.  I was
-> > thought it was OK to pass that 5 seconds worth of hard work to you in
-> > order to save the rest ;)
+On Mon, Jun 04, 2007 at 10:46:24AM +0100, Andy Whitcroft wrote:
 > 
-> That tradeoff is fine, if, in return you'll do the rest of the
-> networking subsystem maintainership work I need to to. :-)
+> This version brings a host of changes to cure false positives and
+> bugs detected on patches submitted to lkml and -mm.  It also brings
+> a number of new tests in response to reviews, of particular note:
+> 
+>   - catch use of volatile
 
-Well, I _did_ save you quite a bit of time by tracking down these
-bugs.  That 5 sec of dedication in exchange would have really made me
-feel good ;(
+It will warn on "asm volatile (" which it shouldn't.
 
-Miklos
+>   - report on architecture specific defines being used
+
+We use architecture specific defines to distinguish between 32 bit and
+64 bit code in user space visible header files, since we cannot use
+CONFIG_64BIT. So this will give us false positives as well.
+Maybe don't warn for header files in include/asm-* ?
