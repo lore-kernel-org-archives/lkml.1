@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765125AbXFEOn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbXFEOoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765125AbXFEOn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764204AbXFEOnv
+	id S932323AbXFEOoY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765152AbXFEOoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:43:51 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:46691 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761140AbXFEOnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:43:50 -0400
-Subject: Problems (a bug?) with UINT_MAX from kernel.h
-From: Richard Purdie <richard@openedhand.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 15:42:42 +0100
-Message-Id: <1181054562.6180.77.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jun 2007 10:44:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:32503 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765119AbXFEOn6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 10:43:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=O21ZJ9/U/YI8PiteHJkHq0Vcbk70Pl0LwtcPAG3Ru0z1dl8OHFfncz9W+BI3UgE6cdp70eo8M1Q21YboGF2iilHwbpbv50riSMK0DyT2VG5aXUQeZjrZ3KSda0glWLmN9258Lh4+ubkoEp2BUqfzAzmMo+m64OsMsnfwaObj51U=
+Message-ID: <4665769D.9090808@googlemail.com>
+Date: Tue, 05 Jun 2007 16:43:41 +0200
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <ak@suse.de>,
+       Rodrigo Luiz <troops.of.doom@gmail.com>
+Subject: [1/5] 2.6.22-rc4: known regressions
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kernel uses UINT_MAX defined from kernel.h in a variety of places.
+Hi all,
 
-While looking at the behaviour of the LZO code, I noticed it seemed to
-think an int was 8 bytes large on my 32 bit i386 machine. It isn't but
-why did it think that?
+Here is a list of some known regressions in 2.6.22-rc4.
 
-kernel.h says:
-
-#define INT_MAX		((int)(~0U>>1))
-#define INT_MIN		(-INT_MAX - 1)
-#define UINT_MAX	(~0U)
-#define LONG_MAX	((long)(~0UL>>1))
-#define LONG_MIN	(-LONG_MAX - 1)
-#define ULONG_MAX	(~0UL)
-#define LLONG_MAX	((long long)(~0ULL>>1))
-#define LLONG_MIN	(-LLONG_MAX - 1)
-#define ULLONG_MAX	(~0ULL)
-
-If I try to compile the code fragment below, I see the error:
-
-#define UINT_MAX	(~0U)
-#if (0xffffffffffffffff == UINT_MAX)
-  #error argh
-#endif
-
-I've tested this on several systems with a variety of gcc versions with
-the same result. I've tried various other ways of testing this all with
-the same conclusion, UINT_MAX is wrong.
-
-The *LONG* definitions above should work as gcc is forced to a certain
-type. Where just 0U is specified, I don't think it will work as intended
-as gcc seems to automatically increase the type to fit the value and
-avoid truncation ending up with a long long.
-
-If I change the above to:
-
-/* Handle GCC = 3.2 */
-#if !defined(__INT_MAX__)
-#define INT_MAX		0x7fffffff
-#else
-#define INT_MAX		(__INT_MAX__)
-#endif
-#define INT_MIN		(-INT_MAX - 1)
-#define UINT_MAX	((INT_MAX<<1)+1)
-
-I get the expected result of an int being 4 bytes long. Is there a
-better solution? Its probably better that whats there now but could
-break a machine using gcc 3.2 that doesn't have int size = 4 bytes...
-
-(gcc <= 3.2 doesn't define __INT_MAX__)
-
-Richard
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
 
+
+Unclassified
+
+Subject    : Kernel hang on CMOS_READ
+References : http://lkml.org/lkml/2007/6/3/138
+Submitter  : Rodrigo Luiz <troops.of.doom@gmail.com>
+Status     : Unknown
+
+Subject    : kernel BUG at arch/i386/kernel/cpu/perfctr-watchdog.c:126!
+References : http://lkml.org/lkml/2007/6/3/60
+Submitter  : Udo A. Steinberg <us15@os.inf.tu-dresden.de>
+Status     : Unknown
+
+Subject    : using smp_processor_id() in preemptible, in mtrr_save_state
+References : http://lkml.org/lkml/2007/6/3/38
+Submitter  : Rafael J. Wysocki <rjw@sisk.pl>
+Status     : Unknown
+
+Subject    : Device hang when offlining a CPU due to IRQ misrouting
+References : http://lkml.org/lkml/2007/5/31/419
+Submitter  : Darrick J. Wong <djwong@us.ibm.com>
+Status     : Unknown
+
+Subject    : long freezes on thinkpad t60
+References : http://lkml.org/lkml/2007/5/24/100
+Submitter  : Miklos Szeredi <miklos@szeredi.hu>
+Handled-By : Ingo Molnar <mingo@elte.hu>
+Status     : problem is being debugged
+
+
+
+Regards,
+Michal
+
+--
+"Najbardziej brakowa³o mi twojego milczenia."
+-- Andrzej Sapkowski "Co¶ wiêcej"
