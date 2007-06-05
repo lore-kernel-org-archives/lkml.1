@@ -1,86 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932801AbXFEOzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbXFEO4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932801AbXFEOzc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932732AbXFEOyx
+	id S932821AbXFEO4Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbXFEO4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:54:53 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:49466 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932646AbXFEOyw (ORCPT
+	Tue, 5 Jun 2007 10:56:00 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38014 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932476AbXFEOz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:54:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=K+jjXcaPFhHSRSnCwrxUfAzqvojIdtrhQhveHff0vEcQqlfDOUQATB+rx/3UjzSvFyYI/Z4260jjfbDpVZbDLF7kxkLTVdURhuc6TeemkhNU2dnp5lTjPMBMScBO6u6nT/GnyOX0I4JSrOnF9xwDwLK0aeDPTCByAqqI/bD2ZKc=
-Message-ID: <4665792B.8030005@googlemail.com>
-Date: Tue, 05 Jun 2007 16:54:35 +0200
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 5 Jun 2007 10:55:59 -0400
+From: Russ Anderson <rja@sgi.com>
+Message-Id: <200706051455.l55Etr1N96333810@clink.americas.sgi.com>
+Subject: linux-ia64 build warning messages
+To: tony.luck@intel.com (Luck Tony)
+Date: Tue, 5 Jun 2007 09:55:53 -0500 (CDT)
+Cc: prarit@redhat.com (Prarit Bhargava), clameter@sgi.com (Christoph Lameter),
+       randy.dunlap@oracle.com (Randy Dunlap), dgc@sgi.com (David Chinner),
+       akpm@linux-foundation.org (Andrew Morton),
+       linux-kernel@vger.kernel.org (lkml), linux-ia64@vger.kernel.org,
+       sam@ravnborg.org (Sam Ravnborg)
+In-Reply-To: <617E1C2C70743745A92448908E030B2A01961AFE@scsmsx411.amr.corp.intel.com> from "Luck, Tony" at Jun 01, 2007 01:00:33 AM
+X-Mailer: ELM [version 2.5 PL2]
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Greg KH <greg@kroah.com>,
-       "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>, linux-ide@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@redhat.com>,
-       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
-       "Horst H. von Brand" <vonbrand@inf.utfsm.cl>
-Subject: Re: [2/2] 2.6.22-rc4: known regressions with patches
-References: <46657866.7000108@googlemail.com>
-In-Reply-To: <46657866.7000108@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Tony Luck wrote:
+> 
+> > I used the sn2_defconfig in the tree :)
+> 
+> So there is something odd happening.  Russ complained that he
+> was still seeing several errors from the sn2_defconfig build
+> too when I posted the "last fix" to Len.  But I don't see them
+> when I build.
 
-Here is a list of some known regressions in 2.6.22-rc4
-with patches available.
+An additional data point.  I have a copy of Tony's test tree
+pulled down on March 30th that builds without the warning messages.
+The copy of Tony's test tree pulled down on May 22nd does have
+warning messages.  I'm building both with the same compiler (etc).
+I'm fairly certain a tree I pulled down in April built without 
+warnings.  I've since blown away that tree.
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+The trees were pulled down using 
+cg-clone git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux-2.6.git test
 
+Building the new tree with an older compiler does not make the 
+warnings go away.
 
+Both are built with sn2_defconfig (using all the default options).
+Using the 3/30 sn2_defconfig with the 5/22 tree (and visa-versa)
+does not change the warnings.
 
-PCI
+------------------------------------------------------
+  MODPOST vmlinux
+WARNING: init/built-in.o - Section mismatch: reference to .init.data: from .sdata after 'C.260.15660' (at offset 0x48)
+WARNING: init/built-in.o - Section mismatch: reference to .init.data: from .sdata after 'C.260.15660' (at offset 0x50)
+WARNING: init/built-in.o - Section mismatch: reference to .init.data:ino from .sdata after 'C.260.15660' (at offset 0x58)
+WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.text:cpu_init from .text between 'start_secondary' (at offset 0x498f2) and 'smp_prepare_boot_cpu'
+WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.text:ia64_mca_cmc_vector_setup from .text between 'start_secondary' (at offset 0x49b02) and 'smp_prepare_boot_cpu'
+WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:smp_boot_data from .sdata before 'acpi_irq_model' (at offset -0x0)
+WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:rsvd_region from .sdata between 'ia64_sal' (at offset 0x98) and 'ia64_i_cache_stride_shift'
+WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:rsvd_region from .sdata between 'ia64_sal' (at offset 0xa0) and 'ia64_i_cache_stride_shift'
+WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:smp_boot_data from .sdata between 'cpu.25245' (at offset 0x228) and 'ap_wakeup_vector'
+WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x58) and 'first_time.25893'
+WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x60) and 'first_time.25893'
+WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x78) and 'first_time.25893'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 0x56f82) and 'drain_alien_cache'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 0x57022) and 'drain_alien_cache'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.data:early_node_map from .sdata before 'min_free_kbytes' (at offset -0x0)
+WARNING: mm/built-in.o - Section mismatch: reference to .init.data:early_node_map from .sdata before 'min_free_kbytes' (at offset -0x8)
+WARNING: mm/built-in.o - Section mismatch: reference to .init.data:early_node_map from .sdata before 'min_free_kbytes' (at offset -0x10)
+WARNING: mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hugetlb_infinity' (at offset 0x1d0) and 'slab_early_init'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .sdata between 'hugetlb_infinity' (at offset 0x1d8) and 'slab_early_init'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .sdata between 'hugetlb_infinity' (at offset 0x1e0) and 'slab_early_init'
+WARNING: drivers/built-in.o - Section mismatch: reference to .init.text:sn_sal_console_setup from .data.rel between 'sal_console' (at offset 0x1c78) and 'ioc4_serial_submodule'
+WARNING: drivers/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'scsi_null_device_strs' (at offset 0x8c0) and 'fc_dev_loss_tmo'
+  OBJCOPY arch/ia64/hp/sim/boot/vmlinux.bin
+------------------------------------------------------
 
-Subject    : Oops on 2.6.22-rc2 when unloading the cciss driver
-References : http://lkml.org/lkml/2007/5/24/172
-Submitter  : Mike Miller (OS Dev) <mikem@beardog.cca.cpqcorp.net>
-Patch      : http://lkml.org/lkml/2007/5/31/387
-Status     : patch available
-
-
-
-SATA/PATA
-
-Subject    : libata reset-seq merge broke sata_sil on sh
-References : http://lkml.org/lkml/2007/5/10/63
-Submitter  : Paul Mundt <lethal@linux-sh.org>
-Handled-By : Tejun Heo <htejun@gmail.com>
-Caused-By  : commit 4750def52cb2c21732dda9aa1d43a07db37b0186
-Patch      : http://lkml.org/lkml/2007/5/19/161
-Status     : patch available
-
-
-
-Sparc64
-
-Subject    : arch/sparc64/time.c doesn't compile on Ultra 1 (no PCI)
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8540
-Submitter  : Horst H. von Brand <vonbrand@inf.utfsm.cl>
-Status     : patch available
-
-
-
-Regards,
-Michal
-
---
-"Najbardziej brakowa³o mi twojego milczenia."
--- Andrzej Sapkowski "Co¶ wiêcej"
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
