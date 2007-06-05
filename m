@@ -1,66 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763005AbXFENFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763260AbXFENLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763005AbXFENFc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 09:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbXFENFZ
+	id S1763260AbXFENLX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 09:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758626AbXFENLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 09:05:25 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:5869 "EHLO relay.sw.ru"
+	Tue, 5 Jun 2007 09:11:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:59506 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757373AbXFENFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 09:05:24 -0400
-Message-ID: <46656051.2060207@openvz.org>
-Date: Tue, 05 Jun 2007 17:08:33 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: menage@google.com, Andrew Morton <akpm@linux-foundation.org>, dev@sw.ru,
-       vatsa@in.ibm.com, ebiederm@xmission.com, svaidy@linux.vnet.ibm.com,
-       balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-Subject: Re: [PATCH 1/1] containers: implement nsproxy containers subsystem
-References: <20070604185034.GA17970@sergelap.austin.ibm.com> <4665346F.20200@openvz.org> <20070605121358.GB22230@sergelap.austin.ibm.com>
-In-Reply-To: <20070605121358.GB22230@sergelap.austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1758438AbXFENLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 09:11:15 -0400
+Subject: [PATCH] lguest-fix-divide-error-implement-sched_clock
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200706051201.32137.ak@suse.de>
+References: <20070522223828.GV11115@waste.org>
+	 <200706042012.15915.ak@suse.de>
+	 <1181011737.25878.146.camel@localhost.localdomain>
+	 <200706051201.32137.ak@suse.de>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 23:11:00 +1000
+Message-Id: <1181049060.14054.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting Pavel Emelianov (xemul@openvz.org):
->> Serge E. Hallyn wrote:
->>> >From 190ea72d213393dd1440643b2b87b5b2128dff87 Mon Sep 17 00:00:00 2001
->>> From: Serge E. Hallyn <serue@us.ibm.com>
->>> Date: Mon, 4 Jun 2007 14:18:52 -0400
->>> Subject: [PATCH 1/1] containers: implement nsproxy containers subsystem
->>>
->>> When a task enters a new namespace via a clone() or unshare(), a new
->>> container is created and the task moves into it.  This enables
->> I have a design question.
->>
->> How the child that has a new namespace guesses what id
->> this namespace has in containers?
+On Tue, 2007-06-05 at 12:01 +0200, Andi Kleen wrote:
+> > But TSC is a "required feature", so "cpu_has_tsc" is always true.
 > 
-> parse /proc/$$/container
+> Hmm? It isn't. What makes you think so?
 
-Ok.
+Interestingly it seems to be only in -mm.
 
-> So more likely the parent would have to grab the cloned pid of the
-> child, parse /proc/$$/container, then rename the container.
-
-Child can happen to die before this and we'll have an orphaned
-container. I mean, it will be deletable, but its name will be unknown.
-
-Maybe its better to get the containers id from the pid of new task?
-
-> -serge
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> > How about this patch:
+> > ===
+> > Don't try to disable the TSC: it's a required feature under modern
+> > configurations, so just mark the sched clock unstable which has the
+> > same effect.
 > 
+> No, using the cpuid bit is the correct way. Or better fix lguest to support
+> TSC properly.
+
+I have a patch for a tsc-based clock, but that's a little orthogonal: I
+actually need to override sched_clock.
+
+(I'd really like to do stolen time and everything, but looking at Xen
+it's a lot of code to do right, and noone's asked for it yet).
+
+This time for sure!
+
+===
+In recent -mm kernels, the TSC capability cannot be disabled,
+resulting in a divide by zero error in the normal sched_clock.
+
+The correct fix is to have a special lguest sched_clock
+implementation: this is as simple as it gets.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/lguest/lguest.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+===================================================================
+--- a/drivers/lguest/lguest.c
++++ b/drivers/lguest/lguest.c
+@@ -351,11 +351,18 @@ static void lguest_time_irq(unsigned int
+ 	update_process_times(user_mode_vm(get_irq_regs()));
+ }
+ 
++static u64 sched_clock_base;
+ static void lguest_time_init(void)
+ {
+ 	set_irq_handler(0, lguest_time_irq);
+ 	hcall(LHCALL_TIMER_READ, 0, 0, 0);
++	sched_clock_base = jiffies_64;
+ 	enable_lguest_irq(0);
++}
++
++static unsigned long long lguest_sched_clock(void)
++{
++	return (jiffies_64 - sched_clock_base) * (1000000000 / HZ);
+ }
+ 
+ static void lguest_load_esp0(struct tss_struct *tss,
+@@ -494,6 +501,7 @@ __init void lguest_init(void *boot)
+ 	paravirt_ops.time_init = lguest_time_init;
+ 	paravirt_ops.set_lazy_mode = lguest_lazy_mode;
+ 	paravirt_ops.wbinvd = lguest_wbinvd;
++	paravirt_ops.sched_clock = lguest_sched_clock;
+ 
+ 	hcall(LHCALL_LGUEST_INIT, __pa(&lguest_data), 0, 0);
+ 
+@@ -507,8 +515,6 @@ __init void lguest_init(void *boot)
+ 	cpu_detect(&new_cpu_data);
+ 	/* Math is always hard! */
+ 	new_cpu_data.hard_math = 1;
+-
+-	tsc_disable = 1;
+ 
+ #ifdef CONFIG_X86_MCE
+ 	mce_disabled = 1;
+
+
 
