@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932921AbXFEPAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932962AbXFEPAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932921AbXFEPAH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 11:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932497AbXFEO7w
+	id S932962AbXFEPAh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 11:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932767AbXFEO75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:59:52 -0400
-Received: from raven.upol.cz ([158.194.120.4]:45678 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932290AbXFEO7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:59:51 -0400
-Date: Tue, 5 Jun 2007 17:11:01 +0200
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [kbuild-devel] [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
-Message-ID: <20070605151101.GQ7266@flower.upol.cz>
-References: <20070603204700.GH9240@uranus.ravnborg.org> <20070605073335.GM7266@flower.upol.cz> <20070605081959.GB21991@uranus.ravnborg.org> <20070605133834.GO7266@flower.upol.cz> <20070605141254.GA24722@uranus.ravnborg.org> <20070605145759.GP7266@flower.upol.cz>
-MIME-Version: 1.0
+	Tue, 5 Jun 2007 10:59:57 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4293 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932680AbXFEO74 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 10:59:56 -0400
+Date: Tue, 5 Jun 2007 15:59:46 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, mroos@linux.ee,
+       linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070605145945.GC2572@flint.arm.linux.org.uk>
+Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Christoph Hellwig <hch@infradead.org>,
+	David Miller <davem@davemloft.net>, mroos@linux.ee,
+	linux-kernel@vger.kernel.org
+References: <Pine.SOC.4.64.0706032314590.20033@math> <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org> <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu> <20070605135608.GA31565@havoc.gtf.org> <20070605141714.GA2572@flint.arm.linux.org.uk> <20070605143523.GE31565@havoc.gtf.org> <20070605145149.GB2572@flint.arm.linux.org.uk> <20070605145603.GF31565@havoc.gtf.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070605145759.GP7266@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+In-Reply-To: <20070605145603.GF31565@havoc.gtf.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 04:57:59PM +0200, Oleg Verych wrote:
-[]
-> expand | while read line
-> do case "$line" in
->    ++*) echo "$line";;
->    $p*)	[ ${#line} -gt $w79 ] && : ${long:=line}
-> 	echo "$line" | sed "/^$p/{s_ *\$__;s_^$p$s7${s}_$p${t}_;s_$s7 _${t}_g}"
-> 	;;
->      *) echo "$line";;
->    esac
-> done
-> [ -n "$long" ] && echo "at least one line, wider than $w79 chars, found" 1>&2
+On Tue, Jun 05, 2007 at 10:56:03AM -0400, Jeff Garzik wrote:
+> On Tue, Jun 05, 2007 at 03:51:49PM +0100, Russell King wrote:
+> > On Tue, Jun 05, 2007 at 10:35:23AM -0400, Jeff Garzik wrote:
+> > > 
+> > > BTW, please fix your mailer.  It emits Mail-Followup-To headers that
+> > > hijack everyone on the thread into the To field, breaking the normal
+> > > LKML To/CC standard replying mechanism that has been working for a
+> > > decade.
+> > 
+> > Sorry, I will not.  My local policy (which I have the utmost right to
+> > have) is that I do not wish to be CC'd on responses to replies to my
+> > posts.  Additional useless CC's are a waste of my limited bandwidth
+> > and resources.
+> > 
+> > It's a question of local policy required by local resource limitations.
+> > 
+> > So I give you a choice: you can either have the benefit of me reply and
+> > put up with the follow up header, or I will arrange to never reply to
+> > your messages ever again (which may involve me never reading one again).
+> > Which would you prefer?
 > 
-> -*-
-[]
-> Last -- bark, if there is at least one line longer that w79.
+> Your personal preference is fine with me.
+> 
+> Just stop hijacking -everyone else's- preferences along with it.
+> 
+> A far more community-friendly method that operates within existing email
+> standards is to filter out duplicate message ids on your side.
 
-Well, if test will be in the pipe end, i.e. ... | { while; test lingth; }
-____
+Utterly wrong - you didn't understand the problem.  Please take the time
+to read my email.
 
+It's the fact that I _am_ CC'd on replies, so I get one message from LKML
+one from the original poster, maybe one via another mailing list if it's
+also copied there.  Add that in to the mix of all the other mail hitting
+my MTA and the probability for the machine to exhaust it's limited VM is
+very high.
+
+Give me a way to stop people CC'ing me on replies and I'll happily remove
+the header.  Unfortunately there isn't, so I can't.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
