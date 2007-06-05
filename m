@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932814AbXFEVA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbXFEVAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932814AbXFEVA2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932790AbXFEU7o
+	id S933041AbXFEVAy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 17:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765282AbXFEVAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 16:59:44 -0400
-Received: from mga02.intel.com ([134.134.136.20]:9707 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932780AbXFEU7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 16:59:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,386,1175497200"; 
-   d="scan'208";a="251174329"
-Date: Tue, 5 Jun 2007 13:48:03 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, akpm@osdl.org, ak@suse.de, gregkh@suse.de,
-       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routines for handling pre-allocated pool of objects
-Message-ID: <20070605204802.GB27638@linux-os.sc.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-References: <20070604210242.079459000@askeshav-devel.jf.intel.com> <20070604210644.156875000@askeshav-devel.jf.intel.com> <20070604225714.GM20299@havoc.gtf.org> <20070604230649.GB9948@linux-os.sc.intel.com> <20070604234354.GC31462@havoc.gtf.org> <20070604235105.GA13390@linux-os.sc.intel.com> <20070605202433.GA27638@linux-os.sc.intel.com> <20070605203048.GR31565@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605203048.GR31565@havoc.gtf.org>
-User-Agent: Mutt/1.4.1i
+	Tue, 5 Jun 2007 17:00:41 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:58954 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758706AbXFEVAk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 17:00:40 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Tue, 5 Jun 2007 16:58:57 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] lib:  Replace calls to __get_free_pages() with __get_dma_pages().
+Message-ID: <Pine.LNX.4.64.0706051657350.20029@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 04:30:48PM -0400, Jeff Garzik wrote:
-> On Tue, Jun 05, 2007 at 01:24:33PM -0700, Keshavamurthy, Anil S wrote:
-> >  1 file changed, 65 insertions(+), 19 deletions(-)
-> > 
-> > Index: linux-2.6.22-rc3/lib/respool.c
-> > ===================================================================
-> > --- linux-2.6.22-rc3.orig/lib/respool.c	2007-06-05 12:22:26.000000000 -0700
-> > +++ linux-2.6.22-rc3/lib/respool.c	2007-06-05 12:58:01.000000000 -0700
-> > @@ -67,6 +67,7 @@
-> >  {
-> >  	unsigned long	flags;
-> >  	struct list_head *plist = (struct list_head *)vaddr;
-> > +	bool queue_work = 0;
-> 
-> Seems sane to me.
-Thanks so much.
 
-> 
-> I only have a very minor nit to pick:  naming a variable (queue_work)
-> the same as a public function may cause confusion.
-> 
-> Also, if its a bool you should initialize it to 'true' or 'false'.
-I will address when this patch gets into Andrew's mm tree.
+Replace a couple calls to __get_free_pages() with the corresponding
+calls to __get_dma_pages().
 
-Thanks once again,
-Anil
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
+---
+
+  that's the lot of them.
+
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 10c13ad..8fc38dc 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -201,8 +201,7 @@ swiotlb_late_init_with_default_size(size_t default_size)
+ 	bytes = io_tlb_nslabs << IO_TLB_SHIFT;
+
+ 	while ((SLABS_PER_PAGE << order) > IO_TLB_MIN_SLABS) {
+-		io_tlb_start = (char *)__get_free_pages(GFP_DMA | __GFP_NOWARN,
+-		                                        order);
++		io_tlb_start = (char *)__get_dma_pages(__GFP_NOWARN, order);
+ 		if (io_tlb_start)
+ 			break;
+ 		order--;
+@@ -244,7 +243,7 @@ swiotlb_late_init_with_default_size(size_t default_size)
+ 	/*
+ 	 * Get the overflow emergency buffer
+ 	 */
+-	io_tlb_overflow_buffer = (void *)__get_free_pages(GFP_DMA,
++	io_tlb_overflow_buffer = (void *)__get_dma_pages(0,
+ 	                                          get_order(io_tlb_overflow));
+ 	if (!io_tlb_overflow_buffer)
+ 		goto cleanup4;
+@@ -449,9 +448,8 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	 * instead, or use ZONE_DMA32 (ia64 overloads ZONE_DMA to be a ~32
+ 	 * bit range instead of a 16MB one).
+ 	 */
+-	flags |= GFP_DMA;
+
+-	ret = (void *)__get_free_pages(flags, order);
++	ret = (void *)__get_dma_pages(flags, order);
+ 	if (ret && address_needs_mapping(hwdev, virt_to_bus(ret))) {
+ 		/*
+ 		 * The allocated memory isn't reachable by the device.
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
