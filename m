@@ -1,61 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932680AbXFEOwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932705AbXFEOyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932680AbXFEOwe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932350AbXFEOwB
+	id S932705AbXFEOyW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932395AbXFEOyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:52:01 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4087 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932295AbXFEOv7 (ORCPT
+	Tue, 5 Jun 2007 10:54:15 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:19410 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932302AbXFEOyO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:51:59 -0400
-Date: Tue, 5 Jun 2007 15:51:49 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, mroos@linux.ee,
-       linux-kernel@vger.kernel.org
-Subject: Re: libata & no PCI: dma_[un]map_single undefined
-Message-ID: <20070605145149.GB2572@flint.arm.linux.org.uk>
-Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Christoph Hellwig <hch@infradead.org>,
-	David Miller <davem@davemloft.net>, mroos@linux.ee,
-	linux-kernel@vger.kernel.org
-References: <Pine.SOC.4.64.0706032314590.20033@math> <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org> <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu> <20070605135608.GA31565@havoc.gtf.org> <20070605141714.GA2572@flint.arm.linux.org.uk> <20070605143523.GE31565@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 5 Jun 2007 10:54:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HUAyodyhXOEmpEjhWsbq8JnNHQtuw5XUV8ioV3XvWEG67pNZwrCqzHVDweJNRN6ATXaVgBQn9MMEzeDK1DmcQE4YRoyqWinsE+CiIuc2aRqiNPW3tAVL0o7EFOpOxbVxUivfPvS0VDfHbMwSIkOtWC0EgjtX9jE/iWaxuss5iyc=
+Message-ID: <6101e8c40706050754r499bc6b5ud13359ba6ea7455d@mail.gmail.com>
+Date: Tue, 5 Jun 2007 16:54:13 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [5/5] 2.6.22-rc4: known regressions
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <466576B9.2080203@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070605143523.GE31565@havoc.gtf.org>
-User-Agent: Mutt/1.4.2.1i
+References: <46657407.1000108@googlemail.com> <466576B9.2080203@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 10:35:23AM -0400, Jeff Garzik wrote:
-> 
-> BTW, please fix your mailer.  It emits Mail-Followup-To headers that
-> hijack everyone on the thread into the To field, breaking the normal
-> LKML To/CC standard replying mechanism that has been working for a
-> decade.
+wonderful long list :)
 
-Sorry, I will not.  My local policy (which I have the utmost right to
-have) is that I do not wish to be CC'd on responses to replies to my
-posts.  Additional useless CC's are a waste of my limited bandwidth
-and resources.
+the 2.6.22 is the next unstable developing tree, the 2.7 tree? When
+not, then so be the stabilization kernel and so be 2.6.22-rcX (
+X->1..15 ), and 0 regression.
 
-It's a question of local policy required by local resource limitations.
-
-So I give you a choice: you can either have the benefit of me reply and
-put up with the follow up header, or I will arrange to never reply to
-your messages ever again (which may involve me never reading one again).
-Which would you prefer?
-
-
-rmk - who has regular fights with the OOM killer taking out name and
-mail servers.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+/* sorry for the spelling, but I learn English not. */
