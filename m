@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760431AbXFEATS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760736AbXFEAjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760431AbXFEATS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 20:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbXFEATK
+	id S1760736AbXFEAjt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 20:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758112AbXFEAjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 20:19:10 -0400
-Received: from ozlabs.org ([203.10.76.45]:59826 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756960AbXFEATJ (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 20:19:09 -0400
-Subject: Re: Interesting interaction between lguest and CFS
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       Linux-kernel@vger.kernel.org
-In-Reply-To: <20070604173710.GR11166@waste.org>
-References: <20070604173710.GR11166@waste.org>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 10:18:54 +1000
-Message-Id: <1181002734.25878.56.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jun 2007 20:39:40 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:33734 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752697AbXFEAjj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 20:39:39 -0400
+Date: Mon, 04 Jun 2007 18:38:14 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [RFC 0/4] CONFIG_STABLE to switch off development checks
+In-reply-to: <fa.wiSgrIhkRNkkC7Wh6Bt3BY4z7BM@ifi.uio.no>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, akpm@linux-foundation.org
+Message-id: <4664B076.5000406@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.UBCbBXgIW93M6j2F+d+umQ5+v9I@ifi.uio.no>
+ <fa.iaekQW/Par/E6eIpnL0NjEdCUxc@ifi.uio.no>
+ <fa.2BlkzuhauAATrsG1MYhPMeWMhPM@ifi.uio.no>
+ <fa.o9WA1K75HxwNnBEQDyoQMfWVpiQ@ifi.uio.no>
+ <fa.wiSgrIhkRNkkC7Wh6Bt3BY4z7BM@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-04 at 12:37 -0500, Matt Mackall wrote:
-> With 2.6.22-rc3-mm1, I've got a long-running video transcoding going
-> on. In other windows, I'm compiling, reading email, etc. with no
-> noticeable problems.
+Dave Kleikamp wrote:
+> I'm on Christoph's side here.  I don't think it makes sense for any code
+> to ask to allocate zero bytes of memory and expect valid memory to be
+> returned.
 > 
-> If I fire up lguest and leave it sitting at a shell prompt for a
-> couple moments, when I return to type something at the prompt, it can
-> take 2-3 seconds for my input to echo. Once it starts responding,
-> typing latency disappears. Suspend the other app and the latency
-> disappears.
+> Would a compromise be to return a pointer to some known invalid region?
+> This way the kmalloc(0) call would appear successful to the caller, but
+> any access to the memory would result in an exception.
 
-This sounds like the waker process (nice 19) not getting a chance to
-run.  You can hack around it for the moment by changing "nice(19)" in
-Documentation/lguest/lguest.c to something less aggressive.
+I would think returning 1 as the address would work here, it's not NULL 
+but any access to that page should still oops..
 
-The real solution is to switch to an fd.  Fortunately, I have just such
-a patch.  I am shuffling it forward in my queue now, and will send when
-testing is complete...
-
-Thanks!
-Rusty.
-
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
