@@ -1,294 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760365AbXFESFK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbXFESN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760365AbXFESFK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 14:05:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXFESE6
+	id S1758671AbXFESN0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 14:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbXFESNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 14:04:58 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:17984 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753819AbXFESE5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 14:04:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=fB5Gh59BsWAXQkW1O1Ow10fRFgb1kTlEJls4AOlWmw6gyVuXR4vDC3CQG8u7ZEiwn1lISFDN1yEyRHsHv8nncTBBf8CjgUhfxyIW8wnTwqOh1d35qCJS00vHRxmA3Ph12L5KRfISiq3jK7VM20g7p/vBYALMmCeo5Vm3m4R5fDY=
-Date: Tue, 5 Jun 2007 22:03:35 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
-Subject: [PATCH] UDF: coding style conversion - lindent fixups 2
-Message-ID: <20070605180335.GC8398@cvg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 5 Jun 2007 14:13:16 -0400
+Received: from pat.uio.no ([129.240.10.15]:37218 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753407AbXFESNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 14:13:15 -0400
+Subject: Re: [NFS] [PATCH 2/2] nfs4: on a O_EXCL OPEN make sure the SETATTR
+	sets the fields holding the verifier
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: nfsv4@linux-nfs.org, nfs@lists.sourceforge.net,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070605135659.8f9c2715.jlayton@redhat.com>
+References: <20070605135659.8f9c2715.jlayton@redhat.com>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 14:13:02 -0400
+Message-Id: <1181067182.7033.25.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.091)
+X-UiO-Scanned: 0DEB7E5A86F7C44C1D1ECE506D9DCF5BEEE93540
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 384 total 2189270 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes sources were converted to kernel coding
-style by Lindent for first and then by hands. But some
-messed things were accidentally skipped.
+On Tue, 2007-06-05 at 13:56 -0400, Jeff Layton wrote:
+> The Linux NFS4 client simply skips over the bitmask in an O_EXCL open
+> call and so it doesn't bother to reset any fields that may be holding
+> the verifier. This patch has us save the first two words of the bitmask
+> (which is all the current client has #defines for). The client then
+> later checks this bitmask and turns on the appropriate flags in the
+> sattr->ia_verify field for the following SETATTR call.
+> 
+> This patch only currently checks to see if the server used the atime
+> and mtime slots for the verifier (which is what the Linux server uses
+> for this). I'm not sure of what other fields the server could
+> reasonably use, but adding checks for others should be trivial.
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> 
+> diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+> index 8e46e3e..34ddd66 100644
+> --- a/fs/nfs/nfs4proc.c
+> +++ b/fs/nfs/nfs4proc.c
+> @@ -955,6 +955,22 @@ static struct nfs4_state *nfs4_open_delegated(struct inode *inode, int flags, st
+>  }
+>  
+>  /*
+> + * on an EXCLUSIVE create, the server should send back a bitmask with FATTR4-*
+> + * fields corresponding to attributes that were used to store the verifier.
+> + * Make sure we clobber those fields in the later setattr call
+> + */
+> +static inline void nfs4_exclusive_attrset (struct nfs4_opendata *opendata, struct iattr *sattr)
+> +{
+> +	if ((opendata->o_res.attrset[1] & FATTR4_WORD1_TIME_ACCESS) &&
+> +	    !(sattr->ia_valid & ATTR_ATIME_SET))
+> +		sattr->ia_valid |= ATTR_ATIME;
+> +
+> +	if ((opendata->o_res.attrset[1] & FATTR4_WORD1_TIME_MODIFY) &&
+> +	    !(sattr->ia_valid & ATTR_MTIME_SET))
+> +		sattr->ia_valid |= ATTR_MTIME;
+> +}
+> +
+> +/*
+>   * Returns a referenced nfs4_state
+>   */
+>  static int _nfs4_do_open(struct inode *dir, struct dentry *dentry, int flags, struct iattr *sattr, struct rpc_cred *cred, struct nfs4_state **res)
+> @@ -985,6 +1001,9 @@ static int _nfs4_do_open(struct inode *dir, struct dentry *dentry, int flags, st
+>  	if (status != 0)
+>  		goto err_opendata_free;
+>  
+> +	if (opendata->o_arg.open_flags & O_EXCL)
+> +		nfs4_exclusive_attrset(opendata, sattr);
+> +
+>  	status = -ENOMEM;
+>  	state = nfs4_opendata_to_nfs4_state(opendata);
+>  	if (state == NULL)
+> @@ -1787,6 +1806,7 @@ nfs4_proc_create(struct inode *dir, struct dentry *dentry, struct iattr *sattr,
+>  		status = nfs4_do_setattr(state->inode, &fattr, sattr, state);
+>  		if (status == 0)
+>  			nfs_setattr_update_inode(state->inode, sattr);
+> +		nfs_refresh_inode(state->inode, &fattr);
+                  ^^^^ should be nfs_post_op_update_inode() to ensure
+that the attribute cache gets invalidated if the server fails to return
+the post-op attributes.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
-Andrew, the patch is incremental over
-- udf-coding-style-conversion-lindent.patch
-- udf-coding-style-conversion-lindent-fixups.patch
+>  	}
+>  	if (status == 0 && nd != NULL && (nd->flags & LOOKUP_OPEN))
+>  		status = nfs4_intent_set_file(nd, dentry, state);
+> diff --git a/fs/nfs/nfs4xdr.c b/fs/nfs/nfs4xdr.c
+> index 4eb8a59..b281c83 100644
+> --- a/fs/nfs/nfs4xdr.c
+> +++ b/fs/nfs/nfs4xdr.c
+> @@ -3313,7 +3313,7 @@ static int decode_delegation(struct xdr_stream *xdr, struct nfs_openres *res)
+>  static int decode_open(struct xdr_stream *xdr, struct nfs_openres *res)
+>  {
+>          __be32 *p;
+> -        uint32_t bmlen;
+> +        uint32_t savewords, bmlen, i;
+>          int status;
+>  
+>          status = decode_op_hdr(xdr, OP_OPEN);
+> @@ -3331,7 +3331,15 @@ static int decode_open(struct xdr_stream *xdr, struct nfs_openres *res)
+>                  goto xdr_error;
+>  
+>          READ_BUF(bmlen << 2);
+> -        p += bmlen;
+> +
+> +	savewords = bmlen > NFS_OPENRES_ATTRSET_WORDS ?
+> +			NFS_OPENRES_ATTRSET_WORDS : bmlen;
+                      ^^^^ min_t(bmlen, NFS_OPENRES_ATTRSET_WORDS, uint32_t);
+> +
+> +	for (i = 0; i < savewords; ++i) 
+> +		READ32(res->attrset[i]);
+> +
+> +	p += (bmlen - savewords);
+> +
+>  	return decode_delegation(xdr, res);
+>  xdr_error:
+>  	dprintk("%s: Bitmap too large! Length = %u\n", __FUNCTION__, bmlen);
+> diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
+> index f8c55e5..f050a27 100644
+> --- a/include/linux/nfs_xdr.h
+> +++ b/include/linux/nfs_xdr.h
+> @@ -133,6 +133,7 @@ struct nfs_openargs {
+>  	__u32			claim;
+>  };
+>  
+> +#define NFS_OPENRES_ATTRSET_WORDS	2
 
-And there is still a bug in UDF system concerned to
-deadlock on inode being dropped. I'm working on it.
+   Could you rename this to NFS4_BITMAP_SIZE and put it into
+include/linux/nfs4.h, please.
 
- fs/udf/inode.c    |   14 ++++---
- fs/udf/truncate.c |  109 ++++++++++++++++++-----------------------------------
- 2 files changed, 45 insertions(+), 78 deletions(-)
+>  struct nfs_openres {
+>  	nfs4_stateid            stateid;
+>  	struct nfs_fh           fh;
+> @@ -145,6 +146,7 @@ struct nfs_openres {
+>  	nfs4_stateid		delegation;
+>  	__u32			do_recall;
+>  	__u64			maxsize;
+> +	__u32			attrset[NFS_OPENRES_ATTRSET_WORDS];
+>  };
+>  
+>  /*
+> 
+> -------------------------------------------------------------------------
+> This SF.net email is sponsored by DB2 Express
+> Download DB2 Express C - the FREE version of DB2 express and take
+> control of your XML. No limits. Just data. Click to get it now.
+> http://sourceforge.net/powerbar/db2/
+> _______________________________________________
+> NFS maillist  -  NFS@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/nfs
 
-diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-index 5c8f812..9fcd76c 100644
---- a/fs/udf/inode.c
-+++ b/fs/udf/inode.c
-@@ -1098,7 +1098,8 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
- 			make_bad_inode(inode);
- 			return;
- 		}
--		memcpy(UDF_I_DATA(inode), bh->b_data + sizeof(struct extendedFileEntry), inode->i_sb->s_blocksize - sizeof(struct extendedFileEntry));
-+		memcpy(UDF_I_DATA(inode), bh->b_data + sizeof(struct extendedFileEntry),
-+		       inode->i_sb->s_blocksize - sizeof(struct extendedFileEntry));
- 	} else if (le16_to_cpu(fe->descTag.tagIdent) == TAG_IDENT_FE) {
- 		UDF_I_EFE(inode) = 0;
- 		UDF_I_USE(inode) = 0;
-@@ -1800,7 +1801,8 @@ int8_t udf_current_aext(struct inode * inode, struct extent_position * epos,
- 		if (!epos->offset)
- 			epos->offset = sizeof(struct allocExtDesc);
- 		ptr = epos->bh->b_data + epos->offset;
--		alen = sizeof(struct allocExtDesc) + le32_to_cpu(((struct allocExtDesc *)epos->bh->b_data)->lengthAllocDescs);
-+		alen = sizeof(struct allocExtDesc) +
-+			le32_to_cpu(((struct allocExtDesc *)epos->bh->b_data)->lengthAllocDescs);
- 	}
- 
- 	switch (UDF_I_ALLOCTYPE(inode)) {
-@@ -1827,9 +1829,8 @@ int8_t udf_current_aext(struct inode * inode, struct extent_position * epos,
- 	return etype;
- }
- 
--static int8_t
--udf_insert_aext(struct inode *inode, struct extent_position epos,
--		kernel_lb_addr neloc, uint32_t nelen)
-+static int8_t udf_insert_aext(struct inode *inode, struct extent_position epos,
-+			      kernel_lb_addr neloc, uint32_t nelen)
- {
- 	kernel_lb_addr oeloc;
- 	uint32_t oelen;
-@@ -1913,7 +1914,8 @@ int8_t udf_delete_aext(struct inode * inode, struct extent_position epos,
- 			aed = (struct allocExtDesc *)oepos.bh->b_data;
- 			aed->lengthAllocDescs =
- 				cpu_to_le32(le32_to_cpu(aed->lengthAllocDescs) - adsize);
--			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) || UDF_SB_UDFREV(inode->i_sb) >= 0x0201)
-+			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
-+			    UDF_SB_UDFREV(inode->i_sb) >= 0x0201)
- 				udf_update_tag(oepos.bh->b_data, epos.offset - adsize);
- 			else
- 				udf_update_tag(oepos.bh->b_data, sizeof(struct allocExtDesc));
-diff --git a/fs/udf/truncate.c b/fs/udf/truncate.c
-index cf562f5..b1655f2 100644
---- a/fs/udf/truncate.c
-+++ b/fs/udf/truncate.c
-@@ -33,12 +33,10 @@ static void extent_trunc(struct inode *inode, struct extent_position *epos,
- 			 uint32_t nelen)
- {
- 	kernel_lb_addr neloc = {};
--	int last_block =
--	    (elen + inode->i_sb->s_blocksize -
--	     1) >> inode->i_sb->s_blocksize_bits;
--	int first_block =
--	    (nelen + inode->i_sb->s_blocksize -
--	     1) >> inode->i_sb->s_blocksize_bits;
-+	int last_block = (elen + inode->i_sb->s_blocksize - 1) >>
-+		inode->i_sb->s_blocksize_bits;
-+	int first_block = (nelen + inode->i_sb->s_blocksize - 1) >>
-+		inode->i_sb->s_blocksize_bits;
- 
- 	if (nelen) {
- 		if (etype == (EXT_NOT_RECORDED_ALLOCATED >> 30)) {
-@@ -154,16 +152,16 @@ void udf_discard_prealloc(struct inode *inode)
- 		extent_trunc(inode, &epos, eloc, etype, elen, 0);
- 		if (!epos.bh) {
- 			UDF_I_LENALLOC(inode) =
--			    epos.offset - udf_file_entry_alloc_offset(inode);
-+				epos.offset - udf_file_entry_alloc_offset(inode);
- 			mark_inode_dirty(inode);
- 		} else {
- 			struct allocExtDesc *aed =
--			    (struct allocExtDesc *)(epos.bh->b_data);
-+				(struct allocExtDesc *)(epos.bh->b_data);
- 			aed->lengthAllocDescs =
--			    cpu_to_le32(epos.offset -
--					sizeof(struct allocExtDesc));
--			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT)
--			    || UDF_SB_UDFREV(inode->i_sb) >= 0x0201)
-+				cpu_to_le32(epos.offset -
-+					    sizeof(struct allocExtDesc));
-+			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
-+			    UDF_SB_UDFREV(inode->i_sb) >= 0x0201)
- 				udf_update_tag(epos.bh->b_data, epos.offset);
- 			else
- 				udf_update_tag(epos.bh->b_data,
-@@ -181,7 +179,7 @@ void udf_discard_prealloc(struct inode *inode)
- void udf_truncate_extents(struct inode *inode)
- {
- 	struct extent_position epos;
--	kernel_lb_addr eloc, neloc = { 0, 0 };
-+	kernel_lb_addr eloc, neloc = {};
- 	uint32_t elen, nelen = 0, indirect_ext_len = 0, lenalloc;
- 	int8_t etype;
- 	struct super_block *sb = inode->i_sb;
-@@ -197,9 +195,8 @@ void udf_truncate_extents(struct inode *inode)
- 		BUG();
- 
- 	etype = inode_bmap(inode, first_block, &epos, &eloc, &elen, &offset);
--	byte_offset =
--	    (offset << sb->s_blocksize_bits) +
--	    (inode->i_size & (sb->s_blocksize - 1));
-+	byte_offset = (offset << sb->s_blocksize_bits) +
-+		(inode->i_size & (sb->s_blocksize - 1));
- 	if (etype != -1) {
- 		epos.offset -= adsize;
- 		extent_trunc(inode, &epos, eloc, etype, elen, byte_offset);
-@@ -214,9 +211,7 @@ void udf_truncate_extents(struct inode *inode)
- 		else
- 			lenalloc -= sizeof(struct allocExtDesc);
- 
--		while ((etype =
--			udf_current_aext(inode, &epos, &eloc, &elen,
--					 0)) != -1) {
-+		while ((etype = udf_current_aext(inode, &epos, &eloc, &elen, 0)) != -1) {
- 			if (etype == (EXT_NEXT_EXTENT_ALLOCDECS >> 30)) {
- 				udf_write_aext(inode, &epos, neloc, nelen, 0);
- 				if (indirect_ext_len) {
-@@ -228,52 +223,35 @@ void udf_truncate_extents(struct inode *inode)
- 							0, indirect_ext_len);
- 				} else {
- 					if (!epos.bh) {
--						UDF_I_LENALLOC(inode) =
--						    lenalloc;
-+						UDF_I_LENALLOC(inode) = lenalloc;
- 						mark_inode_dirty(inode);
- 					} else {
- 						struct allocExtDesc *aed =
--						    (struct allocExtDesc
--						     *)(epos.bh->b_data);
-+							(struct allocExtDesc *)(epos.bh->b_data);
- 						aed->lengthAllocDescs =
- 						    cpu_to_le32(lenalloc);
--						if (!UDF_QUERY_FLAG
--						    (sb, UDF_FLAG_STRICT)
--						    || UDF_SB_UDFREV(sb) >=
--						    0x0201)
--							udf_update_tag(epos.bh->
--								       b_data,
--								       lenalloc
--								       +
--								       sizeof
--								       (struct
--									allocExtDesc));
-+						if (!UDF_QUERY_FLAG(sb, UDF_FLAG_STRICT) ||
-+						    UDF_SB_UDFREV(sb) >= 0x0201)
-+							udf_update_tag(epos.bh->b_data,
-+								       lenalloc +
-+								       sizeof(struct allocExtDesc));
- 						else
--							udf_update_tag(epos.bh->
--								       b_data,
--								       sizeof
--								       (struct
--									allocExtDesc));
--						mark_buffer_dirty_inode(epos.bh,
--									inode);
-+							udf_update_tag(epos.bh->b_data,
-+								       sizeof(struct allocExtDesc));
-+						mark_buffer_dirty_inode(epos.bh, inode);
- 					}
- 				}
- 				brelse(epos.bh);
- 				epos.offset = sizeof(struct allocExtDesc);
- 				epos.block = eloc;
--				epos.bh =
--				    udf_tread(sb,
--					      udf_get_lb_pblock(sb, eloc, 0));
-+				epos.bh = udf_tread(sb, udf_get_lb_pblock(sb, eloc, 0));
- 				if (elen)
--					indirect_ext_len = (elen +
--							    sb->s_blocksize -
--							    1) >> sb->
--					    s_blocksize_bits;
-+					indirect_ext_len = (elen + sb->s_blocksize -1) >>
-+						sb->s_blocksize_bits;
- 				else
- 					indirect_ext_len = 1;
- 			} else {
--				extent_trunc(inode, &epos, eloc, etype, elen,
--					     0);
-+				extent_trunc(inode, &epos, eloc, etype, elen, 0);
- 				epos.offset += adsize;
- 			}
- 		}
-@@ -291,16 +269,13 @@ void udf_truncate_extents(struct inode *inode)
- 				struct allocExtDesc *aed =
- 				    (struct allocExtDesc *)(epos.bh->b_data);
- 				aed->lengthAllocDescs = cpu_to_le32(lenalloc);
--				if (!UDF_QUERY_FLAG(sb, UDF_FLAG_STRICT)
--				    || UDF_SB_UDFREV(sb) >= 0x0201)
-+				if (!UDF_QUERY_FLAG(sb, UDF_FLAG_STRICT) ||
-+				    UDF_SB_UDFREV(sb) >= 0x0201)
- 					udf_update_tag(epos.bh->b_data,
--						       lenalloc +
--						       sizeof(struct
--							      allocExtDesc));
-+						       lenalloc + sizeof(struct allocExtDesc));
- 				else
- 					udf_update_tag(epos.bh->b_data,
--						       sizeof(struct
--							      allocExtDesc));
-+						       sizeof(struct allocExtDesc));
- 				mark_buffer_dirty_inode(epos.bh, inode);
- 			}
- 		}
-@@ -313,21 +288,14 @@ void udf_truncate_extents(struct inode *inode)
- 			 *  no extent above inode->i_size => truncate is
- 			 *  extending the file by 'offset' blocks.
- 			 */
--			if ((!epos.bh
--			     && epos.offset ==
--			     udf_file_entry_alloc_offset(inode)) || (epos.bh
--								     && epos.
--								     offset ==
--								     sizeof
--								     (struct
--								      allocExtDesc)))
--			{
-+			if ((!epos.bh &&
-+			     epos.offset == udf_file_entry_alloc_offset(inode)) ||
-+			    (epos.bh && epos.offset == sizeof(struct allocExtDesc))) {
- 				/* File has no extents at all or has empty last
- 				 * indirect extent! Create a fake extent... */
- 				extent.extLocation.logicalBlockNum = 0;
- 				extent.extLocation.partitionReferenceNum = 0;
--				extent.extLength =
--				    EXT_NOT_RECORDED_NOT_ALLOCATED;
-+				extent.extLength = EXT_NOT_RECORDED_NOT_ALLOCATED;
- 			} else {
- 				epos.offset -= adsize;
- 				etype = udf_next_aext(inode, &epos,
-@@ -336,10 +304,7 @@ void udf_truncate_extents(struct inode *inode)
- 				extent.extLength |= etype << 30;
- 			}
- 			udf_extend_file(inode, &epos, &extent,
--					offset +
--					((inode->
--					  i_size & (sb->s_blocksize - 1)) !=
--					 0));
-+					offset + ((inode->i_size & (sb->s_blocksize - 1)) != 0));
- 		}
- 	}
- 	UDF_I_LENEXTENTS(inode) = inode->i_size;
