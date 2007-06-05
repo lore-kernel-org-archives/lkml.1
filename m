@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932269AbXFEITl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbXFEIXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932269AbXFEITl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 04:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761054AbXFEITL
+	id S932293AbXFEIXj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 04:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbXFEIXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 04:19:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45103
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751661AbXFEITH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 04:19:07 -0400
-Date: Tue, 05 Jun 2007 01:19:22 -0700 (PDT)
-Message-Id: <20070605.011922.102574871.davem@davemloft.net>
-To: miklos@szeredi.hu
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix race in AF_UNIX
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <E1HvU8y-0000xG-00@dorka.pomaz.szeredi.hu>
-References: <E1HvTgf-0000sb-00@dorka.pomaz.szeredi.hu>
-	<20070605.005521.28788982.davem@davemloft.net>
-	<E1HvU8y-0000xG-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 5 Jun 2007 04:23:32 -0400
+Received: from smtp24.orange.fr ([193.252.22.25]:48047 "EHLO smtp24.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754699AbXFEIXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 04:23:30 -0400
+X-ME-UUID: 20070605081552499.79F641C00093@mwinf2458.orange.fr
+Subject: Re: A kexec approach to hibernation
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: nigel@nigel.suspend2.net
+Cc: Jeremy Maitin-Shepard <jmaitins@andrew.cmu.edu>,
+       Pavel Machek <pavel@ucw.cz>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>
+In-Reply-To: <1180996586.4356.65.camel@nigel.suspend2.net>
+References: <878xb3l888.fsf@jbms.ath.cx> <200706020114.37245.rjw@sisk.pl>
+	 <87odjz9qo9.fsf@jbms.ath.cx> <200706020233.44509.rjw@sisk.pl>
+	 <87k5un9l4n.fsf@jbms.ath.cx> <20070604104621.GB4405@elf.ucw.cz>
+	 <20070604220910.GB2515@andrew.cmu.edu>
+	 <1180996586.4356.65.camel@nigel.suspend2.net>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 10:15:41 +0200
+Message-Id: <1181031341.6863.164.camel@frg-rhel40-em64t-04>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 05 Jun 2007 10:11:56 +0200
+On Tue, 2007-06-05 at 08:36 +1000, Nigel Cunningham wrote:
+> I spent some time, last I think, seriously considering this approach.
+> The more I thought about the details, the more I realised that it wasn't
+> a viable approach. As I said before, it does indeed sound like a dream
+> at first, but once you get into the details, it becomes more and more of
+> a nightmare.
 
-> > > I just want to win the "who's laziest?" league.  It would take me
-> > > about 5 minutes to get the netdev tree and test compile the change.
-> > > Of which 5 seconds would be actually updating the patch.  I was
-> > > thought it was OK to pass that 5 seconds worth of hard work to you in
-> > > order to save the rest ;)
-> > 
-> > That tradeoff is fine, if, in return you'll do the rest of the
-> > networking subsystem maintainership work I need to to. :-)
-> 
-> Well, I _did_ save you quite a bit of time by tracking down these
-> bugs.  That 5 sec of dedication in exchange would have really made me
-> feel good ;(
+>From very far, it looks like apm suspend (i.e. an "external" system
+taking control of the computer for hibernation and resuming).
+FWIW, on my old laptop apm beats any kernel solution hands down in terms
+of speed and robustness. Not that this means anything for kexec-suspend.
 
-The only reason I can process as many patches as I can every day is
-that I depend upon the end-nodes (that's you) doing most of the
-time intensive work so that I can concentrate on reviewing patches
-for correctness and proper implementation.
+	Xav
 
-In any event, thanks for respinning the patch, it's late here so
-I'll review it tomorrow.
 
