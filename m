@@ -1,98 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763729AbXFENMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763223AbXFENRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763729AbXFENMR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 09:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758872AbXFENME
+	id S1763223AbXFENRQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 09:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757734AbXFENRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 09:12:04 -0400
-Received: from spatial.ca ([66.11.172.77]:14116 "EHLO fawkes.spatial.ca"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757061AbXFENMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 09:12:02 -0400
-Message-ID: <46656120.9020103@spatial.ca>
-Date: Tue, 05 Jun 2007 09:12:00 -0400
-From: Tom Moore <tmoore@spatial.ca>
-Reply-To: tmoore@spatial.ca
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Tue, 5 Jun 2007 09:17:03 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50275 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756484AbXFENRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 09:17:01 -0400
+Date: Tue, 5 Jun 2007 08:16:55 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, menage@google.com,
+       Andrew Morton <akpm@linux-foundation.org>, dev@sw.ru, vatsa@in.ibm.com,
+       ebiederm@xmission.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+       pj@sgi.com, cpw@sgi.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       mbligh@google.com, rohitseth@google.com, devel@openvz.org
+Subject: Re: [PATCH 1/1] containers: implement nsproxy containers subsystem
+Message-ID: <20070605131655.GA31663@sergelap.austin.ibm.com>
+References: <20070604185034.GA17970@sergelap.austin.ibm.com> <4665346F.20200@openvz.org> <20070605121358.GB22230@sergelap.austin.ibm.com> <46656051.2060207@openvz.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 4Gb ram not showing up
-References: <46642C60.209@spatial.ca> <20070604191052.GD10008@csclub.uwaterloo.ca> <46646BF2.9020705@spatial.ca> <20070604222840.GC10208@animx.eu.org>
-In-Reply-To: <20070604222840.GC10208@animx.eu.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Sanitizer: Advosys mail filter
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46656051.2060207@openvz.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Pavel Emelianov (xemul@openvz.org):
+> Serge E. Hallyn wrote:
+> > Quoting Pavel Emelianov (xemul@openvz.org):
+> >> Serge E. Hallyn wrote:
+> >>> >From 190ea72d213393dd1440643b2b87b5b2128dff87 Mon Sep 17 00:00:00 2001
+> >>> From: Serge E. Hallyn <serue@us.ibm.com>
+> >>> Date: Mon, 4 Jun 2007 14:18:52 -0400
+> >>> Subject: [PATCH 1/1] containers: implement nsproxy containers subsystem
+> >>>
+> >>> When a task enters a new namespace via a clone() or unshare(), a new
+> >>> container is created and the task moves into it.  This enables
+> >> I have a design question.
+> >>
+> >> How the child that has a new namespace guesses what id
+> >> this namespace has in containers?
+> > 
+> > parse /proc/$$/container
+> 
+> Ok.
+> 
+> > So more likely the parent would have to grab the cloned pid of the
+> > child, parse /proc/$$/container, then rename the container.
+> 
+> Child can happen to die before this and we'll have an orphaned
+> container. I mean, it will be deletable, but its name will be unknown.
 
+Can we address that with a release_agent?
 
-Wakko Warner wrote:
-> Tom Moore wrote:
->   
->> Thank you for the reply back.  Your answer makes perfect sense to me, 
->> and it is what I had suspected but was not sure about.  The math seems 
->> to indicate that 4Gb of ram plus 1Gb of PCI address space equals 5Gb of 
->> memory space.  So it does sound like I should have a larger kernel model.
->>
->> What confused me the most (and still does), is the help message string 
->> that is presented for the CONFIG_HIGHMEM4G option:
->>  "Select this if you have a 32-bit processor and between 1 and 4 
->> gigabytes of physical RAM."
->>     
->
-> 4 is not between 1 and 4.
->   
-This idiomatic phrase suggests to me that it applies when ram is >= 1Gb 
-and <= 4Gb.  The fact that we interpret it differently indicates that it 
-could be more clearly stated.  If your interpretation is correct, then 
-what would this mean when a machine had 3.5Gb of ram installed?
->   
->> Well that sounds like the amount of memory that I have, so that is what 
->> I selected.
->>     
->
-> You should select CONFIG_HIGHMEM64G.
->
->   
->> Also, although I know what PAE stands for, I don't know how to select it 
->> when building a kernel.  Would I get this from the CONFIG_HIGHMEM64G 
->> option?  The help text for that says:
->>  "Select this if you have a 32-bit processor and more than 4 gigabytes 
->> of physical RAM."
->>     
->
-> Personally, I feel the wording should say:
-> Select this if you have a 32-bit processor and 4 or more gigabytes of
-> physical RAM.
->
-> It may not hurt to say 3 or more, but I'm not that familiar with x86
-> hardware in regards to memory.
->
->   
-Ok, so it appears that this one is wrong also.  If someone could explain 
-the rules that apply, I would be happy to prepare a patch to the Kconfig 
-script.  I don't consider myself to be completely stupid, and if the 
-help text was a bit more clear I wouldn't be asking these questions.  
-I'm sure that other pilgrims will follow along later with the same 
-questions.
->> This does not sound like it applies to my hardware.  There is something 
->> wrong with my understanding, or with these message strings.  I am still 
->> confused.
->>     
->
-> It does.
->
-> Here's my system (4gb of memory):
->              total       used       free     shared    buffers     cached
-> Mem:       3619996    3289352     330644          0     469764    2025416
-> -/+ buffers/cache:     794172    2825824
-> Swap:            0          0          0
->
-> I know it says 3.6gb of memory, but 4gb is installed.  I had 5gb in this
-> machine and I saw all 5gb.  This is a 32-bit dual xeon (12gb max memory)
->
-> I would be interested to know where the last 400mb of memory went.
->
->   
+Or, the program which did the unshare() (or the fn which was cloned())
+can print out it's /proc/getpid()/container before it (optionally resets
+stdout and) executes the actual program to be run in the container.
 
+> Maybe its better to get the containers id from the pid of new task?
+
+Hmm, that seems reasonable.  In fact I like it.
+
+Good idea, thanks.  I think I'll go ahead and implement that.
+
+-serge
