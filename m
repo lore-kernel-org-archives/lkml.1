@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbXFEVwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933804AbXFEVxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933751AbXFEVwX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933384AbXFEVvF
+	id S933804AbXFEVxP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 17:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932218AbXFEVw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 17:51:05 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54685 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933729AbXFEVvC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 17:51:02 -0400
-Date: Tue, 5 Jun 2007 23:51:06 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] fs/proc/base.c: make a struct static
-Message-ID: <20070605215106.GL5500@stusta.de>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 5 Jun 2007 17:52:58 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:45004 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765558AbXFEVw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 17:52:58 -0400
+Date: Tue, 5 Jun 2007 17:52:56 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: akpm@linux-foundation.org, david@dgreaves.com, htejun@gmail.com,
+       jean.luc.coulon@gmail.com, jgarzik@pobox.com,
+       michal.k.k.piotrowski@gmail.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.22-rc4 - sata_promise regression since -rc3
+Message-ID: <20070605215256.GT31565@havoc.gtf.org>
+References: <200706052131.l55LVkYN000191@harpo.it.uu.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070530235823.793f00d9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200706052131.l55LVkYN000191@harpo.it.uu.se>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global struct proc_pid_sched_operations 
-static.
+On Tue, Jun 05, 2007 at 11:31:46PM +0200, Mikael Pettersson wrote:
+> I can easily reproduce the problem in 2.6.22-rc4. There are no
+> sata_promise changes between rc3 and rc4, but Tejun's libata
+> polling SETXFER change was included in rc4. Reverting it makes
+> sata_promise work again for me.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Ugh.
 
----
---- linux-2.6.22-rc3-mm1/fs/proc/base.c.old	2007-06-05 22:01:08.000000000 +0200
-+++ linux-2.6.22-rc3-mm1/fs/proc/base.c	2007-06-05 22:41:57.000000000 +0200
-@@ -952,7 +952,7 @@
- 	return ret;
- }
- 
--const struct file_operations proc_pid_sched_operations = {
-+static const struct file_operations proc_pid_sched_operations = {
- 	.open		= sched_open,
- 	.read		= seq_read,
- 	.write		= sched_write,
+
+> I suspect that sata_promise.c:pdc_interrupt() should detect
+> a qc w/ ATA_TFLAG_POLLING, treat the interrupt as spurious,
+> and just call ata_chk_status(qc), similar to how sata_inic162x.c,
+> sata_nv.c, sata_sil.c, and sata_vsc.c do things.
+
+Yes, highly likely.
+
+SFF-like controllers (and in this case, Promise is included in that
+list) with their own interrupt handlers need their own polling handling
+code.
+
+	Jeff
+
+
+
