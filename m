@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932685AbXFEVB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXFEVBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932685AbXFEVB0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933048AbXFEVA4
+	id S933159AbXFEVBu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 17:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbXFEVBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 17:00:56 -0400
-Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:49398 "EHLO
-	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933037AbXFEVAy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 17:00:54 -0400
-Date: Tue, 5 Jun 2007 17:00:51 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Eric Paris <eparis@redhat.com>
-cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       Alan Cox <alan@redhat.com>, drepper@redhat.com, roland@redhat.com,
-       arjan@infradead.org, mingo@elte.hu, viro@zeniv.linux.org.uk,
-       chrisw@redhat.com, sds@tycho.nsa.gov, sgrubb@redhat.com
-Subject: Re: [PATCH] Protection for exploiting null dereference using mmap
-In-Reply-To: <1181075666.3978.31.camel@localhost.localdomain>
-Message-ID: <Line.LNX.4.64.0706051658170.23379@d.namei>
-References: <1180561713.3633.27.camel@dhcp231-215.rdu.redhat.com> 
- <20070603205653.GE25869@devserv.devel.redhat.com> 
- <1180964306.14220.34.camel@moss-spartans.epoch.ncsc.mil>
- <1181075666.3978.31.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 5 Jun 2007 17:01:09 -0400
+Received: from minus.inr.ac.ru ([194.67.69.97]:42882 "HELO ms2.inr.ac.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S932891AbXFEVBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 17:01:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ms2.inr.ac.ru;
+  b=nfvifJLg3Zm0cSt82E4bevsTJAsQjSccJllITdFRBV6mrRr7WcFvnwmyLWsy3jDowQqkyp5TkPslxqnj1hTeeXXE3YvT7jFuPMhpetDB1+npIoiji9rfcVBhjdFKfoMqCvT2/+iBNXcWzGqtii2LEI3rmdIf+TUSJbztoQZ3reA=;
+Date: Wed, 6 Jun 2007 01:00:28 +0400
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [RFC][PATCH] muptiple bugs in PI futexes
+Message-ID: <20070605210028.GA10084@ms2.inr.ac.ru>
+References: <20070507144351.GA12302@ms2.inr.ac.ru> <20070523072609.GC6859@elte.hu> <20070523115159.GA30251@ms2.inr.ac.ru> <1181060711.4404.114.camel@chaos> <20070605173949.GA27618@ms2.inr.ac.ru> <1181069306.4404.145.camel@chaos> <1181070953.4404.149.camel@chaos>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181070953.4404.149.camel@chaos>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jun 2007, Eric Paris wrote:
+Hello!
 
-> +extern int mmap_protect_memory;
+> We actually need to do something about this, as we might loop for ever
+> there. The robust cleanup code can fail (e.g. due to list corruption)
+> and we would see exit_state != 0 and the OWNER_DIED bit would never be
+> set, so we are stuck in a busy loop.
 
-This should be an unsigned long.
+Yes...
 
-I wonder if the default should be for this value to be zero (i.e. preserve 
-existing behavior).  It could break binaries, albeit potentially insecure 
-ones.
+It is possible to take read_lock(&tasklist_lock) before:
 
+        inc_preempt_count();
+        curval = futex_atomic_cmpxchg_inatomic(uaddr, uval, newval);
+        dec_preempt_count();
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+and drop it after lookup_pi_state().
+
+In this case exiting task will set FUTEX_OWNER_DIED, but will
+spin in exit_notify(), we will find valid pi_state and go slow path
+taking rtmutex.
+
+Alexey
