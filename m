@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXFEITX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932269AbXFEITl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932095AbXFEITX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 04:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758367AbXFEITI
+	id S932269AbXFEITl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 04:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761054AbXFEITL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 04:19:08 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38496 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755728AbXFEITH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 04:19:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45103
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751661AbXFEITH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Jun 2007 04:19:07 -0400
-Date: Tue, 5 Jun 2007 10:19:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [kbuild-devel] [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
-Message-ID: <20070605081959.GB21991@uranus.ravnborg.org>
-References: <20070603204700.GH9240@uranus.ravnborg.org> <20070605073335.GM7266@flower.upol.cz>
+Date: Tue, 05 Jun 2007 01:19:22 -0700 (PDT)
+Message-Id: <20070605.011922.102574871.davem@davemloft.net>
+To: miklos@szeredi.hu
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix race in AF_UNIX
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <E1HvU8y-0000xG-00@dorka.pomaz.szeredi.hu>
+References: <E1HvTgf-0000sb-00@dorka.pomaz.szeredi.hu>
+	<20070605.005521.28788982.davem@davemloft.net>
+	<E1HvU8y-0000xG-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605073335.GM7266@flower.upol.cz>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 09:33:35AM +0200, Oleg Verych wrote:
-> Hallo.
-> 
-> On Sun, Jun 03, 2007 at 10:47:00PM +0200, Sam Ravnborg wrote:
-> > Subject: [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
-> > From: H. Peter Anvin <hpa@zytor.com>
-> > Date: Fri, 25 May 2007 17:58:26 -0700
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 05 Jun 2007 10:11:56 +0200
+
+> > > I just want to win the "who's laziest?" league.  It would take me
+> > > about 5 minutes to get the netdev tree and test compile the change.
+> > > Of which 5 seconds would be actually updating the patch.  I was
+> > > thought it was OK to pass that 5 seconds worth of hard work to you in
+> > > order to save the rest ;)
 > > 
-> > Make the "cleanfile" and "cleanpatch" script warn about long lines,
-> > by default lines whose visual width exceeds 79 characters.
-> > 
-> > Per suggestion from Auke Kok.
-> > 
-> > Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> > That tradeoff is fine, if, in return you'll do the rest of the
+> > networking subsystem maintainership work I need to to. :-)
 > 
-> Thank you, Sam, for sending messages back in Kbuild list again.
-> I have ~30k backlog in LKML, so that thing is good.
-Delete them all - it only hurst a few minutes ;-)
+> Well, I _did_ save you quite a bit of time by tracking down these
+> bugs.  That 5 sec of dedication in exchange would have really made me
+> feel good ;(
 
-> 
-> So, there are some new scripts. What if my proposition will be better,
-> so to speak? Any problems i'm willing to fix/enhance.
-> 
-> Note: only one copy of the file required. Sym-linked name *diff* or
-> *patch* will process patches. I know, that symlinks in sources isn't
-> good, thus change "$0" -> "$1" will process first parameter.
+The only reason I can process as many patches as I can every day is
+that I depend upon the end-nodes (that's you) doing most of the
+time intensive work so that I can concentrate on reviewing patches
+for correctness and proper implementation.
 
-Sorry - but I really do not get your point here.
-Are you trying to say that current cleanpatch is not good enough
-or do you propose a new script to do something similar?
+In any event, thanks for respinning the patch, it's late here so
+I'll review it tomorrow.
 
-We do not want everyones favorite patch preprocessing script
-in the kernel. So the only option is to incorporate changes in
-cleanpatch.
-
-If on the other hand you are proposing a script to clean whitespace
-damage in the code then git already does this nicely.
-I do not recall the actual receipt but searching the git mailing list
-should reveal it. So for whitespace cleanup we should use git but maybe
-via a small helper script.
-
-	Sam
