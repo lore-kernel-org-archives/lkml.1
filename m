@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764172AbXFENy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764411AbXFEN4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764172AbXFENy7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 09:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760529AbXFENyw
+	id S1764411AbXFEN4W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 09:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760591AbXFEN4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 09:54:52 -0400
-Received: from mail-secure01.communicationvalley.it ([194.246.127.20]:36146
-	"EHLO communicationvalley.it" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760153AbXFENyv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 09:54:51 -0400
-From: Biker <biker@villagepeople.it>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: WARNING: at mm/slab.c:777 __find_general_cachep() in 2.6.22-rc3
-Date: Tue, 5 Jun 2007 15:54:31 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200706041229.37779.biker@villagepeople.it> <b6fcc0a0706040356x7cad92ecl51f4d1aec6a85624@mail.gmail.com>
-In-Reply-To: <b6fcc0a0706040356x7cad92ecl51f4d1aec6a85624@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jun 2007 09:56:14 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:42120 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760512AbXFEN4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 09:56:14 -0400
+Date: Tue, 5 Jun 2007 09:56:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>, David Miller <davem@davemloft.net>,
+       mroos@linux.ee, linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070605135608.GA31565@havoc.gtf.org>
+References: <Pine.SOC.4.64.0706032314590.20033@math> <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org> <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706051554.33719.biker@villagepeople.it>
-x-pineapp-mail-mail-from: biker@villagepeople.it
-x-pineapp-mail-rcpt-to: linux-kernel@vger.kernel.org
+In-Reply-To: <20070605122218.410d611b@the-village.bc.nu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 June 2007 12:56, Alexey Dobriyan wrote:
-> On 6/4/07, Biker <biker@villagepeople.it> wrote:
-> > WARNING: at mm/slab.c:777 __find_general_cachep()
-> >  [<c016e0c4>]  [<f943288c>]  [<f9112bfa>]  [<f90f8546>]  [<c0104c90>]
-> > [<c033702e>]  [<f90f15dd>]  [<f911de1d>]  [<f911e123>]  [<c01714d7>]
-> > [<f911ba7c>]  [<f94300c9>]  [<f943016f>]  [<f9430157>]  [<c017d0bb>]
-> > [<c0172741>]  [<c017d17c>]  [<c017d3fd>]  [<c01041c2>]
->
-> Please, enable CONFIG_DEBUG_BUGVERBOSE, or decipher addresses
-> into function calls yourself.
+On Tue, Jun 05, 2007 at 12:22:18PM +0100, Alan Cox wrote:
+> > NAK
+> > 
+> > We have generic devices and generic DMA mapping.  libata already uses
+> > the generic stuff.  Now fix the platform...
+> 
+> Nice theory but your generic helpers rely on the map functions working
+> even for generic hardware that doesn't need them, so at the very least
+> there is some clean up required.
 
-Eliminating the proprietary nvidia module seems to have resolved the issue. 
-Sorry for the noise.
+Sure there is some clean up needed -- on the arch side.
 
-Biker
+Even !PCI dma_xxx wrappers that do nothing more than return a dma
+mapping error are a valid platform implementation.
+
+Even !HAS_DMA (s/390?) arches should be using the aforementioned
+return-error wrappers, mimicing the implementation of PCI functions
+in linux/pci.h for the !PCI case.
+
+libata core for DMA mapping is already generic enough such that, #ifdefs
+are not needed in the code.
+
+
+OTOH.....  further work in libata _is_ need for I/O accessors, to
+isolate those from the core code.
+
+	Jeff
+
+
+
