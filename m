@@ -1,216 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761307AbXFECdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763005AbXFECei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761307AbXFECdl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 22:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758243AbXFECdd
+	id S1763005AbXFECei (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 22:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbXFECeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 22:33:33 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:18116 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757790AbXFECdc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 22:33:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=C8o7rYKFTfMSrT1uUbJULKNRY8c9AU5I0YA3f2J6qeShcGlt3H+4lFLBkcF47Du3FVFLn5Onw9T3MotxVyEC0p6q4erXBNXiVr4aS+FJ3FAEdNMiBWRiz9UjG/pj6w4ipW4YYdjYsxgw+68KdX1+7BeXNoxAwRBNsC7cYU8rdp4=
-Message-ID: <4664CB6D.8060507@gmail.com>
-Date: Tue, 05 Jun 2007 10:33:17 +0800
-From: Li Yu <raise.sail@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+	Mon, 4 Jun 2007 22:34:31 -0400
+Received: from waste.org ([66.93.16.53]:56312 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757767AbXFECeb (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 22:34:31 -0400
+Date: Mon, 4 Jun 2007 21:34:12 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       Linux-kernel@vger.kernel.org
+Subject: Re: Interesting interaction between lguest and CFS
+Message-ID: <20070605023412.GN11115@waste.org>
+References: <20070604173710.GR11166@waste.org> <1181002734.25878.56.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v14
-References: <20070523120616.GA23407@elte.hu> <4658F1D6.3070706@gmail.com> <20070529061544.GA28523@elte.hu> <20070529080738.GA28657@elte.hu> <465E992C.4020601@gmail.com> <20070531095337.GA8104@elte.hu> <465FC7E7.7080804@gmail.com> <20070601192142.GA10039@elte.hu>
-In-Reply-To: <20070601192142.GA10039@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181002734.25878.56.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Ingo Molnar wrote:
-> * Li Yu <raise.sail@gmail.com> wrote:
->
->   
->> Also, I have want to know what's real meaning of
->>
->>    add_wait_runtime(rq, curr, delta_mine - delta_exec);
->>
->> in update_curr(), IMHO, it should be
->>
->>    add_wait_runtime(rq, curr, delta_mine - delta_fair);
->>
->> Is this just another heuristics? or my opinion is wrong again? :-)
->>     
->
-> well, ->wait_runtime is in real time units. If a task executes 
-> delta_exec time on the CPU, we deduct "-delta_exec" 1:1. But during that 
-> time the task also got entitled to a bit more CPU time, that is 
-> +delta_mine. The calculation above expresses this. I'm not sure what 
-> sense '-delta_fair' would make - "delta_fair" is the amount of time a 
-> nice-0 task would be entitled to - but this task might not be a nice-0 
-> task. Furthermore, even for a nice-0 task why deduct -delta_fair - it 
-> spent delta_exec on the CPU.
+On Tue, Jun 05, 2007 at 10:18:54AM +1000, Rusty Russell wrote:
+> On Mon, 2007-06-04 at 12:37 -0500, Matt Mackall wrote:
+> > With 2.6.22-rc3-mm1, I've got a long-running video transcoding going
+> > on. In other windows, I'm compiling, reading email, etc. with no
+> > noticeable problems.
+> > 
+> > If I fire up lguest and leave it sitting at a shell prompt for a
+> > couple moments, when I return to type something at the prompt, it can
+> > take 2-3 seconds for my input to echo. Once it starts responding,
+> > typing latency disappears. Suspend the other app and the latency
+> > disappears.
 > 
+> This sounds like the waker process (nice 19) not getting a chance to
+> run.  You can hack around it for the moment by changing "nice(19)" in
+> Documentation/lguest/lguest.c to something less aggressive.
 
-Eh, I wrong again~ I even took an experiment in last week end, this idea 
-is really bad! ;(
+Manual renicing seems to have done the trick.
 
-I think the most inner of source of my wrong again and again is
-misunderstanding virtual time. For more better understanding this, I try 
-to write one python script to simulate CFS behavior. However, It can not 
-implement the fairness as I want. I really confuse here.
+This is still a little suspicious though. Why does it take two seconds
+to wake up and then behave responsively for a long interval after that?
 
-Would you like help me point out what's wrong in it? Any suggestion is 
-welcome. Thanks in advanced.
-
-
-#! /usr/bin/python
-
-# htucfs.py - Hard-To-Understand-CFS.py ;)
-# Wrote by Li Yu / 20070604
-
-#
-# only support static load on UP.
-#
-
-
-# Usage:
-#    ./htucfs.py nr_clock_ticks_to_run
-#
-
-import sys
-
-class task_struct:
-    def __init__(self, name, load_weight):
-        self.name = name
-        self.wait_runtime = 0
-        self.fair_clock = 0
-        self.fair_key = 0
-        self.load_weight = float(load_weight)
-    def __repr__(self):
-        return "%s/C%.2f" % (self.name, self.fair_clock)
-
-idle_task = task_struct("idle", 0)
-
-class run_queue:
-    def __init__(self):
-        self.raw_weighted_load = 0
-        self.wall_clock = 0
-        self.fair_clock = 0
-        self.ready_queue = {}
-        self.run_history = []
-        self.task_list = []
-        self.curr = None
-        self.debug = 0
-
-    def snapshot(self):
-        if self.debug:
-            print "%.2f" % self.fair_clock, self.ready_queue, self.curr
-
-    def enqueue(self, task):
-        task.fair_key = self.fair_clock-task.wait_runtime
-        task.fair_key = int(100 * task.fair_key)
-        if not self.ready_queue.get(task.fair_key):
-            self.ready_queue[task.fair_key] = [task]
-        else:
-            # keep FIFO for same fair_key tasks.
-            self.ready_queue[task.fair_key].append(task)
-        self.raw_weighted_load += task.load_weight
-        self.task_list.append(task)
-
-    def dequeue(self, task):
-        self.raw_weighted_load -= task.load_weight
-        self.ready_queue[task.fair_key].remove(task)
-        if not self.ready_queue[task.fair_key]:
-            del self.ready_queue[task.fair_key]
-        self.task_list.remove(task)
-
-    def other_wait_runtime(self):
-        for task in self.task_list:
-            self.dequeue(task)
-            task.wait_runtime += 1
-            self.enqueue(task)
-
-    def clock_tick(self):
-        # clock_tick = 1.0
-        self.fair_clock += 1.0/self.raw_weighted_load
-        # delta_exec = 1.0
-        delta_mine = self.curr.load_weight / self.raw_weighted_load
-        self.curr.wait_runtime += (delta_mine-1.0)
-        self.curr.fair_clock += 1.0/self.curr.load_weight
-        self.dequeue(self.curr)
-        self.other_wait_runtime()
-        self.enqueue(self.curr)
-        self.pick_next_task()
-
-    def pick_next_task(self):
-        key_seq = self.ready_queue.keys()
-        if key_seq:
-            key_seq.sort()
-            self.curr = self.ready_queue[key_seq[0]][0]
-        else:
-            self.curr = idle_task
-        self.snapshot()
-        self.record_run_history()
-
-    def record_run_history(self):
-        task = self.curr
-        if not self.run_history:
-            self.run_history.append([task, 1])
-            return
-        curr = self.run_history[-1]
-        if curr[0] != task:
-            self.run_history.append([task, 1])
-        else:
-            curr[1] += 1
-
-    def show_history(self):
-        stat = {}
-        for entry in self.run_history:
-            task = entry[0]
-            nsec = entry[1]
-            print "%s run %d sec" % (task, nsec)
-            if task not in stat.keys():
-                stat[task] = nsec
-            else:
-                stat[task] += nsec
-        print "=============================="
-        tasks = stat.keys()
-        tasks.sort()
-        for task in tasks:
-            print task, "/", task.load_weight, ":", stat[task], "sec"
-        print "=============================="
-
-    def run(self, delta=0, debug=0):
-        self.debug = debug
-        until = self.wall_clock + delta
-        print "-----------------------------"
-        self.pick_next_task()
-        while self.wall_clock < until:
-            self.wall_clock += 1
-            self.clock_tick()
-        print "-----------------------------"
-
-#
-# To turn this, display verbose runtime information.
-#
-debug = True
-
-if __name__ == "__main__":
-    rq = run_queue()
-    task1 = task_struct("TASK_1", 1)
-    task2 = task_struct("TASK_2", 1)
-    task3 = task_struct("TASK_3", 2)
-    rq.enqueue(task1)
-    rq.enqueue(task2)
-    rq.enqueue(task3)
-    rq.run(int(sys.argv[1]), debug)
-    rq.show_history()
-
-#EOF
-
-Good luck
-
-- Li Yu
+-- 
+Mathematics is the supreme nostalgia of our time.
