@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbXFEB45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbXFECEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762735AbXFEB45 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 21:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756316AbXFEB4s
+	id S1762333AbXFECEo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 22:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756748AbXFECEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 21:56:48 -0400
-Received: from msr43.hinet.net ([168.95.4.143]:45607 "EHLO msr43.hinet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753380AbXFEB4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 21:56:47 -0400
-Subject: [PATCH] sundance: PHY address form 0, only for device ID 0x0200
-	(IP100A) (20070605)
-From: Jesse Huang <jesse@icplus.com.tw>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, akpm@osdl.org,
-       jgarzik@pobox.com, jesse@icplus.com.tw, jeff@garzik.org
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 09:53:11 -0400
-Message-Id: <1181051591.2571.1.camel@localhost.localdomain>
+	Mon, 4 Jun 2007 22:04:36 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52235 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756218AbXFECEf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 22:04:35 -0400
+Date: Mon, 4 Jun 2007 19:03:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Vasily Averin <vvs@sw.ru>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       linux-ext4@vger.kernel.org, Stephen Tweedie <sct@redhat.com>,
+       adilger@clusterfs.com
+Subject: Re: [RFC PATCH ext3/ext4] orphan list corruption due bad inode
+Message-Id: <20070604190340.dba85bb0.akpm@linux-foundation.org>
+In-Reply-To: <4663A0CE.102@sw.ru>
+References: <4663A0CE.102@sw.ru>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 (2.6.0-1) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesse Huang <jesse@icplus.com.tw>
+On Mon, 04 Jun 2007 09:19:10 +0400 Vasily Averin <vvs@sw.ru> wrote:
 
-Change Logs:
-Search PHY address form 0, only for device ID 0x0200 (IP100A). Other device are from PHY address 1.
+> After ext3 orphan list check has been added into ext3_destroy_inode() (please see my previous patch) the following situation has been detected:
+>  EXT3-fs warning (device sda6): ext3_unlink: Deleting nonexistent file (37901290), 0
+>  Inode 00000101a15b7840: orphan list check failed!
+>  00000773 6f665f00 74616d72 00000573 65725f00 06737270 66000000 616d726f
+> ...
+>  Call Trace: [<ffffffff80211ea9>] ext3_destroy_inode+0x79/0x90
+>   [<ffffffff801a2b16>] sys_unlink+0x126/0x1a0
+>   [<ffffffff80111479>] error_exit+0x0/0x81
+>   [<ffffffff80110aba>] system_call+0x7e/0x83
+> 
+> First messages said that unlinked inode has i_nlink=0, then ext3_unlink() adds this inode into orphan list.
+> 
+> Second message means that this inode has not been removed from orphan list. Inode dump has showed that i_fop = &bad_file_ops and it can be set in make_bad_inode() only. Then I've found that ext3_read_inode() can call make_bad_inode() without any error/warning messages, for example in the following case:
+> ...
+>         if (inode->i_nlink == 0) {
+>                 if (inode->i_mode == 0 ||
+>                     !(EXT3_SB(inode->i_sb)->s_mount_state & EXT3_ORPHAN_FS)) {
+>                         /* this inode is deleted */
+>                         brelse (bh);
+>                         goto bad_inode;
+> ...
+> 
+> Bad inode can live some time, ext3_unlink can add it to orphan list, but
+> ext3_delete_inode() do not deleted this inode from orphan list. As
+> result we can have orphan list corruption detected in ext3_destroy_inode().
+> 
+> However it is not clear for me how to fix this issue correctly.
+> 
+> As far as i see is_bad_inode() is called after iget() in all places excluding ext3_lookup() and ext3_get_parent(). I believe it makes sense to add bad inode check to these functions too and call iput if bad inode detected.
 
-Signed-off-by: Jesse Huang <jesse@icplus.com.tw>
----
+Please avoid the 500-column paragraphs?
 
- drivers/net/sundance.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+> Signed-off-by:	Vasily Averin <vvs@sw.ru>
+> 
+> diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+> index 9bb046d..e3ac8c3 100644
+> --- a/fs/ext3/namei.c
+> +++ b/fs/ext3/namei.c
+> @@ -1019,6 +1019,11 @@ static struct dentry *ext3_lookup(struct inode * dir, struct dentry *dentry, str
+>  
+>  		if (!inode)
+>  			return ERR_PTR(-EACCES);
+> +
+> +		if (is_bad_inode(inode)) {
+> +			iput(inode);
+> +			return ERR_PTR(-ENOENT);	
+> +		}
+>  	}
+>  	return d_splice_alias(inode, dentry);
+>  }
+> @@ -1054,6 +1059,11 @@ struct dentry *ext3_get_parent(struct dentry *child)
+>  	if (!inode)
+>  		return ERR_PTR(-EACCES);
+>  
+> +	if (is_bad_inode(inode)) {
+> +		iput(inode);
+> +		return ERR_PTR(-ENOENT);	
+> +	}
+> +
+>  	parent = d_alloc_anon(inode);
+>  	if (!parent) {
+>  		iput(inode);
 
-a093fe5e3e7b9f58458171e481b5096cc1d3abfe
-diff --git a/drivers/net/sundance.c b/drivers/net/sundance.c
-index e1f912d..23d049d 100644
---- a/drivers/net/sundance.c
-+++ b/drivers/net/sundance.c
-@@ -562,7 +562,11 @@ #endif
- 	 * It seems some phys doesn't deal well with address 0 being accessed
- 	 * first, so leave address zero to the end of the loop (32 & 31).
- 	 */
--	for (phy = 1; phy <= 32 && phy_idx < MII_CNT; phy++) {
-+	if(sundance_pci_tbl[np->chip_id].device == 0x0200) 
-+		phy = 0;
-+	else 
-+		phy = 1;
-+	for (; phy <= 32 && phy_idx < MII_CNT; phy++) {
- 		int phyx = phy & 0x1f;
- 		int mii_status = mdio_read(dev, phyx, MII_BMSR);
- 		if (mii_status != 0xffff  &&  mii_status != 0x0000) {
--- 
-1.3.GIT
+Seems reasonable.  So this prevents the bad inodes from getting onto the
+orphan list in the first place?
 
+What caused those inodes to be bad, anyway?  Memory allocation failures?
