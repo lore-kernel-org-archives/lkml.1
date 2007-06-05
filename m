@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765191AbXFEOgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765031AbXFEOlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765191AbXFEOgB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764569AbXFEOf3
+	id S1765031AbXFEOlI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763602AbXFEOk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:35:29 -0400
-Received: from lucidpixels.com ([75.144.35.66]:39152 "EHLO lucidpixels.com"
+	Tue, 5 Jun 2007 10:40:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:54572 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764750AbXFEOf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:35:28 -0400
-Date: Tue, 5 Jun 2007 10:35:27 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: linux-kernel@vger.kernel.org
-Subject: Kernel 2.6.22-rc4: Intel Quad Core Temperature Patch
-Message-ID: <Pine.LNX.4.64.0706051027330.4372@p34.internal.lan>
+	id S1761140AbXFEOkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 10:40:55 -0400
+Message-ID: <466575EE.70901@goop.org>
+Date: Tue, 05 Jun 2007 07:40:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-225880427-1181054127=:4372"
+To: Rene Herman <rene.herman@gmail.com>
+CC: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
+References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0706041143240.23741@woody.linux-foundation.org> <Pine.LNX.4.64.0706041200140.24550@schroedinger.engr.sgi.com> <84144f020706041213x1d241794u98e9b3ca29865033@mail.gmail.com> <Pine.LNX.4.64.0706041213540.24935@schroedinger.engr.sgi.com> <46646747.2080803@cs.helsinki.fi> <Pine.LNX.4.64.0706041532350.27125@schroedinger.engr.sgi.com> <20070604155355.bf29a3a8.akpm@linux-foundation.org> <Pine.LNX.4.64.0706041607560.27346@schroedinger.engr.sgi.com> <466523E0.3050605@gmail.com> <alpine.DEB.0.99.0706050804170.27388@sigma.j-a-k-j.com> <46655CEC.7070900@gmail.com>
+In-Reply-To: <46655CEC.7070900@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Rene Herman wrote:
+> No, what we have is a sizeof(pointer) sized pointer pointing to an
+> object of size zero. ZERO_SIZE_PTR is butt-ugly. With a really ugly butt. 
 
----1463747160-225880427-1181054127=:4372
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+It doesn't matter.  It will never, ever, be used by anything except the
+kmalloc internals.  No client code should ever use the constant for
+anything.
 
-I am using stock cooling in a well ventilated case, I was wondering if=20
-these temps are normal, e.g. I see this in dmesg:
-
-[   60.505648] coretemp coretemp.0: Using undocumented features, absolute=
-=20
-temperature might be wrong!
-[   60.505792] coretemp coretemp.1: Using undocumented features, absolute=
-=20
-temperature might be wrong!
-[   60.505943] coretemp coretemp.2: Using undocumented features, absolute=
-=20
-temperature might be wrong!
-[   60.506099] coretemp coretemp.3: Using undocumented features, absolute=
-=20
-temperature might be wrong!
-
-When idle:
-
-Jun  5 09:33:38 p34 cputemp[3580]: core1: 50=B0C
-Jun  5 09:33:38 p34 cputemp[3580]: core2: 47=B0C
-Jun  5 09:33:38 p34 cputemp[3580]: core3: 52=B0C
-Jun  5 09:33:38 p34 cputemp[3580]: core4: 49=B0C
-
-Under load:
-
-Jun  5 10:30:01 p34 cputemp[6407]: core1: 79=B0C
-Jun  5 10:30:01 p34 cputemp[6407]: core2: 77=B0C
-Jun  5 10:30:01 p34 cputemp[6407]: core3: 79=B0C
-Jun  5 10:30:01 p34 cputemp[6407]: core4: 77=B0C
-
-Is this normal for Kentsfield Quad Core CPUs?
-
-Justin.
----1463747160-225880427-1181054127=:4372--
+    J
