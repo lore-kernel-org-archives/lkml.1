@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761713AbXFEMHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbXFEMOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761713AbXFEMHt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 08:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbXFEMHm
+	id S1758716AbXFEMOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 08:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbXFEMOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 08:07:42 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:50796 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752747AbXFEMHl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 08:07:41 -0400
-Date: Tue, 5 Jun 2007 08:07:31 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Rene Herman <rene.herman@gmail.com>
-cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-In-Reply-To: <466523E0.3050605@gmail.com>
-Message-ID: <alpine.DEB.0.99.0706050804170.27388@sigma.j-a-k-j.com>
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com>
- <alpine.LFD.0.98.0706041143240.23741@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706041200140.24550@schroedinger.engr.sgi.com>
- <84144f020706041213x1d241794u98e9b3ca29865033@mail.gmail.com>
- <Pine.LNX.4.64.0706041213540.24935@schroedinger.engr.sgi.com>
- <46646747.2080803@cs.helsinki.fi> <Pine.LNX.4.64.0706041532350.27125@schroedinger.engr.sgi.com>
- <20070604155355.bf29a3a8.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706041607560.27346@schroedinger.engr.sgi.com>
- <466523E0.3050605@gmail.com>
+	Tue, 5 Jun 2007 08:14:03 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:33042 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751231AbXFEMOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 08:14:01 -0400
+Date: Tue, 5 Jun 2007 07:13:58 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, menage@google.com,
+       Andrew Morton <akpm@linux-foundation.org>, dev@sw.ru, vatsa@in.ibm.com,
+       ebiederm@xmission.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+       pj@sgi.com, cpw@sgi.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       mbligh@google.com, rohitseth@google.com, devel@openvz.org
+Subject: Re: [PATCH 1/1] containers: implement nsproxy containers subsystem
+Message-ID: <20070605121358.GB22230@sergelap.austin.ibm.com>
+References: <20070604185034.GA17970@sergelap.austin.ibm.com> <4665346F.20200@openvz.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4665346F.20200@openvz.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Here a version of the patch that drops the WARN_ONs
+Quoting Pavel Emelianov (xemul@openvz.org):
+> Serge E. Hallyn wrote:
+> >>From 190ea72d213393dd1440643b2b87b5b2128dff87 Mon Sep 17 00:00:00 2001
+> > From: Serge E. Hallyn <serue@us.ibm.com>
+> > Date: Mon, 4 Jun 2007 14:18:52 -0400
+> > Subject: [PATCH 1/1] containers: implement nsproxy containers subsystem
+> > 
+> > When a task enters a new namespace via a clone() or unshare(), a new
+> > container is created and the task moves into it.  This enables
 > 
-> And now all that's done, how about yet another random person stepping in and
-> suggesting NIL or maybe NIL_PTR instead of ZERO_SIZE_PTR?
+> I have a design question.
 > 
-> I understand the idea is that code need not necesarily care about zero sized
-> allocation meaning it won't (generally) need to spell it out but it's still a
-> dreadful name... :-(
+> How the child that has a new namespace guesses what id
+> this namespace has in containers?
 
-The name says exactly what it is. It's not at all dreadful. If we're going 
-to return a special value in the zero-size case (and in only that case) as 
-a valid pointer instead of actually allocating one byte and treating it as 
-zero, what we have is...a zero-size pointer. ZERO_SIZE_PTR is a pretty 
-damn good name.
+parse /proc/$$/container
+
+So more likely the parent would have to grab the cloned pid of the
+child, parse /proc/$$/container, then rename the container.
+
+-serge
