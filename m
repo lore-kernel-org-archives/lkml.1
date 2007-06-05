@@ -1,45 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761978AbXFEM5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762541AbXFENEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761978AbXFEM5X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 08:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755290AbXFEM5P
+	id S1762541AbXFENEX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 09:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbXFENEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 08:57:15 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:38709 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757344AbXFEM5P (ORCPT
+	Tue, 5 Jun 2007 09:04:14 -0400
+Received: from 25.mail-out.ovh.net ([213.186.37.103]:45699 "HELO
+	25.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757061AbXFENEO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 08:57:15 -0400
-Message-ID: <46655CEC.7070900@gmail.com>
-Date: Tue, 05 Jun 2007 14:54:04 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Tue, 5 Jun 2007 09:04:14 -0400
+Date: 5 Jun 2007 13:04:07 -0000
+To: linus.walleij@ericsson.com, arvidjaar@mail.ru
+Subject: RE: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+X-IlohaMail-Blah: samuel@sortiz.org
+X-IlohaMail-Method: mail() [mem]
+X-IlohaMail-Dummy: moo
+X-Mailer: OVH (On: ssl0.ovh.net)
+Message-ID: <JweoxZIu.1181048647.6373490.samuel@sortiz.org>
+In-Reply-To: <A6D19A13FE030A409EC4362C172E091F016F51B1@eseldmw101.eemea.ericsson.se>
+From: "Samuel Ortiz" <samuel@sortiz.org>
+Bounce-To: "Samuel Ortiz" <samuel@sortiz.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "ambx1@neo.rr.com" <ambx1@neo.rr.com>,
+       "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-CC: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: SLUB: Return ZERO_SIZE_PTR for kmalloc(0)
-References: <Pine.LNX.4.64.0706011831170.10767@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0706041143240.23741@woody.linux-foundation.org> <Pine.LNX.4.64.0706041200140.24550@schroedinger.engr.sgi.com> <84144f020706041213x1d241794u98e9b3ca29865033@mail.gmail.com> <Pine.LNX.4.64.0706041213540.24935@schroedinger.engr.sgi.com> <46646747.2080803@cs.helsinki.fi> <Pine.LNX.4.64.0706041532350.27125@schroedinger.engr.sgi.com> <20070604155355.bf29a3a8.akpm@linux-foundation.org> <Pine.LNX.4.64.0706041607560.27346@schroedinger.engr.sgi.com> <466523E0.3050605@gmail.com> <alpine.DEB.0.99.0706050804170.27388@sigma.j-a-k-j.com>
-In-Reply-To: <alpine.DEB.0.99.0706050804170.27388@sigma.j-a-k-j.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/05/2007 02:07 PM, John Anthony Kazos Jr. wrote:
 
-> The name says exactly what it is. It's not at all dreadful. If we're going 
-> to return a special value in the zero-size case (and in only that case) as 
-> a valid pointer instead of actually allocating one byte and treating it as 
-> zero, what we have is...a zero-size pointer.
+On 6/5/2007, "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>
+wrote:
 
-No, what we have is a sizeof(pointer) sized pointer pointing to an object of 
-size zero. ZERO_SIZE_PTR is butt-ugly. With a really ugly butt.
+>Sam wrote:
+>
+>> Andrey, in addition to Bjorn's patch, could you also apply 
+>> this one and try again:
+>> 
+>> diff --git a/drivers/net/irda/smsc-ircc2.c 
+>> b/drivers/net/irda/smsc-ircc2.c index 31c6233..800562a 100644
+>> --- a/drivers/net/irda/smsc-ircc2.c
+>> +++ b/drivers/net/irda/smsc-ircc2.c
+>> @@ -2463,7 +2463,7 @@ static struct 
+>> smsc_ircc_subsystem_configuration subsystem_
+>>                 .subvendor = 0x1179,
+>>                 .subdevice = 0xffff, /* 0xffff is "any" */
+>>                 .sir_io = 0x02e8,
+>> -               .fir_io = 0x02f8,
+>> +               .fir_io = 0x100,
+>
+>You don't need to alter the defaults for the Toshiba ALi, the 
+>preconfigure will respect the settings from the commandline,
+>e.g. modprobe smsc-ircc2 ircc_fir=0x100,ircc_sir=0x02e8.
+True, that's faster.
 
-Rene.
 
+>BUT this value just won't work: we don't know how to tell the ALi 1533
+>to use any other ports than 0x130,0x178,0x03f8,0x02f8 or 0x02e8.
+Oh, that's right. I didn't look carefully enough at
+preconfigure_ali_port()...
+
+
+>The code in preconfigure_ali_port() is from the smscinit tool
+>and I have no idea of how that was initially developed (reverse
+>engineering likely). Since 0x0130 and 0x170 seem to be the same setting,
+>0x100 could be equal to one of the others as well so I would
+>try feeding some different ircc_fir=x settings and see what happens.
+>From the PnP output that Andrey sent, it seems that 0x130 might work.
+If not, I guess it's worth trying at 0x100 while assuming it's the same
+register setting as 0x130 or 0x178, so basically applying this patch on
+top of Bjorn's one:
+
+diff --git a/drivers/net/irda/smsc-ircc2.c b/drivers/net/irda/smsc-ircc2.c
+index 31c6233..0657228 100644
+--- a/drivers/net/irda/smsc-ircc2.c
++++ b/drivers/net/irda/smsc-ircc2.c
+@@ -2742,6 +2742,7 @@ static void __init preconfigure_ali_port(struct
+pci_dev *d
+        unsigned char tmpbyte;
+
+        switch(port) {
++       case 0x0100:
+        case 0x0130:
+        case 0x0178:
+                reg = 0xb0;
+
+and then a modprobe smsc-ircc2 ircc_fir=0x100,ircc_sir=0x02e8
+
+Cheers,
+Samuel.
