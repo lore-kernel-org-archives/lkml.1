@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762244AbXFEBkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761631AbXFEBoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762244AbXFEBkF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 21:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbXFEBj4
+	id S1761631AbXFEBoV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 21:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbXFEBoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 21:39:56 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45631 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbXFEBjz (ORCPT
+	Mon, 4 Jun 2007 21:44:15 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:47378 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752583AbXFEBoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 21:39:55 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Justin Piszcz" <jpiszcz@lucidpixels.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan>
-	<200706011407.51779.jbarnes@virtuousgeek.org>
-	<20070601211943.GO7217@one.firstfloor.org>
-	<200706011441.57149.jbarnes@virtuousgeek.org>
-	<m1r6orwptz.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0706041420100.25811@p34.internal.lan>
-	<20070604201823.7b7cb328@the-village.bc.nu>
-	<m1myzfwi0x.fsf@ebiederm.dsl.xmission.com>
-	<86802c440706041759q1b2d528ex24b3de514d09d9ef@mail.gmail.com>
-Date: Mon, 04 Jun 2007 19:38:53 -0600
-In-Reply-To: <86802c440706041759q1b2d528ex24b3de514d09d9ef@mail.gmail.com>
-	(Yinghai Lu's message of "Mon, 4 Jun 2007 17:59:59 -0700")
-Message-ID: <m1ejkrw576.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 4 Jun 2007 21:44:14 -0400
+Date: Mon, 4 Jun 2007 18:44:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other
+ woes
+In-Reply-To: <1181006711.31677.97.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org>
+References: <1181006711.31677.97.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-> On 6/4/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
->>
->> Exactly, and given that this is a fairly easy thing to do, and that
->> occasionally we see systems where this happens (even if their BIOS is
->> later fixed).  It is likely worth it for someone to write up the patch
->> and that compare MTRRs with available memory, and to complain and
->> reserve all memory that MTRRs claim is not write-back.
->>
-> that is good.
-> Sometime BIOS can not even keep mtrr to the identical between
-> different CPU in SMP system.
->
-> Or reset mtrr according to e820 table.
 
-Resetting the mtrrs according to match the e820 table is attractive
-and it would be even easier to set the MTRR default type to
-write-back, and just handle everything else with PAT.
+On Tue, 5 Jun 2007, Benjamin Herrenschmidt wrote:
+> 
+>  - something calls recalc_sigpending_tsk() on thread A (for example,
+>    something try to sends it S2 which is blocked). There is no longer
+>    an active signal and thus TIF_SIGPENDING is cleared on thread A
 
-However that would most likely do horrible things to any BIOS going
-into SMI mode, and even a more modest scheme with reprogramming
-MTRRs would likely have similar problems, where we put something
-in the wrong caching mode.
+I agree. That's unquestionably a bug. We should *never* clear sigpending 
+for somebody else.
 
-So the only safe thing we can do is not use memory that is not
-write-back cached.  That we can positively detect and is a
-conservative action so if anything will work that will.
+I have to say, your patch looks pretty ugly though. It also looks like 
+it's rife to be subtly buggy (ie somebody calls "recalc_sigpending_tsk()" 
+with "current" and doesn't realize the subtle rule.
 
-Eric
+So I'd rather just make it more explicit, and simple, and just have 
+something really simple like the appended instead..
+
+If we want to be fancier (and avoid the unnecessary compare for the cases 
+where we statically know that we're calling it with "t" being "current"), 
+we could make it an inline function and factor things out a bit, but I'm 
+not sure how worthwhile that really is.
+
+I also wonder if we should just remove the "clear_tsk_thread_flag()" thing 
+*entirely*, and do it only in the do_sigal() path. THAT, however, is a 
+much bigger change. This one-liner seems the trivial and most obvious 
+patch.
+
+Comments?
+
+		Linus
+
+---
+ kernel/signal.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/signal.c b/kernel/signal.c
+index acdfc05..61abd8d 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -105,7 +105,8 @@ static int recalc_sigpending_tsk(struct task_struct *t)
+ 		set_tsk_thread_flag(t, TIF_SIGPENDING);
+ 		return 1;
+ 	}
+-	clear_tsk_thread_flag(t, TIF_SIGPENDING);
++	if (t == current)
++		clear_tsk_thread_flag(t, TIF_SIGPENDING);
+ 	return 0;
+ }
+ 
