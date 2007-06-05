@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763328AbXFEGVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbXFEGrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763328AbXFEGVc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 02:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757649AbXFEGVZ
+	id S1762892AbXFEGrT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 02:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbXFEGrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 02:21:25 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:27625 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757482AbXFEGVZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 02:21:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=LRuxzuX9kWX1Fg3d5HcmoNKKGLCWcaszJIIKoY25S5v/Gi6o45ogKZ9hAAvpHJIsGBvJ3kVLU27HSdu4O9ti7K0XXjAfy2qUHpQUtF2fqSvbul8v0Cm0RXcF8AVJhHSQw75uZ4sKkh3fASZ5PgymrUwbCpQNDh+I//JKjCC8GQA=
-Message-ID: <86802c440706042321k4d83a33dpa0a09deb5fbd5a3a@mail.gmail.com>
-Date: Mon, 4 Jun 2007 23:21:23 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH] x86_64: change dm_ioremap to ioremap
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Tue, 5 Jun 2007 02:47:11 -0400
+Received: from mx34.mail.ru ([194.67.23.200]:13037 "EHLO mx27.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755205AbXFEGrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 02:47:10 -0400
+Date: Tue, 5 Jun 2007 10:46:59 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Remove apparently useless, commented
+	apm_get_battery_status().
+Message-ID: <20070605064659.GA678@zarina>
+Reply-To: cbou@mail.ru
+References: <Pine.LNX.4.64.0706040715520.32191@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_17055_1542349.1181024483137"
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706040715520.32191@localhost.localdomain>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_17055_1542349.1181024483137
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, Jun 04, 2007 at 07:15:58AM -0400, Robert P. J. Day wrote:
+> 
+> Remove the "#if 0"ed definition of apm_get_battery_status().
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-[PATCH] x86_64: change dmi_ioremap to ioremap
+Acked-by: Anton Vorontsov <cbou@mail.ru>
 
-dmi_scan_machine==>dmi_present==>dmi_table==>dmi_ioremap uses
-early_ioremap in mm/init.c
-dmi_scan_machine is called after init_memory_mappings, and could use
-ioremap instead.
-also remove extra extern declaring about dmi_ioremap
+> ---
+> 
+> diff --git a/arch/i386/kernel/apm.c b/arch/i386/kernel/apm.c
+> index 4112afe..5c6da2b 100644
+> --- a/arch/i386/kernel/apm.c
+> +++ b/arch/i386/kernel/apm.c
+> @@ -1006,35 +1006,6 @@ static int apm_get_power_status(u_short *status, u_short *bat, u_short *life)
+>  	return APM_SUCCESS;
+>  }
+> 
+> -#if 0
+> -static int apm_get_battery_status(u_short which, u_short *status,
+> -				  u_short *bat, u_short *life, u_short *nbat)
+> -{
+> -	u32	eax;
+> -	u32	ebx;
+> -	u32	ecx;
+> -	u32	edx;
+> -	u32	esi;
+> -
+> -	if (apm_info.connection_version < 0x0102) {
+> -		/* pretend we only have one battery. */
+> -		if (which != 1)
+> -			return APM_BAD_DEVICE;
+> -		*nbat = 1;
+> -		return apm_get_power_status(status, bat, life);
+> -	}
+> -
+> -	if (apm_bios_call(APM_FUNC_GET_STATUS, (0x8000 | (which)), 0, &eax,
+> -			&ebx, &ecx, &edx, &esi))
+> -		return (eax >> 8) & 0xff;
+> -	*status = ebx;
+> -	*bat = ecx;
+> -	*life = edx;
+> -	*nbat = esi;
+> -	return APM_SUCCESS;
+> -}
+> -#endif
+> -
+>  /**
+>   *	apm_engage_power_management	-	enable PM on a device
+>   *	@device: identity of device
+> -- 
+> ========================================================================
+> Robert P. J. Day
+> Linux Consulting, Training and Annoying Kernel Pedantry
+> Waterloo, Ontario, CANADA
+> 
+> http://fsdev.net/wiki/index.php?title=Main_Page
+> ========================================================================
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-
-------=_Part_17055_1542349.1181024483137
-Content-Type: text/x-patch; name=6x.diff; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f2k00lkb
-Content-Disposition: attachment; filename="6x.diff"
-
-CmRpZmYgLS1naXQgYS9pbmNsdWRlL2FzbS14ODZfNjQvZG1pLmggYi9pbmNsdWRlL2FzbS14ODZf
-NjQvZG1pLmgKaW5kZXggOTNiMmIxNS4uZmM3YjU3NiAxMDA2NDQKLS0tIGEvaW5jbHVkZS9hc20t
-eDg2XzY0L2RtaS5oCisrKyBiL2luY2x1ZGUvYXNtLXg4Nl82NC9kbWkuaApAQCAtMywxNSArMywx
-MiBAQAogCiAjaW5jbHVkZSA8YXNtL2lvLmg+CiAKLWV4dGVybiB2b2lkICpkbWlfaW9yZW1hcCh1
-bnNpZ25lZCBsb25nIGFkZHIsIHVuc2lnbmVkIGxvbmcgc2l6ZSk7Ci1leHRlcm4gdm9pZCBkbWlf
-aW91bm1hcCh2b2lkICphZGRyLCB1bnNpZ25lZCBsb25nIHNpemUpOwotCiAjZGVmaW5lIERNSV9N
-QVhfREFUQSAyMDQ4CiAKIGV4dGVybiBpbnQgZG1pX2FsbG9jX2luZGV4OwogZXh0ZXJuIGNoYXIg
-ZG1pX2FsbG9jX2RhdGFbRE1JX01BWF9EQVRBXTsKIAotLyogVGhpcyBpcyBzbyBlYXJseSB0aGF0
-IHRoZXJlIGlzIG5vIGdvb2Qgd2F5IHRvIGFsbG9jYXRlIGR5bmFtaWMgbWVtb3J5LiAKKy8qIFRo
-aXMgaXMgc28gZWFybHkgdGhhdCB0aGVyZSBpcyBubyBnb29kIHdheSB0byBhbGxvY2F0ZSBkeW5h
-bWljIG1lbW9yeS4KICAgIEFsbG9jYXRlIGRhdGEgaW4gYW4gQlNTIGFycmF5LiAqLwogc3RhdGlj
-IGlubGluZSB2b2lkICpkbWlfYWxsb2ModW5zaWduZWQgbGVuKQogewpAQCAtMjEsNyArMTgsNyBA
-QCBzdGF0aWMgaW5saW5lIHZvaWQgKmRtaV9hbGxvYyh1bnNpZ25lZCBsZW4pCiAJcmV0dXJuIGRt
-aV9hbGxvY19kYXRhICsgaWR4OwogfQogCi0jZGVmaW5lIGRtaV9pb3JlbWFwIGVhcmx5X2lvcmVt
-YXAKLSNkZWZpbmUgZG1pX2lvdW5tYXAgZWFybHlfaW91bm1hcAorI2RlZmluZSBkbWlfaW9yZW1h
-cCBpb3JlbWFwCisjZGVmaW5lIGRtaV9pb3VubWFwKHgsbCkgaW91bm1hcCh4KQogCiAjZW5kaWYK
-
-------=_Part_17055_1542349.1181024483137--
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
