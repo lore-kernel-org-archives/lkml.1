@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763121AbXFESoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764980AbXFESoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763121AbXFESoF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 14:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbXFESny
+	id S1764980AbXFESoW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 14:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbXFESoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 14:43:54 -0400
-Received: from mga09.intel.com ([134.134.136.24]:21412 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755514AbXFESny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 14:43:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,386,1175497200"; 
-   d="scan'208";a="93757392"
-Date: Tue, 5 Jun 2007 11:40:15 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
-Message-ID: <20070605184015.GF17143@linux-os.sc.intel.com>
-References: <20070601004427.GI30788@tree.beaverton.ibm.com> <20070605172310.GD17143@linux-os.sc.intel.com> <20070605173647.GC12782@tree.beaverton.ibm.com> <20070605181342.GE17143@linux-os.sc.intel.com> <20070605183300.GD12782@tree.beaverton.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605183300.GD12782@tree.beaverton.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Tue, 5 Jun 2007 14:44:11 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:57515 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758898AbXFESoK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 14:44:10 -0400
+Message-ID: <4665AEE5.7040904@zytor.com>
+Date: Tue, 05 Jun 2007 11:43:49 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] lguest-fix-divide-error-implement-sched_clock
+References: <20070522223828.GV11115@waste.org> <20070605090714.22bfcfd4.akpm@linux-foundation.org> <46658C41.9090105@zytor.com> <200706051837.22847.ak@suse.de>
+In-Reply-To: <200706051837.22847.ak@suse.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 11:33:01AM -0700, Darrick J. Wong wrote:
-> On Tue, Jun 05, 2007 at 11:13:42AM -0700, Siddha, Suresh B wrote:
-> > I see. Your system should have 4 or 8 logical cpu's right. So you must be
-> > using logical flat mode, right?
+Andi Kleen wrote:
 > 
-> I believe so.  The system has two Xeon 5150s with an Intel 5000 chipset
-> of some sort.
+> I don't think it's a good idea for the TSC. There are various
+> setups where it is unreliable and also often simulators don't 
+> implement it correctly. And it's always a valuable workaround
+> to be able to turn it off.
 > 
-> > When this bug happens, what does /proc/irq/<irq-no>/smp_affinity show?
-> 
-> root@elm3a188:~# cat /proc/irq/114/smp_affinity 
-> 02
 
-Ok. What this shows is that fixup_irqs() failed to move the irq properly.
-Ideally we should see cpu_online_map here (i.e., 0xfd).
+I dug some more into the TSC code, and found some other annoying stuff:
 
-So most likely __assign_irq_vector() failed for some reason and I am
-puzzled for the reason...
+/*
+ * Make an educated guess if the TSC is trustworthy and synchronized
+ * over all CPUs.
+ */
+__cpuinit int unsynchronized_tsc(void)
+{
+        if (!cpu_has_tsc || tsc_unstable)
+                return 1;
+        /*
+         * Intel systems are normally all synchronized.
+         * Exceptions must mark TSC as unstable:
+         */
+        if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
+                /* assume multi socket systems are not synchronized: */
+                if (num_possible_cpus() > 1)
+                        tsc_unstable = 1;
+        }
+        return tsc_unstable;
+}
 
-Does this problem happen only under certain stress or something simple, like
+That's a vendor check foul.  That should be a CPU feature flag.
 
-boot the kernel
-echo 2 > /proc/irq/114/smp_affinity
-wait for irq to hit the cpu1.
-echo 0 > /sys/devices/system/cpu/cpu1/online
+Looks like there is some work to be done here.
 
-will immmd trigger this?
-
-thanks,
-suresh
+	-hpa
