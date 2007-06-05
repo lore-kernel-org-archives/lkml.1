@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764184AbXFEKeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764323AbXFEKmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764184AbXFEKeo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 06:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763601AbXFEKeg
+	id S1764323AbXFEKmA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 06:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764011AbXFEKly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 06:34:36 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:35400 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763457AbXFEKef (ORCPT
+	Tue, 5 Jun 2007 06:41:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:54323 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763897AbXFEKlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 06:34:35 -0400
-Message-ID: <46653C37.7040303@de.ibm.com>
-Date: Tue, 05 Jun 2007 12:34:31 +0200
-From: Carsten Otte <cotte@de.ibm.com>
-Reply-To: carsteno@de.ibm.com
-Organization: =?UTF-8?B?SUJNIERldXRzY2hsYW5kIEVudHdpY2tsdW5nIEdtYkgsVm9ycw==?=
- =?UTF-8?B?aXR6ZW5kZXIgZGVzIEF1ZnNpY2h0c3JhdHM6IEpvaGFubiBXZWloZW4sR2VzY2g=?=
- =?UTF-8?B?w6RmdHNmw7xocnVuZzogSGVyYmVydCBLaXJjaGVyLFNpdHogZGVyIEdlc2VsbHM=?=
- =?UTF-8?B?Y2hhZnQ6IELDtmJsaW5nZW4sUmVnaXN0ZXJnZXJpY2h0OiBBbXRzZ2VyaWNodCA=?=
- =?UTF-8?B?U3R1dHRnYXJ0LCBIUkIgMjQzMjk0?=
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070521)
+	Tue, 5 Jun 2007 06:41:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=eUVGCnlS9TMrXhD6kG8iryYSwm95MjACXB2ltTiW9s0ZoA9Zu7rztVUxlIlWxEbPk9tSj1CweoVv+HPQZwXKobxsPD6fKHER7QTeC64qSreCfowDfqg9YWUtE2SxLvILlCJ66SNdlC1zgLWkEtKscKGe02FuMlbc4tX/3BeT0cY=
+Message-ID: <4bcb1f700706050341j2d772fc3lbd9a637ab869ee38@mail.gmail.com>
+Date: Tue, 5 Jun 2007 16:11:52 +0530
+From: "Ratnadeep Joshi" <ratn.josh@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Documentation/atomic_ops.txt
 MIME-Version: 1.0
-To: Vasily Averin <vvs@sw.ru>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, devel@openvz.org,
-       linux-ext4@vger.kernel.org, Stephen Tweedie <sct@redhat.com>,
-       adilger@clusterfs.com
-Subject: Re: [PATCH] [RESEND] ext[34] orphan list check on destroy_inode
-References: <466538C9.8080104@sw.ru>
-In-Reply-To: <466538C9.8080104@sw.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vasily Averin wrote:
-> Customers claims to ext3-related errors, investigation showed that ext3 orphan
-> list has been corrupted and have the reference to non-ext3 inode. The following
-> debug helps to understand the reasons of this issue.
-This looks like it might be related to the -as far as I recall- 
-unfixed issue we've noticed some time ago: 
-http://osdir.com/ml/file-systems/2004-02/msg00033.html
+This patch fixes a typo in Documentation/atomic_ops.txt
+Thanks,
+- Ratnadeep Joshi
 
-I have'nt heard any reports  of a reproduction on modern kernels on 
-390 lately, our issue seems to have disappeared.
+diff --git a/Documentation/atomic_ops.txt b/Documentation/atomic_ops.txt
+index 2a63d56..05851e9 100644
+--- a/Documentation/atomic_ops.txt
++++ b/Documentation/atomic_ops.txt
+@@ -149,7 +149,7 @@ defined which accomplish this:
+        void smp_mb__before_atomic_dec(void);
+        void smp_mb__after_atomic_dec(void);
+        void smp_mb__before_atomic_inc(void);
+-       void smp_mb__after_atomic_dec(void);
++       void smp_mb__after_atomic_inc(void);
 
-so long,
-Carsten
+ For example, smp_mb__before_atomic_dec() can be used like so:
