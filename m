@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933499AbXFEXP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933948AbXFEXQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933499AbXFEXP4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 19:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763290AbXFEXPr
+	id S933948AbXFEXQc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 19:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765291AbXFEXQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 19:15:47 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:36225 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760777AbXFEXPr (ORCPT
+	Tue, 5 Jun 2007 19:16:22 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:12434 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763290AbXFEXQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 19:15:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=XW3dzd3Kh6ABgilPt8qcCGBLO5bhMFUKUkNlIyqyzYhav7cQG+CNwvqEv/rDsJBrfnZYK1BDkXPv8Mo/JB3hOCWBMJeZLRt+Fdgbn0m6o+M6VtTjd9H0DL5Zv+pEaPAcKPPFndoXMyxWkkkRh2hilvVFITWZlEOkWjEP8QI0FrQ=
-Message-ID: <b6a2187b0706051615t1d63ac2cga25ebe54281bd4a0@mail.gmail.com>
-Date: Wed, 6 Jun 2007 07:15:45 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: 2.6.22-rc4: known regressions [section mismatch]
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton LKML" <linux-kernel@vger.kernel.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>
+	Tue, 5 Jun 2007 19:16:21 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=I8nVhGT7VCYApXV5+CIhqpypX40HW1/B64L+8s8gDhqzRFtruAq1VDrbHvpWJ1VR4
+	Z18/mF/m/lcusM4IPs6Xg==
+Date: Tue, 5 Jun 2007 16:16:09 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: akpm@linux-foundation.org, ak@suse.de, clameter@cthulhu.engr.sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
+ globally
+In-Reply-To: <20070605160149.348b5c4a.pj@sgi.com>
+Message-ID: <alpine.DEB.0.99.0706051608090.16201@chino.kir.corp.google.com>
+References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
+ <20070605160149.348b5c4a.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/2/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+On Tue, 5 Jun 2007, Paul Jackson wrote:
 
-> I think that Sam is working on this.
-> http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git&a=search&h=f285e3d329ce68cc355fadf4ab2c8f34d7f264cb&st=commit&s=section+mismatch
+> I'm a little surprised at this suggested change -- I'd have thought
+> that it was a good idea to let tasks marked for extinction get memory
+> anywhere, as they were going to use that memory to exit, and free up
+> lots more memory.
+> 
 
-I still got the section mismatch errors on 2.6.22-rc4. Here's the details ...
+The intended purpose of TIF_MEMDIE was to allocate pages without being 
+bound by the watermarks so that they have access to memory reserves on the 
+per-zone level.  If the cpuset doesn't have access to a zone, whether it's 
+memory reserve or not, it shouldn't allocate there.
 
-WARNING: arch/i386/kernel/built-in.o(.text+0x9c7f): Section mismatch:
-reference to .init.text: (between 'init_intel_cacheinfo' and
-'cache_shared_cpu_map_setup')
-WARNING: arch/i386/kernel/built-in.o(.text+0xae43): Section mismatch:
-reference to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
-WARNING: arch/i386/kernel/built-in.o(.text+0xafb1): Section mismatch:
-reference to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
-WARNING: arch/i386/kernel/built-in.o(.text+0xafb6): Section mismatch:
-reference to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
-WARNING: arch/i386/kernel/built-in.o(.text+0xb97d): Section mismatch:
-reference to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
-WARNING: kernel/built-in.o(.text+0x17a93): Section mismatch: reference
-to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
+> I'm pretty sure we have this same policy in other places in the
+> kernel, besides cpusets.  Did you intend to change them too?
+> 
 
+You'd have to cite them first.
 
-Only happens after recompile.
+> If a MEMDIE task is taking enough memory to OOM other tasks anywhere
+> in the system, then doesn't that mean your entire system was in deep
+> yogurt, and we're just haggling over who to blame for the upcoming
+> crash?
+> 
 
-Thanks,
-Jeff.
+No, it means that it can allocate anywhere based on the zonelist ordering 
+and then can OOM a very small exclusive cpuset that would never have had 
+any memory pressure if it wasn't violated.
+
+		David
