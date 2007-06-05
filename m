@@ -1,121 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765332AbXFEQ5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763488AbXFEQ6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765332AbXFEQ5B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 12:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758616AbXFEQ4y
+	id S1763488AbXFEQ6j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 12:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbXFEQ6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 12:56:54 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:39635 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755761AbXFEQ4x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 12:56:53 -0400
-Date: Tue, 5 Jun 2007 09:56:52 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Chris Wright <chrisw@sous-sol.org>
-cc: linux-kernel@vger.kernel.org, stable@kernel.org, Andi Kleen <ak@suse.de>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
-       guilherme@centralinf.com.br, johnstul@us.ibm.com
-Subject: Re: [patch 43/69] i386: HPET, check if the counter works
-In-Reply-To: <Pine.LNX.4.64.0706050951240.20704@twinlark.arctic.org>
-Message-ID: <Pine.LNX.4.64.0706050956070.20704@twinlark.arctic.org>
-References: <20070521191612.800400000@sous-sol.org> <20070521191740.534306000@sous-sol.org>
- <Pine.LNX.4.64.0706050951240.20704@twinlark.arctic.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 5 Jun 2007 12:58:32 -0400
+Received: from www.osadl.org ([213.239.205.134]:55047 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751006AbXFEQ6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 12:58:32 -0400
+Subject: Re: FUTEX_CMP_REQUEUE_PI is not quite there
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Pierre Peiffer <pierre.peiffer@bull.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>
+In-Reply-To: <46455A67.8040203@redhat.com>
+References: <46455A67.8040203@redhat.com>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 18:58:27 +0200
+Message-Id: <1181062707.4404.119.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ugh... do not send email before breakfast.  do not send email before 
-breakfast.  nevermind :)
+On Fri, 2007-05-11 at 23:10 -0700, Ulrich Drepper wrote:
+> I hooked up FUTEX_CMP_REQUEUE_PI here and got a kernel crash.  No serial 
+> console so this is the output of the screen after the machine stopped.
+> 
+> This is of course on x86-64.  Compiled from a rawhide-ified upstream 
+> kernel from two days ago.
+> 
+> The situation is the we requeue from a non-PI futex to a PI futex.  We 
+> might now actually want to change the condvar implementation to use
+> internally a PI futex if the mutex in use is PI, too, but this kind of 
+> mismatch can still happen.  I can provide binaries if necessary.
 
--dean
+Can you put the binaries somewhere for download please ? 
 
-On Tue, 5 Jun 2007, dean gaudet wrote:
+I'm looking at the problems, which were reported by Alexey, so I can
+look at this as well.
 
-> the HPET specification allows for HPETs with *much* lower resolution than 
-> 50us.  in fact Fmin is 10Hz iirc.  (sorry to jump in so late, but i'm 
-> about a month behind on the list.)
-> 
-> -dean
-> 
-> On Mon, 21 May 2007, Chris Wright wrote:
-> 
-> > -stable review patch.  If anyone has any objections, please let us know.
-> > ---------------------
-> > 
-> > From: Thomas Gleixner <tglx@linutronix.de>
-> > 
-> > Some systems have a HPET which is not incrementing, which leads to a
-> > complete hang. Detect it during HPET setup.
-> > 
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-> > ---
-> > [chrisw: Why is this not upstream yet?]
-> > 
-> > ---
-> >  arch/i386/kernel/hpet.c |   24 +++++++++++++++++++++++-
-> >  1 file changed, 23 insertions(+), 1 deletion(-)
-> > 
-> > --- linux-2.6.21.1.orig/arch/i386/kernel/hpet.c
-> > +++ linux-2.6.21.1/arch/i386/kernel/hpet.c
-> > @@ -226,7 +226,8 @@ int __init hpet_enable(void)
-> >  {
-> >  	unsigned long id;
-> >  	uint64_t hpet_freq;
-> > -	u64 tmp;
-> > +	u64 tmp, start, now;
-> > +	cycle_t t1;
-> >  
-> >  	if (!is_hpet_capable())
-> >  		return 0;
-> > @@ -273,6 +274,27 @@ int __init hpet_enable(void)
-> >  	/* Start the counter */
-> >  	hpet_start_counter();
-> >  
-> > +	/* Verify whether hpet counter works */
-> > +	t1 = read_hpet();
-> > +	rdtscll(start);
-> > +
-> > +	/*
-> > +	 * We don't know the TSC frequency yet, but waiting for
-> > +	 * 200000 TSC cycles is safe:
-> > +	 * 4 GHz == 50us
-> > +	 * 1 GHz == 200us
-> > +	 */
-> > +	do {
-> > +		rep_nop();
-> > +		rdtscll(now);
-> > +	} while ((now - start) < 200000UL);
-> > +
-> > +	if (t1 == read_hpet()) {
-> > +		printk(KERN_WARNING
-> > +		       "HPET counter not counting. HPET disabled\n");
-> > +		goto out_nohpet;
-> > +	}
-> > +
-> >  	/* Initialize and register HPET clocksource
-> >  	 *
-> >  	 * hpet period is in femto seconds per cycle
-> > 
-> > -- 
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+	tglx
+
+
