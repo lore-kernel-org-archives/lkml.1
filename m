@@ -1,108 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763260AbXFENLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763729AbXFENMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763260AbXFENLX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 09:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758626AbXFENLP
+	id S1763729AbXFENMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 09:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758872AbXFENME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 09:11:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:59506 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758438AbXFENLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 09:11:15 -0400
-Subject: [PATCH] lguest-fix-divide-error-implement-sched_clock
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200706051201.32137.ak@suse.de>
-References: <20070522223828.GV11115@waste.org>
-	 <200706042012.15915.ak@suse.de>
-	 <1181011737.25878.146.camel@localhost.localdomain>
-	 <200706051201.32137.ak@suse.de>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 23:11:00 +1000
-Message-Id: <1181049060.14054.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 5 Jun 2007 09:12:04 -0400
+Received: from spatial.ca ([66.11.172.77]:14116 "EHLO fawkes.spatial.ca"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757061AbXFENMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 09:12:02 -0400
+Message-ID: <46656120.9020103@spatial.ca>
+Date: Tue, 05 Jun 2007 09:12:00 -0400
+From: Tom Moore <tmoore@spatial.ca>
+Reply-To: tmoore@spatial.ca
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: 4Gb ram not showing up
+References: <46642C60.209@spatial.ca> <20070604191052.GD10008@csclub.uwaterloo.ca> <46646BF2.9020705@spatial.ca> <20070604222840.GC10208@animx.eu.org>
+In-Reply-To: <20070604222840.GC10208@animx.eu.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Sanitizer: Advosys mail filter
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-05 at 12:01 +0200, Andi Kleen wrote:
-> > But TSC is a "required feature", so "cpu_has_tsc" is always true.
-> 
-> Hmm? It isn't. What makes you think so?
-
-Interestingly it seems to be only in -mm.
-
-> > How about this patch:
-> > ===
-> > Don't try to disable the TSC: it's a required feature under modern
-> > configurations, so just mark the sched clock unstable which has the
-> > same effect.
-> 
-> No, using the cpuid bit is the correct way. Or better fix lguest to support
-> TSC properly.
-
-I have a patch for a tsc-based clock, but that's a little orthogonal: I
-actually need to override sched_clock.
-
-(I'd really like to do stolen time and everything, but looking at Xen
-it's a lot of code to do right, and noone's asked for it yet).
-
-This time for sure!
-
-===
-In recent -mm kernels, the TSC capability cannot be disabled,
-resulting in a divide by zero error in the normal sched_clock.
-
-The correct fix is to have a special lguest sched_clock
-implementation: this is as simple as it gets.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/lguest/lguest.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-===================================================================
---- a/drivers/lguest/lguest.c
-+++ b/drivers/lguest/lguest.c
-@@ -351,11 +351,18 @@ static void lguest_time_irq(unsigned int
- 	update_process_times(user_mode_vm(get_irq_regs()));
- }
- 
-+static u64 sched_clock_base;
- static void lguest_time_init(void)
- {
- 	set_irq_handler(0, lguest_time_irq);
- 	hcall(LHCALL_TIMER_READ, 0, 0, 0);
-+	sched_clock_base = jiffies_64;
- 	enable_lguest_irq(0);
-+}
-+
-+static unsigned long long lguest_sched_clock(void)
-+{
-+	return (jiffies_64 - sched_clock_base) * (1000000000 / HZ);
- }
- 
- static void lguest_load_esp0(struct tss_struct *tss,
-@@ -494,6 +501,7 @@ __init void lguest_init(void *boot)
- 	paravirt_ops.time_init = lguest_time_init;
- 	paravirt_ops.set_lazy_mode = lguest_lazy_mode;
- 	paravirt_ops.wbinvd = lguest_wbinvd;
-+	paravirt_ops.sched_clock = lguest_sched_clock;
- 
- 	hcall(LHCALL_LGUEST_INIT, __pa(&lguest_data), 0, 0);
- 
-@@ -507,8 +515,6 @@ __init void lguest_init(void *boot)
- 	cpu_detect(&new_cpu_data);
- 	/* Math is always hard! */
- 	new_cpu_data.hard_math = 1;
--
--	tsc_disable = 1;
- 
- #ifdef CONFIG_X86_MCE
- 	mce_disabled = 1;
 
 
+Wakko Warner wrote:
+> Tom Moore wrote:
+>   
+>> Thank you for the reply back.  Your answer makes perfect sense to me, 
+>> and it is what I had suspected but was not sure about.  The math seems 
+>> to indicate that 4Gb of ram plus 1Gb of PCI address space equals 5Gb of 
+>> memory space.  So it does sound like I should have a larger kernel model.
+>>
+>> What confused me the most (and still does), is the help message string 
+>> that is presented for the CONFIG_HIGHMEM4G option:
+>>  "Select this if you have a 32-bit processor and between 1 and 4 
+>> gigabytes of physical RAM."
+>>     
+>
+> 4 is not between 1 and 4.
+>   
+This idiomatic phrase suggests to me that it applies when ram is >= 1Gb 
+and <= 4Gb.  The fact that we interpret it differently indicates that it 
+could be more clearly stated.  If your interpretation is correct, then 
+what would this mean when a machine had 3.5Gb of ram installed?
+>   
+>> Well that sounds like the amount of memory that I have, so that is what 
+>> I selected.
+>>     
+>
+> You should select CONFIG_HIGHMEM64G.
+>
+>   
+>> Also, although I know what PAE stands for, I don't know how to select it 
+>> when building a kernel.  Would I get this from the CONFIG_HIGHMEM64G 
+>> option?  The help text for that says:
+>>  "Select this if you have a 32-bit processor and more than 4 gigabytes 
+>> of physical RAM."
+>>     
+>
+> Personally, I feel the wording should say:
+> Select this if you have a 32-bit processor and 4 or more gigabytes of
+> physical RAM.
+>
+> It may not hurt to say 3 or more, but I'm not that familiar with x86
+> hardware in regards to memory.
+>
+>   
+Ok, so it appears that this one is wrong also.  If someone could explain 
+the rules that apply, I would be happy to prepare a patch to the Kconfig 
+script.  I don't consider myself to be completely stupid, and if the 
+help text was a bit more clear I wouldn't be asking these questions.  
+I'm sure that other pilgrims will follow along later with the same 
+questions.
+>> This does not sound like it applies to my hardware.  There is something 
+>> wrong with my understanding, or with these message strings.  I am still 
+>> confused.
+>>     
+>
+> It does.
+>
+> Here's my system (4gb of memory):
+>              total       used       free     shared    buffers     cached
+> Mem:       3619996    3289352     330644          0     469764    2025416
+> -/+ buffers/cache:     794172    2825824
+> Swap:            0          0          0
+>
+> I know it says 3.6gb of memory, but 4gb is installed.  I had 5gb in this
+> machine and I saw all 5gb.  This is a 32-bit dual xeon (12gb max memory)
+>
+> I would be interested to know where the last 400mb of memory went.
+>
+>   
 
