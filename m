@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762645AbXFEC7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbXFEDFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762645AbXFEC7x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 22:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758199AbXFEC7p
+	id S1762865AbXFEDFj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 23:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbXFEDFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 22:59:45 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:39601 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754340AbXFEC7o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 22:59:44 -0400
-X-IronPort-AV: i="4.16,383,1175486400"; 
-   d="scan'208"; a="41089844:sNHT25560633"
-Subject: [PATCH] RAMFS NOMMU: missed POSIX UID/GID inode attribute checking
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: David Howells <dhowells@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
+	Mon, 4 Jun 2007 23:05:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50307 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756556AbXFEDFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 23:05:30 -0400
+Message-ID: <4664D2C6.4040804@redhat.com>
+Date: Mon, 04 Jun 2007 22:04:38 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+MIME-Version: 1.0
+To: Vasily Averin <vvs@sw.ru>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, devel@openvz.org,
+       linux-ext4@vger.kernel.org, Stephen Tweedie <sct@redhat.com>,
+       adilger@clusterfs.com
+Subject: Re: [PATCH ext3/ext4] orphan list check on destroy_inode
+References: <4663A0BF.9010008@sw.ru>
+In-Reply-To: <4663A0BF.9010008@sw.ru>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Tue, 05 Jun 2007 11:02:01 +0800
-Message-Id: <1181012521.1577.5.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bryan Wu <bryan.wu@analog.com>
+Vasily Averin wrote:
+> Customers claims to ext3-related errors, investigation showed that ext3 orphan list has been corrupted and have the reference to non-ext3 inode. The following debug helps to understand the reasons of this issue.
 
-This bug was caught by LTP testcase fchmod06 on Blackfin platform.
+Vasily, does your customer have this patch in place?
 
-In the manpage of fchmod, "EPERM: The effective UID does not match the
-owner of the file, and the process is not privileged (Linux: it does not
-have the CAP_FOWNER capability)."
+http://www.mail-archive.com/linux-ext4@vger.kernel.org/msg00889.html
 
-But the ramfs nommu code missed the inode_change_ok POSIX UID/GID
-verification. This patch fixed this.
+If not, perhaps it could be leading to the same error, because the inode 
+will not be properly removed from the orphan inode list when it is 
+freed, and could then be recycled...
 
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-Cc: David Howells <dhowells@redhat.com>
----
- fs/ramfs/file-nommu.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
-index 9345a46..5d258c4 100644
---- a/fs/ramfs/file-nommu.c
-+++ b/fs/ramfs/file-nommu.c
-@@ -195,6 +195,11 @@ static int ramfs_nommu_setattr(struct dentry *dentry, struct iattr *ia)
- 	unsigned int old_ia_valid = ia->ia_valid;
- 	int ret = 0;
- 
-+	/* POSIX UID/GID verification for setting inode attributes */
-+	ret = inode_change_ok(inode, ia);
-+	if (ret)
-+		return ret;
-+
- 	/* by providing our own setattr() method, we skip this quotaism */
- 	if ((old_ia_valid & ATTR_UID && ia->ia_uid != inode->i_uid) ||
- 	    (old_ia_valid & ATTR_GID && ia->ia_gid != inode->i_gid))
--- 
-1.5.2
+-Eric
 
