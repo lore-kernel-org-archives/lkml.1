@@ -1,90 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764899AbXFESp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764257AbXFESpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764899AbXFESp0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 14:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758717AbXFESpO
+	id S1764257AbXFESpp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 14:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759489AbXFESpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 14:45:14 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2075 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755514AbXFESpN (ORCPT
+	Tue, 5 Jun 2007 14:45:35 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:37857 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759520AbXFESpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 14:45:13 -0400
-Message-ID: <4665AF40.5020800@shadowen.org>
-Date: Tue, 05 Jun 2007 19:45:20 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 5 Jun 2007 14:45:34 -0400
+Date: Tue, 5 Jun 2007 14:45:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Pavel Machek <pavel@ucw.cz>
+cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before
+ hibernation/suspend
+In-Reply-To: <20070604110052.GI4363@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.44L0.0706051420351.2606-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: jschopp <jschopp@austin.ibm.com>
-CC: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.03
-References: <0a25fd03117c678f17006c5fcefaaed0@pinky> <466434A1.4040905@austin.ibm.com> <4664430C.1070909@shadowen.org> <46644A48.4090300@austin.ibm.com>
-In-Reply-To: <46644A48.4090300@austin.ibm.com>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jschopp wrote:
->> The original suggestion was to count them and only complain if there
->> were "lots".  I had thought though that the general consensus was that
->> #ifdef in C files was pretty much frowned upon.  I must admit to working
->> to the "you must be able to justify all winges in the output" rather
->> than expecting the result to be empty necessarily.
+On Mon, 4 Jun 2007, Pavel Machek wrote:
+
+> > With the USB subsystem I have followed the approach taken by the PM
+> > core, which is that tasks are frozen.  But one can -- and Linus has on
+> > at least one occasion -- make a good case that tasks should be left
+> > running while only I/O is frozen.  This would require the subsystem to
+> > distinguish between a selective device suspend and a system-wide
+> > suspend-to-RAM, so that selective resume could be enabled on demand in
+> > one case but not the other.
+> > 
+> > It's quite doable in principle -- it's just not the technique I used.
 > 
-> I really think we should work towards, "if you see an error the odds are
-> overwhelming that we aren't wasting your time and you should fix this."
-> rather than, "every time you send a patch you will get a couple false
-> positives that you will have to think about and justify to yourself,
-> slowing down your sending the patch out and making more work for you". 
-> I'm not saying we have to have 100% accuracy, but I want it well in the
-> 90s.
+> I guess we need to do that. Random user should not be able to prevent
+> machine from sleeping.
 
-Yeah I tend to agree and most of my work to date has been squashing
-false positives.
+Just to be clear about this, let's agree that we're talking about 
+suspend-to-RAM here, not hibernation.
 
-> Now back to the ifdef's.  I don't think we can really even say a lot or
-> a little is broken (short patch can do 1 ifdef that is stupid, long
-> patch could do several that are good).  I think we'll either have to let
-> that one go or put it under a non-default flag.    We do still have
-> humans reviewing code who can make judgement calls like if you #ifdefs
-> are good or not.
-> 
-> What we can check for is #if 0 code.  I hate that one.
+It boils down to whether we want to freeze user tasks.  As I recall,
+Linus said that he didn't have any big objection to freezing user
+threads; he was much more concerned about freezing kernel threads.  
+Thanks to Raphael's new notifier chains this will no longer be an
+issue, since kernel threads will be able to stop themselves when they
+receive a suspend notification.
 
-For now I've disabled this one.  Put it in the freezer with the
-StudlyCaps one.
+There may remain some obscure difficulties in discerning whether a 
+particular thread should be classified as user or kernel, but let's 
+ignore them.
 
-I like the idea of checking for #if 0 as that is very likely bogus in a
-patch meant for inclusion.
+Even if we don't actively freeze user threads, approximately the same
+effect can be achieved in the following way: Change the main kernel
+entry points so that any thread performing a system call during a
+suspend will get frozen until the suspend is over.  Threads that run
+entirely in userspace will continue doing useful work as before, and
+kernel threads won't be affected at all.  (Not that I think it's 
+necessary to do this; it's just a way to avoid freezing user tasks
+until they need it.)
 
->> We've not talked about how the tool might grow.  My thought was that
->> soon we would enable the robot replies on linux-mm (say) and use the
->> feedback from that to tune what we do and do not report.  I have been
->> pushing all of the contributions to -mm for sometime through it and
->> cirtainly the #ifdef one once of the more common ones (other than white
->> space dammage and >80 character lines).
-> 
-> If you have reasonably good SPAM filters on your list and make the robot
-> so it is very good about only picking up mail that really are patches
-> then this could be a very good idea. Just be careful.  I could send out
-> a bunch of mail with fake headers saying it was from say Andy Whitcroft,
-> then the robot replies and you got a bunch of junk mail.
+One way or another, freezing user tasks should not be a big deal.  
+After all, once the suspend is complete eveything will effectively be 
+frozen anyway.  I suppose there might be issues involving tasks which 
+need to run in order to complete the suspend -- IMO any such issues 
+should be handled by carrying out the necessary actions before the 
+point where we now start up the freezer.
 
-All very good points.  It does only reply to emails which are clearly
-unidiff patches and silently drops all else.  But the potential for spam
-is worrysome ... will think on this some and see if we can come up with
-a safety net.
 
-> User feedback is really useful, both for us and for the user.  Based on
-> user feedback from the very small number of users I had I tweaked a lot
-> of regular expressions, added some new checks, and removed some I could
-> never get right.
+The alternative is to have drivers take over the burden.  I don't like
+this at all.  The most obvious disadvantage is that the necessary
+checks would have to be duplicated many many times and spread out over
+lots of drivers.
 
-I am getting a fair bit of feedback, most of it copied to Joel and Randy
-so at least that bit is working.
+It's also harder to handle these things at the driver level.  Suppose a
+driver gets an I/O request while a suspend is underway.  What should it
+do?  Return an error?  Block until the suspend is over?  Both
+approaches have their difficulties:
 
--apw
+Returning an error would mean that suspend is no longer transparent.  
+Even an error like -EAGAIN.
+
+Waiting until the suspend is over is likely to be impractical.  At a 
+minimum it would involve adding code to drop a lock or mutex, enter the 
+freezer (or its equivalent), and then restart the I/O operation.  And 
+then, what if the driver was invoked with O_NONBLOCK?
+
+I think it is much better overall to stop I/O requests from being
+generated at the source, either by freezing userspace or preventing it
+from making system calls.  It's hard to imagine that anybody would
+miss the small amount of CPU time they'd be giving up by not allowing
+user threads to run during the time that a suspend is underway!
+
+Alan Stern
+
