@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762704AbXFEBCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760476AbXFEBYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762704AbXFEBCY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 21:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759426AbXFEBCR
+	id S1760476AbXFEBYm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 21:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbXFEBYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 21:02:17 -0400
-Received: from ozlabs.org ([203.10.76.45]:37722 "EHLO ozlabs.org"
+	Mon, 4 Jun 2007 21:24:35 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53365 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755413AbXFEBCQ (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 21:02:16 -0400
+	id S1752583AbXFEBYe (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 21:24:34 -0400
+Date: Tue, 5 Jun 2007 11:24:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Olof Johansson <olof@lixom.net>, Matt Mackall <mpm@selenic.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       Linux-kernel@vger.kernel.org
 Subject: Re: Interesting interaction between lguest and CFS
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Olof Johansson <olof@lixom.net>
-Cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, Linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20070604225827.GA4280@lixom.net>
+Message-Id: <20070605112424.4c116535.sfr@canb.auug.org.au>
+In-Reply-To: <1181005320.25878.68.camel@localhost.localdomain>
 References: <20070604173710.GR11166@waste.org>
-	 <20070604225827.GA4280@lixom.net>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 11:02:00 +1000
-Message-Id: <1181005320.25878.68.camel@localhost.localdomain>
+	<20070604225827.GA4280@lixom.net>
+	<1181005320.25878.68.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__5_Jun_2007_11_24_24_+1000_g_8AhAGaSA0qxp28"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-04 at 17:58 -0500, Olof Johansson wrote:
-> On Mon, Jun 04, 2007 at 12:37:10PM -0500, Matt Mackall wrote:
-> > With 2.6.22-rc3-mm1, I've got a long-running video transcoding going
-> > on. In other windows, I'm compiling, reading email, etc. with no
-> > noticeable problems.
-> > 
-> > If I fire up lguest and leave it sitting at a shell prompt for a
-> > couple moments, when I return to type something at the prompt, it can
-> > take 2-3 seconds for my input to echo. Once it starts responding,
-> > typing latency disappears. Suspend the other app and the latency
-> > disappears.
-> > 
-> > The system isn't swapping and has basically no I/O load.
-> 
-> Is this on hvc console? The hvc driver was recently modified to back off
-> it's timing interval when there's no input, the max value is 2 seconds.
-> 
-> See b791072ba3c3b29bab1890963bde52eb944a8451 for the changes in question.
+--Signature=_Tue__5_Jun_2007_11_24_24_+1000_g_8AhAGaSA0qxp28
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hmm, I thought that was only supposed to happen for "interruptless"
-consoles?
+On Tue, 05 Jun 2007 11:02:00 +1000 Rusty Russell <rusty@rustcorp.com.au> wr=
+ote:
+>
+> > See b791072ba3c3b29bab1890963bde52eb944a8451 for the changes in questio=
+n.
+>=20
+> Hmm, I thought that was only supposed to happen for "interruptless"
+> consoles?
 
-Rusty.
+The comment certainly says it only applies to polled mode.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__5_Jun_2007_11_24_24_+1000_g_8AhAGaSA0qxp28
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGZLtMFdBgD/zoJvwRAniQAJ9+Bg2dkD3IWe04W668ZOkmFXbNgACfWH2K
+KJXbH+EQ4LZYTdJi6ED1DMA=
+=T22m
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Jun_2007_11_24_24_+1000_g_8AhAGaSA0qxp28--
