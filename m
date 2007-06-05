@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932273AbXFEO0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764614AbXFEO0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932273AbXFEO0B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764345AbXFEOZu
+	id S1764614AbXFEO0b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764345AbXFEO0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:25:50 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:42370 "EHLO havoc.gtf.org"
+	Tue, 5 Jun 2007 10:26:14 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:41292 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762931AbXFEOZt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:25:49 -0400
-Date: Tue, 5 Jun 2007 10:25:48 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, mroos@linux.ee,
-       linux-kernel@vger.kernel.org
-Subject: Re: libata & no PCI: dma_[un]map_single undefined
-Message-ID: <20070605142548.GD31565@havoc.gtf.org>
-References: <Pine.SOC.4.64.0706032314590.20033@math> <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org> <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu> <20070605135608.GA31565@havoc.gtf.org> <20070605141714.GA2572@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605141714.GA2572@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+	id S1764683AbXFEO0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 10:26:12 -0400
+Date: Tue, 5 Jun 2007 16:20:53 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Takashi Iwai <tiwai@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, Uwe Bugla <uwe.bugla@gmx.de>,
+       linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: BUG in 2.6.22-rc2-mm1: Parts of Alsa sound architecture broken
+In-Reply-To: <s5h64625vu6.wl%tiwai@suse.de>
+Message-ID: <Pine.LNX.4.61.0706051620300.20829@yvahk01.tjqt.qr>
+References: <20070524200052.234330@gmx.net> <20070524130921.8dbd3777.akpm@linux-foundation.org>
+ <s5hiragopsx.wl%tiwai@suse.de> <20070525102806.77ee9c0c.akpm@linux-foundation.org>
+ <s5h1wh4si5l.wl%tiwai@suse.de> <Pine.LNX.4.61.0705261248150.7344@yvahk01.tjqt.qr>
+ <s5hveebziom.wl%tiwai@suse.de> <Pine.LNX.4.61.0705292212120.11140@yvahk01.tjqt.qr>
+ <s5hps4a60zl.wl%tiwai@suse.de> <s5hlkey5zvt.wl%tiwai@suse.de>
+ <Pine.LNX.4.61.0706051523580.20829@yvahk01.tjqt.qr> <s5h64625vu6.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 03:17:14PM +0100, Russell King wrote:
-> On Tue, Jun 05, 2007 at 09:56:08AM -0400, Jeff Garzik wrote:
-> > On Tue, Jun 05, 2007 at 12:22:18PM +0100, Alan Cox wrote:
-> > > > NAK
-> > > > 
-> > > > We have generic devices and generic DMA mapping.  libata already uses
-> > > > the generic stuff.  Now fix the platform...
-> > > 
-> > > Nice theory but your generic helpers rely on the map functions working
-> > > even for generic hardware that doesn't need them, so at the very least
-> > > there is some clean up required.
-> > 
-> > Sure there is some clean up needed -- on the arch side.
-> > 
-> > Even !PCI dma_xxx wrappers that do nothing more than return a dma
-> > mapping error are a valid platform implementation.
-> 
-> If you don't have DMA capabilities, does libata still need ->pad and
-> ->pad_dma set?
-> 
-> I had a problem where a pata_platform device which wasn't DMA capable
-> failed to initialise because we quite rightfully made dma_alloc_coherent()
-> fail (due to the DMA masks not being set.)
-> 
-> It seems odd that libata requires DMA memory for non-DMA capable devices...
 
-Now -that- is a quite valid complaint.
+On Jun 5 2007 16:17, Takashi Iwai wrote:
+>
+>Hm, I guess Jens didn't know about this side-effect.
+>
+>When I don't set "default y", I'll be asked for each belonging item
+>even though I chose "y" manually for the top config
+>(CONFIG_*_DRIVERS).
+>
+>Strangely, setting "default y" has no this effect...
 
-libata needs a bit of work to fall back to PIO-only, if dma_xxx fails.
-
-libata also needs some work to fall back to PIO polling, if IRQ is not
-present, or registration fails.
-
-	Jeff
+Not in oldconfig, it asks you anyway.
+But it should in menuconfig, and the graphical ones.
 
 
-
+	Jan
+-- 
