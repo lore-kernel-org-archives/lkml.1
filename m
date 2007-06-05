@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763238AbXFEEiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761492AbXFEF0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763238AbXFEEiB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 00:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbXFEEhy
+	id S1761492AbXFEF0T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 01:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbXFEF0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 00:37:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:41699 "EHLO ozlabs.org"
+	Tue, 5 Jun 2007 01:26:11 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37615 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753993AbXFEEhx (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 00:37:53 -0400
-Subject: Re: Interesting interaction between lguest and CFS
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       Linux-kernel@vger.kernel.org
-In-Reply-To: <20070605041803.GO11115@waste.org>
-References: <20070604173710.GR11166@waste.org>
-	 <1181002734.25878.56.camel@localhost.localdomain>
-	 <1181010675.25878.140.camel@localhost.localdomain>
-	 <20070605041803.GO11115@waste.org>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 14:37:38 +1000
-Message-Id: <1181018258.25878.150.camel@localhost.localdomain>
+	id S1754848AbXFEF0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 01:26:10 -0400
+Date: Tue, 5 Jun 2007 07:27:11 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: default charset for linux-kernel code?
+Message-ID: <20070605052711.GA21745@uranus.ravnborg.org>
+References: <20070604213645.GA18588@uranus.ravnborg.org> <20070604231115.GG5500@stusta.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070604231115.GG5500@stusta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-04 at 23:18 -0500, Matt Mackall wrote:
-> On Tue, Jun 05, 2007 at 12:31:15PM +1000, Rusty Russell wrote:
-> > Does this solve it for you?
+On Tue, Jun 05, 2007 at 01:11:15AM +0200, Adrian Bunk wrote:
+> On Mon, Jun 04, 2007 at 11:36:45PM +0200, Sam Ravnborg wrote:
+> > In private mail I have discussed with a person the default charset
+> > to use for source code and in particular Kconfig files in the kernel.
+> > I recall to have seen some mails about UTF-8 but I would like to have
+> > confirmed what is the 'nofficial?' recommended charset for kernel code?
 > 
-> Nope. Doesn't accept input and hogs the CPU with lots of system time.
+> Everything that gets compiled into the kernel image (including printk()'s
+> but excluding comments) 7bit ASCII, the rest UTF-8.
+> 
+> For Kconfig files UTF-8 should be the right choice (assuming all
+> *config tools support it).
 
-Dumb question: did you replace both the module and the launcher?
+Thanks - this also matches my understanding.
 
-Rusty.
-
-
+	Sam
