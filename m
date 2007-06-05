@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764846AbXFERvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbXFER5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764846AbXFERvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 13:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbXFERvN
+	id S1760212AbXFER5W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 13:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756033AbXFER5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 13:51:13 -0400
-Received: from mfo10.iij4u.or.jp ([210.138.174.80]:49826 "EHLO
-	mfo10.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216AbXFERvM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 13:51:12 -0400
-X-Greylist: delayed 381 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jun 2007 13:51:12 EDT
-Date: Wed, 06 Jun 2007 02:35:58 +0900 (JST)
-Message-Id: <20070606.023558.230059723.jet@gyve.org>
-To: cebbert@redhat.com
-Cc: B.Zolnierkiewicz@elka.pw.edu.pl, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] never called printk statement in
- ide-taskfile.c::wait_drive_not_busy
-From: Masatake YAMATO <jet@gyve.org>
-In-Reply-To: <4665988A.5060902@redhat.com>
-References: <20070605.112124.28713903.jet@gyve.org>
-	<4665988A.5060902@redhat.com>
-X-Mailer: Mew version 5.2 on Emacs 22.0.98 / Mule 5.0 (SAKAKI)
+	Tue, 5 Jun 2007 13:57:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57429 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754939AbXFER5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 13:57:02 -0400
+Date: Tue, 5 Jun 2007 13:56:48 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: nfsv4@linux-nfs.org, nfs@lists.sourceforge.net
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] intro: make NFSv4 exclusive open calls set and use the
+ bitmask in the reply
+Message-Id: <20070605135648.579e2557.jlayton@redhat.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On 06/04/2007 10:21 PM, Masatake YAMATO wrote:
-> > diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-> > index 30175c7..5e05311 100644
-> > --- a/drivers/ide/ide-taskfile.c
-> > +++ b/drivers/ide/ide-taskfile.c
-> > @@ -249,7 +249,7 @@ static u8 wait_drive_not_busy(ide_drive_t *drive)
-> >  	while (((stat = hwif->INB(IDE_STATUS_REG)) & BUSY_STAT) && retries--)
-> >  		udelay(10);
-> >  
-> > -	if (!retries)
-> > +	if (retries < 0)
-> 
-> 	if (stat & BUSY_STAT)
-> 
-> >  		printk(KERN_ERR "%s: drive still BUSY!\n", drive->name);
-> >  
+Around a year ago, Chris Lalancette posted a patch to make it so that
+when an EXCLUSIVE nfs4 create is done, that the mtime and atime get
+properly updated in the following setattr call. At the time Trond
+replied that that approach was incorrect and that we need to check the
+bitmask in the reply to know what attributes need to be updated.
 
-Oh, yes.
-Giving `retries' both roles: loop counter and condition flag for logging
-may not good.
+The original thread is here:
 
+http://linux-nfs.org/pipermail/nfsv4/2006-June/004489.html
 
-    for (retries = 0; retries < 100; retries++)
-    {
-	    if ((stat = hwif->INB(IDE_STATUS_REG)) & BUSY_STAT)
-	       break;
+The following patchset is a first stab at making the Linux client and
+server adhere to the correct NFS4 exclusive open semantics.
 
-	    udelay(10);
-    }
-
-
-    if (stat & BUSY_STAT)
-	    printk(KERN_ERR "%s: drive still BUSY!\n", drive->name);
-
-Masatake YAMATO
+As always, comments are appreciated...
+-- 
+Jeff Layton <jlayton@redhat.com>
