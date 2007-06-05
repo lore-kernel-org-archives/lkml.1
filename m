@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761956AbXFESSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbXFESaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761956AbXFESSV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 14:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbXFESSN
+	id S1760180AbXFESaZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 14:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXFESaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 14:18:13 -0400
-Received: from mga01.intel.com ([192.55.52.88]:39150 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756050AbXFESSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 14:18:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,386,1175497200"; 
-   d="scan'208";a="253519617"
-Date: Tue, 5 Jun 2007 11:13:42 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
-Message-ID: <20070605181342.GE17143@linux-os.sc.intel.com>
-References: <20070601004427.GI30788@tree.beaverton.ibm.com> <20070605172310.GD17143@linux-os.sc.intel.com> <20070605173647.GC12782@tree.beaverton.ibm.com>
-Mime-Version: 1.0
+	Tue, 5 Jun 2007 14:30:13 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:39791 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754628AbXFESaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 14:30:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=i+8lIKIzKSQ9T4Lq/uDDC8lqV7ITKiokfAdFsJIJs6oqiU6pi/t6Gs5N6jJes0v/y0q1muqFP7yaOuaCBOaU/vdvJa/Dj4YJ8dGYIx+P9+DktFLgktJHOzFMN5GKgPXk9edLOBLVIAIOG/XP1AF8A2mgnPNCioRKUDNrrdsxnhw=
+Date: Tue, 5 Jun 2007 22:28:50 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Joe Perches <joe@perches.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] UDF: coding style conversion - lindent fixups 2
+Message-ID: <20070605182850.GD8398@cvg>
+References: <20070605180335.GC8398@cvg> <1181067646.23941.31.camel@localhost>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070605173647.GC12782@tree.beaverton.ibm.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <1181067646.23941.31.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 10:36:47AM -0700, Darrick J. Wong wrote:
-> On Tue, Jun 05, 2007 at 10:23:10AM -0700, Siddha, Suresh B wrote:
-> 
-> > Darrick, I see a kernel bug in this area(which is already filled with bugs,
-> > and I am looking into ways to fix them). Are you making sure that
-> > between step-1 and step-2, that interrupts actually started arriving at cpu1?
-> > 
-> > i.e., do step-1 and wait till the irq's start hitting at cpu1. At this point
-> > do step-2 and let us know if you still hit this bug?
-> 
-> Yes, the bug only happens after CPU1 begins to receive interrupts.
+[Joe Perches - Tue, Jun 05, 2007 at 11:20:46AM -0700]
+| On Tue, 2007-06-05 at 22:03 +0400, Cyrill Gorcunov wrote:
+| > -			    cpu_to_le32(epos.offset -
+| > -					sizeof(struct allocExtDesc));
+| > -			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT)
+| > -			    || UDF_SB_UDFREV(inode->i_sb) >= 0x0201)
+| > +				cpu_to_le32(epos.offset -
+| > +					    sizeof(struct allocExtDesc));
+| > +			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
+| > +			    UDF_SB_UDFREV(inode->i_sb) >= 0x0201)
+| 
+| Please do not move logical operators or tests from
+| "beginning of next line" to "end of line".
+| 
+| It's coder taste and there is no style guide consensus for this.
+| 
+| cheers,
+| 
+| Joe
+| 
 
-I see. Your system should have 4 or 8 logical cpu's right. So you must be
-using logical flat mode, right?
+Actually a such conversion were made by Lindent - not coder...
+See for original truncate.c in current Linus's tree
 
-When this bug happens, what does /proc/irq/<irq-no>/smp_affinity show?
+		Cyrill
 
-thanks,
-suresh
