@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932754AbXFEQfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765373AbXFEQll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932754AbXFEQfa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 12:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764856AbXFEQfW
+	id S1765373AbXFEQll (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 12:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbXFEQle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 12:35:22 -0400
-Received: from are.twiddle.net ([64.81.246.98]:45801 "EHLO are.twiddle.net"
+	Tue, 5 Jun 2007 12:41:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56029 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764834AbXFEQfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 12:35:21 -0400
-Date: Tue, 5 Jun 2007 09:32:43 -0700
-From: Richard Henderson <rth@twiddle.net>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Meelis Roos <mroos@linux.ee>, ink@jurassic.park.msu.ru,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: alpha modpost warnings
-Message-ID: <20070605163243.GA9149@twiddle.net>
-Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
-	Meelis Roos <mroos@linux.ee>, ink@jurassic.park.msu.ru,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <Pine.SOC.4.64.0706041308560.7370@math> <20070605053502.GB21745@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1756561AbXFEQld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 12:41:33 -0400
+From: Andi Kleen <ak@suse.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] lguest-fix-divide-error-implement-sched_clock
+Date: Tue, 5 Jun 2007 18:37:22 +0200
+User-Agent: KMail/1.9.1
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org
+References: <20070522223828.GV11115@waste.org> <20070605090714.22bfcfd4.akpm@linux-foundation.org> <46658C41.9090105@zytor.com>
+In-Reply-To: <46658C41.9090105@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070605053502.GB21745@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200706051837.22847.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 07:35:02AM +0200, Sam Ravnborg wrote:
-> > WARNING: arch/alpha/kernel/built-in.o(.text+0x7d2c): Section mismatch:
-> reference to .init.text:init_rtc_irq (between 'common_init_rtc' and
-> 'timer_interrupt')
+On Tuesday 05 June 2007 18:16, H. Peter Anvin wrote:
 
-Yeah, I know about them of course.  The proper fix, as best I see it,
-is to split the alpha_mv structure in two, one containing all the __init
-pointers, and the other for more long term stuff.
+> Yes.  Since there is now a mechanism to get a clean message out, it
+> seemed like a good idea to extend the benefit of static determination.
+> Andi already had in his tree -- and I copied it -- code to deal with
+> stuff like "cpu_has_tsc" as a compile-time constant, eliminating the
+> "else" clause.
+>
+> Depending on the configuration it affects FPU, TSC, 3Dnow.
 
-I havn't tried to tackle this yet, as there are other more pressing 
-issues, like how the glibc testsuite manages to generate soft lockups.
+I don't think it's a good idea for the TSC. There are various
+setups where it is unreliable and also often simulators don't 
+implement it correctly. And it's always a valuable workaround
+to be able to turn it off.
 
+Except possibly for the FPU only features used by the gcc output
+should be tested this way. For everything else it is better to 
+test at runtime.
 
-r~
+That is x86-64 makes some more assumptions. But even it
+doesn't assume TSC. 
+
+I added the mechanism to statically evaluate mostly to share cpufeatures.h
+between 32bit and 64bit at some point -- but didn't quite finish that work 
+before the last merge.
+
+-Andi
