@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933549AbXFEVZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933447AbXFEV1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933549AbXFEVZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 17:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXFEVZd
+	id S933447AbXFEV1t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 17:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932671AbXFEV1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 17:25:33 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3752 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932181AbXFEVZc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 17:25:32 -0400
-Date: Tue, 5 Jun 2007 22:25:23 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, alan@lxorguk.ukuu.org.uk, hch@infradead.org,
-       mroos@linux.ee, linux-kernel@vger.kernel.org
-Subject: Re: libata & no PCI: dma_[un]map_single undefined
-Message-ID: <20070605212523.GB18027@flint.arm.linux.org.uk>
-References: <20070605151104.GG31565@havoc.gtf.org> <20070605151847.GD2572@flint.arm.linux.org.uk> <20070605152133.GE2572@flint.arm.linux.org.uk> <20070605.122745.118950378.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605.122745.118950378.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 5 Jun 2007 17:27:41 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:41938 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932596AbXFEV1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 17:27:40 -0400
+Message-id: <31712116432657116505@wsc.cz>
+In-reply-to: <1058130869771517818@wsc.cz>
+Subject: [PATCH 4/3] Char: stallion, remove user class report request
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Date: Tue,  5 Jun 2007 23:27:40 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 12:27:45PM -0700, David Miller wrote:
-> From: Russell King <rmk+lkml@arm.linux.org.uk>
-> Date: Tue, 5 Jun 2007 16:21:33 +0100
-> 
-> > Oh sod it, I'm unsubscribing from LKML.  Jeff, hope your happy.
-> 
-> What an adult way for you to handle this.
+Ok, one more.
 
-Indeed; it's obvious that you're not listening to reason, so I won't
-waste my time and everyone elses trying to get through to people who
-just aren't listening.
+--
 
-I've gone.  Congratulations.
+stallion, remove user class report request
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+
+---
+commit 400de8dd765298a11daec2a4a936a70798f428aa
+tree 81675ba379783ad98f5c0387620a59b2ff2247a7
+parent d62c04c8fe3271ab2089f442e04ad522a158bf8f
+author Jiri Slaby <jirislaby@gmail.com> Tue, 05 Jun 2007 23:26:16 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Tue, 05 Jun 2007 23:26:16 +0200
+
+ drivers/char/stallion.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
+index 45bf2a2..eeb6200 100644
+--- a/drivers/char/stallion.c
++++ b/drivers/char/stallion.c
+@@ -2357,9 +2357,6 @@ static int __devinit stl_pciprobe(struct pci_dev *pdev,
+ 	if ((pdev->class >> 8) == PCI_CLASS_STORAGE_IDE)
+ 		goto err;
+ 
+-	dev_info(&pdev->dev, "please, report this to LKML: %x/%x/%x\n",
+-			pdev->vendor, pdev->device, pdev->class);
+-
+ 	retval = pci_enable_device(pdev);
+ 	if (retval)
+ 		goto err;
