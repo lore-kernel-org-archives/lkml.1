@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764807AbXFEONg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764827AbXFEORh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764807AbXFEONg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 10:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764274AbXFEONW
+	id S1764827AbXFEORh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 10:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762850AbXFEORa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 10:13:22 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:18856 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763495AbXFEONR (ORCPT
+	Tue, 5 Jun 2007 10:17:30 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4425 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762450AbXFEOR3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 10:13:17 -0400
-Message-ID: <46656FD6.6030305@ru.mvista.com>
-Date: Tue, 05 Jun 2007 18:14:46 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Geller Sandor <wildy@petra.hos.u-szeged.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: HPT374 IDE problem with 2.6.21.* kernels
-References: <Pine.LNX.4.62.0705301112170.1260@petra.hos.u-szeged.hu> <Pine.LNX.4.62.0706031224030.25438@petra.hos.u-szeged.hu> <4662FC30.2000602@ru.mvista.com> <200706050300.56079.bzolnier@gmail.com> <46655AEA.4020906@ru.mvista.com>
-In-Reply-To: <46655AEA.4020906@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jun 2007 10:17:29 -0400
+Date: Tue, 5 Jun 2007 15:17:14 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, mroos@linux.ee,
+       linux-kernel@vger.kernel.org
+Subject: Re: libata & no PCI: dma_[un]map_single undefined
+Message-ID: <20070605141714.GA2572@flint.arm.linux.org.uk>
+Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Christoph Hellwig <hch@infradead.org>,
+	David Miller <davem@davemloft.net>, mroos@linux.ee,
+	linux-kernel@vger.kernel.org
+References: <Pine.SOC.4.64.0706032314590.20033@math> <20070603.174010.41894721.davem@davemloft.net> <20070604074719.GB15390@infradead.org> <20070604171952.GA3437@dhcp83-182.boston.redhat.com> <20070605122218.410d611b@the-village.bc.nu> <20070605135608.GA31565@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070605135608.GA31565@havoc.gtf.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Tue, Jun 05, 2007 at 09:56:08AM -0400, Jeff Garzik wrote:
+> On Tue, Jun 05, 2007 at 12:22:18PM +0100, Alan Cox wrote:
+> > > NAK
+> > > 
+> > > We have generic devices and generic DMA mapping.  libata already uses
+> > > the generic stuff.  Now fix the platform...
+> > 
+> > Nice theory but your generic helpers rely on the map functions working
+> > even for generic hardware that doesn't need them, so at the very least
+> > there is some clean up required.
+> 
+> Sure there is some clean up needed -- on the arch side.
+> 
+> Even !PCI dma_xxx wrappers that do nothing more than return a dma
+> mapping error are a valid platform implementation.
 
->> I felt inspired by this explanation (thanks!) and took a look at
->> hpt374-opensource-v2.10 vendor driver.  Here is something interesting:
+If you don't have DMA capabilities, does libata still need ->pad and
+->pad_dma set?
 
->> glbdata.c:
+I had a problem where a pata_platform device which wasn't DMA capable
+failed to initialise because we quite rightfully made dma_alloc_coherent()
+fail (due to the DMA masks not being set.)
 
->> ...
->> #ifdef CLOCK_66MHZ
->> ULONG setting370_66[] = {
->>         0xd029d5e,  0xd029d26,  0xc829ca6,  0xc829c84,  0xc829c62,
->>         0x2c829d2c, 0x2c829c66, 0x2c829c62,
->>         0x1c829c62, 0x1c9a9c62, 0x1c929c62, 0x1c8e9c62, 0x1c8a9c62,
->>         0x1c8a9c62/*0x1cae9c62*/, 0x1c869c62, 0x1c869c62,
->> };
->> ...
+It seems odd that libata requires DMA memory for non-DMA capable devices...
 
->> hpt366.c:
-
->> ...
->> static u32 sixty_six_base_hpt37x[] = {
->>         /* XFER_UDMA_6 */       0x1c869c62,
->>         /* XFER_UDMA_5 */       0x1cae9c62,     /* 0x1c8a9c62 */
->> ...
-
->> So we are using Dual ATA Clock for UDMA5 whereas vendor driver doesn't
-
->    This is so in all other HPT drivers (and HPT371N datasheet has the 
-> same figures -- this chip is the only one supporting UDMA6 and having 
-> the default DPLL clock > 50 MHz).
-
-    What I meant to say was the only one I have a datasheet for. :-)
-
-MBR, Sergei
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
