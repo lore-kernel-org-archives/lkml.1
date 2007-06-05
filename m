@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934086AbXFEXnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934133AbXFEXpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934086AbXFEXnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 19:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760141AbXFEXnF
+	id S934133AbXFEXpT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 19:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933456AbXFEXpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 19:43:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45839
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758791AbXFEXnD (ORCPT
+	Tue, 5 Jun 2007 19:45:06 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:14927 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933395AbXFEXpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 19:43:03 -0400
-Date: Tue, 05 Jun 2007 16:43:17 -0700 (PDT)
-Message-Id: <20070605.164317.78711072.davem@davemloft.net>
-To: chrisw@sous-sol.org
-Cc: simon@fire.lp0.eu, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       yoshfuji@linux-ipv6.org, berni@birkenwald.de, stable@kernel.org,
-       linkfanel@yahoo.fr
-Subject: Re: [stable] "[IPV6]: Fix routing round-robin locking." breaks
- manual default route (bug 8349)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070605233616.GF3723@sequoia.sous-sol.org>
-References: <465B45E0.3040007@simon.arlott.org.uk>
-	<20070605233616.GF3723@sequoia.sous-sol.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jun 2007 19:45:05 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=ohRsEmsssdvVO8seU/u8qlteFWDqtZug58CJa0j5UOqm5y1JhGdXQGXEN98NPyCko
+	r0/SkbKlPh/K0uIQXaAPA==
+Date: Tue, 5 Jun 2007 16:44:43 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org, ak@suse.de,
+       clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
+ globally
+In-Reply-To: <Pine.LNX.4.64.0706051629270.6295@schroedinger.engr.sgi.com>
+Message-ID: <alpine.DEB.0.99.0706051633590.17626@chino.kir.corp.google.com>
+References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
+ <20070605160149.348b5c4a.pj@sgi.com> <alpine.DEB.0.99.0706051608090.16201@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0706051619130.6192@schroedinger.engr.sgi.com>
+ <alpine.DEB.0.99.0706051620580.17032@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0706051629270.6295@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Wright <chrisw@sous-sol.org>
-Date: Tue, 5 Jun 2007 16:36:16 -0700
+On Tue, 5 Jun 2007, Christoph Lameter wrote:
 
-> Rather than reverting that patch, applying this patch should fix
-> your ipv6 issue:
+> But with the patch the process would be able to terminate. There is no 
+> global OOM situation. If there would be a global OOM situation then 
+> TIF_MEMDIE would not help.
 > 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=7ebba6d14f8d63cad583bf1cc0330b601d5a8171
+
+Sure it would, it would have access to memory reserves because of the 
+change in watermarks through get_page_from_freelist().
+
+If that fails, we can't allocate elsewhere because then we have taken 
+exclusive memory from other applications and is contrary to the definition 
+of mem_exclusive.  You need to construct your cpuset hierarchy with these 
+scenarios in mind; when you ask for an exclusive cpuset, it shouldn't come 
+with a disclaimer that says "if another cpuset that is also exclusive 
+happens to OOM, we'll steal your memory anyway and it's not our problem if 
+the dying task gets stuck in D state and doesn't exit synchronously or 
+reliably because all we did was send it a SIGKILL."
+
+> So its seems that the patch is addressing an imagined situation?
 > 
-> I'll wait for Dave or Yoshifuji to decide if this is a proper -stable
-> patch.
 
-I have a batch of stuff to send to -stable tonight and I
-will make sure that this will be part of it.
+No, it's returning us to the previous logic where an exclusive cpuset was 
+actually exclusive.
 
-Thanks for reminding me.
+And, again, without this change it is possible to allocate in other 
+exclusive cpusets without first exhausting your own memory reserves.  
+That's wrong.
+
+		David
