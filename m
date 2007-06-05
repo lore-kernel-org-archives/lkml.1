@@ -1,64 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934206AbXFEXzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933671AbXFEX4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934206AbXFEXzy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 19:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934142AbXFEXzj
+	id S933671AbXFEX4b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 19:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933460AbXFEX4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 19:55:39 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47100 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934119AbXFEXzi (ORCPT
+	Tue, 5 Jun 2007 19:56:11 -0400
+Received: from 108.235.97-84.rev.gaoland.net ([84.97.235.108]:48173 "EHLO
+	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932331AbXFEX4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 19:55:38 -0400
-Date: Tue, 5 Jun 2007 16:55:38 -0700
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: clameter@sgi.com, akpm@linux-foundation.org, ak@suse.de,
-       clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
- globally
-Message-Id: <20070605165538.0a3ce6fe.pj@sgi.com>
-In-Reply-To: <alpine.DEB.0.99.0706051633590.17626@chino.kir.corp.google.com>
-References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
-	<20070605160149.348b5c4a.pj@sgi.com>
-	<alpine.DEB.0.99.0706051608090.16201@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0706051619130.6192@schroedinger.engr.sgi.com>
-	<alpine.DEB.0.99.0706051620580.17032@chino.kir.corp.google.com>
-	<Pine.LNX.4.64.0706051629270.6295@schroedinger.engr.sgi.com>
-	<alpine.DEB.0.99.0706051633590.17626@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jun 2007 19:56:08 -0400
+X-Greylist: delayed 569 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jun 2007 19:56:08 EDT
+From: Samir Bellabes <sam@synack.fr>
+To: Jesse Huang <jesse@icplus.com.tw>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, akpm@osdl.org,
+       jgarzik@pobox.com, jeff@garzik.org
+Subject: Re: [PATCH] sundance: PHY address form 0, only for device ID 0x0200 (IP100A) (20070605)
+References: <1181051441.2487.1.camel@localhost.localdomain>
+Date: Wed, 06 Jun 2007 01:46:34 +0200
+In-Reply-To: <1181051441.2487.1.camel@localhost.localdomain> (Jesse Huang's
+	message of "Tue, 05 Jun 2007 09:50:40 -0400")
+Message-ID: <m2bqfuufqd.fsf@synack.fr>
+User-Agent: Gnus/5.110003 (No Gnus v0.3) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If that fails, we can't allocate elsewhere because then we have taken 
-> exclusive memory from other applications and is contrary to the definition 
-> of mem_exclusive. 
+Jesse Huang <jesse@icplus.com.tw> writes:
 
-Well, I can't speak to the 'real' meaning of TIF_MEMDIE with authority,
-but I can speak to the meaning of cpuset flags.
+Hi Jesse,
 
-The mem_exclusive flag doesn't mean this.
+> -	for (phy = 1; phy <= 32 && phy_idx < MII_CNT; phy++) {
+> +	if(sundance_pci_tbl[np->chip_id].device == 0x0200) 
+> +		phy = 0;
+> +	else 
+> +		phy = 1;
+> +	for (; phy <= 32 && phy_idx < MII_CNT; phy++) {
 
-It means that you cannot overlap the memory of a sibling cpuset.
+I think this value can be put in driver_data.
+Attached patch is doing it, but I didn't test it.
 
-You will, necessarily, still overlap the memory of your ancestor cpusets.
+tree 602e0c2def631e82635b4f8aad762e69184af143
+parent 5ecd3100e695228ac5e0ce0e325e252c0f11806f
+author Samir Bellabes <sam@synack.fr> 1181086775 +0200
+committer Samir Bellabes <sam@synack.fr> 1181086775 +0200
 
-Whether or not you make any use of the mem_exclusive flag, you still
-get the same (limited) guarantees of memory usage -- namely that your
-memory won't be used by tasks in non-overlapping cpusets, with some
-exceptions, such as:
- 1) memory handed out to interrupt code,
- 2) memory handed out for GFP_ATOMIC requests, and
- 3) tasks marked PF_EXITING -- will soon free up memory
+Search PHY address form 0, only for device ID 0x0200 (IP100A). Other
+device are from PHY address 1.
 
-Tasks in cpusets ancestor to your tasks cpuset can always, easily,
-use memory on the same nodes your task is on.
+Noticed by Jesse Huang <jesse@icplus.com.tw>
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Signed-off-by: Samir Bellabes <sam@synack.fr>
+
+------------------------------------------------------------------------------
+
+ sundance.c |   40 +++++++++++++++++++++++++++++++---------
+ 1 files changed, 31 insertions(+), 9 deletions(-)
+
+------------------------------------------------------------------------------
+
+diff --git a/drivers/net/sundance.c b/drivers/net/sundance.c
+index e1f912d..fb59801 100644
+--- a/drivers/net/sundance.c
++++ b/drivers/net/sundance.c
+@@ -205,14 +205,36 @@ #ifndef CONFIG_SUNDANCE_MMIO
+ #define USE_IO_OPS 1
+ #endif
+ 
++enum cfg_version {
++	SUNDANCE_CFG_0 = 0x00,	
++	SUNDANCE_CFG_1,
++	SUNDANCE_CFG_2,
++	SUNDANCE_CFG_3,
++	SUNDANCE_CFG_4,
++	SUNDANCE_CFG_5,
++	SUNDANCE_CFG_6
++};
++
++static const struct {
++	unsigned int phy;
++} sundance_cfg_info[] = {
++	[SUNDANCE_CFG_0] = { 1 },
++	[SUNDANCE_CFG_1] = { 1 },
++	[SUNDANCE_CFG_2] = { 1 },
++	[SUNDANCE_CFG_3] = { 1 },
++	[SUNDANCE_CFG_4] = { 1 },
++	[SUNDANCE_CFG_5] = { 1 },
++	[SUNDANCE_CFG_6] = { 0 }
++};
++
+ static const struct pci_device_id sundance_pci_tbl[] = {
+-	{ 0x1186, 0x1002, 0x1186, 0x1002, 0, 0, 0 },
+-	{ 0x1186, 0x1002, 0x1186, 0x1003, 0, 0, 1 },
+-	{ 0x1186, 0x1002, 0x1186, 0x1012, 0, 0, 2 },
+-	{ 0x1186, 0x1002, 0x1186, 0x1040, 0, 0, 3 },
+-	{ 0x1186, 0x1002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4 },
+-	{ 0x13F0, 0x0201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 5 },
+-	{ 0x13F0, 0x0200, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 6 },
++	{ 0x1186, 0x1002, 0x1186, 0x1002, 0, 0, SUNDANCE_CFG_0 },
++	{ 0x1186, 0x1002, 0x1186, 0x1003, 0, 0, SUNDANCE_CFG_1 },
++	{ 0x1186, 0x1002, 0x1186, 0x1012, 0, 0, SUNDANCE_CFG_2 },
++	{ 0x1186, 0x1002, 0x1186, 0x1040, 0, 0, SUNDANCE_CFG_3 },
++	{ 0x1186, 0x1002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, SUNDANCE_CFG_4 },
++	{ 0x13F0, 0x0201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, SUNDANCE_CFG_5 },
++	{ 0x13F0, 0x0200, PCI_ANY_ID, PCI_ANY_ID, 0, 0, SUNDANCE_CFG_6 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(pci, sundance_pci_tbl);
+@@ -468,7 +490,7 @@ #else
+ 	int bar = 1;
+ #endif
+ 	int phy, phy_idx = 0;
+-
++	const unsigned int phy_start = sundance_cfg_info[ent->driver_data].phy;
+ 
+ /* when built into the kernel, we only print version if device is found */
+ #ifndef MODULE
+@@ -562,7 +584,7 @@ #endif
+ 	 * It seems some phys doesn't deal well with address 0 being accessed
+ 	 * first, so leave address zero to the end of the loop (32 & 31).
+ 	 */
+-	for (phy = 1; phy <= 32 && phy_idx < MII_CNT; phy++) {
++	for (phy = phy_start; phy <= 32 && phy_idx < MII_CNT; phy++) {
+ 		int phyx = phy & 0x1f;
+ 		int mii_status = mdio_read(dev, phyx, MII_BMSR);
+ 		if (mii_status != 0xffff  &&  mii_status != 0x0000) {
