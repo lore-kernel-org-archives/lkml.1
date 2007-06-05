@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764116AbXFENWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbXFEN1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764116AbXFENWk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 09:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758876AbXFENWd
+	id S1761562AbXFEN1D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 09:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760044AbXFEN0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 09:22:33 -0400
-Received: from hu-out-0506.google.com ([72.14.214.228]:18318 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756484AbXFENWc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 09:22:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=katkC78yP1G81pAA2741ImLxLKnNAxB6xFyqzM49yOKf2GZHQKv+/WJLohQs0LQl4SSWqAq9UQUNOTyyhf0f5zrS7eEvplPDXH6u9Uqe9qa540yUW9VCq4+bRpBzgrH1xgMQRk3nD29csgjmGq5ZkkOPih19fhWLy0We3JAgOO0=
-Message-ID: <46656395.30400@gmail.com>
-Date: Tue, 05 Jun 2007 14:22:29 +0100
-From: Michael-Luke Jones <mike.luke.jones@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+	Tue, 5 Jun 2007 09:26:55 -0400
+Received: from raven.upol.cz ([158.194.120.4]:41808 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759619AbXFEN0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 09:26:54 -0400
+Date: Tue, 5 Jun 2007 15:38:34 +0200
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [kbuild-devel] [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines
+Message-ID: <20070605133834.GO7266@flower.upol.cz>
+References: <20070603204700.GH9240@uranus.ravnborg.org> <20070605073335.GM7266@flower.upol.cz> <20070605081959.GB21991@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Richard Purdie <rpurdie@openedhand.com>
-CC: akpm <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Nitin Gupta <nitingupta910@gmail.com>
-Subject: Re: [PATCH -mm 1/5] Add LZO1X compression support to the kernel
-References: <1180971384.6313.73.camel@localhost.localdomain>
-In-Reply-To: <1180971384.6313.73.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070605081959.GB21991@uranus.ravnborg.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Purdie wrote:
-> Index: linux-2.6.21/lib/Kconfig
-> ===================================================================
-> --- linux-2.6.21.orig/lib/Kconfig	2007-06-04 12:19:37.000000000 +0100
-> +++ linux-2.6.21/lib/Kconfig	2007-06-04 12:19:46.000000000 +0100
-> @@ -71,6 +71,11 @@ config AUDIT_GENERIC
->  	depends on AUDIT && !AUDIT_ARCH
->  	default y
->  
-> +config LZO
-> +	tristate "LZO compressor/decompressor"
-> +	help
-> +	  minilzo implementation in kernelspace.
-> +
->  #
->  # compression support is select'ed if needed
->  #
+On Tue, Jun 05, 2007 at 10:19:59AM +0200, Sam Ravnborg wrote:
+[]
+> If on the other hand you are proposing a script to clean whitespace
+> damage in the code then git already does this nicely.
 
-Can this support option be hidden please, with decompression and
-compression support Kconfig options separated out to support minimal
-compilation of just the decompressor for read-only filesystems.
+I've read that too quickly, sorry. What then all that clean scripts
+are for?
 
-Michael-Luke
+> I do not recall the actual receipt but searching the git mailing list
+> should reveal it. So for whitespace cleanup we should use git but maybe
+> via a small helper script.
+
+So, just to protect script from itself or similar one, here's update
+(only for those, who's interested, of course).
+
+-*- clean-whitespace.sh -*-
+#!/bin/sh -e
+# stdin/stdout
+
+IFS=''
+t="`printf '\t'`" ; s=' ' ; s7='       ' ; w79=79 ;
+case $0 in *diff* | *patch*) p='+' ; s='';; esac
+
+while read line
+do case "$line" in
+   ++*) echo "$line";;
+   $p*) line="`echo \"$line\" | expand`"
+	[ ${#line} -gt $w79 ] && : ${long:=line}
+	echo "$line" | sed "/^$p/{s_ *\$__;s_^$p$s7${s}_$p${t}_;s_$s7 _${t}_g}"
+	;;
+     *) echo "$line";;
+   esac
+done
+[ -n "$long" ] && echo "at least one line, wider than $w79 chars, found" 1>&2
+
+-*-
