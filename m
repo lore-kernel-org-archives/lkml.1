@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764137AbXFERT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764431AbXFERVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764137AbXFERT3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 13:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbXFERTW
+	id S1764431AbXFERVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 13:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXFERVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 13:19:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43321 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752347AbXFERTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 13:19:21 -0400
-Message-ID: <4665988A.5060902@redhat.com>
-Date: Tue, 05 Jun 2007 13:08:26 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Tue, 5 Jun 2007 13:21:07 -0400
+Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:53455 "HELO
+	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753185AbXFERVG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 13:21:06 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
+Date: Tue, 5 Jun 2007 10:20:37 -0700
+User-Agent: KMail/1.9.6
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <m1ejkrw576.fsf@ebiederm.dsl.xmission.com> <20070605094623.GA23274@one.firstfloor.org>
+In-Reply-To: <20070605094623.GA23274@one.firstfloor.org>
 MIME-Version: 1.0
-To: Masatake YAMATO <jet@gyve.org>
-CC: Bartlomiej Zolnierkiewicz <B.Zolnierkiewicz@elka.pw.edu.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] never called printk statement in ide-taskfile.c::wait_drive_not_busy
-References: <20070605.112124.28713903.jet@gyve.org>
-In-Reply-To: <20070605.112124.28713903.jet@gyve.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706051020.37812.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/04/2007 10:21 PM, Masatake YAMATO wrote:
-> diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-> index 30175c7..5e05311 100644
-> --- a/drivers/ide/ide-taskfile.c
-> +++ b/drivers/ide/ide-taskfile.c
-> @@ -249,7 +249,7 @@ static u8 wait_drive_not_busy(ide_drive_t *drive)
->  	while (((stat = hwif->INB(IDE_STATUS_REG)) & BUSY_STAT) && retries--)
->  		udelay(10);
->  
-> -	if (!retries)
-> +	if (retries < 0)
+On Tuesday, June 5, 2007 2:46 am Andi Kleen wrote:
+> > So the only safe thing we can do is not use memory that is not
+> > write-back cached.  That we can positively detect and is a
+> > conservative action so if anything will work that will.
+>
+> Jesse wrote such a patch (or rather it limitted end_pfn), but it
+> broke the X server for so far unknown reasons.
 
-	if (stat & BUSY_STAT)
+It looks like I broke the /proc/mtrr interface somehow... I'll try to 
+fix it tomorrow.
 
->  		printk(KERN_ERR "%s: drive still BUSY!\n", drive->name);
->  
->  	return stat;
+Jesse
