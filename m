@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762567AbXFEBzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbXFEB45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762567AbXFEBzw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 21:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbXFEBzo
+	id S1762735AbXFEB45 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 21:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756316AbXFEB4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 21:55:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48658 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754665AbXFEBzn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 21:55:43 -0400
-Date: Mon, 4 Jun 2007 18:54:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vasily Averin <vvs@sw.ru>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       linux-ext4@vger.kernel.org, Stephen Tweedie <sct@redhat.com>,
-       adilger@clusterfs.com
-Subject: Re: [PATCH ext3/ext4] orphan list check on destroy_inode
-Message-Id: <20070604185420.b4206698.akpm@linux-foundation.org>
-In-Reply-To: <4663A0BF.9010008@sw.ru>
-References: <4663A0BF.9010008@sw.ru>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 4 Jun 2007 21:56:48 -0400
+Received: from msr43.hinet.net ([168.95.4.143]:45607 "EHLO msr43.hinet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753380AbXFEB4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 21:56:47 -0400
+Subject: [PATCH] sundance: PHY address form 0, only for device ID 0x0200
+	(IP100A) (20070605)
+From: Jesse Huang <jesse@icplus.com.tw>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, akpm@osdl.org,
+       jgarzik@pobox.com, jesse@icplus.com.tw, jeff@garzik.org
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 09:53:11 -0400
+Message-Id: <1181051591.2571.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.0 (2.6.0-1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 04 Jun 2007 09:18:55 +0400 Vasily Averin <vvs@sw.ru> wrote:
+From: Jesse Huang <jesse@icplus.com.tw>
 
-> Customers claims to ext3-related errors, investigation showed that ext3 orphan list has been corrupted and have the reference to non-ext3 inode. The following debug helps to understand the reasons of this issue.
-> 
-> Signed-off-by:	Vasily Averin <vvs@sw.ru>
-> 
-> diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-> index 6e30629..46e2fa6 100644
-> --- a/fs/ext3/super.c
-> +++ b/fs/ext3/super.c
-> @@ -459,6 +459,21 @@ static struct inode *ext3_alloc_inode(struct super_block *sb)
->  
->  static void ext3_destroy_inode(struct inode *inode)
->  {
-> +	if (!list_empty(&(EXT3_I(inode)->i_orphan))) {
-> +		int i, imax;
-> +		unsigned int *p;
-> +
-> +		p = (unsigned int *)EXT3_I(inode);
-> +		imax = sizeof(struct ext3_inode_info) / sizeof(unsigned int);
-> +		printk("Inode %p: orphan list check failed!\n", EXT3_I(inode));
-> +		for (i = 0; i < imax; i++) {
-> +			if (i && ((i % 8) == 0))
-> +				printk("\n");
-> +			printk("%08x ", *p++);
-> +		}
-> +		printk("\n");
-> +		dump_stack();
+Change Logs:
+Search PHY address form 0, only for device ID 0x0200 (IP100A). Other device are from PHY address 1.
 
-umm, OK, but please use the new lib/hexdump.c for this.
+Signed-off-by: Jesse Huang <jesse@icplus.com.tw>
+---
+
+ drivers/net/sundance.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+a093fe5e3e7b9f58458171e481b5096cc1d3abfe
+diff --git a/drivers/net/sundance.c b/drivers/net/sundance.c
+index e1f912d..23d049d 100644
+--- a/drivers/net/sundance.c
++++ b/drivers/net/sundance.c
+@@ -562,7 +562,11 @@ #endif
+ 	 * It seems some phys doesn't deal well with address 0 being accessed
+ 	 * first, so leave address zero to the end of the loop (32 & 31).
+ 	 */
+-	for (phy = 1; phy <= 32 && phy_idx < MII_CNT; phy++) {
++	if(sundance_pci_tbl[np->chip_id].device == 0x0200) 
++		phy = 0;
++	else 
++		phy = 1;
++	for (; phy <= 32 && phy_idx < MII_CNT; phy++) {
+ 		int phyx = phy & 0x1f;
+ 		int mii_status = mdio_read(dev, phyx, MII_BMSR);
+ 		if (mii_status != 0xffff  &&  mii_status != 0x0000) {
+-- 
+1.3.GIT
+
