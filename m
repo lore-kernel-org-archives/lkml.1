@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760474AbXFEAGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760431AbXFEATS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760474AbXFEAGc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jun 2007 20:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbXFEAGY
+	id S1760431AbXFEATS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jun 2007 20:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbXFEATK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 20:06:24 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:41476 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752201AbXFEAGX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 20:06:23 -0400
-Message-ID: <4664A87C.5040609@zytor.com>
-Date: Mon, 04 Jun 2007 17:04:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: joseph@codesourcery.com, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, linux-arch@vger.kernel.org
-Subject: Re: 64-bit syscall ABI issue
-References: <Pine.LNX.4.64.0706042051280.16431@digraph.polyomino.org.uk> <20070604.142557.68139332.davem@davemloft.net>
-In-Reply-To: <20070604.142557.68139332.davem@davemloft.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Jun 2007 20:19:10 -0400
+Received: from ozlabs.org ([203.10.76.45]:59826 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756960AbXFEATJ (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 4 Jun 2007 20:19:09 -0400
+Subject: Re: Interesting interaction between lguest and CFS
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       Linux-kernel@vger.kernel.org
+In-Reply-To: <20070604173710.GR11166@waste.org>
+References: <20070604173710.GR11166@waste.org>
+Content-Type: text/plain
+Date: Tue, 05 Jun 2007 10:18:54 +1000
+Message-Id: <1181002734.25878.56.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: "Joseph S. Myers" <joseph@codesourcery.com>
-> Date: Mon, 4 Jun 2007 20:56:57 +0000 (UTC)
+On Mon, 2007-06-04 at 12:37 -0500, Matt Mackall wrote:
+> With 2.6.22-rc3-mm1, I've got a long-running video transcoding going
+> on. In other windows, I'm compiling, reading email, etc. with no
+> noticeable problems.
 > 
-> [ added linux-arch which is a great place to discuss these
->   kinds of issues. ]
-> 
->> What should the kernel syscall ABI be in such cases (any case where the 
->> syscall implementations expect arguments narrower than registers, so 
->> mainly 32-bit arguments on 64-bit platforms)?  There are two obvious 
->> possibilities:
-> 
-> In general we've taken the stance that the syscall dispatch
-> should create the proper calling environment for C code
-> implementing the system calls, and this thus means properly
-> sign and zero extending the arguments as expected by the C
-> calling convention.
+> If I fire up lguest and leave it sitting at a shell prompt for a
+> couple moments, when I return to type something at the prompt, it can
+> take 2-3 seconds for my input to echo. Once it starts responding,
+> typing latency disappears. Suspend the other app and the latency
+> disappears.
 
-This is, in fact, rather fundamental (some ABIs don't require sign or
-zero extension, e.g. x86-64); otherwise libc's job becomes a whole lot
-harder.
+This sounds like the waker process (nice 19) not getting a chance to
+run.  You can hack around it for the moment by changing "nice(19)" in
+Documentation/lguest/lguest.c to something less aggressive.
 
-	-hpa
+The real solution is to switch to an fd.  Fortunately, I have just such
+a patch.  I am shuffling it forward in my queue now, and will send when
+testing is complete...
+
+Thanks!
+Rusty.
+
+
