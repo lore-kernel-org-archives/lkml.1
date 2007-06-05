@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762497AbXFEIBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763007AbXFEIDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762497AbXFEIBp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 04:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXFEIBi
+	id S1763007AbXFEIDu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 04:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbXFEIDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 04:01:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37093 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbXFEIBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 04:01:37 -0400
-Date: Tue, 5 Jun 2007 10:01:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Yu <raise.sail@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v14
-Message-ID: <20070605080130.GA4301@elte.hu>
-References: <20070523120616.GA23407@elte.hu> <4658F1D6.3070706@gmail.com> <20070529061544.GA28523@elte.hu> <20070529080738.GA28657@elte.hu> <465E992C.4020601@gmail.com> <20070531095337.GA8104@elte.hu> <465FC7E7.7080804@gmail.com> <20070601192142.GA10039@elte.hu> <4664CB6D.8060507@gmail.com>
+	Tue, 5 Jun 2007 04:03:36 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:27614 "EHLO
+	outbound1-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755592AbXFEIDf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 04:03:35 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+From: "Peter Oruba" <peter.oruba@amd.com>
+Organization: AMD
+To: dev.list@mircea.bardac.net, stefan.prechtel@googlemail.com
+Subject: Re: CPU off-on-off: lost CPU management?
+Date: Tue, 5 Jun 2007 10:03:23 +0200
+User-Agent: KMail/1.9.7
+cc: "Linux List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4664CB6D.8060507@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-ID: <200706051003.29501.peter.oruba@amd.com>
+X-OriginalArrivalTime: 05 Jun 2007 08:03:25.0425 (UTC)
+ FILETIME=[FE4BDE10:01C7A747]
+X-WSS-ID: 6A7BC75B20G4063911-01-01
+Content-Type: multipart/signed;
+ boundary=nextPart1843688.hJNYUL0XEZ;
+ protocol="application/pgp-signature";
+ micalg=pgp-sha1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Li Yu <raise.sail@gmail.com> wrote:
+--nextPart1843688.hJNYUL0XEZ
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Eh, I wrong again~ I even took an experiment in last week end, this 
-> idea is really bad! ;(
-> 
-> I think the most inner of source of my wrong again and again is 
-> misunderstanding virtual time. For more better understanding this, I 
-> try to write one python script to simulate CFS behavior. However, It 
-> can not implement the fairness as I want. I really confuse here.
-> 
-> Would you like help me point out what's wrong in it? Any suggestion is 
-> welcome. Thanks in advanced.
+Stefan, Mircea,
 
-sorry, my python-fu is really, really weak. All i can give you at the 
-moment is the in-kernel implementation of CFS :-)
+reagarding your Turion cpufreq issues - is that solved by now?
+http://lkml.org/lkml/2007/4/8/59
 
-	Ingo
+Regards,
+Peter Oruba
+
+=2D-=20
+AMD Saxony Limited Liability Company & Co. KG
+Operating System Research Center
+Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+Register Court Dresden: HRA 4896
+General Partner authorized to represent:
+AMD Saxony LLC (Wilmington, Delaware, US)
+General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+--nextPart1843688.hJNYUL0XEZ
+Content-Type: application/pgp-signature;
+ name=signature.asc
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGZRjR38rmLONd5dwRAtUxAJ96sFfGeWjpyVqpSgUzIjMiQvjjHACgiazX
+eyQuwdJPLkQxVEZ78szYdcM=
+=ovyW
+-----END PGP SIGNATURE-----
+
+--nextPart1843688.hJNYUL0XEZ--
+
+
