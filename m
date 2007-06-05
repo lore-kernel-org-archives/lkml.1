@@ -1,65 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbXFEL0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbXFEL2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922AbXFEL0t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 07:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXFEL0m
+	id S1757359AbXFEL2v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 07:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbXFEL2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 07:26:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:63876 "EHLO
+	Tue, 5 Jun 2007 07:28:44 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:65000 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752934AbXFEL0l (ORCPT
+	with ESMTP id S1751231AbXFEL2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 07:26:41 -0400
+	Tue, 5 Jun 2007 07:28:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=P9AgOGSx3+KPnciZ22Vr5HXQIju3yHrsSJ082RUDyrb+J52T6l+LmeEFboF+UhuZ6LctVRvTH1VgJCMK3ygSH9QvvC5kBQvtfd5sRO5mvkKPoYctexKUUX3sx4b2B3OzZfYJ9TzaPZEvIfje4a9prYlYU2BnQI5nWFSD4AeJ3Kw=
-Subject: Re: Section mismatches in drivers/video/console/promcon
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=dfBHHRVHYkRdowRH8LvAVDnxc8XvWzVt3H2Yf4ZDZZqFUSOB1ruoX+1xauE8NhlLIPrxouJ5IJ7enOMwKaqdqcLUylNMwFGxVIDhoeWcC9m6NEBlKQ1aUqscSbcwc9tz1qeBYfYv12qVGC3INr/t7eQcKPRc4Uf6QA/sUQ6H/RU=
+Message-ID: <4665446D.9020703@gmail.com>
+Date: Tue, 05 Jun 2007 19:09:33 +0800
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: sam@ravnborg.org, jakub@redhat.com, jengelh@linux01.gwdg.de,
-       daplas@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20070604.235313.85409993.davem@davemloft.net>
-References: <20070602124255.GA10119@uranus.ravnborg.org>
-	 <1180790683.4524.13.camel@daplas>
-	 <20070602191646.GA13264@uranus.ravnborg.org>
-	 <20070604.235313.85409993.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 18:52:53 +0800
-Message-Id: <1181040773.5023.5.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, kernel@stable.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Tero Roponen <teanropo@jyu.fi>
+Subject: [PATCH] neofb: Fix pseudo_palette array overrun in neofb_setcolreg
+References: <465C188F.9000900@googlemail.com>	 <465C222A.8060003@googlemail.com>	 <alpine.LFD.0.98.0705301922560.26602@woody.linux-foundation.org>	 <1180587109.4570.25.camel@daplas> <Pine.LNX.4.64.0705310852400.8734@jalava.cc.jyu.fi>
+In-Reply-To: <Pine.LNX.4.64.0705310852400.8734@jalava.cc.jyu.fi>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-04 at 23:53 -0700, David Miller wrote:
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Sat, 2 Jun 2007 21:16:46 +0200
-> 
-> > > 
-> > > promcon_init() can be called again from visual_init() during
-> > > vc_allocate().  So anything referenced by promcon_init() should not be
-> > > marked __init.
-> > > 
-> > > Although, if you want to keep promfont_unitable and promfont_unicount
-> > > __init, you can probably use con_copy_unimap() using the default vc as
-> > > the source instead of doing a promcon_init_unimap() again.
-> > 
-> > Too involved for me to look into.
-> > I cooked up following very minimal patch - if you agree can you then please
-> > forward/take care of it.
-> > 
-> > 	Sam
-> > 
-> > Subject: video: fix section mismatch warning in promcon
-> 
-> I'll merge this fix in via the Sparc tree since this is a sparc
-> console driver.
-> 
+The pseudo_palette has room for 16 entries only, but in truecolor mode, it
+attempts to write 256.
 
-I was about to send this patch to akpm, I'll leave this to you then.
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+Acked-by: Tero Roponen <teanropo@jyu.fi>
+---
+This fixes the following regression/bug reported as follows:
+
+Subject    : tty-related oops in latest kernel(s)
+References : http://lkml.org/lkml/2007/5/27/104
+Submitter  : Tero Roponen <teanropo@jyu.fi>
+Status     : problem is being debugged
+
+According to Tero, this is also reproducible with 2.6.21.3.
 
 Tony
+
+ drivers/video/neofb.c |   30 ++++++++++++++++--------------
+ 1 files changed, 16 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/video/neofb.c b/drivers/video/neofb.c
+index bd30aba..731d7a5 100644
+--- a/drivers/video/neofb.c
++++ b/drivers/video/neofb.c
+@@ -1286,34 +1286,36 @@ static int neofb_setcolreg(u_int regno, 
+ 	if (regno >= fb->cmap.len || regno > 255)
+ 		return -EINVAL;
+ 
+-	switch (fb->var.bits_per_pixel) {
+-	case 8:
++	if (fb->var.bits_per_pixel <= 8) {
+ 		outb(regno, 0x3c8);
+ 
+ 		outb(red >> 10, 0x3c9);
+ 		outb(green >> 10, 0x3c9);
+ 		outb(blue >> 10, 0x3c9);
+-		break;
+-	case 16:
+-		((u32 *) fb->pseudo_palette)[regno] =
++	} else if (regno < 16) {
++		switch (fb->var.bits_per_pixel) {
++		case 16:
++			((u32 *) fb->pseudo_palette)[regno] =
+ 				((red & 0xf800)) | ((green & 0xfc00) >> 5) |
+ 				((blue & 0xf800) >> 11);
+-		break;
+-	case 24:
+-		((u32 *) fb->pseudo_palette)[regno] =
++			break;
++		case 24:
++			((u32 *) fb->pseudo_palette)[regno] =
+ 				((red & 0xff00) << 8) | ((green & 0xff00)) |
+ 				((blue & 0xff00) >> 8);
+-		break;
++			break;
+ #ifdef NO_32BIT_SUPPORT_YET
+-	case 32:
+-		((u32 *) fb->pseudo_palette)[regno] =
++		case 32:
++			((u32 *) fb->pseudo_palette)[regno] =
+ 				((transp & 0xff00) << 16) | ((red & 0xff00) << 8) |
+ 				((green & 0xff00)) | ((blue & 0xff00) >> 8);
+-		break;
++			break;
+ #endif
+-	default:
+-		return 1;
++		default:
++			return 1;
++		}
+ 	}
++
+ 	return 0;
+ }
+ 
+
 
 
