@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761095AbXFFJqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761454AbXFFJrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761095AbXFFJqZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbXFFJqS
+	id S1761454AbXFFJrS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbXFFJrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:46:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32987 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751610AbXFFJqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:46:17 -0400
-Date: Wed, 6 Jun 2007 11:45:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -rt] Fix TASKLET_STATE_SCHED WARN_ON()
-Message-ID: <20070606094548.GA9511@elte.hu>
-References: <1181096244.6018.20.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181096244.6018.20.camel@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 6 Jun 2007 05:47:06 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:58209 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757499AbXFFJrF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 05:47:05 -0400
+Subject: Re: [PATCH 4/4] mm: variable length argument support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org, Ollie Wild <aaw@google.com>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+In-Reply-To: <20070606094401.GA10393@linux-sh.org>
+References: <20070605150523.786600000@chello.nl>
+	 <20070605151203.790585000@chello.nl>
+	 <20070606013658.20bcbe2f.akpm@linux-foundation.org>
+	 <1181120061.7348.177.camel@twins>
+	 <20070606020651.19a89dca.akpm@linux-foundation.org>
+	 <1181122473.7348.188.camel@twins>  <20070606094401.GA10393@linux-sh.org>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 11:47:00 +0200
+Message-Id: <1181123220.7348.193.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* john stultz <johnstul@us.ibm.com> wrote:
-
-> This fix avoids this race by making sure *after* we've locked the 
-> tasklet that the STATE_SCHED bit is set before adding it to the list.
+On Wed, 2007-06-06 at 18:44 +0900, Paul Mundt wrote:
+> On Wed, Jun 06, 2007 at 11:34:33AM +0200, Peter Zijlstra wrote:
+> > +static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
+> > +		struct page *page)
+> > +{
+> > +	flush_cache_page(bprm->vma, pos, page_to_pfn(page));
+> > +}
+> > +
+> [snip]
 > 
-> Does it look ok to you?
+> > @@ -253,6 +305,17 @@ static void free_arg_pages(struct linux_
+> >  		free_arg_page(bprm, i);
+> >  }
+> >  
+> > +static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
+> > +		struct page *page)
+> > +{
+> > +}
+> > +
+> inline?
 
-ah - nice!! What would be the worst-case effect of this bug? (besides 
-the WARN_ON()?) In any case, this fix will be in -rt10. Great work!
+could do I guess, but doesn't this modern gcc thing auto inline statics
+that are so small?
 
-	Ingo
