@@ -1,37 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbXFFOVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbXFFOVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759526AbXFFOVi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 10:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbXFFOVZ
+	id S1755970AbXFFOVT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 10:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761585AbXFFOVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 10:21:25 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:60143 "EHLO aun.it.uu.se"
+	Wed, 6 Jun 2007 10:21:03 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52869 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754208AbXFFOVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 10:21:24 -0400
-Date: Wed, 6 Jun 2007 16:21:13 +0200 (MEST)
-Message-Id: <200706061421.l56ELDfB004305@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: akpm@linux-foundation.org, jirislaby@gmail.com
-Subject: Re: 2.6.22-rc4-mm1
-Cc: htejun@gmail.com, linux-kernel@vger.kernel.org, mikpe@it.uu.se
+	id S1761681AbXFFOVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 10:21:00 -0400
+Message-ID: <4666C1AB.2070209@linux.vnet.ibm.com>
+Date: Wed, 06 Jun 2007 09:16:11 -0500
+From: "V. Ananda Krishnan" <mansarov@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: linux-serial@vger.kernel.org
+CC: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH TRIVIAL] icom whitespace cleanups
+References: <4665D3EC.60404@redhat.com> <18021.55632.359206.105260@cargo.ozlabs.ibm.com>
+In-Reply-To: <18021.55632.359206.105260@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007 15:04:00 +0200, Jiri Slaby wrote:
-> Andrew Morton napsal(a):
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
+Paul Mackerras wrote:
+> Chris Snook writes:
 > 
-> It freezes during bootup while searching for sata drives on sata_promise. There
-> were 2 issues with sata_promise in -rc4 IIRC, one was fixed, the latter remains
-> unresolved. Or, should be this solved too, Mikael, Tejun and is this yet
-> eanother problem? (In this case I'll post dmesg and co.)
+>> Clean up whitespace and comments in drivers/serial/icom.c
+> 
+> These changes seem totally unnecessary, as the existing indentation is
+> according to a commonly-accepted style and is quite reasonable:
+> 
+I agree with Paul.
 
-I know of only one sata_promise-specific issue in 2.6.22-rc4.
-Tejun's "sata_promise: use TF interface for polling NODATA commands"
-patch posted today fixes it.
+>> @@ -149,23 +149,23 @@ static void free_port_memory(struct icom
+>>  	trace(icom_port, "RET_PORT_MEM", 0);
+>>  	if (icom_port->recv_buf) {
+>>  		pci_free_consistent(dev, 4096, icom_port->recv_buf,
+>> -				    icom_port->recv_buf_pci);
+>> +			icom_port->recv_buf_pci);
+>>  		icom_port->recv_buf = NULL;
+>>  	}
+>>  	if (icom_port->xmit_buf) {
+>>  		pci_free_consistent(dev, 4096, icom_port->xmit_buf,
+>> -				    icom_port->xmit_buf_pci);
+>> +			icom_port->xmit_buf_pci);
+> 
+> etc. etc.  The comment changes I agree on but not most of the other
+> whitespace changes.
+The comment changes are fine with me too.
+> 
+> Also you don't seem to have cc'd the driver author.
+> 
+Current contacts for the driver are: Ananda (mansarov@us.ibm.com) and 
+Wendy (wenxiong@us.ibm.com)
 
-If there are any other sata_promise-specific issues, please
-let us know.
+:- Ananda
 
-/Mikael
+> Paul.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
