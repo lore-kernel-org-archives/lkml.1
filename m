@@ -1,51 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbXFFGe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965079AbXFFGjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965059AbXFFGe6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 02:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758958AbXFFGev
+	id S965079AbXFFGjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 02:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964836AbXFFGjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 02:34:51 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39854 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758712AbXFFGeu (ORCPT
+	Wed, 6 Jun 2007 02:39:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35497 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964819AbXFFGjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 02:34:50 -0400
-Date: Wed, 6 Jun 2007 12:12:28 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v15
-Message-ID: <20070606064228.GA22443@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070531150908.GA23538@elte.hu>
+	Wed, 6 Jun 2007 02:39:04 -0400
+Date: Tue, 5 Jun 2007 23:38:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Maxim Uvarov <muvarov@ru.mvista.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Shailabh Nagar <nagar@watson.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, Jay Lan <jlan@engr.sgi.com>,
+       Jonathan Lim <jlim@sgi.com>
+Subject: Re: [PATCH] Performance Stats: Kernel patch
+Message-Id: <20070605233841.a56c4f20.akpm@linux-foundation.org>
+In-Reply-To: <20070605144349.4636.53260.stgit@localhost.localdomain>
+References: <20070605144349.4636.53260.stgit@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531150908.GA23538@elte.hu>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 31, 2007 at 05:09:08PM +0200, Ingo Molnar wrote:
-> i'm pleased to announce release -v15 of the CFS scheduler patchset.
+On Tue, 05 Jun 2007 14:43:50 +0000 Maxim Uvarov <muvarov@ru.mvista.com> wrote:
 
-Do I smell a bug when a task switches its scheduling classes?
+> Patch makes available to the user the following
+> task and process performance statistics:
+> 	* Involuntary Context Switches (task_struct->nivcsw)
+> 	* Voluntary Context Switches (task_struct->nvcsw)
+> 	           
+> Statistics information is available from:
+> 	1. taskstats interface (Documentation/accounting/)
+> 	2. /proc/PID/status (task only).
+> 
+> This data is useful for detecting hyperactivity
+> patterns between processes.
+> Signed-off-by: Maxim Uvarov <muvarov@ru.mvista.com>
 
-Lets say a task was in real-time class for a long time and switches to
-fair-sched class. When update_curr() is called on this new fair-sched
-task, some of required fields (for ex: exec_start) are uninitialized and can 
-lead to bogus calculations?
+Thanks.
 
-Also, real-time tasks are currently influencing fair clock calculations
-(because there is only one raw_weighted_load field per runqueue). Is
-that intentional?
+Please retain suitable cc's when discussing a patch.  I keep on having to
+find your updates on the mailing list, and then adding all the same cc's
+when I reply.
 
--- 
-Regards,
-vatsa
+Your patch seemed to be against some horridly prehistoric kernel, so I had
+a few things to fix up.
+
+I disagree with the term "rates" for these things.  They are counters, not
+rates.  Adjustments are below.
+
+We still need to think about whether we missed any other fields.
+
+
+diff -puN Documentation/accounting/getdelays.c~taskstats-add-context-switch-counters-fix Documentation/accounting/getdelays.c
+--- a/Documentation/accounting/getdelays.c~taskstats-add-context-switch-counters-fix
++++ a/Documentation/accounting/getdelays.c
+@@ -49,7 +49,7 @@ char name[100];
+ int dbg;
+ int print_delays;
+ int print_io_accounting;
+-int print_task_context_switch_rates;
++int print_task_context_switch_counts;
+ __u64 stime, utime;
+ 
+ #define PRINTF(fmt, arg...) {			\
+@@ -205,7 +205,7 @@ void print_delayacct(struct taskstats *t
+ 	       "count", "delay total", t->swapin_count, t->swapin_delay_total);
+ }
+ 
+-void task_context_switch_rates(struct taskstats *t)
++void task_context_switch_counts(struct taskstats *t)
+ {
+ 	printf("\n\nTask   %15s%15s\n"
+ 	       "       %15lu%15lu\n",
+@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
+ 			break;
+ 		case 'q':
+ 			printf("printing task/process context switch rates\n");
+-			print_task_context_switch_rates = 1;
++			print_task_context_switch_counts = 1;
+ 			break;
+ 		case 'w':
+ 			logfile = strdup(optarg);
+@@ -402,8 +402,8 @@ int main(int argc, char *argv[])
+ 							print_delayacct((struct taskstats *) NLA_DATA(na));
+ 						if (print_io_accounting)
+ 							print_ioacct((struct taskstats *) NLA_DATA(na));
+-						if (print_task_context_switch_rates)
+-							task_context_switch_rates((struct taskstats *) NLA_DATA(na));
++						if (print_task_context_switch_counts)
++							task_context_switch_counts((struct taskstats *) NLA_DATA(na));
+ 						if (fd) {
+ 							if (write(fd, NLA_DATA(na), na->nla_len) < 0) {
+ 								err(1,"write error\n");
+diff -puN Documentation/accounting/taskstats-struct.txt~taskstats-add-context-switch-counters-fix Documentation/accounting/taskstats-struct.txt
+--- a/Documentation/accounting/taskstats-struct.txt~taskstats-add-context-switch-counters-fix
++++ a/Documentation/accounting/taskstats-struct.txt
+@@ -22,7 +22,7 @@ There are three different groups of fiel
+     /* Extended accounting fields end */
+     Their values are collected if CONFIG_TASK_XACCT is set.
+ 
+-4) Per-task and per-thread context switch rates statistics
++4) Per-task and per-thread context switch count statistics
+ 
+ Future extension should add fields to the end of the taskstats struct, and
+ should not change the relative position of each field within the struct.
+diff -puN fs/proc/array.c~taskstats-add-context-switch-counters-fix fs/proc/array.c
+--- a/fs/proc/array.c~taskstats-add-context-switch-counters-fix
++++ a/fs/proc/array.c
+@@ -290,7 +290,9 @@ static inline char *task_cap(struct task
+ 			    cap_t(p->cap_permitted),
+ 			    cap_t(p->cap_effective));
+ }
+-static inline char *task_context_switch_rates(struct task_struct *p, char *buffer)
++
++static inline char *task_context_switch_counts(struct task_struct *p,
++						char *buffer)
+ {
+ 	return buffer + sprintf(buffer, "voluntary_ctxt_switches:\t%lu\n"
+ 			    "nonvoluntary_ctxt_switches:\t%lu\n",
+@@ -316,7 +318,7 @@ int proc_pid_status(struct task_struct *
+ #if defined(CONFIG_S390)
+ 	buffer = task_show_regs(task, buffer);
+ #endif
+-	buffer = task_context_switch_rates(task, buffer);
++	buffer = task_context_switch_counts(task, buffer);
+ 	return buffer - orig;
+ }
+ 
+_
+
