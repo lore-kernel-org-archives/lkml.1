@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964898AbXFFNCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764703AbXFFND6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964898AbXFFNCt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 09:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764723AbXFFNCm
+	id S1764703AbXFFND6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 09:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbXFFNDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 09:02:42 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:55965 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1762162AbXFFNCl (ORCPT
+	Wed, 6 Jun 2007 09:03:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:57994 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756443AbXFFNDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 09:02:41 -0400
-Date: Wed, 6 Jun 2007 08:52:59 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Nicholas Miell <nmiell@comcast.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: signalfd API issues (was Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other woes)
-Message-ID: <20070606125259.GA5491@c2.user-mode-linux.org>
-References: <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com> <1181013756.31677.123.camel@localhost.localdomain> <1181023787.2785.14.camel@entropy> <1181028453.31677.127.camel@localhost.localdomain> <1181087462.2788.8.camel@entropy> <Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com> <1181088936.2788.10.camel@entropy> <Pine.LNX.4.64.0706051736120.23673@alien.or.mcafeemobile.com> <1181091523.2788.28.camel@entropy> <1181098204.31677.158.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181098204.31677.158.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 6 Jun 2007 09:03:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Yyw+yks+GDouT7HYf+v/KjL6x9Dh0897e84E8uT2975CF137n8bejThrmmdQhqSAGA7JnTKMHVHKle1IzMPKecmtGknEdc2ULNRfTUwWS+TuPwfcBjyoCaqmvzr21oDrVCna1gO1THzzKdy1Lo69zd7r3So/yD9ApkgJmJTFeVE=
+Message-ID: <4666B0C0.5070205@gmail.com>
+Date: Wed, 06 Jun 2007 15:04:00 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Mikael Pettersson <mikpe@it.uu.se>,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: 2.6.22-rc4-mm1
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+In-Reply-To: <20070606020737.4663d686.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 12:50:04PM +1000, Benjamin Herrenschmidt wrote:
-> Yeah, synchronous signals should probably never be delivered to another
-> process, even via signalfd. There's no point delivering a SEGV to
-> somebody else :-)
+Andrew Morton napsal(a):
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
 
-Sure there is.  UML does exactly that - intercepting child signals
-(including SEGV) with wait.
+It freezes during bootup while searching for sata drives on sata_promise. There
+were 2 issues with sata_promise in -rc4 IIRC, one was fixed, the latter remains
+unresolved. Or, should be this solved too, Mikael, Tejun and is this yet
+eanother problem? (In this case I'll post dmesg and co.)
 
-				Jeff
-
+thanks,
 -- 
-Work email - jdike at linux dot intel dot com
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
