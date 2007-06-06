@@ -1,90 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935443AbXFFVxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935854AbXFFV4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935443AbXFFVxU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 17:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934563AbXFFVxJ
+	id S935854AbXFFV4V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934563AbXFFV4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 17:53:09 -0400
-Received: from lucidpixels.com ([75.144.35.66]:40344 "EHLO lucidpixels.com"
+	Wed, 6 Jun 2007 17:56:14 -0400
+Received: from animx.eu.org ([216.98.75.249]:42608 "EHLO animx.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758568AbXFFVxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 17:53:07 -0400
-Date: Wed, 6 Jun 2007 17:53:04 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jesse Barnes <jesse.barnes@intel.com>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-In-Reply-To: <200706061229.24486.jesse.barnes@intel.com>
-Message-ID: <Pine.LNX.4.64.0706061747180.3697@p34.internal.lan>
-References: <200706061229.24486.jesse.barnes@intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1757135AbXFFV4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 17:56:13 -0400
+Date: Wed, 6 Jun 2007 17:55:05 -0400
+From: Wakko Warner <wakko@animx.eu.org>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Bodo Eggert <7eggert@gmx.de>, Andi Kleen <andi@firstfloor.org>,
+       tmoore@spatial.ca, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] Re: 4Gb ram not showing up
+Message-ID: <20070606215505.GA19651@animx.eu.org>
+Mail-Followup-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+	Bodo Eggert <7eggert@gmx.de>, Andi Kleen <andi@firstfloor.org>,
+	tmoore@spatial.ca, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.58.0706061356310.2657@be1.lrz> <20070606143723.GF10008@csclub.uwaterloo.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070606143723.GF10008@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.6+20040907i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Lennart Sorensen wrote:
+> On Wed, Jun 06, 2007 at 02:12:22PM +0200, Bodo Eggert wrote:
+> > Change the description of CONFIG_*HIGHMEM* to reflect "lost" memory due to 
+> > PCI space and the existence of the NX flag.
+> > 
+> > Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
+> > ---
+> > I made this quick patch using the information from LKML as I remembered 
+> > it. Please verify.
+> > 
+> > @@ -510,8 +510,15 @@ config NOHIGHMEM
+> >  	  by the kernel to permanently map as much physical memory as
+> >  	  possible.
+> >  
+> > -	  If the machine has between 1 and 4 Gigabytes physical RAM, then
+> > +
+> > +	  If the machine has between 1 and 3.5 Gigabytes physical RAM, then
+> >  	  answer "4GB" here.
+> > +	  
 
+Might be better to say 3 Gigabytes instead of 3.5.  I booted a 4gb kernel on
+a machine with 4gb at work and only saw 3gb of memory.
 
-On Wed, 6 Jun 2007, Jesse Barnes wrote:
+Also, I've noticed that there's ~128mb of memory lost if you select 1gb when
+you have 1gb of memory installed.
 
-> On some machines, buggy BIOSes don't properly setup WB MTRRs to
-> cover all available RAM, meaning the last few megs (or even gigs)
-> of memory will be marked uncached.  Since Linux tends to allocate
-> from high memory addresses first, this causes the machine to be
-> unusably slow as soon as the kernel starts really using memory
-> (i.e. right around init time).
->
-> This patch works around the problem by scanning the MTRRs at
-> boot and figuring out whether the current end_pfn value (setup
-> by early e820 code) goes beyond the highest WB MTRR range, and
-> if so, trimming it to match.  A fairly obnoxious KERN_WARNING
-> is printed too, letting the user know that not all of their
-> memory is available due to a likely BIOS bug.
->
-> Something similar could be done on i386 if needed, but the boot
-> ordering would be slightly different, since the MTRR code on i386
-> depends on the boot_cpu_data structure being setup.
->
-> Justin, can you please test and make sure this patch works for
-> you too?  It'll only work around the problem, but it's better
-> than having to do mem= by hand or waiting for a fix from your
-> BIOS vendor.
->
-> Thanks,
-> Jesse
+> >  	  If more than 4 Gigabytes is used then answer "64GB" here. This
+> >  	  selection turns Intel PAE (Physical Address Extension) mode on.
+> > @@ -520,6 +527,10 @@ config NOHIGHMEM
+> >  	  processors (Pentium Pro and better). NOTE: If you say "64GB" here,
+> >  	  then the kernel will not boot on CPUs that don't support PAE!
+> >  
+> > +	  An additional benefit of the 64GB-Mode is the availability of the
+> > +	  no-execute-pageflag, which can be used to prevent some attacks from
+> > +	  injecting malicious code into applications.
+> > +
+> >  	  The actual amount of total physical memory will either be
+> >  	  auto detected or can be forced by using a kernel command line option
+> >  	  such as "mem=256M". (Try "man bootparam" or see the documentation of
+> > @@ -532,14 +543,14 @@ config HIGHMEM4G
+> >  	bool "4GB"
+> >  	depends on !X86_NUMAQ
+> >  	help
+> > -	  Select this if you have a 32-bit processor and between 1 and 4
+> > +	  Select this if you have a 32-bit processor and between 1 and 3.5
+> >  	  gigabytes of physical RAM.
+> >  
+> >  config HIGHMEM64G
+> > -	bool "64GB"
+> > +	bool "64GB (enables no-execute memory protection if available)"
+> >  	depends on X86_CMPXCHG64
+> >  	help
+> > -	  Select this if you have a 32-bit processor and more than 4
+> > +	  Select this if you have a 32-bit processor and more than 3.5
+> >  	  gigabytes of physical RAM.
 
-Jesse, it worked.
+Same here
 
-With mem=8832M (without your patch): 2.6.22-rc4:
+> Seems like an improvement to me.  To fully explain how it could be 3 or
+> 3.5 or 3.25 or who knows how many GB you can actually use without PAE
+> would probably require writing a small novel.  Certainly talking about
+> address space instead of amounts of physical memory is more correct.
 
-top - 17:39:02 up 1 day,  8:07, 25 users,  load average: 2.33, 0.76, 0.30
-Tasks: 325 total,  11 running, 314 sleeping,   0 stopped,   0 zombie
-Cpu(s): 80.0%us, 20.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
-Mem:   8039620k total,  7936472k used,   103148k free,      708k buffers
-Swap: 16787768k total,      128k used, 16787640k free,  6646248k cached
+It's probably worth it to just say 3gb.
 
-With no mem= in append line (with your patch): 2.6.22-rc4:
+I've looked at the cpuinfo for several machines, all of which (pIII and
+better, not all physically support even 2gb of memory) show pae in the
+flags, so is there really a reason not to just specify 64gb always?
 
-top - 17:44:01 up 1 min,  1 user,  load average: 0.97, 0.25, 0.08
-Tasks: 145 total,   1 running, 144 sleeping,   0 stopped,   0 zombie
-Cpu(s):  5.2%us,  3.0%sy,  1.2%ni, 86.8%id,  3.8%wa,  0.0%hi,  0.0%si,  0.0%st
-Mem:   8039608k total,   969380k used,  7070228k free,     1232k buffers
-Swap: 16787768k total,        0k used, 16787768k free,   109448k cached
+The oldest machine I have access to is a pII 333mhz machine, cpuinfo also
+lists pae in the cpu flags.
 
-Odd, remote netconsole did not capture the dmesg the E820 memory map.
-
-Jun  6 17:43:03 p34 [   53.598611] ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 6 ports 3 Gbps 0x3f impl SATA mode 
-Jun  6 17:43:03 p34 [   53.598683] ahci 0000:00:1f.2: flags: 64bit ncq led clo pio slum part 
-Jun  6 17:43:03 p34 [   53.598986] scsi0 : ahci 
-Jun  6 17:43:03 p34 [   53.599131] scsi1 : ahci 
-Jun  6 17:43:03 p34 [   53.599239] scsi2 : ahci 
-Jun  6 17:43:03 p34 [   53.599340] scsi3 : ahci 
-Jun  6 17:43:03 p34 [   53.599438] scsi4 : ahci
-
-I will run with this patch for a while but so far, no issues, everything 
-looks great.
-
-Will it make it into 2.6.22-rc5? :)
-
-Justin.
+-- 
+ Lab tests show that use of micro$oft causes cancer in lab animals
+ Got Gas???
