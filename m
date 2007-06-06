@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965872AbXFFXBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965887AbXFFXB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965872AbXFFXBK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965630AbXFFXAu
+	id S965887AbXFFXB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965209AbXFFXBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:00:50 -0400
-Received: from waste.org ([66.93.16.53]:35959 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965646AbXFFXAt (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:00:49 -0400
-Date: Wed, 6 Jun 2007 17:59:50 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jared Hulbert <jaredeh@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, carsteno@de.ibm.com,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       richard.griffiths@windriver.com,
-       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-Message-ID: <20070606225949.GV11166@waste.org>
-References: <4653F264.1030807@de.ibm.com> <465BB5BA.3050900@yahoo.com.au> <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com> <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com> <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com> <20070606113351.GA11701@infradead.org> <4666DD88.5030708@de.ibm.com> <20070606162305.GA20600@infradead.org> <6934efce0706061140r4ed8436nf71d9b4aaf5c565e@mail.gmail.com>
+	Wed, 6 Jun 2007 19:01:50 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:5234 "EHLO
+	outbound6-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965171AbXFFXBt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 19:01:49 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <46673D3F.4040508@am.sony.com>
+Date: Wed, 06 Jun 2007 16:03:27 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6934efce0706061140r4ed8436nf71d9b4aaf5c565e@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Big problems applying patch-2.6.21.3-rt9
+References: <46673964.1000004@am.sony.com> <1181170799.4404.271.camel@chaos>
+In-Reply-To: <1181170799.4404.271.camel@chaos>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Jun 2007 23:01:43.0501 (UTC) FILETIME=[A67757D0:01C7A88E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 11:40:58AM -0700, Jared Hulbert wrote:
-> > The embedded people already use them
-> >on flash which is a little dumb, but now we add even more cludge for
-> >a non-block based access.
+Thomas Gleixner wrote:
+> On Wed, 2007-06-06 at 15:47 -0700, Tim Bird wrote:
+>> Ingo,
+>>
+>> I saw lots of problems trying to apply the latest rt-preempt patch.
+>> Maybe some bits got included by mistake in the patch?
+>>
+>> Here's what I saw:
+>> $ wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.3.tar.bz2
 > 
-> Please justify your assertion that using cramfs on flash is dumb.
-> What would be not dumb?  In an embedded system with addressable Flash
-> the linear addressing cramfs is simple and elegant solution.
+> That should be 2.6.21.tar.bz2
+> 
+> The patch contains the .3 patch already. Unfortunately it used the wrong
+> numbering scheme :(
 
-Have to agree with Jared here, cramfs is a perfectly sensible thing to
-use on many platforms. 
+I should have thought of that.  I noticed older patches were
+against 2.6.21.
 
-Adding the ability to make particular files XIP on those platforms is
-also quite reasonable. 
+Thanks!
+ -- Tim
 
-The alternative would be to add a whole new filesystem to the kernel
-(effectively obsoleting cramfs) just to add XIP support or to compile
-in a second filesystem (ext2 w/XIP) just for a few files.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
-Keeping cramfs as a simple example filesystem is really not all that
-worthwhile, given it's not much of an example.
-
--- 
-Mathematics is the supreme nostalgia of our time.
