@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934502AbXFFFoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934677AbXFFFrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934502AbXFFFoF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 01:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934680AbXFFFno
+	id S934677AbXFFFrQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 01:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbXFFFrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 01:43:44 -0400
-Received: from bay0-omc3-s2.bay0.hotmail.com ([65.54.246.202]:24692 "EHLO
-	bay0-omc3-s2.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934679AbXFFFnn (ORCPT
-	<rfc822;Linux-Kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 01:43:43 -0400
-X-Originating-IP: [70.53.13.125]
-X-Originating-Email: [seanlkml@sympatico.ca]
-Date: Wed, 6 Jun 2007 01:43:45 -0400
-From: Sean <seanlkml@sympatico.ca>
-To: Linux-Kernel@vger.kernel.org
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Tejun Heo <htejun@gmail.com>, Adrian Bunk <bunk@stusta.de>
-Subject: rc4 libata regression - commit 464cf177
-Message-Id: <20070606014345.787c6efc.seanlkml@sympatico.ca>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Jun 2007 05:43:55.0093 (UTC) FILETIME=[AB9A5050:01C7A7FD]
+	Wed, 6 Jun 2007 01:47:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52004 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755906AbXFFFrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 01:47:04 -0400
+Date: Wed, 6 Jun 2007 01:46:47 -0400
+From: Dave Jones <davej@redhat.com>
+To: dwmw2@infradead.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: remove references to dead urls from mtd nand code.
+Message-ID: <20070606054647.GA20850@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, dwmw2@infradead.org,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As reported in http://bugzilla.kernel.org/show_bug.cgi?id=7815
+this URL 404's.  Unless they're coming back, we should probably
+just remove them.
 
-Hi Jeff,
+Signed-off-by: Dave Jones <davej@redhat.com>
 
-Don't see a fix for this issue in your tree, although i think someone
-else may have already reported this.   Just thought better safe than
-sorry and report perhaps again that rc4 can't boot here because the
-sata drives can not be found.  Reverting commit 464cf177 fixes the
-problem.
-
-As an aside, booting the patch-reverted rc4 does not resolve the other
-issue I just reported to the list[1] (sorry for not cc'ing you).
-
-Cheers.
-Sean
-
-[1] http://marc.info/?l=linux-kernel&m=118109439301092&w=2
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+index f1d60b6..8f665bb 100644
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -7,8 +7,7 @@ menuconfig MTD_NAND
+ 	select MTD_NAND_IDS
+ 	help
+ 	  This enables support for accessing all type of NAND flash
+-	  devices. For further information see
+-	  <http://www.linux-mtd.infradead.org/doc/nand.html>.
++	  devices.
+ 
+ if MTD_NAND
+ 
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index 7e68203..3f406c7 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -6,9 +6,6 @@
+  *   capable of working with almost all NAND chips currently available.
+  *   Basic support for AG-AND chips is provided.
+  *
+- *	Additional technical information is available on
+- *	http://www.linux-mtd.infradead.org/tech/nand.html
+- *
+  *  Copyright (C) 2000 Steven J. Hill (sjhill@realitydiluted.com)
+  *		  2002-2006 Thomas Gleixner (tglx@linutronix.de)
+  *
+-- 
+http://www.codemonkey.org.uk
