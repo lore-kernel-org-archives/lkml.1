@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbXFFHAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbXFFHDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760520AbXFFHAS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 03:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbXFFHAG
+	id S1761524AbXFFHDT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 03:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757754AbXFFHDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 03:00:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:8875 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755868AbXFFHAB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 03:00:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BErHwHyi4a2CkooMCBTXyUl4AOxxUQG/khVHHgcItYy82INWVUvMfIehktPt/ZCwbuFP+jijKLktkqGW02iRH9xZXv3p4lP8PytzLUMv/jnRClYlSSKQAOtU2DMmYQIwLBDFYAocBDYcgMdFegh/hccZtUI3nidDkTShDAUWU0M=
-Message-ID: <46665B7A.8020506@gmail.com>
-Date: Wed, 06 Jun 2007 09:00:10 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 6 Jun 2007 03:03:11 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34642 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756791AbXFFHDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 03:03:10 -0400
+Date: Wed, 6 Jun 2007 09:01:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v15
+Message-ID: <20070606070143.GA7375@elte.hu>
+References: <20070531150908.GA23538@elte.hu> <20070606064228.GA22443@in.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@google.com>
-CC: linux-kernel@vger.kernel.org, Ingo Korb <ingo@akana.de>
-Subject: Re: [PATCH 1/3] Char: stallion, don't fail with less than max panels
-References: <1058130869771517818@wsc.cz> <20070605171745.1ea5b88f.akpm@google.com>
-In-Reply-To: <20070605171745.1ea5b88f.akpm@google.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070606064228.GA22443@in.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napsal(a):
-> On Tue,  5 Jun 2007 23:20:57 +0200 (CEST)
-> Jiri Slaby <jirislaby@gmail.com> wrote:
-> 
->> stallion, don't fail with less than max panels
->>
-> 
-> Why not?
-> 
-> What problem is this patch fixing, and how does it fix it?
-> 
-> What are the consequences of not having this patch in the kernel?
-> 
-> etc.  More complete changlogs, please.
 
-Aah, sorry.
+* Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
 
---
-Since it's not neccesary to have MAX_PANELS on the card, don't fail to let users
-use this card even in this case. Stop the testing for loop instead.
---
-
+> > i'm pleased to announce release -v15 of the CFS scheduler patchset.
 > 
->> diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
->> index e45113a..265abad 100644
->> --- a/drivers/char/stallion.c
->> +++ b/drivers/char/stallion.c
->> @@ -2172,7 +2172,7 @@ static int __devinit stl_initech(struct stlbrd *brdp)
->>  		}
->>  		status = inb(ioaddr + ECH_PNLSTATUS);
->>  		if ((status & ECH_PNLIDMASK) != nxtid)
->> -			goto err_fr;
->> +			break;
->>  		panelp = kzalloc(sizeof(struct stlpanel), GFP_KERNEL);
->>  		if (!panelp) {
->>  			printk("STALLION: failed to allocate memory "
+> Do I smell a bug when a task switches its scheduling classes?
 > 
+> Lets say a task was in real-time class for a long time and switches to 
+> fair-sched class. When update_curr() is called on this new fair-sched 
+> task, some of required fields (for ex: exec_start) are uninitialized 
+> and can lead to bogus calculations?
 
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+yep, you are right. Dmitry Adamushko and Balbir Singh are working on 
+this area, and my tree already contains the fixes for rt task's 
+exec_start. (this also gives us the ability to have precise 'top' 
+statistics for RT tasks.) So this should be fixed in -v16. (Since it's 
+quite uncommon for a task to drop in and out of scheduling classes, this 
+problem was found via review, not via any user-visible regression.)
+
+> Also, real-time tasks are currently influencing fair clock 
+> calculations (because there is only one raw_weighted_load field per 
+> runqueue). Is that intentional?
+
+yep - the 'fair clock' in essence freezes when RT tasks are running (but 
+not completely). Can you think of any bad effect from this perhaps? It's 
+useful to have unified load-balancing (smpnice-driven) between the RT 
+and fair classes.
+
+	Ingo
