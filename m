@@ -1,62 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758306AbXFFRDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXFFREW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758306AbXFFRDY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 13:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXFFRDQ
+	id S1760908AbXFFREW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 13:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXFFREP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 13:03:16 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:15945 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbXFFRDP (ORCPT
+	Wed, 6 Jun 2007 13:04:15 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58339 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbXFFREO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 13:03:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=kW5JjotEPcSz6pCUqI4lqC9vauEknJNwnkTeidxq+s18+0Ibf2wKjucpyrUF0JKZFWurn8cOWoXUhNpx759YiCQviY8p9seJF6bcO/iQb5wqXGq8D5ZKgfRaUkI8fDSNCI+ar3+rPhWLD2zT/NYzN1HE40Faa1Ctc/0RzygkW4I=
-Message-ID: <5d96567b0706061003r462c324i733ad3698ac3d90c@mail.gmail.com>
-Date: Wed, 6 Jun 2007 20:03:14 +0300
-From: "Raz Ben-Jehuda(caro)" <raziebe@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: kmap_atomic in 2.6.20.x
+	Wed, 6 Jun 2007 13:04:14 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
+References: <1181146045.9503.67.camel@dyn9047017100.beaverton.ibm.com>
+Date: Wed, 06 Jun 2007 11:02:55 -0600
+In-Reply-To: <1181146045.9503.67.camel@dyn9047017100.beaverton.ibm.com>
+	(Badari Pulavarty's message of "Wed, 06 Jun 2007 09:07:24 -0700")
+Message-ID: <m1sl95t3r4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+Badari Pulavarty <pbadari@us.ibm.com> writes:
 
-I am running into some problems with kmap_atomic in my driver.
-My driver copies some pages coming from
-user space to "kernel space kmalloc'ed memory".
-I had this code running from 2.6.5 to 2.6.17 without any problems.
-I have upgraded to 2.6.20.xx and this code fails to kmap_atomic.
-I am running a uni processor 2 GRAM machine, 32bit.
+> Hi Eric,
+>
+> Your recent cleanup to shm code, namely
+>
+> [PATCH] shm: make sysv ipc shared memory use stacked files
+>
+> took away one of the debugging feature for shm segments.
+> Originally, shmid were forced to be the inode numbers and
+> they show up in /proc/pid/maps for the process which mapped
+> this shared memory segments (vma listing). That way, its easy
+> to find out who all mapped this shared memory segment. Your
+> patchset, took away the inode# setting. So, we can't easily
+> match the shmem segments to /proc/pid/maps easily. (It was
+> really useful in tracking down a customer problem recently). 
+> Is this done deliberately ? Anything wrong in setting this back ?
+>
+> Comments ?
+>
+> Thanks,
+> Badari
+>
+> Without patch:
+> --------------
+>
+> # ipcs -m
+>
+> ------ Shared Memory Segments --------
+> key        shmid      owner      perms      bytes      nattch     status
+> 0x00000000 884737     db2inst1  767        33554432   13
+>
+> # grep 884737 /proc/*/maps
+> #
+>
+> With patch:
+> -----------
+>
+> # ipcs -m
+>
+> ------ Shared Memory Segments --------
+> key        shmid      owner      perms      bytes      nattch     status
+> 0x00000000 884737     db2inst1  767        33554432   13
+>
+> # grep 884737 /proc/*/maps
+> /proc/11110/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11111/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11112/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11113/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11114/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11115/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11116/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11117/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11118/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11121/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11122/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11124/maps:4000389c000-4000589c000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+> /proc/11575/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
+> /SYSV00000000 (deleted)
+>
+>
+>
+> Here is the patch.
+>
+> "ino#" in /proc/pid/maps used to match "ipcs -m" output for shared 
+> memory (shmid). It was useful in debugging, but its changed recently. 
+> This patch sets inode number to shared memory id to match /proc/pid/maps.
 
-Basically this is code does:
+Theoretically it makes the stacked file concept more brittle, because
+it means the lower layers can't care about their inode number.
 
-get_user_pages(page,...)
+We do need something to tie these things together.
 
-kmap_atomic(page,KM_USER0);
- .. copy and stuff
-kunmap_atomic(page,KM_USER0)
+So I suspect what makes most sense is to simply rename the dentry
+SYSVID<segmentid>
 
-I have also tried KM_USER1 and KM_SKB_SUNRPC_DATA.
-I crash in arch/i386/highmem.c line 42:
-  ...
-  if (!pte_none(*(kmap_pte-idx)))
-                  BUG();
-..
+That should give you the necessary information while not doing something
+that is a long term maintenance problem.
 
-To the best of my understanding ( from "see : understand the linux
-kernel" page 310 ) , a different kernel component holds this window. A
-fact which is quite strange in the case of KM_SKB_SUNRPC_DATA. I have
-nothing that uses it.
+Do you think you can cook up a patch to that effect?
+Otherwise I will see if I can.
 
-1. Why kmap_atomic does not return NULL ?
-2. Why am I failing only in high memory mappings ?
+In practice I'm not really against your change, but I would prefer
+to leave the code in a state where someone can reimplement hugetlbfs
+or shmfs and we simply don't care.
 
--- 
-Raz
+Eric
