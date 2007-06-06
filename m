@@ -1,424 +1,439 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759027AbXFFQgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760796AbXFFQhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759027AbXFFQgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 12:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbXFFQgn
+	id S1760796AbXFFQhb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 12:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbXFFQhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 12:36:43 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:40896 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbXFFQgl (ORCPT
+	Wed, 6 Jun 2007 12:37:20 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:14365 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753203AbXFFQhR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 12:36:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:mime-version:content-transfer-encoding:message-id:content-type:to:subject:date:x-mailer:from;
-        b=mGLXFKC9LCKdJNfmESRTWhexbEzVfm+krQ74vzTfQvY0BkrlirfQ/6xWZ0CnbUf1wGVtHN/1Rjk3vCUWSObblluwwhTvpV5vsO3OseVxaXL6KJTEi6Ys0IEaf5n7Wq9XlBUVo2iE4IkI7qtmo0a/6WfxsvGM2eD6ytAKhSdE+yQ=
-Mime-Version: 1.0 (Apple Message framework v752.2)
+	Wed, 6 Jun 2007 12:37:17 -0400
+Date: Wed, 6 Jun 2007 09:36:51 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] Add missing files and dirs to 00-INDEX in
+ Documentation/
+Message-Id: <20070606093651.179a13ef.randy.dunlap@oracle.com>
+In-Reply-To: <200706061620.33881.jesper.juhl@gmail.com>
+References: <200706061620.33881.jesper.juhl@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <8076BF28-4780-4248-88E0-3CE3CD6D0CEE@gmail.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: X86 SMP cpu enumeration changes
-Date: Wed, 6 Jun 2007 11:36:36 -0500
-X-Mailer: Apple Mail (2.752.2)
-From: Mark Rustad <mrustad@gmail.com>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There seems to have been a change in SMP cpu enumeration sometime  
-before 2.6.16. I have also tried 2.6.19 and it also exhibits the  
-"new" behavior. It used to be that setting maxcpus to the number of  
-physical cpus would effectively prevent the use of hyperthreading. In  
-fact in arch/i386/kernel/mpparse.c is the following comment:
+On Wed, 6 Jun 2007 16:20:32 +0200 Jesper Juhl wrote:
 
-/*
-  * If the BIOS enumerates physical processors before logical,
-  * maxcpus=N at enumeration-time can be used to disable HT.
-  */
+> 
+> This patch adds descriptions for a number of missing files and directories 
+> to the Documentation/00-INDEX file.
+> People really should learn to keep this file up-to-date when adding or 
+> moving documentation...
 
-Interestingly, the boot messages seem to show that it is behaving  
-correctly:
+/me raises hand.
+Thanks.
 
-Linux version 2.6.19.7-3d3000-2 (mdr@wookieebuildpc) (gcc version  
-3.3.3 (SuSE Linux)) #1 SMP PREEMPT Tue Apr 24 11:36:00 CDT 2007
-BIOS-provided physical RAM map:
-BIOS-e820: 0000000000000000 - 000000000009a000 (usable)
-BIOS-e820: 000000000009a000 - 00000000000a0000 (reserved)
-BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
-BIOS-e820: 0000000000100000 - 000000003ff70000 (usable)
-BIOS-e820: 000000003ff70000 - 000000003ff78000 (ACPI data)
-BIOS-e820: 000000003ff78000 - 000000003ff80000 (ACPI NVS)
-BIOS-e820: 000000003ff80000 - 0000000040000000 (reserved)
-BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
-BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
-BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-BIOS-e820: 00000000ff800000 - 00000000ffc00000 (reserved)
-BIOS-e820: 00000000fffffc00 - 0000000100000000 (reserved)
-1023MB LOWMEM available.
-found SMP MP-table at 000f6860
-Entering add_active_range(0, 0, 262000) 0 entries of 256 used
-Zone PFN ranges:
-   DMA             0 ->     4096
-   Normal       4096 ->   262000
-early_node_map[1] active PFN ranges
-     0:        0 ->   262000
-On node 0 totalpages: 262000
-   DMA zone: 32 pages used for memmap
-   DMA zone: 0 pages reserved
-   DMA zone: 4064 pages, LIFO batch:0
-   Normal zone: 2014 pages used for memmap
-   Normal zone: 255890 pages, LIFO batch:31
-DMI present.
-Using APIC driver default
-ACPI: RSDP (v000 PTLTD                                 ) @ 0x000f68c0
-ACPI: RSDT (v001 PTLTD    RSDT   0x06040000  LTP 0x00000000) @  
-0x3ff73a8f
-ACPI: FADT (v001 INTEL  LINDHRST 0x06040000 PTL  0x00000003) @  
-0x3ff77e20
-ACPI: MADT (v001 PTLTD           APIC   0x06040000  LTP 0x00000000) @  
-0x3ff77e94
-mdr@wookieebuildpc:~/cpus> cat 19.dmesg
-Linux version 2.6.19.7-3d3000-2 (mdr@wookieebuildpc) (gcc version  
-3.3.3 (SuSE Linux)) #1 SMP PREEMPT Tue Apr 24 11:36:00 CDT 2007
-BIOS-provided physical RAM map:
-BIOS-e820: 0000000000000000 - 000000000009a000 (usable)
-BIOS-e820: 000000000009a000 - 00000000000a0000 (reserved)
-BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
-BIOS-e820: 0000000000100000 - 000000003ff70000 (usable)
-BIOS-e820: 000000003ff70000 - 000000003ff78000 (ACPI data)
-BIOS-e820: 000000003ff78000 - 000000003ff80000 (ACPI NVS)
-BIOS-e820: 000000003ff80000 - 0000000040000000 (reserved)
-BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
-BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
-BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-BIOS-e820: 00000000ff800000 - 00000000ffc00000 (reserved)
-BIOS-e820: 00000000fffffc00 - 0000000100000000 (reserved)
-1023MB LOWMEM available.
-found SMP MP-table at 000f6860
-Entering add_active_range(0, 0, 262000) 0 entries of 256 used
-Zone PFN ranges:
-   DMA             0 ->     4096
-   Normal       4096 ->   262000
-early_node_map[1] active PFN ranges
-     0:        0 ->   262000
-On node 0 totalpages: 262000
-   DMA zone: 32 pages used for memmap
-   DMA zone: 0 pages reserved
-   DMA zone: 4064 pages, LIFO batch:0
-   Normal zone: 2014 pages used for memmap
-   Normal zone: 255890 pages, LIFO batch:31
-DMI present.
-Using APIC driver default
-ACPI: RSDP (v000 PTLTD                                 ) @ 0x000f68c0
-ACPI: RSDT (v001 PTLTD    RSDT   0x06040000  LTP 0x00000000) @  
-0x3ff73a8f
-ACPI: FADT (v001 INTEL  LINDHRST 0x06040000 PTL  0x00000003) @  
-0x3ff77e20
-ACPI: MADT (v001 PTLTD           APIC   0x06040000  LTP 0x00000000) @  
-0x3ff77e94
-ACPI: BOOT (v001 PTLTD  $SBFTBL$ 0x06040000  LTP 0x00000001) @  
-0x3ff77f48
-ACPI: SPCR (v001 PTLTD  $UCRTBL$ 0x06040000 PTL  0x00000001) @  
-0x3ff77f70
-ACPI: MCFG (v001 PTLTD           MCFG   0x06040000  LTP 0x00000000) @  
-0x3ff77fc0
-ACPI: SSDT (v001  PmRef    CpuPm 0x00003000 INTL 0x20030224) @  
-0x3ff73acb
-ACPI: DSDT (v001  Intel LINDHRST 0x06040000 MSFT 0x0100000e) @  
-0x00000000
-ACPI: Local APIC address 0xfee00000
-ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-Processor #0 15:3 APIC version 20
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x06] enabled)
-Processor #6 15:3 APIC version 20
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-Processor #1 15:3 APIC version 20
-WARNING: NR_CPUS limit of 2 reached.  Processor ignored.
-ACPI: LAPIC (acpi_id[0x03] lapic_id[0x07] enabled)
-Processor #7 15:3 APIC version 20
-WARNING: NR_CPUS limit of 2 reached.  Processor ignored.
-ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x03] high edge lint[0x1])
-ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 2, version 32, address 0xfec00000, GSI 0-23
-ACPI: IOAPIC (id[0x03] address[0xfec80000] gsi_base[24])
-IOAPIC[1]: apic_id 3, version 32, address 0xfec80000, GSI 24-47
-ACPI: IOAPIC (id[0x04] address[0xfec80400] gsi_base[48])
-IOAPIC[2]: apic_id 4, version 32, address 0xfec80400, GSI 48-71
-ACPI: IOAPIC (id[0x05] address[0xfec84000] gsi_base[72])
-IOAPIC[3]: apic_id 5, version 32, address 0xfec84000, GSI 72-95
-ACPI: IOAPIC (id[0x08] address[0xfec84400] gsi_base[96])
-IOAPIC[4]: apic_id 8, version 32, address 0xfec84400, GSI 96-119
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-ACPI: IRQ0 used by override.
-ACPI: IRQ2 used by override.
-ACPI: IRQ9 used by override.
-Enabling APIC mode:  Flat.  Using 5 I/O APICs
-Using ACPI (MADT) for SMP configuration information
-Allocating PCI resources starting at 50000000 (gap: 40000000:a0000000)
-Detected 3200.170 MHz processor.
-Built 1 zonelists.  Total pages: 259954
-Kernel command line: root=/dev/md1 dhash_entries=65536  
-ihash_entries=32768 thash_entries=32768 rhash_entries=8192  
-console=ttyS1,115200n8 console=tty0 hugepages=178 xio3dshm=300m,300m, 
-100m
-xio3d: mem[0]=314572800
-xio3d: mem[1]=314572800
-xio3d: mem[2]=104857600
-mapped APIC to ffffd000 (fee00000)
-mapped IOAPIC to ffffc000 (fec00000)
-mapped IOAPIC to ffffb000 (fec80000)
-mapped IOAPIC to ffffa000 (fec80400)
-mapped IOAPIC to ffff9000 (fec84000)
-mapped IOAPIC to ffff8000 (fec84400)
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-CPU 0 irqstacks, hard=b04a1000 soft=b049f000
-PID hash table entries: 2048 (order: 11, 8192 bytes)
-Console: colour VGA+ 80x25
-Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Memory: 1034856k/1048000k available (2492k kernel code, 12620k  
-reserved, 914k data, 260k init, 0k highmem)
-virtual kernel memory layout:
-     fixmap  : 0xfffb6000 - 0xfffff000   ( 292 kB)
-     vmalloc : 0xf0800000 - 0xfffb4000   ( 247 MB)
-     lowmem  : 0xb0000000 - 0xeff70000   (1023 MB)
-       .init : 0xb0459000 - 0xb049a000   ( 260 kB)
-       .data : 0xb036f0bf - 0xb0453b8c   ( 914 kB)
-       .text : 0xb0100000 - 0xb036f0bf   (2492 kB)
-Checking if this processor honours the WP bit even in supervisor  
-mode... Ok.
-Calibrating delay using timer specific routine.. 6405.00 BogoMIPS  
-(lpj=12810008)
-Mount-cache hash table entries: 512
-CPU: After generic identify, caps: bfebfbff 20000000 00000000  
-00000000 0000441d 00000000 00000000
-monitor/mwait feature present.
-using mwait in idle threads.
-CPU: Trace cache: 12K uops, L1 D cache: 16K
-CPU: L2 cache: 1024K
-CPU: Physical Processor ID: 0
-CPU: After all inits, caps: bfebfbff 20000000 00000000 00000180  
-0000441d 00000000 00000000
-Checking 'hlt' instruction... OK.
-Freeing SMP alternatives: 16k freed
-ACPI: Core revision 20060707
-CPU0: Intel(R) Xeon(TM) CPU 3.20GHz stepping 04
-Booting processor 1/1 eip 2000
-CPU 1 irqstacks, hard=b04a2000 soft=b04a0000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 6400.63 BogoMIPS  
-(lpj=12801269)
-CPU: After generic identify, caps: bfebfbff 20000000 00000000  
-00000000 0000441d 00000000 00000000
-monitor/mwait feature present.
-CPU: Trace cache: 12K uops, L1 D cache: 16K
-CPU: L2 cache: 1024K
-CPU: Physical Processor ID: 0
-CPU: After all inits, caps: bfebfbff 20000000 00000000 00000180  
-0000441d 00000000 00000000
-CPU1: Intel(R) Xeon(TM) CPU 3.20GHz stepping 04
-Total of 2 processors activated (12805.63 BogoMIPS).
-ENABLING IO-APIC IRQs
-..TIMER: vector=0x31 apic1=0 pin1=2 apic2=0 pin2=0
-checking TSC synchronization across 2 CPUs: passed.
-Brought up 2 CPUs
-migration_cost=44
-NET: Registered protocol family 16
-ACPI: bus type pci registered
-PCI: Using MMCONFIG
-PCI: No mmconfig possible on 8:1
-Setting up standard PCI resources
-ACPI: Interpreter enabled
-ACPI: Using IOAPIC for interrupt routing
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-PCI: Probing PCI hardware (bus 00)
-PCI quirk: region 1000-107f claimed by ICH4 ACPI/GPIO/TCO
-PCI quirk: region 1180-11bf claimed by ICH4 GPIO
-PCI: Ignoring BAR0-3 of IDE controller 0000:00:1f.1
-PCI: PXH quirk detected, disabling MSI for SHPC device
-PCI: PXH quirk detected, disabling MSI for SHPC device
-PCI: PXH quirk detected, disabling MSI for SHPC device
-PCI: PXH quirk detected, disabling MSI for SHPC device
-Boot video device is 0000:08:01.0
-PCI: Transparent bridge - 0000:00:1e.0
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX0.PXH0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEX0.PXH1._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEY0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEZ0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEZ0.PXH0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PEZ0.PXH1._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCIB._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 *5 6 7 10 11 14 15)
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 *10 11 14 15)
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 *7 10 11 14 15)
-ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 10 *11 14 15)
-ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 10 11 14 15) *0,  
-disabled.
-ACPI: PCI Interrupt Link [LNKF] (IRQs 4 5 6 7 10 11 14 15) *0, disabled.
-ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 10 11 14 15) *0,  
-disabled.
-ACPI: PCI Interrupt Link [LNKH] (IRQs 4 5 6 7 *10 11 14 15)
-ACPI: Device [PRT] status [0000000c]: functional but not present;  
-setting present
-SCSI subsystem initialized
-PCI: Using ACPI for IRQ routing
-PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post  
-a report
-PCI: Failed to allocate mem resource #9:100000@e0000000 for 0000:01:00.2
-PCI: Failed to allocate mem resource #6:80000@e0000000 for 0000:02:02.1
-PCI: Bridge: 0000:01:00.0
-   IO window: 2000-3fff
-   MEM window: dc200000-dc2fffff
-   PREFETCH window: df000000-dfffffff
-PCI: Bridge: 0000:01:00.2
-   IO window: 4000-4fff
-   MEM window: dc300000-dc3fffff
-   PREFETCH window: disabled.
-PCI: Bridge: 0000:00:02.0
-   IO window: 2000-4fff
-   MEM window: dc100000-dc3fffff
-   PREFETCH window: df000000-dfffffff
-PCI: Bridge: 0000:00:04.0
-   IO window: disabled.
-   MEM window: disabled.
-   PREFETCH window: disabled.
-PCI: Bridge: 0000:05:00.0
-   IO window: disabled.
-   MEM window: disabled.
-   PREFETCH window: disabled.
-PCI: Bridge: 0000:05:00.2
-   IO window: 5000-5fff
-   MEM window: dc500000-dc5fffff
-   PREFETCH window: 50000000-500fffff
-PCI: Bridge: 0000:00:06.0
-   IO window: 5000-5fff
-   MEM window: dc400000-dc5fffff
-   PREFETCH window: 50000000-500fffff
-PCI: Bridge: 0000:00:1e.0
-   IO window: 6000-6fff
-   MEM window: dc600000-ddffffff
-   PREFETCH window: 50100000-501fffff
-ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:02.0 to 64
-PCI: Setting latency timer of device 0000:01:00.0 to 64
-PCI: Setting latency timer of device 0000:01:00.2 to 64
-ACPI: PCI Interrupt 0000:00:04.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:04.0 to 64
-ACPI: PCI Interrupt 0000:00:06.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:06.0 to 64
-PCI: Setting latency timer of device 0000:05:00.0 to 64
-PCI: Setting latency timer of device 0000:05:00.2 to 64
-PCI: Setting latency timer of device 0000:00:1e.0 to 64
-NET: Registered protocol family 2
-IP route cache hash table entries: 8192 (order: 3, 32768 bytes)
-TCP established hash table entries: 32768 (order: 6, 393216 bytes)
-TCP bind hash table entries: 16384 (order: 5, 196608 bytes)
-TCP: Hash tables configured (established 32768 bind 16384)
-TCP reno registered
-Simple Boot Flag at 0x39 set to 0x1
-IA-32 Microcode Update Driver: v1.14a <tigran@veritas.com>
-Total HugeTLB memory allocated, 178
-io scheduler noop registered (default)
-PCI: Setting latency timer of device 0000:00:02.0 to 64
-Allocate Port Service[0000:00:02.0:pcie00]
-Allocate Port Service[0000:00:02.0:pcie01]
-PCI: Setting latency timer of device 0000:00:04.0 to 64
-Allocate Port Service[0000:00:04.0:pcie00]
-Allocate Port Service[0000:00:04.0:pcie01]
-PCI: Setting latency timer of device 0000:00:06.0 to 64
-Allocate Port Service[0000:00:06.0:pcie00]
-Allocate Port Service[0000:00:06.0:pcie01]
-Evaluate _OSC Set fails. Status = 0x0005
-aer_init: AER service init fails - No ACPI _OSC support
-aer: probe of 0000:00:02.0:pcie01 failed with error 1
-Evaluate _OSC Set fails. Status = 0x0005
-aer_init: AER service init fails - No ACPI _OSC support
-aer: probe of 0000:00:04.0:pcie01 failed with error 1
-Evaluate _OSC Set fails. Status = 0x0005
-aer_init: AER service init fails - No ACPI _OSC support
-aer: probe of 0000:00:06.0:pcie01 failed with error 1
-ACPI: Power Button (FF) [PWRF]
-ACPI: Power Button (CM) [PWRB]
-ACPI: Getting cpuindex for acpiid 0x1
-ACPI: Getting cpuindex for acpiid 0x3
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+> 
+>  Documentation/00-INDEX |  142 +++++++++++++++++++++++++++++++++++++++++++++---
+>  1 files changed, 133 insertions(+), 9 deletions(-)
+> 
+> diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+> index f08ca95..8b05636 100644
+> --- a/Documentation/00-INDEX
+> +++ b/Documentation/00-INDEX
+> @@ -12,6 +12,8 @@ Following translations are available on the WWW:
+>  
+>  00-INDEX
+>  	- this file.
+> +ABI/
+> +	- info on kernel <-> userspace ABI and relative interface stability.
+>  BUG-HUNTING
+>  	- brute force method of doing binary search of patches to find bug.
+>  Changes
+> @@ -25,37 +27,57 @@ DMA-mapping.txt
+>  DocBook/
+>  	- directory with DocBook templates etc. for kernel documentation.
+>  HOWTO
+> -	- The process and procedures of how to do Linux kernel development.
+> +	- the process and procedures of how to do Linux kernel development.
+>  IO-mapping.txt
+>  	- how to access I/O mapped memory from within device drivers.
+>  IPMI.txt
+>  	- info on Linux Intelligent Platform Management Interface (IPMI) Driver.
+>  IRQ-affinity.txt
+>  	- how to select which CPU(s) handle which interrupt events on SMP.
+> +IRQ.txt
+> +	- description of what an IRQ is.
+>  ManagementStyle
+>  	- how to (attempt to) manage kernel hackers.
+>  MSI-HOWTO.txt
+>  	- the Message Signaled Interrupts (MSI) Driver Guide HOWTO and FAQ.
+> +PCIEBUS-HOWTO.txt
+> +	- a guide describing the PCI Express Port Bus driver.
+>  RCU/
+>  	- directory with info on RCU (read-copy update).
+>  README.DAC960
+>  	- info on Mylex DAC960/DAC1100 PCI RAID Controller Driver for Linux.
+> +README.cycladesZ
+> +	- info on Cyclades-Z firmware loading.
+>  SAK.txt
+>  	- info on Secure Attention Keys.
+> +SecurityBugs
+> +	- procedure for reporting security bugs found in the kernel.
+> +SubmitChecklist
+> +	- Linux kernel patch submission checklist.
+>  SubmittingDrivers
+>  	- procedure to get a new driver source included into the kernel tree.
+>  SubmittingPatches
+>  	- procedure to get a source patch included into the kernel tree.
+>  VGA-softcursor.txt
+>  	- how to change your VGA cursor from a blinking underscore.
+> +accounting/
+> +	- documentation on accounting and taskstats.
+> +aoe/
+> +	- description of AoE (ATA over Ethernet) along with config examples.
+>  applying-patches.txt
+>  	- description of various trees and how to apply their patches.
+>  arm/
+>  	- directory with info about Linux on the ARM architecture.
+> +atomic_ops.txt
+> +	- semantics and behavior of atomic and bitmask operations.
+> +auxdisplay/
+> +	- misc. LCD driver documentation (cfag12864b, ks0108).
+>  basic_profiling.txt
+>  	- basic instructions for those who wants to profile Linux kernel.
+>  binfmt_misc.txt
+>  	- info on the kernel support for extra binary formats.
+> +blackfin/
+> +	- directory with documentation for the Blackfin arch.
+>  block/
+>  	- info on the Block I/O (BIO) layer.
+>  cachetlb.txt
+> @@ -68,16 +90,32 @@ cli-sti-removal.txt
+>  	- cli()/sti() removal guide.
+>  computone.txt
+>  	- info on Computone Intelliport II/Plus Multiport Serial Driver.
+> +connector/
+> +	- docs on the netlink based userspace<->kernel space communication mod.
+> +console/
+> +	- documentation on Linux console drivers.
+>  cpqarray.txt
+>  	- info on using Compaq's SMART2 Intelligent Disk Array Controllers.
+>  cpu-freq/
+>  	- info on CPU frequency and voltage scaling.
+> +cpu-hotplug.txt
+> +	- document describing CPU hotplug support in the Linux kernel.
+> +cpu-load.txt
+> +	- document describing how CPU load statistics are collected.
+> +cpusets.txt
+> +	- documents the cpusets feature; assign CPUs and Mem to a set of tasks.
+> +cputopology.txt
+> +	- documentation on how CPU topology info is exported via sysfs.
+>  cris/
+>  	- directory with info about Linux on CRIS architecture.
+>  crypto/
+>  	- directory with info on the Crypto API.
+> +dcdbas.txt
+> +	- information on the Dell Systems Management Base Driver.
+>  debugging-modules.txt
+>  	- some notes on debugging modules after Linux 2.6.3.
+> +dell_rbu.txt
+> +	- document demonstrating the use of the Dell Remote BIOS Update driver.
+>  device-mapper/
+>  	- directory with info on Device Mapper.
+>  devices.txt
+> @@ -86,32 +124,52 @@ digiepca.txt
+>  	- info on Digi Intl. {PC,PCI,EISA}Xx and Xem series cards.
+>  dnotify.txt
+>  	- info about directory notification in Linux.
+> +dontdiff
+> +	- file containing a list of files that should never be diff'ed.
+>  driver-model/
+>  	- directory with info about Linux driver model.
+> +drivers/
+> +	- directory with driver documentation (currently only EDAC).
+>  dvb/
+>  	- info on Linux Digital Video Broadcast (DVB) subsystem.
+>  early-userspace/
+>  	- info about initramfs, klibc, and userspace early during boot.
+> +ecryptfs.txt
+> +	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
+>  eisa.txt
+>  	- info on EISA bus support.
+>  exception.txt
+>  	- how Linux v2.2 handles exceptions without verify_area etc.
+> +fault-injection/
+> +	- dir with docs about the fault injection capabilities infrastructure.
+>  fb/
+>  	- directory with info on the frame buffer graphics abstraction layer.
+> +feature-removal-schedule.txt
+> +	- list of files and features that are going to be removed.
+>  filesystems/
+>  	- directory with info on the various filesystems that Linux supports.
+>  firmware_class/
+>  	- request_firmware() hotplug interface info.
+>  floppy.txt
+>  	- notes and driver options for the floppy disk driver.
+> +fujitsu/
+> +	- Fujitsu FR-V Linux documentation.
+> +gpio.txt
+> +	- overview of GPIO (General Purpose Input/Output) access conventions.
+>  hayes-esp.txt
+>  	- info on using the Hayes ESP serial driver.
+>  highuid.txt
+>  	- notes on the change from 16 bit to 32 bit user/group IDs.
+>  hpet.txt
+>  	- High Precision Event Timer Driver for Linux.
+> +hrtimer/
+> +	- info on the timer_stats debugging facility for timer (ab)use.
+> +hrtimers/
+> +	- info on the hrtimers subsystem for high-resolution kernel timers.
+>  hw_random.txt
+>  	- info on Linux support for random number generator in i8xx chipsets.
+> +hwmon/
+> +	- directory with docs on various hardware monitoring drivers.
+>  i2c/
+>  	- directory with info about the I2C bus/protocol (2 wire, kHz speed).
+>  i2o/
+> @@ -122,16 +180,22 @@ ia64/
+>  	- directory with info about Linux on Intel 64 bit architecture.
+>  ide.txt
+>  	- important info for users of ATA devices (IDE/EIDE disks and CD-ROMS).
+> +infiniband/
+> +	- directory with documents concerning Linux InfiniBand support.
+>  initrd.txt
+>  	- how to use the RAM disk as an initial/temporary root filesystem.
+>  input/
+>  	- info on Linux input device support.
+>  io_ordering.txt
+>  	- info on ordering I/O writes to memory-mapped addresses.
+> +ioctl/
+> +	- directory with documents describing various IOCTL calls.
+>  ioctl-number.txt
+>  	- how to implement and register device/driver ioctl calls.
+>  iostats.txt
+>  	- info on I/O statistics Linux kernel provides.
+> +irqflags-tracing.txt
+> +	- how to use the irq-flags tracing feature.
+>  isapnp.txt
+>  	- info on Linux ISA Plug & Play support.
+>  isdn/
+> @@ -140,26 +204,40 @@ java.txt
+>  	- info on the in-kernel binary support for Java(tm).
+>  kbuild/
+>  	- directory with info about the kernel build process.
+> -kdumpt.txt
+> -       - mini HowTo on getting the crash dump code to work.
+> +kdump/
+> +	- directory with mini HowTo on getting the crash dump code to work.
+>  kernel-doc-nano-HOWTO.txt
+>  	- mini HowTo on generation and location of kernel documentation files.
+>  kernel-docs.txt
+>  	- listing of various WWW + books that document kernel internals.
+>  kernel-parameters.txt
+>  	- summary listing of command line / boot prompt args for the kernel.
+> +keys-request-key.txt
+> +	- description of the kernel key request service.
+> +keys.txt
+> +	- description of the kernel key retention service.
+>  kobject.txt
+>  	- info of the kobject infrastructure of the Linux kernel.
+> +kprobes.txt
+> +	- documents the kernel probes debugging feature.
+> +kref.txt
+> +	- docs on adding reference counters (krefs) to kernel objects.
+>  laptop-mode.txt
+> -	- How to conserve battery power using laptop-mode.
+> +	- how to conserve battery power using laptop-mode.
+>  ldm.txt
+>  	- a brief description of LDM (Windows Dynamic Disks).
+> +leds-class.txt
+> +	- documents LED handling under Linux.
+> +local_ops.txt
+> +	- semantics and behavior of local atomic operations.
+> +lockdep-design.txt
+> +	- documentation on the runtime locking correctness validator.
+>  locks.txt
+>  	- info on file locking implementations, flock() vs. fcntl(), etc.
+>  logo.gif
+> -	- Full colour GIF image of Linux logo (penguin).
+> +	- full colour GIF image of Linux logo (penguin - Tux).
+>  logo.txt
+> -	- Info on creator of above logo & site to get additional images from.
+> +	- info on creator of above logo & site to get additional images from.
+>  m68k/
+>  	- directory with info about Linux on Motorola 68k architecture.
+>  magic-number.txt
+> @@ -170,6 +248,8 @@ mca.txt
+>  	- info on supporting Micro Channel Architecture (e.g. PS/2) systems.
+>  md.txt
+>  	- info on boot arguments for the multiple devices driver.
+> +memory-barriers.txt
+> +	- info on Linux kernel memory barriers.
+>  memory.txt
+>  	- info on typical Linux memory problems.
+>  mips/
+> @@ -177,9 +257,11 @@ mips/
+>  mono.txt
+>  	- how to execute Mono-based .NET binaries with the help of BINFMT_MISC.
+>  moxa-smartio
+> -	- info on installing/using Moxa multiport serial driver.
+> +	- file with info on installing/using Moxa multiport serial driver.
+>  mtrr.txt
+>  	- how to use PPro Memory Type Range Registers to increase performance.
+> +mutex-design.txt
+> +	- info on the generic mutex subsystem.
+>  nbd.txt
+>  	- info on a TCP implementation of a network block device.
+>  netlabel/
+> @@ -190,6 +272,8 @@ nfsroot.txt
+>  	- short guide on setting up a diskless box with NFS root filesystem.
+>  nmi_watchdog.txt
+>  	- info on NMI watchdog for SMP systems.
+> +nommu-mmap.txt
+> +	- documentation about no-mmu memory mapping support.
+>  numastat.txt
+>  	- info on how to read Numa policy hit/miss statistics in sysfs.
+>  oops-tracing.txt
+> @@ -202,8 +286,16 @@ parport.txt
+>  	- how to use the parallel-port driver.
+>  parport-lowlevel.txt
+>  	- description and usage of the low level parallel port functions.
+> +pci-error-recovery.txt
+> +	- info on PCI error recovery.
+>  pci.txt
+>  	- info on the PCI subsystem for device driver authors.
+> +pcieaer-howto.txt
+> +	- the PCI Express Advanced Error Reporting Driver Guide HOWTO.
+> +pcmcia/
+> +	- info on the Linux PCMCIA driver.
+> +pi-futex.txt
+> +	- documentation on lightweight PI-futexes.
+>  pm.txt
+>  	- info on Linux power management support.
+>  pnp.txt
+> @@ -214,18 +306,32 @@ powerpc/
+>  	- directory with info on using Linux with the PowerPC.
+>  preempt-locking.txt
+>  	- info on locking under a preemptive kernel.
+> +prio_tree.txt
+> +	- info on radix-priority-search-tree use for indexing vmas.
+>  ramdisk.txt
+>  	- short guide on how to set up and use the RAM disk.
+> +rbtree.txt
+> +	- info on what red-black trees are and what they are for.
+>  riscom8.txt
+>  	- notes on using the RISCom/8 multi-port serial driver.
+> +robust-futex-ABI.txt
+> +	- documentation of the robust futex ABI.
+> +robust-futexes.txt
+> +	- a description of what robust futexes are.
+>  rocket.txt
+>  	- info on the Comtrol RocketPort multiport serial driver.
+>  rpc-cache.txt
+>  	- introduction to the caching mechanisms in the sunrpc layer.
+> +rt-mutex-design.txt
+> +	- description of the RealTime mutex implementation design.
+> +rt-mutex.txt
+> +	- desc. of RT-mutex subsystem with PI (Priority Inheritance) support.
+>  rtc.txt
+>  	- notes on how to use the Real Time Clock (aka CMOS clock) driver.
+>  s390/
+>  	- directory with info on using Linux on the IBM S390.
+> +sched-arch.txt
+> +	- CPU Scheduler implementation hints for architecture specific code.
+>  sched-coding.txt
+>  	- reference for various scheduler-related methods in the O(1) scheduler.
+>  sched-design.txt
+> @@ -240,22 +346,32 @@ serial/
+>  	- directory with info on the low level serial API.
+>  serial-console.txt
+>  	- how to set up Linux with a serial line console as the default.
+> +sgi-ioc4.txt
+> +	- description of the SGI IOC4 PCI (multi function) device.
+>  sgi-visws.txt
+>  	- short blurb on the SGI Visual Workstations.
+>  sh/
+>  	- directory with info on porting Linux to a new architecture.
+> +sharedsubtree.txt
+> +	- a description of shared subtrees for namespaces.
+>  smart-config.txt
+>  	- description of the Smart Config makefile feature.
+>  smp.txt
+>  	- a few notes on symmetric multi-processing.
+> +sony-laptop.txt
+> +	- Sony Notebook Control Driver (SNC) Readme.
+>  sonypi.txt
+>  	- info on Linux Sony Programmable I/O Device support.
+>  sound/
+>  	- directory with info on sound card support.
+>  sparc/
+>  	- directory with info on using Linux on Sparc architecture.
+> +sparse.txt
+> +	- info on how to obtain and use the sparse tool for typechecking.
+>  specialix.txt
+>  	- info on hardware/driver for specialix IO8+ multiport serial card.
+> +spi/
+> +	- overview of Linux kernel Serial Peripheral Interface (SPI) support.
+>  spinlocks.txt
+>  	- info on using spinlocks to provide exclusive access in kernel.
+>  stable_api_nonsense.txt
+> @@ -274,24 +390,32 @@ sysrq.txt
+>  	- info on the magic SysRq key.
+>  telephony/
+>  	- directory with info on telephony (e.g. voice over IP) support.
+> +thinkpad-acpi.txt
+> +	- information on the (IBM and Lenovo) ThinkPad ACPI Extras driver.
+>  time_interpolators.txt
+>  	- info on time interpolators.
+>  tipar.txt
+>  	- information about Parallel link cable for Texas Instruments handhelds.
+>  tty.txt
+>  	- guide to the locking policies of the tty layer.
+> -unicode.txt
+> -	- info on the Unicode character/font mapping used in Linux.
+>  uml/
+>  	- directory with information about User Mode Linux.
+> +unicode.txt
+> +	- info on the Unicode character/font mapping used in Linux.
+> +unshare.txt
+> +	- description of the Linux unshare system call.
+>  usb/
+>  	- directory with info regarding the Universal Serial Bus.
+> +video-output.txt
+> +	- sysfs class driver interface to enable/disable a video output device.
+>  video4linux/
+>  	- directory with info regarding video/TV/radio cards and linux.
+>  vm/
+>  	- directory with info on the Linux vm code.
+>  voyager.txt
+>  	- guide to running Linux on the Voyager architecture.
+> +w1/
+> +	- directory with documents regarding the 1-wire (w1) subsystem.
+>  watchdog/
+>  	- how to auto-reboot Linux if it has "fallen and can't get up". ;-)
+>  x86_64/
+> 
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-The messages showing that it is ignoring processors #1 and #7 seems  
-to indicate that the correct processors are ignored. Yet, after  
-booting when I look at /proc/cpuinfo I get:
 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 3
-model name      : Intel(R) Xeon(TM) CPU 3.20GHz
-stepping        : 4
-cpu MHz         : 3200.000
-cache size      : 1024 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 5
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr  
-pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm  
-pbe lm constant_tsc pni monitor ds_cpl cid xtpr
-bogomips        : 6404.95
-
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 3
-model name      : Intel(R) Xeon(TM) CPU 3.20GHz
-stepping        : 4
-cpu MHz         : 3200.000
-cache size      : 1024 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 5
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr  
-pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm  
-pbe lm constant_tsc pni monitor ds_cpl cid xtpr
-bogomips        : 6400.70
-
-and when I fire up some work and lay hands on the cpu heatsinks, only  
-one of them warms up, meaning that /proc/cpuinfo is not lying. This  
-kernel was built with CONFIG_NR_CPUS=2, so there is no maxcpus= in  
-the kernel command line, but I also tried adding that on the off  
-chance that it would make a difference, but it did not.
-
-Was this change in behavior intended? If so, I guess the comment  
-should be changed and people that were relying on this behavior  
-somehow informed. If it was not I guess there is a bug somewhere.
-
-I will be digging further, but I was interested in posing the  
-question in any case.
-
--- 
-Mark Rustad, MRustad@gmail.com
-
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
