@@ -1,68 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764871AbXFFOa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764927AbXFFOeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764871AbXFFOa1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 10:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbXFFOaT
+	id S1764927AbXFFOeU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 10:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXFFOeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 10:30:19 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:45832 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbXFFOaS (ORCPT
+	Wed, 6 Jun 2007 10:34:13 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:49641 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753390AbXFFOeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 10:30:18 -0400
-Date: Wed, 06 Jun 2007 08:29:13 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Bad behaviour after hdparm -M  128
-In-reply-to: <fa.DWgGSeKzniALToNSyX9W5NibA1w@ifi.uio.no>
-To: linux-kernel@vger.kernel.org
-Message-id: <4666C4B9.8060408@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.DWgGSeKzniALToNSyX9W5NibA1w@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 6 Jun 2007 10:34:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=FZBNJq26ntVnPAwfbUtJYzVijy9eqx80Se7VaRmjmBeguFGCZ4BorL+CvWCiU+3bEKAcAXFgLHFcc1ymY/eLahPdzDcJWHoRNAQBLMG/6r9ClV4QT+CGLhimxbdXnvbx2ZIwCxxN7ChQhDh2t153iAbGTuHquf2pjcsMuck/c0E=
+Message-ID: <4666C5DC.2030505@googlemail.com>
+Date: Wed, 06 Jun 2007 16:34:04 +0200
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Fenghua Yu <fenghua.yu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <6bffcb0e0706060356y3628e26m49fdce4d6fb8cac9@mail.gmail.com>
+In-Reply-To: <6bffcb0e0706060356y3628e26m49fdce4d6fb8cac9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tino Keitel wrote:
-> Hi,
+Michal Piotrowski pisze:
+> On 06/06/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>>
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/ 
+>>
+>>
 > 
-> I tried to enable acoustic management on my SATA drive, because
-> hdparm -I reported a recommended value of 128, and a current value
-> of 0 (off).
-> 
-> I did this:
-> 
-> $ sudo hdparm -M 128 /dev/sda
-> /dev/sda:
->  setting acoustic management to 128
->  HDIO_DRIVE_CMD:ACOUSTIC failed: Input/output error
->  acoustic      = not supported
-> 
-> It apperently failed, no big deal.
-> 
-> However, I had these messages in the kernel log, and they don't look
-> really harmless to me:
-> 
-> ata3.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
-> ata3.01: cmd ef/42:80:00:00:00/00:00:00:00:00/50 tag 0 cdb 0x0 data 0 
->          res 51/04:80:00:00:00/00:00:00:00:00/50 Emask 0x1 (device error)
-> ata3.01: configured for UDMA/133
-> ata3: EH complete
-> SCSI device sda: 156301488 512-byte hdwr sectors (80026 MB)
-> sda: Write Protect is off
-> sda: Mode Sense: 00 3a 00 00
-> SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> 
-> Is this expected behaviour?
-> 
-> I used kernel 2.6.21 with the libata PIIX SATA driver and a
-> Seagate ST98823AS drive.
+> It reboots immediately.
 
-Yes, that's expected if the drive rejects the command.
+GOOD
+#preserve-the-dirty-bit-in-init_page_buffers.patch
+#rd-mark-ramdisk-buffer-heads-dirty-in-ramdisk_set_page_dirty.patch
+#rd-mark-ramdisk-buffer-heads-dirty-in-ramdisk_set_page_dirty-fix.patch
+#rd-simplify-by-using-the-same-helper-functions-in-libfs.patch
+#rd-remove-ramdisk_set_page_dirty.patch
+#rd-remove-ramdisk_set_page_dirty-fix.patch
+mpu401-warning-fixes.patch
+define-new-percpu-interface-for-shared-data.patch
+use-the-new-percpu-interface-for-shared-data.patch
+introduce-config_virt_to_bus.patch
+BAD
+
+Ok, these patches broke my P4 HT
+
+define-new-percpu-interface-for-shared-data.patch
+use-the-new-percpu-interface-for-shared-data.patch
+
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Intel(R) Pentium(R) 4 CPU 2.80GHz
+stepping        : 5
+cpu MHz         : 2798.721
+cache size      : 512 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 1
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid xtpr
+bogomips        : 5599.63
+clflush size    : 64
+
+processor       : 1
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Intel(R) Pentium(R) 4 CPU 2.80GHz
+stepping        : 5
+cpu MHz         : 2798.721
+cache size      : 512 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 1
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid xtpr
+bogomips        : 5596.56
+clflush size    : 64
+
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/mm-config
+
+Regards,
+Michal
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+"Najbardziej brakowa³o mi twojego milczenia."
+-- Andrzej Sapkowski "Co¶ wiêcej"
