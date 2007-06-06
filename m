@@ -1,107 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934533AbXFFQRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932638AbXFFQTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934533AbXFFQRu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 12:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbXFFQRm
+	id S932638AbXFFQTF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 12:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbXFFQSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 12:17:42 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:38571 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751399AbXFFQRl (ORCPT
+	Wed, 6 Jun 2007 12:18:54 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:20591 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752431AbXFFQSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 12:17:41 -0400
-Subject: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 09:07:24 -0700
-Message-Id: <1181146045.9503.67.camel@dyn9047017100.beaverton.ibm.com>
+	Wed, 6 Jun 2007 12:18:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=BA5gVYfFjxPEgNKaGsED7QjhFJnIxNKWcwYdghCaZtOLFctw0meFZr1Q0ztnOkDzaX0sVCFqfHNesaluanxrrqifMCjhBPvX+3yH/BW8QS3MlKWhy6RWBnrb1bni3TZTCkfuuZP9zOrKUyFYpqt5mxisMWCeyKneXkzxuUaiqVY=
+Date: Thu, 7 Jun 2007 00:19:36 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070606161936.GA8952@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070606020737.4663d686.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
+On Wed, Jun 06, 2007 at 02:07:37AM -0700, Andrew Morton wrote:
+>
+>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
+>
+>- Somebody broke it on my powerpc G5, but I didn't have time to do yet
+>  another bisection yet.
+>
 
-Your recent cleanup to shm code, namely
+It seems strange that a new C source file (mlguest.c) appears in the top dir of the 
+kernel source. There are some problems with it.
 
-[PATCH] shm: make sysv ipc shared memory use stacked files
+First, I used `make mlguest.o` to compile that file, but I got tons of warnings and errors.
+(Too many to put here.) What's wrong with it? Or I didn't compile/configure it correctly?
 
-took away one of the debugging feature for shm segments.
-Originally, shmid were forced to be the inode numbers and
-they show up in /proc/pid/maps for the process which mapped
-this shared memory segments (vma listing). That way, its easy
-to find out who all mapped this shared memory segment. Your
-patchset, took away the inode# setting. So, we can't easily
-match the shmem segments to /proc/pid/maps easily. (It was
-really useful in tracking down a customer problem recently). 
-Is this done deliberately ? Anything wrong in setting this back ?
+Second, mlguest.c #includes a head file named "../../include/linux/lguest_launcher.h".
+Since mlguest.c is in the top dir, so where is ../../include/linux/lguest_launcher.h?
 
-Comments ?
+Regards!
 
-Thanks,
-Badari
-
-Without patch:
---------------
-
-# ipcs -m
-
------- Shared Memory Segments --------
-key        shmid      owner      perms      bytes      nattch     status
-0x00000000 884737     db2inst1  767        33554432   13
-
-# grep 884737 /proc/*/maps
-#
-
-With patch:
------------
-
-# ipcs -m
-
------- Shared Memory Segments --------
-key        shmid      owner      perms      bytes      nattch     status
-0x00000000 884737     db2inst1  767        33554432   13
-
-# grep 884737 /proc/*/maps
-/proc/11110/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11111/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11112/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11113/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11114/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11115/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11116/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11117/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11118/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11121/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11122/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11124/maps:4000389c000-4000589c000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-/proc/11575/maps:40006724000-40008724000 rw-s 00000000 00:08 884737 /SYSV00000000 (deleted)
-
-
-
-Here is the patch.
-
-"ino#" in /proc/pid/maps used to match "ipcs -m" output for shared 
-memory (shmid). It was useful in debugging, but its changed recently. 
-This patch sets inode number to shared memory id to match /proc/pid/maps.
-
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-
-Index: linux-2.6.22-rc4/ipc/shm.c
-===================================================================
---- linux-2.6.22-rc4.orig/ipc/shm.c	2007-06-04 17:57:25.000000000 -0700
-+++ linux-2.6.22-rc4/ipc/shm.c	2007-06-06 08:23:57.000000000 -0700
-@@ -397,6 +397,7 @@ static int newseg (struct ipc_namespace 
- 	shp->shm_nattch = 0;
- 	shp->id = shm_buildid(ns, id, shp->shm_perm.seq);
- 	shp->shm_file = file;
-+	file->f_dentry->d_inode->i_ino = shp->id;
- 
- 	ns->shm_tot += numpages;
- 	shm_unlock(shp);
-
+WANG Cong
 
