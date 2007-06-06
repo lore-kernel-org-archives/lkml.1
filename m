@@ -1,98 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934717AbXFFRz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934768AbXFFR5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934717AbXFFRz3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 13:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759986AbXFFRzP
+	id S934768AbXFFR5R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 13:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbXFFR5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 13:55:15 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:54681 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759746AbXFFRzN (ORCPT
+	Wed, 6 Jun 2007 13:57:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36806 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757916AbXFFR5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 13:55:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=IGqeqXot/kqD4+BjdvFZztu//r1CBeJQVfiVW+vVHPBCiLqg9UU2vJrgty2kV8tbkO6umBp/cs9XnynwRieQSJnePzEurdopf8iH+r2CydC41RU6ZZ+M1F/PhNDd4cMeWvb60Y6IjHWtekYyTDbHQoKlyJNZVjySCn9ZKtGC+/g=
-Date: Wed, 6 Jun 2007 21:53:51 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] UDF: fix deadlock on inode being dropped
-Message-ID: <20070606175351.GA8397@cvg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 6 Jun 2007 13:57:01 -0400
+Date: Wed, 6 Jun 2007 10:56:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, htejun@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+Message-Id: <20070606105650.bebf1c95.akpm@linux-foundation.org>
+In-Reply-To: <4666D3F8.4010002@gmail.com>
+References: <200706061421.l56ELDfB004305@harpo.it.uu.se>
+	<4666D3F8.4010002@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch prevents from deadlock on inode being dropped.
-The deadlock is caused by inderect call of mark_inode_dirty()
-within udf_drop_inode() but inode lock is already kept
-by the kernel. So moving code from udf_drop_inode() to
-udf_delete_inode() we save its functionality and avoid
-deadlock.
+On Wed, 06 Jun 2007 17:34:16 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> Mikael Pettersson napsal(a):
+> > On Wed, 06 Jun 2007 15:04:00 +0200, Jiri Slaby wrote:
+> >> Andrew Morton napsal(a):
+> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
+> >> It freezes during bootup while searching for sata drives on sata_promise. There
+> >> were 2 issues with sata_promise in -rc4 IIRC, one was fixed, the latter remains
+> >> unresolved. Or, should be this solved too, Mikael, Tejun and is this yet
+> >> eanother problem? (In this case I'll post dmesg and co.)
+> > 
+> > I know of only one sata_promise-specific issue in 2.6.22-rc4.
+> > Tejun's "sata_promise: use TF interface for polling NODATA commands"
+> > patch posted today fixes it.
+> 
+> It's in that -mm, so I think, this seems to be another problem.
+
+No, it wasn't in 2.6.22-rc4-mm1.
+
+Here it is - please test?
+
+
+From: Tejun Heo <htejun@gmail.com>
+
+sata_promise uses two different command modes - packet and TF.  Packet mode
+is intelligent low-overhead mode while TF is the same old taskfile
+interface.  As with other advanced interface (ahci/sil24),
+ATA_TFLAG_POLLING has no effect in packet mode.  However, PIO commands are
+issued using TF interface in polling mode, so pdc_interrupt() considers
+interrupts spurious if ATA_TFLAG_POLLING is set.
+
+This is broken for polling NODATA commands because command is issued using
+packet mode but the interrupt handler ignores it due to ATA_TFLAG_POLLING. 
+Fix pdc_qc_issue_prot() such that ATA/ATAPI NODATA commands are issued
+using TF interface if ATA_TFLAG_POLLING is set.
+
+This patch fixes detection failure introduced by polling SETXFERMODE.
+
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Acked-by: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
-Andrew the patch is over Jan's two patches you have dropped.
-AFAIS a such code moving is quite safe but I'm waiting for
-Jan's comments anyway.
 
- fs/udf/inode.c |   20 ++++++++------------
- fs/udf/super.c |    1 -
- 2 files changed, 8 insertions(+), 13 deletions(-)
+ drivers/ata/sata_promise.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-
-diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-index 9fcd76c..ae56f25 100644
---- a/fs/udf/inode.c
-+++ b/fs/udf/inode.c
-@@ -83,6 +83,14 @@ static int udf_get_block(struct inode *, sector_t, struct buffer_head *, int);
-  */
- void udf_delete_inode(struct inode *inode)
- {
-+	if (!(inode->i_sb->s_flags & MS_RDONLY)) {
-+		lock_kernel();
-+		/* Discard preallocation for directories, symlinks, etc. */
-+		udf_discard_prealloc(inode);
-+		udf_truncate_tail_extent(inode);
-+		unlock_kernel();
-+	}
-+
- 	truncate_inode_pages(&inode->i_data, 0);
+diff -puN drivers/ata/sata_promise.c~sata_promise-use-tf-interface-for-polling-nodata-commands drivers/ata/sata_promise.c
+--- a/drivers/ata/sata_promise.c~sata_promise-use-tf-interface-for-polling-nodata-commands
++++ a/drivers/ata/sata_promise.c
+@@ -784,9 +784,12 @@ static unsigned int pdc_qc_issue_prot(st
+ 		if (qc->dev->flags & ATA_DFLAG_CDB_INTR)
+ 			break;
+ 		/*FALLTHROUGH*/
++	case ATA_PROT_NODATA:
++		if (qc->tf.flags & ATA_TFLAG_POLLING)
++			break;
++		/*FALLTHROUGH*/
+ 	case ATA_PROT_ATAPI_DMA:
+ 	case ATA_PROT_DMA:
+-	case ATA_PROT_NODATA:
+ 		pdc_packet_start(qc);
+ 		return 0;
  
- 	if (is_bad_inode(inode))
-@@ -102,18 +110,6 @@ no_delete:
- 	clear_inode(inode);
+@@ -800,7 +803,7 @@ static unsigned int pdc_qc_issue_prot(st
+ static void pdc_tf_load_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
+ {
+ 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
+-		 tf->protocol == ATA_PROT_NODATA);
++		 tf->protocol == ATA_PROT_ATAPI_DMA);
+ 	ata_tf_load(ap, tf);
  }
  
--void udf_drop_inode(struct inode *inode)
--{
--	if (!(inode->i_sb->s_flags & MS_RDONLY)) {
--		lock_kernel();
--		/* Discard preallocation for directories, symlinks, etc. */
--		udf_discard_prealloc(inode);
--		udf_truncate_tail_extent(inode);
--		unlock_kernel();
--	}
--	generic_drop_inode(inode);
--}
--
- void udf_clear_inode(struct inode *inode)
+@@ -808,7 +811,7 @@ static void pdc_tf_load_mmio(struct ata_
+ static void pdc_exec_command_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
  {
- 	kfree(UDF_I_DATA(inode));
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index b02d2c2..deb0d29 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -166,7 +166,6 @@ static const struct super_operations udf_sb_ops = {
- 	.write_inode		= udf_write_inode,
- 	.delete_inode		= udf_delete_inode,
- 	.clear_inode		= udf_clear_inode,
--	.drop_inode		= udf_drop_inode,
- 	.put_super		= udf_put_super,
- 	.write_super		= udf_write_super,
- 	.statfs			= udf_statfs,
+ 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
+-		 tf->protocol == ATA_PROT_NODATA);
++		 tf->protocol == ATA_PROT_ATAPI_DMA);
+ 	ata_exec_command(ap, tf);
+ }
+ 
+_
+
