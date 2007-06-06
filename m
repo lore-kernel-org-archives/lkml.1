@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760541AbXFFQj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbXFFQlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760541AbXFFQj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 12:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbXFFQjW
+	id S1760843AbXFFQlO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 12:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbXFFQlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 12:39:22 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:25167 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbXFFQjW (ORCPT
+	Wed, 6 Jun 2007 12:41:00 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:2400 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbXFFQk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 12:39:22 -0400
+	Wed, 6 Jun 2007 12:40:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=I6sQfK/BX3z4CL4wvMn1ePVyoxVwPjMjvsMSvJESnQxd74J+G/3ri4Ss2eyY1y5JVnKkkbENOBLNFc6E0G2gNm2wApB8jIZqM+y1FZeKPNe7dyErt8FxqNO2PHeB77O5TmndObOkN7hbKbCX72/1WXioZn8vwZUxg+prhQcTE/I=
-Message-ID: <9a8748490706060939i4e667a43xf74b04fb415bdfd3@mail.gmail.com>
-Date: Wed, 6 Jun 2007 18:39:21 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Simon Peter" <simon.peter@gmx.de>
-Subject: Re: Kernel Timers
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070606150129.49936f60.simon.peter@gmx.de>
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=OLqBNiSZL0Clayu0/XIyuSRjJX7fClPUf0ZHFDdTycfaTXA0g0awIpR8tkOp5gilWOQ2jT+VkOr2Irxa8c5SKtAOb5RWT5/F9ZUuf0EgB3NQt3uZf0Jh6GaQh+Ya/xV42FzL9jTe7L8UD+1JPY05bAXasl/iTNvGDPCrxAnr67I=
+Message-ID: <4104961b0706060940y6b43c496n6eca7099499fff58@mail.gmail.com>
+Date: Thu, 7 Jun 2007 00:40:58 +0800
+From: "jidong xiao" <jidong.xiao@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Question about spinlock in linux kernel
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070606150129.49936f60.simon.peter@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/06/07, Simon Peter <simon.peter@gmx.de> wrote:
-> Hi,
->
-> I see two kernel timer interfaces: The standard and the high-resolution
-> timers.
+I found there is such a kernel symbol ".text.lock.spinlock",
+for example,
+# cat /proc/kallsyms | grep spinlock
+ffffffff8011e440 T bust_spinlocks
+ffffffff802d00fc t .text.lock.spinlock
+ffffffff8832ae20 d state_spinlock       [nfs]
+but I can not find that who exported such a symbol?I am wondering
+where is this kernel originated from? I mean, if I faced any oops,
+which shows RIP is for example:
+RIP: 0010:[<ffffffff8031a4d9>] <ffffffff8031a4d9>{.text.lock.spinlock+0}
+then how can i locate the oops?it seems that .text.lock.spinlock is
+neither a function name, nor a variable name, so i am confused, who
+can help me out of here? Any advises is really really appreciated!
 
-Correct.
-
-> Are there any more?
-
-Not as far as I know.
-
-> Is the whole kernel using these two
-> interfaces?
->
-
-As far as I know, yes.
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Regards
+Jason Xiao
