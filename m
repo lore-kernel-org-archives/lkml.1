@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbXFFHSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbXFFHSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752291AbXFFHSQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 03:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXFFHSD
+	id S1753240AbXFFHSa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 03:18:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXFFHSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 03:18:03 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:30083 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbXFFHSB (ORCPT
+	Wed, 6 Jun 2007 03:18:18 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:47256 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752150AbXFFHSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 03:18:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gi8uFRXQOq1gussnQEqa8qnjA6vtpwbqxG8fkESfopiNO/KuVFVRTt/BCmGJbVP3CG2mkZhyO90xy1beQ2xFwcBzh4N/Q+BCRzk44MA5l2p5q0j7LHAXoSOd9/tprWAQDwgCyXt0nYM3ABcoZG0vspcIs0nwOn1FagQhoE5Rx5M=
-Message-ID: <a8e1da0706060018p3b7bd79fkd81d12efa3c8c3d6@mail.gmail.com>
-Date: Wed, 6 Jun 2007 07:18:00 +0000
-From: "dave young" <hidave.darkstar@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [BUG] 2.6.22-rc3-mm1 remove bluetooth usb adapter caused kmalloc bug
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0706052211500.7930@schroedinger.engr.sgi.com>
+	Wed, 6 Jun 2007 03:18:15 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=fBIScSWt0hDFH5r8ziUoTzQCiT93HwQriyE4Sud3f1KFhC+VQQPS5nEslzKQSYiP6
+	5Tetei1SwNDzdOznNAo1w==
+Date: Wed, 6 Jun 2007 00:18:00 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@engr.sgi.com>, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
+ globally
+In-Reply-To: <1181113753.7348.164.camel@twins>
+Message-ID: <alpine.DEB.0.99.0706060012260.15316@chino.kir.corp.google.com>
+References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
+  <1181110846.7348.154.camel@twins>  <alpine.DEB.0.99.0706052334280.30783@chino.kir.corp.google.com>
+ <1181113753.7348.164.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0706051856g242dad96rf4286283192b06c4@mail.gmail.com>
-	 <Pine.LNX.4.64.0706052211500.7930@schroedinger.engr.sgi.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 6 Jun 2007, Peter Zijlstra wrote:
 
->2007/6/6, Christoph Lameter <clameter@sgi.com>:
-> Note that the corruption seems to have its cause in a decrement done at
-> offset 16 into the object pointing to the refcount in struct hci_dev. So
-> it looks like the refcount was decremented after the object was freed.
->
-> sysfs related?
->
+> Right, I see your point; however considering that its a system
+> allocation, and all these constraints get violated by interrupts anyway,
+> its more of an application container than a strict allocation container.
+> 
 
-I tested several more times under 2.6.22-rc4, there's  no such problem.
+It is not necessarily system allocations at all.  It is quite possible, as 
+described earlier, to mlock a large quantity of memory that exceeds the 
+capacity of all nodes in a task's mems_allowed and then when this task 
+OOM's to continue allocating memory in get_user_pages() but with the 
+TIF_MEMDIE exception that allows it to allocate anywhere.  Then other 
+cpusets get their memory infringed upon and they can OOM themselves even 
+though there was no preexisting memory pressure.  This happens before we 
+return to userspace in the mlock() and thus we cannot properly handle the 
+SIGKILL sent down from the OOM killer.
 
-The hci_dev_put is indeed a bug, isn't it? it decrement the refcout on
-more time like you said.
+> Are you actually seeing the described behaviour, or just being pedantic
+> (nothing wrong with that per-se)?
+> 
 
-But why the slub doesn't warning under 2.6.22-rc4 but do under
-2.6.22-rc3-mm1? I'm puzzled.
+Yes, as described above.  An exclusive cpuset containing only root, 
+system-critical tasks was OOM'd when it was not under any memory pressure 
+at all because a separate exclusive cpuset mlock'd a gigantic amount of 
+memory and it could not reliably exit because the mlock continued to 
+allocate outside its own cpuset and eventually OOM'd system-critical tasks 
+or depleated all system memory.  True story.
 
-And if this is a bug , should I write another post to list?  then to
-mm or mainline?
-I'm still new to kernel list,  thanks you all.
+At the least, if this patch is not agreed upon, I would suggest adding 
+sanity checks against gfp_mask in cpuset_zone_allowed() to ensure we 
+should allow the allocation in TIF_MEMDIE circumstances to avoid the above 
+scenario.
 
-Regards
-dave
+		David
