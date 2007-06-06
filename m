@@ -1,102 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935958AbXFFVXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935835AbXFFV0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935958AbXFFVXQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 17:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934915AbXFFVXD
+	id S935835AbXFFV0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935080AbXFFV0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 17:23:03 -0400
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:60725 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934830AbXFFVXB (ORCPT
+	Wed, 6 Jun 2007 17:26:18 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:45909 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934493AbXFFV0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 17:23:01 -0400
-Date: Wed, 6 Jun 2007 23:24:16 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
-Message-ID: <20070606212414.GD6497@enneenne.com>
-References: <20070605072501.GA15273@enneenne.com> <20070606132934.18606a17.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Wed, 6 Jun 2007 17:26:17 -0400
+Date: Thu, 7 Jun 2007 00:26:09 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] stop x86 ->sysdata abuse; introduce pci_sysdata
+Message-ID: <20070606212609.GS8541@rhun.ibm.com>
+References: <11798211663773-git-send-email-muli@il.ibm.com> <1179821166685-git-send-email-muli@il.ibm.com> <11798211661041-git-send-email-muli@il.ibm.com> <20070604113344.0e71ca8c.akpm@linux-foundation.org> <20070604190654.GA20299@havoc.gtf.org> <20070604191346.GL4556@rhun.ibm.com> <20070604210551.GH20299@havoc.gtf.org> <20070605102905.GA3305@rhun.haifa.ibm.com> <20070606210329.GQ8541@rhun.ibm.com> <20070606212151.GA3304@havoc.gtf.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070606132934.18606a17.akpm@linux-foundation.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [RFC] PPS: Implementing LinuxPPS API with new syscalls
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <20070606212151.GA3304@havoc.gtf.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 01:29:34PM -0700, Andrew Morton wrote:
+On Wed, Jun 06, 2007 at 05:21:51PM -0400, Jeff Garzik wrote:
+> > Ok, patch fixed, works for me with Calgary. Andi, it looks like you
+> > added the acpi.c NUMA bits originally, perhaps you could test and/or
+> > ack them?
+> 
+> Just so there is no misunderstanding, I added the allocation bits.
+> 
+> No idea who added the direct usage of ->sysdata for NUMA info.
 
-> >    asmlinkage long sys_time_pps_find(int cmd, int __user *source,
-> >                                           char __user *name, int namelen,
-> >                                           char __user *path, int pathlen);
+Andi Kleen did according to the git log. I'm trying to get access to a
+NUMA system, but in the meantime perhaps Andi can just eyeball it and
+ack.
 
-Try to find a PPS source into the system giving one of its feature.
+> > diff -r 05804111dbee arch/i386/pci/common.c
+> > --- a/arch/i386/pci/common.c	Tue Jun 05 11:34:51 2007 +0300
+> > +++ b/arch/i386/pci/common.c	Wed Jun 06 22:36:53 2007 +0300
+> > @@ -29,12 +29,14 @@ struct pci_raw_ops *raw_pci_ops;
+> >  
+> >  static int pci_read(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 *value)
+> >  {
+> > -	return raw_pci_ops->read(0, bus->number, devfn, where, size, value);
+> > +	return raw_pci_ops->read(pci_domain_nr(bus), bus->number,
+> > +				 devfn, where, size, value);
+> >  }
+> >  
+> >  static int pci_write(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 value)
+> >  {
+> > -	return raw_pci_ops->write(0, bus->number, devfn, where, size, value);
+> > +	return raw_pci_ops->write(pci_domain_nr(bus), bus->number,
+> > +				  devfn, where, size, value);
+> >  }
+> >  
+> >  struct pci_ops pci_root_ops = {
+> 
+> Patch leakage?  I thought I had removed this portion, as being
+> specific to PCI domains.
 
-With cmd==PPS_FIND_SRC we check for a PPS source with index number
-equal to *source, if *source==-1 we just ask for the first PPS source
-defined into the system.
+Nope, it was there in your original patch and I kept it since it's
+obviously harmless (without CONFIG_PCI_DOMAINS pci_domain_nr() is
+defined to 0).
 
-With cmd=PPS_FIND_PATH we check for a PPS source with path name equal
-to path.
+> No objection, obviously, and it's obviously safe given that
+> CONFIG_PCI_DOMAINS is not defined on x86/x86-64.
+> 
+> Nonetheless, it appears "off-topic" for NUMA/Calgary purposes.
+> 
+> ACK everything, but IMO the pci_domain_nr() bits should be in a
+> separate patch.
 
-Selected source is returned into *source and PPS source info are
-placed into path and name arrays.
+Fair enough, I'll drop it out of this one.
 
-> >    asmlinkage long sys_time_pps_getparams(int source,
-> >                                           struct pps_params __user *params);
-
-struct pps_params {
-        int api_version;                /* API version # */
-        int mode;                       /* mode bits */
-        union pps_timeu assert_off_tu;  /* offset compensation for assert */
-        union pps_timeu clear_off_tu;   /* offset compensation for clear */
-};
-
-Given a PPS source index returns its parameters setting.
-
-> >    asmlinkage long sys_time_pps_setparams(int source,
-> >                                           const struct pps_params __user *params);
-
-Sets PPS source parameters.
-
-> >    asmlinkage long sys_time_pps_getcap(int source, int __user *mode);
-
-Given a	PPS source index returns its functioning modes.
-
-> >    asmlinkage long sys_time_pps_fetch(int source, const int tsformat,
-> >                                           struct pps_info __user *info,
-> >                                           const struct timespec __user *timeout);
-
-struct pps_info {
-        unsigned long assert_sequence;  /* seq. num. of assert event */
-        unsigned long clear_sequence;   /* seq. num. of clear event */
-        union pps_timeu assert_tu;      /* time of assert event */
-        union pps_timeu clear_tu;       /* time of clear event */
-        int current_mode;               /* current mode bits */
-};
-
-Given a PPS source index, a time format and, optionally, a timeout
-time returns PPS time data.
-
-Further info on these structs can be get on RFC 2783.
-
-Apart sys_time_pps_find() the other syscalls derive directly from RFC
-2783 suggestions.
-
-I hope these info are enough... :)
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Cheers,
+Muli
