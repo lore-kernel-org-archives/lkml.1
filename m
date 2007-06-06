@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbXFFJjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759895AbXFFJp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759444AbXFFJjy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXFFJjp
+	id S1759895AbXFFJp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbXFFJpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:39:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48342 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599AbXFFJjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:39:44 -0400
-Subject: [PATCH] frv: build fix
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 11:39:40 +0200
-Message-Id: <1181122780.7348.192.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 05:45:16 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:58005 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751610AbXFFJpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 05:45:13 -0400
+Date: Wed, 6 Jun 2007 18:44:01 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org, Ollie Wild <aaw@google.com>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 4/4] mm: variable length argument support
+Message-ID: <20070606094401.GA10393@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+	linux-mm@kvack.org, linux-arch@vger.kernel.org,
+	Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
+	Andi Kleen <ak@suse.de>
+References: <20070605150523.786600000@chello.nl> <20070605151203.790585000@chello.nl> <20070606013658.20bcbe2f.akpm@linux-foundation.org> <1181120061.7348.177.camel@twins> <20070606020651.19a89dca.akpm@linux-foundation.org> <1181122473.7348.188.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181122473.7348.188.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In file included from /usr/src/linux-2.6-2/net/ipv4/ip_input.c:118:
-include2/asm/system.h:245: error: parse error before "__cmpxchg_32"
-include2/asm/system.h:245: error: parse error before '*' token
-include2/asm/system.h:245: warning: type defaults to `int' in declaration of `__cmpxchg_32'
-include2/asm/system.h:245: warning: function declaration isn't a prototype
-include2/asm/system.h:245: warning: data definition has no type or storage class
+On Wed, Jun 06, 2007 at 11:34:33AM +0200, Peter Zijlstra wrote:
+> +static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
+> +		struct page *page)
+> +{
+> +	flush_cache_page(bprm->vma, pos, page_to_pfn(page));
+> +}
+> +
+[snip]
 
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/include/asm-frv/system.h b/include/asm-frv/system.h
-index be303b3..6931af5 100644
---- a/include/asm-frv/system.h
-+++ b/include/asm-frv/system.h
-@@ -12,6 +12,7 @@
- #ifndef _ASM_SYSTEM_H
- #define _ASM_SYSTEM_H
- 
-+#include <linux/types.h>
- #include <linux/linkage.h>
- 
- struct thread_struct;
-
-
+> @@ -253,6 +305,17 @@ static void free_arg_pages(struct linux_
+>  		free_arg_page(bprm, i);
+>  }
+>  
+> +static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
+> +		struct page *page)
+> +{
+> +}
+> +
+inline?
