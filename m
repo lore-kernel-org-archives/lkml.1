@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbXFFHT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbXFFHam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752986AbXFFHT6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 03:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXFFHTw
+	id S1753082AbXFFHam (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 03:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXFFHae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 03:19:52 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:47147 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbXFFHTv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 03:19:51 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 6 Jun 2007 03:18:06 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
+	Wed, 6 Jun 2007 03:30:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57608 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750790AbXFFHad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 03:30:33 -0400
+Date: Wed, 6 Jun 2007 09:30:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] lib:  Replace calls to __get_free_pages() with
- __get_dma_pages().
-In-Reply-To: <20070605170601.67bc2939.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706060317010.26345@localhost.localdomain>
-References: <Pine.LNX.4.64.0706051657350.20029@localhost.localdomain>
- <20070605170601.67bc2939.akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] kernel/sched{,_fair}.c: make code static
+Message-ID: <20070606073023.GA11250@elte.hu>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070605215056.GJ5500@stusta.de> <20070605235441.7b132e27.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070605235441.7b132e27.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jun 2007, Andrew Morton wrote:
 
-> On Tue, 5 Jun 2007 16:58:57 -0400 (EDT)
-> "Robert P. J. Day" <rpjday@mindspring.com> wrote:
->
-> > Replace a couple calls to __get_free_pages() with the corresponding
-> > calls to __get_dma_pages().
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> >
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> > 
 > > ---
-> >
-> >   that's the lot of them.
-> >
-> > diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> > index 10c13ad..8fc38dc 100644
-> > --- a/lib/swiotlb.c
-> > +++ b/lib/swiotlb.c
-> > @@ -201,8 +201,7 @@ swiotlb_late_init_with_default_size(size_t default_size)
-> >  	bytes = io_tlb_nslabs << IO_TLB_SHIFT;
-> >
-> >  	while ((SLABS_PER_PAGE << order) > IO_TLB_MIN_SLABS) {
-> > -		io_tlb_start = (char *)__get_free_pages(GFP_DMA | __GFP_NOWARN,
-> > -		                                        order);
-> > +		io_tlb_start = (char *)__get_dma_pages(__GFP_NOWARN, order);
->
-> __get_dma_pages() is just pointless obfuscation.  I think it'd be better to
-> go the other way: open-code the GFP_DMA at all callsites then send
-> __get_dma_pages() bitbucketwards.
+> > 
+> > BTW: Please don't #include C files in sched.c
+> 
+> Yeah.
 
-i have no objection to that.  it just seemed silly to have some calls
-using one form and some using the other.
+In this case it's not that bad. It makes the source quite a bit cleaner 
+and avoids having to create artificial interfaces, global functions, 
+etc. between the .o's.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+> > -long div64_s(s64 divident, unsigned long divisor)
+> > +static long div64_s(s64 divident, unsigned long divisor)
+> 
+> "divident" does appear to be a word, but I suspect "dividend" was 
+> intended.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+yeah indeed - fixed.
+
+> Why is this function lurking in the CPU scheduler rather than in 
+> lib/somewhere.c?
+> 
+> Doesn't an unsigned divide give the same result as a signed one?
+
+no! 0xfffffff0 / 2 is 0x7fffffff when the division is unsigned, and 
+7ffffff8 (== -8) when signed. On x86 the silicon only offers us unsigned 
+64-bit division, so we first have to make '+16' out of -16, then divide 
+by 2, and turn the +4 into -4. (On x86_64 there's no such problem, 
+there's an idiv and a div 64-bit instruction as well, and gcc picks the 
+right one depending on the type of the variable.)
+
+i think Roman has recently done a nice cleanup patch that introduces 
+this? I'll change CFS to use that interface once it's upstream.
+
+	Ingo
