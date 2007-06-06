@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934281AbXFFDw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbXFFEIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934281AbXFFDw3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 23:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765433AbXFFDwU
+	id S1756801AbXFFEIx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 00:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXFFEIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 23:52:20 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37448 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765329AbXFFDwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 23:52:20 -0400
+	Wed, 6 Jun 2007 00:08:44 -0400
+Received: from rwcrmhc11.comcast.net ([204.127.192.81]:56369 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbXFFEIn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 00:08:43 -0400
 Subject: Re: signalfd API issues (was Re: [PATCH/RFC] signal races/bugs,
 	losing TIF_SIGPENDING and other woes)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+From: Nicholas Miell <nmiell@comcast.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Linux Kernel list <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Paul Mackerras <paulus@samba.org>
-In-Reply-To: <Pine.LNX.4.64.0706052022430.23673@alien.or.mcafeemobile.com>
+In-Reply-To: <alpine.LFD.0.98.0706052035410.4205@woody.linux-foundation.org>
 References: <1181006711.31677.97.camel@localhost.localdomain>
 	 <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org>
 	 <1181009413.31677.117.camel@localhost.localdomain>
@@ -33,60 +34,76 @@ References: <1181006711.31677.97.camel@localhost.localdomain>
 	 <1181091523.2788.28.camel@entropy>
 	 <1181098204.31677.158.camel@localhost.localdomain>
 	 <Pine.LNX.4.64.0706052022430.23673@alien.or.mcafeemobile.com>
+	 <alpine.LFD.0.98.0706052035410.4205@woody.linux-foundation.org>
 Content-Type: text/plain
-Date: Wed, 06 Jun 2007 13:52:00 +1000
-Message-Id: <1181101920.31677.172.camel@localhost.localdomain>
+Date: Tue, 05 Jun 2007 21:08:41 -0700
+Message-Id: <1181102921.2788.57.camel@entropy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.0.njm.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That'd be a limitation. Like you can choose to not handle SEGV, you can 
-> choose to have a signalfd listening to it. Of course, not with the 
-> intention to *handle* the signal, but with a notification intent.
-
-Hrm.. either you handle it or you are dead ... I fail to see how
-signalfd can sneak in to catch it just at the right time...
-
-> > I'm actually thinking we shoud -also- only handle shared signals in
-> > dequeue_signal() when called from a different task.
+On Tue, 2007-06-05 at 20:37 -0700, Linus Torvalds wrote:
 > 
-> Why do you want to impose this? signalfd is a "sniffer", and the user 
-> controls what it can dequeue/sniff or what not. I don't see a reason of 
-> imposing such limits, unless there're clear technical issues.
-
-Well, a synchronous signal such a SIGSEGV, SIGILL or SIGFPE generally
-means that execution cannot continue unless the signal handler does
-something about it...
-
-I think you are opening a whole can of worms here.
-
-> > Well.. you certainly need to instanciate a signalfd for every thread in
-> > the process if you want to get shared signals for sure.
+> On Tue, 5 Jun 2007, Davide Libenzi wrote:
+> > On Wed, 6 Jun 2007, Benjamin Herrenschmidt wrote:
+> > > 
+> > > Yeah, synchronous signals should probably never be delivered to another
+> > > process, even via signalfd. There's no point delivering a SEGV to
+> > > somebody else :-)
+> > 
+> > That'd be a limitation. Like you can choose to not handle SEGV, you can 
+> > choose to have a signalfd listening to it. Of course, not with the 
+> > intention to *handle* the signal, but with a notification intent.
 > 
-> Why? Or better, what do you mean for "instanciate"?
+> I agree that it would be a limitation, but it would be a sane one.
+> 
+> How about we try to live with that limitation, if only to avoid the issue 
+> of having the private signals being stolen by anybody else. If we actually 
+> find a real-live use-case where that is bad in the future, we can re-visit 
+> the issue - it's always easier to _expand_ semantics later than it is to 
+> restrict them, so I think this thread is a good argument for starting it 
+> out in a more restricted form before people start depending on semantics 
+> that can be nasty..
+> 
+> 		Linus
 
-Well, because the kernel makes the decision of which thread to target
-the signal for a shared signal at emission time (though it -can- be
-caught by another thread).
+Proposed semantics:
 
-/me reads more code to be sure..
+a) Process-global signals can be read by any thread (inside or outside
+of the process receiving the signal).
 
-Oh well, a read from signalfd created on one thread -will- catch any
-shared signal that was already pending, whatever thread the kernel
-decided to target it at, it seems (that is, whatever thread actually got
-TIF_SIGPENDING set), but will only catch private signals for _that_
-thread (and I still think catching private signals is a wrong thing).
+Rationale:
+	This should always work, so there's no reason to limit it.
 
-However, I'm not sure about the wakeup condition. signalfd_deliver will
-wakeup anybody in the signalfd_list, which is -not- whoever is blocked
-in signalfd_read() unless I'm missing something.
+b) Thread-specific signals can only be read by their target thread.
 
-For your scheme to work, signalfd_read() you probably need to keep a
-separate list of people to be nofified of signals and add current to it
-from signalfd_list().
+Rationale:
+	This behavior is required by POSIX, and if an application is using
+pthread_kill()/tkill()/tgkill()/etc. to specifically direct a signal, it
+damn well better get to where the app wants it to go.
 
-Ben.
+c) Synchronous signals ("Naturally" generated SIGILL, SIGFPE, SIGSEGV,
+SIGBUS, and SIGTRAP. Did I miss any?) are not delivered via signalfd()
+at all. (And by "naturally" generated, I mean signals that would have
+the SI_KERNEL flag set.)
 
+Rationale: 
+	These are a subset of thread-specific signals, so they can only be read
+from a signalfd by their target thread.
+
+However, there's no way for the target thread to get the signal because
+it is either:
+
+a) not blocked in a syscall waiting for signal delivery and thus further
+execution beyond the instruction causing the signal is impossible
+ OR
+b) it is blocked in a syscall waiting for signal delivery and the error
+is caused by the signal delivery mechanism itself (i.e. a bad pointer
+passed to read/select/poll/epoll_wait/etc.) and thus the signal can't be
+delivered
+
+-- 
+Nicholas Miell <nmiell@comcast.net>
 
