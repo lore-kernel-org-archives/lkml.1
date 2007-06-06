@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934209AbXFFAA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934111AbXFFAES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934209AbXFFAA3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 20:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765148AbXFFAAV
+	id S934111AbXFFAES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 20:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764804AbXFFAEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 20:00:21 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37512 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765524AbXFFAAU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 20:00:20 -0400
-Date: Tue, 5 Jun 2007 17:00:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 2/2] UML - Fix kernel stack size on x86_64
-Message-Id: <20070605170001.c8b2110e.akpm@linux-foundation.org>
-In-Reply-To: <20070605205055.GA9770@c2.user-mode-linux.org>
-References: <20070605205055.GA9770@c2.user-mode-linux.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 5 Jun 2007 20:04:09 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47830 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764245AbXFFAEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jun 2007 20:04:08 -0400
+Subject: Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other
+	woes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Miell <nmiell@comcast.net>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1181087462.2788.8.camel@entropy>
+References: <1181006711.31677.97.camel@localhost.localdomain>
+	 <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org>
+	 <1181009413.31677.117.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com>
+	 <1181013756.31677.123.camel@localhost.localdomain>
+	 <1181023787.2785.14.camel@entropy>
+	 <1181028453.31677.127.camel@localhost.localdomain>
+	 <1181087462.2788.8.camel@entropy>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 10:03:58 +1000
+Message-Id: <1181088238.31677.150.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jun 2007 16:50:55 -0400
-Jeff Dike <jdike@addtoit.com> wrote:
+On Tue, 2007-06-05 at 16:51 -0700, Nicholas Miell wrote:
+> Yes, that's certainly wrong, but that's an implementation issue. I was
+> more concerned about the design of the API.
+> 
+> Naively, I would expect a reads on a signalfd to return either process
+> signals or thread signals targeted towards the thread doing the read.
+> 
+> What it actually does (delivering process signals or thread signals
+> targeted towards the thread that created the signalfd) is weird.
+> 
+> For one, it means you can't create a single signalfd, stick it in an
+> epoll set, and then wait on that set from multiple threads. 
 
-> [ This is 2.6.22 material ]
-> 
-> Having KERNEL_STACK_ORDER in defconfig overrides the value provided by
-> Kconfig, breaking UML/x86_64, which wants 2 page stacks.
-> 
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> --
->  arch/um/defconfig |    1 -
->  1 file changed, 1 deletion(-)
-> 
-> Index: linux-2.6.21-mm/arch/um/defconfig
-> ===================================================================
-> --- linux-2.6.21-mm.orig/arch/um/defconfig	2007-06-05 12:18:35.000000000 -0400
-> +++ linux-2.6.21-mm/arch/um/defconfig	2007-06-05 12:19:12.000000000 -0400
-> @@ -86,7 +86,6 @@ CONFIG_MCONSOLE=y
->  # CONFIG_MAGIC_SYSRQ is not set
->  CONFIG_NEST_LEVEL=0
->  # CONFIG_HIGHMEM is not set
-> -CONFIG_KERNEL_STACK_ORDER=0
->  CONFIG_UML_REAL_TIME_CLOCK=y
->  
+Heh, well, I'll let you discuss that apsect with Davide. Right now, I'm
+just trying to make sure that the implementation in the kernel copes :-)
 
-That means the Kconfig rules are wrong, surely?
+Ben.
+
+
