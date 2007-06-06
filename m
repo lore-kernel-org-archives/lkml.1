@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbXFFIyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759729AbXFFIzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759321AbXFFIyd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 04:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXFFIy0
+	id S1759729AbXFFIzG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 04:55:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXFFIy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 04:54:26 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:22748 "EHLO
-	viefep25-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751113AbXFFIyZ (ORCPT
+	Wed, 6 Jun 2007 04:54:56 -0400
+Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:60926 "EHLO
+	rpc.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753138AbXFFIyz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 04:54:25 -0400
-Subject: Re: [PATCH 4/4] mm: variable length argument support
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <20070606013658.20bcbe2f.akpm@linux-foundation.org>
-References: <20070605150523.786600000@chello.nl>
-	 <20070605151203.790585000@chello.nl>
-	 <20070606013658.20bcbe2f.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 10:54:21 +0200
-Message-Id: <1181120061.7348.177.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 04:54:55 -0400
+User-Agent: Microsoft-Entourage/11.3.3.061214
+Date: Wed, 06 Jun 2007 09:54:51 +0100
+Subject: Re: [Xen-devel] [patch 14/33] xen: xen time implementation
+From: Keir Fraser <keir@xensource.com>
+To: Jan Beulich <jbeulich@novell.com>, Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Xen-devel <xen-devel@lists.xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       <virtualization@lists.osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Message-ID: <C28C34EB.101FE%keir@xensource.com>
+Thread-Topic: [Xen-devel] [patch 14/33] xen: xen time implementation
+Thread-Index: AceoGFfalk+8WBQLEdyEZAAX8io7RQ==
+In-Reply-To: <46668EC6.76E4.0078.0@novell.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 01:36 -0700, Andrew Morton wrote:
-> On Tue, 05 Jun 2007 17:05:27 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > From: Ollie Wild <aaw@google.com>
-> > 
-> > Remove the arg+env limit of MAX_ARG_PAGES by copying the strings directly
-> > from the old mm into the new mm.
-> > 
-> > We create the new mm before the binfmt code runs, and place the new stack
-> > at the very top of the address space. Once the binfmt code runs and figures
-> > out where the stack should be, we move it downwards.
-> > 
-> > It is a bit peculiar in that we have one task with two mm's, one of which is
-> > inactive.
-> > 
-> > ...
-> >
-> > +				flush_cache_page(bprm->vma, kpos,
-> > +						 page_to_pfn(kmapped_page));
+On 6/6/07 09:39, "Jan Beulich" <jbeulich@novell.com> wrote:
 
-Bah, and my frv cross build bums out on an unrelated change,..
-I'll see if I can get a noMMU arch building, in the mean time, would you
-try this:
+> The issue is
+> that on that system, transition into ACPI mode takes over 600ms (SMM
+> execution, and hence no interrupts delivered during that time), and with
+> Xen using the PIT (PM timer support was added by Keir as a result of this,
+> but that doesn't cure the problem here, it just reduces the likelihood it'll
+> be encountered) platform time and local time got pretty much out of sync.
 
----
+If you have an ACPI PM timer in your system (and if you have SMM then your
+system is almost certainly modern enough to have one) then surely the
+problem is fixed for all practical purposes? The problem was overflow of a
+fixed-width platform counter. The PIT wraps every ~50ms, but the ACPI PM
+timer will wrap only every ~4s. It would be quite unreasonable for SMM to
+take the CPU away for multiple seconds, even as a one-time boot operation.
 
-Since no-MMU doesn't do the fancy inactive mm access there is no need to
-flush cache.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-
-Index: linux-2.6-2/fs/exec.c
-===================================================================
---- linux-2.6-2.orig/fs/exec.c	2007-06-05 16:48:52.000000000 +0200
-+++ linux-2.6-2/fs/exec.c	2007-06-06 10:49:19.000000000 +0200
-@@ -428,8 +428,10 @@ static int copy_strings(int argc, char _
- 				kmapped_page = page;
- 				kaddr = kmap(kmapped_page);
- 				kpos = pos & PAGE_MASK;
-+#ifdef CONFIG_MMU
- 				flush_cache_page(bprm->vma, kpos,
- 						 page_to_pfn(kmapped_page));
-+#endif
- 			}
- 			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
- 				ret = -EFAULT;
-
+ -- Keir
 
