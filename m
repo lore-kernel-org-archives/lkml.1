@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965131AbXFFGzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbXFFGzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965131AbXFFGzR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 02:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757754AbXFFGzE
+	id S1758961AbXFFGzl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 02:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757754AbXFFGz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 02:55:04 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57828 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757434AbXFFGzC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 02:55:02 -0400
-Date: Tue, 5 Jun 2007 23:54:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] kernel/sched{,_fair}.c: make code static
-Message-Id: <20070605235441.7b132e27.akpm@linux-foundation.org>
-In-Reply-To: <20070605215056.GJ5500@stusta.de>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
-	<20070605215056.GJ5500@stusta.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 02:55:27 -0400
+Received: from styx.suse.cz ([82.119.242.94]:57154 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758184AbXFFGzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 02:55:24 -0400
+Date: Wed, 6 Jun 2007 08:55:53 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: young dave <hidave.darkstar@gmail.com>,
+       "clameter@sgi.com" <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [BUG] 2.6.22-rc3-mm1 remove bluetooth usb adapter caused kmalloc
+ bug
+In-Reply-To: <20070605194236.03e07a1f.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706060854520.10204@jikos.suse.cz>
+References: <a8e1da0706051856g242dad96rf4286283192b06c4@mail.gmail.com>
+ <20070605194236.03e07a1f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jun 2007 23:50:56 +0200 Adrian Bunk <bunk@stusta.de> wrote:
+On Tue, 5 Jun 2007, Andrew Morton wrote:
 
-> This patch makes some needlessly global code static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> ---
-> 
-> BTW: Please don't #include C files in sched.c
+> Could perhaps be due to bluetooth-postpone-hci_dev-unregistration.patch, 
+> but I don't see how.  (But that patch looks a bit dodgy wrt module 
+> unload so I think I'll drop it).
 
-Yeah.
+It is perfectly fine to drop this one, as the issue it was trying to solve 
+has been already fixed in a different way (commit 4ce61d1c7 in mainline).
 
-> -long div64_s(s64 divident, unsigned long divisor)
-> +static long div64_s(s64 divident, unsigned long divisor)
-
-"divident" does appear to be a word, but I suspect "dividend" was intended.
-
-Why is this function lurking in the CPU scheduler rather than in
-lib/somewhere.c?
-
-Doesn't an unsigned divide give the same result as a signed one?
+-- 
+Jiri Kosina
+SUSE Labs
