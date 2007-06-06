@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933902AbXFFSk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934939AbXFFSlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933902AbXFFSk3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 14:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758778AbXFFSkU
+	id S934939AbXFFSlR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 14:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbXFFSlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 14:40:20 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:18611 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758571AbXFFSkT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 14:40:19 -0400
+	Wed, 6 Jun 2007 14:41:02 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:6958 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762894AbXFFSlA (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 14:41:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=Re2KG/rGlDbhrCiqylgnM+RGzFoEy58mvYUT1tPP5f937ltO3sO9RigZePYTTD1g2bAMcMule4t8B8cAxPeljRVStnX1aOGKG2rq6VFFo6krySsEDbyOuQxJRyRemeOM68blam6dmbm0B9uq3ANSk13mJXdvOZ4dd10jbMWiWfo=
-Date: Wed, 6 Jun 2007 14:40:16 -0400
-To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Size of kernel modules
-Message-ID: <20070606184015.GB20615@nineveh.local>
-Mail-Followup-To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>,
-	linux-kernel@vger.kernel.org
-References: <20070606170534.67b5dea9.Christoph.Pleger@cs.uni-dortmund.de>
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZRNE0DfrNUIhVBOyKzWxdgUIn9UDxyOTQ+lb8lh8It9fRNoqc8BhAdfSudfnTTM8mSB5oR10Bnwo8tMQzuIU7vWDU19nuj5pvXhSWolqJDNJb9X8kFgYqx1HLAvvW0BFzuE39ybE+p+k0fYbX3bAtEvzxJVWwZ6LgAcSzBXsvEs=
+Message-ID: <6934efce0706061140r4ed8436nf71d9b4aaf5c565e@mail.gmail.com>
+Date: Wed, 6 Jun 2007 11:40:58 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Christoph Hellwig" <hch@infradead.org>, carsteno@de.ibm.com,
+       "Jared Hulbert" <jaredeh@gmail.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       "Richard Griffiths" <res07ml0@verizon.net>,
+       Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+In-Reply-To: <20070606162305.GA20600@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070606170534.67b5dea9.Christoph.Pleger@cs.uni-dortmund.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: jfannin@gmail.com (Joseph Fannin)
+References: <1179871779.24163.11.camel@localhost.localdomain>
+	 <4653F264.1030807@de.ibm.com> <465BB5BA.3050900@yahoo.com.au>
+	 <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com>
+	 <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com>
+	 <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com>
+	 <20070606113351.GA11701@infradead.org> <4666DD88.5030708@de.ibm.com>
+	 <20070606162305.GA20600@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 05:05:34PM +0200, Christoph Pleger wrote:
-> I found out that the filenames are the same, but the size of the files
-> differs very much. I found a module file in the new directory that was
-> almost five times as large as the file with the same name in the old
-> directory.
+>  The embedded people already use them
+> on flash which is a little dumb, but now we add even more cludge for
+> a non-block based access.
 
-    For some reason I haven't looked into, copying the Ubuntu .config
-file always results in having "Build the kernel with debug info"
-set, which makes the resulting kernel huge.  Ubuntu's distributed
-kernel binary certainly doesn't have this stuff built in, so turn it
-off in the "Kernel Hacking" menu.
+Please justify your assertion that using cramfs on flash is dumb.
+What would be not dumb?  In an embedded system with addressable Flash
+the linear addressing cramfs is simple and elegant solution.
 
-    If you find that your new kernel spews a lot of messages like "PM:
-adding device nobus:yourmom", flip "Power Management Debugging" off
-under the "Power management" menu also.  I wouldn't do this
-preemptively, though -- it turns off other stuff too, and I think
-Ubuntu's kernel is patched not to do that (and newer kernels have the
-options separated, I think).
+Removing support for block based access would drastically reduce the
+complexity of cramfs.  The non-block access bits of code are trivial
+in comparison.  Specifically which part of my patch represents
+unwarranted, unfixable cludge?
 
-    Flipping the option and building a new package is pretty quick --
-it doesn't rebuild much.
---
-Joseph Fannin
-jfannin@gmail.com || jhf@columbus.rr.com
+> The right way to architect xip for flash-based devices is to implement
+> a generic get_xip_page for mtd-based devices and integrate that into
+> an existing flash filesystem or write a simple new flash filesystem
+> tailored to that use case.
 
+There is often no need for the complexity of the MTD for a readonly
+compressed filesystem in the embedded world.   I am intrigued by the
+suggestion of a generic get_xip_page() for mtd-based devices.  I fail
+to see how get_xip_page() is not highly filesystem dependant.  How
+might a generic one work?
