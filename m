@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759930AbXFFJ2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbXFFJ3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759930AbXFFJ2v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbXFFJ2n
+	id S1760895AbXFFJ3y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXFFJ3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:28:43 -0400
-Received: from hansmi.home.forkbomb.ch ([213.144.146.165]:7486 "EHLO
-	hansmi.home.forkbomb.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753921AbXFFJ2m (ORCPT
+	Wed, 6 Jun 2007 05:29:46 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:32953 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752140AbXFFJ3q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:28:42 -0400
-Date: Wed, 6 Jun 2007 11:28:37 +0200
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@killerfox.forkbomb.ch
-Subject: Re: [linux-usb-devel] [PATCH] Fix NEC OHCI chip silicon bug
-Message-ID: <20070606092837.GA19712@hansmi.ch>
-References: <20070604210555.GB12676@hansmi.ch> <Pine.LNX.4.44L0.0706051018360.3662-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 6 Jun 2007 05:29:46 -0400
+Message-Id: <46669AD4.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Wed, 06 Jun 2007 11:30:28 +0200
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Keir Fraser" <keir@xensource.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       <virtualization@lists.osdl.org>,
+       "Xen-devel" <xen-devel@lists.xensource.com>,
+       "Chris Wright" <chrisw@sous-sol.org>, "Andi Kleen" <ak@suse.de>,
+       "lkml" <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [patch 14/33] xen: xen time implementation
+References: <46668EC6.76E4.0078.0@novell.com>
+ <C28C34EB.101FE%keir@xensource.com>
+In-Reply-To: <C28C34EB.101FE%keir@xensource.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.44L0.0706051018360.3662-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 10:24:14AM -0400, Alan Stern wrote:
-> (Depending on which version of the kernel you are looking at -- [...]
-> Earlier versions did behave the way you describe.)
+>>> Keir Fraser <keir@xensource.com> 06.06.07 10:54 >>>
+>On 6/6/07 09:39, "Jan Beulich" <jbeulich@novell.com> wrote:
+>
+>> The issue is
+>> that on that system, transition into ACPI mode takes over 600ms (SMM
+>> execution, and hence no interrupts delivered during that time), and with
+>> Xen using the PIT (PM timer support was added by Keir as a result of this,
+>> but that doesn't cure the problem here, it just reduces the likelihood it'll
+>> be encountered) platform time and local time got pretty much out of sync.
+>
+>If you have an ACPI PM timer in your system (and if you have SMM then your
+>system is almost certainly modern enough to have one) then surely the
+>problem is fixed for all practical purposes? The problem was overflow of a
+>fixed-width platform counter. The PIT wraps every ~50ms, but the ACPI PM
+>timer will wrap only every ~4s. It would be quite unreasonable for SMM to
+>take the CPU away for multiple seconds, even as a one-time boot operation.
 
-I was looking at 2.6.22-rc3 which might explain the differences.
+No, I don't think the problem's gone with the PM timer - it is just much less
+likely. Since you depend on the TSC (which must generally be assumed be
+unsyncronized across CPUs) and on the error correction factor (which shows
+non-zero values every few seconds), getting the interpolated times on two
+CPUs out of sync is still possible, and given the way the time keeping code
+works even being off by just a single nanosecond may be fatal.
 
-> So the system is behaving the way you want, but not for the reason you 
-> think.  I bet you could remove the call to usb_root_hub_lost_power() 
-> entirely and it wouldn't make any difference at all.
+Jan
 
-Actually, that's true. René Nussbaumer tried without that call and it
-still works as intended. Should I leave that call out and drop the
-changes on usb_root_hub_lost_power for CONFIG_PM?
-
-Greets,
-Michael
