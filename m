@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935864AbXFFUyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935897AbXFFUyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935864AbXFFUyA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 16:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935061AbXFFUxt
+	id S935897AbXFFUyb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 16:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935496AbXFFUyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 16:53:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41701 "EHLO hera.kernel.org"
+	Wed, 6 Jun 2007 16:54:19 -0400
+Received: from mga09.intel.com ([134.134.136.24]:3923 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932771AbXFFUxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 16:53:48 -0400
-Date: Wed, 6 Jun 2007 20:53:47 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.34.5
-Message-ID: <20070606205347.GA24188@hera.kernel.org>
+	id S934955AbXFFUyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 16:54:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
+   d="scan'208";a="94172284"
+Date: Wed, 6 Jun 2007 13:50:36 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Adam Belay <abelay@novell.com>, Len Brown <len.brown@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Shaohua Li <shaohua.li@intel.com>,
+       linux-acpi@vger.kernel.org
+Subject: [PATCH 2/8] cpuidle: menu governor and hrtimer compile fix
+Message-ID: <20070606205036.GB23906@linux-os.sc.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-
-I've just released Linux 2.4.34.5, with extracts from 2.4.35-pre5.
-The most important one is the fix for the regression I introduced
-while fixing CVE-2007-1353 (bluetooth). Basically, I turned a memory
-leak bug into a memory corruption bug. Two minor bluetooth fixes have
-all been backported from 2.6 too.
-
-The other (less) important fix solves the problem of ide-disk.o causing
-oopses after insmod, it was caused by init_idle() being erroneously
-marked __init.
-
-Last, a minor LVM fix from the RHEL3 kernel to correctly count extents
-in case of errors during snapshot allocation.
-
-Regards,
-Willy
-
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.34.5.bz2
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.34.5
-
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.34.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.34.y.git
-
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.34.y.git
 
 
+Compile fix for menu governor.
 
-Summary of changes from v2.4.34.4 to v2.4.34.5
-============================================
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-Willy Tarreau (6):
-      do not mark init_idle() __init
-      Bluetooth: correct fix for CVE-2007-1353
-      [BACKPORT] Bluetooth: Fix NULL pointer dereference in HCI line discipline
-      [BACKPORT] Bluetooth: Fix unintentional fall-through in HCI line discipline
-      lvm: do not update extent count if snapshot allocation fails
-      Change VERSION to 2.4.34.5
-
+Index: linux-2.6.22-rc-mm/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux-2.6.22-rc-mm.orig/drivers/cpuidle/governors/menu.c	2007-06-01 16:25:49.000000000 -0700
++++ linux-2.6.22-rc-mm/drivers/cpuidle/governors/menu.c	2007-06-05 17:52:33.000000000 -0700
+@@ -11,8 +11,8 @@
+ #include <linux/latency.h>
+ #include <linux/time.h>
+ #include <linux/ktime.h>
+-#include <linux/tick.h>
+ #include <linux/hrtimer.h>
++#include <linux/tick.h>
+ 
+ #define BM_HOLDOFF	20000	/* 20 ms */
+ 
