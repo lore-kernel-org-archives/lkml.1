@@ -1,137 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965079AbXFFGjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965118AbXFFGmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965079AbXFFGjR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 02:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964836AbXFFGjH
+	id S965118AbXFFGmz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 02:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964819AbXFFGms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 02:39:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35497 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964819AbXFFGjE (ORCPT
+	Wed, 6 Jun 2007 02:42:48 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:44777 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964867AbXFFGms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 02:39:04 -0400
-Date: Tue, 5 Jun 2007 23:38:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Maxim Uvarov <muvarov@ru.mvista.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Shailabh Nagar <nagar@watson.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Jay Lan <jlan@engr.sgi.com>,
-       Jonathan Lim <jlim@sgi.com>
-Subject: Re: [PATCH] Performance Stats: Kernel patch
-Message-Id: <20070605233841.a56c4f20.akpm@linux-foundation.org>
-In-Reply-To: <20070605144349.4636.53260.stgit@localhost.localdomain>
-References: <20070605144349.4636.53260.stgit@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 02:42:48 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=MLWKKADgNBoXuWRONJrEv6JjkOH2U1LP6gboUu5NUozWPaBNdQCrJ2CoEyfsFuSvi
+	64bbmBE6Z9wDigQyFV0IA==
+Date: Tue, 5 Jun 2007 23:42:09 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@engr.sgi.com>, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
+ globally
+In-Reply-To: <1181110846.7348.154.camel@twins>
+Message-ID: <alpine.DEB.0.99.0706052334280.30783@chino.kir.corp.google.com>
+References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
+ <1181110846.7348.154.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Jun 2007 14:43:50 +0000 Maxim Uvarov <muvarov@ru.mvista.com> wrote:
+On Wed, 6 Jun 2007, Peter Zijlstra wrote:
 
-> Patch makes available to the user the following
-> task and process performance statistics:
-> 	* Involuntary Context Switches (task_struct->nivcsw)
-> 	* Voluntary Context Switches (task_struct->nvcsw)
-> 	           
-> Statistics information is available from:
-> 	1. taskstats interface (Documentation/accounting/)
-> 	2. /proc/PID/status (task only).
+> > diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+> > --- a/kernel/cpuset.c
+> > +++ b/kernel/cpuset.c
+> > @@ -2431,12 +2431,6 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
+> >  	might_sleep_if(!(gfp_mask & __GFP_HARDWALL));
+> >  	if (node_isset(node, current->mems_allowed))
+> >  		return 1;
+> > -	/*
+> > -	 * Allow tasks that have access to memory reserves because they have
+> > -	 * been OOM killed to get memory anywhere.
+> > -	 */
+> > -	if (unlikely(test_thread_flag(TIF_MEMDIE)))
+> > -		return 1;
+> >  	if (gfp_mask & __GFP_HARDWALL)	/* If hardwall request, stop here */
+> >  		return 0;
+> >  
 > 
-> This data is useful for detecting hyperactivity
-> patterns between processes.
-> Signed-off-by: Maxim Uvarov <muvarov@ru.mvista.com>
+> This seems a little pointless, since cpuset_zone_allowed_softwall() is
+> only effective with ALLOC_CPUSET, and the ALLOC_NO_WATERMARKS
+> allocations opened up by TIF_MEMDIE don't use that.
+> 
 
-Thanks.
+That's the change.  Memory reserves on a per-zone level would now be used 
+with respect to ALLOC_NO_WATERMARKS because TIF_MEMDIE tasks no longer 
+have an explicit bypass for them.  If the node is not in the task's 
+mems_allowed and it's a __GFP_HARDWALL allocation or if it's neither
+PF_EXITING or in the nearest_exclusive_ancestor() of that task's cpuset, 
+then we move on to the next zone in get_page_from_freelist().
 
-Please retain suitable cc's when discussing a patch.  I keep on having to
-find your updates on the mailing list, and then adding all the same cc's
-when I reply.
+The problem the patch addresses is that, as you mentioned, tasks with 
+TIF_MEMDIE have an explicit bypass over using any memory reserves and can 
+thus, depending on zonelist ordering, allocate first on nodes outside its 
+mems_allowed even in the case of an exclusive cpuset before exhausting its 
+own memory.  That behavior is wrong.
 
-Your patch seemed to be against some horridly prehistoric kernel, so I had
-a few things to fix up.
-
-I disagree with the term "rates" for these things.  They are counters, not
-rates.  Adjustments are below.
-
-We still need to think about whether we missed any other fields.
-
-
-diff -puN Documentation/accounting/getdelays.c~taskstats-add-context-switch-counters-fix Documentation/accounting/getdelays.c
---- a/Documentation/accounting/getdelays.c~taskstats-add-context-switch-counters-fix
-+++ a/Documentation/accounting/getdelays.c
-@@ -49,7 +49,7 @@ char name[100];
- int dbg;
- int print_delays;
- int print_io_accounting;
--int print_task_context_switch_rates;
-+int print_task_context_switch_counts;
- __u64 stime, utime;
- 
- #define PRINTF(fmt, arg...) {			\
-@@ -205,7 +205,7 @@ void print_delayacct(struct taskstats *t
- 	       "count", "delay total", t->swapin_count, t->swapin_delay_total);
- }
- 
--void task_context_switch_rates(struct taskstats *t)
-+void task_context_switch_counts(struct taskstats *t)
- {
- 	printf("\n\nTask   %15s%15s\n"
- 	       "       %15lu%15lu\n",
-@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
- 			break;
- 		case 'q':
- 			printf("printing task/process context switch rates\n");
--			print_task_context_switch_rates = 1;
-+			print_task_context_switch_counts = 1;
- 			break;
- 		case 'w':
- 			logfile = strdup(optarg);
-@@ -402,8 +402,8 @@ int main(int argc, char *argv[])
- 							print_delayacct((struct taskstats *) NLA_DATA(na));
- 						if (print_io_accounting)
- 							print_ioacct((struct taskstats *) NLA_DATA(na));
--						if (print_task_context_switch_rates)
--							task_context_switch_rates((struct taskstats *) NLA_DATA(na));
-+						if (print_task_context_switch_counts)
-+							task_context_switch_counts((struct taskstats *) NLA_DATA(na));
- 						if (fd) {
- 							if (write(fd, NLA_DATA(na), na->nla_len) < 0) {
- 								err(1,"write error\n");
-diff -puN Documentation/accounting/taskstats-struct.txt~taskstats-add-context-switch-counters-fix Documentation/accounting/taskstats-struct.txt
---- a/Documentation/accounting/taskstats-struct.txt~taskstats-add-context-switch-counters-fix
-+++ a/Documentation/accounting/taskstats-struct.txt
-@@ -22,7 +22,7 @@ There are three different groups of fiel
-     /* Extended accounting fields end */
-     Their values are collected if CONFIG_TASK_XACCT is set.
- 
--4) Per-task and per-thread context switch rates statistics
-+4) Per-task and per-thread context switch count statistics
- 
- Future extension should add fields to the end of the taskstats struct, and
- should not change the relative position of each field within the struct.
-diff -puN fs/proc/array.c~taskstats-add-context-switch-counters-fix fs/proc/array.c
---- a/fs/proc/array.c~taskstats-add-context-switch-counters-fix
-+++ a/fs/proc/array.c
-@@ -290,7 +290,9 @@ static inline char *task_cap(struct task
- 			    cap_t(p->cap_permitted),
- 			    cap_t(p->cap_effective));
- }
--static inline char *task_context_switch_rates(struct task_struct *p, char *buffer)
-+
-+static inline char *task_context_switch_counts(struct task_struct *p,
-+						char *buffer)
- {
- 	return buffer + sprintf(buffer, "voluntary_ctxt_switches:\t%lu\n"
- 			    "nonvoluntary_ctxt_switches:\t%lu\n",
-@@ -316,7 +318,7 @@ int proc_pid_status(struct task_struct *
- #if defined(CONFIG_S390)
- 	buffer = task_show_regs(task, buffer);
- #endif
--	buffer = task_context_switch_rates(task, buffer);
-+	buffer = task_context_switch_counts(task, buffer);
- 	return buffer - orig;
- }
- 
-_
-
+		David
