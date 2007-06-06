@@ -1,51 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbXFFIDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbXFFIJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758132AbXFFIDj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 04:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXFFIDY
+	id S1757053AbXFFIJF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 04:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXFFIIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 04:03:24 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51735 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbXFFIDX (ORCPT
+	Wed, 6 Jun 2007 04:08:50 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:57936 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752494AbXFFIIt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 04:03:23 -0400
-Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
-	globally
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Jackson <pj@sgi.com>, David Rientjes <rientjes@google.com>,
-       ak@suse.de, clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20070606010002.2ff6fc98.akpm@linux-foundation.org>
-References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
-	 <1181110846.7348.154.camel@twins>
-	 <alpine.DEB.0.99.0706052334280.30783@chino.kir.corp.google.com>
-	 <1181113753.7348.164.camel@twins>
-	 <alpine.DEB.0.99.0706060012260.15316@chino.kir.corp.google.com>
-	 <20070606003421.1107a8bf.pj@sgi.com>
-	 <alpine.DEB.0.99.0706060042550.15316@chino.kir.corp.google.com>
-	 <20070606005610.a8c783ce.pj@sgi.com>
-	 <20070606010002.2ff6fc98.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 10:03:17 +0200
-Message-Id: <1181116997.7348.170.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 04:08:49 -0400
+To: davem@davemloft.net
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20070605.224128.104032917.davem@davemloft.net> (message from
+	David Miller on Tue, 05 Jun 2007 22:41:28 -0700 (PDT))
+Subject: Re: [PATCH] fix race in AF_UNIX
+References: <20070605.000247.18308209.davem@davemloft.net>
+	<20070605.173120.59467114.davem@davemloft.net>
+	<E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu> <20070605.224128.104032917.davem@davemloft.net>
+Message-Id: <E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 06 Jun 2007 10:08:29 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 01:00 -0700, Andrew Morton wrote:
-> On Wed, 6 Jun 2007 00:56:10 -0700 Paul Jackson <pj@sgi.com> wrote:
-> 
-> > David wrote:
-> > > That is, unless you can guarantee this type of problem will not happen again
+> > > Holding a global mutex over recvmsg() calls under AF_UNIX is pretty
+> > > much a non-starter, this will kill performance for multi-threaded
+> > > apps.
 > > 
-> > Well, I certainly cannot guarantee that.
+> > That's an rwsem held for read.  It's held for write in unix_gc() only
+> > for a short duration, and unix_gc() should only rarely be called.  So
+> > I don't think there's any performance problem here.
 > 
-> The only place I can think of where the kernel will sit there allocating
-> huge amounts of memory like this is in readahead.
+> It pulls a non-local cacheline into the local thread, that's extremely
+> expensive on SMP.
 
-We just created one more, the execve string copy. However that uses
-get_user_pages(), so if that gets fixed we're save there too.
+OK, here's an updated patch, that uses ->readlock, and passes my
+testing.
+
+----
+From: Miklos Szeredi <mszeredi@suse.cz>
+
+There are races involving the garbage collector, that can throw away
+perfectly good packets with AF_UNIX sockets in them.
+
+The problems arise when a socket goes from installed to in-flight or
+vice versa during garbage collection.  Since gc is done with a
+spinlock held, this only shows up on SMP.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux-2.6.22-rc2/net/unix/garbage.c
+===================================================================
+--- linux-2.6.22-rc2.orig/net/unix/garbage.c	2007-06-03 23:58:11.000000000 +0200
++++ linux-2.6.22-rc2/net/unix/garbage.c	2007-06-06 09:48:36.000000000 +0200
+@@ -186,7 +186,21 @@ void unix_gc(void)
+ 
+ 	forall_unix_sockets(i, s)
+ 	{
+-		unix_sk(s)->gc_tree = GC_ORPHAN;
++		struct unix_sock *u = unix_sk(s);
++
++		u->gc_tree = GC_ORPHAN;
++
++		/*
++		 * Hold ->readlock to protect against sockets going from
++		 * in-flight to installed
++		 *
++		 * Can't sleep on this, because
++		 *   a) we are under spinlock
++		 *   b) skb_recv_datagram() could be waiting for a packet that
++		 *      is to be sent by this thread
++		 */
++		if (!mutex_trylock(&u->readlock))
++			goto lock_failed;
+ 	}
+ 	/*
+ 	 *	Everything is now marked
+@@ -207,8 +221,6 @@ void unix_gc(void)
+ 
+ 	forall_unix_sockets(i, s)
+ 	{
+-		int open_count = 0;
+-
+ 		/*
+ 		 *	If all instances of the descriptor are not
+ 		 *	in flight we are in use.
+@@ -218,10 +230,20 @@ void unix_gc(void)
+ 		 *	In this case (see unix_create1()) we set artificial
+ 		 *	negative inflight counter to close race window.
+ 		 *	It is trick of course and dirty one.
++		 *
++		 *	Get the inflight counter first, then the open
++		 *	counter.  This avoids problems if racing with
++		 *	sendmsg
++		 *
++		 *	If just created socket is not yet attached to
++		 *	a file descriptor, assume open_count of 1
+ 		 */
++		int inflight_count = atomic_read(&unix_sk(s)->inflight);
++		int open_count = 1;
++
+ 		if (s->sk_socket && s->sk_socket->file)
+ 			open_count = file_count(s->sk_socket->file);
+-		if (open_count > atomic_read(&unix_sk(s)->inflight))
++		if (open_count > inflight_count)
+ 			maybe_unmark_and_push(s);
+ 	}
+ 
+@@ -300,6 +322,7 @@ void unix_gc(void)
+ 			spin_unlock(&s->sk_receive_queue.lock);
+ 		}
+ 		u->gc_tree = GC_ORPHAN;
++		mutex_unlock(&u->readlock);
+ 	}
+ 	spin_unlock(&unix_table_lock);
+ 
+@@ -309,4 +332,19 @@ void unix_gc(void)
+ 
+ 	__skb_queue_purge(&hitlist);
+ 	mutex_unlock(&unix_gc_sem);
++	return;
++
++ lock_failed:
++	{
++		struct sock *s1;
++		forall_unix_sockets(i, s1) {
++			if (s1 == s) {
++				spin_unlock(&unix_table_lock);
++				mutex_unlock(&unix_gc_sem);
++				return;
++			}
++			mutex_unlock(&unix_sk(s1)->readlock);
++		}
++		BUG();
++	}
+ }
 
