@@ -1,135 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934674AbXFFGCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964932AbXFFGOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934674AbXFFGCV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 02:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbXFFGCK
+	id S964932AbXFFGOm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 02:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765329AbXFFGOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 02:02:10 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:43444 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754655AbXFFGCI (ORCPT
+	Wed, 6 Jun 2007 02:14:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58439 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756923AbXFFGOb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 02:02:08 -0400
-Subject: Re: [PATCH 4/4] mm: variable length argument support
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <20070605163925.bfc417ca.akpm@linux-foundation.org>
-References: <20070605150523.786600000@chello.nl>
-	 <20070605151203.790585000@chello.nl>
-	 <20070605163925.bfc417ca.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 08:02:05 +0200
-Message-Id: <1181109725.7348.149.camel@twins>
+	Wed, 6 Jun 2007 02:14:31 -0400
+Date: Tue, 5 Jun 2007 23:14:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.22-rc3-mm1 - pppd hanging in netdev_run_todo while holding
+ mutex
+Message-Id: <20070605231423.1c5ffa6c.akpm@linux-foundation.org>
+In-Reply-To: <11184.1180980056@turing-police.cc.vt.edu>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+	<11184.1180980056@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-05 at 16:39 -0700, Andrew Morton wrote:
+On Mon, 04 Jun 2007 14:00:56 -0400 Valdis.Kletnieks@vt.edu wrote:
 
-> > @@ -1620,6 +1600,34 @@ int expand_stack(struct vm_area_struct *
-> >  	return error;
-> >  }
-> >  
-> > +#ifdef CONFIG_STACK_GROWSUP
-> > +int expand_stack(struct vm_area_struct *vma, unsigned long address)
-> > +{
-> > +	return expand_upwards(vma, address);
-> > +}
-> > +
-> > +struct vm_area_struct *
-> > +find_extend_vma(struct mm_struct *mm, unsigned long addr)
-> > +{
-> > +	struct vm_area_struct *vma, *prev;
-> > +
-> > +	addr &= PAGE_MASK;
-> > +	vma = find_vma_prev(mm, addr, &prev);
-> > +	if (vma && (vma->vm_start <= addr))
-> > +		return vma;
-> > +	if (!prev || expand_stack(prev, addr))
-> > +		return NULL;
-> > +	if (prev->vm_flags & VM_LOCKED) {
-> > +		make_pages_present(addr, prev->vm_end);
-> > +	}
+> On Wed, 30 May 2007 23:58:23 PDT, Andrew Morton said:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc3/2.6.22-rc3-mm1/
 > 
-> unneeded braces
+> Under 22-rc2-mm1, if my VPN connection got reset, ppp0 just quietly went away.
 > 
-> We really should check and propagate the make_pages_present() return value
-> when appropriate.  It can fail under -ENOMEM, ulimit exceeded, overcommit,
-> etc.
-
-Right, this is not new ugliness, but indeed a good opportunity to clean
-up.
-
-> > +	return prev;
-> > +}
-> > +#else
-> > +int expand_stack(struct vm_area_struct *vma, unsigned long address)
-> > +{
-> > +	return expand_downwards(vma, address);
-> > +}
-> > +
-> >  struct vm_area_struct *
-> >  find_extend_vma(struct mm_struct * mm, unsigned long addr)
-> >  {
-> > Index: linux-2.6-2/mm/mprotect.c
-> > ===================================================================
-> > --- linux-2.6-2.orig/mm/mprotect.c	2007-06-05 16:23:16.000000000 +0200
-> > +++ linux-2.6-2/mm/mprotect.c	2007-06-05 16:29:45.000000000 +0200
-> > @@ -128,7 +128,7 @@ static void change_protection(struct vm_
-> >  	flush_tlb_range(vma, start, end);
-> >  }
-> >  
-> > -static int
-> > +int
-> >  mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
-> >  	unsigned long start, unsigned long end, unsigned long newflags)
-> >  {
-> > Index: linux-2.6-2/arch/ia64/ia32/binfmt_elf32.c
-> > ===================================================================
-> > --- linux-2.6-2.orig/arch/ia64/ia32/binfmt_elf32.c	2007-06-05 16:23:16.000000000 +0200
-> > +++ linux-2.6-2/arch/ia64/ia32/binfmt_elf32.c	2007-06-05 16:29:45.000000000 +0200
-> > @@ -195,62 +195,23 @@ ia64_elf32_init (struct pt_regs *regs)
-> >  	ia32_load_state(current);
-> >  }
-> >  
-> > +#undef setup_arg_pages
+> Under 22-rc3-mm1, it seems to end up wedged and waiting for references to
+> go away:
 > 
-> What's this for?
+> Jun  4 09:23:01 turing-police kernel: [90089.270707] unregister_netdevice: waiting for ppp0 to become free. Usage count = 8
+> Jun  4 09:23:11 turing-police kernel: [90099.396121] unregister_netdevice: waiting for ppp0 to become free. Usage count = 8
+> Jun  4 09:23:21 turing-police kernel: [90109.520574] unregister_netdevice: waiting for ppp0 to become free. Usage count = 8
+> Jun  4 09:23:32 turing-police kernel: [90119.653129] unregister_netdevice: waiting for ppp0 to become free. Usage count = 8
 
-That file reads:
+Interesting refcount.
 
-#define setup_arg_pages(bprm,tos,exec)          ia32_setup_arg_pages(bprm,exec)
+> 'echo t > /proc/sysrq_trigger' shows pppd hung up here:
+> 
+> Jun  4 10:52:57 turing-police kernel: [95478.047892] pppd          D 0000000105ad3830  4968  3815      1 (NOTLB)
+> Jun  4 10:52:57 turing-police kernel: [95478.047902]  ffff810008d5fd78 0000000000000086 0000000000000000 ffff810003490000
+> Jun  4 10:52:57 turing-police kernel: [95478.047911]  ffff810008d5fd28 ffff810008d4a040 ffff810003461820 ffff810008d4a2b0
+> Jun  4 10:52:57 turing-police kernel: [95478.047920]  0000000105ad3733 0000000000000202 00000000000000ff ffffffff80239795
+> Jun  4 10:52:57 turing-police kernel: [95478.047928] Call Trace:
+> Jun  4 10:52:57 turing-police kernel: [95478.047936]  [<ffffffff805207a2>] schedule_timeout+0x8d/0xb4
+> Jun  4 10:52:57 turing-police kernel: [95478.047945]  [<ffffffff805207e2>] schedule_timeout_uninterruptible+0x19/0x1b
+> Jun  4 10:52:57 turing-police kernel: [95478.047954]  [<ffffffff802397bb>] msleep+0x14/0x1e
+> Jun  4 10:52:57 turing-police kernel: [95478.047963]  [<ffffffff8048aa4e>] netdev_run_todo+0x12f/0x234 
+> Jun  4 10:52:57 turing-police kernel: [95478.047972]  [<ffffffff8049166f>] rtnl_unlock+0x35/0x37
+> Jun  4 10:52:57 turing-police kernel: [95478.047981]  [<ffffffff804894a9>] unregister_netdev+0x1e/0x23
+> Jun  4 10:52:57 turing-police kernel: [95478.047994]  [<ffffffff88a5f2c2>] :ppp_generic:ppp_shutdown_interface+0x67/0xbb
+> Jun  4 10:52:57 turing-police kernel: [95478.048018]  [<ffffffff88a5f5b8>] :ppp_generic:ppp_release+0x33/0x65
+> Jun  4 10:52:57 turing-police kernel: [95478.048028]  [<ffffffff8028d54a>] __fput+0xac/0x176
+> Jun  4 10:52:57 turing-police kernel: [95478.048036]  [<ffffffff8028d628>] fput+0x14/0x16
+> Jun  4 10:52:57 turing-police kernel: [95478.048045]  [<ffffffff8028a9c6>] filp_close+0x66/0x71
+> Jun  4 10:52:57 turing-police kernel: [95478.048054]  [<ffffffff8028bd54>] sys_close+0x98/0xd7
+> Jun  4 10:52:57 turing-police kernel: [95478.048062]  [<ffffffff8020a03c>] tracesys+0xdc/0xe1
+> Jun  4 10:52:57 turing-police kernel: [95478.048073]  [<00002b45cd2429a0>]
 
-....
+I don't know what could have caused this, sorry.  If it's still there in next -mm
+(which is still 100000 compile fixes away) it'd be good if you could bisect it.
+Suspects would be git-net.patch, get-netdev-all.patch and gregkh-driver-*.patch
 
-#include "../../../fs/binfmt_elf.c"
-
-....
-
-int
-ia32_setup_arg_pages (struct linux_binprm *bprm, int executable_stack)
-{
-        int ret;
-
-        ret = setup_arg_pages(bprm, IA32_STACK_TOP, executable_stack);
-/---------------^
-We really want to call the real setup_arg_pages() here, not ourselves please.
-
-        if (!ret) {
-                /*
-                 * Can't do it in ia64_elf32_init(). Needs to be done before
-                 * calls to elf32_map()
-                 */
-                current->thread.ppl = ia32_init_pp_list();
-        }
-
-        return ret;
-}
-
-
+Thanks.
