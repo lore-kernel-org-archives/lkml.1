@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936495AbXFFWo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965566AbXFFWot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936495AbXFFWo2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 18:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965364AbXFFWny
+	id S965566AbXFFWot (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 18:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936012AbXFFWoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:43:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:60831 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965232AbXFFWnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:43:53 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 6 Jun 2007 18:44:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52835
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S935879AbXFFWoT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 18:44:19 -0400
+Date: Wed, 06 Jun 2007 15:44:34 -0700 (PDT)
+Message-Id: <20070606.154434.21926922.davem@davemloft.net>
+To: davidel@xmailserver.org
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, drepper@redhat.com, mingo@elte.hu,
+       dada1@cosmosbay.com
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18023.14494.889739.567439@cargo.ozlabs.ibm.com>
-Date: Thu, 7 Jun 2007 08:43:42 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: signalfd API issues (was Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other woes)
-In-Reply-To: <20070606125259.GA5491@c2.user-mode-linux.org>
-References: <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com>
-	<1181013756.31677.123.camel@localhost.localdomain>
-	<1181023787.2785.14.camel@entropy>
-	<1181028453.31677.127.camel@localhost.localdomain>
-	<1181087462.2788.8.camel@entropy>
-	<Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com>
-	<1181088936.2788.10.camel@entropy>
-	<Pine.LNX.4.64.0706051736120.23673@alien.or.mcafeemobile.com>
-	<1181091523.2788.28.camel@entropy>
-	<1181098204.31677.158.camel@localhost.localdomain>
-	<20070606125259.GA5491@c2.user-mode-linux.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike writes:
+From: Davide Libenzi <davidel@xmailserver.org>
+Date: Wed, 06 Jun 2007 15:30:31 -0700
 
-> On Wed, Jun 06, 2007 at 12:50:04PM +1000, Benjamin Herrenschmidt wrote:
-> > Yeah, synchronous signals should probably never be delivered to another
-> > process, even via signalfd. There's no point delivering a SEGV to
-> > somebody else :-)
+> This patch implement a new syscall sys_socket2(), that accepts an
+> extra "flags" parameter:
 > 
-> Sure there is.  UML does exactly that - intercepting child signals
-> (including SEGV) with wait.
+> int socket2(int domain, int type, int protocol, int flags);
+> 
+> The flags parameter is used to pass extra flags to the kernel, and is
+> at the moment used to select the file descriptor allocations inside
+> the non-sequential area (O_NONSEQFD). The remaining parameters are
+> exactly the same as the ones of sys_socket().
+> The sys_accept() system call has been modified to return a file
+> descriptor inside the non-sequential area, if the listening fd is.
+> The sys_socketcall() system call has been also changed to support
+> a new SYS_SOCKET2 indentifier.
+> 
+> Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-What Ben was talking about was stealing a synchronous SEGV from a task
-without stopping it, and as Ben says that makes no sense.
-Intercepting a signal and stopping the task is reasonable, and that is
-what ptrace does, and I assume also UML.
+Since the valid range of "domain" values is quite small,
+we could avoid the new system call by cribbing some of the
+upper bits of the 'domain' argument.
 
-Paul.
+Valid existing programs pass in valid 'domain' values and
+thus will not set any of the new flags.
+
+Just an idea.
