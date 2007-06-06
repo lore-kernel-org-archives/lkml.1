@@ -1,97 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbXFFINZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbXFFIYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759422AbXFFINZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 04:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbXFFINK
+	id S1757351AbXFFIYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 04:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXFFIYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 04:13:10 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:55718 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753935AbXFFINI (ORCPT
+	Wed, 6 Jun 2007 04:24:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39298 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752505AbXFFIYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 04:13:08 -0400
-Date: Wed, 6 Jun 2007 01:13:03 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: nfs@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.21.3: NFS: Buggy server - nlink == 0!
-Message-ID: <20070606081303.GB7168@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Wed, 6 Jun 2007 04:24:05 -0400
+Subject: Re: [PATCH] lib:  Replace calls to __get_free_pages() with
+	__get_dma_pages().
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0706060350040.29202@localhost.localdomain>
+References: <Pine.LNX.4.64.0706051657350.20029@localhost.localdomain>
+	 <20070605170601.67bc2939.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0706060350040.29202@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 10:24:01 +0200
+Message-Id: <1181118241.7348.173.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While running a dbench stress test on  a nfs mounted file system, I notice
-the subject error message on the client machine.  The client machine is a 48
-core box with NUMA characteristics and 1024 dbench processes running
-continuously in a loop, while another memory hog application runs in parallel.
-The client is on 2.6.21.3.  The server is booted up with 2.6.21.3 as well.
-Attached is the server configuration.  Same test on a 2.6.16 client does not
-spew out these messages.  Is this really the server issue, or is the NFS
-client to be blamed here?
+On Wed, 2007-06-06 at 03:56 -0400, Robert P. J. Day wrote:
+> On Tue, 5 Jun 2007, Andrew Morton wrote:
+> 
+> > On Tue, 5 Jun 2007 16:58:57 -0400 (EDT)
+> > "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+> >
+> > > Replace a couple calls to __get_free_pages() with the corresponding
+> > > calls to __get_dma_pages().
+> > >
+> > > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> > >
+> > > ---
+> > >
+> > >   that's the lot of them.
+> > >
+> > > diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+> > > index 10c13ad..8fc38dc 100644
+> > > --- a/lib/swiotlb.c
+> > > +++ b/lib/swiotlb.c
+> > > @@ -201,8 +201,7 @@ swiotlb_late_init_with_default_size(size_t default_size)
+> > >  	bytes = io_tlb_nslabs << IO_TLB_SHIFT;
+> > >
+> > >  	while ((SLABS_PER_PAGE << order) > IO_TLB_MIN_SLABS) {
+> > > -		io_tlb_start = (char *)__get_free_pages(GFP_DMA | __GFP_NOWARN,
+> > > -		                                        order);
+> > > +		io_tlb_start = (char *)__get_dma_pages(__GFP_NOWARN, order);
+> >
+> > __get_dma_pages() is just pointless obfuscation.  I think it'd be better to
+> > go the other way: open-code the GFP_DMA at all callsites then send
+> > __get_dma_pages() bitbucketwards.
+> 
+> ok, it's easy enough to put together a patch that rids the tree of the
+> superfluous __get_dma_pages() call.  but in converting back to a call
+> to __get_free_pages(), which of the two zone modifiers should be added
+> -- "GFP_DMA" or "__GFP_DMA" -- since they're currently defined
+> equivalently in include/linux/gfp.h.  and there's definitely a mixture
+> of usage in the tree at the moment:
+> 
+> $ grep -r "get_free.*GFP_DMA" *
+> arch/s390/kernel/smp.c:                 __get_free_pages(GFP_KERNEL | GFP_DMA,
+> drivers/net/arm/ep93xx_eth.c:           page = (void *)__get_free_page(GFP_KERNEL | GFP_DMA);
+> drivers/net/arm/ep93xx_eth.c:           page = (void *)__get_free_page(GFP_KERNEL | GFP_DMA);
+> drivers/s390/net/qeth_main.c:                   ptr = (void *) __get_free_page(GFP_KERNEL|GFP_DMA);
+> drivers/s390/net/claw.c:                        (void *)__get_free_pages(__GFP_DMA,
+> drivers/s390/net/claw.c:                        (void *)__get_free_pages(__GFP_DMA,
+> drivers/s390/net/claw.c:                   p_buff=(void *)__get_free_pages(__GFP_DMA,
+> drivers/s390/net/claw.c:                        (void *)__get_free_pages(__GFP_DMA,
+> drivers/s390/net/claw.c:                        p_buff = (void *)__get_free_pages(__GFP_DMA,
+> drivers/s390/block/dasd.c:      device->ccw_mem = (void *) __get_free_pages(GFP_ATOMIC | GFP_DMA, 1);
+> drivers/s390/char/tty3270.c:                    __get_free_pages(GFP_KERNEL|GFP_DMA, 0);
+> drivers/s390/char/sclp_cpi.c:   sccb = (struct cpi_sccb *) __get_free_page(GFP_KERNEL | GFP_DMA);
+> drivers/s390/cio/cmf.c:         mem = (void*)__get_free_pages(GFP_KERNEL | GFP_DMA,
+> include/linux/gfp.h:            __get_free_pages((gfp_mask) | GFP_DMA,(order))
+> lib/swiotlb.c:          io_tlb_start = (char *)__get_free_pages(GFP_DMA | __GFP_NOWARN,
+> lib/swiotlb.c:  io_tlb_overflow_buffer = (void *)__get_free_pages(GFP_DMA,
+> 
+>   i'm guessing "GFP_DMA" would be the right choice, which means that,
+> for consistency, the calls using __GFP_DMA should be switched over as
+> well.  guidance, anyone?
 
-fstab on the client goes as:
-vus2:/mnt/sda5          /nfstest                nfs  udp,wsize=32768,rsize=32768 0 0
+FWIW I prefer:
 
-/etc/exports on the server looks like:
-/mnt/sda5 *(rw,no_root_squash,sync)
+  GFP_KERNEL | __GFP_DMA
+  GFP_ATOMIC | __GFP_DMA
 
-I will be happy to post full config/dmesg if required.
+and
 
-The client side NFS config goes as:
-#
-# Network File Systems
-#
-CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
-# CONFIG_NFS_V3_ACL is not set
-# CONFIG_NFS_V4 is not set
-CONFIG_NFS_DIRECTIO=y
-CONFIG_NFSD=y
-CONFIG_NFSD_V3=y
-# CONFIG_NFSD_V3_ACL is not set
-# CONFIG_NFSD_V4 is not set
-CONFIG_NFSD_TCP=y
-CONFIG_LOCKD=y
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=y
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=y
-# CONFIG_RPCSEC_GSS_KRB5 is not set
-# CONFIG_RPCSEC_GSS_SPKM3 is not set
+  GFP_DMA
 
-The server side NFS config goes as:
+That is, when used as a modifier use __GFP_, when used as a class use
+GFP_.
 
-#
-# Network File Systems
-#
-CONFIG_NFS_FS=m
-CONFIG_NFS_V3=y
-CONFIG_NFS_V3_ACL=y
-# CONFIG_NFS_V4 is not set
-CONFIG_NFS_DIRECTIO=y
-CONFIG_NFSD=m
-CONFIG_NFSD_V2_ACL=y
-CONFIG_NFSD_V3=y
-CONFIG_NFSD_V3_ACL=y
-CONFIG_NFSD_V4=y
-CONFIG_NFSD_TCP=y
-CONFIG_LOCKD=m
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=m
-CONFIG_NFS_ACL_SUPPORT=m
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=m
-
-Thanks,
-Kiran
