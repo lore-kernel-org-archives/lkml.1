@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbXFFKv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763659AbXFFKwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762983AbXFFKv4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 06:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbXFFKvt
+	id S1763659AbXFFKwW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 06:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759916AbXFFKwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 06:51:49 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:57336 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbXFFKvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 06:51:48 -0400
-Date: Wed, 6 Jun 2007 16:29:50 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v15
-Message-ID: <20070606105950.GA32729@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070531150908.GA23538@elte.hu> <20070606064228.GA22443@in.ibm.com> <20070606070143.GA7375@elte.hu> <20070606074317.GB3274@in.ibm.com> <b647ffbd0706060208i5666f57eoe96215b636617622@mail.gmail.com> <46668E4D.8060206@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46668E4D.8060206@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+	Wed, 6 Jun 2007 06:52:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43363 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755875AbXFFKwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 06:52:12 -0400
+X-Authenticated: #14603182
+X-Provags-ID: V01U2FsdGVkX18XfI4rAV8X+BOWeW9upGbspAzX6r4/PKGSwFgjv+
+	k1imYYA1yIsT64
+Message-ID: <466691DD.9060904@gmx.de>
+Date: Wed, 06 Jun 2007 12:52:13 +0200
+From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: "Lars K.W. Gohlke" <lkwg82@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: serio interface
+References: <46667A3B.8070708@gmx.de> <20070606091503.GI2649@lug-owl.de> <46667FB9.70206@gmx.de> <20070606095159.GK2649@lug-owl.de> <46668ED5.5000807@gmx.de> <20070606104426.GL2649@lug-owl.de>
+In-Reply-To: <20070606104426.GL2649@lug-owl.de>
+Content-Type: multipart/mixed;
+ boundary="------------010000060801030305080400"
+X-PGP-KeyID: 9D6D68DF
+X-Request-PGP: 
+X-OpenPGP-Key-ID: 000A26609D6D68DF
+X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
+X-OpenPGP-Key-URL: 
+X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 04:07:01PM +0530, Balbir Singh wrote:
-> Dmitry Adamushko wrote:
-> > On 06/06/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
-> >> On Wed, Jun 06, 2007 at 09:01:43AM +0200, Ingo Molnar wrote:
-> >> > [...] and my tree already contains the fixes for rt task's
-> >> > exec_start.
-> >>
-> >> Can I have this snapshot pls? I have to deal with the same issue when
-> >> the current task switches groups and I was planning to fix it by
-> >> introducing a set_curr_task() method in fair_sched_class which
-> >> initializes exec_start and other fields for that task.
-> > 
-> > Hum.. what about accounting 'exec_time' and updating 'exec_start' in
-> > rt_sched :: dequeue_task_rt() instead (like update_curr() does it in
-> > dequeue_task_fair())?
 
-[For some reason Dimitry's mail has not made it to my inbox yet ..]
+--------------010000060801030305080400
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> > This way, on RT -> NORMAL transition.. some 'delta_exec' ( between
-> > deactivate_task() ---> activate_task() ) will be accounted later as if
-> > the task was 'sched_fair_class' during this time.. which I think makes
-> > some sense. What do you think?
-> > 
-> 
-> Why not do it explicitly in __setscheduler() if the new policy is SCHED_NORMAL
-> or SCHED_BATCH. 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Yes this is the approach I prefer, because we burden the fast/normal
-path less that way (RT->NORMAL transition is not common). That's why I
-was considering a set_curr_task() method in fair_sched_class which will
-be invoked in __setscheduler() if the new policy of currently running
-task happens to be SCHED_NORMAL/BATCH. Alternately if the new policy of
-currently running task happens to be SCHED_FIFO (and its old policy was
-SCHED_NORMAL) we need to invoke put_prev_task() method (so that
-fair_clock etc is updated based on outgoing task's execution time in
-SCHED_NORMAL class).
+Jan-Benedict Glaw schrieb:
+> On Wed, 2007-06-06 12:39:17 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wrote:
+>> Jan-Benedict Glaw schrieb:
+>>> OTOH, why do you want to do the serial stuff in kernel land? Isn't it
+>>> a *lot* easier to do it in userspace? What's your specific device you
+>>> want to work on?
+>
+> [snip]
+>
+> You didn't actually answer any of my questions.
+>
+> MfG, JBG
+>
+sorry.
 
->You could also add the smarts to deactivate_task()
+I want to use the interface aka /dev/ttyS0.
+I want to process data inside of a kernel module to provide it /proc
+(done) or as own char-dev (done).
 
+but I can not grab the data.
 
--- 
-Regards,
-vatsa
+It is part of my project in my studies.
+
+It is more a conceptual work, but important. I want to release a howto,
+when I complete.
+
+answered completely? ;) Hope so.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
+
+iD8DBQFGZpHfAAomYJ1taN8RApsWAJ970RteJmHUsHocvt71lIvNSzk+XQCgxxg1
+gxXm4kZRrRgrhIWfHPKTwEo=
+=zMd7
+-----END PGP SIGNATURE-----
+
+--------------010000060801030305080400
+Content-Type: text/x-vcard; charset=utf-8;
+ name="lkwg82.vcf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="lkwg82.vcf"
+
+YmVnaW46dmNhcmQNCmZuOkxhcnMgSy5XLiBHb2hsa2UNCm46R29obGtlO0xhcnMgSy5XLg0K
+ZW1haWw7aW50ZXJuZXQ6bGt3ZzgyQGdteC5kZQ0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZl
+cnNpb246Mi4xDQplbmQ6dmNhcmQNCg0K
+--------------010000060801030305080400--
+
