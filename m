@@ -1,105 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935854AbXFFV4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935885AbXFFV61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935854AbXFFV4V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 17:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934563AbXFFV4O
+	id S935885AbXFFV61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbXFFV6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 17:56:14 -0400
-Received: from animx.eu.org ([216.98.75.249]:42608 "EHLO animx.eu.org"
+	Wed, 6 Jun 2007 17:58:19 -0400
+Received: from mga02.intel.com ([134.134.136.20]:37129 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757135AbXFFV4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 17:56:13 -0400
-Date: Wed, 6 Jun 2007 17:55:05 -0400
-From: Wakko Warner <wakko@animx.eu.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Bodo Eggert <7eggert@gmx.de>, Andi Kleen <andi@firstfloor.org>,
-       tmoore@spatial.ca, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] Re: 4Gb ram not showing up
-Message-ID: <20070606215505.GA19651@animx.eu.org>
-Mail-Followup-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-	Bodo Eggert <7eggert@gmx.de>, Andi Kleen <andi@firstfloor.org>,
-	tmoore@spatial.ca, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.58.0706061356310.2657@be1.lrz> <20070606143723.GF10008@csclub.uwaterloo.ca>
+	id S1750968AbXFFV6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 17:58:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
+   d="scan'208";a="251629100"
+Date: Wed, 6 Jun 2007 14:54:36 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <lenb@kernel.org>, Adam Belay <abelay@novell.com>,
+       Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Shaohua Li <shaohua.li@intel.com>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 8/8] cpuidle: first round of documentation updates
+Message-ID: <20070606215436.GA27621@linux-os.sc.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070606205641.GH23906@linux-os.sc.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070606143723.GF10008@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.6+20040907i
+In-Reply-To: <20070606205641.GH23906@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Wed, Jun 06, 2007 at 02:12:22PM +0200, Bodo Eggert wrote:
-> > Change the description of CONFIG_*HIGHMEM* to reflect "lost" memory due to 
-> > PCI space and the existence of the NX flag.
-> > 
-> > Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
-> > ---
-> > I made this quick patch using the information from LKML as I remembered 
-> > it. Please verify.
-> > 
-> > @@ -510,8 +510,15 @@ config NOHIGHMEM
-> >  	  by the kernel to permanently map as much physical memory as
-> >  	  possible.
-> >  
-> > -	  If the machine has between 1 and 4 Gigabytes physical RAM, then
-> > +
-> > +	  If the machine has between 1 and 3.5 Gigabytes physical RAM, then
-> >  	  answer "4GB" here.
-> > +	  
+On Wed, Jun 06, 2007 at 01:56:41PM -0700, Venki Pallipadi wrote:
+> 
+> 
+> Documentation changes based on Pavel's feedback.
+Can you also update Documentation/00-INDEX file please.
 
-Might be better to say 3 Gigabytes instead of 3.5.  I booted a 4gb kernel on
-a machine with 4gb at work and only saw 3gb of memory.
-
-Also, I've noticed that there's ~128mb of memory lost if you select 1gb when
-you have 1gb of memory installed.
-
-> >  	  If more than 4 Gigabytes is used then answer "64GB" here. This
-> >  	  selection turns Intel PAE (Physical Address Extension) mode on.
-> > @@ -520,6 +527,10 @@ config NOHIGHMEM
-> >  	  processors (Pentium Pro and better). NOTE: If you say "64GB" here,
-> >  	  then the kernel will not boot on CPUs that don't support PAE!
-> >  
-> > +	  An additional benefit of the 64GB-Mode is the availability of the
-> > +	  no-execute-pageflag, which can be used to prevent some attacks from
-> > +	  injecting malicious code into applications.
-> > +
-> >  	  The actual amount of total physical memory will either be
-> >  	  auto detected or can be forced by using a kernel command line option
-> >  	  such as "mem=256M". (Try "man bootparam" or see the documentation of
-> > @@ -532,14 +543,14 @@ config HIGHMEM4G
-> >  	bool "4GB"
-> >  	depends on !X86_NUMAQ
-> >  	help
-> > -	  Select this if you have a 32-bit processor and between 1 and 4
-> > +	  Select this if you have a 32-bit processor and between 1 and 3.5
-> >  	  gigabytes of physical RAM.
-> >  
-> >  config HIGHMEM64G
-> > -	bool "64GB"
-> > +	bool "64GB (enables no-execute memory protection if available)"
-> >  	depends on X86_CMPXCHG64
-> >  	help
-> > -	  Select this if you have a 32-bit processor and more than 4
-> > +	  Select this if you have a 32-bit processor and more than 3.5
-> >  	  gigabytes of physical RAM.
-
-Same here
-
-> Seems like an improvement to me.  To fully explain how it could be 3 or
-> 3.5 or 3.25 or who knows how many GB you can actually use without PAE
-> would probably require writing a small novel.  Certainly talking about
-> address space instead of amounts of physical memory is more correct.
-
-It's probably worth it to just say 3gb.
-
-I've looked at the cpuinfo for several machines, all of which (pIII and
-better, not all physically support even 2gb of memory) show pae in the
-flags, so is there really a reason not to just specify 64gb always?
-
-The oldest machine I have access to is a pII 333mhz machine, cpuinfo also
-lists pae in the cpu flags.
-
--- 
- Lab tests show that use of micro$oft causes cancer in lab animals
- Got Gas???
+-Anil
