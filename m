@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934062AbXFFMm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932974AbXFFMnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934062AbXFFMm6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 08:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761469AbXFFMmt
+	id S932974AbXFFMnV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 08:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764217AbXFFMnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 08:42:49 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:52878 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbXFFMms convert rfc822-to-8bit (ORCPT
+	Wed, 6 Jun 2007 08:43:06 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:26528 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934347AbXFFMnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 08:42:48 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [Patch 04/18] include/linux/logfs.h
-Date: Wed, 6 Jun 2007 14:42:29 +0200
-User-Agent: KMail/1.9.6
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       Kyle Moffett <mrmacman_g4@mac.com>, John Stoffel <john@stoffel.org>,
-       Willy Tarreau <w@1wt.eu>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       CaT <cat@zip.com.au>, Ondrej Zajicek <santiago@crfreenet.org>,
-       linux-kernel@vger.kernel.org, Bill Davidsen <davidsen@tmr.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Dongjun Shin <djshin90@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Albert Cahalan <acahalan@gmail.com>, linux-fsdevel@vger.kernel.org,
-       linux-mtd@lists.infradead.org,
-       Artem Bityutskiy <dedekind@infradead.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>,
-       =?iso-8859-15?q?J=F6rn_Engel?= <joern@lazybastard.org>,
-       Pavel Machek <pavel@ucw.cz>, Ulisses Furquim <ulissesf@gmail.com>,
-       akpm@osdl.org, David Weinehall <tao@acc.umu.se>
-References: <20070603183845.GA8952@lazybastard.org> <db91817d295770e459727005108b05e2@kernel.crashing.org> <1181119820.25232.434.camel@pmac.infradead.org>
-In-Reply-To: <1181119820.25232.434.camel@pmac.infradead.org>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Wed, 6 Jun 2007 08:43:05 -0400
+Message-ID: <4666ABD4.8050402@fr.ibm.com>
+Date: Wed, 06 Jun 2007 14:43:00 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200706061442.31147.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19b31Ty6sZ8tZlEzIMhB72KlwHgCjw6ToqQx8G
- asJ1BbzpplHPi8r3bluFdHdkswBkndd6z+88wWO5jPK11zfvn8
- RmhhXZm2YFHJX9J8u14rQ==
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+In-Reply-To: <20070606020737.4663d686.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 June 2007, David Woodhouse wrote:
-> And if I had something like this (which is admittedly contrived, but
-> hardware people _do_ do stupid things to us):
->    { uint32_t, uint8_t, uint16_t, uint8_t, uint32_t, uint32_t }
-> 
-> With the 'packed' attribute the compiler would assume arbitrary
-> alignment of all the 32-bit integers. But in reality it's only necessary
-> for the uint16_t in the middle. A 'nopadding' attribute would deal with
-> that correctly.
+Hi Andrew,
 
-I would argue that a newly invented 'nopadding' attribute should reject
-such a structure as invalid, because it should not let members be
-unaligned. Unfortunately, this also gets tricky if you consider
+When CONFIG_DEBUG_VM=y, boot on i386 and s390 (the only one tested) ends 
+with the following. 
 
-struct {
-	uint32_t a;
-	uint64_t b;
-	uint32_t c;
-};
-
-which does have an unaligned member by default in i386, but not on
-any modern platform.
-
-	Arnd <><
+C.
+ 
+------------[ cut here ]------------
+kernel BUG at mm/rmap.c:557!
+invalid opcode: 0000 [#1]
+CPU:    0
+EIP:    0060:[<c013cbbd>]    Not tainted VLI
+EFLAGS: 00000206   (2.6.22-rc4-mm1 #1)
+EIP is at __page_check_anon_rmap+0x21/0x28
+eax: c15bd431   ebx: c1024700   ecx: 000bffa6   edx: c15bb6d0
+esi: c1024700   edi: 01238045   ebp: c1423e9c   esp: c1423e98
+ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Process init (pid: 1, ti=c1422000 task=c14216b0 task.ti=c1422000)
+Stack: c1024700 c1423ea8 c013d631 01238045 c1423ef8 c01392a6 c15bb6d0 c15afc40 
+       c15afa40 c15aebfc c15c3bfc bffa7000 bffa6000 bffa7000 c15bae98 c15d5e98 
+       00000000 c15afa90 c15afc90 00000000 00000002 c15d66f0 00000000 c15bb6d0 
+Call Trace:
+ [<c010282d>] show_trace_log_lvl+0x1a/0x2f
+ [<c01028dd>] show_stack_log_lvl+0x9b/0xa3
+ [<c0102a94>] show_registers+0x1af/0x280
+ [<c0102c4b>] die+0xe6/0x1e5
+ [<c0102dd3>] do_trap+0x89/0xa2
+ [<c010313e>] do_invalid_op+0x88/0x92
+ [<c024d142>] error_code+0x6a/0x70
+ [<c013d631>] page_dup_rmap+0x1b/0x21
+ [<c01392a6>] copy_page_range+0x22b/0x2d0
+ [<c01109bc>] copy_process+0x964/0xf54
+ [<c01110d1>] do_fork+0x98/0x1b8
+ [<c0100716>] sys_clone+0x33/0x39
+ [<c010226c>] syscall_call+0x7/0xb
+ =======================
+Code: 2a c0 ff 05 30 67 2f c0 5d c3 55 89 e5 53 89 c3 8b 42 3c 40 39 43 10 74 04 0f 0b eb fe 2b 4a 04 c1 e9 0c 03 4a 44 39 4b 14 74 04 <0f> 0b eb fe 5b 5d c3 55 89 e5 53 89 c3 8b 42 3c 85 c0 75 04 0f 
+EIP: [<c013cbbd>] __page_check_anon_rmap+0x21/0x28 SS:ESP 0068:c1423e98
+Kernel panic - not syncing: Attempted to kill init!
