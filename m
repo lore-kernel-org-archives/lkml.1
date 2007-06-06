@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966140AbXFFXsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936189AbXFFX52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966140AbXFFXsi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbXFFXsa
+	id S936189AbXFFX52 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935353AbXFFX5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:48:30 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:37695 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755162AbXFFXsa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:48:30 -0400
-Date: Wed, 06 Jun 2007 17:47:56 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Another missing RAM on x86_64
-In-reply-to: <4667362A.8040200@gmail.com>
-To: Reinaldo de Carvalho <reinaldow@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <466747AC.1080606@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.tF0YmfAYyv6X2INP3hwTgQ2Z2Pw@ifi.uio.no>
- <4664DB42.2050401@shaw.ca> <4667362A.8040200@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 6 Jun 2007 19:57:19 -0400
+Received: from gw.goop.org ([64.81.55.164]:52551 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756331AbXFFX5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 19:57:19 -0400
+Message-ID: <466749C8.2010700@goop.org>
+Date: Wed, 06 Jun 2007 16:56:56 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC 6/7] i386: make the bzImage payload an ELF file
+References: <20070606225837.654272428@goop.org> <20070606230922.476662240@goop.org> <4667462A.2010404@zytor.com>
+In-Reply-To: <4667462A.2010404@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reinaldo de Carvalho wrote:
-> This laptop have a nVidia 10de:0244 with 256Mb of RAM. No shared memory.
-> 
-> 
-> Reinaldo de Carvalho
-> 
-> 
-> 
-> 00:05.0 VGA compatible controller: nVidia Corporation C51 PCI Express 
-> Bridge (rev a2) (prog-if 00 [VGA])
->         Subsystem: Hewlett-Packard Company Unknown device 30b5
->         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
-> ParErr- Stepping- SERR- FastB2B-
->         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-> <TAbort- <MAbort- >SERR- <PERR-
->         Latency: 0
->         Interrupt: pin A routed to IRQ 21
->         Region 0: Memory at c2000000 (32-bit, non-prefetchable) [size=16M]
->         Region 1: Memory at d0000000 (64-bit, prefetchable) [size=256M]
->         Region 3: Memory at c1000000 (64-bit, non-prefetchable) [size=16M]
->         [virtual] Expansion ROM at 50000000 [disabled] [size=128K]
->         Capabilities: [48] Power Management version 2
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-> PME(D0-,D1-,D2-,D3hot-,D3cold-)
->                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
->         Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ 
-> Queue=0/0 Enable-
->                 Address: 0000000000000000  Data: 0000
+H. Peter Anvin wrote:
+> I still believe that we should provide, in effect, vmlinux as a
+> (compressed) ELF file rather than provide the intermediate stage.  It
+> would reduce the complexity of testing (all information provided about a
+> stage have to be both guaranteed to even make sense in the future as
+> well as be tested to conform to such information
 
-It's a bit mysterious, then, where the extra 40-some MB of RAM has gone. 
-However, there's not much the kernel can do about it, as the BIOS is not 
-telling us about that memory..
+I'm not sure I follow you.  Sure, you're right that the Phdr info
+contained within the bzImage needs to be tested for correctness.  This
+wouldn't normally happen when booting native, but when booting under the
+most constrained environment - Xen - it will be tested (and I intend
+making the Xen loader as strict as possible).  Of course, it won't help
+if the Phdrs are overmap too much, but I don't think that matters too
+much, so long as the mappings are not excessively large.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+I'm not sure what you mean about "make sense in the future".  If you're
+booting the kernel in a new paravirtualized environment, you've
+presumably modified the kernel to understand that environment, and
+perhaps had to update the boot image format a bit to deal with its
+requirements.  I agree that updating the bzImage format may require
+retesting in all the other environments, but I think that's probably
+true for your scheme as well.
 
+After all, you're assuming that the vmlinux itself provides all
+necessary information to be loaded in any environment, which is not
+necessarily true (it may need extra ELF notes, for example).  But if
+there are any major structural changes needed in the vmlinux, then that
+will be equally problematic for both directly using vmlinux and using
+ELF-in-bzImage.  So I don't think your argument convincingly sways in
+any particular direction.
+
+> ) as well as cover a
+> larger number of environments -- any environment where injecting data
+> into memory is cheaper than execution is quite unhappy about the current
+> system.  Such environments include heterogeneous embedded systems (think
+> a slow CPU on a PCI card where the host CPU has direct access to the
+> memory on the card) as well as simulators/emulators.
+>   
+
+Well, nothing in this scheme precludes the ELF file from being a plain
+uncompressed kernel image.  If that's what these environments want, its
+easy to provide with a small update to the Makefiles.
+
+> For environments where so is appropriate it would even be possible to
+> run the setup, invoke the code32_setup hook to do the decompression (and
+> relocation, if appropriate) in host space.
+>   
+
+Well, that's what we currently have, and we can't break backwards
+compatibility.
+
+> This makes vmlinux (normally stripped) recoverable from the bzImage file
+> and so anything that is currently booting vmlinux would be serviced by
+> this scheme.
+>   
+
+I'm not sure I fully understand the mechanism you're proposing.  You
+have the 16-bit setup code, the 32-bit decompressor, and an ELF.gz. Once
+the decompressor has extracted the actual ELF file, are you proposing
+that it properly parse the ELF file and follow its instuctions to put
+the segments in the appropriate places, or are you assuming that the
+decompressor can just skip that part and plonk the ELF file where it wants?
+
+In other words, do you see the Phdrs as being descriptive or prescriptive?
+
+    J
