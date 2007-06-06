@@ -1,33 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbXFFFQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934462AbXFFFYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757754AbXFFFQM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 01:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbXFFFP6
+	id S934462AbXFFFYa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 01:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758012AbXFFFYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 01:15:58 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:32851 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752051AbXFFFP6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 01:15:58 -0400
-Date: Tue, 5 Jun 2007 22:15:57 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: young dave <hidave.darkstar@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] 2.6.22-rc3-mm1 remove bluetooth usb adapter caused kmalloc
- bug
-In-Reply-To: <a8e1da0706051856g242dad96rf4286283192b06c4@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706052211500.7930@schroedinger.engr.sgi.com>
-References: <a8e1da0706051856g242dad96rf4286283192b06c4@mail.gmail.com>
+	Wed, 6 Jun 2007 01:24:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44756 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755804AbXFFFYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 01:24:21 -0400
+Date: Wed, 6 Jun 2007 01:23:06 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: perex@suse.cz, andy@smile.org.ua
+Subject: Yet another Uniwill laptop with ALC861 codec
+Message-ID: <20070606052306.GA16320@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, perex@suse.cz,
+	andy@smile.org.ua
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Note that the corruption seems to have its cause in a decrement done at
-offset 16 into the object pointing to the refcount in struct hci_dev. So 
-it looks like the refcount was decremented after the object was freed.
+Rediffed version of the patch from ..
+http://bugzilla.kernel.org/show_bug.cgi?id=8016
+that seems to be lingering for some time.
 
-sysfs related?
+Original patch by: Andy Shevchenko <andy@smile.org.ua>
+Signed-off-by: Dave Jones <davej@redhat.com>
+
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index 4776de9..2e6193c 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -8771,6 +8771,7 @@ static struct snd_pci_quirk alc861_cfg_tbl[] = {
+ 	SND_PCI_QUIRK(0x1179, 0xff00, "Toshiba", ALC861_TOSHIBA),
+ 	SND_PCI_QUIRK(0x1179, 0xff10, "Toshiba", ALC861_TOSHIBA),
+ 	SND_PCI_QUIRK(0x1584, 0x9072, "Uniwill m31", ALC861_UNIWILL_M31),
++	SND_PCI_QUIRK(0x1584, 0x9075, "Uniwill", ALC861_UNIWILL_M31),
+ 	SND_PCI_QUIRK(0x1584, 0x2b01, "Uniwill X40AIx", ALC861_UNIWILL_M31),
+ 	SND_PCI_QUIRK(0x1849, 0x0660, "Asrock 939SLI32", ALC660_3ST),
+ 	SND_PCI_QUIRK(0x8086, 0xd600, "Intel", ALC861_3ST),
+
+
+-- 
+http://www.codemonkey.org.uk
