@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965658AbXFFXhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965724AbXFFXlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965658AbXFFXhn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965081AbXFFXhf
+	id S965724AbXFFXlV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965146AbXFFXlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:37:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35448 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964867AbXFFXhe (ORCPT
+	Wed, 6 Jun 2007 19:41:12 -0400
+Received: from 8.sub-75-209-226.myvzw.com ([75.209.226.8]:59398 "EHLO
+	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964867AbXFFXlL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:37:34 -0400
-Date: Wed, 6 Jun 2007 16:37:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Grant Wilson <gww@swandive.no-ip.com>
-Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.22-rc4-mm1
-Message-Id: <20070606163713.250a127a.akpm@linux-foundation.org>
-In-Reply-To: <200706062158.39057.gww@swandive.no-ip.com>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-	<200706062158.39057.gww@swandive.no-ip.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 19:41:11 -0400
+X-Greylist: delayed 1518 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Jun 2007 19:41:08 EDT
+Message-Id: <20070606225837.654272428@goop.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 06 Jun 2007 15:58:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH RFC 0/7] proposed updates to boot protocol and paravirt booting
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007 21:58:38 +0100 Grant Wilson <gww@swandive.no-ip.com> wrote:
+This series:
+ 1. Updates the boot protocol to version 2.07
+ 2. Clean up the existing build process, to get rid of tools/build and
+    make the linker do more heavy lifting
+ 3. Make the bzImage payload an ELF file.  The bootloader can extract
+    this as a naked ELF file by skipping over boot_params.setup_sects worth
+    of 16-bit setup code.
+ 4. Update the boot_params to 2.07, and update the kernel's head.S to
+    jump to the appropriate subarch-specific kernel entrypoint.  The
+    very earliest code is common (copy boot_params, clear bss); the
+    split happens just before the initial pagetable setup.
++ random little changes to make it all hang together
 
-> On Wednesday 06 June 2007 10:07:37 Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
-> 
-> Patch 'usb-try-to-debug-bug-8561' triggers when I plug in a usb flash drive:
+This boots native for me, so everything basically works.  But I haven't
+tested it end-to-end yet, because I haven't done the Xen bits yet.
+Perhaps Rusty can do the lguest version to verify that its all sound in
+principle (hint hint ;).
 
-Cool, thanks.
+So, how does it look?
 
-> [10998.881000] usb 1-10: new high speed USB device using ehci_hcd and address 3
-> [10999.001000] usb 1-10: new device found, idVendor=13fe, idProduct=1a00
-> [10999.002000] usb 1-10: new device strings: Mfr=1, Product=2, SerialNumber=3
-> [10999.016000] usb 1-10: Product: USB DISK 2.0
-> [10999.025000] usb 1-10: Manufacturer:
-> [10999.033000] usb 1-10: SerialNumber: 07720947018D
-> [10999.034000] usb 1-10: configuration #1 chosen from 1 choice
-> [10999.047000] scsi8 : SCSI emulation for USB Mass Storage devices
-> [11004.055000] WARNING: at drivers/usb/core/urb.c:293 usb_submit_urb()
-> [11004.055000]
-> [11004.055000] Call Trace:
-> [11004.055000]  [<ffffffff8020d30f>] dump_trace+0x43f/0x480
-> [11004.055000]  [<ffffffff8020d393>] show_trace+0x43/0x70
-> [11004.055000]  [<ffffffff8020d3d5>] dump_stack+0x15/0x20
-> [11004.055000]  [<ffffffff804b4314>] usb_submit_urb+0x224/0x240
-> [11004.055000]  [<ffffffff804b5ff5>] usb_sg_wait+0xd5/0x180
-> [11004.055000]  [<ffffffff804cf464>] usb_stor_bulk_transfer_sg+0xc4/0x120
-> [11004.055000]  [<ffffffff804cf611>] usb_stor_Bulk_transport+0x151/0x2e0
-> [11004.055000]  [<ffffffff804cfb57>] usb_stor_invoke_transport+0x37/0x380
-> [11004.055000]  [<ffffffff804ce9f9>] usb_stor_transparent_scsi_command+0x9/0x10
-> [11004.055000]  [<ffffffff804d0aea>] usb_stor_control_thread+0x18a/0x230
-> [11004.055000]  [<ffffffff8024927d>] kthread+0x4d/0x80
-> [11004.055000]  [<ffffffff8020c868>] child_rip+0xa/0x12
-> 
+	J
+-- 
 
-Alan, you got a bite - reel her in!
