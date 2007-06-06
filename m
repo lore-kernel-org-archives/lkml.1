@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933590AbXFFMxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934412AbXFFMyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933590AbXFFMxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 08:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759545AbXFFMxd
+	id S934412AbXFFMyz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 08:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762162AbXFFMys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 08:53:33 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47624 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753208AbXFFMxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 08:53:32 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Jan Beulich" <jbeulich@novell.com>
+	Wed, 6 Jun 2007 08:54:48 -0400
+Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:62854 "EHLO
+	rpc.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761469AbXFFMyr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 08:54:47 -0400
+User-Agent: Microsoft-Entourage/11.3.3.061214
+Date: Wed, 06 Jun 2007 13:54:44 +0100
 Subject: Re: [Xen-devel] [patch 14/33] xen: xen time implementation
-Date: Wed, 6 Jun 2007 14:53:20 +0200
-User-Agent: KMail/1.9.6
-Cc: "Keir Fraser" <keir@xensource.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       virtualization@lists.osdl.org,
-       "Xen-devel" <xen-devel@lists.xensource.com>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "lkml" <linux-kernel@vger.kernel.org>
-References: <C28C5EAB.1024D%keir@xensource.com> <200706061418.28967.ak@suse.de> <4666C8E3.76E4.0078.0@novell.com>
+From: Keir Fraser <keir@xensource.com>
+To: Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       <virtualization@lists.osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Message-ID: <C28C6D24.1026E%keir@xensource.com>
+Thread-Topic: [Xen-devel] [patch 14/33] xen: xen time implementation
+Thread-Index: AceoOdrAGSgBOhQtEdyEZAAX8io7RQ==
 In-Reply-To: <4666C8E3.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706061453.20798.ak@suse.de>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 June 2007 14:46:59 Jan Beulich wrote:
-> >>> Andi Kleen <ak@suse.de> 06.06.07 14:18 >>>
-> >
-> >> 
-> >> Yes, this could be an issue. Is there any way to get an interrupt or MCE
-> >> when thermal throttling occurs?
-> >
-> >Yes you can get an thermal interrupt from the local APIC. See the Linux
-> >kernel source. Of course there would be still a race window.
-> >
-> >On the other hand some timing issues on throttling are probably 
-> >the smallest of the users' problems when it really happens.
+
+
+
+On 6/6/07 13:46, "Jan Beulich" <jbeulich@novell.com> wrote:
+
+>> On the other hand some timing issues on throttling are probably
+>> the smallest of the users' problems when it really happens.
 > 
-> Not if this results in your box hanging 
+> Not if this results in your box hanging - I think throttling is exactly
+> intended
+> to keep the box alive as long as possible (and I've seen throttling in action,
+> with the box happily recovering from the situation - after having seen it a
+> few times I checked and found the fan covered with dust).
 
-Yes it shouldn't hang. Just saying that some non monotonicity in the returned
-values under this abnormal condition is probably not the world's end.
+Clamping to last returned timestamp value would be fine here. Time would go
+moderately haywire for a while (lurch forwards and then stop for a while),
+but wouldn't go backwards and should recover reasonably within the timescale
+of the thermal event itself. I don't see an issue with just implementing
+this clamping if it is needed.
 
--Andi
+ -- Keir
+
