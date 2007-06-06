@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965639AbXFFXAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965827AbXFFXAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965639AbXFFXAM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965280AbXFFW7z
+	id S965827AbXFFXAi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965747AbXFFXAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:59:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35306 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965038AbXFFW7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:59:54 -0400
-Message-ID: <46673C24.4070808@redhat.com>
-Date: Wed, 06 Jun 2007 15:58:44 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7> <20070606235906.72439d16@the-village.bc.nu>
-In-Reply-To: <20070606235906.72439d16@the-village.bc.nu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 6 Jun 2007 19:00:06 -0400
+Received: from www.osadl.org ([213.239.205.134]:42522 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965744AbXFFXAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 19:00:04 -0400
+Subject: Re: Big problems applying patch-2.6.21.3-rt9
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Ingo Molnar <mingo@redhat.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <46673964.1000004@am.sony.com>
+References: <46673964.1000004@am.sony.com>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 00:59:59 +0200
+Message-Id: <1181170799.4404.271.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Alan Cox wrote:
-> 	prctl(PR_SPARSEFD, 1);
+On Wed, 2007-06-06 at 15:47 -0700, Tim Bird wrote:
+> Ingo,
 > 
-> to turn on sparse fd allocation for a process ?
+> I saw lots of problems trying to apply the latest rt-preempt patch.
+> Maybe some bits got included by mistake in the patch?
+> 
+> Here's what I saw:
+> $ wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.3.tar.bz2
 
-Yes, there is.  Go back and read the archives.  It has been discussed in
-depth.
+That should be 2.6.21.tar.bz2
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+The patch contains the .3 patch already. Unfortunately it used the wrong
+numbering scheme :(
 
-iD8DBQFGZzwk2ijCOnn/RHQRAtKGAKCTX5njQnYeyDn4XUGFAZ3Ojai+mwCeN/j0
-jibBDSqQpXhR2CwIQNRAnXw=
-=sJb0
------END PGP SIGNATURE-----
+Sorry,
+
+	tglx
+
+
