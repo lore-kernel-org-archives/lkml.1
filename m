@@ -1,74 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936214AbXFFWwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936486AbXFFWyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936214AbXFFWwm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 18:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764464AbXFFWwe
+	id S936486AbXFFWyq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 18:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934884AbXFFWyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:52:34 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1229 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763548AbXFFWwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:52:33 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 6 Jun 2007 15:52:31 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: David Miller <davem@davemloft.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       dada1@cosmosbay.com
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <20070606.154434.21926922.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0706061549110.10383@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
- <20070606.154434.21926922.davem@davemloft.net>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 6 Jun 2007 18:54:39 -0400
+Received: from lucidpixels.com ([75.144.35.66]:36515 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764852AbXFFWyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 18:54:38 -0400
+Date: Wed, 6 Jun 2007 18:54:37 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Jesse Barnes <jesse.barnes@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+In-Reply-To: <20070606153737.2c9da784.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0706061852590.2716@p34.internal.lan>
+References: <200706061229.24486.jesse.barnes@intel.com>
+ <200706061524.52628.jesse.barnes@intel.com> <Pine.LNX.4.64.0706061826260.5415@p34.internal.lan>
+ <200706061528.44070.jesse.barnes@intel.com> <20070606153737.2c9da784.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007, David Miller wrote:
-
-> From: Davide Libenzi <davidel@xmailserver.org>
-> Date: Wed, 06 Jun 2007 15:30:31 -0700
-> 
-> > This patch implement a new syscall sys_socket2(), that accepts an
-> > extra "flags" parameter:
-> > 
-> > int socket2(int domain, int type, int protocol, int flags);
-> > 
-> > The flags parameter is used to pass extra flags to the kernel, and is
-> > at the moment used to select the file descriptor allocations inside
-> > the non-sequential area (O_NONSEQFD). The remaining parameters are
-> > exactly the same as the ones of sys_socket().
-> > The sys_accept() system call has been modified to return a file
-> > descriptor inside the non-sequential area, if the listening fd is.
-> > The sys_socketcall() system call has been also changed to support
-> > a new SYS_SOCKET2 indentifier.
-> > 
-> > Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-> 
-> Since the valid range of "domain" values is quite small,
-> we could avoid the new system call by cribbing some of the
-> upper bits of the 'domain' argument.
-> 
-> Valid existing programs pass in valid 'domain' values and
-> thus will not set any of the new flags.
-> 
-> Just an idea.
-
-I have no huge preferences. If not the slight one of using the same flags 
-for open() and socket{2}() (O_NONSEQFD). If we overload socket() we may 
-need to fight with existing O_* flags. OTOH the current free ones are 
-pretty high in bits, so it may be OK too.
 
 
+On Wed, 6 Jun 2007, Randy Dunlap wrote:
 
-- Davide
+> On Wed, 6 Jun 2007 15:28:43 -0700 Jesse Barnes wrote:
+>
+>> On Wednesday, June 6, 2007 3:26 pm Justin Piszcz wrote:
+>>> Nope, I booted with only netconsole= options.  I have a lot of HW in
+>>> the box and I guess the buffer is too small.  Not sure where to
+>>> change it in the kernel.  Looking..
+>>
+>> It's called "kernel log buffer size" and it's in "General setup".
+>
+> or you can just boot with "log_buf_len=256k" on the kernel boot line (e.g.)
+>
+> ---
+> ~Randy
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>
 
+Hm, not sure if it was from the patch or what but I ran this:
 
+1. swapoff -a
+2. ./eatmem
+
+The machine responded to ping and alt-sysrq-b but the box remain 
+unresponsive, I guess the kernel did not kill the process? :(
+
+The moments before it 'froze'
+
+top - 18:48:01 up 15 min,  7 users,  load average: 6.61, 18.50, 13.31
+Tasks: 200 total,  18 running, 182 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.0%us, 90.7%sy,  0.0%ni,  5.9%id,  3.3%wa,  0.0%hi,  0.0%si, 
+0.0%st
+Mem:   8039576k total,  7998860k used,    40716k free,        8k buffers
+Swap:        0k total,        0k used,        0k free,     1664k cached
+
+   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+   248 root      11  -5     0    0    0 R   85  0.0   0:16.05 kswapd0
+  2265 nut       18   0 13320  244    4 R   40  0.0   0:03.13 newhidups
+  2267 nut       18   0 12216  168    4 R   40  0.0   0:02.04 upsd
+  2474 ntp       18   0 22192  400    8 R   39  0.0   0:02.00 ntpd
+  3563 jpiszcz   18   0 41964 1264    4 R   38  0.0   0:02.20 pine
+  3530 root      18   0 96240 3132   36 R   37  0.0   0:02.09 kdm_greet
+  2052 root      18   0  6080  112    4 R   37  0.0   0:02.00 hald-addon-stor
+  4479 war       17   0 18012  700  252 R   33  0.0   0:01.81 top
+  4480 war       19   0 6948m 6.8g    4 R   22 88.4   0:05.81 eatmem
+  2095 root      18   0 13128  216    8 R   10  0.0   0:00.50 dirmngr
+  2545 root      18   0 95788 2488    4 R    5  0.0   0:00.25 apache2
+  3564 war       18   0 41620  832    4 R    5  0.0   0:00.34 pine
+  2270 nut       15   0 12212  144    4 S    1  0.0   0:00.05 upsmon
+   561 root      10  -5     0    0    0 S    0  0.0   0:00.02 xfsbufd
+
+Very simply program:
+
+#include <iostream>
+using namespace std;
+
+int main()
+{
+   long int interations = 10000000;
+   int counter = 1;
+
+   for(counter;counter<interations;counter++)
+   {
+      double *d = new double[100];
+   }
+
+   return 0;
+}
+
+Any idea why the OOM killer can or does not kill it?
+
+Justin.
