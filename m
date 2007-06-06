@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbXFFHSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbXFFHT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753240AbXFFHSa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 03:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXFFHSS
+	id S1752986AbXFFHT6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 03:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXFFHTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 03:18:18 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:47256 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbXFFHSP (ORCPT
+	Wed, 6 Jun 2007 03:19:52 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:47147 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbXFFHTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 03:18:15 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=fBIScSWt0hDFH5r8ziUoTzQCiT93HwQriyE4Sud3f1KFhC+VQQPS5nEslzKQSYiP6
-	5Tetei1SwNDzdOznNAo1w==
-Date: Wed, 6 Jun 2007 00:18:00 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@engr.sgi.com>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
- globally
-In-Reply-To: <1181113753.7348.164.camel@twins>
-Message-ID: <alpine.DEB.0.99.0706060012260.15316@chino.kir.corp.google.com>
-References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
-  <1181110846.7348.154.camel@twins>  <alpine.DEB.0.99.0706052334280.30783@chino.kir.corp.google.com>
- <1181113753.7348.164.camel@twins>
+	Wed, 6 Jun 2007 03:19:51 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Wed, 6 Jun 2007 03:18:06 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] lib:  Replace calls to __get_free_pages() with
+ __get_dma_pages().
+In-Reply-To: <20070605170601.67bc2939.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706060317010.26345@localhost.localdomain>
+References: <Pine.LNX.4.64.0706051657350.20029@localhost.localdomain>
+ <20070605170601.67bc2939.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007, Peter Zijlstra wrote:
+On Tue, 5 Jun 2007, Andrew Morton wrote:
 
-> Right, I see your point; however considering that its a system
-> allocation, and all these constraints get violated by interrupts anyway,
-> its more of an application container than a strict allocation container.
-> 
+> On Tue, 5 Jun 2007 16:58:57 -0400 (EDT)
+> "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+>
+> > Replace a couple calls to __get_free_pages() with the corresponding
+> > calls to __get_dma_pages().
+> >
+> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> >
+> > ---
+> >
+> >   that's the lot of them.
+> >
+> > diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+> > index 10c13ad..8fc38dc 100644
+> > --- a/lib/swiotlb.c
+> > +++ b/lib/swiotlb.c
+> > @@ -201,8 +201,7 @@ swiotlb_late_init_with_default_size(size_t default_size)
+> >  	bytes = io_tlb_nslabs << IO_TLB_SHIFT;
+> >
+> >  	while ((SLABS_PER_PAGE << order) > IO_TLB_MIN_SLABS) {
+> > -		io_tlb_start = (char *)__get_free_pages(GFP_DMA | __GFP_NOWARN,
+> > -		                                        order);
+> > +		io_tlb_start = (char *)__get_dma_pages(__GFP_NOWARN, order);
+>
+> __get_dma_pages() is just pointless obfuscation.  I think it'd be better to
+> go the other way: open-code the GFP_DMA at all callsites then send
+> __get_dma_pages() bitbucketwards.
 
-It is not necessarily system allocations at all.  It is quite possible, as 
-described earlier, to mlock a large quantity of memory that exceeds the 
-capacity of all nodes in a task's mems_allowed and then when this task 
-OOM's to continue allocating memory in get_user_pages() but with the 
-TIF_MEMDIE exception that allows it to allocate anywhere.  Then other 
-cpusets get their memory infringed upon and they can OOM themselves even 
-though there was no preexisting memory pressure.  This happens before we 
-return to userspace in the mlock() and thus we cannot properly handle the 
-SIGKILL sent down from the OOM killer.
+i have no objection to that.  it just seemed silly to have some calls
+using one form and some using the other.
 
-> Are you actually seeing the described behaviour, or just being pedantic
-> (nothing wrong with that per-se)?
-> 
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-Yes, as described above.  An exclusive cpuset containing only root, 
-system-critical tasks was OOM'd when it was not under any memory pressure 
-at all because a separate exclusive cpuset mlock'd a gigantic amount of 
-memory and it could not reliably exit because the mlock continued to 
-allocate outside its own cpuset and eventually OOM'd system-critical tasks 
-or depleated all system memory.  True story.
-
-At the least, if this patch is not agreed upon, I would suggest adding 
-sanity checks against gfp_mask in cpuset_zone_allowed() to ensure we 
-should allow the allocation in TIF_MEMDIE circumstances to avoid the above 
-scenario.
-
-		David
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
