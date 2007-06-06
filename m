@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935678AbXFFUvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935747AbXFFUxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935678AbXFFUvI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 16:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934876AbXFFUu4
+	id S935747AbXFFUxA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 16:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934560AbXFFUwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 16:50:56 -0400
-Received: from mga03.intel.com ([143.182.124.21]:46849 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934738AbXFFUu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 16:50:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
-   d="scan'208";a="236361889"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Date: Wed, 6 Jun 2007 13:50:41 -0700
-User-Agent: KMail/1.9.6
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200706061229.24486.jesse.barnes@intel.com> <200706061331.30516.jesse.barnes@intel.com> <Pine.LNX.4.64.0706061636550.21038@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0706061636550.21038@p34.internal.lan>
+	Wed, 6 Jun 2007 16:52:53 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:29692 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933097AbXFFUww (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 16:52:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bnBvIN/BUzaYJRFkp+gQUzO0aRimhrl/8p4YCNUgaG32eWq7wlC9LXNpj40ytZTTXS2zkQz6yCr7ZwaJSUSGuWK0z7kqnIDI9Wetk8zYctdMupRgQhkSkSg8ZodfuS0XgNmwTXleBjqBbmrGnlm9+oWF+9qo1yuL5ozHxkmDqJU=
+Message-ID: <b637ec0b0706061352x67dc0dadida65570d77abe6f4@mail.gmail.com>
+Date: Wed, 6 Jun 2007 22:52:52 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.22-rc4-mm1
+Cc: "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
+       "Herbert Xu" <herbert@gondor.apana.org.au>
+In-Reply-To: <20070606132439.3f59f0cf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706061350.42508.jesse.barnes@intel.com>
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+	 <200706062132.37430.m.kozlowski@tuxland.pl>
+	 <20070606132439.3f59f0cf.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, June 6, 2007 1:37 pm Justin Piszcz wrote:
-> On Wed, 6 Jun 2007, Jesse Barnes wrote:
-> > On Wednesday, June 6, 2007 1:28 pm Jesse Barnes wrote:
-> >>> Against what kernel version does this patch apply?
-> >>
-> >> Um... git as of b4946ffb1860597b187d78d61ac6504177eb0ff8.  Sorry I
-> >> should have updated before spinning the patch (will do now).
-> >
-> > Appears to apply cleanly to git head as of a minute ago too.
-> >
-> > Jesse
+Hi
+
+On 6/6/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 6 Jun 2007 21:32:36 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 >
-> Can you produce a patch against 2.6.22-rc4 or 2.6.21 so I and other
-> people can easily try it? I do not have git installed on this
-> machine, thanks.
+> > Hello,
+> >
+> >       This is from my P4 sony vaio laptop.
+> >
+> > These warnings still there:
+> >
+> > drivers/input/keyboard/Kconfig:170:warning: 'select' used by config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+> > drivers/input/mouse/Kconfig:182:warning: 'select' used by config symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+> > sound/soc/sh/Kconfig:6:warning: 'select' used by config symbol 'SND_SOC_PCM_SH7760' refers to undefined symbol 'SH_DMABRG'
+>
+> Yeah, people keep adding those and then never fixing them.  I've given up
+> and I just ignore them.
 
-Seems to apply cleanly to 2.6.22-rc4 too.  Haven't tested that though.
-
-Jesse
+Maybe it is because ATARI_KBD_CORE is defined only in arch/m68k.
