@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965475AbXFFX2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXFFX3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965475AbXFFX2Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935714AbXFFX2A
+	id S965661AbXFFX3X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935394AbXFFX3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:28:00 -0400
-Received: from mga03.intel.com ([143.182.124.21]:19036 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935667AbXFFX17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:27:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
-   d="scan'208";a="236413904"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Date: Wed, 6 Jun 2007 16:27:46 -0700
-User-Agent: KMail/1.9.6
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200706061229.24486.jesse.barnes@intel.com> <200706061620.10627.jesse.barnes@intel.com> <Pine.LNX.4.64.0706061923470.2716@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0706061923470.2716@p34.internal.lan>
+	Wed, 6 Jun 2007 19:29:16 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4989 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbXFFX3P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 19:29:15 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 6 Jun 2007 16:29:13 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <20070607001932.35c9591c@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0706061619560.10383@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+ <20070606235906.72439d16@the-village.bc.nu>
+ <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
+ <20070607001932.35c9591c@the-village.bc.nu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706061627.46421.jesse.barnes@intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, June 6, 2007 4:24 pm Justin Piszcz wrote:
-> > The mem= approach though looks slightly off, but I haven't looked
-> > at x86_64's mem= handling to see why.  From a high level though,
-> > adjusting end_pfn is the right thing to do, since theoretically
-> > mem= could choose to make holes in your low memory and keep your
-> > high memory in the allocation pools (though it's not generally
-> > implemented this way).
-> >
-> > Jesse
->
-> Ahh, ok!  Sounds great, I will keep running the kernel with your
-> patch without mem= and let you know if I see any issues.
->
-> Chances of getting this into 2.6.22-rc5?
+On Thu, 7 Jun 2007, Alan Cox wrote:
 
-I'm not sure it's appropriate for -rc5 since it mucks around with some 
-early boot ordering, but I'll leave that to Andi, since it does address 
-some real bugs people have been seeing.
+> > > 	prctl(PR_SPARSEFD, 1);
+> > > 
+> > > to turn on sparse fd allocation for a process ?
+> > 
+> > There was a little discussion where I tried to whisper something similar, 
+> > but Linus and Uli shot me :) - with good reasons IMO.
+> > You may link to runtimes that are not non-sequentialfd aware, and will 
+> > break them.
+> 
+> Linking to the correct version of a libary and getting the library
+> versioning right is not rocket science and isn't a sane excuse. Its no
+> different to the stdio to large fd migration issues with many Unixen and
+> they all coped just fine.
 
-Can we add your "Tested-by:  Justin Piszcz <jpiszcz@lucidpixels.com>" to 
-the patch? :)
+I don't think it's a matter of versioning. Many userspace libraries 
+expects their fds to be compact (for many reasons - they use select, they 
+use them to index 0-based arrays, etc...), and if the kernel suddendly 
+starts returning values in the 1<<28 up arena, they sure won't be happy.
+So I believe that the correct way is that the caller specifically selects 
+the feature, leaving the legacy fd allocation as default.
 
-Thanks,
-Jesse
+
+
+- Davide
+
+
