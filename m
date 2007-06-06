@@ -1,69 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934444AbXFFF4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934674AbXFFGCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934444AbXFFF4N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 01:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934031AbXFFFz6
+	id S934674AbXFFGCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 02:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbXFFGCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 01:55:58 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:61459 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756176AbXFFFz5 (ORCPT
+	Wed, 6 Jun 2007 02:02:10 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:43444 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754655AbXFFGCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 01:55:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JSsVBBrgVI3ga+EyEC/Cey3iDUDUe2mvHEfHySfNTfmNMcBEuFmvckagCvB8XZrWVUz9SC4WaqO6rmzb0UiPZVq6dihVmDhZNYrMde0j67fT/chngzxw+5EEGpXQEnUX/ciDHggQ672gSFk3bM0CU9HX0uT/qEUNhv7bYQrYLdo=
-Message-ID: <a8e1da0706052255sa487d5ck1724c5a07620a88b@mail.gmail.com>
-Date: Wed, 6 Jun 2007 05:55:56 +0000
-From: "young dave" <hidave.darkstar@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [BUG] 2.6.22-rc3-mm1 remove bluetooth usb adapter caused kmalloc bug
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0706052211500.7930@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 6 Jun 2007 02:02:08 -0400
+Subject: Re: [PATCH 4/4] mm: variable length argument support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <20070605163925.bfc417ca.akpm@linux-foundation.org>
+References: <20070605150523.786600000@chello.nl>
+	 <20070605151203.790585000@chello.nl>
+	 <20070605163925.bfc417ca.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 08:02:05 +0200
+Message-Id: <1181109725.7348.149.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0706051856g242dad96rf4286283192b06c4@mail.gmail.com>
-	 <Pine.LNX.4.64.0706052211500.7930@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
->2007/6/6, Christoph Lameter <clameter@sgi.com>:
-> Note that the corruption seems to have its cause in a decrement done at
-> offset 16 into the object pointing to the refcount in struct hci_dev. So
-> it looks like the refcount was decremented after the object was freed.
->
-> sysfs related?
->
-I noticed in hci_core.c:
+On Tue, 2007-06-05 at 16:39 -0700, Andrew Morton wrote:
 
-hci_dev_close call hci_dev_do_close , then call hci_dev_put
+> > @@ -1620,6 +1600,34 @@ int expand_stack(struct vm_area_struct *
+> >  	return error;
+> >  }
+> >  
+> > +#ifdef CONFIG_STACK_GROWSUP
+> > +int expand_stack(struct vm_area_struct *vma, unsigned long address)
+> > +{
+> > +	return expand_upwards(vma, address);
+> > +}
+> > +
+> > +struct vm_area_struct *
+> > +find_extend_vma(struct mm_struct *mm, unsigned long addr)
+> > +{
+> > +	struct vm_area_struct *vma, *prev;
+> > +
+> > +	addr &= PAGE_MASK;
+> > +	vma = find_vma_prev(mm, addr, &prev);
+> > +	if (vma && (vma->vm_start <= addr))
+> > +		return vma;
+> > +	if (!prev || expand_stack(prev, addr))
+> > +		return NULL;
+> > +	if (prev->vm_flags & VM_LOCKED) {
+> > +		make_pages_present(addr, prev->vm_end);
+> > +	}
+> 
+> unneeded braces
+> 
+> We really should check and propagate the make_pages_present() return value
+> when appropriate.  It can fail under -ENOMEM, ulimit exceeded, overcommit,
+> etc.
 
-but in hci_dev_do_close  also call hci_dev_put
+Right, this is not new ugliness, but indeed a good opportunity to clean
+up.
 
-Maybe this is the reason, by apply the below patch the bug seems
-doesn't exist,  but the strange thing is the 2.4.22-rc4 seems works, I
-will test once more to see the result.
+> > +	return prev;
+> > +}
+> > +#else
+> > +int expand_stack(struct vm_area_struct *vma, unsigned long address)
+> > +{
+> > +	return expand_downwards(vma, address);
+> > +}
+> > +
+> >  struct vm_area_struct *
+> >  find_extend_vma(struct mm_struct * mm, unsigned long addr)
+> >  {
+> > Index: linux-2.6-2/mm/mprotect.c
+> > ===================================================================
+> > --- linux-2.6-2.orig/mm/mprotect.c	2007-06-05 16:23:16.000000000 +0200
+> > +++ linux-2.6-2/mm/mprotect.c	2007-06-05 16:29:45.000000000 +0200
+> > @@ -128,7 +128,7 @@ static void change_protection(struct vm_
+> >  	flush_tlb_range(vma, start, end);
+> >  }
+> >  
+> > -static int
+> > +int
+> >  mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
+> >  	unsigned long start, unsigned long end, unsigned long newflags)
+> >  {
+> > Index: linux-2.6-2/arch/ia64/ia32/binfmt_elf32.c
+> > ===================================================================
+> > --- linux-2.6-2.orig/arch/ia64/ia32/binfmt_elf32.c	2007-06-05 16:23:16.000000000 +0200
+> > +++ linux-2.6-2/arch/ia64/ia32/binfmt_elf32.c	2007-06-05 16:29:45.000000000 +0200
+> > @@ -195,62 +195,23 @@ ia64_elf32_init (struct pt_regs *regs)
+> >  	ia32_load_state(current);
+> >  }
+> >  
+> > +#undef setup_arg_pages
+> 
+> What's this for?
 
-Signed-off-by: dave young <hidave.darkstar@gmail.com>
----
- net/bluetooth/hci_core.c |    1 -
- 1 file changed, 1 deletion(-)
+That file reads:
 
-diff -dur linux/net/bluetooth/hci_core.c linux.new/net/bluetooth/hci_core.c
---- linux/net/bluetooth/hci_core.c      2007-06-06 13:47:14.000000000 +0000
-+++ linux.new/net/bluetooth/hci_core.c  2007-06-06 13:46:58.000000000 +0000
-@@ -577,7 +577,6 @@
+#define setup_arg_pages(bprm,tos,exec)          ia32_setup_arg_pages(bprm,exec)
 
-        hci_req_unlock(hdev);
+....
 
--       hci_dev_put(hdev);
-        return 0;
- }
+#include "../../../fs/binfmt_elf.c"
 
-Regards
-dave
+....
+
+int
+ia32_setup_arg_pages (struct linux_binprm *bprm, int executable_stack)
+{
+        int ret;
+
+        ret = setup_arg_pages(bprm, IA32_STACK_TOP, executable_stack);
+/---------------^
+We really want to call the real setup_arg_pages() here, not ourselves please.
+
+        if (!ret) {
+                /*
+                 * Can't do it in ia64_elf32_init(). Needs to be done before
+                 * calls to elf32_map()
+                 */
+                current->thread.ppl = ia32_init_pp_list();
+        }
+
+        return ret;
+}
+
+
