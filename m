@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934626AbXFFSDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934803AbXFFSFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934626AbXFFSDg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 14:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbXFFSD3
+	id S934803AbXFFSFd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 14:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758476AbXFFSFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 14:03:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59454 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754698AbXFFSD2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 14:03:28 -0400
-Date: Wed, 6 Jun 2007 11:03:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 2/2] UML - Fix kernel stack size on x86_64
-Message-Id: <20070606110314.c64f8234.akpm@linux-foundation.org>
-In-Reply-To: <20070606151134.GA5972@c2.user-mode-linux.org>
-References: <20070605205055.GA9770@c2.user-mode-linux.org>
-	<20070605170001.c8b2110e.akpm@linux-foundation.org>
-	<20070606003752.GA11511@c2.user-mode-linux.org>
-	<20070605182024.003502d4.akpm@linux-foundation.org>
-	<20070606151134.GA5972@c2.user-mode-linux.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Jun 2007 14:05:25 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:45517 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752153AbXFFSFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 14:05:25 -0400
+Message-ID: <4666F7A1.6030202@drzeus.cx>
+Date: Wed, 06 Jun 2007 20:06:25 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Rodolfo Giometti <giometti@enneenne.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: mmc0: unrecognised SCR structure version 1
+References: <20070530165705.GD29337@enneenne.com> <4662AE11.70107@drzeus.cx> <20070603145529.GC3879@enneenne.com>
+In-Reply-To: <20070603145529.GC3879@enneenne.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007 11:11:34 -0400 Jeff Dike <jdike@addtoit.com> wrote:
+Rodolfo Giometti wrote:
+> I suppose the same... but this is the only cards who gives me such
+> problems! What do you think it could be the problem? Maybe some PXA
+> MMC special settings?
+>   
 
-> On Tue, Jun 05, 2007 at 06:20:24PM -0700, Andrew Morton wrote:
-> > If you do
-> > 
-> > -	int "Kernel stack size order"
-> > +	int
-> > 
-> > then this rule will no longer be offered to the user and `make oldconfig'
-> > (actually anythingconfig) will override whatever happens to be in .config
-> > for KERNEL_STACK_ORDER.
-> 
-> You're saying that making an option user-visible changes whether
-> *config overrides .config?  That's non-intuitive.
+I'm afraid I have little experience with PXA. Perhaps you can find
+someone on the linux arm kernel mailing list with more insight?
 
-Yeah, I thought so.  I discovered it by comparing the behaviour of your
-patch against the behaviour of CONFIG_BASE_SMALL, fiddling around and
-then saying "wtf".
+> The card is a 512MB MiniSD by Viking InterWorks.
+>
+>   
 
-> > I'm not sure if that's actually what you want, but if the current situation
-> > is that a random CONFIG_KERNEL_STACK_ORDER=0 left over in .config will
-> > break the kernel at runtime then I think something sterner than editing
-> > defconfig is needed?
-> 
-> That's a good point, but I think I do want it user-visible.  If
-> someone sees someething I suspect to be a stack overflow, I'd like to
-> be able to tell them to bump KERNEL_STACK_ORDER and see if the problem
-> goes away.
-> 
-> As for something sterner, it turns out that Kbuild provides some
-> support for this.  So, drop the previous patch in favor of this one:
-> 
-> Force KERNEL_STACK_ORDER to be at least 1 on UML/x86_64.
-> 
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> --
->  arch/um/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: linux-2.6.21-mm/arch/um/Kconfig
-> ===================================================================
-> --- linux-2.6.21-mm.orig/arch/um/Kconfig	2007-06-06 09:28:13.000000000 -0400
-> +++ linux-2.6.21-mm/arch/um/Kconfig	2007-06-06 11:08:49.000000000 -0400
-> @@ -278,6 +278,7 @@ config HIGHMEM
->  config KERNEL_STACK_ORDER
->  	int "Kernel stack size order"
->  	default 1 if 64BIT
-> +	range 1 10 if 64BIT
->  	default 0 if !64BIT
->  	help
->  	This option determines the size of UML kernel stacks.  They will
+Sounds like a fairly common card. Cards so broken that they give an
+incorrect scr version should be rare, so I would guess that there is
+some transfer problem with the PXA. I don't suppose you have any other
+linux based platforms to test the card in?
 
-heh, fair enough.
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
