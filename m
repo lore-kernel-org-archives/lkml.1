@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759702AbXFFJWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759930AbXFFJ2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759702AbXFFJWa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbXFFJWX
+	id S1759930AbXFFJ2v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbXFFJ2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:22:23 -0400
-Received: from mail2.zrz.TU-Berlin.DE ([130.149.4.14]:38813 "EHLO
-	mail2.zrz.tu-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbXFFJWW (ORCPT
+	Wed, 6 Jun 2007 05:28:43 -0400
+Received: from hansmi.home.forkbomb.ch ([213.144.146.165]:7486 "EHLO
+	hansmi.home.forkbomb.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753921AbXFFJ2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:22:22 -0400
-X-Greylist: delayed 2186 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Jun 2007 05:22:22 EDT
-From: Robert Gerlach <khnz@khnz.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] tablet buttons driver for fujitsu siemens laptops
-Date: Wed, 6 Jun 2007 10:45:42 +0200
-User-Agent: KMail/1.9.6
-References: <200706020259.34033.khnz@gmx.de> <20070601183054.44c09935@freepuppy>
-In-Reply-To: <20070601183054.44c09935@freepuppy>
+	Wed, 6 Jun 2007 05:28:42 -0400
+Date: Wed, 6 Jun 2007 11:28:37 +0200
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@killerfox.forkbomb.ch
+Subject: Re: [linux-usb-devel] [PATCH] Fix NEC OHCI chip silicon bug
+Message-ID: <20070606092837.GA19712@hansmi.ch>
+References: <20070604210555.GB12676@hansmi.ch> <Pine.LNX.4.44L0.0706051018360.3662-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="ansi_x3.4-1968"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200706061045.42915.khnz@khnz.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.44L0.0706051018360.3662-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 June 2007 03:30:54 Stephen Hemminger wrote:
-> On Sat, 2 Jun 2007 02:59:33 +0200
-> > #ifdef DEBUG
-> > #  define debug(m, a...)	printk( KERN_DEBUG   MODULENAME ": " m "\n",
-> > ##a) #else
-> > #  define debug(m, a...)	do {} while(0)
-> > #endif
-> >
-> > #define info(m, a...)	printk( KERN_INFO    MODULENAME ": " m "\n", ##a)
-> > #define warn(m, a...)	printk( KERN_WARNING MODULENAME ": " m "\n", ##a)
-> > #define error(m, a...)	printk( KERN_ERR     MODULENAME ": " m "\n", ##a)
->
-> Please don't reinvent
-> 	pr_debug
-> 	pr_info
+On Tue, Jun 05, 2007 at 10:24:14AM -0400, Alan Stern wrote:
+> (Depending on which version of the kernel you are looking at -- [...]
+> Earlier versions did behave the way you describe.)
 
-Changed.
+I was looking at 2.6.22-rc3 which might explain the differences.
 
-> 	pr_warn,...
+> So the system is behaving the way you want, but not for the reason you 
+> think.  I bet you could remove the call to usb_root_hub_lost_power() 
+> entirely and it wouldn't make any difference at all.
 
-There is no pr_warn. Is it ok to define it like pr_err in spider_net.c or is 
-there a better way?
+Actually, that's true. René Nussbaumer tried without that call and it
+still works as intended. Should I leave that call out and drop the
+changes on usb_root_hub_lost_power for CONFIG_PM?
 
-
-Many thanks,
-Robert
-
+Greets,
+Michael
