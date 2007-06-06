@@ -1,41 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935503AbXFFUYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935549AbXFFUZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935503AbXFFUYX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 16:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbXFFUYN
+	id S935549AbXFFUZe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 16:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933954AbXFFUZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 16:24:13 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59920 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932650AbXFFUYM (ORCPT
+	Wed, 6 Jun 2007 16:25:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44505 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933715AbXFFUZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 16:24:12 -0400
-Date: Wed, 6 Jun 2007 21:24:09 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Richard Knutsson <ricknu-0@student.ltu.se>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Josh Triplett <josh@freedesktop.org>
-Subject: Re: generic bool and sparse errors?
-Message-ID: <20070606202409.GY4095@ftp.linux.org.uk>
-References: <4666FD0A.4060609@intel.com> <466708D8.90208@student.ltu.se> <46671668.4090805@intel.com>
+	Wed, 6 Jun 2007 16:25:24 -0400
+Date: Wed, 6 Jun 2007 13:24:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: 2.6.22-rc4-mm1
+Message-Id: <20070606132439.3f59f0cf.akpm@linux-foundation.org>
+In-Reply-To: <200706062132.37430.m.kozlowski@tuxland.pl>
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+	<200706062132.37430.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46671668.4090805@intel.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 01:17:44PM -0700, Kok, Auke wrote:
-> well the sparse warning is about signedness. Either sparse needs to "know" 
-> that bool is unsigned, or the kernel headers need to somehow make bool 
-> unsigned... the latter choice would come down to just that, but it doesn't 
-> look like a good idea to me either somehow.
+On Wed, 6 Jun 2007 21:32:36 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-sparse treats _Bool as 1-bit integer type.  It's considerably more
-complicated beast; for one thing (_Bool)2 is 1, not 0.  For another,
-several places make unpleasant assumptions that size in bits is a
-multiple of bits_in_char.  Which would be fine, but sparse has it
-set to 1 for _Bool.  With obvious results...
+> Hello,
+> 
+> 	This is from my P4 sony vaio laptop.
+> 
+> These warnings still there:
+> 
+> drivers/input/keyboard/Kconfig:170:warning: 'select' used by config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+> drivers/input/mouse/Kconfig:182:warning: 'select' used by config symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+> sound/soc/sh/Kconfig:6:warning: 'select' used by config symbol 'SND_SOC_PCM_SH7760' refers to undefined symbol 'SH_DMABRG'
+
+Yeah, people keep adding those and then never fixing them.  I've given up
+and I just ignore them.
+
+> A hwmon related build error:
+> 
+>   Building modules, stage 2.
+>   MODPOST 187 modules
+> ERROR: "input_register_polled_device" [drivers/hwmon/hdaps.ko] undefined!
+> ERROR: "input_allocate_polled_device" [drivers/hwmon/hdaps.ko] undefined!
+> ERROR: "input_free_polled_device" [drivers/hwmon/hdaps.ko] undefined!
+> ERROR: "input_unregister_polled_device" [drivers/hwmon/hdaps.ko] undefined!
+> ERROR: "input_register_polled_device" [drivers/hwmon/applesmc.ko] undefined!
+> ERROR: "input_allocate_polled_device" [drivers/hwmon/applesmc.ko] undefined!
+> ERROR: "input_free_polled_device" [drivers/hwmon/applesmc.ko] undefined!
+> ERROR: "input_unregister_polled_device" [drivers/hwmon/applesmc.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+
+Yes, this is being argued on the lm-sensors list, of all places.  For now
+you'll need to manually set CONFIG_INPUT_POLLDEV, I assume.
+
+
+> And for some reason the whole Cryptographic API is under the main level of menu 
+> (please find .config and menu.png attached).
+
+err, yes.  git-cryptodev.patch did that.  Herbert is being immodest ;)
