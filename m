@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935803AbXFFUxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935864AbXFFUyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935803AbXFFUxl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 16:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934560AbXFFUx3
+	id S935864AbXFFUyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 16:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935061AbXFFUxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 16:53:29 -0400
-Received: from mga01.intel.com ([192.55.52.88]:7500 "EHLO mga01.intel.com"
+	Wed, 6 Jun 2007 16:53:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41701 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935011AbXFFUx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 16:53:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
-   d="scan'208";a="254023601"
-Date: Wed, 6 Jun 2007 13:49:47 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Adam Belay <abelay@novell.com>, Len Brown <len.brown@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Shaohua Li <shaohua.li@intel.com>,
-       linux-acpi@vger.kernel.org
-Subject: [PATCH 1/8] cpuidle: acpi_set_cstate_limit compile fix
-Message-ID: <20070606204947.GA23906@linux-os.sc.intel.com>
-References: <1174722412.32554.81.camel@localhost.localdomain> <200705312117.48690.lenb@kernel.org>
+	id S932771AbXFFUxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 16:53:48 -0400
+Date: Wed, 6 Jun 2007 20:53:47 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.34.5
+Message-ID: <20070606205347.GA24188@hera.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705312117.48690.lenb@kernel.org>
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-Len,
+I've just released Linux 2.4.34.5, with extracts from 2.4.35-pre5.
+The most important one is the fix for the regression I introduced
+while fixing CVE-2007-1353 (bluetooth). Basically, I turned a memory
+leak bug into a memory corruption bug. Two minor bluetooth fixes have
+all been backported from 2.6 too.
 
-Following are a bunch of small changes to cpuidle trying to prepare it
-for mainline. Some of the changes are just the compile timer errors/warnings
-and you probably already have them in acpi-test.
+The other (less) important fix solves the problem of ide-disk.o causing
+oopses after insmod, it was caused by init_idle() being erroneously
+marked __init.
 
-Should apply cleanly to latest acpi-test. Please include in acpi-test.
+Last, a minor LVM fix from the RHEL3 kernel to correctly count extents
+in case of errors during snapshot allocation.
 
-Thanks,
-Venki
+Regards,
+Willy
 
-This patch:
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.34.5.bz2
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.34.5
+
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.34.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.34.y.git
+
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.34.y.git
 
 
-cpuidle compile fix related to acpi_set_cstate_limit().
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Summary of changes from v2.4.34.4 to v2.4.34.5
+============================================
 
-Index: linux-2.6.22-rc-mm/drivers/acpi/osl.c
-===================================================================
---- linux-2.6.22-rc-mm.orig/drivers/acpi/osl.c	2007-06-01 16:17:40.000000000 -0700
-+++ linux-2.6.22-rc-mm/drivers/acpi/osl.c	2007-06-01 16:21:43.000000000 -0700
-@@ -1030,6 +1030,7 @@
- 	if (acpi_do_set_cstate_limit)
- 		acpi_do_set_cstate_limit();
- }
-+EXPORT_SYMBOL(acpi_set_cstate_limit);
- 
- /*
-  * Acquire a spinlock.
+Willy Tarreau (6):
+      do not mark init_idle() __init
+      Bluetooth: correct fix for CVE-2007-1353
+      [BACKPORT] Bluetooth: Fix NULL pointer dereference in HCI line discipline
+      [BACKPORT] Bluetooth: Fix unintentional fall-through in HCI line discipline
+      lvm: do not update extent count if snapshot allocation fails
+      Change VERSION to 2.4.34.5
+
