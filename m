@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935229AbXFFTyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935045AbXFFUDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935229AbXFFTyK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 15:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbXFFTxz
+	id S935045AbXFFUDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 16:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758864AbXFFUDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 15:53:55 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:26498 "EHLO
-	viefep25-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751189AbXFFTxx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 15:53:53 -0400
-Subject: Re: [PATCH 3/4] mm: move_page_tables{,_up}
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ollie Wild <aaw@google.com>
-Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <65dd6fd50706061250l7378ec38gf86c984fe4e00b86@mail.gmail.com>
-References: <20070605150523.786600000@chello.nl>
-	 <20070605151203.738393000@chello.nl>
-	 <65dd6fd50706061206y558e7f90t3740424fae7bdc9c@mail.gmail.com>
-	 <1181157134.5676.28.camel@lappy>
-	 <65dd6fd50706061250l7378ec38gf86c984fe4e00b86@mail.gmail.com>
+	Wed, 6 Jun 2007 16:03:35 -0400
+Received: from pat.uio.no ([129.240.10.15]:57910 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756017AbXFFUDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 16:03:34 -0400
+Subject: Re: kmap_atomic in 2.6.20.x
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: "Raz Ben-Jehuda(caro)" <raziebe@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <5d96567b0706061003r462c324i733ad3698ac3d90c@mail.gmail.com>
+References: <5d96567b0706061003r462c324i733ad3698ac3d90c@mail.gmail.com>
 Content-Type: text/plain
-Date: Wed, 06 Jun 2007 21:53:35 +0200
-Message-Id: <1181159615.5676.40.camel@lappy>
+Date: Wed, 06 Jun 2007 16:03:31 -0400
+Message-Id: <1181160211.6408.42.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.0, required=12.0, autolearn=disabled, AWL=-0.037)
+X-UiO-Scanned: A2F0E551D6CE1C4E279EB6108EBB3F69A26EDB3A
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 67 total 2220971 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 12:50 -0700, Ollie Wild wrote:
-> On 6/6/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > PA-RISC will still need it, right?
-> 
-> Originally, I thought since the PA-RISC stack grows up, we'd want to
-> place the stack at the bottom of memory and have copy_strings() and
-> friends work in the opposite direction.  It turns out, though, that
-> this ends up being way more headache than it's worth, so I just
-> manually grow the stack down with expand_downwards().
+On Wed, 2007-06-06 at 20:03 +0300, Raz Ben-Jehuda(caro) wrote:
+> If my understanding ( from "see : understand the linux
+> kernel" page 310 ) , a different kernel component holds this window. A
+> fact which is quite strange in the case of KM_SKB_SUNRPC_DATA. I have
+> nothing that uses it.
 
-Ah, ok. I'll drop this whole patch then.
+KM_SKB_SUNRPC_DATA is verboten unless you are running in the appropriate
+bh-safe socket environment. Otherwise, see Jens' comment.
+
+Trond
 
