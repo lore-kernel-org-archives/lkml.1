@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933925AbXFFAPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934148AbXFFASQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933925AbXFFAPp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 20:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764245AbXFFAPi
+	id S934148AbXFFASQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 20:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765730AbXFFASE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 20:15:38 -0400
-Received: from rwcrmhc13.comcast.net ([204.127.192.83]:55633 "EHLO
-	rwcrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763761AbXFFAPh (ORCPT
+	Tue, 5 Jun 2007 20:18:04 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:17805 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763875AbXFFASB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 20:15:37 -0400
-Subject: Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other
-	woes
-From: Nicholas Miell <nmiell@comcast.net>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com>
-References: <1181006711.31677.97.camel@localhost.localdomain>
-	 <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org>
-	 <1181009413.31677.117.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com>
-	 <1181013756.31677.123.camel@localhost.localdomain>
-	 <1181023787.2785.14.camel@entropy>
-	 <1181028453.31677.127.camel@localhost.localdomain>
-	 <1181087462.2788.8.camel@entropy>
-	 <Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com>
-Content-Type: text/plain
-Date: Tue, 05 Jun 2007 17:15:36 -0700
-Message-Id: <1181088936.2788.10.camel@entropy>
+	Tue, 5 Jun 2007 20:18:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:to:cc:subject:message-id:in-reply-to:
+	references:x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=nJmOGH6HfagJ4lYGbhA3c3djKdh8MTIlcyupsAEgYRBIncUiNRyuXSbhqhbwBTAGh
+	ws5YdSR0jf2eNfsGNBWFA==
+Date: Tue, 5 Jun 2007 17:17:45 -0700
+From: Andrew Morton <akpm@google.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>, "Ingo Korb" <ingo@akana.de>
+Subject: Re: [PATCH 1/3] Char: stallion, don't fail with less than max
+ panels
+Message-Id: <20070605171745.1ea5b88f.akpm@google.com>
+In-Reply-To: <1058130869771517818@wsc.cz>
+References: <1058130869771517818@wsc.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.0.njm.1) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-05 at 17:11 -0700, Davide Libenzi wrote:
-> On Tue, 5 Jun 2007, Nicholas Miell wrote:
-> 
-> > Yes, that's certainly wrong, but that's an implementation issue. I was
-> > more concerned about the design of the API.
-> > 
-> > Naively, I would expect a reads on a signalfd to return either process
-> > signals or thread signals targeted towards the thread doing the read.
-> > 
-> > What it actually does (delivering process signals or thread signals
-> > targeted towards the thread that created the signalfd) is weird.
-> > 
-> > For one, it means you can't create a single signalfd, stick it in an
-> > epoll set, and then wait on that set from multiple threads.
-> 
-> In your box threads do share the sighand, don't they? :)
-> 
+On Tue,  5 Jun 2007 23:20:57 +0200 (CEST)
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-I have no idea what you're trying to say, but it doesn't appear to
-address the issue I raise.
+> stallion, don't fail with less than max panels
+>
 
--- 
-Nicholas Miell <nmiell@comcast.net>
+Why not?
 
+What problem is this patch fixing, and how does it fix it?
+
+What are the consequences of not having this patch in the kernel?
+
+etc.  More complete changlogs, please.
+
+> 
+> diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
+> index e45113a..265abad 100644
+> --- a/drivers/char/stallion.c
+> +++ b/drivers/char/stallion.c
+> @@ -2172,7 +2172,7 @@ static int __devinit stl_initech(struct stlbrd *brdp)
+>  		}
+>  		status = inb(ioaddr + ECH_PNLSTATUS);
+>  		if ((status & ECH_PNLIDMASK) != nxtid)
+> -			goto err_fr;
+> +			break;
+>  		panelp = kzalloc(sizeof(struct stlpanel), GFP_KERNEL);
+>  		if (!panelp) {
+>  			printk("STALLION: failed to allocate memory "
