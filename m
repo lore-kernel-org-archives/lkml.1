@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758682AbXFFIdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbXFFIhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758682AbXFFIdy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 04:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbXFFIdo
+	id S1757553AbXFFIhf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 04:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbXFFIh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 04:33:44 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:15742 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbXFFIdn (ORCPT
+	Wed, 6 Jun 2007 04:37:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55162 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750790AbXFFIh0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 04:33:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=a8xBGjNK6sK87QwGtmvxLakumSFoHlsKNq3drDNRQoY7BeegFPuKs0mqpAhWx9wSc3Aa+qo27i2+ZoUzJTc8TrAryLwaa9dT/ftBUQ2xL5m2mppVi/KpKB8gGQYNr9q0nt7PreiSPPDrf/heRrKW7kRcRMMbAly28AWjHMH/Ia0=
-Message-ID: <46667160.80905@gmail.com>
-Date: Wed, 06 Jun 2007 17:33:36 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: David Greaves <david@dgreaves.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       netdev@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression
-References: <46608E3F.4060201@dgreaves.com> <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com>
-In-Reply-To: <4662D852.4000005@dgreaves.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Jun 2007 04:37:26 -0400
+Date: Wed, 6 Jun 2007 01:36:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 4/4] mm: variable length argument support
+Message-Id: <20070606013658.20bcbe2f.akpm@linux-foundation.org>
+In-Reply-To: <20070605151203.790585000@chello.nl>
+References: <20070605150523.786600000@chello.nl>
+	<20070605151203.790585000@chello.nl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 05 Jun 2007 17:05:27 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-David Greaves wrote:
-> Linus Torvalds wrote:
->> It would be interesting to see what triggered it, since it apparently 
->> worked before. So yes, a bisection would be great.
+> From: Ollie Wild <aaw@google.com>
 > 
-> Tejun, all the problematic patches are yours - so adding you.
+> Remove the arg+env limit of MAX_ARG_PAGES by copying the strings directly
+> from the old mm into the new mm.
+> 
+> We create the new mm before the binfmt code runs, and place the new stack
+> at the very top of the address space. Once the binfmt code runs and figures
+> out where the stack should be, we move it downwards.
+> 
+> It is a bit peculiar in that we have one task with two mm's, one of which is
+> inactive.
+> 
+> ...
+>
+> +				flush_cache_page(bprm->vma, kpos,
+> +						 page_to_pfn(kmapped_page));
 
-Ouch....
+Breaks SuperH:
 
-> given the first patch identified is
-> 9666f4009c22f6520ac3fb8a19c9e32ab973e828: "libata: reimplement suspend/resume
-> support using sdev->manage_start_stop"
-> That seems a good candidate...
+fs/exec.c: In function `bprm_mm_init':
+fs/exec.c:268: warning: unused variable `vma'
+fs/exec.c: In function `copy_strings':
+fs/exec.c:431: error: structure has no member named `vma'
 
-9ce3075c20d458040138690edfdf6446664ec3ee works, right?  Can you test
-9666f4009c22f6520ac3fb8a19c9e32ab973e828 by removing
-ata_scsi_device_suspend/resume callbacks from sata_via.c?  Just delete
-all lines referencing those two functions.  There were one or two
-fallouts from the conversion.
-
-How many drives do you have?  Behavior difference introduced by the
-reimplementation is serialization of resume sequence, so it takes more
-time.  My test machine had problems resuming if resume took too long
-even with the previous implementation.  It didn't matter whether the
-long resuming sequence is caused by too many controllers or explicit
-ssleep().  If time needed for resume sequence is over certain threshold,
-machine hangs while resuming.  I thought it was a BIOS glitch and didn't
-dig into it but you might be seeing the same issue.
-
-Please post dmesg too.  Thanks.
-
--- 
-tejun
