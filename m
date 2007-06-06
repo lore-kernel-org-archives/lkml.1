@@ -1,341 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965218AbXFFWjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965353AbXFFWjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965218AbXFFWjb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 18:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936796AbXFFWjA
+	id S965353AbXFFWjz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 18:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936604AbXFFWjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:39:00 -0400
-Received: from gw.goop.org ([64.81.55.164]:55323 "EHLO mail.goop.org"
+	Wed, 6 Jun 2007 18:39:19 -0400
+Received: from lucidpixels.com ([75.144.35.66]:50546 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936784AbXFFWi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:38:58 -0400
-Message-ID: <4667376F.9080201@goop.org>
-Date: Wed, 06 Jun 2007 15:38:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S936537AbXFFWjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 18:39:17 -0400
+Date: Wed, 6 Jun 2007 18:39:16 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Jesse Barnes <jesse.barnes@intel.com>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+In-Reply-To: <200706061528.44070.jesse.barnes@intel.com>
+Message-ID: <Pine.LNX.4.64.0706061838200.3563@p34.internal.lan>
+References: <200706061229.24486.jesse.barnes@intel.com>
+ <200706061524.52628.jesse.barnes@intel.com> <Pine.LNX.4.64.0706061826260.5415@p34.internal.lan>
+ <200706061528.44070.jesse.barnes@intel.com>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: [PATCH UPDATE] xen: use iret directly where possible
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Expand, correct and clarify comments; minor code change. ]
 
-Most of the time we can simply use the iret instruction to exit the
-kernel, rather than having to use the iret hypercall - the only
-exception is if we're returning into vm86 mode, or from delivering an
-NMI (which we don't support yet).
 
-When running native, iret has the behaviour of testing for a pending
-interrupt atomically with re-enabling interrupts.  Unfortunately
-there's no way to do this with Xen, so there's a window in which we
-could get a recursive exception after enabling events but before
-actually returning to userspace.
+On Wed, 6 Jun 2007, Jesse Barnes wrote:
 
-This causes a problem: if the nested interrupt causes one of the
-task's TIF_WORK_MASK flags to be set, they will not be checked again
-before returning to userspace.  This means that pending work may be
-left pending indefinitely, until the process enters and leaves the
-kernel again.  The net effect is that a pending signal or reschedule
-event could be delayed for an unbounded amount of time.
+> On Wednesday, June 6, 2007 3:26 pm Justin Piszcz wrote:
+>> Nope, I booted with only netconsole= options.  I have a lot of HW in
+>> the box and I guess the buffer is too small.  Not sure where to
+>> change it in the kernel.  Looking..
+>
+> It's called "kernel log buffer size" and it's in "General setup".
+>
+> Jesse
+>
 
-To deal with this, the xen event upcall handler checks to see if the
-EIP is within the critical section of the iret code, after events
-are (potentially) enabled up to the iret itself.  If its within this
-range, it calls the iret critical section fixup, which adjusts the
-stack to deal with any unrestored registers, and then shifts the
-stack frame up to replace the previous invocation.
+Seems stable & fast so far, except when it hit swap :)
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+top - 18:38:13 up 5 min,  6 users,  load average: 38.56, 12.65, 4.52
+Tasks: 227 total,  64 running, 163 sleeping,   0 stopped,   0 zombie
+Cpu0  :  0.0%us, 23.9%sy,  0.0%ni,  0.0%id, 72.7%wa,  0.0%hi,  3.4%si,  0.0%st
+Cpu1  :  0.0%us, 23.5%sy,  0.0%ni,  1.0%id, 75.5%wa,  0.0%hi,  0.0%si,  0.0%st
+Cpu2  :  0.0%us, 24.1%sy,  0.0%ni,  0.0%id, 75.9%wa,  0.0%hi,  0.0%si,  0.0%st
+Cpu3  :  0.0%us, 23.6%sy,  0.0%ni,  0.0%id, 76.4%wa,  0.0%hi,  0.0%si,  0.0%st
+Mem:   8039576k total,  7998988k used,    40588k free,       12k buffers
+Swap: 16787768k total,   879324k used, 15908444k free,    16316k cached
 
----
- arch/i386/kernel/asm-offsets.c |    1 
- arch/i386/kernel/entry.S       |   16 +++
- arch/i386/xen/enlighten.c      |    1 
- arch/i386/xen/xen-asm.S        |  185 +++++++++++++++++++++++++++++++++++++++-
- arch/i386/xen/xen-ops.h        |    1 
- 5 files changed, 199 insertions(+), 5 deletions(-)
+Tested with
+$ stress --vm 32 --vm-bytes 250M
+and
+$ stress --vm 64 --vm-bytes 250M
 
-===================================================================
---- a/arch/i386/kernel/asm-offsets.c
-+++ b/arch/i386/kernel/asm-offsets.c
-@@ -65,6 +65,7 @@ void foo(void)
- 	OFFSET(TI_addr_limit, thread_info, addr_limit);
- 	OFFSET(TI_restart_block, thread_info, restart_block);
- 	OFFSET(TI_sysenter_return, thread_info, sysenter_return);
-+	OFFSET(TI_cpu, thread_info, cpu);
- 	BLANK();
- 
- 	OFFSET(GDS_size, Xgt_desc_struct, size);
-===================================================================
---- a/arch/i386/kernel/entry.S
-+++ b/arch/i386/kernel/entry.S
-@@ -1030,7 +1030,21 @@ ENTRY(xen_hypervisor_callback)
- 	CFI_ADJUST_CFA_OFFSET 4
- 	SAVE_ALL
- 	TRACE_IRQS_OFF
--	mov %esp, %eax
-+
-+	/* Check to see if we got the event in the critical
-+	   region in xen_iret_direct, after we've reenabled
-+	   events and checked for pending events.  This simulates
-+	   iret instruction's behaviour where it delivers a
-+	   pending interrupt when enabling interrupts. */
-+	movl PT_EIP(%esp),%eax
-+	cmpl $xen_iret_start_crit,%eax
-+	jb   1f
-+	cmpl $xen_iret_end_crit,%eax
-+	jae  1f
-+
-+	call xen_iret_crit_fixup
-+
-+1:	mov %esp, %eax
- 	call xen_evtchn_do_upcall
- 	jmp  ret_from_intr
- 	CFI_ENDPROC
-===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -827,6 +827,7 @@ void __init xen_setup_vcpu_info_placemen
- 		paravirt_ops.irq_disable = xen_irq_disable_direct;
- 		paravirt_ops.irq_enable = xen_irq_enable_direct;
- 		paravirt_ops.read_cr2 = xen_read_cr2_direct;
-+		paravirt_ops.iret = xen_iret_direct;
- 	}
- }
- 
-===================================================================
---- a/arch/i386/xen/xen-asm.S
-+++ b/arch/i386/xen/xen-asm.S
-@@ -12,14 +12,20 @@
-  */
- 
- #include <linux/linkage.h>
-+
- #include <asm/asm-offsets.h>
- #include <asm/thread_info.h>
- #include <asm/percpu.h>
--#include <asm/asm-offsets.h>
- #include <asm/processor-flags.h>
-+#include <asm/segment.h>
-+
-+#include <xen/interface/xen.h>
- 
- #define RELOC(x, v)	.globl x##_reloc; x##_reloc=v
- #define ENDPATCH(x)	.globl x##_end; x##_end=.
-+
-+/* Pseudo-flag used for virtual NMI, which we don't implement yet */
-+#define XEN_EFLAGS_NMI	0x80000000
- 
- /*
- 	Enable events.  This clears the event mask and tests the pending
-@@ -81,13 +87,12 @@ ENDPATCH(xen_save_fl_direct)
-  */
- ENTRY(xen_restore_fl_direct)
- 	testb $X86_EFLAGS_IF>>8, %ah
--	setz %al
--	movb %al, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
-+	setz PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
- 	/* Preempt here doesn't matter because that will deal with
- 	   any pending interrupts.  The pending check may end up being
- 	   run on the wrong CPU, but that doesn't hurt. */
- 
--	/* check for pending but unmasked */
-+	/* check for unmasked and pending */
- 	cmpw $0x0001, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_pending
- 	jz 1f
- 2:	call check_events
-@@ -97,6 +102,178 @@ ENDPATCH(xen_restore_fl_direct)
- 	ENDPROC(xen_restore_fl_direct)
- 	RELOC(xen_restore_fl_direct, 2b+1)
- 
-+/*
-+	This is run where a normal iret would be run, with the same stack setup:
-+	      8: eflags
-+	      4: cs
-+	esp-> 0: eip
-+
-+	This attempts to make sure that any pending events are dealt
-+	with on return to usermode, but there is a small window in
-+	which an event can happen just before entering usermode.  If
-+	the nested interrupt ends up setting one of the TIF_WORK_MASK
-+	pending work flags, they will not be tested again before
-+	returning to usermode. This means that a process can end up
-+	with pending work, which will be unprocessed until the process
-+	enters and leaves the kernel again, which could be an
-+	unbounded amount of time.  This means that a pending signal or
-+	reschedule event could be indefinitely delayed.
-+
-+	The fix is to notice a nested interrupt in the critical
-+	window, and if one occurs, then fold the nested interrupt into
-+	the current interrupt stack frame, and re-process it
-+	iteratively rather than recursively.  This means that it will
-+	exit via the normal path, and all pending work will be dealt
-+	with appropriately.
-+
-+	Because the nested interrupt handler needs to deal with the
-+	current stack state in whatever form its in, we keep things
-+	simple by only using a single register which is pushed/popped
-+	on the stack.
-+
-+	Non-direct iret could be done in the same way, but it would
-+	require an annoying amount of code duplication.  We'll assume
-+	that direct mode will be the common case once the hypervisor
-+	support becomes commonplace.
-+ */
-+ENTRY(xen_iret_direct)
-+	/* test eflags for special cases */
-+	testl $(X86_EFLAGS_VM | XEN_EFLAGS_NMI), 8(%esp)
-+	jnz hyper_iret
-+
-+	push %eax
-+	ESP_OFFSET=4	# bytes pushed onto stack
-+
-+	/* Store vcpu_info pointer for easy access.  Do it this
-+	   way to avoid having to reload %fs */
-+#ifdef CONFIG_SMP
-+	GET_THREAD_INFO(%eax)
-+	movl TI_cpu(%eax),%eax
-+	movl __per_cpu_offset(,%eax,4),%eax
-+	lea per_cpu__xen_vcpu_info(%eax),%eax
-+#else
-+	movl $per_cpu__xen_vcpu_info, %eax
-+#endif
-+
-+	/* check IF state we're restoring */
-+	testb $X86_EFLAGS_IF>>8, 8+1+ESP_OFFSET(%esp)
-+
-+	/* Maybe enable events.  Once this happens we could get a
-+	   recursive event, so the critical region starts immediately
-+	   afterwards.  However, if that happens we don't end up
-+	   resuming the code, so we don't have to be worried about
-+	   being preempted to another CPU. */
-+	setz XEN_vcpu_info_mask(%eax)
-+xen_iret_start_crit:
-+
-+	/* check for unmasked and pending */
-+	cmpw $0x0001, XEN_vcpu_info_pending(%eax)
-+
-+	/* If there's something pending, mask events again so we
-+	   can jump back into xen_hypervisor_callback */
-+	sete XEN_vcpu_info_mask(%eax)
-+
-+	popl %eax
-+
-+	/* From this point on the registers are restored and the stack
-+	   updated, so we don't need to worry about it if we're preempted */
-+iret_restore_end:
-+
-+	/* Jump to hypervisor_callback after fixing up the stack.
-+	   Events are masked, so jumping out of the critical
-+	   region is OK. */
-+	je xen_hypervisor_callback
-+
-+	iret
-+xen_iret_end_crit:
-+
-+hyper_iret:
-+	/* put this out of line since its very rarely used */
-+	jmp hypercall_page + __HYPERVISOR_iret * 32
-+
-+	.globl xen_iret_start_crit, xen_iret_end_crit
-+
-+/*
-+   This is called by xen_hypervisor_callback in entry.S when it sees
-+   that the EIP at the time of interrupt was between xen_iret_start_crit
-+   and xen_iret_end_crit.  We're passed the EIP in %eax so we can do
-+   a more refined determination of what to do.
-+
-+   The stack format at this point is:
-+	----------------
-+	 ss		: (ss/esp may be present if we came from usermode)
-+	 esp		:
-+	 eflags		}  outer exception info
-+	 cs		}
-+	 eip		}
-+	---------------- <- edi (copy dest)
-+	 eax		:  outer eax if it hasn't been restored
-+	----------------
-+	 eflags		}  nested exception info
-+	 cs		}   (no ss/esp because we're nested
-+	 eip		}    from the same ring)
-+	 orig_eax	}<- esi (copy src)
-+	 - - - - - - - -
-+	 fs		}
-+	 es		}
-+	 ds		}  SAVE_ALL state
-+	 eax		}
-+	  :		:
-+	 ebx		}
-+	----------------
-+	 return addr	 <- esp
-+	----------------
-+
-+   In order to deliver the nested exception properly, we need to shift
-+   everything from the return addr up to the error code so it
-+   sits just under the outer exception info.  This means that when we
-+   handle the exception, we do it in the context of the outer exception
-+   rather than starting a new one.
-+
-+   The only caveat is that if the outer eax hasn't been
-+   restored yet (ie, it's still on stack), we need to insert
-+   its value into the SAVE_ALL state before going on, since
-+   it's usermode state which we eventually need to restore.
-+ */
-+ENTRY(xen_iret_crit_fixup)
-+	/* offsets +4 for return address */
-+
-+	/*
-+	   Paranoia: Make sure we're really coming from userspace.
-+	   Once could imagine a case where userspace jumps into the
-+	   critical range address, but just before the CPU delivers a GP,
-+	   it decides to deliver an interrupt instead.  Unlikely?
-+	   Definitely.  Easy to avoid?  Yes.  The Intel documents
-+	   explicitly say that the reported EIP for a bad jump is the
-+	   jump instruction itself, not the destination, but some virtual
-+	   environments get this wrong.
-+	 */
-+	movl PT_CS+4(%esp), %ecx
-+	andl $SEGMENT_RPL_MASK, %ecx
-+	cmpl $USER_RPL, %ecx
-+	je 2f
-+
-+	lea PT_ORIG_EAX+4(%esp), %esi
-+	lea PT_EFLAGS+4(%esp), %edi
-+
-+	/* If eip is before iret_restore_end then stack
-+	   hasn't been restored yet. */
-+	cmp $iret_restore_end, %eax
-+	jae 1f
-+
-+	movl 0+4(%edi),%eax		/* copy EAX */
-+	movl %eax, PT_EAX+4(%esp)
-+
-+	lea ESP_OFFSET(%edi),%edi	/* move dest up over saved regs */
-+
-+	/* set up the copy */
-+1:	std
-+	mov $(PT_EIP+4) / 4, %ecx	/* copy ret+saved regs up to orig_eax */
-+	rep movsl
-+	cld
-+
-+	lea 4(%edi),%esp		/* point esp to new frame */
-+2:	ret
- 
- 
- /*
-===================================================================
---- a/arch/i386/xen/xen-ops.h
-+++ b/arch/i386/xen/xen-ops.h
-@@ -67,4 +67,5 @@ DECL_ASM(unsigned long, xen_save_fl_dire
- DECL_ASM(unsigned long, xen_save_fl_direct, void);
- DECL_ASM(void, xen_restore_fl_direct, unsigned long);
- 
-+void xen_iret_direct(void);
- #endif /* XEN_OPS_H */
+   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+   248 root      10  -5     0    0    0 D   18  0.0   0:07.81 kswapd0
+  3788 war       18   0  256m 115m  164 D    3  1.5   0:01.32 stress
+  3800 war       18   0  256m 7300  160 R    3  0.1   0:00.58 stress
+  3801 war       18   0  256m  34m  160 R    3  0.4   0:02.48 stress
+  3808 war       18   0  256m 217m  164 R    3  2.8   0:01.16 stress
+   559 root      10  -5     0    0    0 D    2  0.0   0:00.15 md0_raid1
+  3771 war       18   0  256m 174m  164 R    2  2.2   0:01.30 stress
+  3785 war       18   0  256m  30m  164 R    2  0.4   0:01.42 stress
+  3813 war       18   0  256m  34m  164 R    2  0.4   0:01.06 stress
+  3787 war       18   0  256m  24m  160 R    2  0.3   0:00.25 stress
+  3794 war       18   0  256m  40m  160 R    2  0.5   0:00.14 stress
+  3778 war       18   0  256m 109m  164 R    2  1.4   0:01.23 stress
+  3783 war       18   0  256m 185m  164 R    2  2.4   0:01.29 stress
+  3799 war       18   0  256m 172m  164 R    2  2.2   0:01.07 stress
+  3816 war       18   0  256m 203m  160 R    2  2.6   0:00.39 stress
+  3819 war       18   0  256m 144m  160 R    2  1.8   0:00.40 stress
+  3820 war       18   0  256m 147m  160 R    2  1.9   0:00.39 stress
+  3825 war       18   0  256m  91m  164 R    2  1.2   0:01.16 stress
+  3777 war       18   0  256m  29m  164 R    1  0.4   0:01.05 stress
+  3779 war       18   0  256m 197m  164 R    1  2.5   0:01.29 stress
+  3805 war       18   0  256m 216m  160 R    1  2.8   0:00.36 stress
+  3812 war       18   0  256m  30m  164 R    1  0.4   0:01.14 stress
+  3830 war       18   0  256m 176m  164 R    1  2.3   0:01.17 stress
+  3831 war       18   0  256m  64m  164 R    1  0.8   0:01.40 stress
+  3769 war       18   0  256m  43m  164 R    1  0.6   0:01.23 stress
+  3770 war       18   0  256m 169m  164 R    1  2.2   0:01.18 stress
+  3773 war       18   0  256m  44m  160 R    1  0.6   0:00.29 stress
+  3774 war       18   0  256m  21m  160 R    1  0.3   0:00.21 stress
+  3780 war       18   0  256m 167m  164 R    1  2.1   0:01.33 stress
+  3781 war       18   0  256m 143m  164 R    1  1.8   0:01.35 stress
+  3798 war       18   0  256m 153m  164 R    1  1.9   0:01.16 stress
+  3807 war       18   0  256m  31m  164 R    1  0.4   0:01.17 stress
+  3817 war       18   0  256m 185m  160 R    1  2.4   0:00.40 stress
+  3822 war       18   0  256m 200m  160 R    1  2.6   0:00.41 stress
+  3824 war       18   0  256m 8684  160 R    1  0.1   0:00.16 stress
+  3827 war       18   0  256m 103m  164 R    1  1.3   0:00.95 stress
+  3828 war       18   0  256m 1976  160 R    1  0.0   0:00.19 stress
+  2026 daemon    30  15 30580  436  372 D    1  0.0   0:02.10 bindgraph.pl
+  3768 war       18   0  256m  81m  164 R    1  1.0   0:01.84 stress
+  3772 war       18   0  256m 158m  164 R    1  2.0   0:01.11 stress
+  3782 war       18   0  256m 180m  164 R    1  2.3   0:01.25 stress
+  3786 war       18   0  256m 173m  164 R    1  2.2   0:01.13 stress
+  3790 war       18   0  256m  20m  164 R    1  0.3   0:01.10 stress
+  3791 war       18   0  256m  36m  164 R    1  0.5   0:01.80 stress
+  3796 war       18   0  256m 111m  164 R    1  1.4   0:01.04 stress
+  3797 war       18   0  256m 120m  164 R    1  1.5   0:01.12 stress
+  3803 war       18   0  256m 129m  160 R    1  1.6   0:01.98 stress
+  3804 war       18   0  256m 234m  160 R    1  3.0   0:00.40 stress
+  3806 war       18   0  256m  49m  164 R    1  0.6   0:00.99 stress
+  3809 war       18   0  256m  54m  164 R    1  0.7   0:01.16 stress
+  3814 war       18   0  256m  38m  164 R    1  0.5   0:00.97 stress
+  3815 war       18   0  256m  69m  164 R    1  0.9   0:01.06 stress
+   246 root      15   0     0    0    0 D    0  0.0   0:00.01 pdflush
+  3687 war       15   0 18012  896  560 R    0  0.0   0:00.88 top
+  3775 war       18   0  256m 153m  164 R    0  2.0   0:01.14 stress
+  3776 war       18   0  256m  55m  164 R    0  0.7   0:01.34 stress
+  3784 war       18   0  256m  13m  164 R    0  0.2   0:00.96 stress
+  3789 war       18   0  256m  46m  164 R    0  0.6   0:01.54 stress
+  3792 war       18   0  256m  12m  164 R    0  0.2   0:01.00 stress
+  3793 war       18   0  256m  44m  164 R    0  0.6   0:00.96 stress
+  3795 war       18   0  256m 196m  164 R    0  2.5   0:01.06 stress
+  3802 war       18   0  256m  22m  160 R    0  0.3   0:02.70 stress
+  3810 war       18   0  256m  40m  164 R    0  0.5   0:01.06 stress
+  3818 war       18   0  256m 146m  160 R    0  1.9   0:00.34 stress
+  3829 war       18   0  256m 130m  164 R    0  1.7   0:01.11 stress
+   247 root      15   0     0    0    0 D    0  0.0   0:00.01 pdflush
+   554 root      10  -5     0    0    0 D    0  0.0   0:00.01 md2_raid1
+  3811 war       18   0  256m  61m  160 R    0  0.8   0:05.85 stress
+  3821 war       18   0  256m 136m  160 R    0  1.7   0:00.37 stress
+  3823 war       18   0  256m 204m  160 R    0  2.6   0:00.34 stress
+  3826 war       18   0  256m  95m  164 R    0  1.2   0:01.03 stress
+
+
 
 
