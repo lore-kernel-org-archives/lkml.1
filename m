@@ -1,252 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935069AbXFFT3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbXFFTa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935069AbXFFT3w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 15:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXFFT3m
+	id S1751110AbXFFTa3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 15:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbXFFTaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 15:29:42 -0400
-Received: from mga03.intel.com ([143.182.124.21]:31780 "EHLO mga03.intel.com"
+	Wed, 6 Jun 2007 15:30:06 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:5067 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbXFFT3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 15:29:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
-   d="scan'208";a="236331249"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] trim memory not covered by WB MTRRs
-Date: Wed, 6 Jun 2007 12:29:23 -0700
-User-Agent: KMail/1.9.6
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1754894AbXFFTaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 15:30:05 -0400
+Date: Wed, 6 Jun 2007 21:36:48 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Uwe Bugla <uwe.bugla@gmx.de>,
+       linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: BUG in 2.6.22-rc2-mm1: Parts of Alsa sound architecture broken
+Message-ID: <20070606193647.GF4735@kernel.dk>
+References: <s5hiragopsx.wl%tiwai@suse.de> <20070525102806.77ee9c0c.akpm@linux-foundation.org> <s5h1wh4si5l.wl%tiwai@suse.de> <Pine.LNX.4.61.0705261248150.7344@yvahk01.tjqt.qr> <s5hveebziom.wl%tiwai@suse.de> <Pine.LNX.4.61.0705292212120.11140@yvahk01.tjqt.qr> <s5hps4a60zl.wl%tiwai@suse.de> <s5hlkey5zvt.wl%tiwai@suse.de> <Pine.LNX.4.61.0706051523580.20829@yvahk01.tjqt.qr> <s5h64625vu6.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706061229.24486.jesse.barnes@intel.com>
+In-Reply-To: <s5h64625vu6.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On some machines, buggy BIOSes don't properly setup WB MTRRs to
-cover all available RAM, meaning the last few megs (or even gigs)
-of memory will be marked uncached.  Since Linux tends to allocate
-from high memory addresses first, this causes the machine to be
-unusably slow as soon as the kernel starts really using memory
-(i.e. right around init time).
+On Tue, Jun 05 2007, Takashi Iwai wrote:
+> At Tue, 5 Jun 2007 15:25:07 +0200 (MEST),
+> Jan Engelhardt wrote:
+> > 
+> > 
+> > >> > >Well, I find the change of CONFIG_SND to menuconfig is fine, too.
+> > >> > >But CONFIG_SND_PCI_DRIVERS and others don't make much sense to me.
+> > >> > >How is it useful at all?
+> > >> > 
+> > >> > Hah, I just tell you some of my own experience.
+> > >> > In summer 2003, I bought the last new machine, and it got these
+> > >> > shiny new ports they like to call USB. :)
+> > >> > I did not have much use for it, but I left it on - you never know
+> > >> > what standard next is the big win of the decade. And actually,
+> > >> > it did not took long (well, summer 2005) to get my first USB device.
+> > >> > Still, I am hell as sure I do not have USB-based sound devices
+> > >> > anytime soon, so it would be cool to deactivate the whole usbsound
+> > >> > menu at once. I think I said that in the patch description, did not I?
+> > >> 
+> > >> But it's not cool to add an extra config item just for that, too.
+> > >> And, the structure of menuconfig-if-endif is uglier than menu-endmenu.
+> > >> That's why I feel a bit uneasy, although all these are a matter of
+> > >> taste...
+> > >
+> > >Forgot to mention about another annoying drawback.  Because of the new
+> > >CONFIG_SND_*_DRIVERS, you'll have to re-select all belonging
+> > >CONFIG_SND_*, even via config oldconfig.  Putting the dependency on
+> > >the top seems to reset the values defined in the old .config.
+> > 
+> > Well, *I* (previously) submitted patches with  "default y", but Jens 
+> > Axboe [http://lkml.org/lkml/2007/5/12/164] disagreed heavily enough to 
+> > stop that practice.
+> 
+> Hm, I guess Jens didn't know about this side-effect.
+> 
+> When I don't set "default y", I'll be asked for each belonging item
+> even though I chose "y" manually for the top config
+> (CONFIG_*_DRIVERS).
+> 
+> Strangely, setting "default y" has no this effect...
 
-This patch works around the problem by scanning the MTRRs at
-boot and figuring out whether the current end_pfn value (setup
-by early e820 code) goes beyond the highest WB MTRR range, and
-if so, trimming it to match.  A fairly obnoxious KERN_WARNING
-is printed too, letting the user know that not all of their
-memory is available due to a likely BIOS bug.
+That sounds like a bug in the kconfig system. I still think default y is
+an *awful* idea, but you can read why in the thread referenced above.
 
-Something similar could be done on i386 if needed, but the boot
-ordering would be slightly different, since the MTRR code on i386
-depends on the boot_cpu_data structure being setup.
+-- 
+Jens Axboe
 
-Justin, can you please test and make sure this patch works for
-you too?  It'll only work around the problem, but it's better
-than having to do mem= by hand or waiting for a fix from your
-BIOS vendor.
-
-Thanks,
-Jesse
-
-Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
-
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index c4ebb51..71fc768 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -13,7 +13,7 @@
- #include "mtrr.h"
- 
- struct mtrr_state {
--	struct mtrr_var_range *var_ranges;
-+	struct mtrr_var_range var_ranges[NUM_VAR_RANGES];
- 	mtrr_type fixed_ranges[NUM_FIXED_RANGES];
- 	unsigned char enabled;
- 	unsigned char have_fixed;
-@@ -84,12 +84,6 @@ void get_mtrr_state(void)
- 	struct mtrr_var_range *vrs;
- 	unsigned lo, dummy;
- 
--	if (!mtrr_state.var_ranges) {
--		mtrr_state.var_ranges = kmalloc(num_var_ranges * sizeof (struct mtrr_var_range), 
--						GFP_KERNEL);
--		if (!mtrr_state.var_ranges)
--			return;
--	} 
- 	vrs = mtrr_state.var_ranges;
- 
- 	rdmsr(MTRRcap_MSR, lo, dummy);
-diff --git a/arch/i386/kernel/cpu/mtrr/if.c b/arch/i386/kernel/cpu/mtrr/if.c
-index c7d8f17..d7922ce 100644
---- a/arch/i386/kernel/cpu/mtrr/if.c
-+++ b/arch/i386/kernel/cpu/mtrr/if.c
-@@ -12,7 +12,7 @@
- #include "mtrr.h"
- 
- /* RED-PEN: this is accessed without any locking */
--extern unsigned int *usage_table;
-+extern unsigned int usage_table[];
- 
- 
- #define FILE_FCOUNT(f) (((struct seq_file *)((f)->private_data))->private)
-diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-index 1cf466d..c133856 100644
---- a/arch/i386/kernel/cpu/mtrr/main.c
-+++ b/arch/i386/kernel/cpu/mtrr/main.c
-@@ -38,8 +38,8 @@
- #include <linux/cpu.h>
- #include <linux/mutex.h>
- 
-+#include <asm/e820.h>
- #include <asm/mtrr.h>
--
- #include <asm/uaccess.h>
- #include <asm/processor.h>
- #include <asm/msr.h>
-@@ -47,7 +47,7 @@
- 
- u32 num_var_ranges = 0;
- 
--unsigned int *usage_table;
-+unsigned int usage_table[NUM_VAR_RANGES];
- static DEFINE_MUTEX(mtrr_mutex);
- 
- u64 size_or_mask, size_and_mask;
-@@ -121,11 +121,6 @@ static void __init init_table(void)
- 	int i, max;
- 
- 	max = num_var_ranges;
--	if ((usage_table = kmalloc(max * sizeof *usage_table, GFP_KERNEL))
--	    == NULL) {
--		printk(KERN_ERR "mtrr: could not allocate\n");
--		return;
--	}
- 	for (i = 0; i < max; i++)
- 		usage_table[i] = 1;
- }
-@@ -589,16 +584,11 @@ struct mtrr_value {
- 	unsigned long	lsize;
- };
- 
--static struct mtrr_value * mtrr_state;
-+static struct mtrr_value mtrr_state[NUM_VAR_RANGES];
- 
- static int mtrr_save(struct sys_device * sysdev, pm_message_t state)
- {
- 	int i;
--	int size = num_var_ranges * sizeof(struct mtrr_value);
--
--	mtrr_state = kzalloc(size,GFP_ATOMIC);
--	if (!mtrr_state)
--		return -ENOMEM;
- 
- 	for (i = 0; i < num_var_ranges; i++) {
- 		mtrr_if->get(i,
-@@ -620,7 +610,6 @@ static int mtrr_restore(struct sys_device * sysdev)
- 				 mtrr_state[i].lsize,
- 				 mtrr_state[i].ltype);
- 	}
--	kfree(mtrr_state);
- 	return 0;
- }
- 
-@@ -631,6 +620,42 @@ static struct sysdev_driver mtrr_sysdev_driver = {
- 	.resume		= mtrr_restore,
- };
- 
-+/**
-+ * mtrr_trim_uncached_memory - trim RAM not covered by MTRRs
-+ *
-+ * Some buggy BIOSes don't setup the MTRRs properly for systems with certain
-+ * memory configurations.  This routine checks to make sure the MTRRs having
-+ * a write back type cover all of the memory the kernel is intending to use.
-+ * If not, it'll trim any memory off the end by adjusting end_pfn, removing
-+ * it from the kernel's allocation pools, warning the user with an obnoxious
-+ * message.
-+ */
-+void __init mtrr_trim_uncached_memory(void)
-+{
-+	unsigned long i, base, size, highest_addr = 0;
-+	mtrr_type type;
-+
-+	/* Find highest cached pfn */
-+	for (i = 0; i < num_var_ranges; i++) {
-+		mtrr_if->get(i, &base, &size, &type);
-+		if (type != MTRR_TYPE_WRBACK)
-+			continue;
-+		base <<= PAGE_SHIFT;
-+		size <<= PAGE_SHIFT;
-+		if (highest_addr < base + size)
-+			highest_addr = base + size;
-+	}
-+
-+	if ((highest_addr >> PAGE_SHIFT) != end_pfn) {
-+		printk(KERN_WARNING "***************\n");
-+		printk(KERN_WARNING "**** WARNING: likely BIOS bug\n");
-+		printk(KERN_WARNING "**** MTRRs don't cover all of "
-+		       "memory, trimmed %ld pages\n", end_pfn -
-+		       (highest_addr >> PAGE_SHIFT));
-+		printk(KERN_WARNING "***************\n");
-+		end_pfn = highest_addr >> PAGE_SHIFT;
-+	}
-+}
- 
- /**
-  * mtrr_bp_init - initialize mtrrs on the boot CPU
-diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
-index 289dfe6..a29dcba 100644
---- a/arch/i386/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
-@@ -14,6 +14,7 @@
- #define MTRRphysMask_MSR(reg) (0x200 + 2 * (reg) + 1)
- 
- #define NUM_FIXED_RANGES 88
-+#define NUM_VAR_RANGES 256
- #define MTRRfix64K_00000_MSR 0x250
- #define MTRRfix16K_80000_MSR 0x258
- #define MTRRfix16K_A0000_MSR 0x259
-diff --git a/arch/x86_64/kernel/bugs.c b/arch/x86_64/kernel/bugs.c
-index c3c6b91..c138eac 100644
---- a/arch/x86_64/kernel/bugs.c
-+++ b/arch/x86_64/kernel/bugs.c
-@@ -14,7 +14,6 @@
- void __init check_bugs(void)
- {
- 	identify_cpu(&boot_cpu_data);
--	mtrr_bp_init();
- #if !defined(CONFIG_SMP)
- 	printk("CPU: ");
- 	print_cpu_info(&boot_cpu_data);
-diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
-index eb6524f..409b63c 100644
---- a/arch/x86_64/kernel/setup.c
-+++ b/arch/x86_64/kernel/setup.c
-@@ -266,6 +266,10 @@ void __init setup_arch(char **cmdline_p)
- 	 * we are rounding upwards:
- 	 */
- 	end_pfn = e820_end_of_ram();
-+	/* Trim memory not covered by WB MTRRs */
-+	mtrr_bp_init();
-+	mtrr_trim_uncached_memory();
-+
- 	num_physpages = end_pfn;
- 
- 	check_efer();
-diff --git a/include/asm-x86_64/mtrr.h b/include/asm-x86_64/mtrr.h
-index b557c48..cc62bd8 100644
---- a/include/asm-x86_64/mtrr.h
-+++ b/include/asm-x86_64/mtrr.h
-@@ -78,6 +78,7 @@ extern int mtrr_add_page (unsigned long base, unsigned long size,
- 		     unsigned int type, char increment);
- extern int mtrr_del (int reg, unsigned long base, unsigned long size);
- extern int mtrr_del_page (int reg, unsigned long base, unsigned long size);
-+extern void mtrr_trim_uncached_memory(void);
- #  else
- static __inline__ int mtrr_add (unsigned long base, unsigned long size,
- 				unsigned int type, char increment)
