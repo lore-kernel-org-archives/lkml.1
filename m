@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964876AbXFFBjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934415AbXFFBlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964876AbXFFBjf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 21:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933993AbXFFBiX
+	id S934415AbXFFBlZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 21:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933204AbXFFBlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 21:38:23 -0400
-Received: from 207.47.60.147.static.nextweb.net ([207.47.60.147]:40665 "EHLO
-	rpc.xensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933927AbXFFBiW (ORCPT
+	Tue, 5 Jun 2007 21:41:16 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:24454 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933190AbXFFBlP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 21:38:22 -0400
-Message-ID: <46661001.5090406@xensource.com>
-Date: Tue, 05 Jun 2007 18:38:09 -0700
-From: Jeremy Fitzhardinge <jeremy@xensource.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 5 Jun 2007 21:41:15 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=opx/KQldcECiRLwCETBgcQwj7+ECe620Qp8pJNKVfCUOzwFlC2/kG3LoZFvfj/WMT
+	zYKShu9CG0qry4sd8FKcg==
+Date: Tue, 5 Jun 2007 18:40:34 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org, ak@suse.de,
+       clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
+ globally
+In-Reply-To: <Pine.LNX.4.64.0706051826310.6928@schroedinger.engr.sgi.com>
+Message-ID: <alpine.DEB.0.99.0706051837310.23799@chino.kir.corp.google.com>
+References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
+ <20070605160149.348b5c4a.pj@sgi.com> <alpine.DEB.0.99.0706051608090.16201@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0706051619130.6192@schroedinger.engr.sgi.com>
+ <alpine.DEB.0.99.0706051620580.17032@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0706051629270.6295@schroedinger.engr.sgi.com>
+ <alpine.DEB.0.99.0706051633590.17626@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0706051653330.6473@schroedinger.engr.sgi.com>
+ <alpine.DEB.0.99.0706051817380.23799@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0706051826310.6928@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@xensource.com>
-CC: Andi Kleen <ak@suse.de>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] paravirt: helper to disable all IO space
-References: <46660CB2.60409@xensource.com>
-In-Reply-To: <46660CB2.60409@xensource.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Jun 2007 01:38:21.0867 (UTC) FILETIME=[5DEA6FB0:01C7A7DB]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> In a virtual environment, device drivers such as legacy IDE will waste
-> quite a lot of time probing for their devices which will never appear.
-> This helper function allows a paravirt implementation to lay claim to
-> the whole iomem and ioport space, thereby disabling all device drivers
-> trying to claim IO resources.
->
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
->
-> diff -r 83c67f9402b5 arch/i386/kernel/paravirt.c
-> --- a/arch/i386/kernel/paravirt.c	Tue Jun 05 17:41:04 2007 -0700
-> +++ b/arch/i386/kernel/paravirt.c	Tue Jun 05 18:17:29 2007 -0700
-> @@ -227,6 +227,39 @@ static int __init print_banner(void)
->  	return 0;
->  }
->  core_initcall(print_banner);
-> +
-> +static struct resource reserve_ioports = {
-> +	.start = 0,
-> +	.end = IO_SPACE_LIMIT,
-> +	.name = "paravirt-ioport",
-> +	.flags = IORESOURCE_IO | IORESOURCE_BUSY,
-> +};
-> +
-> +static struct resource reserve_iomem = {
-> +	.start = 0,
-> +	.end = -1,
-> +	.name = "paravirt-iomem",
-> +	.flags = IORESOURCE_MEM | IORESOURCE_BUSY,
-> +};
-> +
-> +/*
-> + * Reserve the whole legacy IO space to prevent any legacy drivers
-> + * from wasting time probing for their hardware.  This is a fairly
-> + * brute-force approach to disabling all non-virtual drivers.
-> + * 
-> + * Note that this must be called very early to have any effect.
-> + */
-> +int paravirt_disable_iospace(void)
-> +{
-> +	int ret = 0;
-> +
-> +	ret = request_resource(&ioport_resource, &reserve_ioports);
-> +	if (ret == 0)
-> +		ret = request_resource(&iomem_resource, &reserve_iomem);
-> +
-> +	return ret;
-> +}
-> +
->  
->  struct paravirt_ops paravirt_ops = {
->  	.name = "bare hardware",
-> diff -r 83c67f9402b5 arch/i386/xen/setup.c
-> --- a/arch/i386/xen/setup.c	Tue Jun 05 17:41:04 2007 -0700
-> +++ b/arch/i386/xen/setup.c	Tue Jun 05 18:17:29 2007 -0700
->   
+On Tue, 5 Jun 2007, Christoph Lameter wrote:
 
-Oops.  This was supposed to be in the corresponding Xen patch.
+> On Tue, 5 Jun 2007, David Rientjes wrote:
+> 
+> > Obviously GFP_KERNEL allocations can allocate regardless of our memory 
+> > exclusivity, but the point is that a job in one exclusive cpuset should 
+> > not have the ability to effect the performance (in terms of reclaim and 
+> > swap), memory usage, or survival of jobs in other exclusive cpusets 
+> > because it was out of memory.
+> 
+> Right but the process is terminating thus only requiring limited resources
+> to get finished. The process does not have the ability to affect the other 
+> cpusets. I.e. it cannot directly allocate outside of the cpuset. The 
+> system has that capability and the system is handling the termination of 
+> the process and should terminate the process in a clean way if possible.
+> 
 
-    J
+And those limited resources should be available in the difference between 
+low and no watermarks as defined by each zone in the cpuset's 
+mems_allowed.  Regardless, we should not allow allocations outside of the 
+cpuset because we have marked it TIF_MEMDIE and we don't have any explicit 
+guarantee that it is exiting yet and not mlock'ing an excessive amount of 
+memory that exceeds the capacity of all cpuset nodes.
+
+		David
