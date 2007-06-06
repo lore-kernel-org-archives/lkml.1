@@ -1,82 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761424AbXFFJfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758900AbXFFJiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761424AbXFFJfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760296AbXFFJev
+	id S1758900AbXFFJiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXFFJh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:34:51 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56999 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760700AbXFFJeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:34:50 -0400
-X-Authenticated: #14603182
-X-Provags-ID: V01U2FsdGVkX1+hI4IxQtihj6rc4RBzL170Op9RWDfyu1owQUV6fJ
-	VLuL9g6R7XyHcZ
-Message-ID: <46667FB9.70206@gmx.de>
-Date: Wed, 06 Jun 2007 11:34:49 +0200
-From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: "Lars K.W. Gohlke" <lkwg82@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: serio interface
-References: <46667A3B.8070708@gmx.de> <20070606091503.GI2649@lug-owl.de>
-In-Reply-To: <20070606091503.GI2649@lug-owl.de>
-Content-Type: multipart/mixed;
- boundary="------------080203090402050307000106"
-X-PGP-KeyID: 9D6D68DF
-X-Request-PGP: 
-X-OpenPGP-Key-ID: 000A26609D6D68DF
-X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
-X-OpenPGP-Key-URL: 
-X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
-X-Y-GMX-Trusted: 0
+	Wed, 6 Jun 2007 05:37:57 -0400
+Received: from www.osadl.org ([213.239.205.134]:34531 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751599AbXFFJh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 05:37:56 -0400
+Subject: [PATCH] ACPI: Move timer broadcast and pmtimer access before C3
+	arbiter shutdown
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Stable Team <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>, Andi Kleen <ak@suse.de>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Dave Jones <davej@redhat.com>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 11:37:53 +0200
+Message-Id: <1181122673.4404.200.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Udo A. Steinberg <us15@os.inf.tu-dresden.de>
 
---------------080203090402050307000106
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+The chip set doc for IHC4 says:
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+1.In general, software should not attempt any non-posted accesses during
+arbiter disable except to the ICH4's power management registers. This
+implies that interrupt handlers for any unmasked hardware interrupts and
+SMI/NMI should check ARB_DIS status before reading from ICH devices.
 
-Jan-Benedict Glaw schrieb:
-> On Wed, 2007-06-06 11:11:23 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wrote:
->> wouldsomebody explain me the serio interface or give me a code link for
->> very simple example.
->
-> What do you want to do with it?  Do you want on the serial port side,
-> or on the mouse/keyboard/gadget side?  See for example the various
-> serial keyboards and mice drivers.
->
-> MfG, JBG
->
-I want on the kernelside process data from first uart-hardware interface
-aka ttyS0.
+So it's not a good idea to access ICH devices after arbiter shut down. 
 
-I don't understand the structure of e.g. input/mouse/sermouse.c
+Signed-off-by: Udo A. Steinberg <us15@os.inf.tu-dresden.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-where is said, which hardware is used for reading data from?
+---
+ drivers/acpi/processor_idle.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-mfg
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
+Index: linux-2.6.22-rc4/drivers/acpi/processor_idle.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/acpi/processor_idle.c	2007-06-06 11:47:21.000000000 +0200
++++ linux-2.6.22-rc4/drivers/acpi/processor_idle.c	2007-06-06 11:48:21.000000000 +0200
+@@ -488,6 +488,11 @@ static void acpi_processor_idle(void)
+ 
+ 	case ACPI_STATE_C3:
+ 
++		/* Get start time (ticks) */
++		t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
++		/* Handle timer broadcast before bus arbiter shutdown ! */
++		acpi_state_timer_broadcast(pr, cx, 1);
++
+ 		if (pr->flags.bm_check) {
+ 			if (atomic_inc_return(&c3_cpu_count) ==
+ 			    num_online_cpus()) {
+@@ -502,10 +507,7 @@ static void acpi_processor_idle(void)
+ 			ACPI_FLUSH_CPU_CACHE();
+ 		}
+ 
+-		/* Get start time (ticks) */
+-		t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
+ 		/* Invoke C3 */
+-		acpi_state_timer_broadcast(pr, cx, 1);
+ 		acpi_cstate_enter(cx);
+ 		/* Get end time (ticks) */
+ 		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
 
-iD8DBQFGZn+7AAomYJ1taN8RAlwOAJ4qP5DnhIE7IJ5pCqDGBD4di4zybACgqBq6
-8lSB3Zp7qO/bwCK+WsWL+HU=
-=3Fdg
------END PGP SIGNATURE-----
-
---------------080203090402050307000106
-Content-Type: text/x-vcard; charset=utf-8;
- name="lkwg82.vcf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="lkwg82.vcf"
-
-YmVnaW46dmNhcmQNCmZuOkxhcnMgSy5XLiBHb2hsa2UNCm46R29obGtlO0xhcnMgSy5XLg0K
-ZW1haWw7aW50ZXJuZXQ6bGt3ZzgyQGdteC5kZQ0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZl
-cnNpb246Mi4xDQplbmQ6dmNhcmQNCg0K
---------------080203090402050307000106--
 
