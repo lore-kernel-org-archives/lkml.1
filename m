@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965907AbXFFXIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965985AbXFFXLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965907AbXFFXIn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965534AbXFFXIH
+	id S965985AbXFFXLA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965074AbXFFXKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:08:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59426
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965368AbXFFXIC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:08:02 -0400
-Date: Wed, 06 Jun 2007 16:08:17 -0700 (PDT)
-Message-Id: <20070606.160817.70217859.davem@davemloft.net>
-To: davidel@xmailserver.org
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       drepper@redhat.com, mingo@elte.hu, dada1@cosmosbay.com
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
-	<20070606235906.72439d16@the-village.bc.nu>
-	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 19:10:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36081 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964911AbXFFXKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 19:10:51 -0400
+Date: Thu, 7 Jun 2007 01:10:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Martin Peschke <mp3@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, jbaron@redhat.com,
+       rostedt@goodmis.org, linux-s390@vger.kernel.org
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+Message-ID: <20070606231041.GB11592@elte.hu>
+References: <1181165656.7133.23.camel@dix>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181165656.7133.23.camel@dix>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Davide Libenzi <davidel@xmailserver.org>
-Date: Wed, 6 Jun 2007 16:04:40 -0700 (PDT)
 
-> On Wed, 6 Jun 2007, Alan Cox wrote:
-> 
-> > > The sys_accept() system call has been modified to return a file
-> > > descriptor inside the non-sequential area, if the listening fd is.
-> > > The sys_socketcall() system call has been also changed to support
-> > > a new SYS_SOCKET2 indentifier.
-> > 
-> > This still all seems really really ugly. Is there anything wrong with
-> > throwing all these extra cases out and replacing the entire lot with
-> > 
-> > 	prctl(PR_SPARSEFD, 1);
-> > 
-> > to turn on sparse fd allocation for a process ?
-> 
-> There was a little discussion where I tried to whisper something similar, 
-> but Linus and Uli shot me :) - with good reasons IMO.
-> You may link to runtimes that are not non-sequentialfd aware, and will 
-> break them.
+* Martin Peschke <mp3@de.ibm.com> wrote:
 
-Thanks for explaining this issue clearly instead of telling people
-to "go read the archives" in a condescending manner like someone
-else did.
+> - lock_time_inc() vs. statistic_add_util()
+
+please fix the coding style in lib/statistic.c. It's full of:
+
+{
+        unsigned long long i;
+        if (value <= stat->u.histogram.range_min)
+                return 0;
+
+put a newline after variable sections.
+
+and:
+
+        on_each_cpu(_statistic_barrier, NULL, 0, 1);
+        return 0;
+
+preferably use a newline before 'return' statements as well. (this is 
+not always necessary, but in the above case it looks better)
+
+	Ingo
