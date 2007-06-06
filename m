@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761859AbXFFG5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbXFFHAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761859AbXFFG5R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 02:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbXFFG5F
+	id S1760520AbXFFHAS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 03:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbXFFHAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 02:57:05 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:20543 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754314AbXFFG5B (ORCPT
+	Wed, 6 Jun 2007 03:00:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:8875 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755868AbXFFHAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 02:57:01 -0400
+	Wed, 6 Jun 2007 03:00:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=lxLPu5R5AmWjDhf9fu0MCpoC20KGmXcpLZm6hRLIJT31sIxMxNGpPZBchh76N4DVfKhdbim3Ap1GuboO9TCjPPE2r5dRk7A6LjcQuaLA7Qoc4YChrXvygWBB2NEZRI7fWI4TEm5jwIKk1CvxwXhaF4n8dTantpbJu8v8mU/NZ/U=
-Message-ID: <46665AB5.6040508@gmail.com>
-Date: Wed, 06 Jun 2007 15:56:53 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+        b=BErHwHyi4a2CkooMCBTXyUl4AOxxUQG/khVHHgcItYy82INWVUvMfIehktPt/ZCwbuFP+jijKLktkqGW02iRH9xZXv3p4lP8PytzLUMv/jnRClYlSSKQAOtU2DMmYQIwLBDFYAocBDYcgMdFegh/hccZtUI3nidDkTShDAUWU0M=
+Message-ID: <46665B7A.8020506@gmail.com>
+Date: Wed, 06 Jun 2007 09:00:10 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Mikael Pettersson <mikpe@it.uu.se>, akpm@linux-foundation.org,
-       david@dgreaves.com, jean.luc.coulon@gmail.com, jgarzik@pobox.com,
-       michal.k.k.piotrowski@gmail.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.22-rc4 - sata_promise regression since -rc3
-References: <200706052131.l55LVkYN000191@harpo.it.uu.se> <20070605215256.GT31565@havoc.gtf.org>
-In-Reply-To: <20070605215256.GT31565@havoc.gtf.org>
-X-Enigmail-Version: 0.94.2.0
+To: Andrew Morton <akpm@google.com>
+CC: linux-kernel@vger.kernel.org, Ingo Korb <ingo@akana.de>
+Subject: Re: [PATCH 1/3] Char: stallion, don't fail with less than max panels
+References: <1058130869771517818@wsc.cz> <20070605171745.1ea5b88f.akpm@google.com>
+In-Reply-To: <20070605171745.1ea5b88f.akpm@google.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Jeff Garzik wrote:
-> On Tue, Jun 05, 2007 at 11:31:46PM +0200, Mikael Pettersson wrote:
->> I can easily reproduce the problem in 2.6.22-rc4. There are no
->> sata_promise changes between rc3 and rc4, but Tejun's libata
->> polling SETXFER change was included in rc4. Reverting it makes
->> sata_promise work again for me.
+Andrew Morton napsal(a):
+> On Tue,  5 Jun 2007 23:20:57 +0200 (CEST)
+> Jiri Slaby <jirislaby@gmail.com> wrote:
 > 
-> Ugh.
-
-Ugh...
-
->> I suspect that sata_promise.c:pdc_interrupt() should detect
->> a qc w/ ATA_TFLAG_POLLING, treat the interrupt as spurious,
->> and just call ata_chk_status(qc), similar to how sata_inic162x.c,
->> sata_nv.c, sata_sil.c, and sata_vsc.c do things.
+>> stallion, don't fail with less than max panels
+>>
 > 
-> Yes, highly likely.
+> Why not?
+> 
+> What problem is this patch fixing, and how does it fix it?
+> 
+> What are the consequences of not having this patch in the kernel?
+> 
+> etc.  More complete changlogs, please.
 
-I'm not sure whether that will work.  I'll give a shot at it here.
+Aah, sorry.
 
-> SFF-like controllers (and in this case, Promise is included in that
-> list) with their own interrupt handlers need their own polling handling
-> code.
+--
+Since it's not neccesary to have MAX_PANELS on the card, don't fail to let users
+use this card even in this case. Stop the testing for loop instead.
+--
 
-One thing I don't understand is why IDENTIFY works.  IDENTIFY uses
-polling too.  Hmm...
+> 
+>> diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
+>> index e45113a..265abad 100644
+>> --- a/drivers/char/stallion.c
+>> +++ b/drivers/char/stallion.c
+>> @@ -2172,7 +2172,7 @@ static int __devinit stl_initech(struct stlbrd *brdp)
+>>  		}
+>>  		status = inb(ioaddr + ECH_PNLSTATUS);
+>>  		if ((status & ECH_PNLIDMASK) != nxtid)
+>> -			goto err_fr;
+>> +			break;
+>>  		panelp = kzalloc(sizeof(struct stlpanel), GFP_KERNEL);
+>>  		if (!panelp) {
+>>  			printk("STALLION: failed to allocate memory "
+> 
 
+thanks,
 -- 
-tejun
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
