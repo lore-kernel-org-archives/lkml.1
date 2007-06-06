@@ -1,147 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936129AbXFFVAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936189AbXFFVBD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936129AbXFFVAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 17:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935289AbXFFVA0
+	id S936189AbXFFVBD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:01:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935809AbXFFVAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 17:00:26 -0400
-Received: from mga03.intel.com ([143.182.124.21]:8847 "EHLO mga03.intel.com"
+	Wed, 6 Jun 2007 17:00:48 -0400
+Received: from doppler.zen.co.uk ([212.23.3.27]:37256 "EHLO doppler.zen.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935120AbXFFVAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 17:00:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
-   d="scan'208";a="236365283"
-Date: Wed, 6 Jun 2007 13:56:41 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Adam Belay <abelay@novell.com>, Len Brown <len.brown@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Shaohua Li <shaohua.li@intel.com>,
-       linux-acpi@vger.kernel.org
-Subject: [PATCH 8/8] cpuidle: first round of documentation updates 
-Message-ID: <20070606205641.GH23906@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S935289AbXFFVAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 17:00:47 -0400
+From: Grant Wilson <gww@swandive.no-ip.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.22-rc4-mm1
+Date: Wed, 6 Jun 2007 21:58:38 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+In-Reply-To: <20070606020737.4663d686.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Message-Id: <200706062158.39057.gww@swandive.no-ip.com>
+X-Originating-Pythagoras-IP: [82.71.45.175]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 06 June 2007 10:07:37 Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
 
+Patch 'usb-try-to-debug-bug-8561' triggers when I plug in a usb flash drive:
 
-Documentation changes based on Pavel's feedback.
+[10998.881000] usb 1-10: new high speed USB device using ehci_hcd and address 3
+[10999.001000] usb 1-10: new device found, idVendor=13fe, idProduct=1a00
+[10999.002000] usb 1-10: new device strings: Mfr=1, Product=2, SerialNumber=3
+[10999.016000] usb 1-10: Product: USB DISK 2.0
+[10999.025000] usb 1-10: Manufacturer:
+[10999.033000] usb 1-10: SerialNumber: 07720947018D
+[10999.034000] usb 1-10: configuration #1 chosen from 1 choice
+[10999.047000] scsi8 : SCSI emulation for USB Mass Storage devices
+[11004.055000] WARNING: at drivers/usb/core/urb.c:293 usb_submit_urb()
+[11004.055000]
+[11004.055000] Call Trace:
+[11004.055000]  [<ffffffff8020d30f>] dump_trace+0x43f/0x480
+[11004.055000]  [<ffffffff8020d393>] show_trace+0x43/0x70
+[11004.055000]  [<ffffffff8020d3d5>] dump_stack+0x15/0x20
+[11004.055000]  [<ffffffff804b4314>] usb_submit_urb+0x224/0x240
+[11004.055000]  [<ffffffff804b5ff5>] usb_sg_wait+0xd5/0x180
+[11004.055000]  [<ffffffff804cf464>] usb_stor_bulk_transfer_sg+0xc4/0x120
+[11004.055000]  [<ffffffff804cf611>] usb_stor_Bulk_transport+0x151/0x2e0
+[11004.055000]  [<ffffffff804cfb57>] usb_stor_invoke_transport+0x37/0x380
+[11004.055000]  [<ffffffff804ce9f9>] usb_stor_transparent_scsi_command+0x9/0x10
+[11004.055000]  [<ffffffff804d0aea>] usb_stor_control_thread+0x18a/0x230
+[11004.055000]  [<ffffffff8024927d>] kthread+0x4d/0x80
+[11004.055000]  [<ffffffff8020c868>] child_rip+0xa/0x12
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-
-Index: linux-2.6.22-rc-mm/Documentation/cpuidle/sysfs.txt
-===================================================================
---- linux-2.6.22-rc-mm.orig/Documentation/cpuidle/sysfs.txt	2007-06-06 11:33:25.000000000 -0700
-+++ linux-2.6.22-rc-mm/Documentation/cpuidle/sysfs.txt	2007-06-06 11:35:37.000000000 -0700
-@@ -4,14 +4,22 @@
- 
- 				cpuidle sysfs
- 
--System global cpuidle information are under
-+System global cpuidle related information and tunables are under
- /sys/devices/system/cpu/cpuidle
- 
- The current interfaces in this directory has self-explanatory names:
-+* current_driver_ro
-+* current_governor_ro
-+
-+With cpuidle_sysfs_switch boot option (meant for developer testing)
-+following objects are visible instead.
- * available_drivers
- * available_governors
- * current_driver
- * current_governor
-+In this case user can switch the driver, governor at run time by writing
-+onto current_driver and current_governor.
-+
- 
- Per logical CPU specific cpuidle information are under
- /sys/devices/system/cpu/cpuX/cpuidle
-@@ -19,9 +27,9 @@
- 
- Under this percpu directory, there is a directory for each idle state supported
- by the driver, which in turn has
--* latency
--* power
--* time
--* usage
-+* latency : Latency to exit out of this idle state (in microseconds)
-+* power : Power consumed while in this idle state (in milliwatts)
-+* time : Total time spent in this idle state (in microseconds)
-+* usage : Number of times this state was entered (count)
- 
- 
-Index: linux-2.6.22-rc-mm/Documentation/cpuidle/governor.txt
-===================================================================
---- linux-2.6.22-rc-mm.orig/Documentation/cpuidle/governor.txt	2007-06-06 11:33:25.000000000 -0700
-+++ linux-2.6.22-rc-mm/Documentation/cpuidle/governor.txt	2007-06-06 11:33:34.000000000 -0700
-@@ -11,12 +11,16 @@
- cpuidle governor is policy routine that decides what idle state to enter at
- any given time. cpuidle core uses different callbacks to governor while
- handling idle entry.
--* select_state callback where governor can determine next idle state to enter
--* prepare_idle callback is called before entering an idle state
--* scan callback is called after a driver forces redetection of the states
-+* select_state() callback where governor can determine next idle state to enter
-+* prepare_idle() callback is called before entering an idle state
-+* scan() callback is called after a driver forces redetection of the states
- 
- More than one governor can be registered at the same time and
--user can switch between drivers using /sysfs interface.
-+user can switch between drivers using /sysfs interface (when supported).
-+
-+More than one governor part is supported for developers to easily experiment
-+with different governors. By default, most optimal governor based on your
-+kernel configuration and platform will be selected by cpuidle.
- 
- Interfaces:
- int cpuidle_register_governor(struct cpuidle_governor *gov);
-Index: linux-2.6.22-rc-mm/Documentation/cpuidle/core.txt
-===================================================================
---- linux-2.6.22-rc-mm.orig/Documentation/cpuidle/core.txt	2007-06-06 11:33:25.000000000 -0700
-+++ linux-2.6.22-rc-mm/Documentation/cpuidle/core.txt	2007-06-06 11:33:34.000000000 -0700
-@@ -12,6 +12,6 @@
- standardized infrastructure to support independent development of
- governors and drivers.
- 
--cpuidle resides under /drivers/cpuidle.
-+cpuidle resides under drivers/cpuidle.
- 
- 
-Index: linux-2.6.22-rc-mm/Documentation/cpuidle/driver.txt
-===================================================================
---- linux-2.6.22-rc-mm.orig/Documentation/cpuidle/driver.txt	2007-06-06 11:33:25.000000000 -0700
-+++ linux-2.6.22-rc-mm/Documentation/cpuidle/driver.txt	2007-06-06 11:33:34.000000000 -0700
-@@ -7,16 +7,21 @@
- 
- 
- 
--cpuidle driver supports capability detection for a particular system. The
--init and exit routines will be called for each online CPU, with a percpu
--cpuidle_driver object and driver should fill in cpuidle_states inside
--cpuidle_driver depending on the CPU capability.
-+cpuidle driver hooks into the cpuidle infrastructure and does the
-+architecture/platform dependent part of CPU idle states. Driver
-+provides the platform idle state detection capability and also
-+has mechanisms in place to support actusl entry-exit into a CPU idle state.
-+
-+cpuidle driver supports capability detection for a platform using the
-+init and exit routines. They will be called for each online CPU, with a
-+percpu cpuidle_driver object and driver should fill in cpuidle_states
-+inside cpuidle_driver depending on the CPU capability.
- 
- Driver can handle dynamic state changes (like battery<->AC), by calling
- force_redetect interface.
- 
- It is possible to have more than one driver registered at the same time and
--user can switch between drivers using /sysfs interface.
-+user can switch between drivers using /sysfs interface (when enabled).
- 
- Interfaces:
- int cpuidle_register_driver(struct cpuidle_driver *drv);
+Cheers,
+Grant
