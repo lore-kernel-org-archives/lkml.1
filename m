@@ -1,82 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbXFFKhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762254AbXFFKjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761524AbXFFKhU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 06:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757738AbXFFKhJ
+	id S1762254AbXFFKjZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 06:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758227AbXFFKjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 06:37:09 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:58788 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751113AbXFFKhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 06:37:07 -0400
-Date: Wed, 6 Jun 2007 12:36:41 +0200 (MEST)
-Message-Id: <200706061036.l56AafXS003241@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: htejun@gmail.com, jeff@garzik.org
-Subject: Re: Linux 2.6.22-rc4 - sata_promise regression since -rc3
-Cc: akpm@linux-foundation.org, david@dgreaves.com, jean.luc.coulon@gmail.com,
-       jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       michal.k.k.piotrowski@gmail.com, mikpe@it.uu.se,
-       torvalds@linux-foundation.org
+	Wed, 6 Jun 2007 06:39:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38567 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758026AbXFFKjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 06:39:17 -0400
+X-Authenticated: #14603182
+X-Provags-ID: V01U2FsdGVkX1/z6qoZWVrzetqFVMS8vHg1A5p/XQUKKgykYkIFbG
+	vNW5tZVbYklQyX
+Message-ID: <46668ED5.5000807@gmx.de>
+Date: Wed, 06 Jun 2007 12:39:17 +0200
+From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, "Lars K.W. Gohlke" <lkwg82@gmx.de>
+Subject: Re: serio interface
+References: <46667A3B.8070708@gmx.de> <20070606091503.GI2649@lug-owl.de> <46667FB9.70206@gmx.de> <20070606095159.GK2649@lug-owl.de>
+In-Reply-To: <20070606095159.GK2649@lug-owl.de>
+Content-Type: multipart/mixed;
+ boundary="------------000202010806040001010403"
+X-PGP-KeyID: 9D6D68DF
+X-Request-PGP: 
+X-OpenPGP-Key-ID: 000A26609D6D68DF
+X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
+X-OpenPGP-Key-URL: 
+X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007 15:56:53 +0900, Tejun Heo wrote:
-> Jeff Garzik wrote:
-> > On Tue, Jun 05, 2007 at 11:31:46PM +0200, Mikael Pettersson wrote:
-> >> I can easily reproduce the problem in 2.6.22-rc4. There are no
-> >> sata_promise changes between rc3 and rc4, but Tejun's libata
-> >> polling SETXFER change was included in rc4. Reverting it makes
-> >> sata_promise work again for me.
-> > 
-> > Ugh.
-> 
-> Ugh...
-> 
-> >> I suspect that sata_promise.c:pdc_interrupt() should detect
-> >> a qc w/ ATA_TFLAG_POLLING, treat the interrupt as spurious,
-> >> and just call ata_chk_status(qc), similar to how sata_inic162x.c,
-> >> sata_nv.c, sata_sil.c, and sata_vsc.c do things.
-> > 
-> > Yes, highly likely.
-> 
-> I'm not sure whether that will work.  I'll give a shot at it here.
 
-I tried it and it didn't work. The qc:s never got completed, so
-they timed out and the ports got disabled.
+--------------000202010806040001010403
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Calling pdc_host_intr() instead, which calls ata_qc_complete(),
-did work (see hack below). However, this means that pdc_interrupt()
-should ignore ATA_TFLAG_POLLING, which seems strange and unsafe.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-I'm just guessing here, but maybe pdc_interrupt()'s clearing of
-PDC_INT_SEQMASK also affects whatever legacy ATA status bit libata
-is polling to detect completion of the qc?
+Jan-Benedict Glaw schrieb:
+> On Wed, 2007-06-06 11:34:49 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wrote:
+>> Jan-Benedict Glaw schrieb:
+>>> On Wed, 2007-06-06 11:11:23 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wrote:
+>>>> wouldsomebody explain me the serio interface or give me a code link for
+>>>> very simple example.
+>>> What do you want to do with it?  Do you want on the serial port side,
+>>> or on the mouse/keyboard/gadget side?  See for example the various
+>>> serial keyboards and mice drivers.
+>> I want on the kernelside process data from first uart-hardware interface
+>> aka ttyS0.
+>>
+>> I don't understand the structure of e.g. input/mouse/sermouse.c
+>>
+>> where is said, which hardware is used for reading data from?
+>
+> I'm not entirely sure, but I guess that most of the time, you assign a
+> serial port with the help of `inputattach' to a given device driver,
+> which expects to find its hardware on that port.
+>
+> OTOH, why do you want to do the serial stuff in kernel land? Isn't it
+> a *lot* easier to do it in userspace? What's your specific device you
+> want to work on?
+>
+> MfG, JBG
+>
 
---- linux-2.6.22-rc4/drivers/ata/sata_promise.c.~1~	2007-06-05 22:21:39.000000000 +0200
-+++ linux-2.6.22-rc4/drivers/ata/sata_promise.c	2007-06-06 12:04:38.000000000 +0200
-@@ -748,6 +748,11 @@
- 			qc = ata_qc_from_tag(ap, ap->active_tag);
- 			if (qc && (!(qc->tf.flags & ATA_TFLAG_POLLING)))
- 				handled += pdc_host_intr(ap, qc);
-+			else if (qc) {
-+				printk("%s: stray irq on port %u\n", __FUNCTION__, i);
-+				//ata_check_status(ap);
-+				handled += pdc_host_intr(ap, qc);
-+			}
- 		}
- 	}
- 
+if you want to write a driver, there must be a possibility to get the
+data, like others do. (kernel-space)
 
-> > SFF-like controllers (and in this case, Promise is included in that
-> > list) with their own interrupt handlers need their own polling handling
-> > code.
-> 
-> One thing I don't understand is why IDENTIFY works.  IDENTIFY uses
-> polling too.  Hmm...
+I want to know where I can get and how to do.
 
-SETXFER is special: Promise chips snoop the commands and automatically
-update internal timing registers when they see XFER MODE changes. They
-may be hardwired to raise interrupts after these commands.
+At least I want to be able to copy the data from device to another
+(maybe own).
 
-/Mikael
+It is to get familiar with that.
+
+thx
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
+
+iD8DBQFGZo7XAAomYJ1taN8RAgdAAJ0f1PilbuuwK8USjfLIDDGR1bPB3QCfdxmn
+16d7ERDrASzpOYomyjs80rM=
+=ZnRu
+-----END PGP SIGNATURE-----
+
+--------------000202010806040001010403
+Content-Type: text/x-vcard; charset=utf-8;
+ name="lkwg82.vcf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="lkwg82.vcf"
+
+YmVnaW46dmNhcmQNCmZuOkxhcnMgSy5XLiBHb2hsa2UNCm46R29obGtlO0xhcnMgSy5XLg0K
+ZW1haWw7aW50ZXJuZXQ6bGt3ZzgyQGdteC5kZQ0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZl
+cnNpb246Mi4xDQplbmQ6dmNhcmQNCg0K
+--------------000202010806040001010403--
+
