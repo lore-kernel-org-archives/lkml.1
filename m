@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760675AbXFFESP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934023AbXFFESo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760675AbXFFESP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 00:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbXFFESB
+	id S934023AbXFFESo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 00:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbXFFESf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 00:18:01 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:38947 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752051AbXFFESA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 00:18:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=PIP1dc1J808VKxXJUmZ4FdSGgW0vS3UQ26hNhzsn4gzEQGHGBLMgPkIhgpXHDZ16rxaNhl/Ga1KWIJGCzoFR5twurlkIQwIZAWYwqT5oRtHND3im+1n9sBl44G/ItZ7f1ZWF2CcohW68QDuL7W25pMfx5BkUYIjpl91sD5oeSYQ=
-Message-ID: <86802c440706052117i57b86f84p1d5be56be690c934@mail.gmail.com>
-Date: Tue, 5 Jun 2007 21:17:54 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: [PATCH] x86_64: remove extra extern declaring about dmi_ioremap
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_37032_20526330.1181103474779"
+	Wed, 6 Jun 2007 00:18:35 -0400
+Received: from gate.crashing.org ([63.228.1.57]:46817 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754504AbXFFESe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 00:18:34 -0400
+Subject: Re: signalfd API issues (was Re: [PATCH/RFC] signal races/bugs,
+	losing TIF_SIGPENDING and other woes)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Miell <nmiell@comcast.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1181102921.2788.57.camel@entropy>
+References: <1181006711.31677.97.camel@localhost.localdomain>
+	 <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org>
+	 <1181009413.31677.117.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com>
+	 <1181013756.31677.123.camel@localhost.localdomain>
+	 <1181023787.2785.14.camel@entropy>
+	 <1181028453.31677.127.camel@localhost.localdomain>
+	 <1181087462.2788.8.camel@entropy>
+	 <Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com>
+	 <1181088936.2788.10.camel@entropy>
+	 <Pine.LNX.4.64.0706051736120.23673@alien.or.mcafeemobile.com>
+	 <1181091523.2788.28.camel@entropy>
+	 <1181098204.31677.158.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0706052022430.23673@alien.or.mcafeemobile.com>
+	 <alpine.LFD.0.98.0706052035410.4205@woody.linux-foundation.org>
+	 <1181102921.2788.57.camel@entropy>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 14:18:25 +1000
+Message-Id: <1181103505.31677.176.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_37032_20526330.1181103474779
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-[PATCH] x86_64: remove extra extern declaring about dmi_ioremap
+> a) Process-global signals can be read by any thread (inside or outside
+> of the process receiving the signal).
+> 
+> Rationale:
+> 	This should always work, so there's no reason to limit it.
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+I agree, with an appropriate fix to recalc_sigpending_tsk() to only
+clear TIF_SIGPENDING if tsk == current (the patch Linus posted
+basically) _along_ with a fix to avoid the notifier thingy if stealing
+from another task, that would work.
 
-------=_Part_37032_20526330.1181103474779
-Content-Type: text/x-patch; name=6x.diff; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f2lb1vq4
-Content-Disposition: attachment; filename="6x.diff"
+> b) Thread-specific signals can only be read by their target thread.
+> 
+> Rationale:
+> 	This behavior is required by POSIX, and if an application is using
+> pthread_kill()/tkill()/tgkill()/etc. to specifically direct a signal, it
+> damn well better get to where the app wants it to go.
 
-CmRpZmYgLS1naXQgYS9pbmNsdWRlL2FzbS14ODZfNjQvZG1pLmggYi9pbmNsdWRlL2FzbS14ODZf
-NjQvZG1pLmgKaW5kZXggOTNiMmIxNS4uZmM3YjU3NiAxMDA2NDQKLS0tIGEvaW5jbHVkZS9hc20t
-eDg2XzY0L2RtaS5oCisrKyBiL2luY2x1ZGUvYXNtLXg4Nl82NC9kbWkuaApAQCAtMywxNSArMywx
-MiBAQAogCiAjaW5jbHVkZSA8YXNtL2lvLmg+CiAKLWV4dGVybiB2b2lkICpkbWlfaW9yZW1hcCh1
-bnNpZ25lZCBsb25nIGFkZHIsIHVuc2lnbmVkIGxvbmcgc2l6ZSk7Ci1leHRlcm4gdm9pZCBkbWlf
-aW91bm1hcCh2b2lkICphZGRyLCB1bnNpZ25lZCBsb25nIHNpemUpOwotCiAjZGVmaW5lIERNSV9N
-QVhfREFUQSAyMDQ4CiAKIGV4dGVybiBpbnQgZG1pX2FsbG9jX2luZGV4OwogZXh0ZXJuIGNoYXIg
-ZG1pX2FsbG9jX2RhdGFbRE1JX01BWF9EQVRBXTsKIAotLyogVGhpcyBpcyBzbyBlYXJseSB0aGF0
-IHRoZXJlIGlzIG5vIGdvb2Qgd2F5IHRvIGFsbG9jYXRlIGR5bmFtaWMgbWVtb3J5LiAKKy8qIFRo
-aXMgaXMgc28gZWFybHkgdGhhdCB0aGVyZSBpcyBubyBnb29kIHdheSB0byBhbGxvY2F0ZSBkeW5h
-bWljIG1lbW9yeS4KICAgIEFsbG9jYXRlIGRhdGEgaW4gYW4gQlNTIGFycmF5LiAqLwogc3RhdGlj
-IGlubGluZSB2b2lkICpkbWlfYWxsb2ModW5zaWduZWQgbGVuKQogewo=
-------=_Part_37032_20526330.1181103474779--
+I agree there too. I don't see the point of the 'feature' of allowing
+those to be stolen and can only lead into all sort of new headaches
+nobody needs.
+
+> c) Synchronous signals ("Naturally" generated SIGILL, SIGFPE, SIGSEGV,
+> SIGBUS, and SIGTRAP. Did I miss any?) are not delivered via signalfd()
+> at all. (And by "naturally" generated, I mean signals that would have
+> the SI_KERNEL flag set.)
+
+Heh, well, as you say later, it can't be delivered anyway... I don't
+think we need to do anything explicit to prevent them from being read()
+in signalfd, it will just not happen.
+
+> Rationale: 
+> 	These are a subset of thread-specific signals, so they can only be read
+> from a signalfd by their target thread.
+> 
+> However, there's no way for the target thread to get the signal because
+> it is either:
+> 
+> a) not blocked in a syscall waiting for signal delivery and thus further
+> execution beyond the instruction causing the signal is impossible
+>  OR
+> b) it is blocked in a syscall waiting for signal delivery and the error
+> is caused by the signal delivery mechanism itself (i.e. a bad pointer
+> passed to read/select/poll/epoll_wait/etc.) and thus the signal can't be
+> delivered
+
+Ben.
+
+
