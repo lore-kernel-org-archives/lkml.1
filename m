@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934799AbXFFU7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936129AbXFFVAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934799AbXFFU7i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 16:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935289AbXFFU7Z
+	id S936129AbXFFVAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935289AbXFFVA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 16:59:25 -0400
-Received: from mga01.intel.com ([192.55.52.88]:57479 "EHLO mga01.intel.com"
+	Wed, 6 Jun 2007 17:00:26 -0400
+Received: from mga03.intel.com ([143.182.124.21]:8847 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935215AbXFFU7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 16:59:23 -0400
+	id S935120AbXFFVAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 17:00:23 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
-   d="scan'208";a="254025688"
-Date: Wed, 6 Jun 2007 13:55:42 -0700
+   d="scan'208";a="236365283"
+Date: Wed, 6 Jun 2007 13:56:41 -0700
 From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
 To: Len Brown <lenb@kernel.org>
 Cc: Adam Belay <abelay@novell.com>, Len Brown <len.brown@intel.com>,
@@ -20,8 +20,8 @@ Cc: Adam Belay <abelay@novell.com>, Len Brown <len.brown@intel.com>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@osdl.org>, Shaohua Li <shaohua.li@intel.com>,
        linux-acpi@vger.kernel.org
-Subject: [PATCH 7/8] cpuidle: add rating to the governors and pick the one with highest rating by default
-Message-ID: <20070606205542.GG23906@linux-os.sc.intel.com>
+Subject: [PATCH 8/8] cpuidle: first round of documentation updates 
+Message-ID: <20070606205641.GH23906@linux-os.sc.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,102 +31,117 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-
-Introduce a governor rating scheme to pick the right governor by default.
+Documentation changes based on Pavel's feedback.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-Index: linux-2.6.22-rc-mm/include/linux/cpuidle.h
+Index: linux-2.6.22-rc-mm/Documentation/cpuidle/sysfs.txt
 ===================================================================
---- linux-2.6.22-rc-mm.orig/include/linux/cpuidle.h	2007-06-05 17:00:09.000000000 -0700
-+++ linux-2.6.22-rc-mm/include/linux/cpuidle.h	2007-06-05 17:01:08.000000000 -0700
-@@ -159,6 +159,7 @@
- struct cpuidle_governor {
- 	char			name[CPUIDLE_NAME_LEN];
- 	struct list_head 	governor_list;
-+	unsigned int		rating;
+--- linux-2.6.22-rc-mm.orig/Documentation/cpuidle/sysfs.txt	2007-06-06 11:33:25.000000000 -0700
++++ linux-2.6.22-rc-mm/Documentation/cpuidle/sysfs.txt	2007-06-06 11:35:37.000000000 -0700
+@@ -4,14 +4,22 @@
  
- 	int  (*init)		(struct cpuidle_device *dev);
- 	void (*exit)		(struct cpuidle_device *dev);
-Index: linux-2.6.22-rc-mm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-2.6.22-rc-mm.orig/drivers/cpuidle/governors/menu.c	2007-06-05 15:46:34.000000000 -0700
-+++ linux-2.6.22-rc-mm/drivers/cpuidle/governors/menu.c	2007-06-05 17:04:32.000000000 -0700
-@@ -153,6 +153,7 @@
+ 				cpuidle sysfs
  
- struct cpuidle_governor menu_governor = {
- 	.name =		"menu",
-+	.rating =	20,
- 	.scan =		menu_scan_device,
- 	.select =	menu_select,
- 	.reflect =	menu_reflect,
-Index: linux-2.6.22-rc-mm/drivers/cpuidle/governor.c
-===================================================================
---- linux-2.6.22-rc-mm.orig/drivers/cpuidle/governor.c	2007-06-01 16:25:49.000000000 -0700
-+++ linux-2.6.22-rc-mm/drivers/cpuidle/governor.c	2007-06-05 17:15:05.000000000 -0700
-@@ -131,7 +131,8 @@
- 	if (__cpuidle_find_governor(gov->name) == NULL) {
- 		ret = 0;
- 		list_add_tail(&gov->governor_list, &cpuidle_governors);
--		if (!cpuidle_curr_governor)
-+		if (!cpuidle_curr_governor ||
-+		    cpuidle_curr_governor->rating < gov->rating)
- 			cpuidle_switch_governor(gov);
- 	}
- 	mutex_unlock(&cpuidle_lock);
-@@ -142,6 +143,29 @@
- EXPORT_SYMBOL_GPL(cpuidle_register_governor);
+-System global cpuidle information are under
++System global cpuidle related information and tunables are under
+ /sys/devices/system/cpu/cpuidle
  
- /**
-+ * cpuidle_replace_governor - find a replacement governor
-+ * @exclude_rating: the rating that will be skipped while looking for
-+ * new governor.
-+ */
-+struct cpuidle_governor *cpuidle_replace_governor(int exclude_rating)
-+{
-+	struct cpuidle_governor *gov;
-+	struct cpuidle_governor *ret_gov = NULL;
-+	unsigned int max_rating = 0;
+ The current interfaces in this directory has self-explanatory names:
++* current_driver_ro
++* current_governor_ro
 +
-+	list_for_each_entry(gov, &cpuidle_governors, governor_list) {
-+		if (gov->rating == exclude_rating)
-+			continue;
-+		if (gov->rating > max_rating) {
-+			max_rating = gov->rating;
-+			ret_gov = gov;
-+		}
-+	}
++With cpuidle_sysfs_switch boot option (meant for developer testing)
++following objects are visible instead.
+ * available_drivers
+ * available_governors
+ * current_driver
+ * current_governor
++In this case user can switch the driver, governor at run time by writing
++onto current_driver and current_governor.
 +
-+	return ret_gov;
-+}
-+
-+/**
-  * cpuidle_unregister_governor - unregisters a governor
-  * @gov: the governor
-  */
-@@ -151,8 +175,11 @@
- 		return;
  
- 	mutex_lock(&cpuidle_lock);
--	if (gov == cpuidle_curr_governor)
--		cpuidle_switch_governor(NULL);
-+	if (gov == cpuidle_curr_governor) {
-+		struct cpuidle_governor *new_gov;
-+		new_gov = cpuidle_replace_governor(gov->rating);
-+		cpuidle_switch_governor(new_gov);
-+	}
- 	list_del(&gov->governor_list);
- 	mutex_unlock(&cpuidle_lock);
- }
-Index: linux-2.6.22-rc-mm/drivers/cpuidle/governors/ladder.c
+ Per logical CPU specific cpuidle information are under
+ /sys/devices/system/cpu/cpuX/cpuidle
+@@ -19,9 +27,9 @@
+ 
+ Under this percpu directory, there is a directory for each idle state supported
+ by the driver, which in turn has
+-* latency
+-* power
+-* time
+-* usage
++* latency : Latency to exit out of this idle state (in microseconds)
++* power : Power consumed while in this idle state (in milliwatts)
++* time : Total time spent in this idle state (in microseconds)
++* usage : Number of times this state was entered (count)
+ 
+ 
+Index: linux-2.6.22-rc-mm/Documentation/cpuidle/governor.txt
 ===================================================================
---- linux-2.6.22-rc-mm.orig/drivers/cpuidle/governors/ladder.c	2007-06-01 16:25:49.000000000 -0700
-+++ linux-2.6.22-rc-mm/drivers/cpuidle/governors/ladder.c	2007-06-05 17:03:37.000000000 -0700
-@@ -199,6 +199,7 @@
+--- linux-2.6.22-rc-mm.orig/Documentation/cpuidle/governor.txt	2007-06-06 11:33:25.000000000 -0700
++++ linux-2.6.22-rc-mm/Documentation/cpuidle/governor.txt	2007-06-06 11:33:34.000000000 -0700
+@@ -11,12 +11,16 @@
+ cpuidle governor is policy routine that decides what idle state to enter at
+ any given time. cpuidle core uses different callbacks to governor while
+ handling idle entry.
+-* select_state callback where governor can determine next idle state to enter
+-* prepare_idle callback is called before entering an idle state
+-* scan callback is called after a driver forces redetection of the states
++* select_state() callback where governor can determine next idle state to enter
++* prepare_idle() callback is called before entering an idle state
++* scan() callback is called after a driver forces redetection of the states
  
- static struct cpuidle_governor ladder_governor = {
- 	.name =		"ladder",
-+	.rating =	10,
- 	.init =		ladder_init_device,
- 	.exit =		ladder_exit_device,
- 	.scan =		ladder_scan_device,
+ More than one governor can be registered at the same time and
+-user can switch between drivers using /sysfs interface.
++user can switch between drivers using /sysfs interface (when supported).
++
++More than one governor part is supported for developers to easily experiment
++with different governors. By default, most optimal governor based on your
++kernel configuration and platform will be selected by cpuidle.
+ 
+ Interfaces:
+ int cpuidle_register_governor(struct cpuidle_governor *gov);
+Index: linux-2.6.22-rc-mm/Documentation/cpuidle/core.txt
+===================================================================
+--- linux-2.6.22-rc-mm.orig/Documentation/cpuidle/core.txt	2007-06-06 11:33:25.000000000 -0700
++++ linux-2.6.22-rc-mm/Documentation/cpuidle/core.txt	2007-06-06 11:33:34.000000000 -0700
+@@ -12,6 +12,6 @@
+ standardized infrastructure to support independent development of
+ governors and drivers.
+ 
+-cpuidle resides under /drivers/cpuidle.
++cpuidle resides under drivers/cpuidle.
+ 
+ 
+Index: linux-2.6.22-rc-mm/Documentation/cpuidle/driver.txt
+===================================================================
+--- linux-2.6.22-rc-mm.orig/Documentation/cpuidle/driver.txt	2007-06-06 11:33:25.000000000 -0700
++++ linux-2.6.22-rc-mm/Documentation/cpuidle/driver.txt	2007-06-06 11:33:34.000000000 -0700
+@@ -7,16 +7,21 @@
+ 
+ 
+ 
+-cpuidle driver supports capability detection for a particular system. The
+-init and exit routines will be called for each online CPU, with a percpu
+-cpuidle_driver object and driver should fill in cpuidle_states inside
+-cpuidle_driver depending on the CPU capability.
++cpuidle driver hooks into the cpuidle infrastructure and does the
++architecture/platform dependent part of CPU idle states. Driver
++provides the platform idle state detection capability and also
++has mechanisms in place to support actusl entry-exit into a CPU idle state.
++
++cpuidle driver supports capability detection for a platform using the
++init and exit routines. They will be called for each online CPU, with a
++percpu cpuidle_driver object and driver should fill in cpuidle_states
++inside cpuidle_driver depending on the CPU capability.
+ 
+ Driver can handle dynamic state changes (like battery<->AC), by calling
+ force_redetect interface.
+ 
+ It is possible to have more than one driver registered at the same time and
+-user can switch between drivers using /sysfs interface.
++user can switch between drivers using /sysfs interface (when enabled).
+ 
+ Interfaces:
+ int cpuidle_register_driver(struct cpuidle_driver *drv);
