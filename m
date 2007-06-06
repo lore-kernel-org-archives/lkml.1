@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761454AbXFFJrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760701AbXFFJvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761454AbXFFJrS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbXFFJrG
+	id S1760701AbXFFJvG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:51:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbXFFJu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:47:06 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:58209 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757499AbXFFJrF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:47:05 -0400
-Subject: Re: [PATCH 4/4] mm: variable length argument support
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org, Ollie Wild <aaw@google.com>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
-In-Reply-To: <20070606094401.GA10393@linux-sh.org>
-References: <20070605150523.786600000@chello.nl>
-	 <20070605151203.790585000@chello.nl>
-	 <20070606013658.20bcbe2f.akpm@linux-foundation.org>
-	 <1181120061.7348.177.camel@twins>
-	 <20070606020651.19a89dca.akpm@linux-foundation.org>
-	 <1181122473.7348.188.camel@twins>  <20070606094401.GA10393@linux-sh.org>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 11:47:00 +0200
-Message-Id: <1181123220.7348.193.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 6 Jun 2007 05:50:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53388 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751610AbXFFJu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 05:50:56 -0400
+Message-ID: <4666832D.8080603@redhat.com>
+Date: Wed, 06 Jun 2007 11:49:33 +0200
+From: Miloslav Trmac <mitr@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: dwmw2@infradead.org
+CC: linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>,
+       Steve Grubb <sgrubb@redhat.com>, Alexander Viro <aviro@redhat.com>
+Subject: [PATCH] Audit: Add TTY input auditing
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 18:44 +0900, Paul Mundt wrote:
-> On Wed, Jun 06, 2007 at 11:34:33AM +0200, Peter Zijlstra wrote:
-> > +static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
-> > +		struct page *page)
-> > +{
-> > +	flush_cache_page(bprm->vma, pos, page_to_pfn(page));
-> > +}
-> > +
-> [snip]
-> 
-> > @@ -253,6 +305,17 @@ static void free_arg_pages(struct linux_
-> >  		free_arg_page(bprm, i);
-> >  }
-> >  
-> > +static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
-> > +		struct page *page)
-> > +{
-> > +}
-> > +
-> inline?
+From: Miloslav Trmac <mitr@redhat.com>
 
-could do I guess, but doesn't this modern gcc thing auto inline statics
-that are so small?
+Add TTY input auditing, used to audit system administrator's actions.
+TTY input auditing works on a higher level than auditing all system
+calls within the session, which would produce an overwhelming amount of
+mostly useless audit events.
+
+Add an "audit_tty" attribute, inherited across fork ().  Data read from
+TTYs by process with the attribute is sent to the audit subsystem by the
+kernel.  The audit netlink interface is extended to allow modifying the
+audit_tty attribute, and to allow sending explanatory audit events from
+user-space (for example, a shell might send an event containing the
+final command, after the interactive command-line editing and history
+expansion is performed, which might be difficult to decipher from the
+TTY input alone).
+
+Because the "audit_tty" attribute is inherited across fork (), it would
+be set e.g. for sshd restarted within an audited session.  To prevent
+this, the audit_tty attribute is cleared when a process with no open TTY
+file descriptors (e.g. after daemon startup) opens a TTY.
+
+See https://www.redhat.com/archives/linux-audit/2007-June/msg00000.html
+for a more detailed rationale document for an older version of this patch.
 
