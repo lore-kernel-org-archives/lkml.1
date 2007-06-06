@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbXFFJF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbXFFJH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759292AbXFFJF1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXFFJFO
+	id S1759517AbXFFJH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXFFJHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:05:14 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:55662 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751738AbXFFJFM (ORCPT
+	Wed, 6 Jun 2007 05:07:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54871 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751738AbXFFJHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:05:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=W4LWC8vbt5hbFhxQwxGxRA0L50lBHyFp5QYlJQUsf0X6CxkBASg9C4REzdEycrrTVRDFdHfnhovxb8M/tfzEeq95JCIkmlWumG/JdciMdWenCDmff/+mM7TjBgVxUIoYU/GG59cbrI3k6oU8vbRMp3v97QULgrIQJON6h/IBuFU=
-Message-ID: <9a8748490706060205y1fc8e354p4af7426fd76dd816@mail.gmail.com>
-Date: Wed, 6 Jun 2007 11:05:07 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: [PATCH] update checkpatch.pl to version 0.03
-Cc: "Andrew Morton" <akpm@osdl.org>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Joel Schopp" <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <0a25fd03117c678f17006c5fcefaaed0@pinky>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 6 Jun 2007 05:07:14 -0400
+Date: Wed, 6 Jun 2007 02:06:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 4/4] mm: variable length argument support
+Message-Id: <20070606020651.19a89dca.akpm@linux-foundation.org>
+In-Reply-To: <1181120061.7348.177.camel@twins>
+References: <20070605150523.786600000@chello.nl>
+	<20070605151203.790585000@chello.nl>
+	<20070606013658.20bcbe2f.akpm@linux-foundation.org>
+	<1181120061.7348.177.camel@twins>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <0a25fd03117c678f17006c5fcefaaed0@pinky>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/06/07, Andy Whitcroft <apw@shadowen.org> wrote:
->
-> This version brings a host of changes to cure false positives and
-> bugs detected on patches submitted to lkml and -mm.  It also brings
-> a number of new tests in response to reviews, of particular note:
->
+On Wed, 06 Jun 2007 10:54:21 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-I have a few ideas for additional checks you could add to that script:
+> > > It is a bit peculiar in that we have one task with two mm's, one of which is
+> > > inactive.
+> > > 
+> > > ...
+> > >
+> > > +				flush_cache_page(bprm->vma, kpos,
+> > > +						 page_to_pfn(kmapped_page));
+> 
+> Bah, and my frv cross build bums out on an unrelated change,..
+> I'll see if I can get a noMMU arch building, in the mean time, would you
+> try this:
+> 
+> ---
+> 
+> Since no-MMU doesn't do the fancy inactive mm access there is no need to
+> flush cache.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+> 
+> Index: linux-2.6-2/fs/exec.c
+> ===================================================================
+> --- linux-2.6-2.orig/fs/exec.c	2007-06-05 16:48:52.000000000 +0200
+> +++ linux-2.6-2/fs/exec.c	2007-06-06 10:49:19.000000000 +0200
+> @@ -428,8 +428,10 @@ static int copy_strings(int argc, char _
+>  				kmapped_page = page;
+>  				kaddr = kmap(kmapped_page);
+>  				kpos = pos & PAGE_MASK;
+> +#ifdef CONFIG_MMU
+>  				flush_cache_page(bprm->vma, kpos,
+>  						 page_to_pfn(kmapped_page));
+> +#endif
+>  			}
+>  			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
+>  				ret = -EFAULT;
+> 
 
- - Source files should be 7bit ASCII and Documentation/Kbuild
-files/etc should be UTF-8, test that the patch honors that and doesn't
-put something else in (cleanups that remove 8bit ASCII etc from a
-source file is OK though).
+I think the same problem will happen on NOMMU && STACK_GROWS_UP.  There are
+several new references to bprm->vma in there, not all inside CONFIG_MMU.
 
-- Check that nothing in the patch touches any file from Documentation/dontdiff
-
-- Check for an excessive number of blank lines - some people have a
-nasty tendency to put 3 or more blank lines between functions or
-between comments and next source line etc.
-
-- Check that all newlines added by the patch are "\n", not "\r",
-"\r\n" or "\n\r".
-
-- Check that, if the patch adds a new file, the new file ends with a newline.
-
-- Warn about usage of the "register" keyword.
-
-- Maybe warn about usage of float/double in source files?
-
-- 'return' is not a function, so warn about patches that think it is
-and use 'return(expr);' (this one is tricky since 'return (expr);' can
-be OK in some cases.
-
-
-That's all I can come up with at the moment. If more ideas pop up I'll
-let you know.
-Good work with that script btw.
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
