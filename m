@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbXFFJMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760553AbXFFJPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760764AbXFFJMX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbXFFJMP
+	id S1760553AbXFFJPT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbXFFJPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:12:15 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:27496 "EHLO
-	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755175AbXFFJMO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:12:14 -0400
-Subject: Re: [PATCH 4/4] mm: variable length argument support
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <20070606020651.19a89dca.akpm@linux-foundation.org>
-References: <20070605150523.786600000@chello.nl>
-	 <20070605151203.790585000@chello.nl>
-	 <20070606013658.20bcbe2f.akpm@linux-foundation.org>
-	 <1181120061.7348.177.camel@twins>
-	 <20070606020651.19a89dca.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 11:12:09 +0200
-Message-Id: <1181121129.7348.181.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 05:15:08 -0400
+Received: from lug-owl.de ([195.71.106.12]:46134 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753138AbXFFJPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 05:15:06 -0400
+Date: Wed, 6 Jun 2007 11:15:03 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: "Lars K.W. Gohlke" <lkwg82@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: serio interface
+Message-ID: <20070606091503.GI2649@lug-owl.de>
+Mail-Followup-To: "Lars K.W. Gohlke" <lkwg82@gmx.de>,
+	linux-kernel@vger.kernel.org
+References: <46667A3B.8070708@gmx.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="crFW2+mWrWMXeHsA"
+Content-Disposition: inline
+In-Reply-To: <46667A3B.8070708@gmx.de>
+X-Operating-System: Linux mail 2.6.18-4-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 02:06 -0700, Andrew Morton wrote:
-> On Wed, 06 Jun 2007 10:54:21 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > > > It is a bit peculiar in that we have one task with two mm's, one of which is
-> > > > inactive.
-> > > > 
-> > > > ...
-> > > >
-> > > > +				flush_cache_page(bprm->vma, kpos,
-> > > > +						 page_to_pfn(kmapped_page));
-> > 
-> > Bah, and my frv cross build bums out on an unrelated change,..
-> > I'll see if I can get a noMMU arch building, in the mean time, would you
-> > try this:
-> > 
-> > ---
-> > 
-> > Since no-MMU doesn't do the fancy inactive mm access there is no need to
-> > flush cache.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> > 
-> > Index: linux-2.6-2/fs/exec.c
-> > ===================================================================
-> > --- linux-2.6-2.orig/fs/exec.c	2007-06-05 16:48:52.000000000 +0200
-> > +++ linux-2.6-2/fs/exec.c	2007-06-06 10:49:19.000000000 +0200
-> > @@ -428,8 +428,10 @@ static int copy_strings(int argc, char _
-> >  				kmapped_page = page;
-> >  				kaddr = kmap(kmapped_page);
-> >  				kpos = pos & PAGE_MASK;
-> > +#ifdef CONFIG_MMU
-> >  				flush_cache_page(bprm->vma, kpos,
-> >  						 page_to_pfn(kmapped_page));
-> > +#endif
-> >  			}
-> >  			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
-> >  				ret = -EFAULT;
-> > 
-> 
-> I think the same problem will happen on NOMMU && STACK_GROWS_UP.  There are
-> several new references to bprm->vma in there, not all inside CONFIG_MMU.
 
-Right, which archs have that combo? I'll go gather cross compilers.
+--crFW2+mWrWMXeHsA
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Perhaps I'd better create a flush_arg_page() function and stick that in
-the mmu/nommu section somewhere earlier on in that file. Patch in a few.
+On Wed, 2007-06-06 11:11:23 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wrote:
+> wouldsomebody explain me the serio interface or give me a code link for
+> very simple example.
 
-A related question; does anybody know of a no-MMU arch that uses
-fs/compat.c ? If there is such a beast, that would need some work.
+What do you want to do with it?  Do you want on the serial port side,
+or on the mouse/keyboard/gadget side?  See for example the various
+serial keyboards and mice drivers.
 
+MfG, JBG
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:                 Friends are relatives you make for yourself.
+the second  :
+
+--crFW2+mWrWMXeHsA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGZnsXHb1edYOZ4bsRAkzsAJ9QJMAkjmqJTbsF/1IwBWFJNbMSmQCfQIZM
+gffv9VO89RQ16KE/6u4p8+g=
+=1PVa
+-----END PGP SIGNATURE-----
+
+--crFW2+mWrWMXeHsA--
