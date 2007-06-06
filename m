@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936581AbXFFXXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936709AbXFFXYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936581AbXFFXXZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763575AbXFFXXR
+	id S936709AbXFFXYe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935647AbXFFXY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:23:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40139 "EHLO mx1.redhat.com"
+	Wed, 6 Jun 2007 19:24:26 -0400
+Received: from lucidpixels.com ([75.144.35.66]:39725 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751472AbXFFXXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:23:17 -0400
-Message-ID: <466741BD.20106@redhat.com>
-Date: Wed, 06 Jun 2007 16:22:37 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1763575AbXFFXYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 19:24:25 -0400
+Date: Wed, 6 Jun 2007 19:24:24 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Jesse Barnes <jesse.barnes@intel.com>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+In-Reply-To: <200706061620.10627.jesse.barnes@intel.com>
+Message-ID: <Pine.LNX.4.64.0706061923470.2716@p34.internal.lan>
+References: <200706061229.24486.jesse.barnes@intel.com>
+ <200706061528.44070.jesse.barnes@intel.com> <Pine.LNX.4.64.0706061857420.2716@p34.internal.lan>
+ <200706061620.10627.jesse.barnes@intel.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>	<20070606235906.72439d16@the-village.bc.nu>	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com> <20070607001932.35c9591c@the-village.bc.nu>
-In-Reply-To: <20070607001932.35c9591c@the-village.bc.nu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Alan Cox wrote:
-> Linking to the correct version of a libary and getting the library
-> versioning right is not rocket science and isn't a sane excuse. Its no
-> different to the stdio to large fd migration issues with many Unixen and
-> they all coped just fine.
 
-This has nothing to do with linking and ABI.  The assumptions about
-continuous allocation are part of the API.  It's required by POSIX and
-provided by Unix since the early days.  There are entire code bases out
-there which depend on this assumption.  Linking with code like this,
-before or after the new version controlled symbol is introduced, will
-break it.  Policies or stateful behavior, however yo want to call it, is
-just plain wrong for this (and most other things).
+On Wed, 6 Jun 2007, Jesse Barnes wrote:
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+> On Wednesday, June 6, 2007 3:57 pm Justin Piszcz wrote:
+>> On Wed, 6 Jun 2007, Jesse Barnes wrote:
+>>> On Wednesday, June 6, 2007 3:26 pm Justin Piszcz wrote:
+>>>> Nope, I booted with only netconsole= options.  I have a lot of HW
+>>>> in the box and I guess the buffer is too small.  Not sure where to
+>>>> change it in the kernel.  Looking..
+>>>
+>>> It's called "kernel log buffer size" and it's in "General setup".
+>>>
+>>> Jesse
+>>
+>> Did the dmesg output get you what you needed?  Why the few KB
+>> difference?
+>>
+>> :)
+>
+> Yeah, looked at your e820 and your MTRR settings and I think my patch is
+> doing the right thing (i.e. trimming just the right amount of memory,
+> leaving you with as much as possible).
+>
+> The mem= approach though looks slightly off, but I haven't looked at
+> x86_64's mem= handling to see why.  From a high level though, adjusting
+> end_pfn is the right thing to do, since theoretically mem= could choose
+> to make holes in your low memory and keep your high memory in the
+> allocation pools (though it's not generally implemented this way).
+>
+> Jesse
+>
 
-iD8DBQFGZ0G92ijCOnn/RHQRAkB9AJ93ol7XV2GiCw+8wgbJ9uMBnHU6dQCgmmAp
-9m+WEup3iPkEHH6HIHDa88I=
-=Dhto
------END PGP SIGNATURE-----
+Ahh, ok!  Sounds great, I will keep running the kernel with your patch 
+without mem= and let you know if I see any issues.
+
+Chances of getting this into 2.6.22-rc5?
+
+Justin.
