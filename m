@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933652AbXFFT2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935248AbXFFT2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933652AbXFFT2X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 15:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbXFFT2P
+	id S935248AbXFFT2h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 15:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761375AbXFFT2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 15:28:15 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:64912 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751110AbXFFT2N (ORCPT
+	Wed, 6 Jun 2007 15:28:17 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:57369 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754326AbXFFT2Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 15:28:13 -0400
-Subject: Re: 2.6.22-rc4-mm1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Mel Gorman <mel@skynet.ie>, Cedric Le Goater <clg@fr.ibm.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <npiggin@suse.de>, aaw@google.com
-In-Reply-To: <1181149580.5676.25.camel@lappy>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-	 <4666ABD4.8050402@fr.ibm.com> <4666D050.7010603@googlemail.com>
-	 <4666DA55.5090405@fr.ibm.com> <20070606162649.GA9932@skynet.ie>
-	 <20070606163538.GN6909@holomorphy.com>  <1181149580.5676.25.camel@lappy>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 21:27:55 +0200
-Message-Id: <1181158075.5676.32.camel@lappy>
+	Wed, 6 Jun 2007 15:28:16 -0400
+Date: Wed, 6 Jun 2007 15:19:25 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: avi@qumranet.com
+Cc: kvm-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       jun.nakajima@intel.com, eddie.dong@intel.com
+Subject: [PATCH] KVM - Fix rmode_tss_base declaration
+Message-ID: <20070606191925.GA8989@c2.user-mode-linux.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 19:06 +0200, Peter Zijlstra wrote:
-> On Wed, 2007-06-06 at 09:35 -0700, William Lee Irwin III wrote:
-> > On Wed, Jun 06, 2007 at 05:26:49PM +0100, Mel Gorman wrote:
-> > > I do not believe this is Nick's problem. I encountered the same issue and
-> > > the bisect ended up here;
-> > > # BISECT HERE
-> > > mm-variable-length-argument-support.patch
-> > > mm-variable-length-argument-support-fix.patch
-> > > # BISECT BAD
-> > > Reverting those two patches boots ok on my standalone x86 laptop.
-> > > Patch authors cc'd. I have not read the patches yet to see what might
-> > > be the problem.
-> > 
-> > I found this a while ago and peterz already has a tentative fix for it at
-> > http://programming.kicks-ass.net/kernel-patches/max_arg_pages/move_anon_vma.patch
-> > I'm sure he himself will chime in with more/better code when he returns.
-> 
-> Ah, yes indeed. We were discussing wether it would be better to update
-> page->index (as this patch does) or not change vma->vm_pgoff. Bill
-> argued that the latter would be safe, it would just limit the merge
-> capabilities of the anon vma (and the stack rarely, if ever, merges
-> anyway).
-> 
-> I myself an not quite sure on the effects of ->vm_pgoff of anon vmas
-> yet.
+The long return value of rmode_tss_base is truncated by its declared
+return type of int.
 
-Ok, from what I can make of it, nobody relies on the value of
-vma->vm_pgoff for anon vmas as long as the following invariant is kept:
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ drivers/kvm/vmx.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-  vaddr = vma->vm_start + (page->index - vma->vm_pgoff)*PAGE_SIZE
-
-So the proper thing to do is not change vm_pgoff.
-
+Index: kvm/drivers/kvm/vmx.c
+===================================================================
+--- kvm.orig/drivers/kvm/vmx.c
++++ kvm/drivers/kvm/vmx.c
+@@ -884,7 +884,7 @@ static void enter_pmode(struct kvm_vcpu 
+ 	vmcs_write32(GUEST_CS_AR_BYTES, 0x9b);
+ }
+ 
+-static int rmode_tss_base(struct kvm* kvm)
++static unsigned long rmode_tss_base(struct kvm* kvm)
+ {
+ 	gfn_t base_gfn = kvm->memslots[0].base_gfn + kvm->memslots[0].npages - 3;
+ 	return base_gfn << PAGE_SHIFT;
