@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934008AbXFFSxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934666AbXFFS4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934008AbXFFSxb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 14:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762600AbXFFSxU
+	id S934666AbXFFS4w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 14:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762361AbXFFS4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 14:53:20 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:51271 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758843AbXFFSxT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 14:53:19 -0400
-From: Thomas Klein <osstklei@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 2.6.22-rc4] ehea: Fixed possible kernel panic on VLAN packet recv
-Date: Wed, 6 Jun 2007 20:53:16 +0200
-User-Agent: KMail/1.8.2
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <ossthema@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+	Wed, 6 Jun 2007 14:56:45 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:37132 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755973AbXFFS4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 14:56:44 -0400
+Date: Wed, 6 Jun 2007 11:58:29 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
+Message-ID: <20070606185829.GA26062@tree.beaverton.ibm.com>
+References: <20070601004427.GI30788@tree.beaverton.ibm.com> <20070605172310.GD17143@linux-os.sc.intel.com> <20070605173647.GC12782@tree.beaverton.ibm.com> <20070605181342.GE17143@linux-os.sc.intel.com> <20070605183300.GD12782@tree.beaverton.ibm.com> <20070605184015.GF17143@linux-os.sc.intel.com> <20070605200954.GE12782@tree.beaverton.ibm.com> <20070605211451.GG17143@linux-os.sc.intel.com> <20070605235707.GB16074@tree.beaverton.ibm.com> <20070606013759.GI17143@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
 Content-Disposition: inline
-Message-Id: <200706062053.16986.osstklei@de.ibm.com>
+In-Reply-To: <20070606013759.GI17143@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a possible kernel panic due to not checking the vlan group
-when processing received VLAN packets and a malfunction in VLAN/hypervisor
-registration.
 
+--Dxnq1zWXvFF0Q93v
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
----
+On Tue, Jun 05, 2007 at 06:37:59PM -0700, Siddha, Suresh B wrote:
+> On Tue, Jun 05, 2007 at 04:57:07PM -0700, Darrick J. Wong wrote:
+> > On Tue, Jun 05, 2007 at 02:14:51PM -0700, Siddha, Suresh B wrote:
+> > =20
+> > > Can you send us your system's dmesg aswell as output of /proc/interru=
+pts?
+> >=20
+> > http://sweaglesw.net/~djwong/docs/dmesg
+> > http://sweaglesw.net/~djwong/docs/interrupts
+>=20
+> Didn't find anything wrong in that information. Can you try this
+> appended debug patch and see if you see this error msg in dmesg, when you
+> hit the bug? Thanks.
 
+I don't see that message.
 
-diff -Nurp -X dontdiff linux-2.6.22-rc4/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.22-rc4/drivers/net/ehea/ehea.h	2007-06-05 02:57:25.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea.h	2007-06-06 12:53:58.000000000 +0200
-@@ -39,7 +39,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0061"
-+#define DRV_VERSION	"EHEA_0064"
- 
- #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
- 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
-diff -Nurp -X dontdiff linux-2.6.22-rc4/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.22-rc4/drivers/net/ehea/ehea_main.c	2007-06-05 02:57:25.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-06-06 12:53:58.000000000 +0200
-@@ -451,7 +451,8 @@ static struct ehea_cqe *ehea_proc_rwqes(
- 				processed_rq3++;
- 			}
- 
--			if (cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
-+			if ((cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
-+			    && port->vgrp)
- 				vlan_hwaccel_receive_skb(skb, port->vgrp,
- 							 cqe->vlan_tag);
- 			else
-@@ -1910,10 +1911,7 @@ static void ehea_vlan_rx_register(struct
- 		goto out;
- 	}
- 
--	if (grp)
--		memset(cb1->vlan_filter, 0, sizeof(cb1->vlan_filter));
--	else
--		memset(cb1->vlan_filter, 0xFF, sizeof(cb1->vlan_filter));
-+	memset(cb1->vlan_filter, 0, sizeof(cb1->vlan_filter));
- 
- 	hret = ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id,
- 				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
-@@ -1947,7 +1945,7 @@ static void ehea_vlan_rx_add_vid(struct 
- 	}
- 
- 	index = (vid / 64);
--	cb1->vlan_filter[index] |= ((u64)(1 << (vid & 0x3F)));
-+	cb1->vlan_filter[index] |= ((u64)(0x8000000000000000 >> (vid & 0x3F)));
- 
- 	hret = ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id,
- 				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
-@@ -1982,7 +1980,7 @@ static void ehea_vlan_rx_kill_vid(struct
- 	}
- 
- 	index = (vid / 64);
--	cb1->vlan_filter[index] &= ~((u64)(1 << (vid & 0x3F)));
-+	cb1->vlan_filter[index] &= ~((u64)(0x8000000000000000 >> (vid & 0x3F)));
- 
- 	hret = ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id,
- 				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
+--D
 
+--Dxnq1zWXvFF0Q93v
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGZwPVa6vRYYgWQuURAiLVAJ4mFrjO+tdkGrXzdyBItmc7jeYa4QCfRx7p
+SbKiG4CKeQ4CnHbSaDZ0oLU=
+=FDQk
+-----END PGP SIGNATURE-----
+
+--Dxnq1zWXvFF0Q93v--
