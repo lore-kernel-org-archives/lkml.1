@@ -1,109 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbXFFQnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbXFFQsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762214AbXFFQnF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 12:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbXFFQmz
+	id S1757384AbXFFQsP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 12:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbXFFQr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 12:42:55 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:45391 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbXFFQmy (ORCPT
+	Wed, 6 Jun 2007 12:47:59 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:46945 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753103AbXFFQr7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 12:42:54 -0400
-Message-ID: <4666E40A.2060708@fr.ibm.com>
-Date: Wed, 06 Jun 2007 18:42:50 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-       Nick Piggin <npiggin@suse.de>
+	Wed, 6 Jun 2007 12:47:59 -0400
+Date: Wed, 6 Jun 2007 17:47:56 +0100
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Cedric Le Goater <clg@fr.ibm.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, aaw@google.com, a.p.zijlstra@chello.nl
 Subject: Re: 2.6.22-rc4-mm1
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-In-Reply-To: <20070606020737.4663d686.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070606164755.GA14278@skynet.ie>
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <4666ABD4.8050402@fr.ibm.com> <4666D050.7010603@googlemail.com> <4666DA55.5090405@fr.ibm.com> <20070606162649.GA9932@skynet.ie> <20070606163538.GN6909@holomorphy.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070606163538.GN6909@holomorphy.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a tentative fix for mm-merge-nopfn-into-fault.patch. 
+On (06/06/07 09:35), William Lee Irwin III didst pronounce:
+> On Wed, Jun 06, 2007 at 05:26:49PM +0100, Mel Gorman wrote:
+> > I do not believe this is Nick's problem. I encountered the same issue and
+> > the bisect ended up here;
+> > # BISECT HERE
+> > mm-variable-length-argument-support.patch
+> > mm-variable-length-argument-support-fix.patch
+> > # BISECT BAD
+> > Reverting those two patches boots ok on my standalone x86 laptop.
+> > Patch authors cc'd. I have not read the patches yet to see what might
+> > be the problem.
+> 
+> I found this a while ago and peterz already has a tentative fix for it at
+> http://programming.kicks-ass.net/kernel-patches/max_arg_pages/move_anon_vma.patch
+> I'm sure he himself will chime in with more/better code when he returns.
+> 
 
-./arch/powerpc/platforms/cell/spufs/file.c: In function 'spufs_mem_mmap_fault':
-./arch/powerpc/platforms/cell/spufs/file.c:122: error: 'address' undeclared (first use in this function)
-./arch/powerpc/platforms/cell/spufs/file.c:122: error: (Each undeclared identifier is reported only once
-./arch/powerpc/platforms/cell/spufs/file.c:122: error: for each function it appears in.)
-./arch/powerpc/platforms/cell/spufs/file.c:141: error: expected ';' before 'if'
-./arch/powerpc/platforms/cell/spufs/file.c:122: warning: unused variable 'addr0'
- 
-I'm not sure how useful is the addr0 variable.
+This patch also boots successfully on the machine.
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- arch/powerpc/platforms/cell/spufs/file.c |   23 +++++------------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
-
-Index: 2.6.22-rc4-mm1/arch/powerpc/platforms/cell/spufs/file.c
-===================================================================
---- 2.6.22-rc4-mm1.orig/arch/powerpc/platforms/cell/spufs/file.c
-+++ 2.6.22-rc4-mm1/arch/powerpc/platforms/cell/spufs/file.c
-@@ -53,19 +53,6 @@ spufs_mem_open(struct inode *inode, stru
- 	return 0;
- }
- 
--static int
--spufs_mem_release(struct inode *inode, struct file *file)
--{
--	struct spufs_inode_info *i = SPUFS_I(inode);
--	struct spu_context *ctx = i->i_ctx;
--
--	spin_lock(&ctx->mapping_lock);
--	if (!--i->i_openers)
--		ctx->local_store = NULL;
--	spin_unlock(&ctx->mapping_lock);
--	return 0;
--}
--
- static ssize_t
- __spufs_mem_read(struct spu_context *ctx, char __user *buffer,
- 			size_t size, loff_t *pos)
-@@ -119,13 +106,13 @@ static struct page *spufs_mem_mmap_fault
- 					  struct fault_data *fdata)
- {
- 	struct spu_context *ctx	= vma->vm_file->private_data;
--	unsigned long pfn, offset, addr0 = address;
-+	unsigned long pfn, offset, addr0 = fdata->address;
- #ifdef CONFIG_SPU_FS_64K_LS
- 	struct spu_state *csa = &ctx->csa;
- 	int psize;
- 
- 	/* Check what page size we are using */
--	psize = get_slice_psize(vma->vm_mm, address);
-+	psize = get_slice_psize(vma->vm_mm, fdata->address);
- 
- 	/* Some sanity checking */
- 	BUG_ON(csa->use_big_pages != (psize == MMU_PAGE_64K));
-@@ -133,18 +120,18 @@ static struct page *spufs_mem_mmap_fault
- 	/* Wow, 64K, cool, we need to align the address though */
- 	if (csa->use_big_pages) {
- 		BUG_ON(vma->vm_start & 0xffff);
--		address &= ~0xfffful;
-+		fdata->address &= ~0xfffful;
- 	}
- #endif /* CONFIG_SPU_FS_64K_LS */
- 
--	offset = fdata->pgoff << PAGE_SHIFT
-+	offset = fdata->pgoff << PAGE_SHIFT;
- 	if (offset >= LS_SIZE) {
- 		fdata->type = VM_FAULT_SIGBUS;
- 		return NULL;
- 	}
- 
- 	pr_debug("spufs_mem_mmap_nopfn address=0x%lx -> 0x%lx, offset=0x%lx\n",
--		 addr0, address, offset);
-+		 addr0, fdata->address, offset);
- 
- 	spu_acquire(ctx);
- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
