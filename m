@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934053AbXFFAbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933927AbXFFAho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934053AbXFFAbU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 20:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933194AbXFFAbH
+	id S933927AbXFFAho (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 20:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933081AbXFFAhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 20:31:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45944
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761956AbXFFAbG (ORCPT
+	Tue, 5 Jun 2007 20:37:36 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1579 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932923AbXFFAhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 20:31:06 -0400
-Date: Tue, 05 Jun 2007 17:31:20 -0700 (PDT)
-Message-Id: <20070605.173120.59467114.davem@davemloft.net>
-To: miklos@szeredi.hu
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix race in AF_UNIX
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070605.000247.18308209.davem@davemloft.net>
-References: <E1HubUt-0004Hb-00@dorka.pomaz.szeredi.hu>
-	<E1Hv980-0006gQ-00@dorka.pomaz.szeredi.hu>
-	<20070605.000247.18308209.davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jun 2007 20:37:35 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 5 Jun 2007 17:37:33 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Nicholas Miell <nmiell@comcast.net>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other
+ woes
+In-Reply-To: <1181088936.2788.10.camel@entropy>
+Message-ID: <Pine.LNX.4.64.0706051736120.23673@alien.or.mcafeemobile.com>
+References: <1181006711.31677.97.camel@localhost.localdomain> 
+ <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org> 
+ <1181009413.31677.117.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com> 
+ <1181013756.31677.123.camel@localhost.localdomain>  <1181023787.2785.14.camel@entropy>
+  <1181028453.31677.127.camel@localhost.localdomain>  <1181087462.2788.8.camel@entropy>
+  <Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com>
+ <1181088936.2788.10.camel@entropy>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Tue, 05 Jun 2007 00:02:47 -0700 (PDT)
+On Tue, 5 Jun 2007, Nicholas Miell wrote:
 
-> From: Miklos Szeredi <miklos@szeredi.hu>
-> Date: Mon, 04 Jun 2007 11:45:32 +0200
+> On Tue, 2007-06-05 at 17:11 -0700, Davide Libenzi wrote:
+> > On Tue, 5 Jun 2007, Nicholas Miell wrote:
+> > 
+> > > Yes, that's certainly wrong, but that's an implementation issue. I was
+> > > more concerned about the design of the API.
+> > > 
+> > > Naively, I would expect a reads on a signalfd to return either process
+> > > signals or thread signals targeted towards the thread doing the read.
+> > > 
+> > > What it actually does (delivering process signals or thread signals
+> > > targeted towards the thread that created the signalfd) is weird.
+> > > 
+> > > For one, it means you can't create a single signalfd, stick it in an
+> > > epoll set, and then wait on that set from multiple threads.
+> > 
+> > In your box threads do share the sighand, don't they? :)
+> > 
 > 
-> > > A recv() on an AF_UNIX, SOCK_STREAM socket can race with a
-> > > send()+close() on the peer, causing recv() to return zero, even though
-> > > the sent data should be received.
-> > > 
-> > > This happens if the send() and the close() is performed between
-> > > skb_dequeue() and checking sk->sk_shutdown in unix_stream_recvmsg():
-> > > 
-> > > process A  skb_dequeue() returns NULL, there's no data in the socket queue
-> > > process B  new data is inserted onto the queue by unix_stream_sendmsg()
-> > > process B  sk->sk_shutdown is set to SHUTDOWN_MASK by unix_release_sock()
-> > > process A  sk->sk_shutdown is checked, unix_release_sock() returns zero
-> > 
-> > This is only part of the story.  It turns out, there are other races
-> > involving the garbage collector, that can throw away perfectly good
-> > packets with AF_UNIX sockets in them.
-> > 
-> > The problems arise when a socket goes from installed to in-flight or
-> > vica versa during garbage collection.  Since gc is done with a
-> > spinlock held, this only shows up on SMP.
-> > 
-> > The following patch fixes it for me, but it's possibly the wrong
-> > approach.
-> > 
-> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> I have no idea what you're trying to say, but it doesn't appear to
+> address the issue I raise.
 
-Concerning this specific patch I think we need to rethink it
-a bit.
+"For one, it means you can't create a single signalfd, stick it in an
+ epoll set, and then wait on that set from multiple threads."
 
-Holding a global mutex over recvmsg() calls under AF_UNIX is pretty
-much a non-starter, this will kill performance for multi-threaded
-apps.
+Why not?
+A signalfd, like I said, is attached to the sighand, that is shared by the 
+threads.
 
-One possible solution is for the garbage collection code to hold the
-u->readlock while processing a socket, but be careful about deadlocks.
 
-Anyone want to give that a try?
+
+- Davide
+
+
