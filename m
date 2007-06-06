@@ -1,64 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXFFX3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965533AbXFFXeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965661AbXFFX3X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935394AbXFFX3Q
+	id S965533AbXFFXeX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965005AbXFFXeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:29:16 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:4989 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbXFFX3P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:29:15 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 6 Jun 2007 16:29:13 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <20070607001932.35c9591c@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0706061619560.10383@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
- <20070606235906.72439d16@the-village.bc.nu>
- <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
- <20070607001932.35c9591c@the-village.bc.nu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 6 Jun 2007 19:34:15 -0400
+Received: from mga03.intel.com ([143.182.124.21]:35318 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964996AbXFFXeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 19:34:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
+   d="scan'208";a="236415528"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Date: Wed, 6 Jun 2007 16:34:00 -0700
+User-Agent: KMail/1.9.6
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <200706061229.24486.jesse.barnes@intel.com> <20070606161103.f8e3b253.randy.dunlap@oracle.com> <Pine.LNX.4.64.0706061915090.2716@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0706061915090.2716@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706061634.00937.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007, Alan Cox wrote:
+On Wednesday, June 6, 2007 4:15 pm Justin Piszcz wrote:
+> On Wed, 6 Jun 2007, Randy Dunlap wrote:
+> > On Wed, 6 Jun 2007 18:54:37 -0400 (EDT) Justin Piszcz wrote:
+> >> Hm, not sure if it was from the patch or what but I ran this:
+> >>
+> >> 1. swapoff -a
+> >> 2. ./eatmem
+> >
+> > You usually have to access the allocated memory, like:
+> >
+> > 	*d = 1.0;
+> >
+> > for it to actually be allocated (AFAIK).
+> >
+> >>    }
+> >>
+> >>    return 0;
+> >> }
+> >>
+> >> Any idea why the OOM killer can or does not kill it?
+> >
+> > What are the values of /proc/sys/vm/overcommit* ?
+> >
+> > See Documentation/vm/overcommit-accounting .
+>
+> They should be the defaults as I do not change them:
+>
+> p34:~# find /proc/|grep -i overcommit
+> /proc/sys/vm/overcommit_memory
+> /proc/sys/vm/overcommit_ratio
+> find: /proc/5128: No such file or directory
+> p34:~# cat /proc/sys/vm/overcommit_memory
+> 0
+> p34:~# cat /proc/sys/vm/overcommit_ratio
+> 50
+> p34:~#
+>
+>
+> Comments?
 
-> > > 	prctl(PR_SPARSEFD, 1);
-> > > 
-> > > to turn on sparse fd allocation for a process ?
-> > 
-> > There was a little discussion where I tried to whisper something similar, 
-> > but Linus and Uli shot me :) - with good reasons IMO.
-> > You may link to runtimes that are not non-sequentialfd aware, and will 
-> > break them.
-> 
-> Linking to the correct version of a libary and getting the library
-> versioning right is not rocket science and isn't a sane excuse. Its no
-> different to the stdio to large fd migration issues with many Unixen and
-> they all coped just fine.
+You can be sure your memory is available if reported in /proc/meminfo or 
+at boot, since those represent the actual kernel data structures used 
+for memory allocation:
 
-I don't think it's a matter of versioning. Many userspace libraries 
-expects their fds to be compact (for many reasons - they use select, they 
-use them to index 0-based arrays, etc...), and if the kernel suddendly 
-starts returning values in the 1<<28 up arena, they sure won't be happy.
-So I believe that the correct way is that the caller specifically selects 
-the feature, leaving the legacy fd allocation as default.
+[    0.000000] On node 0 totalpages: 2061783
 
+That corresponds to 2061783*4k = 8445063168 bytes or ~8053M.  Is that 
+fairly close to what's actually installed in the machine?
 
+Note that your boot also mentions this:
 
-- Davide
+[  106.449661] mtrr: no more MTRRs available
 
+which indicates that things like X may not be able to map the 
+framebuffer with the 'write-combine' attribute, which will hurt 
+performance.  I've heard reports that turning of 'Intel QST fan 
+control' in your BIOS settings will prevent all your MTRRs from being 
+used (improperly, probably another BIOS bug) so that X will perform 
+well.  But if you don't use X on this machine, you don't have to worry 
+about it.  The other option would be to remap your MTRRs by hand to 
+free one up for X, you can do that by combining the last one or two 
+entries into a single MTRR using the API described in 
+Documentation/mtrr.txt before you start X.
 
+Jesse
