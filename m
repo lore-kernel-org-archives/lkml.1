@@ -1,72 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762688AbXFFKqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763055AbXFFKs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762688AbXFFKqx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 06:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbXFFKqr
+	id S1763055AbXFFKs7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 06:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbXFFKsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 06:46:47 -0400
-Received: from www.osadl.org ([213.239.205.134]:46833 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755630AbXFFKqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 06:46:46 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-To: John Sigler <linux.kernel@free.fr>
-Subject: Re: PCI MPEG-2 encoder with SDI input in Linux 2.6
-Date: Wed, 6 Jun 2007 12:46:07 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org,
-       Video 4 Linux Mailing List <video4linux-list@redhat.com>
-References: <46668F28.807@free.fr>
-In-Reply-To: <46668F28.807@free.fr>
-Organization: Linutronix
+	Wed, 6 Jun 2007 06:48:52 -0400
+Received: from mx2.suse.de ([195.135.220.15]:41197 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751813AbXFFKsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 06:48:51 -0400
+To: tmoore@spatial.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 4Gb ram not showing up
+References: <46642C60.209@spatial.ca>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 06 Jun 2007 13:45:10 +0200
+In-Reply-To: <46642C60.209@spatial.ca>
+Message-ID: <p73odjt9uih.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706061246.07668.hjk@linutronix.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
-the Video4Linux mailing list is a better place for this question.
-I've added them to CC. Please remove linux-kernel from CC when
-answering.
+Tom Moore <tmoore@spatial.ca> writes:
 
-Thanks,
-Hans
+> Hi everyone.
+> 
+> I am having some difficulty trying to get my 4Gb of ram recognized by
 
-Am Mittwoch 06 Juni 2007 12:40 schrieb John Sigler:
-> Hello,
-> 
-> I work for a small company involved in broadcast.
-> 
-> For the past year, we've been looking for a PCI board that meets
-> at least the following requirements:
-> 
-> 1. Serial Digital Interface input
-> http://en.wikipedia.org/wiki/Serial_Digital_Interface
-> 
-> 2. On-board (hardware) MPEG-2 encoder (our app runs on a low-spec PC) 
-> which returns a smooth CBR Transport Stream
-> http://en.wikipedia.org/wiki/Transport_stream
-> 
-> 3. Robust Linux 2.6 device driver
-> 
-> AFAIU, the major player in this space is Optibase's MovieMaker 230 
-> Publisher. AFAICT, they only support 2.4 kernels, and the board is 
-> overpriced.
-> 
-> I had hoped that Greg Kroah-Hartman's offer would change the landscape, 
-> but I don't think it has.
-> 
-> At this point, I am definitely open to any and all comments, 
-> suggestions, and ideas.
-> 
-> Regards.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+This really seems to become a FAQ recently. Please look in the archives.
+In short your BIOS is broken.  Complain to your BIOS vendor.
+
+Anyone interested to write up some web page (all the necessary 
+information on this has been posted many times in the past) with
+a FAQ that people could be pointed to?
+
+-Andi
