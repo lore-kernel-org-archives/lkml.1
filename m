@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbXFFQYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbXFFQ1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758190AbXFFQYh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 12:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbXFFQYa
+	id S1757612AbXFFQ1A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 12:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXFFQ0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 12:24:30 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59744 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751325AbXFFQY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 12:24:29 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19c6KN5FqtcuElzcy9dcjSb0kYSEyq+I0yWgqMXsc
-	iZ1tsiqsYhNKBl
-Date: Wed, 6 Jun 2007 18:24:26 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: Bad behaviour after hdparm -M  128
-Message-ID: <20070606162425.GA3943@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-	Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-References: <fa.DWgGSeKzniALToNSyX9W5NibA1w@ifi.uio.no> <4666C4B9.8060408@shaw.ca> <20070606154442.GB13166@khazad-dum.debian.net>
+	Wed, 6 Jun 2007 12:26:53 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:33375 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbXFFQ0x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 12:26:53 -0400
+Date: Wed, 6 Jun 2007 17:26:49 +0100
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, aaw@google.com, a.p.zijlstra@chello.nl
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070606162649.GA9932@skynet.ie>
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <4666ABD4.8050402@fr.ibm.com> <4666D050.7010603@googlemail.com> <4666DA55.5090405@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070606154442.GB13166@khazad-dum.debian.net>
+In-Reply-To: <4666DA55.5090405@fr.ibm.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.06 12:44:42 -0300, Henrique de Moraes Holschuh wrote:
-> On Wed, 06 Jun 2007, Robert Hancock wrote:
-> > >I used kernel 2.6.21 with the libata PIIX SATA driver and a
-> > >Seagate ST98823AS drive.
+On (06/06/07 18:01), Cedric Le Goater didst pronounce:
+> > Same problem here
 > > 
-> > Yes, that's expected if the drive rejects the command.
+> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/console.log
+> > 
+> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/mm-config2
+> > 
+> > 
+> > l *__page_check_anon_rmap+0x49
+> > 0xc1075ee5 is in __page_check_anon_rmap (mm/rmap.c:557).
+> > 552              * over the call to page_add_new_anon_rmap.
+> > 553              */
+> > 554             struct anon_vma *anon_vma = vma->anon_vma;
+> > 555             anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
+> > 556             BUG_ON(page->mapping != (struct address_space *)anon_vma);
+> > 557             BUG_ON(page->index != linear_page_index(vma, address));
+> > 558     #endif
+> > 559     }
+> > 560
+> > 561     /**
+> > 
+> > I'll try to revert
+> > mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
 > 
-> Are *all* SATA drives rejecting the command?  Mine doesn't accept it,
-> either.  And it should, AFAIK, unless IBM's HDAPS-enabled firmware started
-> ripping out accousting management from Hitachi drives, which I don't find
-> very likely...
+> yes, i gave it a try that but it seems that this patch is heavily 
+> interlaced with others. I assume Nick has a better understanding 
+> of the issue.
+> 
 
-Works here, using a WDC WD1600AAJS-00PSA0 and sata_nv.
+I do not believe this is Nick's problem. I encountered the same issue and
+the bisect ended up here;
 
-Björn
+# BISECT HERE
+mm-variable-length-argument-support.patch
+mm-variable-length-argument-support-fix.patch
+# BISECT BAD
+
+Reverting those two patches boots ok on my standalone x86 laptop. Patch authors
+cc'd. I have not read the patches yet to see what might be the problem.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
