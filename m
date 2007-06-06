@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965372AbXFFWkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965418AbXFFWln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965372AbXFFWkk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 18:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965051AbXFFWjW
+	id S965418AbXFFWln (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 18:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965405AbXFFWky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:39:22 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:40603 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964867AbXFFWjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:39:20 -0400
-Date: Wed, 6 Jun 2007 15:37:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Message-Id: <20070606153737.2c9da784.randy.dunlap@oracle.com>
-In-Reply-To: <200706061528.44070.jesse.barnes@intel.com>
-References: <200706061229.24486.jesse.barnes@intel.com>
-	<200706061524.52628.jesse.barnes@intel.com>
-	<Pine.LNX.4.64.0706061826260.5415@p34.internal.lan>
-	<200706061528.44070.jesse.barnes@intel.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Jun 2007 18:40:54 -0400
+Received: from gw.goop.org ([64.81.55.164]:59346 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965402AbXFFWkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 18:40:52 -0400
+Message-ID: <466737E5.9090802@goop.org>
+Date: Wed, 06 Jun 2007 15:40:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: [PATCH]  xen: fix xen-smp.patch: setup_runstate_info
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007 15:28:43 -0700 Jesse Barnes wrote:
+Somehow an smp_processor_id() survived the transition to passing the
+cpu around.
 
-> On Wednesday, June 6, 2007 3:26 pm Justin Piszcz wrote:
-> > Nope, I booted with only netconsole= options.  I have a lot of HW in
-> > the box and I guess the buffer is too small.  Not sure where to
-> > change it in the kernel.  Looking..
-> 
-> It's called "kernel log buffer size" and it's in "General setup".
-
-or you can just boot with "log_buf_len=256k" on the kernel boot line (e.g.)
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Jan Beulich <jbeulich@novell.com>
 
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ arch/i386/xen/time.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+===================================================================
+--- a/arch/i386/xen/time.c
++++ b/arch/i386/xen/time.c
+@@ -110,7 +110,7 @@ static void setup_runstate_info(int cpu)
+ 	area.addr.v = &per_cpu(runstate, cpu);
+ 
+ 	if (HYPERVISOR_vcpu_op(VCPUOP_register_runstate_memory_area,
+-			       smp_processor_id(), &area))
++			       cpu, &area))
+ 		BUG();
+ }
+ 
+
+
