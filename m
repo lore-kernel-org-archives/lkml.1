@@ -1,61 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964941AbXFFGsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965248AbXFFGsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964941AbXFFGsR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 02:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964980AbXFFGrt
+	id S965248AbXFFGsf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 02:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964980AbXFFGsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 02:47:49 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:44644 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964964AbXFFGrs (ORCPT
+	Wed, 6 Jun 2007 02:48:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43522 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965197AbXFFGsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 02:47:48 -0400
-Date: Wed, 6 Jun 2007 08:47:44 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Bad behaviour after hdparm -M  128
-Message-ID: <20070606064744.GA14552@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 6 Jun 2007 02:48:22 -0400
+Date: Tue, 5 Jun 2007 23:48:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kevin Lloyd <klloyd@sierrawireless.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, torvalds@linux-foundation.org
+Subject: Re: [PATCH 2.6.21.3] USB: add support for TRU-install and new
+ VID/PIDs to Sierra Wireless driver
+Message-Id: <20070605234805.b03bb87c.akpm@linux-foundation.org>
+In-Reply-To: <4665D518.8020508@sierrawireless.com>
+References: <4665D518.8020508@sierrawireless.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 05 Jun 2007 14:26:48 -0700 Kevin Lloyd <klloyd@sierrawireless.com> wrote:
 
-I tried to enable acoustic management on my SATA drive, because
-hdparm -I reported a recommended value of 128, and a current value
-of 0 (off).
+> This patch is derived from the 2.6.21.3 kernel source and adds support for the new TRU-install
+> feature (without this support new devices will not work), and add new UMTS device VID/PIDs.
 
-I did this:
+2.6.21.3 is quite old, sorry.  The patch throws several rejects.
 
-$ sudo hdparm -M 128 /dev/sda
-/dev/sda:
- setting acoustic management to 128
- HDIO_DRIVE_CMD:ACOUSTIC failed: Input/output error
- acoustic      = not supported
-
-It apperently failed, no big deal.
-
-However, I had these messages in the kernel log, and they don't look
-really harmless to me:
-
-ata3.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
-ata3.01: cmd ef/42:80:00:00:00/00:00:00:00:00/50 tag 0 cdb 0x0 data 0 
-         res 51/04:80:00:00:00/00:00:00:00:00/50 Emask 0x1 (device error)
-ata3.01: configured for UDMA/133
-ata3: EH complete
-SCSI device sda: 156301488 512-byte hdwr sectors (80026 MB)
-sda: Write Protect is off
-sda: Mode Sense: 00 3a 00 00
-SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-
-Is this expected behaviour?
-
-I used kernel 2.6.21 with the libata PIIX SATA driver and a
-Seagate ST98823AS drive.
-
-Regards,
-Tino
+Against 2.6.22-rc4 would be preferred.  Against git-snapshot-of-the-day
+from ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots/ is even better.
