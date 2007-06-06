@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765521AbXFFRop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932650AbXFFRrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765521AbXFFRop (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 13:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbXFFRoi
+	id S932650AbXFFRrJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 13:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbXFFRq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 13:44:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51212 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751829AbXFFRoh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 13:44:37 -0400
-Date: Wed, 6 Jun 2007 10:43:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: 2.6.22-rc4-mm1 -- ia64 build failure
-Message-Id: <20070606104358.fbafc08b.akpm@linux-foundation.org>
-In-Reply-To: <4666BB65.8050800@shadowen.org>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-	<4666BB65.8050800@shadowen.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 6 Jun 2007 13:46:57 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:52722 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751829AbXFFRq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 13:46:56 -0400
+Date: Wed, 6 Jun 2007 19:17:11 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Size of kernel modules
+Message-ID: <20070606171711.GA5918@uranus.ravnborg.org>
+References: <20070606170534.67b5dea9.Christoph.Pleger@cs.uni-dortmund.de> <9a8748490706060851g59f3043ah82a0390ffc2b290b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9a8748490706060851g59f3043ah82a0390ffc2b290b@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007 14:49:25 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
-
-> Seeing this on an ia64:
+On Wed, Jun 06, 2007 at 05:51:24PM +0200, Jesper Juhl wrote:
+> On 06/06/07, Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de> wrote:
+> >Hello,
+> >
+> >I have a machine here which I installed with Ubuntu 7.04. Immediately
+> >after the installation had been finished, I installed the Ubuntu package
+> >which contains the Ubuntu-modified sources of the linux kernel. I
+> >extracted the resulting tar.bz2-file, copied the configuration of the
+> >currently running kernel to .config and created a file localversion-irb
+> >which contains the line "-irb" and then called "make menuconfig".
 > 
-> drivers/built-in.o: In function `efi_setup_pcdp_console':
-> (.init.text+0x13be2): undefined reference to `early_serial_console_init'
-> drivers/built-in.o: In function `efi_setup_pcdp_console':
-> (.init.text+0x13de2): undefined reference to `early_serial_console_init'
-> make: *** [.tmp_vmlinux1] Error 1
+> You forgot "make oldconfig". When you copy in a .config file from a
+> different kernel, always do oldconfig (just get in the habbit, if the
+> .config from the same kernel it's harmless).
+Christoph used menuconfig so his configuration was perfectly OK and
+oldconfig would not have changed anything.
 
-We really exceeded ourselves this time.  .config, please?
+	Sam
