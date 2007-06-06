@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936282AbXFFXPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965065AbXFFXQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936282AbXFFXPh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935964AbXFFXPF
+	id S965065AbXFFXQP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935862AbXFFXPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:15:05 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50727 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S935900AbXFFXPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:15:04 -0400
-Date: Thu, 7 Jun 2007 00:19:32 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070607001932.35c9591c@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
-	<20070606235906.72439d16@the-village.bc.nu>
-	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 19:15:55 -0400
+Received: from lucidpixels.com ([75.144.35.66]:43184 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935874AbXFFXPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 19:15:54 -0400
+Date: Wed, 6 Jun 2007 19:15:53 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Jesse Barnes <jesse.barnes@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+In-Reply-To: <20070606161103.f8e3b253.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0706061915090.2716@p34.internal.lan>
+References: <200706061229.24486.jesse.barnes@intel.com>
+ <200706061524.52628.jesse.barnes@intel.com> <Pine.LNX.4.64.0706061826260.5415@p34.internal.lan>
+ <200706061528.44070.jesse.barnes@intel.com> <20070606153737.2c9da784.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0706061852590.2716@p34.internal.lan>
+ <20070606161103.f8e3b253.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 	prctl(PR_SPARSEFD, 1);
-> > 
-> > to turn on sparse fd allocation for a process ?
-> 
-> There was a little discussion where I tried to whisper something similar, 
-> but Linus and Uli shot me :) - with good reasons IMO.
-> You may link to runtimes that are not non-sequentialfd aware, and will 
-> break them.
 
-Linking to the correct version of a libary and getting the library
-versioning right is not rocket science and isn't a sane excuse. Its no
-different to the stdio to large fd migration issues with many Unixen and
-they all coped just fine.
 
-Really all this new syscall hackery stuff is just too ugly to live. If
-you use the prctl then yes we have a bit of library versioning to worry
-about for the odd library that cares but thats a once over thing. The
-crappy zillion extra syscalls we have to support for years and years just
-to save a little bit of userspace work.
+On Wed, 6 Jun 2007, Randy Dunlap wrote:
 
-At its most moronic its no different to 32 and 64bit binary linking - and
-the gnu tools manage to cope with stopping me linking a 32bit app to a
-64bit lib and vice versa just fine, so I'm sure they can cope the same
-way with sparse fd safe/non sparese fd safe libraries
+> On Wed, 6 Jun 2007 18:54:37 -0400 (EDT) Justin Piszcz wrote:
+>
+>> Hm, not sure if it was from the patch or what but I ran this:
+>>
+>> 1. swapoff -a
+>> 2. ./eatmem
+>>
+>
+> You usually have to access the allocated memory, like:
+>
+> 	*d = 1.0;
+>
+> for it to actually be allocated (AFAIK).
+>
+>>    }
+>>
+>>    return 0;
+>> }
+>>
+>> Any idea why the OOM killer can or does not kill it?
+>
+> What are the values of /proc/sys/vm/overcommit* ?
+>
+> See Documentation/vm/overcommit-accounting .
 
+They should be the defaults as I do not change them:
+
+p34:~# find /proc/|grep -i overcommit
+/proc/sys/vm/overcommit_memory
+/proc/sys/vm/overcommit_ratio
+find: /proc/5128: No such file or directory
+p34:~# cat /proc/sys/vm/overcommit_memory
+0
+p34:~# cat /proc/sys/vm/overcommit_ratio
+50
+p34:~#
+
+
+Comments?
