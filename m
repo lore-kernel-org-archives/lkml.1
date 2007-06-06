@@ -1,73 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965118AbXFFGmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965128AbXFFGrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965118AbXFFGmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 02:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964819AbXFFGms
+	id S965128AbXFFGrw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 02:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbXFFGro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 02:42:48 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:44777 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964867AbXFFGms (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 02:42:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=MLWKKADgNBoXuWRONJrEv6JjkOH2U1LP6gboUu5NUozWPaBNdQCrJ2CoEyfsFuSvi
-	64bbmBE6Z9wDigQyFV0IA==
-Date: Tue, 5 Jun 2007 23:42:09 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@engr.sgi.com>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
- globally
-In-Reply-To: <1181110846.7348.154.camel@twins>
-Message-ID: <alpine.DEB.0.99.0706052334280.30783@chino.kir.corp.google.com>
-References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
- <1181110846.7348.154.camel@twins>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 6 Jun 2007 02:47:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36091 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756907AbXFFGrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 02:47:43 -0400
+Subject: Re: signalfd API issues (was Re: [PATCH/RFC] signal races/bugs,
+	losing TIF_SIGPENDING and other woes)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <alpine.LFD.0.98.0706052035410.4205@woody.linux-foundation.org>
+References: <1181006711.31677.97.camel@localhost.localdomain>
+	 <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org>
+	 <1181009413.31677.117.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com>
+	 <1181013756.31677.123.camel@localhost.localdomain>
+	 <1181023787.2785.14.camel@entropy>
+	 <1181028453.31677.127.camel@localhost.localdomain>
+	 <1181087462.2788.8.camel@entropy>
+	 <Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com>
+	 <1181088936.2788.10.camel@entropy>
+	 <Pine.LNX.4.64.0706051736120.23673@alien.or.mcafeemobile.com>
+	 <1181091523.2788.28.camel@entropy>
+	 <1181098204.31677.158.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0706052022430.23673@alien.or.mcafeemobile.com>
+	 <alpine.LFD.0.98.0706052035410.4205@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 16:47:31 +1000
+Message-Id: <1181112452.31677.220.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007, Peter Zijlstra wrote:
+On Tue, 2007-06-05 at 20:37 -0700, Linus Torvalds wrote:
 
-> > diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-> > --- a/kernel/cpuset.c
-> > +++ b/kernel/cpuset.c
-> > @@ -2431,12 +2431,6 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
-> >  	might_sleep_if(!(gfp_mask & __GFP_HARDWALL));
-> >  	if (node_isset(node, current->mems_allowed))
-> >  		return 1;
-> > -	/*
-> > -	 * Allow tasks that have access to memory reserves because they have
-> > -	 * been OOM killed to get memory anywhere.
-> > -	 */
-> > -	if (unlikely(test_thread_flag(TIF_MEMDIE)))
-> > -		return 1;
-> >  	if (gfp_mask & __GFP_HARDWALL)	/* If hardwall request, stop here */
-> >  		return 0;
-> >  
+> I agree that it would be a limitation, but it would be a sane one.
 > 
-> This seems a little pointless, since cpuset_zone_allowed_softwall() is
-> only effective with ALLOC_CPUSET, and the ALLOC_NO_WATERMARKS
-> allocations opened up by TIF_MEMDIE don't use that.
-> 
+> How about we try to live with that limitation, if only to avoid the issue 
+> of having the private signals being stolen by anybody else. If we actually 
+> find a real-live use-case where that is bad in the future, we can re-visit 
+> the issue - it's always easier to _expand_ semantics later than it is to 
+> restrict them, so I think this thread is a good argument for starting it 
+> out in a more restricted form before people start depending on semantics 
+> that can be nasty..
 
-That's the change.  Memory reserves on a per-zone level would now be used 
-with respect to ALLOC_NO_WATERMARKS because TIF_MEMDIE tasks no longer 
-have an explicit bypass for them.  If the node is not in the task's 
-mems_allowed and it's a __GFP_HARDWALL allocation or if it's neither
-PF_EXITING or in the nearest_exclusive_ancestor() of that task's cpuset, 
-then we move on to the next zone in get_page_from_freelist().
+Here's a patch. Let me know if I missed something.
 
-The problem the patch addresses is that, as you mentioned, tasks with 
-TIF_MEMDIE have an explicit bypass over using any memory reserves and can 
-thus, depending on zonelist ordering, allocate first on nodes outside its 
-mems_allowed even in the case of an exclusive cpuset before exhausting its 
-own memory.  That behavior is wrong.
+Fix races with signalfd and TIF_SIGPENDING
 
-		David
+We must never clear TIF_SIGPENDING for another task. This patch
+ensures that by preventing recalc_sigpending_tsk() from clearing
+that bit if the target task is not current.
+
+In addition we also prevent __dequeue_signal() from calling the
+DRM notifier thingy when stealing signals from another task via
+signalfd.
+
+Finally, we only dequeue shared signals when called from another
+task (via signalfd), we leave private signals alone.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+Index: linux-work/kernel/signal.c
+===================================================================
+--- linux-work.orig/kernel/signal.c	2007-06-06 16:38:05.000000000 +1000
++++ linux-work/kernel/signal.c	2007-06-06 16:42:43.000000000 +1000
+@@ -105,7 +105,12 @@ static int recalc_sigpending_tsk(struct 
+ 		set_tsk_thread_flag(t, TIF_SIGPENDING);
+ 		return 1;
+ 	}
+-	clear_tsk_thread_flag(t, TIF_SIGPENDING);
++	/* Only clear the flag when this is issued by the target task to
++	 * clearing TIF_SIGPENDING after the target task decided to return
++	 * -ERESTARTSYS from a syscall
++	 */
++	if (t == current)
++		clear_tsk_thread_flag(t, TIF_SIGPENDING);
+ 	return 0;
+ }
+ 
+@@ -328,12 +333,12 @@ static int collect_signal(int sig, struc
+ }
+ 
+ static int __dequeue_signal(struct sigpending *pending, sigset_t *mask,
+-			siginfo_t *info)
++			    siginfo_t *info, int stealing)
+ {
+ 	int sig = next_signal(pending, mask);
+ 
+ 	if (sig) {
+-		if (current->notifier) {
++		if (current->notifier && !stealing) {
+ 			if (sigismember(current->notifier_mask, sig)) {
+ 				if (!(current->notifier)(current->notifier_data)) {
+ 					clear_thread_flag(TIF_SIGPENDING);
+@@ -357,10 +362,19 @@ static int __dequeue_signal(struct sigpe
+  */
+ int dequeue_signal(struct task_struct *tsk, sigset_t *mask, siginfo_t *info)
+ {
+-	int signr = __dequeue_signal(&tsk->pending, mask, info);
++	int stealing = tsk != current;
++	int signr = 0;
++
++	/* Only dequeue private signals if we are the owner, not when signals
++	 * are being stolen by another task via signalfd
++	 */
++	if (!stealing)
++		signr = __dequeue_signal(&tsk->pending, mask, info, 0);
++
++	/* No private signal, look for shared ones */
+ 	if (!signr) {
+ 		signr = __dequeue_signal(&tsk->signal->shared_pending,
+-					 mask, info);
++					 mask, info, stealing);
+ 		/*
+ 		 * itimer signal ?
+ 		 *
+
+
