@@ -1,62 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbXFFJ3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbXFFJeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760895AbXFFJ3y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXFFJ3q
+	id S1760115AbXFFJeq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXFFJei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:29:46 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:32953 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752140AbXFFJ3q convert rfc822-to-8bit (ORCPT
+	Wed, 6 Jun 2007 05:34:38 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:3915 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756160AbXFFJeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:29:46 -0400
-Message-Id: <46669AD4.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 06 Jun 2007 11:30:28 +0200
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Keir Fraser" <keir@xensource.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       <virtualization@lists.osdl.org>,
-       "Xen-devel" <xen-devel@lists.xensource.com>,
-       "Chris Wright" <chrisw@sous-sol.org>, "Andi Kleen" <ak@suse.de>,
-       "lkml" <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [patch 14/33] xen: xen time implementation
-References: <46668EC6.76E4.0078.0@novell.com>
- <C28C34EB.101FE%keir@xensource.com>
-In-Reply-To: <C28C34EB.101FE%keir@xensource.com>
+	Wed, 6 Jun 2007 05:34:37 -0400
+Subject: Re: [PATCH 4/4] mm: variable length argument support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <20070606020651.19a89dca.akpm@linux-foundation.org>
+References: <20070605150523.786600000@chello.nl>
+	 <20070605151203.790585000@chello.nl>
+	 <20070606013658.20bcbe2f.akpm@linux-foundation.org>
+	 <1181120061.7348.177.camel@twins>
+	 <20070606020651.19a89dca.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 11:34:33 +0200
+Message-Id: <1181122473.7348.188.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Keir Fraser <keir@xensource.com> 06.06.07 10:54 >>>
->On 6/6/07 09:39, "Jan Beulich" <jbeulich@novell.com> wrote:
->
->> The issue is
->> that on that system, transition into ACPI mode takes over 600ms (SMM
->> execution, and hence no interrupts delivered during that time), and with
->> Xen using the PIT (PM timer support was added by Keir as a result of this,
->> but that doesn't cure the problem here, it just reduces the likelihood it'll
->> be encountered) platform time and local time got pretty much out of sync.
->
->If you have an ACPI PM timer in your system (and if you have SMM then your
->system is almost certainly modern enough to have one) then surely the
->problem is fixed for all practical purposes? The problem was overflow of a
->fixed-width platform counter. The PIT wraps every ~50ms, but the ACPI PM
->timer will wrap only every ~4s. It would be quite unreasonable for SMM to
->take the CPU away for multiple seconds, even as a one-time boot operation.
+On Wed, 2007-06-06 at 02:06 -0700, Andrew Morton wrote:
 
-No, I don't think the problem's gone with the PM timer - it is just much less
-likely. Since you depend on the TSC (which must generally be assumed be
-unsyncronized across CPUs) and on the error correction factor (which shows
-non-zero values every few seconds), getting the interpolated times on two
-CPUs out of sync is still possible, and given the way the time keeping code
-works even being off by just a single nanosecond may be fatal.
+> I think the same problem will happen on NOMMU && STACK_GROWS_UP.  There are
+> several new references to bprm->vma in there, not all inside CONFIG_MMU.
 
-Jan
+I found two: one in setup_arg_pages() and one in get_arg_page() both are
+under CONFIG_MMU.
+
+---
+fix a no-MMU compile error on flush_cache_page() and clean up the no-MMU
+code a bit by placing more #ifdef CONFIG_MMU stuff into their own
+function.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/exec.c |  112 +++++++++++++++++++++++++++++++++++++-------------------------
+ 1 file changed, 68 insertions(+), 44 deletions(-)
+
+Index: linux-2.6-2/fs/exec.c
+===================================================================
+--- linux-2.6-2.orig/fs/exec.c	2007-06-05 16:48:52.000000000 +0200
++++ linux-2.6-2/fs/exec.c	2007-06-06 11:21:35.000000000 +0200
+@@ -215,6 +215,58 @@ static void free_arg_pages(struct linux_
+ {
+ }
+ 
++static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
++		struct page *page)
++{
++	flush_cache_page(bprm->vma, pos, page_to_pfn(page));
++}
++
++static int __bprm_mm_init(struct linux_binprm *bprm)
++{
++	int err = -ENOMEM;
++	struct vm_area_struct *vma = NULL;
++	struct mm_struct *mm = bprm->mm;
++
++	bprm->vma = vma = kmem_cache_zalloc(vm_area_cachep, GFP_KERNEL);
++	if (!vma)
++		goto err;
++
++	down_write(&mm->mmap_sem);
++	vma->vm_mm = mm;
++
++	/*
++	 * Place the stack at the top of user memory.  Later, we'll
++	 * move this to an appropriate place.  We don't use STACK_TOP
++	 * because that can depend on attributes which aren't
++	 * configured yet.
++	 */
++	vma->vm_end = STACK_TOP_MAX;
++	vma->vm_start = vma->vm_end - PAGE_SIZE;
++
++	vma->vm_flags = VM_STACK_FLAGS;
++	vma->vm_page_prot = protection_map[vma->vm_flags & 0x7];
++	err = insert_vm_struct(mm, vma);
++	if (err) {
++		up_write(&mm->mmap_sem);
++		goto err;
++	}
++
++	mm->stack_vm = mm->total_vm = 1;
++	up_write(&mm->mmap_sem);
++
++	bprm->p = vma->vm_end - sizeof(void *);
++
++	return 0;
++
++err:
++	if (vma) {
++		bprm->vma = NULL;
++		kmem_cache_free(vm_area_cachep, vma);
++	}
++
++	return err;
++}
++
+ #else
+ 
+ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
+@@ -253,6 +305,17 @@ static void free_arg_pages(struct linux_
+ 		free_arg_page(bprm, i);
+ }
+ 
++static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
++		struct page *page)
++{
++}
++
++static int __bprm_mm_init(struct linux_binprm *bprm)
++{
++	bprm->p = PAGE_SIZE * MAX_ARG_PAGES - sizeof(void *);
++	return 0;
++}
++
+ #endif /* CONFIG_MMU */
+ 
+ /*
+@@ -265,61 +328,23 @@ int bprm_mm_init(struct linux_binprm *bp
+ {
+ 	int err;
+ 	struct mm_struct *mm = NULL;
+-	struct vm_area_struct *vma = NULL;
+ 
+ 	bprm->mm = mm = mm_alloc();
+ 	err = -ENOMEM;
+ 	if (!mm)
+ 		goto err;
+ 
+-	if ((err = init_new_context(current, mm)))
++	err = init_new_context(current, mm);
++	if (err)
+ 		goto err;
+ 
+-#ifdef CONFIG_MMU
+-	bprm->vma = vma = kmem_cache_zalloc(vm_area_cachep, GFP_KERNEL);
+-	err = -ENOMEM;
+-	if (!vma)
++	err = __bprm_mm_init(bprm);
++	if (err)
+ 		goto err;
+ 
+-	down_write(&mm->mmap_sem);
+-	{
+-		vma->vm_mm = mm;
+-
+-		/*
+-		 * Place the stack at the top of user memory.  Later, we'll
+-		 * move this to an appropriate place.  We don't use STACK_TOP
+-		 * because that can depend on attributes which aren't
+-		 * configured yet.
+-		 */
+-		vma->vm_end = STACK_TOP_MAX;
+-		vma->vm_start = vma->vm_end - PAGE_SIZE;
+-
+-		vma->vm_flags = VM_STACK_FLAGS;
+-		vma->vm_page_prot = protection_map[vma->vm_flags & 0x7];
+-		if ((err = insert_vm_struct(mm, vma))) {
+-			up_write(&mm->mmap_sem);
+-			goto err;
+-		}
+-
+-		mm->stack_vm = mm->total_vm = 1;
+-	}
+-	up_write(&mm->mmap_sem);
+-
+-	bprm->p = vma->vm_end - sizeof(void *);
+-#else
+-	bprm->p = PAGE_SIZE * MAX_ARG_PAGES - sizeof(void *);
+-#endif
+-
+ 	return 0;
+ 
+ err:
+-#ifdef CONFIG_MMU
+-	if (vma) {
+-		bprm->vma = NULL;
+-		kmem_cache_free(vm_area_cachep, vma);
+-	}
+-#endif
+-
+ 	if (mm) {
+ 		bprm->mm = NULL;
+ 		mmdrop(mm);
+@@ -428,8 +453,7 @@ static int copy_strings(int argc, char _
+ 				kmapped_page = page;
+ 				kaddr = kmap(kmapped_page);
+ 				kpos = pos & PAGE_MASK;
+-				flush_cache_page(bprm->vma, kpos,
+-						 page_to_pfn(kmapped_page));
++				flush_arg_page(bprm, kpos, kmapped_page);
+ 			}
+ 			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
+ 				ret = -EFAULT;
+
 
