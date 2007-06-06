@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935463AbXFFUXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935503AbXFFUYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935463AbXFFUXo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 16:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932650AbXFFUXf
+	id S935503AbXFFUYX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 16:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbXFFUYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 16:23:35 -0400
-Received: from waste.org ([66.93.16.53]:41773 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753608AbXFFUXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 16:23:34 -0400
-Date: Wed, 6 Jun 2007 15:23:14 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Interesting interaction between lguest and CFS
-Message-ID: <20070606202314.GH11115@waste.org>
-References: <20070604173710.GR11166@waste.org> <20070604175436.GC30274@elte.hu> <20070604184106.GG11115@waste.org> <20070605071904.GB25163@elte.hu> <20070605140342.GR11115@waste.org> <b647ffbd0706050814u1e145b82qdb344d475d9ffe93@mail.gmail.com> <b647ffbd0706050841v2a326fb4n128249131ccbc11a@mail.gmail.com> <20070605195015.GA24348@elte.hu>
-MIME-Version: 1.0
+	Wed, 6 Jun 2007 16:24:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59920 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932650AbXFFUYM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 16:24:12 -0400
+Date: Wed, 6 Jun 2007 21:24:09 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Richard Knutsson <ricknu-0@student.ltu.se>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Josh Triplett <josh@freedesktop.org>
+Subject: Re: generic bool and sparse errors?
+Message-ID: <20070606202409.GY4095@ftp.linux.org.uk>
+References: <4666FD0A.4060609@intel.com> <466708D8.90208@student.ltu.se> <46671668.4090805@intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070605195015.GA24348@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <46671668.4090805@intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 09:50:15PM +0200, Ingo Molnar wrote:
-> Matt, could you run this for 1-2 minutes and send us the sched_debug.txt 
-> output?
+On Wed, Jun 06, 2007 at 01:17:44PM -0700, Kok, Auke wrote:
+> well the sparse warning is about signedness. Either sparse needs to "know" 
+> that bool is unsigned, or the kernel headers need to somehow make bool 
+> unsigned... the latter choice would come down to just that, but it doesn't 
+> look like a good idea to me either somehow.
 
-http://selenic.com/sched_debug.txt.gz
-
--- 
-Mathematics is the supreme nostalgia of our time.
+sparse treats _Bool as 1-bit integer type.  It's considerably more
+complicated beast; for one thing (_Bool)2 is 1, not 0.  For another,
+several places make unpleasant assumptions that size in bits is a
+multiple of bits_in_char.  Which would be fine, but sparse has it
+set to 1 for _Bool.  With obvious results...
