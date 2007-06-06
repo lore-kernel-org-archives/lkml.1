@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763715AbXFFL0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764247AbXFFL0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763715AbXFFL0R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 07:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760748AbXFFL0J
+	id S1764247AbXFFL0v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 07:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760748AbXFFL0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 07:26:09 -0400
-Received: from lug-owl.de ([195.71.106.12]:34537 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759635AbXFFL0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 07:26:08 -0400
-Date: Wed, 6 Jun 2007 13:26:07 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: serio interface
-Message-ID: <20070606112607.GM2649@lug-owl.de>
-Mail-Followup-To: "Lars K.W. Gohlke" <lkwg82@gmx.de>,
-	linux-kernel@vger.kernel.org
-References: <46667A3B.8070708@gmx.de> <20070606091503.GI2649@lug-owl.de> <46667FB9.70206@gmx.de> <20070606095159.GK2649@lug-owl.de> <46668ED5.5000807@gmx.de> <20070606104426.GL2649@lug-owl.de> <466691DD.9060904@gmx.de>
+	Wed, 6 Jun 2007 07:26:43 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:59986 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760551AbXFFL0l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 07:26:41 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>, Andi Kleen <ak@suse.de>,
+       Jiri Kosina <jikos@jikos.cz>,
+       kernel list <linux-kernel@vger.kernel.org>
+Reply-To: 7eggert@gmx.de
+Date: Wed, 06 Jun 2007 13:26:24 +0200
+References: <8siVc-46n-17@gated-at.bofh.it> <8sktY-6G7-13@gated-at.bofh.it> <8skDC-6Su-5@gated-at.bofh.it> <8sl6G-7uE-9@gated-at.bofh.it> <8slgk-7Gl-3@gated-at.bofh.it> <8slq0-89X-9@gated-at.bofh.it> <8snLc-3ik-29@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="1VtFtf1bAEcuptAG"
-Content-Disposition: inline
-In-Reply-To: <466691DD.9060904@gmx.de>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1Hvtej-0000eT-3V@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX197J+b8gOnO5PlSRyADSUbhxjFOjjkyHC6/QyD
+ BitjHAQ5FG5TNI1RvGryai30VshTmmJMAgzr995R00w2RNO/Kh
+ 09hh09ZGroGJnyDUbu7XQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> On Mon, 04 Jun 2007, Dmitry Torokhov wrote:
 
---1VtFtf1bAEcuptAG
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>> >...but I'm not quite sure it is a buggy keyboard. It happens _way_ too
+>> >often. Launch the line above and try to do some typing...
+>> 
+>> This used to work fine on my box last time I tried it (the switch
+>> itself is offloaded to a keventd and shoud not get in the way) but
+>> then they push all kind of ACPI/SMM crap together with KBC so who
+>> knows... I should try it again when I get home.
+> 
+> Err... in laptops, almost *always* the KDC is emulated by the embedded
+> controller, so I bet you're right on the money, there.  It is not "a buggy
+> KDC", it is a buggy EC firmware and/or buggy SMBIOS which is a lot more
+> common.
 
-On Wed, 2007-06-06 12:52:13 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wrote:
-> Jan-Benedict Glaw schrieb:
-> > On Wed, 2007-06-06 12:39:17 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wro=
-te:
-> > > Jan-Benedict Glaw schrieb:
-> > > > OTOH, why do you want to do the serial stuff in kernel land? Isn't =
-it
-> > > > a *lot* easier to do it in userspace? What's your specific device y=
-ou
-> > > > want to work on?
->
-> > You didn't actually answer any of my questions.
+It happens on my desktop using an original IBM Model M PS/2 keyboard, too.
 
-> sorry.
->=20
-> I want to use the interface aka /dev/ttyS0.
-> I want to process data inside of a kernel module to provide it /proc
-> (done) or as own char-dev (done).
->=20
-> but I can not grab the data.
->=20
-> It is part of my project in my studies.
->=20
-> It is more a conceptual work, but important. I want to release a howto,
-> when I complete.
+The keyboard controler is known to be too slow for 80286, you shouldn't be
+surprised by that thing being too slow for modern PC, at least if you're
+stroboscoping the LED.
+-- 
+knghtbrd:<JHM> AIX - the Unix from the universe where Spock has a beard.
 
-You still answer unasked questions. Please answer inline:
-
-  * Why do you wanto to do the serial stuff in kernel land?
-
-  * Isn't it easier to do it in userspace?
-
-  * What specific device do you work on?
-
-  * New: Is it a wise idea to do it in kernel land?
-
-The /proc filesystem has been somewhat obsoleted in favour of sysfs
-for device/driver information.
-
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-Signature of:                   ...und wenn Du denkst, es geht nicht mehr,
-the second  :                          kommt irgendwo ein Lichtlein her.
-
---1VtFtf1bAEcuptAG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGZpnPHb1edYOZ4bsRAlwpAJsEIjlclrhWtFi4k99Qaqndl7I+iACfYgtD
-ltEnpDm1xF32BkIKYUINM+M=
-=GJmF
------END PGP SIGNATURE-----
-
---1VtFtf1bAEcuptAG--
+Friﬂ, Spammer: GpQo.qz@7eggert.dyndns.org mjjrpVo@wbbvIdbS.7eggert.dyndns.org
+ Fbb95rv3@7eggert.dyndns.org m@u.7eggert.dyndns.org o@ffkpN.7eggert.dyndns.org
