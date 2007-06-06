@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbXFFJH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbXFFJHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759517AbXFFJH2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXFFJHR
+	id S1756020AbXFFJHt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbXFFJHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:07:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54871 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751738AbXFFJHO (ORCPT
+	Wed, 6 Jun 2007 05:07:39 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1581 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbXFFJHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:07:14 -0400
-Date: Wed, 6 Jun 2007 02:06:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 4/4] mm: variable length argument support
-Message-Id: <20070606020651.19a89dca.akpm@linux-foundation.org>
-In-Reply-To: <1181120061.7348.177.camel@twins>
-References: <20070605150523.786600000@chello.nl>
-	<20070605151203.790585000@chello.nl>
-	<20070606013658.20bcbe2f.akpm@linux-foundation.org>
-	<1181120061.7348.177.camel@twins>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 05:07:38 -0400
+Date: Wed, 6 Jun 2007 10:07:34 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-mips@linux-mips.org, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] zs.c: Drain the transmission line
+Message-ID: <Pine.LNX.4.64N.0706051145260.15653@blysk.ds.pg.gda.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007 10:54:21 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+ This is an update to the zs.c driver to make it wait for the transmission 
+line to become idle before disabling the transmitter or resetting the 
+chip.  This way the character that is on the way at the time one of these 
+actions is about to be performed does not get corrupted.
 
-> > > It is a bit peculiar in that we have one task with two mm's, one of which is
-> > > inactive.
-> > > 
-> > > ...
-> > >
-> > > +				flush_cache_page(bprm->vma, kpos,
-> > > +						 page_to_pfn(kmapped_page));
-> 
-> Bah, and my frv cross build bums out on an unrelated change,..
-> I'll see if I can get a noMMU arch building, in the mean time, would you
-> try this:
-> 
-> ---
-> 
-> Since no-MMU doesn't do the fancy inactive mm access there is no need to
-> flush cache.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
-> 
-> Index: linux-2.6-2/fs/exec.c
-> ===================================================================
-> --- linux-2.6-2.orig/fs/exec.c	2007-06-05 16:48:52.000000000 +0200
-> +++ linux-2.6-2/fs/exec.c	2007-06-06 10:49:19.000000000 +0200
-> @@ -428,8 +428,10 @@ static int copy_strings(int argc, char _
->  				kmapped_page = page;
->  				kaddr = kmap(kmapped_page);
->  				kpos = pos & PAGE_MASK;
-> +#ifdef CONFIG_MMU
->  				flush_cache_page(bprm->vma, kpos,
->  						 page_to_pfn(kmapped_page));
-> +#endif
->  			}
->  			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
->  				ret = -EFAULT;
-> 
+ Plus a change to reset the index/data pointer first before issuing a chip 
+reset just in case the state is wrong when control of the chip is taken 
+the first time.
 
-I think the same problem will happen on NOMMU && STACK_GROWS_UP.  There are
-several new references to bprm->vma in there, not all inside CONFIG_MMU.
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ These are almost obvious, but I have run-time tested them just in case.  
+They make the switch from the initial (early printk) PROM-based console 
+less disruptive.  The change to load_zsregs() also affects set_termios().
 
+ Please apply,
+
+  Maciej
+
+patch-mips-2.6.21-20070502-zs-serial-drain-3
+diff -up --recursive --new-file linux-mips-2.6.21-20070502.macro/drivers/serial/zs.c linux-mips-2.6.21-20070502/drivers/serial/zs.c
+--- linux-mips-2.6.21-20070502.macro/drivers/serial/zs.c	2007-06-05 11:08:24.000000000 +0000
++++ linux-mips-2.6.21-20070502/drivers/serial/zs.c	2007-06-05 11:08:57.000000000 +0000
+@@ -240,10 +240,24 @@ static int zs_transmit_drain(struct zs_p
+ 	return loops;
+ }
+ 
++static int zs_line_drain(struct zs_port *zport, int irq)
++{
++	struct zs_scc *scc = zport->scc;
++	int loops = 10000;
++
++	while (!(read_zsreg(zport, R1) & ALL_SNT) && loops--) {
++		zs_spin_unlock_cond_irq(&scc->zlock, irq);
++		udelay(2);
++		zs_spin_lock_cond_irq(&scc->zlock, irq);
++	}
++	return loops;
++}
++
+ 
+ static void load_zsregs(struct zs_port *zport, u8 *regs, int irq)
+ {
+-	zs_transmit_drain(zport, irq);
++	/* Let the current transmission finish.  */
++	zs_line_drain(zport, irq);
+ 	/* Load 'em up.  */
+ 	write_zsreg(zport, R3, regs[3] & ~RxENABLE);
+ 	write_zsreg(zport, R5, regs[5] & ~TxENAB);
+@@ -814,6 +828,10 @@ static void zs_reset(struct zs_port *zpo
+ 	spin_lock_irqsave(&scc->zlock, flags);
+ 	irq = !irqs_disabled_flags(flags);
+ 	if (!scc->initialised) {
++		/* Reset the pointer first, just in case...  */
++		read_zsreg(zport, R0);
++		/* And let the current transmission finish.  */
++		zs_line_drain(zport, irq);
+ 		write_zsreg(zport, R9, FHWRES);
+ 		udelay(10);
+ 		write_zsreg(zport, R9, 0);
