@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965887AbXFFXB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936587AbXFFXDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965887AbXFFXB7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965209AbXFFXBu
+	id S936587AbXFFXDb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935709AbXFFXDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:01:50 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:5234 "EHLO
-	outbound6-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965171AbXFFXBt (ORCPT
+	Wed, 6 Jun 2007 19:03:21 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40366
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S935566AbXFFXDU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:01:49 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Message-ID: <46673D3F.4040508@am.sony.com>
-Date: Wed, 06 Jun 2007 16:03:27 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@redhat.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Big problems applying patch-2.6.21.3-rt9
-References: <46673964.1000004@am.sony.com> <1181170799.4404.271.camel@chaos>
-In-Reply-To: <1181170799.4404.271.camel@chaos>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 6 Jun 2007 19:03:20 -0400
+Date: Wed, 06 Jun 2007 16:02:10 -0700 (PDT)
+Message-Id: <20070606.160210.23014574.davem@davemloft.net>
+To: drepper@redhat.com
+Cc: davidel@xmailserver.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, mingo@elte.hu,
+       dada1@cosmosbay.com
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <46673BE5.8040605@redhat.com>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+	<20070606.154434.21926922.davem@davemloft.net>
+	<46673BE5.8040605@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Jun 2007 23:01:43.0501 (UTC) FILETIME=[A67757D0:01C7A88E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Wed, 2007-06-06 at 15:47 -0700, Tim Bird wrote:
->> Ingo,
->>
->> I saw lots of problems trying to apply the latest rt-preempt patch.
->> Maybe some bits got included by mistake in the patch?
->>
->> Here's what I saw:
->> $ wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.3.tar.bz2
-> 
-> That should be 2.6.21.tar.bz2
-> 
-> The patch contains the .3 patch already. Unfortunately it used the wrong
-> numbering scheme :(
+From: Ulrich Drepper <drepper@redhat.com>
+Date: Wed, 06 Jun 2007 15:57:41 -0700
 
-I should have thought of that.  I noticed older patches were
-against 2.6.21.
+> I would strongly argue that any change we're doing in this area at
+> userlevel would involve a new interface.  Programs also need new
+> definitions from headers files.  This means a recent enough glibc will
+> be needed in any case.  Unless programs use their own definitions in
+> which case they might as well use the syscall() function.
 
-Thanks!
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
-
+To be honest, after reading Alan's response a few moments ago
+I'm growing in favor of his suggestions and that all of these
+new system calls perhaps really are overkill.
