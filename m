@@ -1,81 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933135AbXFFMa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933662AbXFFMbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933135AbXFFMa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 08:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbXFFMaX
+	id S933662AbXFFMbu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 08:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763494AbXFFMbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 08:30:23 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:51315 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbXFFMaW (ORCPT
+	Wed, 6 Jun 2007 08:31:42 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:55172 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752710AbXFFMbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 08:30:22 -0400
-Subject: [SERIAL] Don't optimise away baud rate changes when BOTHER is used
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
-In-Reply-To: <20070524160559.54c2c639@the-village.bc.nu>
-References: <20070523172739.1d3a918c@the-village.bc.nu>
-	 <1180012135.8303.89.camel@shinybook.infradead.org>
-	 <20070524144109.7bd0f4d0@the-village.bc.nu>
-	 <1180014338.8303.95.camel@shinybook.infradead.org>
-	 <20070524160559.54c2c639@the-village.bc.nu>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 13:30:10 +0100
-Message-Id: <1181133010.4096.26.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 6 Jun 2007 08:31:41 -0400
+Date: Wed, 6 Jun 2007 14:31:45 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] kernel/sched{,_fair}.c: make code static
+Message-ID: <20070606123145.GM5500@stusta.de>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070605215056.GJ5500@stusta.de> <20070605235441.7b132e27.akpm@linux-foundation.org> <20070606073023.GA11250@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070606073023.GA11250@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The uart_set_termios() function will bail out early without bothering to
-touch the hardware, if it decides that nothing "relevant" has changed.
-Unfortunately, its idea of "relevant" doesn't include c_[io]speed. So if
-the baud rate bits are BOTHER and you just change the speed, the change
-gets optimised away.
+On Wed, Jun 06, 2007 at 09:30:23AM +0200, Ingo Molnar wrote:
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> > > 
+> > > ---
+> > > 
+> > > BTW: Please don't #include C files in sched.c
+> > 
+> > Yeah.
+> 
+> In this case it's not that bad. It makes the source quite a bit cleaner 
+> and avoids having to create artificial interfaces, global functions, 
+> etc. between the .o's.
+>...
 
-This patch makes it ignore the old Bfoo bits in c_cflag and just check
-whether c_ispeed and c_ospeed have changed. Those integers are always
-set appropriately for us by set_termios().
+The idiom used in the kernel for such code is "global code and compile 
+the files separately". The expected inclusion for a C file into the 
+kernel is through the Makefile, and everything else is surprising when 
+looking through the code.
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+"artificial interfaces" is not a problem since these are completely 
+private interfaces you can change at any time.
 
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index e8be3b5..a81fc08 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -1146,13 +1146,23 @@ static void uart_set_termios(struct tty_struct *tty, struct ktermios *old_termio
- 
- 	/*
- 	 * These are the bits that are used to setup various
--	 * flags in the low level driver.
-+	 * flags in the low level driver. We can ignore the Bfoo
-+	 * bits in c_cflag; c_[io]speed will always be set
-+	 * appropriately by set_termios() in tty_ioctl.c
- 	 */
-+#ifdef CIBAUD
-+#define RELEVANT_CFLAG(cflag)	((cflag) & ~(CIBAUD|CBAUD)
-+#else
-+#define RELEVANT_CFLAG(cflag)	((cflag) & ~(CBAUD)
-+#endif
- #define RELEVANT_IFLAG(iflag)	((iflag) & (IGNBRK|BRKINT|IGNPAR|PARMRK|INPCK))
--
- 	if ((cflag ^ old_termios->c_cflag) == 0 &&
--	    RELEVANT_IFLAG(tty->termios->c_iflag ^ old_termios->c_iflag) == 0)
-+	    tty->termios->c_ospeed == old_termios->c_ospeed &&
-+	    tty->termios->c_ispeed == old_termios->c_ispeed &&
-+	    RELEVANT_IFLAG(tty->termios->c_iflag ^ old_termios->c_iflag) == 0) {
-+		printk("No relevant change\n");
- 		return;
-+	}
- 
- 	uart_change_speed(state, old_termios);
- 
+> 	Ingo
+
+cu
+Adrian
 
 -- 
-dwmw2
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
