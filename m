@@ -1,127 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXFFREW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762327AbXFFRGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760908AbXFFREW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 13:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXFFREP
+	id S1762327AbXFFRGt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 13:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXFFRGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 13:04:15 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58339 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbXFFREO (ORCPT
+	Wed, 6 Jun 2007 13:06:41 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:37620 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751005AbXFFRGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 13:04:14 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-References: <1181146045.9503.67.camel@dyn9047017100.beaverton.ibm.com>
-Date: Wed, 06 Jun 2007 11:02:55 -0600
-In-Reply-To: <1181146045.9503.67.camel@dyn9047017100.beaverton.ibm.com>
-	(Badari Pulavarty's message of "Wed, 06 Jun 2007 09:07:24 -0700")
-Message-ID: <m1sl95t3r4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 6 Jun 2007 13:06:40 -0400
+Subject: Re: 2.6.22-rc4-mm1
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Mel Gorman <mel@skynet.ie>, Cedric Le Goater <clg@fr.ibm.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, aaw@google.com
+In-Reply-To: <20070606163538.GN6909@holomorphy.com>
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+	 <4666ABD4.8050402@fr.ibm.com> <4666D050.7010603@googlemail.com>
+	 <4666DA55.5090405@fr.ibm.com> <20070606162649.GA9932@skynet.ie>
+	 <20070606163538.GN6909@holomorphy.com>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 19:06:20 +0200
+Message-Id: <1181149580.5676.25.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari Pulavarty <pbadari@us.ibm.com> writes:
+On Wed, 2007-06-06 at 09:35 -0700, William Lee Irwin III wrote:
+> On Wed, Jun 06, 2007 at 05:26:49PM +0100, Mel Gorman wrote:
+> > I do not believe this is Nick's problem. I encountered the same issue and
+> > the bisect ended up here;
+> > # BISECT HERE
+> > mm-variable-length-argument-support.patch
+> > mm-variable-length-argument-support-fix.patch
+> > # BISECT BAD
+> > Reverting those two patches boots ok on my standalone x86 laptop.
+> > Patch authors cc'd. I have not read the patches yet to see what might
+> > be the problem.
+> 
+> I found this a while ago and peterz already has a tentative fix for it at
+> http://programming.kicks-ass.net/kernel-patches/max_arg_pages/move_anon_vma.patch
+> I'm sure he himself will chime in with more/better code when he returns.
 
-> Hi Eric,
->
-> Your recent cleanup to shm code, namely
->
-> [PATCH] shm: make sysv ipc shared memory use stacked files
->
-> took away one of the debugging feature for shm segments.
-> Originally, shmid were forced to be the inode numbers and
-> they show up in /proc/pid/maps for the process which mapped
-> this shared memory segments (vma listing). That way, its easy
-> to find out who all mapped this shared memory segment. Your
-> patchset, took away the inode# setting. So, we can't easily
-> match the shmem segments to /proc/pid/maps easily. (It was
-> really useful in tracking down a customer problem recently). 
-> Is this done deliberately ? Anything wrong in setting this back ?
->
-> Comments ?
->
-> Thanks,
-> Badari
->
-> Without patch:
-> --------------
->
-> # ipcs -m
->
-> ------ Shared Memory Segments --------
-> key        shmid      owner      perms      bytes      nattch     status
-> 0x00000000 884737     db2inst1  767        33554432   13
->
-> # grep 884737 /proc/*/maps
-> #
->
-> With patch:
-> -----------
->
-> # ipcs -m
->
-> ------ Shared Memory Segments --------
-> key        shmid      owner      perms      bytes      nattch     status
-> 0x00000000 884737     db2inst1  767        33554432   13
->
-> # grep 884737 /proc/*/maps
-> /proc/11110/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11111/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11112/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11113/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11114/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11115/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11116/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11117/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11118/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11121/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11122/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11124/maps:4000389c000-4000589c000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
-> /proc/11575/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> /SYSV00000000 (deleted)
->
->
->
-> Here is the patch.
->
-> "ino#" in /proc/pid/maps used to match "ipcs -m" output for shared 
-> memory (shmid). It was useful in debugging, but its changed recently. 
-> This patch sets inode number to shared memory id to match /proc/pid/maps.
+Ah, yes indeed. We were discussing wether it would be better to update
+page->index (as this patch does) or not change vma->vm_pgoff. Bill
+argued that the latter would be safe, it would just limit the merge
+capabilities of the anon vma (and the stack rarely, if ever, merges
+anyway).
 
-Theoretically it makes the stacked file concept more brittle, because
-it means the lower layers can't care about their inode number.
+I myself an not quite sure on the effects of ->vm_pgoff of anon vmas
+yet.
 
-We do need something to tie these things together.
-
-So I suspect what makes most sense is to simply rename the dentry
-SYSVID<segmentid>
-
-That should give you the necessary information while not doing something
-that is a long term maintenance problem.
-
-Do you think you can cook up a patch to that effect?
-Otherwise I will see if I can.
-
-In practice I'm not really against your change, but I would prefer
-to leave the code in a state where someone can reimplement hugetlbfs
-or shmfs and we simply don't care.
-
-Eric
