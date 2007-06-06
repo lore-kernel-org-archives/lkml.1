@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936637AbXFFW4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965613AbXFFW5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936637AbXFFW4s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 18:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965332AbXFFW4W
+	id S965613AbXFFW5o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 18:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935738AbXFFW5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:56:22 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:13885 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965533AbXFFW4V (ORCPT
+	Wed, 6 Jun 2007 18:57:32 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43398
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S935589AbXFFW5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:56:21 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=nmEhwdN0wv1L32+0fIBbY3F9YJHBgd6ANV9XPAa/bPMZVPgtss2FGK4nXIqiFWCKm
-	8fL+8ysFzIP9AyuFf9M6w==
-Date: Wed, 6 Jun 2007 15:53:06 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Stephane Eranian <eranian@hpl.hp.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/22] 2.6.22-rc3 perfmon2 : new system calls support
-In-Reply-To: <20070606222721.GB13713@frankl.hpl.hp.com>
-Message-ID: <alpine.DEB.0.99.0706061551210.23328@chino.kir.corp.google.com>
-References: <200705291348.l4TDmHQd019645@frankl.hpl.hp.com>
- <alpine.DEB.0.99.0706040729230.10505@chino.kir.corp.google.com>
- <20070605211711.GD11693@frankl.hpl.hp.com>
- <alpine.DEB.0.99.0706051826330.23799@chino.kir.corp.google.com>
- <20070606222721.GB13713@frankl.hpl.hp.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 6 Jun 2007 18:57:31 -0400
+Date: Wed, 06 Jun 2007 15:57:47 -0700 (PDT)
+Message-Id: <20070606.155747.31642197.davem@davemloft.net>
+To: davidel@xmailserver.org
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, drepper@redhat.com, mingo@elte.hu,
+       dada1@cosmosbay.com
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0706061549110.10383@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+	<20070606.154434.21926922.davem@davemloft.net>
+	<Pine.LNX.4.64.0706061549110.10383@alien.or.mcafeemobile.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007, Stephane Eranian wrote:
+From: Davide Libenzi <davidel@xmailserver.org>
+Date: Wed, 6 Jun 2007 15:52:31 -0700 (PDT)
 
-> > Is this ia64 patch the one you mentioned that you did not post to LKML 
-> > because it was too large in patch 0?  Is there any way you could break 
-> > that patch up itself and post it for comments?
-> > 
-> Yes, this is the patch. It would be hard to break up in pieces.
-> The reason it is big is because it has to remove the older IA-64-only
-> implementation which was all in a single file whose size
-> was bigger than 100kB. It is hard to break this, unless I explicitely
-> remove the 'remove old file' diff from the patch.
-> 
+> I have no huge preferences. If not the slight one of using the same flags 
+> for open() and socket{2}() (O_NONSEQFD). If we overload socket() we may 
+> need to fight with existing O_* flags. OTOH the current free ones are 
+> pretty high in bits, so it may be OK too.
 
-Could you provide it online somewhere so it can be downloaded, reviewed, 
-and tested?
+I see.
+
+To me this tends to give higher weight to just adding the
+new socket2() system call.
