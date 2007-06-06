@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965129AbXFFV2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935474AbXFFVcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965129AbXFFV2s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 17:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964865AbXFFV2k
+	id S935474AbXFFVcu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763453AbXFFVcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 17:28:40 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1100 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964845AbXFFV2k (ORCPT
+	Wed, 6 Jun 2007 17:32:42 -0400
+Received: from ananke.telenet-ops.be ([195.130.137.78]:41895 "EHLO
+	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758568AbXFFVcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 17:28:40 -0400
-Date: Thu, 7 Jun 2007 07:28:31 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
-       Jan Engelhardt <jengelh@gmx.de>
-Subject: Re: 2.6.22-rc4-mm1
-Message-ID: <20070606212831.GA1534@gondor.apana.org.au>
-References: <20070606020737.4663d686.akpm@linux-foundation.org> <200706062132.37430.m.kozlowski@tuxland.pl> <20070606132439.3f59f0cf.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070606132439.3f59f0cf.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 6 Jun 2007 17:32:42 -0400
+Date: Wed, 6 Jun 2007 23:32:38 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: i2c@lm-sensors.org
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: i2c module aliases
+Message-ID: <Pine.LNX.4.64.0706062325270.30244@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 01:24:39PM -0700, Andrew Morton wrote:
->
-> > And for some reason the whole Cryptographic API is under the main level of menu 
-> > (please find .config and menu.png attached).
-> 
-> err, yes.  git-cryptodev.patch did that.  Herbert is being immodest ;)
+>From browsing through file2alias.c, I have the impression there's a
+missing TO_NATIVE() conversion in the handling of 16-bit (hence,
+endian-affected) i2c IDs.
+This will cause the module aliases to be incorrect when cross-compiling
+for a system with a different endianness.  Is that correct?
+If yes, the patch below adds the missing conversion.
 
-Is it this patch? If so then you sent to it me :)
+Of course, no driver seems to use `MODULE_DEVICE_TABLE(i2c, ...)' yet,
+hence nobody noticed.
 
-Should I drop it?
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -390,6 +390,7 @@ static int do_vio_entry(const char *file
+ 
+ static int do_i2c_entry(const char *filename, struct i2c_device_id *i2c, char *alias)
+ {
++	i2c->id = TO_NATIVE(i2c->id);
+ 	strcpy(alias, "i2c:");
+ 	ADD(alias, "id", 1, i2c->id);
+ 	return 1;
+
+Gr{oetje,eeting}s,
+
+						Geert
+
 --
-commit a85e40c4a0d4fd87e3f9449faac98db0d7d6ac78
-Author: Jan Engelhardt <jengelh@gmx.de>
-Date:   Fri May 18 15:11:01 2007 +1000
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-    [CRYPTO] Kconfig: Use menuconfig objects
-
-    Use menuconfigs instead of menus, so the whole menu can be disabled at once
-    instead of going through all options.
-
-    Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-a85e40c4a0d4fd87e3f9449faac98db0d7d6ac78
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 4ca0ab3..935301e 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -2,9 +2,7 @@
- # Cryptographic API Configuration
- #
- 
--menu "Cryptographic options"
--
--config CRYPTO
-+menuconfig CRYPTO
- 	bool "Cryptographic API"
- 	help
- 	  This option provides the core Cryptographic API.
-@@ -463,5 +461,3 @@ config CRYPTO_TEST
- source "drivers/crypto/Kconfig"
- 
- endif	# if CRYPTO
--
--endmenu
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
