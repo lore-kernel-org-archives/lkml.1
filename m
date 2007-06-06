@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764142AbXFFL3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764241AbXFFLcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764142AbXFFL3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 07:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbXFFL3I
+	id S1764241AbXFFLcm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 07:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbXFFLce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 07:29:08 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:46918 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751813AbXFFL3H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 07:29:07 -0400
-Date: Wed, 6 Jun 2007 17:07:33 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v15
-Message-ID: <20070606113733.GD3274@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070531150908.GA23538@elte.hu> <20070606064228.GA22443@in.ibm.com> <20070606070143.GA7375@elte.hu> <20070606074317.GB3274@in.ibm.com> <b647ffbd0706060208i5666f57eoe96215b636617622@mail.gmail.com> <46668E4D.8060206@linux.vnet.ibm.com> <20070606105950.GA32729@in.ibm.com> <b647ffbd0706060419v1ed81e15w312f44aad8975d5b@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 6 Jun 2007 07:32:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34612 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751813AbXFFLce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 07:32:34 -0400
+Date: Wed, 6 Jun 2007 13:32:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: maximilian attems <max@stro.at>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] Kconfig.debug DEBUG_PREEMPT dependency
+Message-ID: <20070606113227.GA2373@elte.hu>
+References: <20070606105314.GD32083@stro.at>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b647ffbd0706060419v1ed81e15w312f44aad8975d5b@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070606105314.GD32083@stro.at>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 01:19:01PM +0200, Dmitry Adamushko wrote:
-> >Yes this is the approach I prefer, because we burden the fast/normal
-> >path less that way (RT->NORMAL transition is not common).
-> 
-> I don't think that rt_sched_class :: dequeue_task_rt() is in any of
-> such "fast pathes" that we should really care about an additional
-> math. operation.
-> 
-> If this approach is ok, logically-wise (no side effects from a short
-> 'delta_exec', esp. on RT -> NORMAL).. I think it's better as it keeps
-> the 'sched_class' interface simpler.
 
-I can see your point, given that we just update exec_start in
-dequeue_task_rt(). However the situation is slightly more complex in my
-patch stack, as I need to update other things during group change. Perhaps
-we can postpone this discussion until I post that patch stack.
+* maximilian attems <max@stro.at> wrote:
 
-> >That's why I
-> >was considering a set_curr_task() method in fair_sched_class which will
-> >be invoked in __setscheduler() if the new policy of currently running
-> >task happens to be SCHED_NORMAL/BATCH. Alternately if the new policy of
-> >currently running task happens to be SCHED_FIFO (and its old policy was
-> >SCHED_NORMAL) we need to invoke put_prev_task() method (so that
-> >fair_clock etc is updated based on outgoing task's execution time in
-> >SCHED_NORMAL class).
-> 
-> rt_sched_class :: put_prev_task() from __setscheduler() ?
+> allow to set DEBUG_PREEMPT on PREEMPT_BKL, but !PREEMPT purpose is to 
+> get bonus of debug_smp_processor_id().
 
-No, fair_sched_class :: put_prev_task() if we are transitioning from
-NORMAL->RT. That will update the fair_clock based on execution time
-of current task in fair_sched class?
+hm, have you tested this? In the case of !PREEMPT there will be _lots_ 
+of places that use smp_processor_id() but where the preempt_count() wont 
+be elevated - causing false positive warnings.
 
-> But it's not
-> supposed to be called from here, logically-wise. You just rely on its
-> current behavior (which is only about updating 'exec_start' and
-> 'exec_sum') -- that's just bad. Maybe I misunderatood your intention
-> though..
-
--- 
-Regards,
-vatsa
+	Ingo
