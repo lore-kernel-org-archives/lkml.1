@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbXFFIi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbXFFIpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbXFFIi3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 04:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbXFFIiV
+	id S1756958AbXFFIpa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 04:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbXFFIpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 04:38:21 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:52701 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751019AbXFFIiU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 04:38:20 -0400
-Message-Id: <46668EC6.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 06 Jun 2007 10:39:02 +0200
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       <virtualization@lists.osdl.org>,
-       "Xen-devel" <xen-devel@lists.xensource.com>,
-       "Chris Wright" <chrisw@sous-sol.org>, "Andi Kleen" <ak@suse.de>,
-       "lkml" <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [patch 14/33] xen: xen time implementation
-References: <20070522140941.802382212@goop.org>
- <20070522141252.030961467@goop.org>
-In-Reply-To: <20070522141252.030961467@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Wed, 6 Jun 2007 04:45:22 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:36165 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024AbXFFIpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 04:45:20 -0400
+Date: Wed, 6 Jun 2007 17:44:07 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org, Ollie Wild <aaw@google.com>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 4/4] mm: variable length argument support
+Message-ID: <20070606084407.GA9975@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+	linux-mm@kvack.org, linux-arch@vger.kernel.org,
+	Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
+	Andi Kleen <ak@suse.de>
+References: <20070605150523.786600000@chello.nl> <20070605151203.790585000@chello.nl> <20070606013658.20bcbe2f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070606013658.20bcbe2f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->+cycle_t xen_clocksource_read(void)
->+{
->+	struct shadow_time_info *shadow = &get_cpu_var(shadow_time);
->+	cycle_t ret;
->+
->+	get_time_values_from_xen();
->+
->+	ret = shadow->system_timestamp + get_nsec_offset(shadow);
->+
->+	put_cpu_var(shadow_time);
->+
->+	return ret;
->+}
-
-I'm afraid this mechanism is pretty unreliable on SMP: getnstimeofday() and
-do_gettimeofday() both use the difference between the last snapshot taken
-and the current value read from the clock source. Since I had added this
-clocksource code to our kernel, I had reproducible hangs on one of the
-systems I regularly work with (you may have seen the respective thread
-on xen-devel), which recently I finally found time to look into. The issue is
-that on that system, transition into ACPI mode takes over 600ms (SMM
-execution, and hence no interrupts delivered during that time), and with
-Xen using the PIT (PM timer support was added by Keir as a result of this,
-but that doesn't cure the problem here, it just reduces the likelihood it'll
-be encountered) platform time and local time got pretty much out of sync.
-
-Xen itself knows to deal with this (by using an error correction factor to
-slow down the local [TSC-based] clock), but for the kernel such a situation
-may be fatal: If clocksource->cycle_last was most recently set on a CPU
-with shadow->tsc_to_nsec_mul sufficiently different from that where
-getnstimeofday() is being used, timekeeping.c's __get_nsec_offset() will
-calculate a huge nanosecond value (due to cyc2ns() doing unsigned
-operations), worth abut 4000s. This value may then be used to set a
-timeout that was intended to be a few milliseconds, effectively yielding
-a hung app (and perhaps system).
-
-I'm sure the time keeping code can't deal with negative values returned
-from __get_nsec_offset() (timespec_add_ns() is an example, used in
-__get_realtime_clock_ts()), otherwise a potential solution might have
-been to set the clock source's multiplier and shift to one and zero
-respectively. But I think that a clock source can be expected to be
-monotonic anyway, which Xen's interpolation mechanism doesn't
-guarantee across multiple CPUs. (I'm actually beginning to think that
-this might also be the reason for certain test suites occasionally reporting
-timeouts to fire early.)
-
-Unfortunately so far I haven't been able to think of a reasonable solution
-to this - a simplistic approach like making xen_clocksource_read() check
-the value it is about to return against the last value it returned doesn't
-seem to be a good idea (time might appear to have stopped over some
-period of time otherwise), nor does attempting to adjust the shadowed
-tsc_to_nsec_mul values (because the kernel can't know whether it should
-boost the lagging CPU or throttle the rushing one).
-
-Jan
-
-
+On Wed, Jun 06, 2007 at 01:36:58AM -0700, Andrew Morton wrote:
+> On Tue, 05 Jun 2007 17:05:27 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > From: Ollie Wild <aaw@google.com>
+> > 
+> > Remove the arg+env limit of MAX_ARG_PAGES by copying the strings directly
+> > from the old mm into the new mm.
+> > 
+> > We create the new mm before the binfmt code runs, and place the new stack
+> > at the very top of the address space. Once the binfmt code runs and figures
+> > out where the stack should be, we move it downwards.
+> > 
+> > It is a bit peculiar in that we have one task with two mm's, one of which is
+> > inactive.
+> > 
+> > ...
+> >
+> > +				flush_cache_page(bprm->vma, kpos,
+> > +						 page_to_pfn(kmapped_page));
+> 
+> Breaks SuperH:
+> 
+> fs/exec.c: In function `bprm_mm_init':
+> fs/exec.c:268: warning: unused variable `vma'
+> fs/exec.c: In function `copy_strings':
+> fs/exec.c:431: error: structure has no member named `vma'
+> 
+More pointedly, bprm->vma doesn't exist if CONFIG_MMU=n, which Andrew's
+config seems to have ;-)
