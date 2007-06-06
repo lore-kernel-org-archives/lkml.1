@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935211AbXFFUR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935226AbXFFUUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935211AbXFFUR4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 16:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765149AbXFFURs
+	id S935226AbXFFUUg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 16:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932343AbXFFUU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 16:17:48 -0400
-Received: from mga01.intel.com ([192.55.52.88]:44613 "EHLO mga01.intel.com"
+	Wed, 6 Jun 2007 16:20:28 -0400
+Received: from waste.org ([66.93.16.53]:41568 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764897AbXFFURr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 16:17:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
-   d="scan'208";a="254009208"
-Message-ID: <46671668.4090805@intel.com>
-Date: Wed, 06 Jun 2007 13:17:44 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	id S1752713AbXFFUU1 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 16:20:27 -0400
+Date: Wed, 6 Jun 2007 15:19:55 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       Linux-kernel@vger.kernel.org
+Subject: Re: Interesting interaction between lguest and CFS
+Message-ID: <20070606201955.GG11115@waste.org>
+References: <20070604173710.GR11166@waste.org> <1181002734.25878.56.camel@localhost.localdomain> <1181010675.25878.140.camel@localhost.localdomain> <20070605041803.GO11115@waste.org> <20070605104353.GA7309@elte.hu> <20070605190806.GA18503@elte.hu>
 MIME-Version: 1.0
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Josh Triplett <josh@freedesktop.org>
-Subject: Re: generic bool and sparse errors?
-References: <4666FD0A.4060609@intel.com> <466708D8.90208@student.ltu.se>
-In-Reply-To: <466708D8.90208@student.ltu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Jun 2007 20:17:45.0958 (UTC) FILETIME=[BED56860:01C7A877]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070605190806.GA18503@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Knutsson wrote:
-> Kok, Auke wrote:
->> I'm experimenting with using the generic bool type and using sparse I 
->> get tons of these messages:
->>
->> warning: incorrect type in argument 4 (different signedness)
->>     expected bool [unsigned] [usertype] *[unsigned] success
->>     got bool *<noident>
->>
->> I'm not really worried about this, I assume that sparse hasn't caught 
->> up with what bool really means, but perhaps this can be looked into by 
->> someone who knows sparse well. The warnings don't really add up and 
->> with more people switching to use the generic bool this may beceome 
->> unwanted.
- >
-> Actually, I am "assigned" to that. :)
+On Tue, Jun 05, 2007 at 09:08:06PM +0200, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > Matt, could you send me your .config too? Maybe i can reproduce it 
+> > with your config.
+> 
+> ok, got it (off-list) and you seem to have the default HZ=250. Could you 
+> change it to HZ=1000 - does the delay get alot smaller?
 
-ah cool
+Well I'm too busy/lazy to reboot at the moment, but I've reproduced
+this behavior with the following:
 
-> Just out of curiousity, where do you see those messages? In the log for 
-> allyesconfig on i386 I only found ntfs/super.c with similar output.
+watchdelta.py:
+import time
 
-I was poking around replacing the boolean_t typedef in e1000, so it's nothing 
-upstream. Just run `sed -i s/boolean_t/bool/g` on all the files in 
-drivers/net/e1000 to see :)
+last = time.time()
+while 1:
+    t = time.time()
+    delta = t - last
+    if delta > .5:
+        print delta
+    last = t
 
-the version of sparse is that in fc6, so that may be out-of-date (?).
+$ nice -n 20 python watchdelta.py 
+0.696138858795
+0.772134065628
+0.852141141891
+2.22020101547
+0.600075960159
+0.528147935867
+0.556170940399
+0.536160945892
+0.572169065475
+0.672204971313
+0.576174974442
+0.640056848526
+0.548166036606
+0.568286895752
+0.544052124023
+0.572114944458
+0.534852027893
+0.596146821976
+0.552155971527
+0.552098035812
+0.564115047455
+0.546761989594
+0.63211107254
+0.876178026199
+0.584072828293
+0.544088125229
+0.760088920593
+1.07612800598
+0.552155017853
+...
 
->> alternatively we might need to reconsider the `typedef _Bool bool;` 
->> declaration and force it to be unsigned. I'm not sure what to think of 
->> that.
-> I do not see how that would make any sense.
+At load=1 (the first several lines), this prints out messages
+sporadically. At higher loads, every iteration is a >.5s delay. So
+it's probably not particular to lguest at all.
 
-well the sparse warning is about signedness. Either sparse needs to "know" that 
-bool is unsigned, or the kernel headers need to somehow make bool unsigned... 
-the latter choice would come down to just that, but it doesn't look like a good 
-idea to me either somehow.
-
-Auke
+-- 
+Mathematics is the supreme nostalgia of our time.
