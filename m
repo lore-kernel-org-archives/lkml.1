@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934777AbXFFQBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933675AbXFFQEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934777AbXFFQBg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 12:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754868AbXFFQB3
+	id S933675AbXFFQEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 12:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759105AbXFFQEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 12:01:29 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:34132 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754208AbXFFQB3 (ORCPT
+	Wed, 6 Jun 2007 12:04:46 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55460 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754868AbXFFQEq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 12:01:29 -0400
-Message-ID: <4666DA55.5090405@fr.ibm.com>
-Date: Wed, 06 Jun 2007 18:01:25 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 6 Jun 2007 12:04:46 -0400
+Date: Wed, 6 Jun 2007 18:04:51 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Thomas Voegtle <tv@lio96.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.16.52 can't boot on Intel DG965SS
+Message-ID: <20070606160451.GN5500@stusta.de>
+References: <Pine.LNX.4.63.0706061436190.32355@er-systems.de>
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: 2.6.22-rc4-mm1
-References: <20070606020737.4663d686.akpm@linux-foundation.org> <4666ABD4.8050402@fr.ibm.com> <4666D050.7010603@googlemail.com>
-In-Reply-To: <4666D050.7010603@googlemail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.63.0706061436190.32355@er-systems.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Same problem here
+On Wed, Jun 06, 2007 at 05:16:00PM +0200, Thomas Voegtle wrote:
 > 
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/console.log
+> Hi,
 > 
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/mm-config2
+> I want to use 2.6.16.y on the Intel DG965SS mainboard, but the kernel 
+> stops booting:
+> 
+> ...
+> ACPI: bus type pci registered
+> PCI: Using MMCONFIG
+> ACPI: Subsystem revision 20060127
+> ACPI: Interpreter enabled
+> ACPI: Using IOAPIC for interrupt routing
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> ACPI: Assume root bridge [\_SB_.PCIO] bus is 0 
 > 
 > 
-> l *__page_check_anon_rmap+0x49
-> 0xc1075ee5 is in __page_check_anon_rmap (mm/rmap.c:557).
-> 552              * over the call to page_add_new_anon_rmap.
-> 553              */
-> 554             struct anon_vma *anon_vma = vma->anon_vma;
-> 555             anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
-> 556             BUG_ON(page->mapping != (struct address_space *)anon_vma);
-> 557             BUG_ON(page->index != linear_page_index(vma, address));
-> 558     #endif
-> 559     }
-> 560
-> 561     /**
 > 
-> I'll try to revert
-> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
+> A Kernel 2.6.16.52 boots with pci=nommconf.
+> A SuSE 10.1 installation cd boots with no special bootparams.
+> A Kernel 2.6.17 vanilla boots with no special bootparams.
+> 
+> 
+> So something is missing in 2.6.16.y, can anyone point me to a patch or 
+> something else which enables this?
+>...
 
-yes, i gave it a try that but it seems that this patch is heavily 
-interlaced with others. I assume Nick has a better understanding 
-of the issue.
+Set in the kernel configuration:
+  Bus options (PCI, PCMCIA, EISA, MCA, ISA)
+    PCI access mode
+to "Direct".
 
-C.
+There are fixes in this area in 2.6.17, but that's something I'll not 
+fiddle with in 2.6.16.
+
+>       Thomas
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
