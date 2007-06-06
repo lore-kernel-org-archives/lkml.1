@@ -1,43 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936587AbXFFXDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965757AbXFFXEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936587AbXFFXDb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935709AbXFFXDV
+	id S965757AbXFFXEy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935675AbXFFXEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:03:21 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40366
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S935566AbXFFXDU (ORCPT
+	Wed, 6 Jun 2007 19:04:43 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2748 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935639AbXFFXEm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:03:20 -0400
-Date: Wed, 06 Jun 2007 16:02:10 -0700 (PDT)
-Message-Id: <20070606.160210.23014574.davem@davemloft.net>
-To: drepper@redhat.com
-Cc: davidel@xmailserver.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org, mingo@elte.hu,
-       dada1@cosmosbay.com
+	Wed, 6 Jun 2007 19:04:42 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 6 Jun 2007 16:04:40 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>
 Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46673BE5.8040605@redhat.com>
+In-Reply-To: <20070606235906.72439d16@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
 References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
-	<20070606.154434.21926922.davem@davemloft.net>
-	<46673BE5.8040605@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+ <20070606235906.72439d16@the-village.bc.nu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ulrich Drepper <drepper@redhat.com>
-Date: Wed, 06 Jun 2007 15:57:41 -0700
+On Wed, 6 Jun 2007, Alan Cox wrote:
 
-> I would strongly argue that any change we're doing in this area at
-> userlevel would involve a new interface.  Programs also need new
-> definitions from headers files.  This means a recent enough glibc will
-> be needed in any case.  Unless programs use their own definitions in
-> which case they might as well use the syscall() function.
+> > The sys_accept() system call has been modified to return a file
+> > descriptor inside the non-sequential area, if the listening fd is.
+> > The sys_socketcall() system call has been also changed to support
+> > a new SYS_SOCKET2 indentifier.
+> 
+> This still all seems really really ugly. Is there anything wrong with
+> throwing all these extra cases out and replacing the entire lot with
+> 
+> 	prctl(PR_SPARSEFD, 1);
+> 
+> to turn on sparse fd allocation for a process ?
 
-To be honest, after reading Alan's response a few moments ago
-I'm growing in favor of his suggestions and that all of these
-new system calls perhaps really are overkill.
+There was a little discussion where I tried to whisper something similar, 
+but Linus and Uli shot me :) - with good reasons IMO.
+You may link to runtimes that are not non-sequentialfd aware, and will 
+break them.
+
+
+
+> Anyone needing to deal with certain special fds will use dup2() anyway so
+> a task global switch seems to be cleaner and make the behaviour simply to
+> flip on, with no extra calls (and you need to submit man pages for them
+> all too), and also more importantly no new glibc stuff should be needed,
+> and a process can try to set sparsefd, fail and carry on so its more
+> portable and back portable.
+
+Man pages! Damn, I forgot Michael Kerrisk is already waiting for the other 
+stuff :(
+
+
+
+- Davide
+
+
