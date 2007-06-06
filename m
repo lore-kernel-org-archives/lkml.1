@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760324AbXFFQwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762360AbXFFQxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760324AbXFFQwL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 12:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbXFFQv6
+	id S1762360AbXFFQxY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 12:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbXFFQxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 12:51:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37315 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751922AbXFFQv5 (ORCPT
+	Wed, 6 Jun 2007 12:53:17 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:60446 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbXFFQxR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 12:51:57 -0400
-Date: Wed, 6 Jun 2007 09:51:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>
+	Wed, 6 Jun 2007 12:53:17 -0400
+Message-ID: <4666E678.4070608@fr.ibm.com>
+Date: Wed, 06 Jun 2007 18:53:12 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Mel Gorman <mel@skynet.ie>
+CC: William Lee Irwin III <wli@holomorphy.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, aaw@google.com, a.p.zijlstra@chello.nl
 Subject: Re: 2.6.22-rc4-mm1
-Message-Id: <20070606095124.ae95529c.akpm@linux-foundation.org>
-In-Reply-To: <46669CE6.6060804@googlemail.com>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-	<46669CE6.6060804@googlemail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <4666ABD4.8050402@fr.ibm.com> <4666D050.7010603@googlemail.com> <4666DA55.5090405@fr.ibm.com> <20070606162649.GA9932@skynet.ie> <20070606163538.GN6909@holomorphy.com> <20070606164755.GA14278@skynet.ie>
+In-Reply-To: <20070606164755.GA14278@skynet.ie>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007 13:39:18 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+Mel Gorman wrote:
+> On (06/06/07 09:35), William Lee Irwin III didst pronounce:
+>> On Wed, Jun 06, 2007 at 05:26:49PM +0100, Mel Gorman wrote:
+>>> I do not believe this is Nick's problem. I encountered the same issue and
+>>> the bisect ended up here;
+>>> # BISECT HERE
+>>> mm-variable-length-argument-support.patch
+>>> mm-variable-length-argument-support-fix.patch
+>>> # BISECT BAD
+>>> Reverting those two patches boots ok on my standalone x86 laptop.
+>>> Patch authors cc'd. I have not read the patches yet to see what might
+>>> be the problem.
+>> I found this a while ago and peterz already has a tentative fix for it at
+>> http://programming.kicks-ass.net/kernel-patches/max_arg_pages/move_anon_vma.patch
+>> I'm sure he himself will chime in with more/better code when he returns.
+>>
+> 
+> This patch also boots successfully on the machine.
 
-> Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
-> >
-> >   
-> 
-> 
-> Compile error here :
-> 
-> ...
-> 
-> LD .tmp_vmlinux1
-> drivers/built-in.o: In function `acpi_init':
-> bus.c:(.init.text+0x249a): undefined reference to `pci_mmcfg_late_init'
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> ....
-> 
-> 
-> http://frugalware.org/~crazy/other/mm/2.6.22-rc4-mm1/config
-> 
+Same for me.
 
-Yeah, this caused test.kernel.org to fail as well.
+thanks,
 
-There are a couple of fixes in
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/hot-fixes/
-which should get things going again.
-
-Robert, I spent some time picking at
-mmconfig-validate-against-acpi-motherboard-resources.patch then got bored
-with fiddling with it and reverted it outright.
-
-Please, we need to get those prototypes of pci_mmcfg_early_init() and
-pci_mmcfg_late_init() into some sane place which works on all
-architectures, not duplicate one of them in a C file and even see if we can
-avoid the #ifdef CONFIG_PCI_MMCONFIG in arch/i386/pci/init.c
-
-This code area is really messy, due partly to the x86_64 and i386 sharing. 
-Any changes in there need careful testing and checking.
+C.
 
