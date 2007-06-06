@@ -1,112 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934768AbXFFR5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932343AbXFFSCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934768AbXFFR5R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 13:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbXFFR5E
+	id S932343AbXFFSCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 14:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXFFSBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 13:57:04 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36806 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757916AbXFFR5B (ORCPT
+	Wed, 6 Jun 2007 14:01:52 -0400
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:54285 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751310AbXFFSBv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 13:57:01 -0400
-Date: Wed, 6 Jun 2007 10:56:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, htejun@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-Message-Id: <20070606105650.bebf1c95.akpm@linux-foundation.org>
-In-Reply-To: <4666D3F8.4010002@gmail.com>
-References: <200706061421.l56ELDfB004305@harpo.it.uu.se>
-	<4666D3F8.4010002@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 14:01:51 -0400
+Date: Wed, 6 Jun 2007 14:01:47 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Stephen Smalley <sds@tycho.nsa.gov>
+cc: Eric Paris <eparis@redhat.com>, Alan Cox <alan@redhat.com>,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov, drepper@redhat.com,
+       roland@redhat.com, arjan@infradead.org, mingo@elte.hu,
+       viro@zeniv.linux.org.uk, chrisw@redhat.com, sgrubb@redhat.com
+Subject: Re: [PATCH] Protection for exploiting null dereference using mmap
+In-Reply-To: <1181151040.3699.181.camel@moss-spartans.epoch.ncsc.mil>
+Message-ID: <Line.LNX.4.64.0706061400020.31665@d.namei>
+References: <1180561713.3633.27.camel@dhcp231-215.rdu.redhat.com> 
+ <20070603205653.GE25869@devserv.devel.redhat.com> 
+ <1180964306.14220.34.camel@moss-spartans.epoch.ncsc.mil> 
+ <1181075666.3978.31.camel@localhost.localdomain>  <Line.LNX.4.64.0706051658170.23379@d.namei>
+  <20070605211616.GE23291@devserv.devel.redhat.com> 
+ <1181111433.3978.48.camel@localhost.localdomain>
+ <1181151040.3699.181.camel@moss-spartans.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007 17:34:16 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+On Wed, 6 Jun 2007, Stephen Smalley wrote:
 
-> Mikael Pettersson napsal(a):
-> > On Wed, 06 Jun 2007 15:04:00 +0200, Jiri Slaby wrote:
-> >> Andrew Morton napsal(a):
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
-> >> It freezes during bootup while searching for sata drives on sata_promise. There
-> >> were 2 issues with sata_promise in -rc4 IIRC, one was fixed, the latter remains
-> >> unresolved. Or, should be this solved too, Mikael, Tejun and is this yet
-> >> eanother problem? (In this case I'll post dmesg and co.)
-> > 
-> > I know of only one sata_promise-specific issue in 2.6.22-rc4.
-> > Tejun's "sata_promise: use TF interface for polling NODATA commands"
-> > patch posted today fixes it.
+> With the fix already noted by James,
 > 
-> It's in that -mm, so I think, this seems to be another problem.
+> Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
 
-No, it wasn't in 2.6.22-rc4-mm1.
+Final patch applied to:
 
-Here it is - please test?
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-akpm
 
 
-From: Tejun Heo <htejun@gmail.com>
+Also queued there is the following patch which enables the check in 
+SELinux:
 
-sata_promise uses two different command modes - packet and TF.  Packet mode
-is intelligent low-overhead mode while TF is the same old taskfile
-interface.  As with other advanced interface (ahci/sil24),
-ATA_TFLAG_POLLING has no effect in packet mode.  However, PIO commands are
-issued using TF interface in polling mode, so pdc_interrupt() considers
-interrupts spurious if ATA_TFLAG_POLLING is set.
 
-This is broken for polling NODATA commands because command is issued using
-packet mode but the interrupt handler ignores it due to ATA_TFLAG_POLLING. 
-Fix pdc_qc_issue_prot() such that ATA/ATAPI NODATA commands are issued
-using TF interface if ATA_TFLAG_POLLING is set.
+Subject: [PATCH] SELinux: enable minimum address checking for mmap
 
-This patch fixes detection failure introduced by polling SETXFERMODE.
+Enable enable minimum address checking for mmap if not already enabled, and
+disable it on exit if we enabled it. Processes will then require the
+new mmap_zero permission to override the check.  Set the default value to
+64KB as suggested.  If already set, the existing value will be used.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Acked-by: Mikael Pettersson <mikpe@it.uu.se>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
+Acked-by: Eric Paris <eparis@redhat.com>
+Signed-off-by: James Morris <jmorris@namei.org>
 ---
+ security/selinux/hooks.c |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
- drivers/ata/sata_promise.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff -puN drivers/ata/sata_promise.c~sata_promise-use-tf-interface-for-polling-nodata-commands drivers/ata/sata_promise.c
---- a/drivers/ata/sata_promise.c~sata_promise-use-tf-interface-for-polling-nodata-commands
-+++ a/drivers/ata/sata_promise.c
-@@ -784,9 +784,12 @@ static unsigned int pdc_qc_issue_prot(st
- 		if (qc->dev->flags & ATA_DFLAG_CDB_INTR)
- 			break;
- 		/*FALLTHROUGH*/
-+	case ATA_PROT_NODATA:
-+		if (qc->tf.flags & ATA_TFLAG_POLLING)
-+			break;
-+		/*FALLTHROUGH*/
- 	case ATA_PROT_ATAPI_DMA:
- 	case ATA_PROT_DMA:
--	case ATA_PROT_NODATA:
- 		pdc_packet_start(qc);
- 		return 0;
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 2b44832..9a8db0b 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -112,6 +112,9 @@ int selinux_enabled = 1;
+ /* Original (dummy) security module. */
+ static struct security_operations *original_ops = NULL;
  
-@@ -800,7 +803,7 @@ static unsigned int pdc_qc_issue_prot(st
- static void pdc_tf_load_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
- {
- 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
--		 tf->protocol == ATA_PROT_NODATA);
-+		 tf->protocol == ATA_PROT_ATAPI_DMA);
- 	ata_tf_load(ap, tf);
- }
++/* Did we enable minimum mmap address checking? */
++static int enabled_mmap_min_addr;
++
+ /* Minimal support for a secondary security module,
+    just to allow the use of the dummy or capability modules.
+    The owlsm module can alternatively be used as a secondary
+@@ -4912,6 +4915,16 @@ static __init int selinux_init(void)
+ 	sel_inode_cache = kmem_cache_create("selinux_inode_security",
+ 					    sizeof(struct inode_security_struct),
+ 					    0, SLAB_PANIC, NULL, NULL);
++
++	/*
++	 * Tasks cannot mmap below this without the mmap_zero permission.
++	 * If not enabled already, do so by setting it to 64KB.
++	 */
++	if (mmap_min_addr == 0) {
++		enabled_mmap_min_addr = 1;
++		mmap_min_addr = 65536;
++	}
++
+ 	avc_init();
  
-@@ -808,7 +811,7 @@ static void pdc_tf_load_mmio(struct ata_
- static void pdc_exec_command_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
- {
- 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
--		 tf->protocol == ATA_PROT_NODATA);
-+		 tf->protocol == ATA_PROT_ATAPI_DMA);
- 	ata_exec_command(ap, tf);
- }
+ 	original_ops = secondary_ops = security_ops;
+@@ -5061,6 +5074,10 @@ int selinux_disable(void)
  
-_
+ 	selinux_disabled = 1;
+ 	selinux_enabled = 0;
++	
++	/* Disable minimum mmap address check only if we enabled it */
++	if (enabled_mmap_min_addr)
++		mmap_min_addr = 0;
+ 
+ 	/* Reset security_ops to the secondary module, dummy or capability. */
+ 	security_ops = secondary_ops;
+-- 
+1.5.0.6
 
