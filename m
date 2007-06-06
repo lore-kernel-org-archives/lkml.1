@@ -1,90 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763659AbXFFKwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763658AbXFFKx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763659AbXFFKwW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 06:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759916AbXFFKwO
+	id S1763658AbXFFKx0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 06:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbXFFKxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 06:52:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43363 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755875AbXFFKwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 06:52:12 -0400
-X-Authenticated: #14603182
-X-Provags-ID: V01U2FsdGVkX18XfI4rAV8X+BOWeW9upGbspAzX6r4/PKGSwFgjv+
-	k1imYYA1yIsT64
-Message-ID: <466691DD.9060904@gmx.de>
-Date: Wed, 06 Jun 2007 12:52:13 +0200
-From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 6 Jun 2007 06:53:19 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:3813 "EHLO baikonur.stro.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751160AbXFFKxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 06:53:18 -0400
+Date: Wed, 6 Jun 2007 12:53:14 +0200
+From: maximilian attems <max@stro.at>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu
+Subject: [patch] Kconfig.debug DEBUG_PREEMPT dependency
+Message-ID: <20070606105314.GD32083@stro.at>
 MIME-Version: 1.0
-To: "Lars K.W. Gohlke" <lkwg82@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: serio interface
-References: <46667A3B.8070708@gmx.de> <20070606091503.GI2649@lug-owl.de> <46667FB9.70206@gmx.de> <20070606095159.GK2649@lug-owl.de> <46668ED5.5000807@gmx.de> <20070606104426.GL2649@lug-owl.de>
-In-Reply-To: <20070606104426.GL2649@lug-owl.de>
-Content-Type: multipart/mixed;
- boundary="------------010000060801030305080400"
-X-PGP-KeyID: 9D6D68DF
-X-Request-PGP: 
-X-OpenPGP-Key-ID: 000A26609D6D68DF
-X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
-X-OpenPGP-Key-URL: 
-X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+allow to set DEBUG_PREEMPT on PREEMPT_BKL, but !PREEMPT
+purpose is to get bonus of debug_smp_processor_id().
 
---------------010000060801030305080400
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Signed-off-by: maximilian attems <max@stro.at>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Jan-Benedict Glaw schrieb:
-> On Wed, 2007-06-06 12:39:17 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wrote:
->> Jan-Benedict Glaw schrieb:
->>> OTOH, why do you want to do the serial stuff in kernel land? Isn't it
->>> a *lot* easier to do it in userspace? What's your specific device you
->>> want to work on?
->
-> [snip]
->
-> You didn't actually answer any of my questions.
->
-> MfG, JBG
->
-sorry.
-
-I want to use the interface aka /dev/ttyS0.
-I want to process data inside of a kernel module to provide it /proc
-(done) or as own char-dev (done).
-
-but I can not grab the data.
-
-It is part of my project in my studies.
-
-It is more a conceptual work, but important. I want to release a howto,
-when I complete.
-
-answered completely? ;) Hope so.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
-
-iD8DBQFGZpHfAAomYJ1taN8RApsWAJ970RteJmHUsHocvt71lIvNSzk+XQCgxxg1
-gxXm4kZRrRgrhIWfHPKTwEo=
-=zMd7
------END PGP SIGNATURE-----
-
---------------010000060801030305080400
-Content-Type: text/x-vcard; charset=utf-8;
- name="lkwg82.vcf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="lkwg82.vcf"
-
-YmVnaW46dmNhcmQNCmZuOkxhcnMgSy5XLiBHb2hsa2UNCm46R29obGtlO0xhcnMgSy5XLg0K
-ZW1haWw7aW50ZXJuZXQ6bGt3ZzgyQGdteC5kZQ0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZl
-cnNpb246Mi4xDQplbmQ6dmNhcmQNCg0K
---------------010000060801030305080400--
-
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index da95e10..1d4ab66 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -145,7 +145,7 @@ config DEBUG_SLAB_LEAK
+ 
+ config DEBUG_PREEMPT
+ 	bool "Debug preemptible kernel"
+-	depends on DEBUG_KERNEL && PREEMPT && TRACE_IRQFLAGS_SUPPORT
++	depends on DEBUG_KERNEL && (PREEMPT || PREEMPT_BKL) && TRACE_IRQFLAGS_SUPPORT
+ 	default y
+ 	help
+ 	  If you say Y here then the kernel will use a debug variant of the
