@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbXFFK0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761427AbXFFKbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762130AbXFFK0l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 06:26:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759307AbXFFK0e
+	id S1761427AbXFFKbk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 06:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757738AbXFFKbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 06:26:34 -0400
-Received: from ns1.suse.de ([195.135.220.2]:35787 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759302AbXFFK0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 06:26:33 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [Xen-devel] [patch 14/33] xen: xen time implementation
-Date: Wed, 6 Jun 2007 12:26:10 +0200
-User-Agent: KMail/1.9.6
-Cc: Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       virtualization@lists.osdl.org,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Chris Wright <chrisw@sous-sol.org>, lkml <linux-kernel@vger.kernel.org>,
-       Jiri Bohac <jbohac@suse.cz>
-References: <20070522140941.802382212@goop.org> <46668EC6.76E4.0078.0@novell.com> <466686E2.4040004@goop.org>
-In-Reply-To: <466686E2.4040004@goop.org>
+	Wed, 6 Jun 2007 06:31:33 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:28408 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbXFFKbd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 06:31:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cpyhR1cI1Yxge4FThg4pA0VwzGOaZUO5ltFxlThKLA2UcOOC73+JQ6RVK9ICaT0Kc5RusrcANDrcDNRVIhL9mhZEXlkV8DtIRdhSEDVpSyoJL2NP+vSKCLF+RW0bP03G1nkTeVxEDV4jdINbAep8UCXj/hKZ8O3GfHyIUKSDhl0=
+Message-ID: <9a8748490706060331w56438ef8j71d9026f324901f8@mail.gmail.com>
+Date: Wed, 6 Jun 2007 12:31:32 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "john stultz" <johnstul@us.ibm.com>
+Subject: Re: [PATCH -rt] Fix TASKLET_STATE_SCHED WARN_ON()
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1181096244.6018.20.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706061226.11326.ak@suse.de>
+References: <1181096244.6018.20.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 June 2007 12:05:22 Jeremy Fitzhardinge wrote:
-> Jan Beulich wrote:
-> > Xen itself knows to deal with this (by using an error correction factor to
-> > slow down the local [TSC-based] clock), but for the kernel such a situation
-> > may be fatal: If clocksource->cycle_last was most recently set on a CPU
-> > with shadow->tsc_to_nsec_mul sufficiently different from that where
-> > getnstimeofday() is being used, timekeeping.c's __get_nsec_offset() will
-> > calculate a huge nanosecond value (due to cyc2ns() doing unsigned
-> > operations), worth abut 4000s. This value may then be used to set a
-> > timeout that was intended to be a few milliseconds, effectively yielding
-> > a hung app (and perhaps system).
-> >   
-> 
-> Hm.  I had a similar situation in the stolen time code, and I ended up
-> using signed values so I could clamp at zero.  Though that might have
-> been another bug; either way, the clamp is still there.
-> 
-> I wonder if cyc2ns might not be better using signed operations?  Or
-> perhaps better, the time code should endevour to do things on a
-> completely per-cpu basis (haven't really given this any thought).
+On 06/06/07, john stultz <johnstul@us.ibm.com> wrote:
+> --- 2.6-rt.orig/kernel/softirq.c        2007-06-05 18:30:54.000000000 -0700
+> +++ 2.6-rt/kernel/softirq.c     2007-06-05 18:36:44.000000000 -0700
+> @@ -544,10 +544,17 @@ static void inline
+>  __tasklet_common_schedule(struct tasklet_struct *t, struct tasklet_head *head, unsigned int nr)
+>  {
+>         if (tasklet_trylock(t)) {
+> -               WARN_ON(t->next != NULL);
+> -               t->next = head->list;
+> -               head->list = t;
+> -               raise_softirq_irqoff(nr);
+> +               /* We may have been preempted before tasklet_trylock
+> +                * and __tasklet_action may have already run.
+> +                * So double check the sched bit while the takslet
 
-This is being worked on.
+s/takslet/tasklet/
 
-
-> > Unfortunately so far I haven't been able to think of a reasonable solution
-> > to this - a simplistic approach like making xen_clocksource_read() check
-> > the value it is about to return against the last value it returned doesn't
-> > seem to be a good idea (time might appear to have stopped over some
-> > period of time otherwise), nor does attempting to adjust the shadowed
-> > tsc_to_nsec_mul values (because the kernel can't know whether it should
-> > boost the lagging CPU or throttle the rushing one).
-> 
-> I once had some code in there to do that, implemented in very boneheaded
-> way with a spinlock to protect the "last time returned" variable.  I
-> expect there's a better way to implement it.
-
-But any per CPU setup likely needs this to avoid non monotonicity 
-
--Andi
- 
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
