@@ -1,48 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbXLBXW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbXLBXft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbXLBXW6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Dec 2007 18:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbXLBXWu
+	id S1753687AbXLBXft (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Dec 2007 18:35:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXLBXfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Dec 2007 18:22:50 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39101 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751103AbXLBXWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Dec 2007 18:22:49 -0500
-Date: Mon, 3 Dec 2007 00:23:31 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Valdis.Kletnieks@vt.edu, tvrtko.ursulin@sophos.com,
-       Andi Kleen <andi@firstfloor.org>, ak@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Out of tree module using LSM
-Message-ID: <20071202232331.GE2438@elf.ucw.cz>
-References: <p738x4i9nyd.fsf@crumb.suse.de> <OFFB86F10D.D565B603-ON802573A2.005A558C-802573A2.005B85B0@sophos.com> <20071201084332.GB4446@ucw.cz> <17957.1196624688@turing-police.cc.vt.edu> <20071202202240.GB1625@elf.ucw.cz> <23463.1196629795@turing-police.cc.vt.edu> <20071202215634.GB2438@elf.ucw.cz> <Pine.LNX.4.64.0712022356460.24188@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0712022356460.24188@fbirervta.pbzchgretzou.qr>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 2 Dec 2007 18:35:39 -0500
+Received: from mx0.sover.net ([209.198.87.162]:61262 "EHLO mx0.sover.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751501AbXLBXfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Dec 2007 18:35:38 -0500
+X-Greylist: delayed 598 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Dec 2007 18:35:37 EST
+Message-Id: <200712022336.SAA12095@granite.sover.net>
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM: loadlin incompatible with 2.6.23 kernels
+Date: 2007 12 02
+Cc: lermen@elserv.ffm.fgan.de, lermen@fgan.de, davej@redhat.com,
+       cebbert@redhat.com
+reply-to: kmh@nerdshack.com
+from: kmh@nerdshack.com (Kenneth Howlett)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+The loadlin boot loader fails to boot 2.6.23 kernels.
 
-> >Well... I'd really like to know what A/V people are trying to do.
-> >
-> >Indexing services are really different, and doable with recursive
-> >m-time Jan is preparing... 
-> >
-> m-time <=> modification time?
+I used msdos 6.22 in real mode, without himem.sys or any other memory
+manager, without any tsrs; loadlin 1.6c; and kernel 2.6.23.1-42.fc8, which
+is the install kernel for the fedora core 8 distribution. The normal loadlin
+messages are displayed, the display is cleared and the cursor moves to the
+upper left corner, and then nothing else happens. No kernel boot messages
+are displayed. The computer does not respond to most keyboard actions, but
+the computer does reboot when I press control-alternate-delete.
 
-Yep.
+My computer is a dell dimension 4100 with pentium III 733mhz and intel
+chipset, and ATI radeon all-in-wonder display controller.
 
-> What am I preparing?
+The output of loadlin -d is:
+LOADLIN v1.6c (C) 1994..2002 Hans Lermen <lermen@fgan.de>
 
-Not you, Jan Kara. Sorry.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Your current LINUX kernel boot configuration is:
+  image file:       fed8.ker
+  kernel version    2.6.23.1-42.fc8 (kojibuilder@xenbuilder1.fedora.redhat.com) #1 SMP Tue Oct 30 13:05:10 EDT 2007
+  kernel size:     0x001E0300 (high loaded) setup size:  0x2C00, heap: 0x1200
+  VGA mode:         0xFFFF
+  command line (size 0x0013):
+    BOOT_IMAGE=fed8.ker
+
+Your current DOS/CPU configuration is:
+  load buffer size: 0x00F60000 EXT , setup buffer size:  0x3E00
+  lowmem buffer:    0x00080000 (part of load buffer)
+  total memory:     0x040FFC00
+  CPU is in REAL mode
+  SetupIntercept: YES, legal intercept, setup header version 0206
+  stat1: cpu in real 386 mode, no need to backswitch
+  input params (size 0x0011):
+    fed8.ker -d o.txt
+  LOADLIN started from DOS-prompt
+
+Option -t set, Linux not loaded
+
+
+I tried using loadlin -f, and the result was the same. I tried using loadlin
+-noheap, and the computer rebooted itself instead of crashing. I tried using
+freedos 1.0 instead of msdos 6.22, and instead of crashing, the computer
+displayed a message saying invalid opcode, and the dos prompt returned. I
+tried using the 586, 686, and debug kernels from packages on the fedora core
+8 dvd, and the result was the same. I tried using the pae kernel from the
+package on the fedora core 8 dvd, and the computer crashed like before, but
+this time the computer did not respond to control-alternate-delete.
+
+Loadlin works ok with older kernels. The kernel works ok with other boot
+loaders. I tested the integrity of my fedora core 8 dvd and it was ok.
+
+I searched the web, and the only reference I found was
+<a href="http://kerneltrap.org/node/14842">http://kerneltrap.org/node/14842</a>.
+The first comment is from me. The person who wrote the original post
+seems to be compiling his own kernels; therefore this is probably a kernel
+problem, not a problem with the fedora core 8 distribution. The person who
+wrote the original post says that kernel 2.6.22.12 did not have this
+problem, therefore the problem probably appeared in the 2.6.23 kernels, and
+earlier kernels are probably ok.
+
+I do not know if the problem is with the kernel or with loadlin. Probably
+some people will say it is the kernel's fault, and other people will say it
+is loadlin's fault.
+
+I am not knowledgable about the kernel boot process, but I am guessing that
+the first thing the kernel does is uncompress itself, and the second thing
+the kernel does is set the vga or framebuffer mode. I am guessing that the
+clearing of the display is not done by loadlin, but is done as part of
+setting the vga or framebuffer mode. Therefore I guessed that the kernel
+successfully uncompressed itself, then got stuck setting the vga or
+framebuffer mode. So I tried changing the vga options.
+
+With vga=normal, the result is the same. With vga=771 (vesa framebuffer,
+800x600, 256 colors), the computer crashes like before, but the cursor is
+not visible in the upper left corner. With vga=ask, the computer displays a
+message saying press enter for list, press space to continue. If I press
+space, the computer crashes. If I press enter, the computer displays a list
+of video modes. If I select 0, the computer crashes without changing the
+display. If I select 1, the text becomes smaller and occupies a smaller part
+of the display, and the computer crashes. If I select 2, the display
+clears and the computer crashes. With all of these crashes, the computer can
+still be rebooted by pressing control alternate delete.
+
+I conclude that the problem occurs after or at the end of setting the vga or
+framebuffer mode. The problem probably occurs before or at the beginning of
+probing for hardware, because no kernel boot messages are displayed after
+the vga=ask messages.
+
+I do not know why this occurs with loadlin and not with other boot loaders.
