@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965032AbXFFGdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbXFFGe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965032AbXFFGdf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 02:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758958AbXFFGd2
+	id S965059AbXFFGe6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 02:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758958AbXFFGev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 02:33:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34355 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757434AbXFFGd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 02:33:28 -0400
-Date: Wed, 6 Jun 2007 02:33:11 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: greg@kroah.com
-Subject: Bus hidden behind transparent bridge.
-Message-ID: <20070606063311.GD20745@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>, greg@kroah.com
-MIME-Version: 1.0
+	Wed, 6 Jun 2007 02:34:51 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:39854 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758712AbXFFGeu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 02:34:50 -0400
+Date: Wed, 6 Jun 2007 12:12:28 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v15
+Message-ID: <20070606064228.GA22443@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070531150908.GA23538@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070531150908.GA23538@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We've had this printk in drivers/pci/probe.c asking people
-to report it if they see it to linux-kernel for a long time.
+On Thu, May 31, 2007 at 05:09:08PM +0200, Ingo Molnar wrote:
+> i'm pleased to announce release -v15 of the CFS scheduler patchset.
 
-google finds hundreds of instances of this being hit.
-There are a bunch in bugzilla too..
+Do I smell a bug when a task switches its scheduling classes?
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6783
-http://bugzilla.kernel.org/show_bug.cgi?id=7403
-http://bugzilla.kernel.org/show_bug.cgi?id=7575
-http://bugzilla.kernel.org/show_bug.cgi?id=7664
-http://bugzilla.kernel.org/show_bug.cgi?id=8074
-http://bugzilla.kernel.org/show_bug.cgi?id=8480
+Lets say a task was in real-time class for a long time and switches to
+fair-sched class. When update_curr() is called on this new fair-sched
+task, some of required fields (for ex: exec_start) are uninitialized and can 
+lead to bogus calculations?
 
-(possibly others, these are just a quick skim based on summary)
-
-I don't recall ever seeing anything happen any time someone has
-reported this.  Is it worth keeping the printk there?
-It only seems to cause confusion (users think its an error,
-especially as we ask them to do something).
-
-Better yet, I don't think I've seen a report of this where
-the user is actually experiencing a problem.
-
-Who is the intended recipient of these reports?
-
-	Dave
+Also, real-time tasks are currently influencing fair clock calculations
+(because there is only one raw_weighted_load field per runqueue). Is
+that intentional?
 
 -- 
-http://www.codemonkey.org.uk
+Regards,
+vatsa
