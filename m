@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936201AbXFFWKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936186AbXFFWM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936201AbXFFWKB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 18:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935160AbXFFWJv
+	id S936186AbXFFWM3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 18:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbXFFWMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:09:51 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:30654 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758568AbXFFWJu (ORCPT
+	Wed, 6 Jun 2007 18:12:21 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:46943 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752061AbXFFWMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:09:50 -0400
-Date: Wed, 6 Jun 2007 15:09:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH -mm] schedstats: fix printk format
-Message-Id: <20070606150929.6422177f.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Jun 2007 18:12:19 -0400
+Message-ID: <46673135.30105@zytor.com>
+Date: Wed, 06 Jun 2007 15:12:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Bodo Eggert <7eggert@gmx.de>, Andi Kleen <andi@firstfloor.org>,
+       tmoore@spatial.ca, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] Re: 4Gb ram not showing up
+References: <Pine.LNX.4.58.0706061356310.2657@be1.lrz> <20070606143723.GF10008@csclub.uwaterloo.ca>
+In-Reply-To: <20070606143723.GF10008@csclub.uwaterloo.ca>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Lennart Sorensen wrote:
+> 
+> Seems like an improvement to me.  To fully explain how it could be 3 or
+> 3.5 or 3.25 or who knows how many GB you can actually use without PAE
+> would probably require writing a small novel.  Certainly talking about
+> address space instead of amounts of physical memory is more correct.
+> 
 
-Fix printk format warnings for schedstats:
+On some machines it's even just 2 GB.
 
-fs/proc/base.c:309: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'long long unsigned int'
-fs/proc/base.c:309: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'long long unsigned int'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- fs/proc/base.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.22-rc4-mm1.orig/fs/proc/base.c
-+++ linux-2.6.22-rc4-mm1/fs/proc/base.c
-@@ -303,7 +303,7 @@ static int proc_pid_wchan(struct task_st
-  */
- static int proc_pid_schedstat(struct task_struct *task, char *buffer)
- {
--	return sprintf(buffer, "%lu %lu %lu\n",
-+	return sprintf(buffer, "%llu %llu %lu\n",
- 			task->sched_info.cpu_time,
- 			task->sched_info.run_delay,
- 			task->sched_info.pcnt);
+	-hpa
