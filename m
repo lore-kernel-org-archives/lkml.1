@@ -1,57 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934412AbXFFMyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934248AbXFFNBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934412AbXFFMyz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 08:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762162AbXFFMys
+	id S934248AbXFFNBl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 09:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762162AbXFFNBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 08:54:48 -0400
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:62854 "EHLO
-	rpc.xensource.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761469AbXFFMyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 08:54:47 -0400
-User-Agent: Microsoft-Entourage/11.3.3.061214
-Date: Wed, 06 Jun 2007 13:54:44 +0100
-Subject: Re: [Xen-devel] [patch 14/33] xen: xen time implementation
-From: Keir Fraser <keir@xensource.com>
-To: Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       <virtualization@lists.osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Message-ID: <C28C6D24.1026E%keir@xensource.com>
-Thread-Topic: [Xen-devel] [patch 14/33] xen: xen time implementation
-Thread-Index: AceoOdrAGSgBOhQtEdyEZAAX8io7RQ==
-In-Reply-To: <4666C8E3.76E4.0078.0@novell.com>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Wed, 6 Jun 2007 09:01:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55565 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759545AbXFFNBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 09:01:33 -0400
+X-Authenticated: #228032
+X-Provags-ID: V01U2FsdGVkX1/9q4x6Rkr9W4etw2VLzWYyd87W9DeyytD3INvOuN
+	yEp12nkqMBeAeu
+Date: Wed, 6 Jun 2007 15:01:29 +0200
+From: Simon Peter <simon.peter@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Kernel Timers
+Message-Id: <20070606150129.49936f60.simon.peter@gmx.de>
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+I see two kernel timer interfaces: The standard and the high-resolution
+timers. Are there any more? Is the whole kernel using these two
+interfaces?
 
-
-On 6/6/07 13:46, "Jan Beulich" <jbeulich@novell.com> wrote:
-
->> On the other hand some timing issues on throttling are probably
->> the smallest of the users' problems when it really happens.
-> 
-> Not if this results in your box hanging - I think throttling is exactly
-> intended
-> to keep the box alive as long as possible (and I've seen throttling in action,
-> with the box happily recovering from the situation - after having seen it a
-> few times I checked and found the fan covered with dust).
-
-Clamping to last returned timestamp value would be fine here. Time would go
-moderately haywire for a while (lurch forwards and then stop for a while),
-but wouldn't go backwards and should recover reasonably within the timescale
-of the thermal event itself. I don't see an issue with just implementing
-this clamping if it is needed.
-
- -- Keir
-
+Thanks,
+Simon
