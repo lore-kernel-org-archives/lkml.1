@@ -1,107 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966050AbXFFXLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966017AbXFFXMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966050AbXFFXLY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965986AbXFFXLB
+	id S966017AbXFFXMn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965434AbXFFXMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:11:01 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:47528 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965981AbXFFXLA (ORCPT
+	Wed, 6 Jun 2007 19:12:34 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:14777 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965225AbXFFXMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:11:00 -0400
-Date: Wed, 6 Jun 2007 16:11:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Message-Id: <20070606161103.f8e3b253.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0706061852590.2716@p34.internal.lan>
-References: <200706061229.24486.jesse.barnes@intel.com>
-	<200706061524.52628.jesse.barnes@intel.com>
-	<Pine.LNX.4.64.0706061826260.5415@p34.internal.lan>
-	<200706061528.44070.jesse.barnes@intel.com>
-	<20070606153737.2c9da784.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0706061852590.2716@p34.internal.lan>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Jun 2007 19:12:33 -0400
+Message-ID: <5640c7e00706061612h62074699wdbd2725654a164@mail.gmail.com>
+Date: Thu, 7 Jun 2007 11:12:32 +1200
+From: "Ian McDonald" <ian.mcdonald@jandi.co.nz>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Subject: Re: [BUG] Fwd: segfault : modprobe dccp_probe/tcp_probe
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       "David S. Miller" <davem@davemloft.net>,
+       "Patrick Andrieux" <patrick.andrieux@gmail.com>,
+       "DCCP Mailing List" <dccp@vger.kernel.org>, jbeulich@novell.com
+In-Reply-To: <46673B76.2090508@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+References: <5640c7e00706061347v42c9ecbahb5354f6687a70a78@mail.gmail.com>
+	 <46673B76.2090508@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007 18:54:37 -0400 (EDT) Justin Piszcz wrote:
+On 6/7/07, Chuck Ebbert <cebbert@redhat.com> wrote:
+> On 06/06/2007 04:47 PM, Ian McDonald wrote:
+> > Hi there,
+> >
+> > We've seen a report of a problem with dccp_probe as shown below. The
+> > user has also verified that it occurs in tcp_probe as well. This is on
+> > Dave Miller's tree but that currently tracks Linus' tree quite
+> > closely. I do note that it is around 2.6.22-rc2 timeframe so there is
+> > a possibility fixes may have gone in since.
+> >
+>
+> It faulted when it tried to write the breakpoint instruction into the
+> running kernel's executable code. Apparently the kernel code is now marked
+> read-only?
+>
+>
+Yes it would appear to be the case as user has CONFIG_DEBUG_RODATA
+set. Patrick - can you turn this off and retest? It's under Kernel
+Hacking, Write protect kernel read only data structures.
 
-> Hm, not sure if it was from the patch or what but I ran this:
-> 
-> 1. swapoff -a
-> 2. ./eatmem
-> 
-> The machine responded to ping and alt-sysrq-b but the box remain 
-> unresponsive, I guess the kernel did not kill the process? :(
-> 
-> The moments before it 'froze'
-> 
-> top - 18:48:01 up 15 min,  7 users,  load average: 6.61, 18.50, 13.31
-> Tasks: 200 total,  18 running, 182 sleeping,   0 stopped,   0 zombie
-> Cpu(s):  0.0%us, 90.7%sy,  0.0%ni,  5.9%id,  3.3%wa,  0.0%hi,  0.0%si, 
-> 0.0%st
-> Mem:   8039576k total,  7998860k used,    40716k free,        8k buffers
-> Swap:        0k total,        0k used,        0k free,     1664k cached
-> 
->    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->    248 root      11  -5     0    0    0 R   85  0.0   0:16.05 kswapd0
->   2265 nut       18   0 13320  244    4 R   40  0.0   0:03.13 newhidups
->   2267 nut       18   0 12216  168    4 R   40  0.0   0:02.04 upsd
->   2474 ntp       18   0 22192  400    8 R   39  0.0   0:02.00 ntpd
->   3563 jpiszcz   18   0 41964 1264    4 R   38  0.0   0:02.20 pine
->   3530 root      18   0 96240 3132   36 R   37  0.0   0:02.09 kdm_greet
->   2052 root      18   0  6080  112    4 R   37  0.0   0:02.00 hald-addon-stor
->   4479 war       17   0 18012  700  252 R   33  0.0   0:01.81 top
->   4480 war       19   0 6948m 6.8g    4 R   22 88.4   0:05.81 eatmem
->   2095 root      18   0 13128  216    8 R   10  0.0   0:00.50 dirmngr
->   2545 root      18   0 95788 2488    4 R    5  0.0   0:00.25 apache2
->   3564 war       18   0 41620  832    4 R    5  0.0   0:00.34 pine
->   2270 nut       15   0 12212  144    4 S    1  0.0   0:00.05 upsmon
->    561 root      10  -5     0    0    0 S    0  0.0   0:00.02 xfsbufd
-> 
-> Very simply program:
-> 
-> #include <iostream>
-> using namespace std;
-> 
-> int main()
-> {
->    long int interations = 10000000;
->    int counter = 1;
-> 
->    for(counter;counter<interations;counter++)
->    {
->       double *d = new double[100];
+The list of commits that I see around this are at:
+http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git&a=search&h=HEAD&st=commit&s=DEBUG_RODATA
 
-You usually have to access the allocated memory, like:
+I suspect it's probably one of the latter ones giving the timing.
 
-	*d = 1.0;
+I guess there are a couple of solutions here - either make kprobes
+conflict with CONFIG_DEBUG_RODATA so you can do one or the other, or
+look into more detail what access kprobes need.
 
-for it to actually be allocated (AFAIK).
-
->    }
-> 
->    return 0;
-> }
-> 
-> Any idea why the OOM killer can or does not kill it?
-
-What are the values of /proc/sys/vm/overcommit* ?
-
-See Documentation/vm/overcommit-accounting .
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Ian
+-- 
+Web: http://wand.net.nz/~iam4/
+Blog: http://iansblog.jandi.co.nz
+WAND Network Research Group
