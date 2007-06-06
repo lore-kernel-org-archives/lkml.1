@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935795AbXFFVp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935612AbXFFVws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935795AbXFFVp2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 17:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933487AbXFFVpV
+	id S935612AbXFFVws (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbXFFVwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 17:45:21 -0400
-Received: from cassarossa.samfundet.no ([129.241.93.19]:43930 "EHLO
-	cassarossa.samfundet.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756600AbXFFVpU (ORCPT
+	Wed, 6 Jun 2007 17:52:40 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45140 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755804AbXFFVwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 17:45:20 -0400
-X-Greylist: delayed 1471 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Jun 2007 17:45:20 EDT
-Date: Wed, 6 Jun 2007 23:20:46 +0200
-From: "Steinar H. Gunderson" <sgunderson@bigfoot.com>
-To: linux-kernel@vger.kernel.org
-Subject: USB low-speed bulk transfers
-Message-ID: <20070606212046.GA16162@uio.no>
+	Wed, 6 Jun 2007 17:52:39 -0400
+X-Sasl-enc: rCzuc23BwuTAQYyOmIK0rnwMmcCsaCs5eU2xKCnZi+q9 1181166758
+Date: Wed, 6 Jun 2007 18:52:32 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: Bad behaviour after hdparm -M  128
+Message-ID: <20070606215232.GC31549@khazad-dum.debian.net>
+References: <fa.DWgGSeKzniALToNSyX9W5NibA1w@ifi.uio.no> <4666C4B9.8060408@shaw.ca> <20070606154442.GB13166@khazad-dum.debian.net> <20070606162425.GA3943@atjola.homenet> <20070606164854.GA18984@khazad-dum.debian.net> <20070606175112.GA4659@atjola.homenet> <20070606210337.GA31549@khazad-dum.debian.net> <20070606213617.GA6580@atjola.homenet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Operating-System: Linux 2.6.20.4 on a x86_64
-X-Message-Flag: Outlook? --> http://www.mozilla.org/products/thunderbird/
+In-Reply-To: <20070606213617.GA6580@atjola.homenet>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Please Cc on reply]
+On Wed, 06 Jun 2007, Bj�rn Steinbrink wrote:
+> HDAPS support is available, revision is MB2IA60A.
 
-Hi,
+That would usually rule out the possibility of it being the firmware, but we
+have different disks, so different firmware.
 
-I recently bought an USB MIDI interface from ESI (called “ESI MIDI Mate”). It
-claims to work with Linux, but doesn't -- I've already asked the manufacturer
-for an explanation, but as I was impatient, I hacked a bit on the drivers to
-actually make it work...
+It looks like I will have to try 2.6.22 to know for sure.
 
-The /proc/bus/usb/devices entry looks like this:
-
-  T:  Bus=04 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  4 Spd=1.5 MxCh= 0
-  D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
-  P:  Vendor=0a92 ProdID=1001 Rev= 1.04
-  S:  Manufacturer=ESI
-  S:  Product=ESI MIDI Mate
-  C:* #Ifs= 2 Cfg#= 1 Atr=80 MxPwr= 20mA
-  I:* If#= 0 Alt= 0 #EPs= 0 Cls=01(audio) Sub=01 Prot=00 Driver=snd-usb-audio
-  I:* If#= 1 Alt= 0 #EPs= 2 Cls=01(audio) Sub=03 Prot=00 Driver=snd-usb-audio
-  E:  Ad=81(I) Atr=02(Bulk) MxPS=   4 Ivl=0ms
-  E:  Ad=01(O) Atr=02(Bulk) MxPS=   4 Ivl=0ms
-
-There are two points worth noting here:
-
- - The device is USB low speed. snd-usb-audio simply checks for full/high
-   speed, and refuses any device that isn't. I can hack around this,
-   inverting a few checks etc., and it seems to work reasonably well
-   (probably since the device has no PCM parts).
- - Both endpoint descriptors are bulk. The HCD driver plain refuses bulk
-   transfers for low-speed; it looks like they are disallowed in the USB
-   standard somehow. If I comment out the check, the driver works
-   (perfectly!), but I guess this isn't acceptable for upstream?
-
-Could the check for low-speed bulk transfers be replaced by a kernel warning
-somehow? I can't see any big harm by allowing them, and obviously, Windows XP
-and Mac OS X does so.
-
-I can supply a patch for the snd-usb-audio specific parts if desired, but I
-can't guarantee it's the correct fix for cards that support PCM. Not that I
-know of any PCM-capable low-speed USB sound cards out there...
-
-/* Steinar */
 -- 
-Homepage: http://www.sesse.net/
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
