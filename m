@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965054AbXFFV0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965129AbXFFV2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965054AbXFFV0p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 17:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935190AbXFFV0i
+	id S965129AbXFFV2s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964865AbXFFV2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 17:26:38 -0400
-Received: from lucidpixels.com ([75.144.35.66]:53744 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935080AbXFFV0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 17:26:37 -0400
-Date: Wed, 6 Jun 2007 17:26:36 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jesse Barnes <jesse.barnes@intel.com>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-In-Reply-To: <200706061350.42508.jesse.barnes@intel.com>
-Message-ID: <Pine.LNX.4.64.0706061726340.23650@p34.internal.lan>
-References: <200706061229.24486.jesse.barnes@intel.com>
- <200706061331.30516.jesse.barnes@intel.com> <Pine.LNX.4.64.0706061636550.21038@p34.internal.lan>
- <200706061350.42508.jesse.barnes@intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 6 Jun 2007 17:28:40 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1100 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964845AbXFFV2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 17:28:40 -0400
+Date: Thu, 7 Jun 2007 07:28:31 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@gmx.de>
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070606212831.GA1534@gondor.apana.org.au>
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <200706062132.37430.m.kozlowski@tuxland.pl> <20070606132439.3f59f0cf.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070606132439.3f59f0cf.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Will give it a shot.
+On Wed, Jun 06, 2007 at 01:24:39PM -0700, Andrew Morton wrote:
+>
+> > And for some reason the whole Cryptographic API is under the main level of menu 
+> > (please find .config and menu.png attached).
+> 
+> err, yes.  git-cryptodev.patch did that.  Herbert is being immodest ;)
 
-On Wed, 6 Jun 2007, Jesse Barnes wrote:
+Is it this patch? If so then you sent to it me :)
 
-> On Wednesday, June 6, 2007 1:37 pm Justin Piszcz wrote:
->> On Wed, 6 Jun 2007, Jesse Barnes wrote:
->>> On Wednesday, June 6, 2007 1:28 pm Jesse Barnes wrote:
->>>>> Against what kernel version does this patch apply?
->>>>
->>>> Um... git as of b4946ffb1860597b187d78d61ac6504177eb0ff8.  Sorry I
->>>> should have updated before spinning the patch (will do now).
->>>
->>> Appears to apply cleanly to git head as of a minute ago too.
->>>
->>> Jesse
->>
->> Can you produce a patch against 2.6.22-rc4 or 2.6.21 so I and other
->> people can easily try it? I do not have git installed on this
->> machine, thanks.
->
-> Seems to apply cleanly to 2.6.22-rc4 too.  Haven't tested that though.
->
-> Jesse
->
+Should I drop it?
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+commit a85e40c4a0d4fd87e3f9449faac98db0d7d6ac78
+Author: Jan Engelhardt <jengelh@gmx.de>
+Date:   Fri May 18 15:11:01 2007 +1000
+
+    [CRYPTO] Kconfig: Use menuconfig objects
+
+    Use menuconfigs instead of menus, so the whole menu can be disabled at once
+    instead of going through all options.
+
+    Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+a85e40c4a0d4fd87e3f9449faac98db0d7d6ac78
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index 4ca0ab3..935301e 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -2,9 +2,7 @@
+ # Cryptographic API Configuration
+ #
+ 
+-menu "Cryptographic options"
+-
+-config CRYPTO
++menuconfig CRYPTO
+ 	bool "Cryptographic API"
+ 	help
+ 	  This option provides the core Cryptographic API.
+@@ -463,5 +461,3 @@ config CRYPTO_TEST
+ source "drivers/crypto/Kconfig"
+ 
+ endif	# if CRYPTO
+-
+-endmenu
