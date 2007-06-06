@@ -1,150 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935248AbXFFTSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935344AbXFFTSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935248AbXFFTSH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 15:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934175AbXFFTQ1
+	id S935344AbXFFTSi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 15:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934501AbXFFTQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 6 Jun 2007 15:16:27 -0400
-Received: from mga09.intel.com ([134.134.136.24]:41190 "EHLO mga09.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:18125 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932281AbXFFTQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932355AbXFFTQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 Jun 2007 15:16:23 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
-   d="scan'208";a="94140694"
-Message-Id: <20070606190042.615257000@askeshav-devel.jf.intel.com>
+   d="scan'208";a="253987303"
+Message-Id: <20070606190042.930671000@askeshav-devel.jf.intel.com>
 References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 06 Jun 2007 11:57:01 -0700
+Date: Wed, 06 Jun 2007 11:57:05 -0700
 From: anil.s.keshavamurthy@intel.com
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
        asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
        anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
        ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
-Subject: [Intel-IOMMU 03/10] PCI generic helper function
-Content-Disposition: inline; filename=pcie_port_type.patch
+Subject: [Intel-IOMMU 07/10] Intel iommu cmdline option - forcedac
+Content-Disposition: inline; filename=dmar_forcedac.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When devices are under a p2p bridge, upstream
-transactions get replaced by the device id of the bridge as it owns the
-PCIE transaction. Hence its necessary to setup translations on behalf of the
-bridge as well. Due to this limitation all devices under a p2p share the same
-domain in a DMAR.
-
-We just cache the type of device, if its a native PCIe device
-or not for later use.
+	Introduce intel_iommu=forcedac commandline option.
+This option is helpful to verify the pci device capability
+of handling physical dma'able address greater than 4G.
 
 Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
 ---
- drivers/pci/pci.h    |    1 +
- drivers/pci/probe.c  |   14 ++++++++++++++
- drivers/pci/search.c |   30 ++++++++++++++++++++++++++++++
- include/linux/pci.h  |    2 ++
- 4 files changed, 47 insertions(+)
+ Documentation/kernel-parameters.txt |    7 +++++++
+ drivers/pci/intel-iommu.c           |    6 +++++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.22-rc3/drivers/pci/pci.h
+Index: linux-2.6.22-rc3/Documentation/kernel-parameters.txt
 ===================================================================
---- linux-2.6.22-rc3.orig/drivers/pci/pci.h	2007-06-04 12:27:34.000000000 -0700
-+++ linux-2.6.22-rc3/drivers/pci/pci.h	2007-06-04 12:36:31.000000000 -0700
-@@ -92,3 +92,4 @@
- 	return NULL;
- }
+--- linux-2.6.22-rc3.orig/Documentation/kernel-parameters.txt	2007-06-04 12:40:29.000000000 -0700
++++ linux-2.6.22-rc3/Documentation/kernel-parameters.txt	2007-06-04 12:40:41.000000000 -0700
+@@ -785,6 +785,13 @@
+ 			bypassed by not enabling DMAR with this option. In
+ 			this case, gfx device will use physical address for
+ 			DMA.
++		forcedac
++			With this option iommu will not optimize to look
++			for io virtual address below 32 bit forcing dual
++			address cycle on pci bus for cards supporting greater
++			than 32 bit addressing. The default is to look
++			for translation below 32 bit and if not available
++			then look in the higher range.
  
-+struct pci_dev *pci_find_upstream_pcie_bridge(struct pci_dev *pdev);
-Index: linux-2.6.22-rc3/drivers/pci/probe.c
+ 	io7=		[HW] IO7 for Marvel based alpha systems
+ 			See comment before marvel_specify_io7 in
+Index: linux-2.6.22-rc3/drivers/pci/intel-iommu.c
 ===================================================================
---- linux-2.6.22-rc3.orig/drivers/pci/probe.c	2007-06-04 12:27:34.000000000 -0700
-+++ linux-2.6.22-rc3/drivers/pci/probe.c	2007-06-04 12:36:31.000000000 -0700
-@@ -803,6 +803,19 @@
- 	kfree(pci_dev);
- }
+--- linux-2.6.22-rc3.orig/drivers/pci/intel-iommu.c	2007-06-04 12:40:29.000000000 -0700
++++ linux-2.6.22-rc3/drivers/pci/intel-iommu.c	2007-06-04 12:40:41.000000000 -0700
+@@ -53,6 +53,7 @@
  
-+static void set_pcie_port_type(struct pci_dev *pdev)
-+{
-+	int pos;
-+	u16 reg16;
-+
-+	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-+	if (!pos)
-+		return;
-+	pdev->is_pcie = 1;
-+	pci_read_config_word(pdev, pos + PCI_EXP_FLAGS, &reg16);
-+	pdev->pcie_type = (reg16 & PCI_EXP_FLAGS_TYPE) >> 4;
-+}
-+
- /**
-  * pci_cfg_space_size - get the configuration space size of the PCI device.
-  * @dev: PCI device
-@@ -917,6 +930,7 @@
- 	dev->device = (l >> 16) & 0xffff;
- 	dev->cfg_size = pci_cfg_space_size(dev);
- 	dev->error_state = pci_channel_io_normal;
-+	set_pcie_port_type(dev);
+ static int dmar_disabled;
+ static int __initdata dmar_map_gfx = 1;
++static int dmar_forcedac = 0;
  
- 	/* Assume 32-bit PCI; let 64-bit PCI cards (which are far rarer)
- 	   set this higher, assuming the system even supports it.  */
-Index: linux-2.6.22-rc3/drivers/pci/search.c
-===================================================================
---- linux-2.6.22-rc3.orig/drivers/pci/search.c	2007-06-04 12:27:34.000000000 -0700
-+++ linux-2.6.22-rc3/drivers/pci/search.c	2007-06-04 12:36:31.000000000 -0700
-@@ -14,6 +14,36 @@
- #include "pci.h"
+ #define DUMMY_DEVICE_DOMAIN_INFO ((struct device_domain_info *)(-1))
+ static DEFINE_SPINLOCK(device_domain_lock);
+@@ -69,6 +70,9 @@
+ 		} else if (!strncmp(str, "igfx_off", 8)) {
+ 			dmar_map_gfx = 0;
+ 			printk(KERN_INFO"Intel-IOMMU: disable GFX device mapping\n");
++ 		} else if (!strncmp(str, "forcedac", 8)) {
++			printk (KERN_INFO"Intel-IOMMU: Enabling DAC for PCI supporting > 32Bit DMA\n");
++			dmar_forcedac = 1;
+ 		}
  
- DECLARE_RWSEM(pci_bus_sem);
-+/*
-+ * find the upstream PCIE-to-PCI bridge of a PCI device
-+ * if the device is PCIE, return NULL
-+ * if the device isn't connected to a PCIE bridge (that is its parent is a
-+ * legacy PCI bridge and the bridge is directly connected to bus 0), return its
-+ * parent
-+ */
-+struct pci_dev *
-+pci_find_upstream_pcie_bridge(struct pci_dev *pdev)
-+{
-+	struct pci_dev *tmp = NULL;
-+
-+	if (pdev->is_pcie)
-+		return NULL;
-+	while (1) {
-+		if (!pdev->bus->self)
-+			break;
-+		pdev = pdev->bus->self;
-+		/* a p2p bridge */
-+		if (!pdev->is_pcie) {
-+			tmp = pdev;
-+			continue;
-+		}
-+		/* PCI device should connect to a PCIE bridge */
-+		BUG_ON(pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE);
-+		return pdev;
-+	}
-+
-+	return tmp;
-+}
+ 		str += strcspn(str, ",");
+@@ -1500,7 +1504,7 @@
  
- static struct pci_bus *pci_do_find_bus(struct pci_bus *bus, unsigned char busnr)
- {
-Index: linux-2.6.22-rc3/include/linux/pci.h
-===================================================================
---- linux-2.6.22-rc3.orig/include/linux/pci.h	2007-06-04 12:27:34.000000000 -0700
-+++ linux-2.6.22-rc3/include/linux/pci.h	2007-06-04 12:36:31.000000000 -0700
-@@ -139,6 +139,7 @@
- 	unsigned short	subsystem_device;
- 	unsigned int	class;		/* 3 bytes: (base,sub,prog-if) */
- 	u8		hdr_type;	/* PCI header type (`multi' flag masked out) */
-+	u8		pcie_type;	/* PCI-E device/port type */
- 	u8		rom_base_reg;	/* which config register controls the ROM */
- 	u8		pin;  		/* which interrupt pin this device uses */
+ 	start_addr = IOVA_START_ADDR;
  
-@@ -181,6 +182,7 @@
- 	unsigned int 	msi_enabled:1;
- 	unsigned int	msix_enabled:1;
- 	unsigned int	is_managed:1;
-+	unsigned int	is_pcie:1;
- 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
- 
- 	u32		saved_config_space[16]; /* config space saved at suspend time */
+-	if (pdev->dma_mask <= DMA_32BIT_MASK) {
++	if ((pdev->dma_mask <= DMA_32BIT_MASK) || (dmar_forcedac)) {
+ 		iova = iommu_alloc_iova(domain, addr, size, start_addr,
+ 			pdev->dma_mask);
+ 	} else  {
 
 -- 
