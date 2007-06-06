@@ -1,166 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933003AbXFFRtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934069AbXFFRts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933003AbXFFRtd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 13:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbXFFRtZ
+	id S934069AbXFFRts (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 13:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756600AbXFFRt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 6 Jun 2007 13:49:26 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:33481 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751829AbXFFRtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 Jun 2007 13:49:25 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:34761 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751399AbXFFRtY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 13:49:24 -0400
-Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <m1sl95t3r4.fsf@ebiederm.dsl.xmission.com>
-References: <1181146045.9503.67.camel@dyn9047017100.beaverton.ibm.com>
-	 <m1sl95t3r4.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 10:37:55 -0700
-Message-Id: <1181151475.9503.77.camel@dyn9047017100.beaverton.ibm.com>
+Date: Wed, 6 Jun 2007 19:50:26 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Another version of cleanfile/cleanpatch (Re: [PATCH 08/19] scripts: Make cleanfile/cleanpatch warn about long lines)
+Message-ID: <20070606175026.GA6303@uranus.ravnborg.org>
+References: <20070603204700.GH9240@uranus.ravnborg.org> <20070605073335.GM7266@flower.upol.cz> <20070605081959.GB21991@uranus.ravnborg.org> <20070605133834.GO7266@flower.upol.cz> <20070605141254.GA24722@uranus.ravnborg.org> <20070605145759.GP7266@flower.upol.cz> <20070605151101.GQ7266@flower.upol.cz> <20070606174556.GS7266@flower.upol.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070606174556.GS7266@flower.upol.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 11:02 -0600, Eric W. Biederman wrote:
-> Badari Pulavarty <pbadari@us.ibm.com> writes:
+On Wed, Jun 06, 2007 at 07:45:56PM +0200, Oleg Verych wrote:
+> While i'm against whitespace damaged files or patches since my very
+> first patch, and don't like brain damaged programmer's tools called
+> text editors, i also want to encourage UNIX-way of using userspace.
 > 
-> > Hi Eric,
-> >
-> > Your recent cleanup to shm code, namely
-> >
-> > [PATCH] shm: make sysv ipc shared memory use stacked files
-> >
-> > took away one of the debugging feature for shm segments.
-> > Originally, shmid were forced to be the inode numbers and
-> > they show up in /proc/pid/maps for the process which mapped
-> > this shared memory segments (vma listing). That way, its easy
-> > to find out who all mapped this shared memory segment. Your
-> > patchset, took away the inode# setting. So, we can't easily
-> > match the shmem segments to /proc/pid/maps easily. (It was
-> > really useful in tracking down a customer problem recently). 
-> > Is this done deliberately ? Anything wrong in setting this back ?
-> >
-> > Comments ?
-> >
-> > Thanks,
-> > Badari
-> >
-> > Without patch:
-> > --------------
-> >
-> > # ipcs -m
-> >
-> > ------ Shared Memory Segments --------
-> > key        shmid      owner      perms      bytes      nattch     status
-> > 0x00000000 884737     db2inst1  767        33554432   13
-> >
-> > # grep 884737 /proc/*/maps
-> > #
-> >
-> > With patch:
-> > -----------
-> >
-> > # ipcs -m
-> >
-> > ------ Shared Memory Segments --------
-> > key        shmid      owner      perms      bytes      nattch     status
-> > 0x00000000 884737     db2inst1  767        33554432   13
-> >
-> > # grep 884737 /proc/*/maps
-> > /proc/11110/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11111/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11112/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11113/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11114/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11115/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11116/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11117/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11118/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11121/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11122/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11124/maps:4000389c000-4000589c000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> > /proc/11575/maps:40006724000-40008724000 rw-s 00000000 00:08 884737
-> > /SYSV00000000 (deleted)
-> >
-> >
-> >
-> > Here is the patch.
-> >
-> > "ino#" in /proc/pid/maps used to match "ipcs -m" output for shared 
-> > memory (shmid). It was useful in debugging, but its changed recently. 
-> > This patch sets inode number to shared memory id to match /proc/pid/maps.
+> Of course, i might be wrong and foolish. Anyway, what i'm trying to do
+> is not to become new generation of Visual Perl#(R) implemented in
+> Java(R) using XML with userspace, that suck.
 > 
-> Theoretically it makes the stacked file concept more brittle, because
-> it means the lower layers can't care about their inode number.
-> 
-> We do need something to tie these things together.
-> 
-> So I suspect what makes most sense is to simply rename the dentry
-> SYSVID<segmentid>
+> Many things in XXI century still can be done by tools founded 20-30
+> years ago. Why not try to?
 
-Yep. Currently, we use part of "key" as the dentry name. For example,
+Because your shell script is unreadable by normal human beings[*]
+while the perl script for people with a bit of perl fu can read it
+and fix/modify it.
 
-# ipcs
+We want tools that can be maintained and enhanced by most people.
 
------- Shared Memory Segments --------
-key        shmid      owner      perms      bytes      nattch     status
-0x083d0d74 851968     db2inst1  767        33554432   13
-
-# grep 83d0d74 /proc/*/maps
-/proc/11110/maps:40004724000-40006724000 rw-s 00000000 00:08 851968  /SYSV083d0d74 (deleted)
-/proc/11111/maps:40004724000-40006724000 rw-s 00000000 00:08 851968  /SYSV083d0d74 (deleted)
-/proc/11112/maps:40004724000-40006724000 rw-s 00000000 00:08 851968  /SYSV083d0d74 (deleted)
-/proc/11113/maps:40004724000-40006724000 rw-s 00000000 00:08 851968  /SYSV083d0d74 (deleted)
-..
-
-The issue is with the ones with key = 0x0000000, like following:
-
-# ipcs
-
------- Shared Memory Segments --------
-key        shmid      owner      perms      bytes      nattch     status
-0x00000000 884737     db2inst1  767        33554432   13
-0x00000000 950275     db2fenc1  701        23052288   13
-
-There is no unique way to identify them easily :(
-
-I guess, like you suggested, we can change the dentry name to use shmid
-instead of the portions of the "key" to make it unique. I think, I can 
-work out a patch for this.
-
-
-> 
-> That should give you the necessary information while not doing something
-> that is a long term maintenance problem.
-> 
-> Do you think you can cook up a patch to that effect?
-> Otherwise I will see if I can.
-> 
-> In practice I'm not really against your change, but I would prefer
-> to leave the code in a state where someone can reimplement hugetlbfs
-> or shmfs and we simply don't care.
-
-Thanks for your suggestion.
-
-Thanks,
-Badari
-
-
+[*] Normal human beings are people with same level of shell
+scripting/sed skills that I have just to put that straight.
+	Sam
