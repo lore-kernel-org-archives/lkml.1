@@ -1,141 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934088AbXFFBiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964797AbXFFBik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934088AbXFFBiZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 21:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764364AbXFFBiP
+	id S964797AbXFFBik (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 21:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933359AbXFFBiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 21:38:15 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:24270 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763383AbXFFBiO (ORCPT
+	Tue, 5 Jun 2007 21:38:18 -0400
+Received: from 207.47.60.147.static.nextweb.net ([207.47.60.147]:40656 "EHLO
+	rpc.xensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933190AbXFFBiQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 21:38:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=TbgNDFAgXPAGAF0+Y1P9Bka0MFalplTvfRFIBQwyBcLmZN4kGkY8+Ab6Y6mM+3kBT
-	6DW2rA9S21wsLjZdbmEmw==
-Date: Tue, 5 Jun 2007 18:34:56 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Stephane Eranian <eranian@hpl.hp.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/22] 2.6.22-rc3 perfmon2 : new system calls support
-In-Reply-To: <20070605211711.GD11693@frankl.hpl.hp.com>
-Message-ID: <alpine.DEB.0.99.0706051826330.23799@chino.kir.corp.google.com>
-References: <200705291348.l4TDmHQd019645@frankl.hpl.hp.com>
- <alpine.DEB.0.99.0706040729230.10505@chino.kir.corp.google.com>
- <20070605211711.GD11693@frankl.hpl.hp.com>
+	Tue, 5 Jun 2007 21:38:16 -0400
+X-Greylist: delayed 848 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jun 2007 21:38:16 EDT
+Message-ID: <46660CB2.60409@xensource.com>
+Date: Tue, 05 Jun 2007 18:24:02 -0700
+From: Jeremy Fitzhardinge <jeremy@xensource.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH] paravirt: helper to disable all IO space
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Jun 2007 01:24:15.0546 (UTC) FILETIME=[657819A0:01C7A7D9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jun 2007, Stephane Eranian wrote:
+In a virtual environment, device drivers such as legacy IDE will waste
+quite a lot of time probing for their devices which will never appear.
+This helper function allows a paravirt implementation to lay claim to
+the whole iomem and ioport space, thereby disabling all device drivers
+trying to claim IO resources.
 
-> > > +static int pfm_task_incompatible(struct pfm_context *ctx, struct task_struct *task)
-> > > +{
-> > > +	/*
-> > > +	 * no kernel task or task not owned by caller
-> > > +	 */
-> > > +	if (!task->mm) {
-> > > +		PFM_DBG("cannot attach to kernel thread [%d]", task->pid);
-> > > +		return -EPERM;
-> > > +	}
-> > 
-> > This isn't a sufficient check for whether a task is owned by the caller.
-> > 
-> 
-> The comment is missing a part. The ownership test is done by ptrace_may_attahc().
-> The above test is about checking for a kernel-only thread.
-> 
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 
-Ok.
+diff -r 83c67f9402b5 arch/i386/kernel/paravirt.c
+--- a/arch/i386/kernel/paravirt.c	Tue Jun 05 17:41:04 2007 -0700
++++ b/arch/i386/kernel/paravirt.c	Tue Jun 05 18:17:29 2007 -0700
+@@ -227,6 +227,39 @@ static int __init print_banner(void)
+ 	return 0;
+ }
+ core_initcall(print_banner);
++
++static struct resource reserve_ioports = {
++	.start = 0,
++	.end = IO_SPACE_LIMIT,
++	.name = "paravirt-ioport",
++	.flags = IORESOURCE_IO | IORESOURCE_BUSY,
++};
++
++static struct resource reserve_iomem = {
++	.start = 0,
++	.end = -1,
++	.name = "paravirt-iomem",
++	.flags = IORESOURCE_MEM | IORESOURCE_BUSY,
++};
++
++/*
++ * Reserve the whole legacy IO space to prevent any legacy drivers
++ * from wasting time probing for their hardware.  This is a fairly
++ * brute-force approach to disabling all non-virtual drivers.
++ * 
++ * Note that this must be called very early to have any effect.
++ */
++int paravirt_disable_iospace(void)
++{
++	int ret = 0;
++
++	ret = request_resource(&ioport_resource, &reserve_ioports);
++	if (ret == 0)
++		ret = request_resource(&iomem_resource, &reserve_iomem);
++
++	return ret;
++}
++
+ 
+ struct paravirt_ops paravirt_ops = {
+ 	.name = "bare hardware",
+diff -r 83c67f9402b5 arch/i386/xen/setup.c
+--- a/arch/i386/xen/setup.c	Tue Jun 05 17:41:04 2007 -0700
++++ b/arch/i386/xen/setup.c	Tue Jun 05 18:17:29 2007 -0700
+@@ -8,12 +8,14 @@
+ #include <linux/mm.h>
+ #include <linux/sched.h>
+ #include <linux/pm.h>
++#include <linux/ioport.h>
+ 
+ #include <asm/elf.h>
+ #include <asm/e820.h>
+ #include <asm/setup.h>
+ #include <asm/xen/hypervisor.h>
+ #include <asm/xen/hypercall.h>
++#include <asm/io.h>
+ 
+ #include <xen/interface/physdev.h>
+ #include <xen/features.h>
+diff -r 83c67f9402b5 include/asm-i386/paravirt.h
+--- a/include/asm-i386/paravirt.h	Tue Jun 05 17:41:04 2007 -0700
++++ b/include/asm-i386/paravirt.h	Tue Jun 05 18:17:29 2007 -0700
+@@ -262,6 +262,7 @@ unsigned paravirt_patch_insns(void *site
+ unsigned paravirt_patch_insns(void *site, unsigned len,
+ 			      const char *start, const char *end);
+ 
++int paravirt_disable_iospace(void);
+ 
+ /*
+  * This generates an indirect call based on the operation type number.
 
-> > > +int pfm_get_task(struct pfm_context *ctx, pid_t pid, struct task_struct **task)
-> > > +{
-> > 
-> > This function could be marked static even though it's exported through 
-> > perfmon.h in patch 13.  It is unreferenced elsewhere.
-> > 
-> No because it is used in another module on IA-64 (for compatibility with older versions).
-> 
-
-Is this ia64 patch the one you mentioned that you did not post to LKML 
-because it was too large in patch 0?  Is there any way you could break 
-that patch up itself and post it for comments?
-
-> > Why can't this be done with just struct task_struct *task as the third 
-> > formal and change the assignment later to task = p?
-> > 
-> Because we need to carry the errno back: ESRCH or EPERM.
-> 
-
-Your formal is "struct task_struct **task" yet the only actual to this 
-function is the memory address of a pointer to a single struct task_struct 
-(i.e. it's never passed an array of struct task_struct pointers, which 
-"struct task_struct **task" is).
-
-And since you only ever use this has *task to get the pointer, you can 
-change the formal to just be "struct task_struct *task" and then pass in a 
-pointer to a single struct task_struct.
-
-> > > +	if (check_mask & PFM_CMD_STOPPED) {
-> > > +
-> > > +		spin_unlock_irqrestore(&ctx->lock, local_flags);
-> > > +
-> > > +		/*
-> > > +		 * check that the thread is ptraced AND STOPPED
-> > > +		 */
-> > > +		ret = ptrace_check_attach(task, 0);
-> > > +
-> > > +		spin_lock_irqsave(&ctx->lock, new_flags);
-> > > +
-> > > +		/*
-> > > +		 * flags may be different than when we released the lock
-> > > +		 */
-> > > +		*flags = new_flags;
-> > 
-> > You can't do this, you'll need to either separate these functions out by 
-> > having pfm_check_task_state() indicate by a return value that 
-> > ptrace_check_attach() should be checked or that we've already failed, or 
-> > come up with a non-locking solution.
-> > 
-> Are you worried about the the local_flags vs. new flags?
-> I think your solution would be cleaner, I will see what I can do.
-> 
-
-It should be simple if this is broken down into two smaller functions, the 
-latter of which is called only upon a successful return of the former.
-
-> > > +
-> > > +asmlinkage long sys_pfm_write_pmcs(int fd, struct pfarg_pmc __user *ureq, int count)
-> > > +{
-> > > +	struct pfm_context *ctx;
-> > > +	struct file *filp;
-> > > +	struct pfarg_pmc pmcs[PFM_PMC_STK_ARG];
-> > > +	struct pfarg_pmc *req;
-> > > +	void *fptr;
-> > > +	unsigned long flags;
-> > > +	size_t sz;
-> > > +	int ret, fput_needed;
-> > > +
-> > 
-> > Could this have a stack overflow on powerpc?
-> > 
-> The PFM_PMC_STK_ARG is per-arch,  so you could chose a very low value. 
-> I think it is set to 4. pfarg_pmc s 48 bytes and pfarg_pmd is 176 bytes
-> regardless of LP64 vs. ILP32.
-> 
-
-Stack overflows like that are annoying to track down and powerpc has the 
-highest PFM_PMC_STK_ARG of the entire patchset.
-
-> Thanks for your feedback.
-> 
-
-I'm looking forward to seeing the next patchset and I'll give it a 
-thorough test run on x86_64.  It'd probably be best to base that patchset 
-off 2.6.22 when it's released.
-
-		David
