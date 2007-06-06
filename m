@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbXFFIvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbXFFIyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758281AbXFFIvZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 04:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbXFFIvQ
+	id S1759321AbXFFIyd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 04:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXFFIy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 04:51:16 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:59069 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbXFFIvO (ORCPT
+	Wed, 6 Jun 2007 04:54:26 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:22748 "EHLO
+	viefep25-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751113AbXFFIyZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 04:51:14 -0400
-Subject: Re: [Patch 04/18] include/linux/logfs.h
-From: David Woodhouse <dwmw2@infradead.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, John Stoffel <john@stoffel.org>,
-       Willy Tarreau <w@1wt.eu>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       CaT <cat@zip.com.au>, Ondrej Zajicek <santiago@crfreenet.org>,
-       linux-kernel@vger.kernel.org, Bill Davidsen <davidsen@tmr.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Dongjun Shin <djshin90@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Arnd Bergmann <arnd@arndb.de>,
-       Albert Cahalan <acahalan@gmail.com>, linux-fsdevel@vger.kernel.org,
-       linux-mtd@lists.infradead.org,
-       Artem Bityutskiy <dedekind@infradead.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       Pavel Machek <pavel@ucw.cz>, Ulisses Furquim <ulissesf@gmail.com>,
-       akpm@osdl.org, David Weinehall <tao@acc.umu.se>
-In-Reply-To: <db91817d295770e459727005108b05e2@kernel.crashing.org>
-References: <20070603183845.GA8952@lazybastard.org>
-	 <20070603184205.GE8952@lazybastard.org> <200706032342.27252.arnd@arndb.de>
-	 <20070604091245.GF14823@lazybastard.org>
-	 <1180964303.25232.358.camel@pmac.infradead.org>
-	 <18f622d94e9273fe6c93ef091fcec87c@kernel.crashing.org>
-	 <1181058836.16089.23.camel@hades.cambridge.redhat.com>
-	 <db91817d295770e459727005108b05e2@kernel.crashing.org>
+	Wed, 6 Jun 2007 04:54:25 -0400
+Subject: Re: [PATCH 4/4] mm: variable length argument support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <20070606013658.20bcbe2f.akpm@linux-foundation.org>
+References: <20070605150523.786600000@chello.nl>
+	 <20070605151203.790585000@chello.nl>
+	 <20070606013658.20bcbe2f.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Wed, 06 Jun 2007 09:50:20 +0100
-Message-Id: <1181119820.25232.434.camel@pmac.infradead.org>
+Date: Wed, 06 Jun 2007 10:54:21 +0200
+Message-Id: <1181120061.7348.177.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-05 at 20:49 +0200, Segher Boessenkool wrote:
-> >>> It would be better if GCC had a 'nopadding' attribute which gave us
-> >>> what we need without the _extra_ implications about alignment.
-> >>
-> >> That's impossible; removing the padding from a struct
-> >> _will_ make accesses to its members unaligned (think
-> >> about arrays of that struct).
-> >
-> > It _might_ make accesses to _some_ of its members unaligned.
+On Wed, 2007-06-06 at 01:36 -0700, Andrew Morton wrote:
+> On Tue, 05 Jun 2007 17:05:27 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> It _will_ make accesses to _at least one_ of the members
-> unaligned, in the second array element.
+> > From: Ollie Wild <aaw@google.com>
+> > 
+> > Remove the arg+env limit of MAX_ARG_PAGES by copying the strings directly
+> > from the old mm into the new mm.
+> > 
+> > We create the new mm before the binfmt code runs, and place the new stack
+> > at the very top of the address space. Once the binfmt code runs and figures
+> > out where the stack should be, we move it downwards.
+> > 
+> > It is a bit peculiar in that we have one task with two mm's, one of which is
+> > inactive.
+> > 
+> > ...
+> >
+> > +				flush_cache_page(bprm->vma, kpos,
+> > +						 page_to_pfn(kmapped_page));
 
-It _might_, but not necessarily.
+Bah, and my frv cross build bums out on an unrelated change,..
+I'll see if I can get a noMMU arch building, in the mean time, would you
+try this:
 
-Won't a simple struct { uint16_t } get padded to a size of 4 bytes on
-ARM? Even if I'm misremembering that, I certainly can't guarantee that
-such a thing will _never_ happen on any newly-invented ABI. If you had
-'nopadding' instead of 'packed', then there's no need to emit code to
-handle unaligned loads.
+---
 
-Likewise, with a struct which looks like this: 
-   { uint32_t, uint16_t, uint16_t, uint32_t, uint32_t }
-I cannot _guarantee_ that there will never be an architecture on which
-we'll end up using 32 bits of space for each uint16_t. I might _guess_
-that and hope, but that's precisely the kind of moronic empirical
-behaviour which caused Linux to have so many problems with newer
-compilers in the past. If it isn't _guaranteed_ then I shouldn't be
-assuming it.
+Since no-MMU doesn't do the fancy inactive mm access there is no need to
+flush cache.
 
-Thus, I want a way to tell the compiler not to insert _any_ padding. But
-without the compiler making extra inferences about the whole thing being
-found at arbitrary alignments.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
 
-And if I had something like this (which is admittedly contrived, but
-hardware people _do_ do stupid things to us):
-   { uint32_t, uint8_t, uint16_t, uint8_t, uint32_t, uint32_t }
+Index: linux-2.6-2/fs/exec.c
+===================================================================
+--- linux-2.6-2.orig/fs/exec.c	2007-06-05 16:48:52.000000000 +0200
++++ linux-2.6-2/fs/exec.c	2007-06-06 10:49:19.000000000 +0200
+@@ -428,8 +428,10 @@ static int copy_strings(int argc, char _
+ 				kmapped_page = page;
+ 				kaddr = kmap(kmapped_page);
+ 				kpos = pos & PAGE_MASK;
++#ifdef CONFIG_MMU
+ 				flush_cache_page(bprm->vma, kpos,
+ 						 page_to_pfn(kmapped_page));
++#endif
+ 			}
+ 			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
+ 				ret = -EFAULT;
 
-With the 'packed' attribute the compiler would assume arbitrary
-alignment of all the 32-bit integers. But in reality it's only necessary
-for the uint16_t in the middle. A 'nopadding' attribute would deal with
-that correctly.
-
--- 
-dwmw2
 
