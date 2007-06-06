@@ -1,43 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935612AbXFFVws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935443AbXFFVxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935612AbXFFVws (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 17:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbXFFVwk
+	id S935443AbXFFVxU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934563AbXFFVxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 17:52:40 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45140 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755804AbXFFVwj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 17:52:39 -0400
-X-Sasl-enc: rCzuc23BwuTAQYyOmIK0rnwMmcCsaCs5eU2xKCnZi+q9 1181166758
-Date: Wed, 6 Jun 2007 18:52:32 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: Bad behaviour after hdparm -M  128
-Message-ID: <20070606215232.GC31549@khazad-dum.debian.net>
-References: <fa.DWgGSeKzniALToNSyX9W5NibA1w@ifi.uio.no> <4666C4B9.8060408@shaw.ca> <20070606154442.GB13166@khazad-dum.debian.net> <20070606162425.GA3943@atjola.homenet> <20070606164854.GA18984@khazad-dum.debian.net> <20070606175112.GA4659@atjola.homenet> <20070606210337.GA31549@khazad-dum.debian.net> <20070606213617.GA6580@atjola.homenet>
+	Wed, 6 Jun 2007 17:53:09 -0400
+Received: from lucidpixels.com ([75.144.35.66]:40344 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758568AbXFFVxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 17:53:07 -0400
+Date: Wed, 6 Jun 2007 17:53:04 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Jesse Barnes <jesse.barnes@intel.com>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+In-Reply-To: <200706061229.24486.jesse.barnes@intel.com>
+Message-ID: <Pine.LNX.4.64.0706061747180.3697@p34.internal.lan>
+References: <200706061229.24486.jesse.barnes@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070606213617.GA6580@atjola.homenet>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007, Björn Steinbrink wrote:
-> HDAPS support is available, revision is MB2IA60A.
 
-That would usually rule out the possibility of it being the firmware, but we
-have different disks, so different firmware.
 
-It looks like I will have to try 2.6.22 to know for sure.
+On Wed, 6 Jun 2007, Jesse Barnes wrote:
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> On some machines, buggy BIOSes don't properly setup WB MTRRs to
+> cover all available RAM, meaning the last few megs (or even gigs)
+> of memory will be marked uncached.  Since Linux tends to allocate
+> from high memory addresses first, this causes the machine to be
+> unusably slow as soon as the kernel starts really using memory
+> (i.e. right around init time).
+>
+> This patch works around the problem by scanning the MTRRs at
+> boot and figuring out whether the current end_pfn value (setup
+> by early e820 code) goes beyond the highest WB MTRR range, and
+> if so, trimming it to match.  A fairly obnoxious KERN_WARNING
+> is printed too, letting the user know that not all of their
+> memory is available due to a likely BIOS bug.
+>
+> Something similar could be done on i386 if needed, but the boot
+> ordering would be slightly different, since the MTRR code on i386
+> depends on the boot_cpu_data structure being setup.
+>
+> Justin, can you please test and make sure this patch works for
+> you too?  It'll only work around the problem, but it's better
+> than having to do mem= by hand or waiting for a fix from your
+> BIOS vendor.
+>
+> Thanks,
+> Jesse
+
+Jesse, it worked.
+
+With mem=8832M (without your patch): 2.6.22-rc4:
+
+top - 17:39:02 up 1 day,  8:07, 25 users,  load average: 2.33, 0.76, 0.30
+Tasks: 325 total,  11 running, 314 sleeping,   0 stopped,   0 zombie
+Cpu(s): 80.0%us, 20.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Mem:   8039620k total,  7936472k used,   103148k free,      708k buffers
+Swap: 16787768k total,      128k used, 16787640k free,  6646248k cached
+
+With no mem= in append line (with your patch): 2.6.22-rc4:
+
+top - 17:44:01 up 1 min,  1 user,  load average: 0.97, 0.25, 0.08
+Tasks: 145 total,   1 running, 144 sleeping,   0 stopped,   0 zombie
+Cpu(s):  5.2%us,  3.0%sy,  1.2%ni, 86.8%id,  3.8%wa,  0.0%hi,  0.0%si,  0.0%st
+Mem:   8039608k total,   969380k used,  7070228k free,     1232k buffers
+Swap: 16787768k total,        0k used, 16787768k free,   109448k cached
+
+Odd, remote netconsole did not capture the dmesg the E820 memory map.
+
+Jun  6 17:43:03 p34 [   53.598611] ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 6 ports 3 Gbps 0x3f impl SATA mode 
+Jun  6 17:43:03 p34 [   53.598683] ahci 0000:00:1f.2: flags: 64bit ncq led clo pio slum part 
+Jun  6 17:43:03 p34 [   53.598986] scsi0 : ahci 
+Jun  6 17:43:03 p34 [   53.599131] scsi1 : ahci 
+Jun  6 17:43:03 p34 [   53.599239] scsi2 : ahci 
+Jun  6 17:43:03 p34 [   53.599340] scsi3 : ahci 
+Jun  6 17:43:03 p34 [   53.599438] scsi4 : ahci
+
+I will run with this patch for a while but so far, no issues, everything 
+looks great.
+
+Will it make it into 2.6.22-rc5? :)
+
+Justin.
