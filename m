@@ -1,99 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935448AbXFFTTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935387AbXFFTUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935448AbXFFTTb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 15:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934729AbXFFTQ3
+	id S935387AbXFFTUF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 15:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934813AbXFFTQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 15:16:29 -0400
+	Wed, 6 Jun 2007 15:16:30 -0400
 Received: from mga01.intel.com ([192.55.52.88]:18125 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932496AbXFFTQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764425AbXFFTQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 Jun 2007 15:16:24 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,390,1175497200"; 
-   d="scan'208";a="253987306"
-Message-Id: <20070606190043.136940000@askeshav-devel.jf.intel.com>
+   d="scan'208";a="253987307"
+Message-Id: <20070606190043.060111000@askeshav-devel.jf.intel.com>
 References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 06 Jun 2007 11:57:08 -0700
+Date: Wed, 06 Jun 2007 11:57:07 -0700
 From: anil.s.keshavamurthy@intel.com
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
        asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
        anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
        ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
-Subject: [Intel-IOMMU 10/10] Iommu floppy workaround
-Content-Disposition: inline; filename=floppy_disk_wrkaround.patch
+Subject: [Intel-IOMMU 09/10] Iommu Gfx workaround
+Content-Disposition: inline; filename=gfx_wrkaround.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	This config option (DMAR_FLPY_WA) sets up 1:1 mapping for the
-floppy device so that the floppy device which does not use
-DMA api's will continue to work.
+When we fix all the opensource gfx drivers to use the DMA api's,
+at that time we can yank this config options out.
 
 Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
 ---
- arch/x86_64/Kconfig       |   10 ++++++++++
- drivers/pci/intel-iommu.c |   23 +++++++++++++++++++++++
- 2 files changed, 33 insertions(+)
+ Documentation/Intel-IOMMU.txt |    5 +++++
+ arch/x86_64/Kconfig           |   11 +++++++++++
+ arch/x86_64/kernel/e820.c     |   19 +++++++++++++++++++
+ drivers/pci/intel-iommu.c     |   32 ++++++++++++++++++++++++++++++++
+ 4 files changed, 67 insertions(+)
 
+Index: linux-2.6.22-rc3/Documentation/Intel-IOMMU.txt
+===================================================================
+--- linux-2.6.22-rc3.orig/Documentation/Intel-IOMMU.txt	2007-06-04 12:40:58.000000000 -0700
++++ linux-2.6.22-rc3/Documentation/Intel-IOMMU.txt	2007-06-04 12:41:11.000000000 -0700
+@@ -57,6 +57,11 @@
+ If you encounter issues with graphics devices, you can try adding
+ option intel_iommu=igfx_off to turn off the integrated graphics engine.
+ 
++If it happens to be a PCI device included in the INCLUDE_ALL Engine,
++then try enabling CONFIG_DMAR_GFX_WA to setup a 1-1 map. We hear
++graphics drivers may be in process of using DMA api's in the near
++future and at that time this option can be yanked out.
++
+ Some exceptions to IOVA
+ -----------------------
+ Interrupt ranges are not address translated, (0xfee00000 - 0xfeefffff).
 Index: linux-2.6.22-rc3/arch/x86_64/Kconfig
 ===================================================================
---- linux-2.6.22-rc3.orig/arch/x86_64/Kconfig	2007-06-05 12:58:08.000000000 -0700
-+++ linux-2.6.22-rc3/arch/x86_64/Kconfig	2007-06-05 12:58:08.000000000 -0700
-@@ -738,6 +738,16 @@
- 	 all the OS visible memory. Hence the driver can continue
- 	 to use physical addresses for DMA.
+--- linux-2.6.22-rc3.orig/arch/x86_64/Kconfig	2007-06-04 12:35:19.000000000 -0700
++++ linux-2.6.22-rc3/arch/x86_64/Kconfig	2007-06-04 12:41:11.000000000 -0700
+@@ -727,6 +727,17 @@
+ 	  and includes pci device scope covered by these DMA
+ 	  remapping device.
  
-+config DMAR_FLPY_WA
-+	bool "Support for Floppy disk workaround"
++config DMAR_GFX_WA
++	bool "Support for Graphics workaround"
 +	depends on DMAR
 +	default y
 +	help
-+	 Floppy disk drivers are know to by pass dma api calls
-+	 their by failing to work when IOMMU is enabled. This
-+	 work around will setup a 1 to 1 mappings for the first
-+	 16M to make floppy(isa device) work.
++	 Current Graphics drivers tend to use physical address
++	 for DMA and avoid using DMA api's. Setting this config
++	 option permits the IOMMU driver to set a unity map for
++	 all the OS visible memory. Hence the driver can continue
++	 to use physical addresses for DMA.
 +
  source "drivers/pci/pcie/Kconfig"
  
  source "drivers/pci/Kconfig"
+Index: linux-2.6.22-rc3/arch/x86_64/kernel/e820.c
+===================================================================
+--- linux-2.6.22-rc3.orig/arch/x86_64/kernel/e820.c	2007-06-04 12:19:13.000000000 -0700
++++ linux-2.6.22-rc3/arch/x86_64/kernel/e820.c	2007-06-04 12:41:11.000000000 -0700
+@@ -717,3 +717,22 @@
+ 	printk(KERN_INFO "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
+ 		pci_mem_start, gapstart, gapsize);
+ }
++
++int __init arch_get_ram_range(int slot, u64 *addr, u64 *size)
++{
++	int i;
++
++	if (slot < 0 || slot >= e820.nr_map)
++		return -1;
++	for (i = slot; i < e820.nr_map; i++) {
++		if(e820.map[i].type != E820_RAM)
++			continue;
++		break;
++	}
++	if (i == e820.nr_map || e820.map[i].addr > (max_pfn << PAGE_SHIFT))
++		return -1;
++	*addr = e820.map[i].addr;
++	*size = min_t(u64, e820.map[i].size + e820.map[i].addr,
++		max_pfn << PAGE_SHIFT) - *addr;
++	return i + 1;
++}
 Index: linux-2.6.22-rc3/drivers/pci/intel-iommu.c
 ===================================================================
---- linux-2.6.22-rc3.orig/drivers/pci/intel-iommu.c	2007-06-05 12:58:08.000000000 -0700
-+++ linux-2.6.22-rc3/drivers/pci/intel-iommu.c	2007-06-05 12:58:08.000000000 -0700
-@@ -1584,6 +1584,25 @@
+--- linux-2.6.22-rc3.orig/drivers/pci/intel-iommu.c	2007-06-04 12:40:58.000000000 -0700
++++ linux-2.6.22-rc3/drivers/pci/intel-iommu.c	2007-06-04 12:41:11.000000000 -0700
+@@ -1556,6 +1556,34 @@
+ 		rmrr->end_address + 1);
  }
- #endif
  
-+#ifdef CONFIG_DMAR_FLPY_WA
-+static void iommu_prepare_isa(void)
++#ifdef CONFIG_DMAR_GFX_WA
++extern int arch_get_ram_range(int slot, u64 *addr, u64 *size);
++static void __init iommu_prepare_gfx_mapping(void)
 +{
 +	struct pci_dev *pdev = NULL;
++	u64 base, size;
++	int slot;
 +	int ret;
 +
-+	pdev = pci_get_class (PCI_CLASS_BRIDGE_ISA << 8, NULL);
-+	if (!pdev)
-+		return;
-+
-+	printk (KERN_INFO "IOMMU: Prepare 0-16M unity mapping for LPC\n");
-+	ret = iommu_prepare_identity_map(pdev, 0, 16*1024*1024);
-+
-+	if (ret)
-+		printk ("IOMMU: Failed to create 0-64M identity map, Floppy might not work\n");
-+
++	for_each_pci_dev(pdev) {
++		if (pdev->sysdata == DUMMY_DEVICE_DOMAIN_INFO ||
++				!IS_GFX_DEVICE(pdev))
++			continue;
++		printk(KERN_INFO "IOMMU: gfx device %s 1-1 mapping\n",
++			pci_name(pdev));
++		slot = 0;
++		while ((slot = arch_get_ram_range(slot, &base, &size)) >= 0) {
++			ret = iommu_prepare_identity_map(pdev, base, base + size);
++			if (ret)
++				goto error;
++		}
++		continue;
++error:
++		printk(KERN_ERR "IOMMU: mapping reserved region failed\n");
++	}
 +}
 +#endif
 +
  int __init init_dmars(void)
  {
  	struct dmar_drhd_unit *drhd;
-@@ -1643,6 +1662,10 @@
- 	iommu_prepare_gfx_mapping();
- #endif
+@@ -1611,6 +1639,10 @@
+ 			printk(KERN_ERR "IOMMU: mapping reserved region failed\n");
+ 	end_for_each_rmrr_device(rmrr, pdev)
  
-+#ifdef CONFIG_DMAR_FLPY_WA
-+	iommu_prepare_isa();
++#ifdef CONFIG_DMAR_GFX_WA
++	iommu_prepare_gfx_mapping();
 +#endif
 +
  	/*
