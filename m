@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935474AbXFFVcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935867AbXFFVdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935474AbXFFVcu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 17:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763453AbXFFVcm
+	id S935867AbXFFVdh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 17:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935012AbXFFVd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 17:32:42 -0400
-Received: from ananke.telenet-ops.be ([195.130.137.78]:41895 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758568AbXFFVcm (ORCPT
+	Wed, 6 Jun 2007 17:33:27 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:50498 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934563AbXFFVdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 17:32:42 -0400
-Date: Wed, 6 Jun 2007 23:32:38 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: i2c@lm-sensors.org
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: i2c module aliases
-Message-ID: <Pine.LNX.4.64.0706062325270.30244@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 6 Jun 2007 17:33:25 -0400
+Subject: [RFC] [Patch 0/4] lock contention tracking slimmed down
+From: Martin Peschke <mp3@de.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: a.p.zijlstra@chello.nl, jbaron@redhat.com, rostedt@goodmis.org,
+       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 23:33:22 +0200
+Message-Id: <1181165602.7133.18.camel@dix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From browsing through file2alias.c, I have the impression there's a
-missing TO_NATIVE() conversion in the handling of 16-bit (hence,
-endian-affected) i2c IDs.
-This will cause the module aliases to be incorrect when cross-compiling
-for a system with a different endianness.  Is that correct?
-If yes, the patch below adds the missing conversion.
+We can save many lines of code in the lock contention tracking patches
+by using some common code which implements statistics in a generic way.
 
-Of course, no driver seems to use `MODULE_DEVICE_TABLE(i2c, ...)' yet,
-hence nobody noticed.
+Data is still gathered per cpu; output goes to debugfs files. Several
+ideas that went into the lock contention tracking patches can be found
+in the statistics infrastructure as well.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Please see the last patch for details and for some sample output.
+The first three patches just prepare the statistics infrastructure
+for this new use case.
 
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -390,6 +390,7 @@ static int do_vio_entry(const char *file
- 
- static int do_i2c_entry(const char *filename, struct i2c_device_id *i2c, char *alias)
- {
-+	i2c->id = TO_NATIVE(i2c->id);
- 	strcpy(alias, "i2c:");
- 	ADD(alias, "id", 1, i2c->id);
- 	return 1;
+Feel free to pick at any rough edge you want me to smooth out,
+if you are interested in this approach.
 
-Gr{oetje,eeting}s,
+[Patch 1/4] statistics: no include hell for users
+[Patch 2/4] statistics: cleanups
+[Patch 3/4] statistics: sets of statistics in single file
+[Patch 4/4] lock contention tracking slimmed down
 
-						Geert
+Please mind that the patches are against 2.6.22-rc3-mm1. They don't apply
+against 2.6.22-rc4-mm1. (The statistics library functions have been dropped,
+because a couple more users would be nice.)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Ah, and you might need to add CONFIG_STATISTICS to Kconfig of the
+architecture of your choice (see s390).
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Signed-off-by: Martin Peschke <mp3@de.ibm.com>
+
+
