@@ -1,166 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966007AbXFFXoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966228AbXFFXpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966007AbXFFXoj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965830AbXFFXlt
+	id S966228AbXFFXpT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966031AbXFFXl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:41:49 -0400
-Received: from 8.sub-75-209-226.myvzw.com ([75.209.226.8]:59411 "EHLO
-	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965832AbXFFXlr (ORCPT
+	Wed, 6 Jun 2007 19:41:56 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:60057 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755817AbXFFXlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:41:47 -0400
-Message-Id: <20070606230922.257728963@goop.org>
-References: <20070606225837.654272428@goop.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 06 Jun 2007 15:58:40 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+	Wed, 6 Jun 2007 19:41:53 -0400
+Message-ID: <4667462A.2010404@zytor.com>
+Date: Wed, 06 Jun 2007 16:41:30 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
        Andi Kleen <ak@suse.de>,
        v12n <virtualization@lists.linux-foundation.org>,
        lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH RFC 3/7] allow linux/elf.h to be included in assembler
-Content-Disposition: inline; filename=asm-elf_h.patch
+Subject: Re: [PATCH RFC 6/7] i386: make the bzImage payload an ELF file
+References: <20070606225837.654272428@goop.org> <20070606230922.476662240@goop.org>
+In-Reply-To: <20070606230922.476662240@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Jeremy Fitzhardinge wrote:
+> This patch makes the payload of the bzImage file an ELF file.  In
+> other words, the bzImage is structured as follows:
+>  - boot sector
+>  - 16bit setup code
+>  - ELF header
+>   - decompressor
+>   - compressed kernel
+> 
+> A bootloader may find the start of the ELF file by looking at the
+> setup_size entry in the boot params, and using that to find the offset
+> of the ELF header.  The ELF Phdrs contain all the mapped memory
+> required to decompress and start booting the kernel.
+> 
+> One slightly complex part of this is that the bzImage boot_params need
+> to know about the internal structure of the ELF file, at least to the
+> extent of being able to point the core32_start entry at the ELF file's
+> entrypoint, so that loaders which use this field will still work.
+> 
+> Similarly, the ELF header needs to know how big the kernel vmlinux's
+> bss segment is, in order to make sure is is mapped properly.
+> 
+> To handle these two cases, we generate abstracted versions of the
+> object files which only contain the symbols we care about (generated
+> with objcopy --strip-all --keep-symbol=X), and then include those
+> symbol tables with ld -R.
 
----
- include/linux/elf.h |   24 +++++++++++++++++++-----
- 1 file changed, 19 insertions(+), 5 deletions(-)
+I still believe that we should provide, in effect, vmlinux as a
+(compressed) ELF file rather than provide the intermediate stage.  It
+would reduce the complexity of testing (all information provided about a
+stage have to be both guaranteed to even make sense in the future as
+well as be tested to conform to such information) as well as cover a
+larger number of environments -- any environment where injecting data
+into memory is cheaper than execution is quite unhappy about the current
+system.  Such environments include heterogeneous embedded systems (think
+a slow CPU on a PCI card where the host CPU has direct access to the
+memory on the card) as well as simulators/emulators.
 
-===================================================================
---- a/include/linux/elf.h
-+++ b/include/linux/elf.h
-@@ -1,9 +1,10 @@
- #ifndef _LINUX_ELF_H
- #define _LINUX_ELF_H
- 
-+#include <linux/elf-em.h>
-+#ifndef __ASSEMBLY__
- #include <linux/types.h>
- #include <linux/auxvec.h>
--#include <linux/elf-em.h>
- #include <asm/elf.h>
- 
- struct file;
-@@ -31,6 +32,7 @@ typedef __u32	Elf64_Word;
- typedef __u32	Elf64_Word;
- typedef __u64	Elf64_Xword;
- typedef __s64	Elf64_Sxword;
-+#endif	/* __ASSEMBLY__ */
- 
- /* These constants are for the segment types stored in the image headers */
- #define PT_NULL    0
-@@ -123,6 +125,7 @@ typedef __s64	Elf64_Sxword;
- #define ELF64_ST_BIND(x)	ELF_ST_BIND(x)
- #define ELF64_ST_TYPE(x)	ELF_ST_TYPE(x)
- 
-+#ifndef __ASSEMBLY__
- typedef struct dynamic{
-   Elf32_Sword d_tag;
-   union{
-@@ -138,6 +141,7 @@ typedef struct {
-     Elf64_Addr d_ptr;
-   } d_un;
- } Elf64_Dyn;
-+#endif	/* __ASSEMBLY__ */
- 
- /* The following are used with relocations */
- #define ELF32_R_SYM(x) ((x) >> 8)
-@@ -146,6 +150,7 @@ typedef struct {
- #define ELF64_R_SYM(i)			((i) >> 32)
- #define ELF64_R_TYPE(i)			((i) & 0xffffffff)
- 
-+#ifndef __ASSEMBLY__
- typedef struct elf32_rel {
-   Elf32_Addr	r_offset;
-   Elf32_Word	r_info;
-@@ -185,11 +190,12 @@ typedef struct elf64_sym {
-   Elf64_Addr st_value;		/* Value of the symbol */
-   Elf64_Xword st_size;		/* Associated symbol size */
- } Elf64_Sym;
--
-+#endif	/* __ASSEMBLY__ */
- 
- #define EI_NIDENT	16
- 
--typedef struct elf32_hdr{
-+#ifndef __ASSEMBLY__
-+typedef struct elf32_hdr {
-   unsigned char	e_ident[EI_NIDENT];
-   Elf32_Half	e_type;
-   Elf32_Half	e_machine;
-@@ -222,6 +228,7 @@ typedef struct elf64_hdr {
-   Elf64_Half e_shnum;
-   Elf64_Half e_shstrndx;
- } Elf64_Ehdr;
-+#endif	/* __ASSEMBLY__ */
- 
- /* These constants define the permissions on sections in the program
-    header, p_flags. */
-@@ -229,7 +236,8 @@ typedef struct elf64_hdr {
- #define PF_W		0x2
- #define PF_X		0x1
- 
--typedef struct elf32_phdr{
-+#ifndef __ASSEMBLY__
-+typedef struct elf32_phdr {
-   Elf32_Word	p_type;
-   Elf32_Off	p_offset;
-   Elf32_Addr	p_vaddr;
-@@ -250,6 +258,7 @@ typedef struct elf64_phdr {
-   Elf64_Xword p_memsz;		/* Segment size in memory */
-   Elf64_Xword p_align;		/* Segment alignment, file & memory */
- } Elf64_Phdr;
-+#endif	/* __ASSEMBLY__ */
- 
- /* sh_type */
- #define SHT_NULL	0
-@@ -284,7 +293,8 @@ typedef struct elf64_phdr {
- #define SHN_ABS		0xfff1
- #define SHN_COMMON	0xfff2
- #define SHN_HIRESERVE	0xffff
-- 
-+
-+#ifndef __ASSEMBLY__
- typedef struct {
-   Elf32_Word	sh_name;
-   Elf32_Word	sh_type;
-@@ -310,6 +320,7 @@ typedef struct elf64_shdr {
-   Elf64_Xword sh_addralign;	/* Section alignment */
-   Elf64_Xword sh_entsize;	/* Entry size if section holds table */
- } Elf64_Shdr;
-+#endif	/* __ASSEMBLY__ */
- 
- #define	EI_MAG0		0		/* e_ident[] indexes */
- #define	EI_MAG1		1
-@@ -343,6 +354,7 @@ typedef struct elf64_shdr {
- 
- #define ELFOSABI_NONE	0
- #define ELFOSABI_LINUX	3
-+#define ELFOSABI_STANDALONE	255
- 
- #ifndef ELF_OSABI
- #define ELF_OSABI ELFOSABI_NONE
-@@ -357,6 +369,7 @@ typedef struct elf64_shdr {
- #define NT_PRXFPREG     0x46e62b7f      /* copied from gdb5.1/include/elf/common.h */
- 
- 
-+#ifndef __ASSEMBLY__
- /* Note header in a PT_NOTE section */
- typedef struct elf32_note {
-   Elf32_Word	n_namesz;	/* Name size */
-@@ -396,5 +409,6 @@ static inline void arch_write_notes(stru
- #define ELF_CORE_EXTRA_NOTES_SIZE arch_notes_size()
- #define ELF_CORE_WRITE_EXTRA_NOTES arch_write_notes(file)
- #endif /* ARCH_HAVE_EXTRA_ELF_NOTES */
-+#endif	/* __ASSEMBLY__ */
- 
- #endif /* _LINUX_ELF_H */
+For environments where so is appropriate it would even be possible to
+run the setup, invoke the code32_setup hook to do the decompression (and
+relocation, if appropriate) in host space.
 
--- 
+This makes vmlinux (normally stripped) recoverable from the bzImage file
+and so anything that is currently booting vmlinux would be serviced by
+this scheme.
 
+	-hpa
