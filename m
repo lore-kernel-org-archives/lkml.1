@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932254AbXFFNKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933760AbXFFNM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932254AbXFFNKY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 09:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbXFFNKI
+	id S933760AbXFFNM0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 09:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbXFFNMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 09:10:08 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:48856 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755175AbXFFNKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 09:10:06 -0400
-Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Pavel Machek <pavel@ucw.cz>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <200706041630.49316.agruen@suse.de>
-References: <20070514110607.549397248@suse.de>
-	 <200706041342.42178.agruen@suse.de> <20070604131242.GE1971@elf.ucw.cz>
-	 <200706041630.49316.agruen@suse.de>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 06 Jun 2007 09:09:57 -0400
-Message-Id: <1181135397.3699.53.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 6 Jun 2007 09:12:19 -0400
+Received: from mx2.compro.net ([216.54.166.4]:28439 "EHLO mx2.compro.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755175AbXFFNMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 09:12:19 -0400
+X-IronPort-AV: E=Sophos;i="4.16,389,1175486400"; 
+   d="scan'208";a="418744"
+Message-ID: <4666B2A4.7090603@compro.net>
+Date: Wed, 06 Jun 2007 09:12:04 -0400
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: markh@compro.net, Oleg Nesterov <oleg@tv-sign.ru>,
+       Mark Hounschell <dmarkh@cfl.rr.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: floppy.c soft lockup
+References: <20070531192256.GA88@tv-sign.ru> <465F2D96.9060502@compro.net> <20070601110058.GA83@tv-sign.ru> <466028DB.3060509@compro.net> <20070601151605.GA108@tv-sign.ru> <4660534E.6050903@cfl.rr.com> <20070601183642.GA92@tv-sign.ru> <466078FF.2080508@cfl.rr.com> <20070602123030.GA719@tv-sign.ru> <4661D698.5040009@cfl.rr.com> <20070603081417.GA81@tv-sign.ru> <46641B16.9090701@compro.net>
+In-Reply-To: <46641B16.9090701@compro.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-04 at 16:30 +0200, Andreas Gruenbacher wrote:
-> On Monday 04 June 2007 15:12, Pavel Machek wrote:
-> > How will kernel work with very long paths? I'd suspect some problems,
-> > if path is 1MB long and I attempt to print it in /proc
-> > somewhere.
+Mark Hounschell wrote:
+> Oleg Nesterov wrote:
+>> On 06/02, Mark Hounschell wrote:
+>>> Jun  2 16:36:11 harley kernel: ERR!! events/1 flush hang: c201dbc0
+>>> c201dbc0 10012 10012
+>>> Jun  2 16:36:11 harley kernel: CURR: 7974 7974 vrsx 93 26
+>>> Jun  2 16:36:11 harley kernel:     wq_barrier_func+0x0/0x8
+>>> Jun  2 16:36:11 harley kernel:     vmstat_update+0x0/0x24
+>>> Jun  2 16:36:11 harley kernel:     ----
+>>> Jun  2 16:36:11 harley kernel:     cache_reap+0x0/0xf4
+>> As expected.
+>>
+>> Note that ->nivcsw/->nvcsw doesn't change. There is no "spare time"
+>> on CPU 1, "vrsx" monopolizes CPU. events/1->cache_reap() was preempted
+>> by vrsx, it had no chance to run since then. Note that jobs == 7974
+>> doesn't change too. I forgot to print cwq->thread->state, but it should
+>> be TASK_RUNNING. It would not be possible to kill vrsx if cache_reap()
+>> stalled.
+>>
+>> I don't think this is a kernel problem, vrsx breaks flush_workqueue().
+>> Ingo can answer authoritatively, but I think SCHED_RR/SCHED_FIFO were
+>> not designed to be 100% cpu-bound.
+>>
+>> That said, I think it makes sense to get rid of flush_scheduled_work()
+>> in floppy.c.
+>>
 > 
-> Pathnames are only used for informational purposes in the kernel, except in 
-> AppArmor of course.
+> Oleg, thanks for your time in diagnosing this. 
+> 
+> As far as a 100% CPU bound task being a valid thing to do, it has been 
+> done for many years on SMP machines. Any kernel limitation on this 
+> surely must be considered a bug? 
+> 
 
-I don't mean this as a flame, but isn't the above statement the very
-crux of this discussion?  Why should AppArmor be different from the rest
-of the kernel in its usage of pathnames (basis for decisions vs.
-informational reporting to userspace)?  And if it is ok for AppArmor to
-generate and use pathnames as its basis of decisions on each open, then
-is it also ok for audit, inotify, and others to use them in the same
-manner?  If the audit developers or inotify developers had come with
-patches that used d_path or equivalent in the same manner as AppArmor,
-don't you think they would have gotten the same resistance?  And if you
-are truly trying to create a mechanism (in AppArmor) that you can
-ultimately apply widely to the system (going beyond AppArmor's original
-limited focus on a small set of network-facing daemons), aren't you
-concerned about the implications of having to generate a pathname on
-each open just to decide what to do?  Is this really the "path" you want
-to take ;)?
+Could someone authoritatively comment on this? Is a SCHED_RR/SCHED_FIFO
+100% Cpu bound process supported in an SMP env on Linux? (vanilla or -rt)
 
-Another question:  it seems like the read-only bind mount folks gave up
-on propagating the vfsmounts down and switched to a rather different
-approach (checking near the entry points, using mount writer counters).
-So similarly, what makes AppArmor fundamentally different that it
-wouldn't take a similar approach to what they are doing vs. propagating
-the vfsmounts down?  Or do you think they made the wrong choice?  If so,
-why?
-
-Just trying to understand your position better...
-
--- 
-Stephen Smalley
-National Security Agency
-
+Thanks and Regards
+Mark
