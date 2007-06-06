@@ -1,106 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934807AbXFFSgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933902AbXFFSk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934807AbXFFSgW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 14:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760441AbXFFSgM
+	id S933902AbXFFSk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 14:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758778AbXFFSkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 14:36:12 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3378 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758571AbXFFSgL (ORCPT
+	Wed, 6 Jun 2007 14:40:20 -0400
+Received: from wx-out-0506.google.com ([66.249.82.232]:18611 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758571AbXFFSkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 14:36:11 -0400
-Message-ID: <4666FE8F.6050005@shadowen.org>
-Date: Wed, 06 Jun 2007 19:35:59 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Wed, 6 Jun 2007 14:40:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=Re2KG/rGlDbhrCiqylgnM+RGzFoEy58mvYUT1tPP5f937ltO3sO9RigZePYTTD1g2bAMcMule4t8B8cAxPeljRVStnX1aOGKG2rq6VFFo6krySsEDbyOuQxJRyRemeOM68blam6dmbm0B9uq3ANSk13mJXdvOZ4dd10jbMWiWfo=
+Date: Wed, 6 Jun 2007 14:40:16 -0400
+To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Size of kernel modules
+Message-ID: <20070606184015.GB20615@nineveh.local>
+Mail-Followup-To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>,
+	linux-kernel@vger.kernel.org
+References: <20070606170534.67b5dea9.Christoph.Pleger@cs.uni-dortmund.de>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@osdl.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] add a trivial patch style checker v2
-References: <9a1288909c10f2935af82ec5cea0c46b@pinky> <735b25fd823d649f9cf55b63eb878b63@pinky> <Pine.LNX.4.62.0706061433430.10542@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0706061433430.10542@pademelon.sonytel.be>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070606170534.67b5dea9.Christoph.Pleger@cs.uni-dortmund.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: jfannin@gmail.com (Joseph Fannin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Tue, 29 May 2007, Andy Whitcroft wrote:
->> As a first step package up the current state of the patch style
->> checker and include it in the kernel tree.  Add instructions
->> suggesting running it on submissions.  This adds version v0.01 of
->                                                            ^^^^^
->> the checkpatch.pl script.
->>
->> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
->> ---
->> 	Ok, here is V2 of the checker.	A lot of feedback has been
->                     ^^
->> --- /dev/null
->> +++ b/scripts/checkpatch.pl
->> @@ -0,0 +1,595 @@
->> +#!/usr/bin/perl -w
->> +# (c) 2001, Dave Jones. <davej@codemonkey.org.uk> (the file handling bit)
->> +# (c) 2005, Joel Scohpp <jschopp@austin.ibm.com> (the ugly bit)
->> +# (c) 2007, Andy Whitcroft <apw@uk.ibm.com> (new conditions, test suite, etc)
->> +# Licensed under the terms of the GNU GPL License version 2
->> +
->> +use strict;
->> +
->> +my $P = $0;
->> +
->> +my $V = '0.01';
->             ^^^^
-> So, what's the correct version number? ;-)
-> 
+On Wed, Jun 06, 2007 at 05:05:34PM +0200, Christoph Pleger wrote:
+> I found out that the filenames are the same, but the size of the files
+> differs very much. I found a module file in the new directory that was
+> almost five times as large as the file with the same name in the old
+> directory.
 
-Yep that is terribly confusing.  Internally I have actually tagged the
-V2 version 0.02, and will be using those numbers from now on.
+    For some reason I haven't looked into, copying the Ubuntu .config
+file always results in having "Build the kernel with debug info"
+set, which makes the resulting kernel huge.  Ubuntu's distributed
+kernel binary certainly doesn't have this stuff built in, so turn it
+off in the "Kernel Hacking" menu.
 
-> Will http://www.codemonkey.org.uk/projects/checkpatch/checkpatch.git/ (hey, a
-> project with the same name started by the same person???) be merged in?
-> 
-> Below is a small fix for the wrong hardcoded script name
+    If you find that your new kernel spews a lot of messages like "PM:
+adding device nobus:yourmom", flip "Power Management Debugging" off
+under the "Power management" menu also.  I wouldn't do this
+preemptively, though -- it turns off other stuff too, and I think
+Ubuntu's kernel is patched not to do that (and newer kernels have the
+options separated, I think).
 
-Yep this looks good.  I've squished this into my tree.
+    Flipping the option and building a new package is pretty quick --
+it doesn't rebuild much.
+--
+Joseph Fannin
+jfannin@gmail.com || jhf@columbus.rr.com
 
-> 
-> ---
-> Subject: [PATCH] Fix checkpatch.pl name in usage template
-> 
-> Fix checkpatch.pl name in usage template:
->   - Don't use wrong hardcoded script name
->   - Strip dirname from command name
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> ---
->  scripts/checkpatch.pl |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletion(-)
-> 
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -7,6 +7,7 @@
->  use strict;
->  
->  my $P = $0;
-> +$P =~ s@.*/@@g;
->  
->  my $V = '0.01';
->  
-> @@ -26,7 +27,7 @@ GetOptions(
->  my $exit = 0;
->  
->  if ($#ARGV < 0) {
-> -	print "usage: patchstylecheckemail.pl [options] patchfile\n";
-> +	print "usage: $P [options] patchfile\n";
->  	print "version: $V\n";
->  	print "options: -q           => quiet\n";
->  	print "         --no-tree    => run without a kernel tree\n";
-
--apw
