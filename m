@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965529AbXFFWoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936495AbXFFWo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965529AbXFFWoF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 18:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964845AbXFFWnv
+	id S936495AbXFFWo2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 18:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965364AbXFFWny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:43:51 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49616 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764852AbXFFWnu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:43:50 -0400
-Date: Wed, 6 Jun 2007 15:43:47 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: serue@us.ibm.com, menage@google.com, akpm@linux-foundation.org, dev@sw.ru,
-       xemul@sw.ru, vatsa@in.ibm.com, ebiederm@xmission.com,
-       haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
-       cpw@sgi.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       mbligh@google.com, rohitseth@google.com, devel@openvz.org
-Subject: Re: [PATCH 00/10] Containers(V10): Generic Process Containers
-Message-Id: <20070606154347.a155630b.pj@sgi.com>
-In-Reply-To: <20070606223952.GB5626@sergelap.austin.ibm.com>
-References: <20070529130104.461765000@menage.corp.google.com>
-	<20070604191412.GA901@sergelap.austin.ibm.com>
-	<20070604123151.4db007a6.pj@sgi.com>
-	<6599ad830706041330q1802ebf2n2bac63f706a73a50@mail.gmail.com>
-	<20070604204131.GB19409@sergelap.austin.ibm.com>
-	<20070604140533.65e25286.pj@sgi.com>
-	<20070606223952.GB5626@sergelap.austin.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Jun 2007 18:43:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:60831 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965232AbXFFWnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 18:43:53 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18023.14494.889739.567439@cargo.ozlabs.ibm.com>
+Date: Thu, 7 Jun 2007 08:43:42 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: signalfd API issues (was Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other woes)
+In-Reply-To: <20070606125259.GA5491@c2.user-mode-linux.org>
+References: <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com>
+	<1181013756.31677.123.camel@localhost.localdomain>
+	<1181023787.2785.14.camel@entropy>
+	<1181028453.31677.127.camel@localhost.localdomain>
+	<1181087462.2788.8.camel@entropy>
+	<Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com>
+	<1181088936.2788.10.camel@entropy>
+	<Pine.LNX.4.64.0706051736120.23673@alien.or.mcafeemobile.com>
+	<1181091523.2788.28.camel@entropy>
+	<1181098204.31677.158.camel@localhost.localdomain>
+	<20070606125259.GA5491@c2.user-mode-linux.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I wasn't paying close enough attention to understand why you couldn't
-> > do it in two steps - make the container, and then populate it with
-> > resources.
+Jeff Dike writes:
+
+> On Wed, Jun 06, 2007 at 12:50:04PM +1000, Benjamin Herrenschmidt wrote:
+> > Yeah, synchronous signals should probably never be delivered to another
+> > process, even via signalfd. There's no point delivering a SEGV to
+> > somebody else :-)
 > 
-> Sorry, please clarify - are you saying that now you do understand, or
-> that I should explain?
+> Sure there is.  UML does exactly that - intercepting child signals
+> (including SEGV) with wait.
 
-Could you explain -- I still don't understand why you need this option.
-I still don't understand why you can't do it in two steps - make the
-container, then add cpu/mem separately.
+What Ben was talking about was stealing a synchronous SEGV from a task
+without stopping it, and as Ben says that makes no sense.
+Intercepting a signal and stopping the task is reasonable, and that is
+what ptrace does, and I assume also UML.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Paul.
