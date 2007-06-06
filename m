@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765349AbXFFOkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932879AbXFFOkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765349AbXFFOkP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 10:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXFFOkB
+	id S932879AbXFFOkj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 10:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765112AbXFFOkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 10:40:01 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:54470 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbXFFOkB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 10:40:01 -0400
-Message-ID: <4666C73F.6080208@s5r6.in-berlin.de>
-Date: Wed, 06 Jun 2007 16:39:59 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Wed, 6 Jun 2007 10:40:15 -0400
+Received: from colo.lackof.org ([198.49.126.79]:42366 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762627AbXFFOkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 10:40:12 -0400
+Date: Wed, 6 Jun 2007 08:40:03 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       linux-mm@kvack.org, Ollie Wild <aaw@google.com>,
+       Ingo Molnar <mingo@elte.hu>, parisc-linux@lists.parisc-linux.org
+Subject: Re: [parisc-linux] Re: [PATCH 4/4] mm: variable length argument
+	support
+Message-ID: <20070606144003.GD9722@colo.lackof.org>
+References: <20070605150523.786600000@chello.nl> <20070605151203.790585000@chello.nl> <20070606013658.20bcbe2f.akpm@linux-foundation.org> <1181120061.7348.177.camel@twins> <20070606020651.19a89dca.akpm@linux-foundation.org> <1181121129.7348.181.camel@twins>
 MIME-Version: 1.0
-To: tim.post@netkinetics.net
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Kernel inclusion policy, meta desicion making structure?
-References: <1180928198.5786.111.camel@localhost.localdomain>
-In-Reply-To: <1180928198.5786.111.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181121129.7348.181.camel@twins>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.15+20070515 (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Post wrote on 2007-06-04:
-> I was wondering if a meta version of the decision making process that
-> would be employed to determine if a new contribution does or does not go
-> into the main stream Linux kernel.
-[...]
-> Does some document exist that shows the decision making process so that
-> I can easily answer the ultimate question of "Why not" for myself?
+On Wed, Jun 06, 2007 at 11:12:09AM +0200, Peter Zijlstra wrote:
+...
+> > I think the same problem will happen on NOMMU && STACK_GROWS_UP.  There are
+> > several new references to bprm->vma in there, not all inside CONFIG_MMU.
+> 
+> Right, which archs have that combo? I'll go gather cross compilers.
 
-There is documentation on how submissions should look like.  Other than
-that, these are case-by-case decisions based on a number of factors.
-Perhaps you should look up discussions on merge requests (accepted as
-well as rejected ones) in archives or better at sources like LWN.net.
+parisc only supports with MMU. I don't know who elses uses STACK_GROWS_UP.
 
-[...]
-> I would like to write my own lightweight cluster file system and make
-> modifications to existing cluster file systems.
+hth,
+grant
 
-If you don't want to start with an actual submission, you could begin
-with discussing the specific features you have in mind directly with the
-developers and maintainers of the existing cluster FSs.  Then it should
-become clearer how to proceed most effectively.
--- 
-Stefan Richter
--=====-=-=== -==- ---=-
-http://arcgraph.de/sr/
+> 
+> Perhaps I'd better create a flush_arg_page() function and stick that in
+> the mmu/nommu section somewhere earlier on in that file. Patch in a few.
+> 
+> A related question; does anybody know of a no-MMU arch that uses
+> fs/compat.c ? If there is such a beast, that would need some work.
+> 
+> _______________________________________________
+> parisc-linux mailing list
+> parisc-linux@lists.parisc-linux.org
+> http://lists.parisc-linux.org/mailman/listinfo/parisc-linux
