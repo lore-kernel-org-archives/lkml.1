@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763103AbXFFKkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763588AbXFFKlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763103AbXFFKkq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 06:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758227AbXFFKkh
+	id S1763588AbXFFKlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 06:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762813AbXFFKkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 06:40:37 -0400
-Received: from jericho.provo.novell.com ([137.65.248.124]:38484 "EHLO
-	jericho.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759978AbXFFKkg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 06:40:36 -0400
-X-Greylist: delayed 1252 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Jun 2007 06:40:36 EDT
-Message-ID: <46668A30.2040907@suse.de>
-Date: Wed, 06 Jun 2007 19:19:28 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 6 Jun 2007 06:40:43 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:37442 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762693AbXFFKkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 06:40:42 -0400
+Message-ID: <46668F28.807@free.fr>
+Date: Wed, 06 Jun 2007 12:40:40 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: David Greaves <david@dgreaves.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       netdev@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       Neil Brown <neilb@suse.de>, mikpe@it.uu.se
-Subject: Re: [PATCH] sata_promise: use TF interface for polling NODATA commands
-References: <46608E3F.4060201@dgreaves.com> <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <20070606101837.GC29122@htj.dyndns.org>
-In-Reply-To: <20070606101837.GC29122@htj.dyndns.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: PCI MPEG-2 encoder with SDI input in Linux 2.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> sata_promise uses two different command modes - packet and TF.  Packet
-> mode is intelligent low-overhead mode while TF is the same old
-> taskfile interface.  As with other advanced interface (ahci/sil24),
-> ATA_TFLAG_POLLING has no effect in packet mode.  However, PIO commands
-> are issued using TF interface in polling mode, so pdc_interrupt()
-> considers interrupts spurious if ATA_TFLAG_POLLING is set.
-> 
-> This is broken for polling NODATA commands because command is issued
-> using packet mode but the interrupt handler ignores it due to
-> ATA_TFLAG_POLLING.  Fix pdc_qc_issue_prot() such that ATA/ATAPI NODATA
-> commands are issued using TF interface if ATA_TFLAG_POLLING is set.
-> 
-> This patch fixes detection failure introduced by polling SETXFERMODE.
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
+Hello,
 
-Eeeek... Wrong thread.  Please ignore this posting.  Will repost.  Sorry.
+I work for a small company involved in broadcast.
 
--- 
-tejun
+For the past year, we've been looking for a PCI board that meets
+at least the following requirements:
+
+1. Serial Digital Interface input
+http://en.wikipedia.org/wiki/Serial_Digital_Interface
+
+2. On-board (hardware) MPEG-2 encoder (our app runs on a low-spec PC) 
+which returns a smooth CBR Transport Stream
+http://en.wikipedia.org/wiki/Transport_stream
+
+3. Robust Linux 2.6 device driver
+
+AFAIU, the major player in this space is Optibase's MovieMaker 230 
+Publisher. AFAICT, they only support 2.4 kernels, and the board is 
+overpriced.
+
+I had hoped that Greg Kroah-Hartman's offer would change the landscape, 
+but I don't think it has.
+
+At this point, I am definitely open to any and all comments, 
+suggestions, and ideas.
+
+Regards.
