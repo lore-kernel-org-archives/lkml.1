@@ -1,77 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763467AbXFFLWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763715AbXFFL0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763467AbXFFLWt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 07:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759635AbXFFLWm
+	id S1763715AbXFFL0R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 07:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760748AbXFFL0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 07:22:42 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53592 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751113AbXFFLWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 07:22:41 -0400
-X-Authenticated: #14603182
-X-Provags-ID: V01U2FsdGVkX1/XD+52vaLXD+bCrCH+pBxYFFlVZ5Glhpl20XXEEz
-	Ho98paDc6/krWt
-Message-ID: <46669829.9010305@gmx.de>
-Date: Wed, 06 Jun 2007 13:19:05 +0200
-From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 6 Jun 2007 07:26:09 -0400
+Received: from lug-owl.de ([195.71.106.12]:34537 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759635AbXFFL0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 07:26:08 -0400
+Date: Wed, 6 Jun 2007 13:26:07 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: "Lars K.W. Gohlke" <lkwg82@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: serio interface
+Message-ID: <20070606112607.GM2649@lug-owl.de>
+Mail-Followup-To: "Lars K.W. Gohlke" <lkwg82@gmx.de>,
+	linux-kernel@vger.kernel.org
+References: <46667A3B.8070708@gmx.de> <20070606091503.GI2649@lug-owl.de> <46667FB9.70206@gmx.de> <20070606095159.GK2649@lug-owl.de> <46668ED5.5000807@gmx.de> <20070606104426.GL2649@lug-owl.de> <466691DD.9060904@gmx.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: The Input Layer and the Serial Port
-Content-Type: multipart/mixed;
- boundary="------------090500070609030404030303"
-X-PGP-KeyID: 9D6D68DF
-X-Request-PGP: 
-X-OpenPGP-Key-ID: 000A26609D6D68DF
-X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
-X-OpenPGP-Key-URL: 
-X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
-X-Y-GMX-Trusted: 0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="1VtFtf1bAEcuptAG"
+Content-Disposition: inline
+In-Reply-To: <466691DD.9060904@gmx.de>
+X-Operating-System: Linux mail 2.6.18-4-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---------------090500070609030404030303
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+--1VtFtf1bAEcuptAG
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wed, 2007-06-06 12:52:13 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wrote:
+> Jan-Benedict Glaw schrieb:
+> > On Wed, 2007-06-06 12:39:17 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wro=
+te:
+> > > Jan-Benedict Glaw schrieb:
+> > > > OTOH, why do you want to do the serial stuff in kernel land? Isn't =
+it
+> > > > a *lot* easier to do it in userspace? What's your specific device y=
+ou
+> > > > want to work on?
+>
+> > You didn't actually answer any of my questions.
 
-how did you solved it???
+> sorry.
+>=20
+> I want to use the interface aka /dev/ttyS0.
+> I want to process data inside of a kernel module to provide it /proc
+> (done) or as own char-dev (done).
+>=20
+> but I can not grab the data.
+>=20
+> It is part of my project in my studies.
+>=20
+> It is more a conceptual work, but important. I want to release a howto,
+> when I complete.
 
-- ------------------------
-Mit freundlichen Gr=FC=DFen
-Lars K.W. Gohlke
-mailto:lkwg82@gmx.de
-- -------------------------
-Visit http://www.lars-gohlke.de.vu
+You still answer unasked questions. Please answer inline:
 
-06.06.2007 13:18
+  * Why do you wanto to do the serial stuff in kernel land?
+
+  * Isn't it easier to do it in userspace?
+
+  * What specific device do you work on?
+
+  * New: Is it a wise idea to do it in kernel land?
+
+The /proc filesystem has been somewhat obsoleted in favour of sysfs
+for device/driver information.
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:                   ...und wenn Du denkst, es geht nicht mehr,
+the second  :                          kommt irgendwo ein Lichtlein her.
+
+--1VtFtf1bAEcuptAG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGZpgqAAomYJ1taN8RAqksAJoCDKK0eojRl1lO2unoTLVZjzV/9ACdG5Md
-MtMjNdhcTh1R2kNWmuamZS4=3D
-=3DI2iy
+iD8DBQFGZpnPHb1edYOZ4bsRAlwpAJsEIjlclrhWtFi4k99Qaqndl7I+iACfYgtD
+ltEnpDm1xF32BkIKYUINM+M=
+=GJmF
 -----END PGP SIGNATURE-----
 
---------------090500070609030404030303
-Content-Type: text/x-vcard; charset=utf-8;
- name="lkwg82.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="lkwg82.vcf"
-
-begin:vcard
-fn:Lars K.W. Gohlke
-n:Gohlke;Lars K.W.
-email;internet:lkwg82@gmx.de
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
-
-
---------------090500070609030404030303--
-
+--1VtFtf1bAEcuptAG--
