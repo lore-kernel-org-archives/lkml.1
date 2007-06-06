@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934509AbXFFQAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934777AbXFFQBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934509AbXFFQAT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 12:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbXFFQAH
+	id S934777AbXFFQBg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 12:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754868AbXFFQB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 12:00:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:32670 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754893AbXFFQAF (ORCPT
+	Wed, 6 Jun 2007 12:01:29 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:34132 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754208AbXFFQB3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 12:00:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:openpgp:content-type:content-transfer-encoding;
-        b=p93F/KxJTRuEeYGSoBkDljVwazR7nuZEcc/gF4G1OYLfRW9sxZivMMPPP9UVE9i5+bDSRwftcDu/HTCypIk8w/86u8iqg3G7ZwkyciPyxVmoFCLmMj5T4260DOJMZSgQYBVEmrNVPcV8yy1HlAafUseX0eU6OzHmj/2E3crr+aE=
-Message-ID: <4666D9FC.8030002@gmail.com>
-Date: Wed, 06 Jun 2007 21:29:56 +0530
-From: jimmy bahuleyan <knight.camelot@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 6 Jun 2007 12:01:29 -0400
+Message-ID: <4666DA55.5090405@fr.ibm.com>
+Date: Wed, 06 Jun 2007 18:01:25 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Size of kernel modules
-References: <20070606170534.67b5dea9.Christoph.Pleger@cs.uni-dortmund.de>
-In-Reply-To: <20070606170534.67b5dea9.Christoph.Pleger@cs.uni-dortmund.de>
-X-Enigmail-Version: 0.95.0
-OpenPGP: url=subkeys.pgp.net
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: 2.6.22-rc4-mm1
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <4666ABD4.8050402@fr.ibm.com> <4666D050.7010603@googlemail.com>
+In-Reply-To: <4666D050.7010603@googlemail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Pleger wrote:
-> Hello,
+> Same problem here
 > 
-[snip]
-> After the new kernel package had been created, I installed it. After
-> that, I looked into the directory /boot and was very surprised: The
-> initial ramdisk of the new kernel was much larger than the initrd of the
-> old kernel. To find out the cause for this, I investigated how
-> directories /lib/modules/$old and /lib/modules/$new differ. I found out
-> that the filenames are the same, but the size of the files differs very
-> much. I found a module file in the new directory that was almost five
-> times as large as the file with the same name in the old directory.
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/console.log
 > 
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/mm-config2
+> 
+> 
+> l *__page_check_anon_rmap+0x49
+> 0xc1075ee5 is in __page_check_anon_rmap (mm/rmap.c:557).
+> 552              * over the call to page_add_new_anon_rmap.
+> 553              */
+> 554             struct anon_vma *anon_vma = vma->anon_vma;
+> 555             anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
+> 556             BUG_ON(page->mapping != (struct address_space *)anon_vma);
+> 557             BUG_ON(page->index != linear_page_index(vma, address));
+> 558     #endif
+> 559     }
+> 560
+> 561     /**
+> 
+> I'll try to revert
+> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
 
-sounds more like you have debug options enabled?
+yes, i gave it a try that but it seems that this patch is heavily 
+interlaced with others. I assume Nick has a better understanding 
+of the issue.
 
--jb
--- 
-Tact is the art of making a point without making an enemy.
+C.
