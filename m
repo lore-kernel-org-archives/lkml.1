@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934123AbXFFD3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934012AbXFFDaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934123AbXFFD3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jun 2007 23:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXFFD3P
+	id S934012AbXFFDaI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jun 2007 23:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbXFFD3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jun 2007 23:29:15 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:31551 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbXFFD3O (ORCPT
+	Tue, 5 Jun 2007 23:29:34 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2173 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051AbXFFD3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jun 2007 23:29:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=kSDmyLgEjkgwn0zcr+E02FfJXAhiqj5tnKmDQRFwI6KiByeexbpYdV9T/jkrVoi+o
-	eb0GHFZvLgBS3SXAwSUoA==
-Date: Tue, 5 Jun 2007 20:29:01 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org, ak@suse.de,
-       clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] cpusets: do not allow TIF_MEMDIE tasks to allocate
- globally
-In-Reply-To: <Pine.LNX.4.64.0706051851350.7159@schroedinger.engr.sgi.com>
-Message-ID: <alpine.DEB.0.99.0706052026130.30783@chino.kir.corp.google.com>
-References: <alpine.DEB.0.99.0706051537450.13200@chino.kir.corp.google.com>
- <20070605160149.348b5c4a.pj@sgi.com> <alpine.DEB.0.99.0706051608090.16201@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0706051619130.6192@schroedinger.engr.sgi.com>
- <alpine.DEB.0.99.0706051620580.17032@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0706051629270.6295@schroedinger.engr.sgi.com>
- <alpine.DEB.0.99.0706051633590.17626@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0706051653330.6473@schroedinger.engr.sgi.com>
- <alpine.DEB.0.99.0706051817380.23799@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0706051826310.6928@schroedinger.engr.sgi.com>
- <alpine.DEB.0.99.0706051837310.23799@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0706051851350.7159@schroedinger.engr.sgi.com>
+	Tue, 5 Jun 2007 23:29:32 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 5 Jun 2007 20:29:31 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: signalfd API issues (was Re: [PATCH/RFC] signal races/bugs,
+ losing TIF_SIGPENDING and other woes)
+In-Reply-To: <1181098204.31677.158.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0706052022430.23673@alien.or.mcafeemobile.com>
+References: <1181006711.31677.97.camel@localhost.localdomain> 
+ <alpine.LFD.0.98.0706041831400.23741@woody.linux-foundation.org> 
+ <1181009413.31677.117.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0706041935230.30836@alien.or.mcafeemobile.com> 
+ <1181013756.31677.123.camel@localhost.localdomain>  <1181023787.2785.14.camel@entropy>
+  <1181028453.31677.127.camel@localhost.localdomain>  <1181087462.2788.8.camel@entropy>
+  <Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com> 
+ <1181088936.2788.10.camel@entropy>  <Pine.LNX.4.64.0706051736120.23673@alien.or.mcafeemobile.com>
+  <1181091523.2788.28.camel@entropy> <1181098204.31677.158.camel@localhost.localdomain>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jun 2007, Christoph Lameter wrote:
+On Wed, 6 Jun 2007, Benjamin Herrenschmidt wrote:
 
-> Hmmmm... But we have sent it a SIGKILL. If the process is following 
-> conventions then it is exiting. Of course the process could be abusing the 
-> system and attempting to OOM the whole system as an act of revenge for 
-> being killed but isnt this a bit far fetched?
+> On Tue, 2007-06-05 at 17:58 -0700, Nicholas Miell wrote:
+> > 
+> > "At the time of generation, a determination shall be made whether the
+> > signal has been generated for the process or for a specific thread
+> > within the process. Signals which are generated by some action
+> > attributable to a particular thread, such as a hardware fault, shall
+> > be generated for the thread that caused the signal to be generated.
 > 
+> Yeah, synchronous signals should probably never be delivered to another
+> process, even via signalfd. There's no point delivering a SEGV to
+> somebody else :-)
 
-It's not abusing the system because it was killed, it was killed because 
-it was abusing the system and attempted to mlock more memory than allowed 
-in its exclusive mems.  So we OOM the task but it can continue mlock'ing 
-memory and intrude on the memory of other cpusets because of the 
-TIF_MEMDIE exception and our SIGKILL hasn't been handled yet.
+That'd be a limitation. Like you can choose to not handle SEGV, you can 
+choose to have a signalfd listening to it. Of course, not with the 
+intention to *handle* the signal, but with a notification intent.
+
+
+
+> I'm actually thinking we shoud -also- only handle shared signals in
+> dequeue_signal() when called from a different task.
+
+Why do you want to impose this? signalfd is a "sniffer", and the user 
+controls what it can dequeue/sniff or what not. I don't see a reason of 
+imposing such limits, unless there're clear technical issues.
+
+
+
+> > dequeue_signal(tsk, ...) looks for signals first in tsk->pending and
+> > then in tsk->signal->shared_pending.
+> > 
+> > sys_signalfd() stores current in signalfd_ctx. signalfd_read() passes
+> > that context to signalfd_dequeue, which passes that that saved
+> > task_struct pointer to dequeue_signal.
+> > 
+> > This means that a signalfd will deliver signals targeted towards
+> > either the original thread that created that signalfd, or signals
+> > targeted towards the process as a whole.
+> >
+> > This means that a single signalfd is not adequate to handle signal
+> > delivery for all threads in a process, because signals targeted
+> > towards threads other than the thread that originally created the
+> > signalfd will never be queued to that signalfd.
+> 
+> Well.. you certainly need to instanciate a signalfd for every thread in
+> the process if you want to get shared signals for sure.
+
+Why? Or better, what do you mean for "instanciate"?
+
+
+
+- Davide
+
+
