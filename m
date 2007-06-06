@@ -1,153 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933590AbXFFPel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934531AbXFFPgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933590AbXFFPel (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 11:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbXFFPeb
+	id S934531AbXFFPgm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 11:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758717AbXFFPgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 11:34:31 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:56604 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1759989AbXFFPea (ORCPT
+	Wed, 6 Jun 2007 11:36:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47008 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751098AbXFFPgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 11:34:30 -0400
-Date: Wed, 6 Jun 2007 11:25:57 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH] UML - Get declaration of simple_strtoul
-Message-ID: <20070606152557.GA7234@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Wed, 6 Jun 2007 11:36:31 -0400
+Date: Wed, 6 Jun 2007 08:35:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [BUG] ptraced process waiting on syscall may return kernel
+ internal errnos
+In-Reply-To: <20070606105900.DE5E94D0592@magilla.localdomain>
+Message-ID: <alpine.LFD.0.98.0706060811470.4205@woody.linux-foundation.org>
+References: <20070606105900.DE5E94D0592@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Include linux/kernel.h wherever simple_strtoul is used.  This kills a
-compile warning in stderr_console.c and potential ones in the other
-files.
 
-This also fixes a bunch of style violations in exitcode.c.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/drivers/line.c           |    1 +
- arch/um/drivers/stderr_console.c |    1 +
- arch/um/drivers/ubd_kern.c       |    1 +
- arch/um/kernel/exitcode.c        |   39 +++++++++++++++++----------------------
- 4 files changed, 20 insertions(+), 22 deletions(-)
+On Wed, 6 Jun 2007, Roland McGrath wrote:
+> 
+> [PATCH] Restrict clearing TIF_SIGPENDING
+> 
+> This patch should get a few birds.  It prevents sigaction calls from
+> clearing TIF_SIGPENDING in other threads, which could leak -ERESTART*.
+> It fixes ptrace_stop not to clear it, which done at the syscall exit
+> stop could leak -ERESTART*.  It probably removes the harm from
+> signalfd, at least assuming it never calls dequeue_signal on kernel
+> threads that might have used block_all_signals.
 
-Index: linux-2.6.21-mm/arch/um/drivers/stderr_console.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/stderr_console.c	2007-05-28 11:06:27.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/stderr_console.c	2007-06-06 09:31:06.000000000 -0400
-@@ -1,3 +1,4 @@
-+#include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/console.h>
- 
-Index: linux-2.6.21-mm/arch/um/drivers/line.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/line.c	2007-06-06 09:28:13.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/line.c	2007-06-06 11:13:03.000000000 -0400
-@@ -3,6 +3,7 @@
-  * Licensed under the GPL
-  */
- 
-+#include "linux/kernel.h"
- #include "linux/sched.h"
- #include "linux/slab.h"
- #include "linux/list.h"
-Index: linux-2.6.21-mm/arch/um/drivers/ubd_kern.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/ubd_kern.c	2007-06-06 09:28:47.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/ubd_kern.c	2007-06-06 11:13:42.000000000 -0400
-@@ -20,6 +20,7 @@
- #define MAJOR_NR UBD_MAJOR
- #define UBD_SHIFT 4
- 
-+#include "linux/kernel.h"
- #include "linux/module.h"
- #include "linux/blkdev.h"
- #include "linux/hdreg.h"
-Index: linux-2.6.21-mm/arch/um/kernel/exitcode.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/kernel/exitcode.c	2007-05-28 11:06:28.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/kernel/exitcode.c	2007-06-06 11:23:09.000000000 -0400
-@@ -1,8 +1,9 @@
--/* 
-+/*
-  * Copyright (C) 2002 Jeff Dike (jdike@karaya.com)
-  * Licensed under the GPL
-  */
- 
-+#include "linux/kernel.h"
- #include "linux/init.h"
- #include "linux/ctype.h"
- #include "linux/proc_fs.h"
-@@ -24,11 +25,14 @@ static int read_proc_exitcode(char *page
- 	val = uml_exitcode;
- 	len = sprintf(page, "%d\n", val);
- 	len -= off;
--	if(len <= off+count) *eof = 1;
-+	if(len <= off+count)
-+		*eof = 1;
- 	*start = page + off;
--	if(len > count) len = count;
--	if(len < 0) len = 0;
--	return(len);
-+	if(len > count)
-+		len = count;
-+	if(len < 0)
-+		len = 0;
-+	return len;
- }
- 
- static int write_proc_exitcode(struct file *file, const char __user *buffer,
-@@ -38,12 +42,14 @@ static int write_proc_exitcode(struct fi
- 	int tmp;
- 
- 	if(copy_from_user(buf, buffer, count))
--		return(-EFAULT);
-+		return -EFAULT;
-+
- 	tmp = simple_strtol(buf, &end, 0);
- 	if((*end != '\0') && !isspace(*end))
--		return(-EINVAL);
-+		return -EINVAL;
-+
- 	uml_exitcode = tmp;
--	return(count);
-+	return count;
- }
- 
- static int make_proc_exitcode(void)
-@@ -54,24 +60,13 @@ static int make_proc_exitcode(void)
- 	if(ent == NULL){
- 		printk(KERN_WARNING "make_proc_exitcode : Failed to register "
- 		       "/proc/exitcode\n");
--		return(0);
-+		return 0;
+Ok, this one is more complex than my suggested one-liner, but seems to fix 
+another bug. And it's logic in dequeue_signal() is a bit prettier than 
+Ben's (otherwise somewhat similar) patch.
+
+HOWEVER: I'm still a bit worried about the fact that we have about ~180 
+calls to "recalc_sigpending()" around the kernel, and I'm not AT ALL sure 
+that they are all supposed to possibly clear the TIF_SIGPENDING flag. The 
+fact that we had basically two independent bugs in this area really makes 
+me more convinced that we probably should clear TIF_SIGPENDING in the only 
+path that really matters, namely the one that _depends_ on it being right 
+(the "do_signal()" path).
+
+So I think that the *right* place to clear TIF_SIGPENDING is actually in 
+"get_signal_to_deliver()", because that function is called _only_ by the 
+actual per-architecture "I'm going to deliver a signal now".
+
+(Oh, and we do need to handle it in the "notifier()" case too - ugly hack 
+for DRM).
+
+So how does *this* patch look? It:
+
+ - totally removes the "clear_tsk_thread_flag()" from the signal pending 
+   recalculations (ie now both "recalc_sigpending()" _and_ 
+   "recalc_sigpending_tsk()" will ever only _set_ that bit)
+
+ - in get_signal_to_deliver(), it adds a
+
+	if (!recalc_sigpending_tsk(current))
+		d_flag(TIF_SIGPENDING);
+
+   at the end.
+
+ - it removes the "recalc_sigpending_tsk()" from dequeue_signal(), since 
+   that can never clear the signal any more.
+
+So now we should do "recalc_sigpending()" only when signals may be *added* 
+(where messing with the "blocked" mask obviously is a form of adding 
+signals, and possibly the most common reason for having to recalculate the 
+sigpending mask).
+
+Comments? This patch is _entirely_ and utterly untested, so I'm only 
+saying that this "feels" safer and more correct to me.
+
+		Linus
+
+---
+ kernel/signal.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/signal.c b/kernel/signal.c
+index acdfc05..82b3c1a 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -105,7 +105,6 @@ static int recalc_sigpending_tsk(struct task_struct *t)
+ 		set_tsk_thread_flag(t, TIF_SIGPENDING);
+ 		return 1;
  	}
- 
- 	ent->read_proc = read_proc_exitcode;
- 	ent->write_proc = write_proc_exitcode;
--	
--	return(0);
-+
-+	return 0;
+-	clear_tsk_thread_flag(t, TIF_SIGPENDING);
+ 	return 0;
  }
  
- __initcall(make_proc_exitcode);
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
+@@ -385,7 +384,6 @@ int dequeue_signal(struct task_struct *tsk, sigset_t *mask, siginfo_t *info)
+ 			}
+ 		}
+ 	}
+-	recalc_sigpending_tsk(tsk);
+ 	if (signr && unlikely(sig_kernel_stop(signr))) {
+ 		/*
+ 		 * Set a marker that we have dequeued a stop signal.  Our
+@@ -1859,6 +1857,8 @@ relock:
+ 		do_group_exit(signr);
+ 		/* NOTREACHED */
+ 	}
++	if (!recalc_sigpending_tsk(current))
++		clear_thread_flag(TIF_SIGPENDING);
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 	return signr;
+ }
