@@ -1,211 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbXFFJeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761424AbXFFJfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760115AbXFFJeq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 05:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXFFJei
+	id S1761424AbXFFJfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 05:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760296AbXFFJev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 05:34:38 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:3915 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756160AbXFFJeh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 05:34:37 -0400
-Subject: Re: [PATCH 4/4] mm: variable length argument support
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <20070606020651.19a89dca.akpm@linux-foundation.org>
-References: <20070605150523.786600000@chello.nl>
-	 <20070605151203.790585000@chello.nl>
-	 <20070606013658.20bcbe2f.akpm@linux-foundation.org>
-	 <1181120061.7348.177.camel@twins>
-	 <20070606020651.19a89dca.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 06 Jun 2007 11:34:33 +0200
-Message-Id: <1181122473.7348.188.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 05:34:51 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56999 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1760700AbXFFJeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 05:34:50 -0400
+X-Authenticated: #14603182
+X-Provags-ID: V01U2FsdGVkX1+hI4IxQtihj6rc4RBzL170Op9RWDfyu1owQUV6fJ
+	VLuL9g6R7XyHcZ
+Message-ID: <46667FB9.70206@gmx.de>
+Date: Wed, 06 Jun 2007 11:34:49 +0200
+From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: "Lars K.W. Gohlke" <lkwg82@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: serio interface
+References: <46667A3B.8070708@gmx.de> <20070606091503.GI2649@lug-owl.de>
+In-Reply-To: <20070606091503.GI2649@lug-owl.de>
+Content-Type: multipart/mixed;
+ boundary="------------080203090402050307000106"
+X-PGP-KeyID: 9D6D68DF
+X-Request-PGP: 
+X-OpenPGP-Key-ID: 000A26609D6D68DF
+X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
+X-OpenPGP-Key-URL: 
+X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 02:06 -0700, Andrew Morton wrote:
 
-> I think the same problem will happen on NOMMU && STACK_GROWS_UP.  There are
-> several new references to bprm->vma in there, not all inside CONFIG_MMU.
+--------------080203090402050307000106
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I found two: one in setup_arg_pages() and one in get_arg_page() both are
-under CONFIG_MMU.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
----
-fix a no-MMU compile error on flush_cache_page() and clean up the no-MMU
-code a bit by placing more #ifdef CONFIG_MMU stuff into their own
-function.
+Jan-Benedict Glaw schrieb:
+> On Wed, 2007-06-06 11:11:23 +0200, Lars K.W. Gohlke <lkwg82@gmx.de> wrote:
+>> wouldsomebody explain me the serio interface or give me a code link for
+>> very simple example.
+>
+> What do you want to do with it?  Do you want on the serial port side,
+> or on the mouse/keyboard/gadget side?  See for example the various
+> serial keyboards and mice drivers.
+>
+> MfG, JBG
+>
+I want on the kernelside process data from first uart-hardware interface
+aka ttyS0.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- fs/exec.c |  112 +++++++++++++++++++++++++++++++++++++-------------------------
- 1 file changed, 68 insertions(+), 44 deletions(-)
+I don't understand the structure of e.g. input/mouse/sermouse.c
 
-Index: linux-2.6-2/fs/exec.c
-===================================================================
---- linux-2.6-2.orig/fs/exec.c	2007-06-05 16:48:52.000000000 +0200
-+++ linux-2.6-2/fs/exec.c	2007-06-06 11:21:35.000000000 +0200
-@@ -215,6 +215,58 @@ static void free_arg_pages(struct linux_
- {
- }
- 
-+static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
-+		struct page *page)
-+{
-+	flush_cache_page(bprm->vma, pos, page_to_pfn(page));
-+}
-+
-+static int __bprm_mm_init(struct linux_binprm *bprm)
-+{
-+	int err = -ENOMEM;
-+	struct vm_area_struct *vma = NULL;
-+	struct mm_struct *mm = bprm->mm;
-+
-+	bprm->vma = vma = kmem_cache_zalloc(vm_area_cachep, GFP_KERNEL);
-+	if (!vma)
-+		goto err;
-+
-+	down_write(&mm->mmap_sem);
-+	vma->vm_mm = mm;
-+
-+	/*
-+	 * Place the stack at the top of user memory.  Later, we'll
-+	 * move this to an appropriate place.  We don't use STACK_TOP
-+	 * because that can depend on attributes which aren't
-+	 * configured yet.
-+	 */
-+	vma->vm_end = STACK_TOP_MAX;
-+	vma->vm_start = vma->vm_end - PAGE_SIZE;
-+
-+	vma->vm_flags = VM_STACK_FLAGS;
-+	vma->vm_page_prot = protection_map[vma->vm_flags & 0x7];
-+	err = insert_vm_struct(mm, vma);
-+	if (err) {
-+		up_write(&mm->mmap_sem);
-+		goto err;
-+	}
-+
-+	mm->stack_vm = mm->total_vm = 1;
-+	up_write(&mm->mmap_sem);
-+
-+	bprm->p = vma->vm_end - sizeof(void *);
-+
-+	return 0;
-+
-+err:
-+	if (vma) {
-+		bprm->vma = NULL;
-+		kmem_cache_free(vm_area_cachep, vma);
-+	}
-+
-+	return err;
-+}
-+
- #else
- 
- static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
-@@ -253,6 +305,17 @@ static void free_arg_pages(struct linux_
- 		free_arg_page(bprm, i);
- }
- 
-+static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
-+		struct page *page)
-+{
-+}
-+
-+static int __bprm_mm_init(struct linux_binprm *bprm)
-+{
-+	bprm->p = PAGE_SIZE * MAX_ARG_PAGES - sizeof(void *);
-+	return 0;
-+}
-+
- #endif /* CONFIG_MMU */
- 
- /*
-@@ -265,61 +328,23 @@ int bprm_mm_init(struct linux_binprm *bp
- {
- 	int err;
- 	struct mm_struct *mm = NULL;
--	struct vm_area_struct *vma = NULL;
- 
- 	bprm->mm = mm = mm_alloc();
- 	err = -ENOMEM;
- 	if (!mm)
- 		goto err;
- 
--	if ((err = init_new_context(current, mm)))
-+	err = init_new_context(current, mm);
-+	if (err)
- 		goto err;
- 
--#ifdef CONFIG_MMU
--	bprm->vma = vma = kmem_cache_zalloc(vm_area_cachep, GFP_KERNEL);
--	err = -ENOMEM;
--	if (!vma)
-+	err = __bprm_mm_init(bprm);
-+	if (err)
- 		goto err;
- 
--	down_write(&mm->mmap_sem);
--	{
--		vma->vm_mm = mm;
--
--		/*
--		 * Place the stack at the top of user memory.  Later, we'll
--		 * move this to an appropriate place.  We don't use STACK_TOP
--		 * because that can depend on attributes which aren't
--		 * configured yet.
--		 */
--		vma->vm_end = STACK_TOP_MAX;
--		vma->vm_start = vma->vm_end - PAGE_SIZE;
--
--		vma->vm_flags = VM_STACK_FLAGS;
--		vma->vm_page_prot = protection_map[vma->vm_flags & 0x7];
--		if ((err = insert_vm_struct(mm, vma))) {
--			up_write(&mm->mmap_sem);
--			goto err;
--		}
--
--		mm->stack_vm = mm->total_vm = 1;
--	}
--	up_write(&mm->mmap_sem);
--
--	bprm->p = vma->vm_end - sizeof(void *);
--#else
--	bprm->p = PAGE_SIZE * MAX_ARG_PAGES - sizeof(void *);
--#endif
--
- 	return 0;
- 
- err:
--#ifdef CONFIG_MMU
--	if (vma) {
--		bprm->vma = NULL;
--		kmem_cache_free(vm_area_cachep, vma);
--	}
--#endif
--
- 	if (mm) {
- 		bprm->mm = NULL;
- 		mmdrop(mm);
-@@ -428,8 +453,7 @@ static int copy_strings(int argc, char _
- 				kmapped_page = page;
- 				kaddr = kmap(kmapped_page);
- 				kpos = pos & PAGE_MASK;
--				flush_cache_page(bprm->vma, kpos,
--						 page_to_pfn(kmapped_page));
-+				flush_arg_page(bprm, kpos, kmapped_page);
- 			}
- 			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
- 				ret = -EFAULT;
+where is said, which hardware is used for reading data from?
 
+mfg
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
+
+iD8DBQFGZn+7AAomYJ1taN8RAlwOAJ4qP5DnhIE7IJ5pCqDGBD4di4zybACgqBq6
+8lSB3Zp7qO/bwCK+WsWL+HU=
+=3Fdg
+-----END PGP SIGNATURE-----
+
+--------------080203090402050307000106
+Content-Type: text/x-vcard; charset=utf-8;
+ name="lkwg82.vcf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="lkwg82.vcf"
+
+YmVnaW46dmNhcmQNCmZuOkxhcnMgSy5XLiBHb2hsa2UNCm46R29obGtlO0xhcnMgSy5XLg0K
+ZW1haWw7aW50ZXJuZXQ6bGt3ZzgyQGdteC5kZQ0KeC1tb3ppbGxhLWh0bWw6RkFMU0UNCnZl
+cnNpb246Mi4xDQplbmQ6dmNhcmQNCg0K
+--------------080203090402050307000106--
 
