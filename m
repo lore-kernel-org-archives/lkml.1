@@ -1,65 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbXFFIpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbXFFIqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756958AbXFFIpa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 04:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbXFFIpW
+	id S1758702AbXFFIqs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 04:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbXFFIqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 04:45:22 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:36165 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751024AbXFFIpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 04:45:20 -0400
-Date: Wed, 6 Jun 2007 17:44:07 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org, Ollie Wild <aaw@google.com>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 4/4] mm: variable length argument support
-Message-ID: <20070606084407.GA9975@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-	linux-mm@kvack.org, linux-arch@vger.kernel.org,
-	Ollie Wild <aaw@google.com>, Ingo Molnar <mingo@elte.hu>,
-	Andi Kleen <ak@suse.de>
-References: <20070605150523.786600000@chello.nl> <20070605151203.790585000@chello.nl> <20070606013658.20bcbe2f.akpm@linux-foundation.org>
+	Wed, 6 Jun 2007 04:46:40 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:31316 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbXFFIqi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 04:46:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=OPOPhjUbpKIndWY/HSjdQ3vdAxPOy1hh609nTg2aT5M4ntJvUR74q5TJ9CrQuKpyhNhKiTEFAxsEJ5zSylpqwPsheMH64RL/G6UW2cK76dZiNYCVVZ5JaZf6ndDEfLrY+9lZfoG4yOtEdkz5lE2ae34J6omsp6Qf7jqvPjVetWE=
+Message-ID: <46667466.4010500@gmail.com>
+Date: Wed, 06 Jun 2007 17:46:30 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070606013658.20bcbe2f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Gregor Jasny <gjasny@googlemail.com>
+CC: Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>	 <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>	 <466196AD.3090502@garzik.org> <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com>
+In-Reply-To: <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/mixed;
+ boundary="------------010506040506040407080802"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 01:36:58AM -0700, Andrew Morton wrote:
-> On Tue, 05 Jun 2007 17:05:27 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+This is a multi-part message in MIME format.
+--------------010506040506040407080802
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Gregor Jasny wrote:
+> 2007/6/2, Jeff Garzik <jeff@garzik.org>:
+>> Does this patch change the behavior at all?
 > 
-> > From: Ollie Wild <aaw@google.com>
-> > 
-> > Remove the arg+env limit of MAX_ARG_PAGES by copying the strings directly
-> > from the old mm into the new mm.
-> > 
-> > We create the new mm before the binfmt code runs, and place the new stack
-> > at the very top of the address space. Once the binfmt code runs and figures
-> > out where the stack should be, we move it downwards.
-> > 
-> > It is a bit peculiar in that we have one task with two mm's, one of which is
-> > inactive.
-> > 
-> > ...
-> >
-> > +				flush_cache_page(bprm->vma, kpos,
-> > +						 page_to_pfn(kmapped_page));
-> 
-> Breaks SuperH:
-> 
-> fs/exec.c: In function `bprm_mm_init':
-> fs/exec.c:268: warning: unused variable `vma'
-> fs/exec.c: In function `copy_strings':
-> fs/exec.c:431: error: structure has no member named `vma'
-> 
-More pointedly, bprm->vma doesn't exist if CONFIG_MMU=n, which Andrew's
-config seems to have ;-)
+> No. It still times out. I've raised the first timeout to 60 seconds
+> but still no luck.
+
+Let's see where we're failing.  Please apply the attached patch and
+report what kernel says.
+
+Thanks.
+
+-- 
+tejun
+
+--------------010506040506040407080802
+Content-Type: text/x-patch;
+ name="srst-debug.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="srst-debug.patch"
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 4733f00..ae6f177 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3053,8 +3053,11 @@ static int ata_bus_post_reset(struct ata_port *ap, unsigned int devmask,
+ 	if (dev0) {
+ 		rc = ata_wait_ready(ap, deadline);
+ 		if (rc) {
+-			if (rc != -ENODEV)
++			if (rc != -ENODEV) {
++				ata_port_printk(ap, KERN_WARNING,
++						"ata_bus_post_reset: EXIT0\n");
+ 				return rc;
++			}
+ 			ret = rc;
+ 		}
+ 	}
+@@ -3070,15 +3073,21 @@ static int ata_bus_post_reset(struct ata_port *ap, unsigned int devmask,
+ 		lbal = ioread8(ioaddr->lbal_addr);
+ 		if ((nsect == 1) && (lbal == 1))
+ 			break;
+-		if (time_after(jiffies, deadline))
++		if (time_after(jiffies, deadline)) {
++			ata_port_printk(ap, KERN_WARNING,
++					"ata_bus_post_reset: EXIT1\n");
+ 			return -EBUSY;
++		}
+ 		msleep(50);	/* give drive a breather */
+ 	}
+ 	if (dev1) {
+ 		rc = ata_wait_ready(ap, deadline);
+ 		if (rc) {
+-			if (rc != -ENODEV)
++			if (rc != -ENODEV) {
++				ata_port_printk(ap, KERN_WARNING,
++						"ata_bus_post_reset: EXIT2\n");
+ 				return rc;
++			}
+ 			ret = rc;
+ 		}
+ 	}
+@@ -3090,6 +3099,7 @@ static int ata_bus_post_reset(struct ata_port *ap, unsigned int devmask,
+ 	if (dev0)
+ 		ap->ops->dev_select(ap, 0);
+ 
++	ata_port_printk(ap, KERN_WARNING, "ata_bus_post_reset: EXIT3\n");
+ 	return ret;
+ }
+ 
+
+--------------010506040506040407080802--
