@@ -1,60 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935576AbXFFTWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934700AbXFFT1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935576AbXFFTWv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 15:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935235AbXFFTUH
+	id S934700AbXFFT1R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 15:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763433AbXFFT1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 15:20:07 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37889 "EHLO pasmtpB.tele.dk"
+	Wed, 6 Jun 2007 15:27:03 -0400
+Received: from fizeau.zen.co.uk ([212.23.8.67]:47431 "EHLO fizeau.zen.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935068AbXFFTUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 15:20:04 -0400
-Date: Wed, 6 Jun 2007 21:21:02 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Meelis Roos <mroos@linux.ee>, rth@twiddle.net, ink@jurassic.park.msu.ru
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: alpha modpost warnings
-Message-ID: <20070606192102.GA6828@uranus.ravnborg.org>
-References: <Pine.SOC.4.64.0706041308560.7370@math> <20070605053502.GB21745@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070605053502.GB21745@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+	id S1763290AbXFFT1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 15:27:00 -0400
+X-Greylist: delayed 1040 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Jun 2007 15:27:00 EDT
+Message-ID: <466705F5.9000702@opcode-solutions.com>
+Date: Wed, 06 Jun 2007 20:07:33 +0100
+From: Matt Keenan <matt@opcode-solutions.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Steve French <sfrench@samba.org>
+CC: Jeremy Allison <jra@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-cifs-client@lists.samba.org
+Subject: [PATCH] CIFS should honour umask
+Content-Type: multipart/mixed;
+ boundary="------------000206070705030701060406"
+X-Originating-Heisenberg-IP: [82.69.27.224]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 05, 2007 at 07:35:02AM +0200, Sam Ravnborg wrote:
-> > WARNING: drivers/built-in.o(.data.rel+0x1a80): Section mismatch: reference to .init.text:serial8250_console_setup (between 'serial8250_console' and '__param_arr_probe_rsa')
+This is a multi-part message in MIME format.
+--------------000206070705030701060406
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-I wondered why this one showed up on alpha but nowhere else.
-We already whitelist (do not warn about) references to .init.text from
-variables named *_console IFF the variable is placed in section .data
+This patch makes CIFS honour a process' umask like other filesystems. 
+Of course the server is still free to munge the permissions if it wants
+to; but the client will send the "right" permissions to begin with.
 
-But from the above we can see that serial8250_console is placed in .data.rel
-Now I wonder why the alpha toolchain suddenly uses a .data.rel section.
-The exact commandline to build the .c file is:
+A few caveats;
 
-alpha-unknown-linux-gnu-gcc -Wp,-MD,drivers/serial/.8250.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.1.0-glibc-2.3.6/alpha-unknown-linux-gnu/lib/gcc/alpha-unknown-linux-gnu/4.1.0/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/sam/kernel/kbuild.git/include -include include/linux/autoconf.h -I/home/sam/kernel/kbuild.git/drivers/serial -Idrivers/serial -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -O2 -pipe -mno-fp-regs -ffixed-8 -msmall-data -mcpu=ev6 -Wa,-mev6 -fomit-frame-pointer -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(8250)"  -D"KBUILD_MODNAME=KBUILD_STR(8250)" -c -o drivers/serial/8250.o /home/sam/kernel/kbuild.git/drivers/serial/8250.c
+1) It only applies to filesystems that have CAP_UNIX (aka support unix
+extensions)
+2) It applies the correct mode to the follow up CIFSSMBUnixSetPerms()
+after remote creation (I can write a new patch if you want with the
+"right" mode at actual creation time; however the "right" perms will
+still need to be given to the follow up CIFSSMBUnixSetPerms() anyway).
+3) It will probably work best with Samba 3.0.25a or newer (ie with this
+patch applied
+http://lists.samba.org/archive/linux-cifs-client/2007-January/001697.html)
+4) It has been compiled, and tested on 2.6.22-rc4 / Samba 3.0.25a
+(Ubuntu Dapper with a few custom backports), and with a bit of testing
+seems to work just fine. (it also incidentally side steps bugs in
+thunderbird and openoffice (the apps don't check the permissions on
+files they create, they assume they will open() the way that have asked
+them to be created xref open(O_WRONLY|O_CREAT) => valid fd then
+mmap(fd,PROT_READ) => EFAULT).
 
-No use of -PIC or somethign like that.
+I am going to give this patch a more thorough test tomorrow with ltp.
+Comments, corrections, et al are welcome.
 
-Then I tried to reproduce it here - no luck.
-I do not see the warning from serial/8250.o here?
 
-I thought that I had all warnings reproduced but in the noise I must have
-missed that I did not reproduce the 8250.o warning.
+Matt
 
-I will consider my patch for 8250.c bad and will drop it.
-The others I will forward to akpm.
+-- 
+Matt Keenan
+OpCode Solutions
 
-Anyone that can explain why alpha uses .data.rel in the above case -
-but not with my toolchain?
 
-$> gcc --version
-alpha-unknown-linux-gnu-gcc (GCC) 4.1.0
-Copyright (C) 2006 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-	Sam
+--------------000206070705030701060406
+Content-Type: text/plain;
+ name="patch-2.6.22-rc4.cifs-umask-fix"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="patch-2.6.22-rc4.cifs-umask-fix"
+
+U2lnbmVkLW9mZi1ieTogTWF0dCBLZWVuYW4gPG1hdHRAb3Bjb2RlLXNvbHV0aW9ucy5jb20+
+CgotLQpkaWZmIC11ck4gbGludXgtMi42LjIyLXJjNC9mcy9jaWZzL2Rpci5jIGxpbnV4LTIu
+Ni4yMi1yYzQuY2lmcy11bWFzay1maXgvZnMvY2lmcy9kaXIuYwotLS0gbGludXgtMi42LjIy
+LXJjNC9mcy9jaWZzL2Rpci5jCTIwMDctMDYtMDYgMDg6MzQ6MDMuMDAwMDAwMDAwICswMTAw
+CisrKyBsaW51eC0yLjYuMjItcmM0LmNpZnMtdW1hc2stZml4L2ZzL2NpZnMvZGlyLmMJMjAw
+Ny0wNi0wNiAxOToyNzowMC4wMDAwMDAwMDAgKzAxMDAKQEAgLTIwNiw3ICsyMDYsMTEgQEAK
+IAkJLyogSWYgT3BlbiByZXBvcnRlZCB0aGF0IHdlIGFjdHVhbGx5IGNyZWF0ZWQgYSBmaWxl
+CiAJCXRoZW4gd2Ugbm93IGhhdmUgdG8gc2V0IHRoZSBtb2RlIGlmIHBvc3NpYmxlICovCiAJ
+CWlmICgoY2lmc19zYi0+dGNvbi0+c2VzLT5jYXBhYmlsaXRpZXMgJiBDQVBfVU5JWCkgJiYK
+LQkJCShvcGxvY2sgJiBDSUZTX0NSRUFURV9BQ1RJT04pKQorCQkJKG9wbG9jayAmIENJRlNf
+Q1JFQVRFX0FDVElPTikpIHsKKwkJCS8qIHJlc3BlY3QgdW1hc2sgc2V0dGluZ3MgbGlrZSBv
+dGhlciBmaWxlc3lzdGVtczsKKwkJCSAqIGlmIHRoZSBzZXJ2ZXIgd2FudHMgdG8gbXVuZ2Ug
+dGhlIGJpdHMgbGV0IGl0LCBidXQgdGhlIGNsaWVudAorCQkJICogc2hvdWxkICJEbyBUaGUg
+UmlnaHQgVGhpbmciICh0bSkgKi8KKwkJCW1vZGUgJj0gfmN1cnJlbnQtPmZzLT51bWFzazsK
+IAkJCWlmKGNpZnNfc2ItPm1udF9jaWZzX2ZsYWdzICYgQ0lGU19NT1VOVF9TRVRfVUlEKSB7
+CiAJCQkJQ0lGU1NNQlVuaXhTZXRQZXJtcyh4aWQsIHBUY29uLCBmdWxsX3BhdGgsIG1vZGUs
+CiAJCQkJCShfX3U2NCljdXJyZW50LT5mc3VpZCwKQEAgLTIyNCw3ICsyMjgsNyBAQAogCQkJ
+CQljaWZzX3NiLT5tbnRfY2lmc19mbGFncyAmIAogCQkJCQkJQ0lGU19NT1VOVF9NQVBfU1BF
+Q0lBTF9DSFIpOwogCQkJfQotCQllbHNlIHsKKwkJfSBlbHNlIHsKIAkJCS8qIEJCIGltcGxl
+bWVudCBtb2RlIHNldHRpbmcgdmlhIFdpbmRvd3Mgc2VjdXJpdHkgZGVzY3JpcHRvcnMgKi8K
+IAkJCS8qIGVnIENJRlNTTUJXaW5TZXRQZXJtcyh4aWQscFRjb24sZnVsbF9wYXRoLG1vZGUs
+LTEsLTEsbG9jYWxfbmxzKTsqLwogCQkJLyogY291bGQgc2V0IHIvbyBkb3MgYXR0cmlidXRl
+IGlmIG1vZGUgJiAwMjIyID09IDAgKi8KZGlmZiAtdXJOIGxpbnV4LTIuNi4yMi1yYzQvZnMv
+Y2lmcy9pbm9kZS5jIGxpbnV4LTIuNi4yMi1yYzQuY2lmcy11bWFzay1maXgvZnMvY2lmcy9p
+bm9kZS5jCi0tLSBsaW51eC0yLjYuMjItcmM0L2ZzL2NpZnMvaW5vZGUuYwkyMDA3LTA2LTA2
+IDA4OjM0OjAzLjAwMDAwMDAwMCArMDEwMAorKysgbGludXgtMi42LjIyLXJjNC5jaWZzLXVt
+YXNrLWZpeC9mcy9jaWZzL2lub2RlLmMJMjAwNy0wNi0wNiAxOToyNjoyNi4wMDAwMDAwMDAg
+KzAxMDAKQEAgLTk4Nyw2ICs5ODcsMTEgQEAKIAkJaWYgKChkaXJlbnRyeS0+ZF9pbm9kZSkg
+JiYgKGRpcmVudHJ5LT5kX2lub2RlLT5pX25saW5rIDwgMikpCiAJCQkJZGlyZW50cnktPmRf
+aW5vZGUtPmlfbmxpbmsgPSAyOyAKIAkJaWYgKGNpZnNfc2ItPnRjb24tPnNlcy0+Y2FwYWJp
+bGl0aWVzICYgQ0FQX1VOSVgpCisJCXsKKwkJCS8qIHJlc3BlY3QgdW1hc2sgc2V0dGluZ3Mg
+bGlrZSBvdGhlciBmaWxlc3lzdGVtczsKKwkJCSAqIGlmIHRoZSBzZXJ2ZXIgd2FudHMgdG8g
+bXVuZ2UgdGhlIGJpdHMgbGV0IGl0LCBidXQgdGhlIGNsaWVudAorCQkJICogc2hvdWxkICJE
+byBUaGUgUmlnaHQgVGhpbmciICh0bSkgKi8KKwkJCW1vZGUgJj0gfmN1cnJlbnQtPmZzLT51
+bWFzazsKIAkJCWlmIChjaWZzX3NiLT5tbnRfY2lmc19mbGFncyAmIENJRlNfTU9VTlRfU0VU
+X1VJRCkgewogCQkJCUNJRlNTTUJVbml4U2V0UGVybXMoeGlkLCBwVGNvbiwgZnVsbF9wYXRo
+LAogCQkJCQkJICAgIG1vZGUsCkBAIC0xMDA0LDcgKzEwMDksNyBAQAogCQkJCQkJICAgIGNp
+ZnNfc2ItPm1udF9jaWZzX2ZsYWdzICYgCiAJCQkJCQkgICAgQ0lGU19NT1VOVF9NQVBfU1BF
+Q0lBTF9DSFIpOwogCQkJfQotCQllbHNlIHsKKwkJfSBlbHNlIHsKIAkJCS8qIEJCIHRvIGJl
+IGltcGxlbWVudGVkIHZpYSBXaW5kb3dzIHNlY3J0eSBkZXNjcmlwdG9ycwogCQkJICAgZWcg
+Q0lGU1NNQldpblNldFBlcm1zKHhpZCwgcFRjb24sIGZ1bGxfcGF0aCwgbW9kZSwKIAkJCQkJ
+CSAtMSwgLTEsIGxvY2FsX25scyk7ICovCg==
+--------------000206070705030701060406--
