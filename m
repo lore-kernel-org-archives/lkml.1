@@ -1,47 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932680AbXFFStF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934008AbXFFSxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932680AbXFFStF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 14:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758396AbXFFSsy
+	id S934008AbXFFSxb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 14:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762600AbXFFSxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 14:48:54 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:28515 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754749AbXFFSsx (ORCPT
+	Wed, 6 Jun 2007 14:53:20 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:51271 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758843AbXFFSxT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 14:48:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=fQFNaum3OkEGJQSEUYooY7WcBXKD5zEk9vvNxUyICAPDcZixhaCxeQgX2geKpvCD433T1VhMuhu3VTKdYY205Q34J8mpnFHrLxEWtYREL9QuPwNKJY6hlorp80igenG0GUkrTxhMN8DiQgNzrHzGk1Si41FZCIVMx2EU33Rxq9E=
-Message-ID: <4667018D.7020407@googlemail.com>
-Date: Wed, 06 Jun 2007 20:48:45 +0200
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 6 Jun 2007 14:53:19 -0400
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 2.6.22-rc4] ehea: Fixed possible kernel panic on VLAN packet recv
+Date: Wed, 6 Jun 2007 20:53:16 +0200
+User-Agent: KMail/1.8.2
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <ossthema@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: 2.6.22-rc4-mm1
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-In-Reply-To: <20070606020737.4663d686.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706062053.16986.osstklei@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton pisze:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
-> 
+This patch fixes a possible kernel panic due to not checking the vlan group
+when processing received VLAN packets and a malfunction in VLAN/hypervisor
+registration.
 
-Kay, your patch gregkh-driver-block-device.patch breaks Fedora 7 initrd
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/initrd.jpg
 
-Please fix it ASAP, I can't test kernel...
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+---
 
-Regards,
-Michal
 
--- 
-"Najbardziej brakowało mi twojego milczenia."
--- Andrzej Sapkowski "Coś więcej"
+diff -Nurp -X dontdiff linux-2.6.22-rc4/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+--- linux-2.6.22-rc4/drivers/net/ehea/ehea.h	2007-06-05 02:57:25.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea.h	2007-06-06 12:53:58.000000000 +0200
+@@ -39,7 +39,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0061"
++#define DRV_VERSION	"EHEA_0064"
+ 
+ #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
+ 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+diff -Nurp -X dontdiff linux-2.6.22-rc4/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-2.6.22-rc4/drivers/net/ehea/ehea_main.c	2007-06-05 02:57:25.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-06-06 12:53:58.000000000 +0200
+@@ -451,7 +451,8 @@ static struct ehea_cqe *ehea_proc_rwqes(
+ 				processed_rq3++;
+ 			}
+ 
+-			if (cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
++			if ((cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
++			    && port->vgrp)
+ 				vlan_hwaccel_receive_skb(skb, port->vgrp,
+ 							 cqe->vlan_tag);
+ 			else
+@@ -1910,10 +1911,7 @@ static void ehea_vlan_rx_register(struct
+ 		goto out;
+ 	}
+ 
+-	if (grp)
+-		memset(cb1->vlan_filter, 0, sizeof(cb1->vlan_filter));
+-	else
+-		memset(cb1->vlan_filter, 0xFF, sizeof(cb1->vlan_filter));
++	memset(cb1->vlan_filter, 0, sizeof(cb1->vlan_filter));
+ 
+ 	hret = ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id,
+ 				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
+@@ -1947,7 +1945,7 @@ static void ehea_vlan_rx_add_vid(struct 
+ 	}
+ 
+ 	index = (vid / 64);
+-	cb1->vlan_filter[index] |= ((u64)(1 << (vid & 0x3F)));
++	cb1->vlan_filter[index] |= ((u64)(0x8000000000000000 >> (vid & 0x3F)));
+ 
+ 	hret = ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id,
+ 				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
+@@ -1982,7 +1980,7 @@ static void ehea_vlan_rx_kill_vid(struct
+ 	}
+ 
+ 	index = (vid / 64);
+-	cb1->vlan_filter[index] &= ~((u64)(1 << (vid & 0x3F)));
++	cb1->vlan_filter[index] &= ~((u64)(0x8000000000000000 >> (vid & 0x3F)));
+ 
+ 	hret = ehea_h_modify_ehea_port(adapter->handle, port->logical_port_id,
+ 				       H_PORT_CB1, H_PORT_CB1_ALL, cb1);
+
