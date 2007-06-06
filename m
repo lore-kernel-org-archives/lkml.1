@@ -1,113 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933570AbXFFN0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934502AbXFFN1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933570AbXFFN0l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 09:26:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762144AbXFFN0b
+	id S934502AbXFFN1Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 09:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762987AbXFFN1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 09:26:31 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:40062 "EHLO jazzhorn.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762071AbXFFN0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 09:26:30 -0400
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
-	pathname matching
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Pavel Machek <pavel@ucw.cz>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <200706042303.28785.agruen@suse.de>
-References: <20070514110607.549397248@suse.de>
-	 <20070514110621.655650997@suse.de> <20070515092010.GE6816@ucw.cz>
-	 <200706042303.28785.agruen@suse.de>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 06 Jun 2007 09:26:26 -0400
-Message-Id: <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 09:27:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51612 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762664AbXFFN1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 09:27:14 -0400
+Message-ID: <4666B603.6050302@redhat.com>
+Date: Wed, 06 Jun 2007 09:26:27 -0400
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070529)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] allow file system to configure for no leases
+References: <4665B50A.5020801@redhat.com> <1181072000.7033.31.camel@heimdal.trondhjem.org> <4665BE93.8000705@redhat.com>
+In-Reply-To: <4665BE93.8000705@redhat.com>
+Content-Type: multipart/mixed;
+ boundary="------------090006070003020400020207"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-04 at 23:03 +0200, Andreas Gruenbacher wrote:
-> On Tuesday 15 May 2007 11:20, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > Pathname matching, transition table loading, profile loading and
-> > > manipulation.
-> > 
-> > So we get small interpretter of state machines, and reason we need is
-> > is 'apparmor is misdesigned and works with paths when it should have
-> > worked with handles'.
-> 
-> I assume you mean labels instead of handles.
-> 
-> AppArmor's design is around paths not labels, and independent of whether or 
-> not you like AppArmor, this design leads to a useful security model distinct 
-> from the SELinux security model (which is useful in its own ways). The 
-> differences between those models cannot be argued away, neither is a subset 
-> of the other, and neither is a misdesign. I would be thankful if you could 
-> stop spreading this lie.
+This is a multi-part message in MIME format.
+--------------090006070003020400020207
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I have a hard time distinguishing AppArmor's "model" from its
-implementation; every time we suggest that one might emulate much of
-AppArmor's functionality on SELinux (as in SEEdit), someone points to a
-specific characteristic of the AppArmor implementation that cannot be
-emulated in this manner.  But is that implementation characteristic an
-actual requirement or just how it happens to have been done to date in
-AA?  And I get the impression that even if we extended SELinux in
-certain ways to ease such emulation, the AA folks would never be
-satisfied because the implementation would still differ.  Can we
-separate the desired functionality and actual requirements from the
-implementation specifics?
+Hi.
 
-> > If you solve the 'new file problem', aa becomes subset of selinux.
-> > And I'm pretty sure patch will be nicer than this. 
-> 
-> You are quite mistaken. SELinux turns pathnames into labels when it initially 
-> labels all files (when a policy is rolled out), whereas AppArmor computes 
-> the "label" of each file when a file is opened. The two models start to 
-> diverge as soon as files are renamed: in SELinux, labels stick with the 
-> files. In AppArmor, "labels" stick with the names.
+Attached is a small patch to allow file systems to inform the file
+system independent layers that they don't support file leases.
 
-I'd argue a bit with that characterization, given that:
-- in the case of SELinux, the pathname is never used as a basis for
-decisions by the kernel,
-- under AA, each file may have an arbitrary set of "labels" or
-"policies" applied to it depending on what programs are accessing it and
-what names are being used to reference it - there is no system view of
-the subjects and objects and thus no way to identify the overall system
-policy for a given file.
-- names are far less tranquil than labels.
+The problem is that some file system such as NFSv2 and NFSv3 do
+not have sufficient support to be able to support leases correctly.
+In particular for these two file systems, there is no over the wire
+protocol support.
+
+Currently, these two file systems fail the fcntl(F_SETLEASE) call
+accidentally, due to a reference counting difference.  These file
+systems should fail more consciously, with a proper error to
+indicate that the call is invalid for them.
+
+   Thanx...
+
+      ps
+
+Sign-off-by: Peter Staubach <staubach@redhat.com>
+
+
+--------------090006070003020400020207
+Content-Type: text/plain;
+ name="leases.devel"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="leases.devel"
+
+--- linux-2.6.21.i686/fs/nfs/super.c.org
++++ linux-2.6.21.i686/fs/nfs/super.c
+@@ -522,6 +522,8 @@ static inline void nfs_initialise_sb(str
  
-> So what you advocate for is a hybrid between the SELinux and the AppArmor 
-> model, not a superset.
-> 
-> It could be that the SELinux folks will solve the issues they are having with 
-> new files using something better than restorecond in the future, perhaps even 
-> an in-kernel mechanism (although I somewhat doubt it). But then again, their 
-> basic model makes sense even without any live file relabeling, and so that's 
-> probably not very high up on the priority list.
+ 	sb->s_magic = NFS_SUPER_MAGIC;
+ 
++	sb->s_flags |= MS_NO_LEASES;
++
+ 	/* We probably want something more informative here */
+ 	snprintf(sb->s_id, sizeof(sb->s_id),
+ 		 "%x:%x", MAJOR(sb->s_dev), MINOR(sb->s_dev));
+--- linux-2.6.21.i686/fs/locks.c.org
++++ linux-2.6.21.i686/fs/locks.c
+@@ -1493,6 +1493,8 @@ int fcntl_setlease(unsigned int fd, stru
+ 	error = security_file_lock(filp, arg);
+ 	if (error)
+ 		return error;
++	if (IS_NO_LEASES(inode))
++		return -EINVAL;
+ 
+ 	locks_init_lock(&fl);
+ 	error = lease_init(filp, arg, &fl);
+--- linux-2.6.21.i686/include/linux/fs.h.org
++++ linux-2.6.21.i686/include/linux/fs.h
+@@ -121,6 +121,7 @@ extern int dir_notify_enable;
+ #define MS_SLAVE	(1<<19)	/* change to slave */
+ #define MS_SHARED	(1<<20)	/* change to shared */
+ #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
++#define MS_NO_LEASES	(1<<22)	/* fs does not support leases */
+ #define MS_ACTIVE	(1<<30)
+ #define MS_NOUSER	(1<<31)
+ 
+@@ -180,6 +181,7 @@ extern int dir_notify_enable;
+ #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
+ #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
+ #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
++#define IS_NO_LEASES(inode)	__IS_FLG(inode, MS_NO_LEASES)
+ 
+ /* the read-only stuff doesn't really belong here, but any other place is
+    probably as bad and I don't want to create yet another include file. */
 
-Live file relabeling (non-tranquility) tends to break one's ability to
-show anything about preservation of confidentiality or integrity
-(particularly in the absence of complete revocation support).
-
-On the new files issue, it wouldn't be difficult or even a real
-divergence from our existing model to introduce the component name (not
-a "full" pathname, but the last component) as an additional input to the
-decision for labeling new files (along with the existing use of the
-creating process' label, the parent directory label, and the kind of new
-file) at creation time, and that would reduce the need somewhat to
-modify some applications that create files of multiple security contexts
-in the same directory.  That would further help the SEEdit folks in
-emulating AA on top of SELinux, but as before, I don't get the
-impression that the AA folks will ever be satisfied with such an
-emulation, not because of any real requirement but merely because they
-are tied to their implementation specifics.
-
--- 
-Stephen Smalley
-National Security Agency
-
+--------------090006070003020400020207--
