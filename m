@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965985AbXFFXLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966050AbXFFXLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965985AbXFFXLA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 19:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965074AbXFFXKw
+	id S966050AbXFFXLY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 19:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965986AbXFFXLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 19:10:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36081 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964911AbXFFXKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 19:10:51 -0400
-Date: Thu, 7 Jun 2007 01:10:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Peschke <mp3@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, jbaron@redhat.com,
-       rostedt@goodmis.org, linux-s390@vger.kernel.org
-Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
-Message-ID: <20070606231041.GB11592@elte.hu>
-References: <1181165656.7133.23.camel@dix>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181165656.7133.23.camel@dix>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 6 Jun 2007 19:11:01 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:47528 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965981AbXFFXLA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 19:11:00 -0400
+Date: Wed, 6 Jun 2007 16:11:03 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: Jesse Barnes <jesse.barnes@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Message-Id: <20070606161103.f8e3b253.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0706061852590.2716@p34.internal.lan>
+References: <200706061229.24486.jesse.barnes@intel.com>
+	<200706061524.52628.jesse.barnes@intel.com>
+	<Pine.LNX.4.64.0706061826260.5415@p34.internal.lan>
+	<200706061528.44070.jesse.barnes@intel.com>
+	<20070606153737.2c9da784.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0706061852590.2716@p34.internal.lan>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 6 Jun 2007 18:54:37 -0400 (EDT) Justin Piszcz wrote:
 
-* Martin Peschke <mp3@de.ibm.com> wrote:
+> Hm, not sure if it was from the patch or what but I ran this:
+> 
+> 1. swapoff -a
+> 2. ./eatmem
+> 
+> The machine responded to ping and alt-sysrq-b but the box remain 
+> unresponsive, I guess the kernel did not kill the process? :(
+> 
+> The moments before it 'froze'
+> 
+> top - 18:48:01 up 15 min,  7 users,  load average: 6.61, 18.50, 13.31
+> Tasks: 200 total,  18 running, 182 sleeping,   0 stopped,   0 zombie
+> Cpu(s):  0.0%us, 90.7%sy,  0.0%ni,  5.9%id,  3.3%wa,  0.0%hi,  0.0%si, 
+> 0.0%st
+> Mem:   8039576k total,  7998860k used,    40716k free,        8k buffers
+> Swap:        0k total,        0k used,        0k free,     1664k cached
+> 
+>    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+>    248 root      11  -5     0    0    0 R   85  0.0   0:16.05 kswapd0
+>   2265 nut       18   0 13320  244    4 R   40  0.0   0:03.13 newhidups
+>   2267 nut       18   0 12216  168    4 R   40  0.0   0:02.04 upsd
+>   2474 ntp       18   0 22192  400    8 R   39  0.0   0:02.00 ntpd
+>   3563 jpiszcz   18   0 41964 1264    4 R   38  0.0   0:02.20 pine
+>   3530 root      18   0 96240 3132   36 R   37  0.0   0:02.09 kdm_greet
+>   2052 root      18   0  6080  112    4 R   37  0.0   0:02.00 hald-addon-stor
+>   4479 war       17   0 18012  700  252 R   33  0.0   0:01.81 top
+>   4480 war       19   0 6948m 6.8g    4 R   22 88.4   0:05.81 eatmem
+>   2095 root      18   0 13128  216    8 R   10  0.0   0:00.50 dirmngr
+>   2545 root      18   0 95788 2488    4 R    5  0.0   0:00.25 apache2
+>   3564 war       18   0 41620  832    4 R    5  0.0   0:00.34 pine
+>   2270 nut       15   0 12212  144    4 S    1  0.0   0:00.05 upsmon
+>    561 root      10  -5     0    0    0 S    0  0.0   0:00.02 xfsbufd
+> 
+> Very simply program:
+> 
+> #include <iostream>
+> using namespace std;
+> 
+> int main()
+> {
+>    long int interations = 10000000;
+>    int counter = 1;
+> 
+>    for(counter;counter<interations;counter++)
+>    {
+>       double *d = new double[100];
 
-> - lock_time_inc() vs. statistic_add_util()
+You usually have to access the allocated memory, like:
 
-please fix the coding style in lib/statistic.c. It's full of:
+	*d = 1.0;
 
-{
-        unsigned long long i;
-        if (value <= stat->u.histogram.range_min)
-                return 0;
+for it to actually be allocated (AFAIK).
 
-put a newline after variable sections.
+>    }
+> 
+>    return 0;
+> }
+> 
+> Any idea why the OOM killer can or does not kill it?
 
-and:
+What are the values of /proc/sys/vm/overcommit* ?
 
-        on_each_cpu(_statistic_barrier, NULL, 0, 1);
-        return 0;
+See Documentation/vm/overcommit-accounting .
 
-preferably use a newline before 'return' statements as well. (this is 
-not always necessary, but in the above case it looks better)
-
-	Ingo
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
