@@ -1,56 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965566AbXFFWot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965598AbXFFWpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965566AbXFFWot (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 18:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936012AbXFFWoU
+	id S965598AbXFFWpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 18:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965280AbXFFWpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:44:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52835
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S935879AbXFFWoT (ORCPT
+	Wed, 6 Jun 2007 18:45:25 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:18141 "EHLO
+	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965230AbXFFWpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:44:19 -0400
-Date: Wed, 06 Jun 2007 15:44:34 -0700 (PDT)
-Message-Id: <20070606.154434.21926922.davem@davemloft.net>
-To: davidel@xmailserver.org
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, drepper@redhat.com, mingo@elte.hu,
-       dada1@cosmosbay.com
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 6 Jun 2007 18:45:22 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <46673964.1000004@am.sony.com>
+Date: Wed, 06 Jun 2007 15:47:00 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@redhat.com>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Big problems applying patch-2.6.21.3-rt9
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Jun 2007 22:45:16.0876 (UTC) FILETIME=[5A6450C0:01C7A88C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Davide Libenzi <davidel@xmailserver.org>
-Date: Wed, 06 Jun 2007 15:30:31 -0700
+Ingo,
 
-> This patch implement a new syscall sys_socket2(), that accepts an
-> extra "flags" parameter:
-> 
-> int socket2(int domain, int type, int protocol, int flags);
-> 
-> The flags parameter is used to pass extra flags to the kernel, and is
-> at the moment used to select the file descriptor allocations inside
-> the non-sequential area (O_NONSEQFD). The remaining parameters are
-> exactly the same as the ones of sys_socket().
-> The sys_accept() system call has been modified to return a file
-> descriptor inside the non-sequential area, if the listening fd is.
-> The sys_socketcall() system call has been also changed to support
-> a new SYS_SOCKET2 indentifier.
-> 
-> Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+I saw lots of problems trying to apply the latest rt-preempt patch.
+Maybe some bits got included by mistake in the patch?
 
-Since the valid range of "domain" values is quite small,
-we could avoid the new system call by cribbing some of the
-upper bits of the 'domain' argument.
+Here's what I saw:
+$ wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.3.tar.bz2
+$ wget http://people.redhat.com/mingo/realtime-preempt/patch-2.6.21.3-rt9
+$ tar -xjf linux-2.6.21.3.tar.bz2
+$ cd linux-2.6.21.3
+$ patch -p1 -f <../patch-2.6.21.3-rt9
+... lots of errors, (many "already applied" errors if you don't use '-f')...
+$ find . -name "*.rej"
+./arch/arm/kernel/traps.c.rej
+./arch/arm/mach-iop13xx/pci.c.rej
+./arch/arm/plat-iop/time.c.rej
+./arch/i386/kernel/cpu/cpufreq/powernow-k7.c.rej
+./arch/i386/kernel/cpu/cpufreq/powernow-k8.c.rej
+./arch/i386/kernel/cpu/cpufreq/powernow-k8.h.rej
+./arch/sparc64/kernel/prom.c.rej
+./arch/x86_64/kernel/vsyscall.c.rej
+./crypto/api.c.rej
+./drivers/ata/libata-sff.c.rej
+./drivers/ata/sata_via.c.rej
+./drivers/base/core.c.rej
+./drivers/char/ipmi/ipmi_si_intf.c.rej
+./drivers/crypto/geode-aes.c.rej
+./drivers/crypto/geode-aes.h.rej
+./drivers/md/raid1.c.rej
+./drivers/message/fusion/mptspi.c.rej
+./drivers/net/Kconfig.rej
+./drivers/net/bnx2.c.rej
+./drivers/net/sis900.c.rej
+./drivers/net/skge.c.rej
+./drivers/net/sky2.c.rej
+./drivers/net/smc911x.c.rej
+./drivers/net/tg3.c.rej
+./drivers/pci/quirks.c.rej
+./drivers/usb/atm/cxacru.c.rej
+./drivers/usb/input/hiddev.c.rej
+./fs/fat/dir.c.rej
+./fs/jfs/jfs_logmgr.c.rej
+./fs/nfsd/export.c.rej
+./fs/reiserfs/xattr.c.rej
+./fs/udf/namei.c.rej
+./include/asm-arm/arch-iop13xx/iop13xx.h.rej
+./include/asm-sparc64/openprom.h.rej
+./include/linux/netfilter/nf_conntrack_proto_gre.h.rej
+./include/linux/netfilter_ipv4/ip_conntrack_proto_gre.h.rej
+./include/linux/clocksource.h.rej
+./include/linux/netdevice.h.rej
+./kernel/time/clocksource.c.rej
+./kernel/time/tick-common.c.rej
+./kernel/time/tick-internal.h.rej
+./kernel/time/tick-sched.c.rej
+./lib/zlib_inflate/inflate.c.rej
+./mm/hugetlb.c.rej
+./mm/oom_kill.c.rej
+./mm/slob.c.rej
+./net/ipv4/netfilter/ip_conntrack_core.c.rej
+./net/ipv4/netfilter/ip_nat_proto_gre.c.rej
+./net/ipv4/netfilter/nf_nat_proto_gre.c.rej
+./net/ipv4/tcp.c.rej
+./net/ipv6/addrconf.c.rej
+./net/ipv6/exthdrs.c.rej
+./net/ipv6/ip6_input.c.rej
+./net/ipv6/ip6_output.c.rej
+./net/ipv6/proc.c.rej
+./net/ipv6/xfrm6_tunnel.c.rej
+./net/netfilter/nf_conntrack_core.c.rej
+./net/sched/sch_prio.c.rej
+./net/sctp/socket.c.rej
+./net/sunrpc/auth_gss/svcauth_gss.c.rej
+./scripts/basic/fixdep.c.rej
+./sound/pci/hda/patch_sigmatel.c.rej
+./Makefile.rej
 
-Valid existing programs pass in valid 'domain' values and
-thus will not set any of the new flags.
+I can send you the full output from patch if you want.
+Please advise.
+  -- Tim
 
-Just an idea.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
+
