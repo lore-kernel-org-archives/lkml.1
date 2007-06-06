@@ -1,101 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932515AbXFFMkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934062AbXFFMm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932515AbXFFMkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 08:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXFFMk3
+	id S934062AbXFFMm6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 08:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761469AbXFFMmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 08:40:29 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:32821 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752557AbXFFMk3 (ORCPT
+	Wed, 6 Jun 2007 08:42:49 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:52878 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752557AbXFFMms convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 08:40:29 -0400
-Date: Wed, 6 Jun 2007 14:40:24 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Andy Whitcroft <apw@shadowen.org>, Dave Jones <davej@redhat.com>
-cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] add a trivial patch style checker v2
-In-Reply-To: <735b25fd823d649f9cf55b63eb878b63@pinky>
-Message-ID: <Pine.LNX.4.62.0706061433430.10542@pademelon.sonytel.be>
-References: <9a1288909c10f2935af82ec5cea0c46b@pinky> <735b25fd823d649f9cf55b63eb878b63@pinky>
+	Wed, 6 Jun 2007 08:42:48 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [Patch 04/18] include/linux/logfs.h
+Date: Wed, 6 Jun 2007 14:42:29 +0200
+User-Agent: KMail/1.9.6
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+       Kyle Moffett <mrmacman_g4@mac.com>, John Stoffel <john@stoffel.org>,
+       Willy Tarreau <w@1wt.eu>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       CaT <cat@zip.com.au>, Ondrej Zajicek <santiago@crfreenet.org>,
+       linux-kernel@vger.kernel.org, Bill Davidsen <davidsen@tmr.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Dongjun Shin <djshin90@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Albert Cahalan <acahalan@gmail.com>, linux-fsdevel@vger.kernel.org,
+       linux-mtd@lists.infradead.org,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>,
+       =?iso-8859-15?q?J=F6rn_Engel?= <joern@lazybastard.org>,
+       Pavel Machek <pavel@ucw.cz>, Ulisses Furquim <ulissesf@gmail.com>,
+       akpm@osdl.org, David Weinehall <tao@acc.umu.se>
+References: <20070603183845.GA8952@lazybastard.org> <db91817d295770e459727005108b05e2@kernel.crashing.org> <1181119820.25232.434.camel@pmac.infradead.org>
+In-Reply-To: <1181119820.25232.434.camel@pmac.infradead.org>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200706061442.31147.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19b31Ty6sZ8tZlEzIMhB72KlwHgCjw6ToqQx8G
+ asJ1BbzpplHPi8r3bluFdHdkswBkndd6z+88wWO5jPK11zfvn8
+ RmhhXZm2YFHJX9J8u14rQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007, Andy Whitcroft wrote:
-> As a first step package up the current state of the patch style
-> checker and include it in the kernel tree.  Add instructions
-> suggesting running it on submissions.  This adds version v0.01 of
-                                                           ^^^^^
-> the checkpatch.pl script.
+On Wednesday 06 June 2007, David Woodhouse wrote:
+> And if I had something like this (which is admittedly contrived, but
+> hardware people _do_ do stupid things to us):
+>    { uint32_t, uint8_t, uint16_t, uint8_t, uint32_t, uint32_t }
 > 
-> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-> ---
-> 	Ok, here is V2 of the checker.	A lot of feedback has been
-                    ^^
-> --- /dev/null
-> +++ b/scripts/checkpatch.pl
-> @@ -0,0 +1,595 @@
-> +#!/usr/bin/perl -w
-> +# (c) 2001, Dave Jones. <davej@codemonkey.org.uk> (the file handling bit)
-> +# (c) 2005, Joel Scohpp <jschopp@austin.ibm.com> (the ugly bit)
-> +# (c) 2007, Andy Whitcroft <apw@uk.ibm.com> (new conditions, test suite, etc)
-> +# Licensed under the terms of the GNU GPL License version 2
-> +
-> +use strict;
-> +
-> +my $P = $0;
-> +
-> +my $V = '0.01';
-            ^^^^
-So, what's the correct version number? ;-)
+> With the 'packed' attribute the compiler would assume arbitrary
+> alignment of all the 32-bit integers. But in reality it's only necessary
+> for the uint16_t in the middle. A 'nopadding' attribute would deal with
+> that correctly.
 
-Will http://www.codemonkey.org.uk/projects/checkpatch/checkpatch.git/ (hey, a
-project with the same name started by the same person???) be merged in?
+I would argue that a newly invented 'nopadding' attribute should reject
+such a structure as invalid, because it should not let members be
+unaligned. Unfortunately, this also gets tricky if you consider
 
-Below is a small fix for the wrong hardcoded script name
+struct {
+	uint32_t a;
+	uint64_t b;
+	uint32_t c;
+};
 
----
-Subject: [PATCH] Fix checkpatch.pl name in usage template
+which does have an unaligned member by default in i386, but not on
+any modern platform.
 
-Fix checkpatch.pl name in usage template:
-  - Don't use wrong hardcoded script name
-  - Strip dirname from command name
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- scripts/checkpatch.pl |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletion(-)
-
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -7,6 +7,7 @@
- use strict;
- 
- my $P = $0;
-+$P =~ s@.*/@@g;
- 
- my $V = '0.01';
- 
-@@ -26,7 +27,7 @@ GetOptions(
- my $exit = 0;
- 
- if ($#ARGV < 0) {
--	print "usage: patchstylecheckemail.pl [options] patchfile\n";
-+	print "usage: $P [options] patchfile\n";
- 	print "version: $V\n";
- 	print "options: -q           => quiet\n";
- 	print "         --no-tree    => run without a kernel tree\n";
-
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+	Arnd <><
