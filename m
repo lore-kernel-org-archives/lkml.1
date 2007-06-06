@@ -1,117 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934700AbXFFT1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933652AbXFFT2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934700AbXFFT1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 15:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763433AbXFFT1D
+	id S933652AbXFFT2X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 15:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbXFFT2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 15:27:03 -0400
-Received: from fizeau.zen.co.uk ([212.23.8.67]:47431 "EHLO fizeau.zen.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763290AbXFFT1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 15:27:00 -0400
-X-Greylist: delayed 1040 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Jun 2007 15:27:00 EDT
-Message-ID: <466705F5.9000702@opcode-solutions.com>
-Date: Wed, 06 Jun 2007 20:07:33 +0100
-From: Matt Keenan <matt@opcode-solutions.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Steve French <sfrench@samba.org>
-CC: Jeremy Allison <jra@samba.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-cifs-client@lists.samba.org
-Subject: [PATCH] CIFS should honour umask
-Content-Type: multipart/mixed;
- boundary="------------000206070705030701060406"
-X-Originating-Heisenberg-IP: [82.69.27.224]
+	Wed, 6 Jun 2007 15:28:15 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:64912 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751110AbXFFT2N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 15:28:13 -0400
+Subject: Re: 2.6.22-rc4-mm1
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Mel Gorman <mel@skynet.ie>, Cedric Le Goater <clg@fr.ibm.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, aaw@google.com
+In-Reply-To: <1181149580.5676.25.camel@lappy>
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+	 <4666ABD4.8050402@fr.ibm.com> <4666D050.7010603@googlemail.com>
+	 <4666DA55.5090405@fr.ibm.com> <20070606162649.GA9932@skynet.ie>
+	 <20070606163538.GN6909@holomorphy.com>  <1181149580.5676.25.camel@lappy>
+Content-Type: text/plain
+Date: Wed, 06 Jun 2007 21:27:55 +0200
+Message-Id: <1181158075.5676.32.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000206070705030701060406
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Wed, 2007-06-06 at 19:06 +0200, Peter Zijlstra wrote:
+> On Wed, 2007-06-06 at 09:35 -0700, William Lee Irwin III wrote:
+> > On Wed, Jun 06, 2007 at 05:26:49PM +0100, Mel Gorman wrote:
+> > > I do not believe this is Nick's problem. I encountered the same issue and
+> > > the bisect ended up here;
+> > > # BISECT HERE
+> > > mm-variable-length-argument-support.patch
+> > > mm-variable-length-argument-support-fix.patch
+> > > # BISECT BAD
+> > > Reverting those two patches boots ok on my standalone x86 laptop.
+> > > Patch authors cc'd. I have not read the patches yet to see what might
+> > > be the problem.
+> > 
+> > I found this a while ago and peterz already has a tentative fix for it at
+> > http://programming.kicks-ass.net/kernel-patches/max_arg_pages/move_anon_vma.patch
+> > I'm sure he himself will chime in with more/better code when he returns.
+> 
+> Ah, yes indeed. We were discussing wether it would be better to update
+> page->index (as this patch does) or not change vma->vm_pgoff. Bill
+> argued that the latter would be safe, it would just limit the merge
+> capabilities of the anon vma (and the stack rarely, if ever, merges
+> anyway).
+> 
+> I myself an not quite sure on the effects of ->vm_pgoff of anon vmas
+> yet.
 
-This patch makes CIFS honour a process' umask like other filesystems. 
-Of course the server is still free to munge the permissions if it wants
-to; but the client will send the "right" permissions to begin with.
+Ok, from what I can make of it, nobody relies on the value of
+vma->vm_pgoff for anon vmas as long as the following invariant is kept:
 
-A few caveats;
+  vaddr = vma->vm_start + (page->index - vma->vm_pgoff)*PAGE_SIZE
 
-1) It only applies to filesystems that have CAP_UNIX (aka support unix
-extensions)
-2) It applies the correct mode to the follow up CIFSSMBUnixSetPerms()
-after remote creation (I can write a new patch if you want with the
-"right" mode at actual creation time; however the "right" perms will
-still need to be given to the follow up CIFSSMBUnixSetPerms() anyway).
-3) It will probably work best with Samba 3.0.25a or newer (ie with this
-patch applied
-http://lists.samba.org/archive/linux-cifs-client/2007-January/001697.html)
-4) It has been compiled, and tested on 2.6.22-rc4 / Samba 3.0.25a
-(Ubuntu Dapper with a few custom backports), and with a bit of testing
-seems to work just fine. (it also incidentally side steps bugs in
-thunderbird and openoffice (the apps don't check the permissions on
-files they create, they assume they will open() the way that have asked
-them to be created xref open(O_WRONLY|O_CREAT) => valid fd then
-mmap(fd,PROT_READ) => EFAULT).
+So the proper thing to do is not change vm_pgoff.
 
-I am going to give this patch a more thorough test tomorrow with ltp.
-Comments, corrections, et al are welcome.
-
-
-Matt
-
--- 
-Matt Keenan
-OpCode Solutions
-
-
-
---------------000206070705030701060406
-Content-Type: text/plain;
- name="patch-2.6.22-rc4.cifs-umask-fix"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="patch-2.6.22-rc4.cifs-umask-fix"
-
-U2lnbmVkLW9mZi1ieTogTWF0dCBLZWVuYW4gPG1hdHRAb3Bjb2RlLXNvbHV0aW9ucy5jb20+
-CgotLQpkaWZmIC11ck4gbGludXgtMi42LjIyLXJjNC9mcy9jaWZzL2Rpci5jIGxpbnV4LTIu
-Ni4yMi1yYzQuY2lmcy11bWFzay1maXgvZnMvY2lmcy9kaXIuYwotLS0gbGludXgtMi42LjIy
-LXJjNC9mcy9jaWZzL2Rpci5jCTIwMDctMDYtMDYgMDg6MzQ6MDMuMDAwMDAwMDAwICswMTAw
-CisrKyBsaW51eC0yLjYuMjItcmM0LmNpZnMtdW1hc2stZml4L2ZzL2NpZnMvZGlyLmMJMjAw
-Ny0wNi0wNiAxOToyNzowMC4wMDAwMDAwMDAgKzAxMDAKQEAgLTIwNiw3ICsyMDYsMTEgQEAK
-IAkJLyogSWYgT3BlbiByZXBvcnRlZCB0aGF0IHdlIGFjdHVhbGx5IGNyZWF0ZWQgYSBmaWxl
-CiAJCXRoZW4gd2Ugbm93IGhhdmUgdG8gc2V0IHRoZSBtb2RlIGlmIHBvc3NpYmxlICovCiAJ
-CWlmICgoY2lmc19zYi0+dGNvbi0+c2VzLT5jYXBhYmlsaXRpZXMgJiBDQVBfVU5JWCkgJiYK
-LQkJCShvcGxvY2sgJiBDSUZTX0NSRUFURV9BQ1RJT04pKQorCQkJKG9wbG9jayAmIENJRlNf
-Q1JFQVRFX0FDVElPTikpIHsKKwkJCS8qIHJlc3BlY3QgdW1hc2sgc2V0dGluZ3MgbGlrZSBv
-dGhlciBmaWxlc3lzdGVtczsKKwkJCSAqIGlmIHRoZSBzZXJ2ZXIgd2FudHMgdG8gbXVuZ2Ug
-dGhlIGJpdHMgbGV0IGl0LCBidXQgdGhlIGNsaWVudAorCQkJICogc2hvdWxkICJEbyBUaGUg
-UmlnaHQgVGhpbmciICh0bSkgKi8KKwkJCW1vZGUgJj0gfmN1cnJlbnQtPmZzLT51bWFzazsK
-IAkJCWlmKGNpZnNfc2ItPm1udF9jaWZzX2ZsYWdzICYgQ0lGU19NT1VOVF9TRVRfVUlEKSB7
-CiAJCQkJQ0lGU1NNQlVuaXhTZXRQZXJtcyh4aWQsIHBUY29uLCBmdWxsX3BhdGgsIG1vZGUs
-CiAJCQkJCShfX3U2NCljdXJyZW50LT5mc3VpZCwKQEAgLTIyNCw3ICsyMjgsNyBAQAogCQkJ
-CQljaWZzX3NiLT5tbnRfY2lmc19mbGFncyAmIAogCQkJCQkJQ0lGU19NT1VOVF9NQVBfU1BF
-Q0lBTF9DSFIpOwogCQkJfQotCQllbHNlIHsKKwkJfSBlbHNlIHsKIAkJCS8qIEJCIGltcGxl
-bWVudCBtb2RlIHNldHRpbmcgdmlhIFdpbmRvd3Mgc2VjdXJpdHkgZGVzY3JpcHRvcnMgKi8K
-IAkJCS8qIGVnIENJRlNTTUJXaW5TZXRQZXJtcyh4aWQscFRjb24sZnVsbF9wYXRoLG1vZGUs
-LTEsLTEsbG9jYWxfbmxzKTsqLwogCQkJLyogY291bGQgc2V0IHIvbyBkb3MgYXR0cmlidXRl
-IGlmIG1vZGUgJiAwMjIyID09IDAgKi8KZGlmZiAtdXJOIGxpbnV4LTIuNi4yMi1yYzQvZnMv
-Y2lmcy9pbm9kZS5jIGxpbnV4LTIuNi4yMi1yYzQuY2lmcy11bWFzay1maXgvZnMvY2lmcy9p
-bm9kZS5jCi0tLSBsaW51eC0yLjYuMjItcmM0L2ZzL2NpZnMvaW5vZGUuYwkyMDA3LTA2LTA2
-IDA4OjM0OjAzLjAwMDAwMDAwMCArMDEwMAorKysgbGludXgtMi42LjIyLXJjNC5jaWZzLXVt
-YXNrLWZpeC9mcy9jaWZzL2lub2RlLmMJMjAwNy0wNi0wNiAxOToyNjoyNi4wMDAwMDAwMDAg
-KzAxMDAKQEAgLTk4Nyw2ICs5ODcsMTEgQEAKIAkJaWYgKChkaXJlbnRyeS0+ZF9pbm9kZSkg
-JiYgKGRpcmVudHJ5LT5kX2lub2RlLT5pX25saW5rIDwgMikpCiAJCQkJZGlyZW50cnktPmRf
-aW5vZGUtPmlfbmxpbmsgPSAyOyAKIAkJaWYgKGNpZnNfc2ItPnRjb24tPnNlcy0+Y2FwYWJp
-bGl0aWVzICYgQ0FQX1VOSVgpCisJCXsKKwkJCS8qIHJlc3BlY3QgdW1hc2sgc2V0dGluZ3Mg
-bGlrZSBvdGhlciBmaWxlc3lzdGVtczsKKwkJCSAqIGlmIHRoZSBzZXJ2ZXIgd2FudHMgdG8g
-bXVuZ2UgdGhlIGJpdHMgbGV0IGl0LCBidXQgdGhlIGNsaWVudAorCQkJICogc2hvdWxkICJE
-byBUaGUgUmlnaHQgVGhpbmciICh0bSkgKi8KKwkJCW1vZGUgJj0gfmN1cnJlbnQtPmZzLT51
-bWFzazsKIAkJCWlmIChjaWZzX3NiLT5tbnRfY2lmc19mbGFncyAmIENJRlNfTU9VTlRfU0VU
-X1VJRCkgewogCQkJCUNJRlNTTUJVbml4U2V0UGVybXMoeGlkLCBwVGNvbiwgZnVsbF9wYXRo
-LAogCQkJCQkJICAgIG1vZGUsCkBAIC0xMDA0LDcgKzEwMDksNyBAQAogCQkJCQkJICAgIGNp
-ZnNfc2ItPm1udF9jaWZzX2ZsYWdzICYgCiAJCQkJCQkgICAgQ0lGU19NT1VOVF9NQVBfU1BF
-Q0lBTF9DSFIpOwogCQkJfQotCQllbHNlIHsKKwkJfSBlbHNlIHsKIAkJCS8qIEJCIHRvIGJl
-IGltcGxlbWVudGVkIHZpYSBXaW5kb3dzIHNlY3J0eSBkZXNjcmlwdG9ycwogCQkJICAgZWcg
-Q0lGU1NNQldpblNldFBlcm1zKHhpZCwgcFRjb24sIGZ1bGxfcGF0aCwgbW9kZSwKIAkJCQkJ
-CSAtMSwgLTEsIGxvY2FsX25scyk7ICovCg==
---------------000206070705030701060406--
