@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965449AbXFFWmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965438AbXFFWlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965449AbXFFWmM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 18:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964936AbXFFWlP
+	id S965438AbXFFWlH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 18:41:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965362AbXFFWj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 18:41:15 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:19194 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964981AbXFFWlN (ORCPT
+	Wed, 6 Jun 2007 18:39:58 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:46905 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965357AbXFFWj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 18:41:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WYStCk+d+QkRD5alsMeqXclLfdcLr3RlabuUm5cQNUn7lmQ9Nemdd58fpRAvldlaMcZ6QUbOIUg9uxqQUoRSYG6tHfNy7jKyrj8L0dd1Ct3V6kFHhjhWgAE4FX9xKclKV+hmSGjaMkYVTBudt8F63vNYXPoNw+xi2d3prudwe80=
-Message-ID: <f4527be0706061541ifd49a8fg60442532d72f1d06@mail.gmail.com>
-Date: Wed, 6 Jun 2007 23:41:11 +0100
-From: "Andrew Lyon" <andrew.lyon@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] Re: 4Gb ram not showing up
-In-Reply-To: <46673135.30105@zytor.com>
+	Wed, 6 Jun 2007 18:39:57 -0400
+Date: Wed, 6 Jun 2007 17:39:52 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, menage@google.com,
+       akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, vatsa@in.ibm.com,
+       ebiederm@xmission.com, haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com,
+       balbir@in.ibm.com, cpw@sgi.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       mbligh@google.com, rohitseth@google.com, devel@openvz.org
+Subject: Re: [PATCH 00/10] Containers(V10): Generic Process Containers
+Message-ID: <20070606223952.GB5626@sergelap.austin.ibm.com>
+References: <20070529130104.461765000@menage.corp.google.com> <20070604191412.GA901@sergelap.austin.ibm.com> <20070604123151.4db007a6.pj@sgi.com> <6599ad830706041330q1802ebf2n2bac63f706a73a50@mail.gmail.com> <20070604204131.GB19409@sergelap.austin.ibm.com> <20070604140533.65e25286.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.58.0706061356310.2657@be1.lrz>
-	 <20070606143723.GF10008@csclub.uwaterloo.ca>
-	 <46673135.30105@zytor.com>
+In-Reply-To: <20070604140533.65e25286.pj@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/6/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> Lennart Sorensen wrote:
-> >
-> > Seems like an improvement to me.  To fully explain how it could be 3 or
-> > 3.5 or 3.25 or who knows how many GB you can actually use without PAE
-> > would probably require writing a small novel.  Certainly talking about
-> > address space instead of amounts of physical memory is more correct.
-> >
->
-> On some machines it's even just 2 GB.
->
->         -hpa
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Quoting Paul Jackson (pj@sgi.com):
+> > Would it then make sense to just
+> > default to (parent_set - sibling_exclusive_set) for a new sibling's
+> > value?
+> 
+> Which could well be empty, which in turn puts one back in the position
+> of dealing with a newborn cpuset that is empty (of cpus or of memory),
+> or else it introduces a new and odd constraint on when cpusets can be
+> created (only when there are non-exclusive cpus and mems available.)
+> 
+> > An option is fine with me, but without such an option at all, cpusets
+> > could not be applied to namespaces...
+> 
+> I wasn't paying close enough attention to understand why you couldn't
+> do it in two steps - make the container, and then populate it with
+> resources.
 
-Could this also cause a system to be unstable? my abit athlon64 at
-work will not run x64 with more than 1gb ram, and i have a colo server
-with supermicro & 2 x dual core xeons that will not run with more than
-2gb.
+Sorry, please clarify - are you saying that now you do understand, or
+that I should explain?
 
-Both systems have long uptimes but if i add ram they crash within
-minutes of booting.
+> But if indeed that's not possible, then I guess we need some sort of
+> option specifying whether to create kids empty, or inheriting.
 
-Tried several kernels up to 2.6.21 and gave up, I can send dmesg
-output but the crashes are completely random.
+Paul (uh, Menage :) should I do a patch for this or have you got it
+already?
 
-andy
+thanks,
+-serge
