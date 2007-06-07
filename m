@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937431AbXFGWd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937725AbXFGWfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937431AbXFGWd2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937475AbXFGWdG
+	id S937725AbXFGWfT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937117AbXFGWe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:33:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58419 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936581AbXFGWdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:33:04 -0400
-Message-ID: <466880A4.3090908@redhat.com>
-Date: Thu, 07 Jun 2007 15:03:16 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Thu, 7 Jun 2007 18:34:57 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35212 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S936489AbXFGWe4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:34:56 -0400
+Date: Thu, 7 Jun 2007 23:39:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tejun Heo <htejun@gmail.com>, Gregor Jasny <gjasny@googlemail.com>,
+       Jeff Garzik <jeff@garzik.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7> <20070606235906.72439d16@the-village.bc.nu> <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com> <20070607001932.35c9591c@the-village.bc.nu> <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu> <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com> <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com> <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com> <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+       linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
+Message-ID: <20070607233959.22d29e14@the-village.bc.nu>
+In-Reply-To: <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
+	<9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>
+	<466196AD.3090502@garzik.org>
+	<9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com>
+	<46667466.4010500@gmail.com>
+	<9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com>
+	<4667B347.9040900@gmail.com>
+	<alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Thu, 7 Jun 2007 13:56:11 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Davide Libenzi wrote:
-> What we can sanily do, is re-random the base if no fds are in there (of 
-> course CLOFORK and CLOEXEC do not count).
+> 
+> 
+> On Thu, 7 Jun 2007, Tejun Heo wrote:
+> >
+> > Ah.. okay.  Now I see what's going on.  Jeff, this is another device
+> > which doesn't set nsect and lbal to 1 after reset.  Gregor, please try
+> > the attached patch.
+> 
+> Tejun, since Jeff is apparently traveling this week, and Gregor tested the 
+> patch successfully (and it looks sane anyway - why in Gods name _would_ we 
+> care what the initial setting of nsect/lbal is?), can you send this in 
 
-With the last comment you mean "count after CLOFORK and CLOEXEC", right?
- So the re-basing would be done in two places: after fork and after execve?
+Its a sanity check, and if the vendors could get their chips right a good
+one, but specs/toilet paper  usual story
 
-That would be enough.  Programs should clean after themselves.
+> with the changelog and sign-off?
+> 
+> Maybe it can go through Andrew like the other patch (the sata_promise 
+> irq/polling handling), but I can take it directly too. Whatever seems 
+> best.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+I'll certainly ACK it, and it also means I can drop a pending patch to
+handle the IT8212 raid mode which also gets this wrong.
 
-iD8DBQFGaICk2ijCOnn/RHQRAqq5AJwIDmKdsL71ecQVd6PoDI2oOL/KcwCguj2b
-TFqDhpJEDqFx1ypdHITuywA=
-=Cbfg
------END PGP SIGNATURE-----
+Alan
