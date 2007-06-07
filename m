@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbXFGMuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbXFGMwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760115AbXFGMuU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 08:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbXFGMuK
+	id S1760192AbXFGMwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 08:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbXFGMwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 08:50:10 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:43479 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755608AbXFGMuI (ORCPT
+	Thu, 7 Jun 2007 08:52:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53532 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755608AbXFGMwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 08:50:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=FiVw3aWQF87ohDssWs57uoeqEpq0KP9jaT1D6bZewCQw7wfMmB82C3Cv3zUzM9MnOyRMtSXjS2Gq+DIA4CP2EYTaoxrWZz3PrsYFzPb/ASTuhQnLm62BF7urNy3kM9x90ieTPJieSFXxXOBjOxfZGeKcvLAuxBrEXXMZjX4aksM=
-Message-ID: <f69849430706070550k4780060dheaa0f3073555d137@mail.gmail.com>
-Date: Thu, 7 Jun 2007 05:50:06 -0700
-From: "kernel coder" <lhrkernelcoder@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: tcp/ip stack question
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Thu, 7 Jun 2007 08:52:36 -0400
+Subject: Re: drivers/media/dvb/b2c2/flexcop-dma.c uses PCI DMA API
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-dvb@linuxtv.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0706062106150.30244@anakin>
+References: <Pine.LNX.4.64.0706062106150.30244@anakin>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 07 Jun 2007 09:50:56 -0300
+Message-Id: <1181220656.4187.64.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
-       I am recieveing the packet on eth1 and want to send it through eth2.
+Hi Geert,
 
-I've written code in netif_recieve_skb function .This code changes the
-mac header in sk_buff structure so that it can be send through other
-interface card.But when i call ip_dev_find fucntion to get the second
-interface structure ,NULL is returned.I checked the ip of second
-ethernet card  and it was similar to one passed to ip_dev_find
-fucntion,then why NULL is being returned?
+Em Qua, 2007-06-06 às 21:11 +0200, Geert Uytterhoeven escreveu:
+> 	Hi,
+> 
+> drivers/media/dvb/b2c2/flexcop-dma.c uses the PCI DMA API, but DVB_B2C2_FLEXCOP
+> doesn't depend on PCI, causing the following problem on PCI-less systems:
+> 
+> | linux/drivers/media/dvb/b2c2/flexcop-dma.c:20: warning: implicit declaration of function 'pci_alloc_consistent'
+> | linux/drivers/media/dvb/b2c2/flexcop-dma.c:20: warning: implicit declaration of function 'pci_alloc_consistent'
+> 
+> Apparently this is the flexcop DMA core, which is used by both
+> DVB_B2C2_FLEXCOP_PCI and DVB_B2C2_FLEXCOP_USB.
+> 
+> DVB_B2C2_FLEXCOP_PCI depends on PCI.
+> DVB_B2C2_FLEXCOP_USB depends on USB.
 
+Thanks for pointing us about this issue. While the usage of the generic
+dma is the better way, a simple fix can be applied by simply moving
+flexcop-dma to b2c2-flexcop-pci (currently, only the last uses the DMA
+stuff). I've committed such patch. It is available at:
 
-Actually if i get the correct dev structure from ip_dev_find fucntion
-then i'll assign that dev structure to current skbuff->dev  and call
-dev_queue_xmit fucntion,so that it transmitted through second
-interface card.Is mine approach correct?
+http://linuxtv.org/hg/v4l-dvb/rev/c314ec17335a
 
+ 
+Cheers,
+Mauro
 
-shahzad
