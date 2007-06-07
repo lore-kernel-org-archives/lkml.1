@@ -1,92 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934409AbXFGRdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933859AbXFGRd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934409AbXFGRdf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933764AbXFGRdU
+	id S933859AbXFGRd6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934461AbXFGRdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:33:20 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:35921 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933268AbXFGRdS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:33:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PFUhxJdDhrDJfNgw+AQXg3CZW2+QdYNb6E/kFTa8nRW8nLAR9QL/LDyIWLjkidjdgPXRsARuoziQiQOIPi94KE3qVZnsCEi187VPLjvEkGswbvUss1xUbC74M0vgcJlShgGNTkgtImRdVSXcqd3LJT1A/cB5fkQNRWaXc4cUKwQ=
-Message-ID: <a781481a0706071033y4bd86301v51bb0ebeb0e6f8b9@mail.gmail.com>
-Date: Thu, 7 Jun 2007 23:03:08 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>
-Subject: Re: [patch] i386/x86_64: smp_call_function locking inconsistency
-Cc: "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Jan Glauber" <jan.glauber@de.ibm.com>,
-       "David Miller" <davem@davemloft.net>, akpm@osdl.org, mingo@elte.hu,
-       ak@suse.de, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
-       "Alan Cox" <alan@redhat.com>
-In-Reply-To: <46683EC4.4030604@qumranet.com>
+	Thu, 7 Jun 2007 13:33:37 -0400
+Received: from mga03.intel.com ([143.182.124.21]:27498 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934421AbXFGRdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:33:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,395,1175497200"; 
+   d="scan'208";a="236712140"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Date: Thu, 7 Jun 2007 10:33:22 -0700
+User-Agent: KMail/1.9.6
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <200706061229.24486.jesse.barnes@intel.com> <200706061627.46421.jesse.barnes@intel.com> <20070607085147.GC15226@one.firstfloor.org>
+In-Reply-To: <20070607085147.GC15226@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070208203210.GB9798@osiris.ibm.com>
-	 <20070208.124328.88477956.davem@davemloft.net>
-	 <20070209084221.GA8259@osiris.boeblingen.de.ibm.com>
-	 <1171025838.5349.14.camel@localhost.localdomain>
-	 <a781481a0706070707j301ba886h10f4607fd6a6e8de@mail.gmail.com>
-	 <20070607162743.GA9433@osiris.ibm.com>
-	 <a781481a0706070954l636d752am82ef7ca9703788aa@mail.gmail.com>
-	 <a781481a0706071018t26e75c84jba5314dde3fc6019@mail.gmail.com>
-	 <46683EC4.4030604@qumranet.com>
+Message-Id: <200706071033.22818.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/7/07, Avi Kivity <avi@qumranet.com> wrote:
-> Satyam Sharma wrote:
+On Thursday, June 7, 2007 1:51 am Andi Kleen wrote:
+> On Wed, Jun 06, 2007 at 04:27:46PM -0700, Jesse Barnes wrote:
+> > On Wednesday, June 6, 2007 4:24 pm Justin Piszcz wrote:
+> > > > The mem= approach though looks slightly off, but I haven't
+> > > > looked at x86_64's mem= handling to see why.  From a high level
+> > > > though, adjusting end_pfn is the right thing to do, since
+> > > > theoretically mem= could choose to make holes in your low
+> > > > memory and keep your high memory in the allocation pools
+> > > > (though it's not generally implemented this way).
+> > > >
+> > > > Jesse
+> > >
+> > > Ahh, ok!  Sounds great, I will keep running the kernel with your
+> > > patch without mem= and let you know if I see any issues.
+> > >
+> > > Chances of getting this into 2.6.22-rc5?
 > >
-> > Oh wait, the on_one_cpu() patch proposes on UP:
-> >
-> > +static inline int on_one_cpu(int cpu, void (*func)(void *info), void
-> > *info,
-> > +                 int retry, int wait)
-> > +{
-> >
-> > /* this needs a if (cpu == 0) check here, IMO */
-> >
-> > +    local_irq_disable();
-> > +    func(info);
-> > +    local_irq_enable();
-> > +    return 0;
-> >
-> > /* else WARN and return -EINVAL; */
-> >
-> > +}
-> >
-> > which is broken without the suggested additions, IMHO
-> > (this is what got me into this in the first place). There
-> > _is_ a difference between on_each_cpu() and the
-> > smp_call_function* semantics (as discussed on the other
-> > thread -- gargh! my mistake for opening this discussion up
-> > on so many threads), and in its current form on_one_cpu()
-> > has quite confused semantics, trying to mix the two. I guess
-> > on_one_cpu() would be better off simply being just an
-> > atomic wrapper over smp_processor_id() and
-> > smp_call_function_single() (which is the *real* issue that
-> > needs solving in the first place), and do it well.
-> >
+> > I'm not sure it's appropriate for -rc5 since it mucks around with
+> > some early boot ordering, but I'll leave that to Andi, since it
+> > does address some real bugs people have been seeing.
 >
-> This is on UP, so (cpu == 0) is trivially true.
+> I don't think the patch is suitable for merging at this time. Perhaps
+> if it survives some time in -mm* / 2.6.23* it could be backported
+> in a later 2.6.22 stable release. But right now it definitely
+> needs more testing and addressing of my review comments.
+>
+> > Can we add your "Tested-by:  Justin Piszcz
+> > <jpiszcz@lucidpixels.com>" to the patch? :)
+>
+> All such headers are only for the trail of blame and do you want to
+> blame Justin if anything goes wrong? Perhaps it should rather have a
+> Blame-to: <whoever wrote Justin/Jesse's BIOS> but that also wouldn't
+> help without concrete contact points.
 
-Yes, the caller code might derive the value for the cpu arg in
-such a manner to always only ever yield 0 on UP. OTOH,
-WARN_ON(!...)'s are often added for such assumptions that are
-understood to be trivially true. Note that a warning for cpu != 0
-would be perfectly justified, we'd clearly want to flag such
-(errant) users.
+I think that header would be Lame-workaround-needed-because-of: 
+<bad.bios.writer@foo.bar>. :)  The idea of tested-by is to give people 
+a clue about who would be able to test any changes in the area 
+affected.  So far from blaming Justin, it would give him credit for all 
+his testing, and let people know that he might be able to test similar 
+patches in the future.  I think it's worthwhile to track that...
 
-Anyway, I guess another problem being tackled here is avoding
-#ifdef CONFIG_SMP's to mask calls to smp_call_function* (and
-thus on_cpu()) in kernel code(?) Avoiding putting WARN_ON() in
-the UP cases could be useful to minimize noise, in that case. It
-(and smp_call_function*) could still return -EINVAL for the invalid
-cases, though.
+Jesse
