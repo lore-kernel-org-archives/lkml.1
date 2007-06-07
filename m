@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757204AbXFGNKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbXFGNMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757204AbXFGNKR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 09:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXFGNKF
+	id S1756845AbXFGNMh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 09:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXFGNMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 09:10:05 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:11059 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751100AbXFGNKD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 09:10:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=p0YtdnJ6WgVOhqaQ5aQQ36iS7m6kBdy/3U2KpPvZPLEAMVrgbqLL/sGSoPQZL8Ob/mOJ2bA8Elx0W5xRniIxRa5fEluuSR428WXC4uRnsCxw+53yah6uRtL9mP7nKfz2MqVIFj8wK1gNZ6H6tsYU1zt3PV6wgdl85y6Mb12GCyI=
-Message-ID: <a790ea7a0706070610y4693da95he77e576dc05d1f17@mail.gmail.com>
-Date: Thu, 7 Jun 2007 15:10:02 +0200
-From: "Antonio Mignolli" <antoniomignolli@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fwd: lid switch hangs notebook
-In-Reply-To: <a790ea7a0706070536v60be358cn277b4be4ca9deb1f@mail.gmail.com>
+	Thu, 7 Jun 2007 09:12:30 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38607 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751205AbXFGNMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 09:12:30 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX1/3JsRfSzb34uj+C9PXTXnnujtSFNpu3XJ9KSrM9p
+	oYIwPcURUd6H9o
+Message-ID: <4667A655.1040909@gmx.net>
+Date: Thu, 07 Jun 2007 08:31:49 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: lkml <linux-kernel@vger.kernel.org>
+CC: emogenet@google.com
+Subject: man-pages-2.52 and man-pages-2.53 are released
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a790ea7a0703120753i232ace2bg7272fa479b821e32@mail.gmail.com>
-	 <20070315110606.741c2dc4.akpm@linux-foundation.org>
-	 <200704131553.54787.bjorn.helgaas@hp.com>
-	 <a790ea7a0706040357g799e8756ue758e95d5b460307@mail.gmail.com>
-	 <20070607104208.GA8245@ucw.cz>
-	 <a790ea7a0706070536v60be358cn277b4be4ca9deb1f@mail.gmail.com>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I forgot the forwarding to the mailing list...
+"A foolish consistency is the hobgoblin of little minds, adored by little
+statesmen and philosophers and divines"
 
+         Ralph Waldo Emerson (1803-1882)
 
----------- Forwarded message ----------
-From: Antonio Mignolli <antoniomignolli@gmail.com>
-Date: Jun 7, 2007 2:36 PM
-Subject: Re: lid switch hangs notebook
-To: Pavel Machek <pavel@ucw.cz>
+But damn it, those man pages were a mess!
 
+Perhaps for the first time in their 14-year history, the sections in all of
+the pages on man-pages are now in the same order...  The standard order
+(with many sections being optional) is now:
 
-Hi, thanks for all your responses.
+            NAME
+            SYNOPSIS
+            DESCRIPTION
+            RETURN VALUE
+            ERRORS
+            ENVIRONMENT
+            FILES
+            VERSIONS
+            CONFORMING TO
+            NOTES
+            BUGS
+            EXAMPLE
+            SEE ALSO
 
-Never enabled APM,
-and sure, no hangs in grub.
-As I said, the problem started from kernel 2.6.19
-(never tried 2.6.18).
-I've only tried Slackware, so far, in case it's not a kernel-related
-issue, I will try something else.
-Bye.
+So, I just released man-pages-2.52 and man-pages-2.53.  As well as that
+change, there are a very large number of changes to achieve greater
+consistency across man pages; full details can be found in the change logs.
 
-On 6/7/07, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
-> > The problem reported below has not been solved,
-> > I tried with the last stable kernel 2.6.21.3.
-> >
-> > But it seems not to be an ACPI issue,
-> > I removed ACPI support from the kernel,
-> > and still have the problem.
-> > What else could be?
->
-> Does it hang the box if you close/open the lid on grub prompt?
->
-> Also try disabling apm.
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+In the upcoming man-pages-2.54 release, a new man-pages.7 page will
+describe the conventions that should be followed when writing pages for
+man-pages.
+
+These releases are now available for download at:
+
+    http://www.kernel.org/pub/linux/docs/manpages
+    or ftp://ftp.kernel.org/pub/linux/docs/manpages
+    or mirrors: ftp://ftp.XX.kernel.org/pub/linux/docs/manpages
+
+and soon at:
+
+    ftp://ftp.win.tue.nl/pub/linux-local/manpages
+
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
+
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
+
