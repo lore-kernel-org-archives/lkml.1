@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbXFGGll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbXFGGmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594AbXFGGll (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 02:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXFGGlf
+	id S1753239AbXFGGmP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 02:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbXFGGl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 02:41:35 -0400
-Received: from holomorphy.com ([66.93.40.71]:47524 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbXFGGle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 02:41:34 -0400
-Date: Wed, 6 Jun 2007 23:42:31 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm2
-Message-ID: <20070607064231.GQ6909@holomorphy.com>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
+	Thu, 7 Jun 2007 02:41:59 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:42105 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbXFGGl6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 02:41:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=a3BGsoY3Iet/R85Al81dsBHBkm769fYpQkHC6CYJAS1mjSpVNd4lGuTq7Tt05CSBA8z2nu1MtGDB3UZbdQHy9C7PFcWwhQCp/hDGlo7tTZLSd92c67eJUcYqLGJwY3N7XZVastrtPAZoVvgSSGhXNzCmeKc46viNI8iU4AMzKiw=
+Message-ID: <a781481a0706062314v7696ca06p47e279e626403529@mail.gmail.com>
+Date: Thu, 7 Jun 2007 11:44:02 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [linux-usb-devel] [PATCH] bug removing ehci-hcd
+Cc: Stuart_Hayes@dell.com, akpm@linux-foundation.org, malattia@linux.it,
+       gregkh@suse.de, linux-kernel@vger.kernel.org,
+       dbrownell@users.sourceforge.net, linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <a781481a0706062252oa09dcf7xc6a190d2479e837a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070529093324.92e571a0.akpm@linux-foundation.org>
+	 <DFEF91B22ED07447AB6AA4B237F913F9524D64@ausx3mpc125.aus.amer.dell.com>
+	 <20070607041924.GA8545@kroah.com>
+	 <a781481a0706062252oa09dcf7xc6a190d2479e837a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
-> - Basically a bugfixed version of 2.6.22-rc4-mm1.  None of the subsystem
->   trees were repulled, several bad patches were dropped, a few were fixed.
+On 6/7/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> Hi,
+>
+> I remember this one ...
+>
+> On 6/7/07, Greg KH <greg@kroah.com> wrote:
+> > On Thu, May 31, 2007 at 10:26:10AM -0500, Stuart_Hayes@Dell.com wrote:
+> > >
+> > > I wasn't actually able to reproduce the bug myself, but I guess it is
+> > > pretty obvious that I shouldn't have called cpufreq_unregister_notifier
+> > > with a spinlock held.  I haven't been doing this long enough to know
+> > > exactly which kernel this patch should be against, so let me know if
+> > > this ins't good.  Thanks!
+> > >
+> > >
+> > > This patch (for the 2.6.21.3 kernel plus previously sent cpufreq
+> > > notifier patch) fixes a bug caused by calling
+> > > cpufreq_unregister_notifier (which can sleep) while holding a spinlock.
+> > >
+> > > Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
+> >
+> > Hm, this doesn't apply to the 2.6.21.3 kernel.
+>
+> The cpufreq patches only live in -mm as of now ...
 
-create-the-zone_movable-zone.patch breaks the build on sparc32.
+Argh, excuse the noise!
 
+> > Can you send both patches merged together?
+> >
+> > And is the fix already in Linus's tree?
 
--- wli
+And you clearly meant gregkh-usb-usb-ehci-cpufreq-fix.patch
+here ... (btw, no, I don't see this in the latest git)
 
-$ good=0; bad=`quilt series -v | wc -l`; time while [[ $(( $bad - $good )) -gt 1 ]]; do cur=`quilt series -v |egrep -c '(=|\+)'`; chkpt=$(( ($good + $bad)/2 )); delta=$(( $chkpt - $cur )); if [[ $delta -lt 0 ]]; then (quilt pop $(( 0 - $delta )) ) >& /dev/null; elif [[ $delta -gt 0 ]]; then (quilt push $delta) >& /dev/null; else true; fi; cur=$chkpt; (yes "" | make ARCH=sparc CROSS_COMPILE="sparc-linux-" CC="gcc-sparc-4.1" quiet=1 -j16 defconfig) >& /dev/null; echo "last known good = $good, first known bad = $bad, trying $chkpt"; yes "" | make ARCH=sparc CROSS_COMPILE="sparc-linux-" CC="gcc-sparc-4.1" quiet=1 -j16 image modules; s=$?; if [[ $s -ne 0 ]]; then echo "$chkpt bad"; bad=$chkpt; else echo "$chkpt good"; good=$chkpt; fi; done
-...
-last known good = 641, first known bad = 645, trying 643
-scripts/kconfig/conf -s arch/sparc/Kconfig
-drivers/macintosh/Kconfig:116:warning: 'select' used by config symbol 'PMAC_APM_EMU' refers to undefined symbol 'APM_EMULATION'
-drivers/input/keyboard/Kconfig:170:warning: 'select' used by config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-drivers/input/mouse/Kconfig:182:warning: 'select' used by config symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-sound/soc/sh/Kconfig:6:warning: 'select' used by config symbol 'SND_SOC_PCM_SH7760' refers to undefined symbol 'SH_DMABRG'
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-<stdin>:752:2: warning: #warning syscall setresuid not implemented
-<stdin>:756:2: warning: #warning syscall getresuid not implemented
-<stdin>:776:2: warning: #warning syscall setresgid not implemented
-<stdin>:780:2: warning: #warning syscall getresgid not implemented
-  CHK     include/linux/compile.h
-mm/page_alloc.c: In function 'nr_free_pagecache_pages':
-mm/page_alloc.c:1706: error: 'GFP_HIGH_MOVABLE' undeclared (first use in this function)
-mm/page_alloc.c:1706: error: (Each undeclared identifier is reported only once
-mm/page_alloc.c:1706: error: for each function it appears in.)
-make[1]: *** [mm/page_alloc.o] Error 1
-make[1]: *** Waiting for unfinished jobs....
-make: *** [mm] Error 2
-make: *** Waiting for unfinished jobs....
-drivers/char/rtc.c:118: warning: 'hpet_rtc_interrupt' defined but not used
-make: *** wait: No child processes.  Stop.
+Satyam
