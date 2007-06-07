@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXFGKBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbXFGKCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755579AbXFGKBg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 06:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXFGKB1
+	id S1755884AbXFGKCe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 06:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXFGKCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 06:01:27 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:40255 "EHLO
-	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbXFGKBZ (ORCPT
+	Thu, 7 Jun 2007 06:02:24 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57123 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752665AbXFGKCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 06:01:25 -0400
-Subject: 
-From: vignesh babu <vignesh.babu@wipro.com>
-Reply-To: vignesh.babu@wipro.com
-To: tony.luck@intel.com, rohit.seth@intel.com, kenneth.w.chen@intel.com
-Cc: linux-ia64@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: WIPRO Technologies
-Date: Thu, 07 Jun 2007 15:15:23 +0530
-Message-Id: <1181209523.10486.1.camel@merlin.linuxcoe.com>
+	Thu, 7 Jun 2007 06:02:23 -0400
+Date: Thu, 7 Jun 2007 11:06:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+Message-ID: <20070607110623.53322dae@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0706061619560.10383@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+	<20070606235906.72439d16@the-village.bc.nu>
+	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
+	<20070607001932.35c9591c@the-village.bc.nu>
+	<Pine.LNX.4.64.0706061619560.10383@alien.or.mcafeemobile.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-X-OriginalArrivalTime: 07 Jun 2007 09:50:00.0621 (UTC) FILETIME=[36F4D5D0:01C7A8E9]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I don't think it's a matter of versioning. Many userspace libraries 
+> expects their fds to be compact (for many reasons - they use select, they 
+> use them to index 0-based arrays, etc...), and if the kernel suddendly 
+> starts returning values in the 1<<28 up arena, they sure won't be happy.
+> So I believe that the correct way is that the caller specifically selects 
+> the feature, leaving the legacy fd allocation as default.
 
-Replacing (n & (n-1)) in the context of power of 2 checks
-with is_power_of_2
-
-Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
---- 
-diff --git a/arch/ia64/mm/hugetlbpage.c b/arch/ia64/mm/hugetlbpage.c
-index 1346b7f..d22861c 100644
---- a/arch/ia64/mm/hugetlbpage.c
-+++ b/arch/ia64/mm/hugetlbpage.c
-@@ -15,6 +15,7 @@
- #include <linux/pagemap.h>
- #include <linux/slab.h>
- #include <linux/sysctl.h>
-+#include <linux/log2.h>
- #include <asm/mman.h>
- #include <asm/pgalloc.h>
- #include <asm/tlb.h>
-@@ -182,7 +183,7 @@ static int __init hugetlb_setup_sz(char *str)
- 		tr_pages = 0x15557000UL;
- 
- 	size = memparse(str, &str);
--	if (*str || (size & (size-1)) || !(tr_pages & size) ||
-+	if (*str || !is_power_of_2(size) || !(tr_pages & size) ||
- 		size <= PAGE_SIZE ||
- 		size >= (1UL << PAGE_SHIFT << MAX_ORDER)) {
- 		printk(KERN_WARNING "Invalid huge page size specified\n");
-
--- 
-Vignesh Babu BM 
-_____________________________________________________________ 
-"Why is it that every time I'm with you, makes me believe in magic?"
-
+I don't understand the connection between this paragraph (with which I
+agree) and the urge to add a ton of ugly syscall hacks. "Caller
+specifically selects feature" - > prctl(). Libraries get unhappy ->
+linker issue.
