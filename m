@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751506AbXFGJGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751836AbXFGJJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751506AbXFGJGU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 05:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbXFGJGJ
+	id S1751836AbXFGJJj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 05:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbXFGJJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 05:06:09 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:39427 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbXFGJGI (ORCPT
+	Thu, 7 Jun 2007 05:09:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:59757 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbXFGJJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 05:06:08 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 7 Jun 2007 05:04:27 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: trying to summarize/organize the page allocation routines
-Message-ID: <Pine.LNX.4.64.0706070442530.6253@localhost.localdomain>
+	Thu, 7 Jun 2007 05:09:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=kvVa+zyBZtAKf9nTj55iblQlSwGBCXSVCa/R3BKRZqDhEeAnjxnvjHEPz/PP6YsKhr1d+8tQ6M4IjDz4DGI2MloLgiSTeDs3ZUcLga96u+Ry3e5eOjp70WiJ9/LrnexZiAqS6fLq5RR5NU2yd1R67X83xHkextoqT08imLpNWIU=
+Message-ID: <3877989d0706070209y7fc4518ai785dae5da0c92558@mail.gmail.com>
+Date: Thu, 7 Jun 2007 17:09:28 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Maciej Rutecki" <maciej.rutecki@gmail.com>
+Subject: Re: [2.6.22-rc4-mm1] ACPI Exception (processor_throttling)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, lenb@kernel.org
+In-Reply-To: <4667B970.7000506@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_4448_32087688.1181207368122"
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+	 <4667B970.7000506@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_4448_32087688.1181207368122
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-  not surprisingly, there's a bit of chaos in the variety of page
-allocation routines that can be used to do equivalent things.
+UGxlYXNlIHRlc3QgdGhlIGF0dGFjaGVkIHBhdGNoLgoKVGhhbmtzLApMdW1pbmcKCk9uIDYvNy8w
+NywgTWFjaWVqIFJ1dGVja2kgPG1hY2llai5ydXRlY2tpQGdtYWlsLmNvbT4gd3JvdGU6Cj4gQUNQ
+SSBFeGNlcHRpb24gKHByb2Nlc3Nvcl90aHJvdHRsaW5nLTAwODQpOiBBRV9OT1RfRk9VTkQsIEV2
+YWx1YXRpbmcKPiBfUFRDIFsyMDA3MDEyNl0KPiBBQ1BJIEV4Y2VwdGlvbiAocHJvY2Vzc29yX3Ro
+cm90dGxpbmctMDE0Nyk6IEFFX05PVF9GT1VORCwgRXZhbHVhdGluZwo+IF9UU1MgWzIwMDcwMTI2
+XQo+Cj4gT24gMi42LjIwLjkgSSBkb24ndCBoYXZlIHRoaXMgZXhjZXB0aW9ucy4KPgo+IE90aGVy
+IHByb2JsZW06Cj4KPiAyLjYuMjJyYzQtbW0xOgo+IHJ1dGVrOi9ob21lL21hY2llayMgY2F0IC9w
+cm9jL2FjcGkvcHJvY2Vzc29yL0NQVTAvdGhyb3R0bGluZwo+IE5hcnVzemVuaWUgb2Nocm9ueSBw
+YW1p6mNpIChzZWdtZW50YXRpb24gZmF1bHQpCj4KPiBjb21wYXJlZCB0byAyLjYuMjAuOToKPiBt
+YWNpZWtAcnV0ZWs6fiQgY2F0IC9wcm9jL2FjcGkvcHJvY2Vzc29yL0NQVTAvdGhyb3R0bGluZwo+
+IHN0YXRlIGNvdW50OiAgICAgICAgICAgICA4Cj4gYWN0aXZlIHN0YXRlOiAgICAgICAgICAgIFQw
+Cj4gc3RhdGVzOgo+ICAgICpUMDogICAgICAgICAgICAgICAgICAwMCUKPiAgICAgVDE6ICAgICAg
+ICAgICAgICAgICAgMTIlCj4gICAgIFQyOiAgICAgICAgICAgICAgICAgIDI1JQo+ICAgICBUMzog
+ICAgICAgICAgICAgICAgICAzNyUKPiAgICAgVDQ6ICAgICAgICAgICAgICAgICAgNTAlCj4gICAg
+IFQ1OiAgICAgICAgICAgICAgICAgIDYyJQo+ICAgICBUNjogICAgICAgICAgICAgICAgICA3NSUK
+PiAgICAgVDc6ICAgICAgICAgICAgICAgICAgODclCj4KPgo+IE90aGVyIGluZm8gKDIuNi4yMi1y
+YzQtbW0xKToKPiBydXRlazovaG9tZS9tYWNpZWsjIGxzIC9wcm9jL2FjcGkvcHJvY2Vzc29yL0NQ
+VTAvCj4gaW5mbyAgbGltaXQgIHBvd2VyICB0aHJvdHRsaW5nCj4gcnV0ZWs6L2hvbWUvbWFjaWVr
+IyBjYXQgL3Byb2MvYWNwaS9wcm9jZXNzb3IvQ1BVMC9pbmZvCj4gcHJvY2Vzc29yIGlkOiAgICAg
+ICAgICAgIDAKPiBhY3BpIGlkOiAgICAgICAgICAgICAgICAgMQo+IGJ1cyBtYXN0ZXJpbmcgY29u
+dHJvbDogICB5ZXMKPiBwb3dlciBtYW5hZ2VtZW50OiAgICAgICAgeWVzCj4gdGhyb3R0bGluZyBj
+b250cm9sOiAgICAgIHllcwo+IGxpbWl0IGludGVyZmFjZTogICAgICAgICB5ZXMKPiBydXRlazov
+aG9tZS9tYWNpZWsjIGNhdCAvcHJvYy9hY3BpL3Byb2Nlc3Nvci9DUFUwL2xpbWl0Cj4gYWN0aXZl
+IGxpbWl0OiAgICAgICAgICAgIFAwOlQwCj4gdXNlciBsaW1pdDogICAgICAgICAgICAgIFAwOlQw
+Cj4gdGhlcm1hbCBsaW1pdDogICAgICAgICAgIFAwOlQwCj4gcnV0ZWs6L2hvbWUvbWFjaWVrIyBj
+YXQgL3Byb2MvYWNwaS9wcm9jZXNzb3IvQ1BVMC9wb3dlcgo+IGFjdGl2ZSBzdGF0ZTogICAgICAg
+ICAgICBDMAo+IG1heF9jc3RhdGU6ICAgICAgICAgICAgICBDOAo+IGJ1cyBtYXN0ZXIgYWN0aXZp
+dHk6ICAgICAwMDAwMDAwMAo+IG1heGltdW0gYWxsb3dlZCBsYXRlbmN5OiA4MDAwIHVzZWMKPiBz
+dGF0ZXM6Cj4gICAgIEMxOiAgICAgICAgICAgICAgICAgIHR5cGVbQzFdIHByb21vdGlvblstLV0g
+ZGVtb3Rpb25bLS1dCj4gbGF0ZW5jeVswMDFdIHVzYWdlWzAwMDAwMDAwXSBkdXJhdGlvblswMDAw
+MDAwMDAwMDAwMDAwMDAwMF0KPiAgICAgQzI6ICAgICAgICAgICAgICAgICAgdHlwZVtDMl0gcHJv
+bW90aW9uWy0tXSBkZW1vdGlvblstLV0KPiBsYXRlbmN5WzAwMV0gdXNhZ2VbMDAwMDAwMDBdIGR1
+cmF0aW9uWzAwMDAwMDAwMDAwMDAwMDAwMDAwXQo+Cj4gRm9yIENQVTEgaXMgc2ltaWxhci4KPgo+
+IGNvbmZpZywgZG1lc2csIGFjcGlkdW1wOgo+IGh0dHA6Ly93d3cudW5peHkucGwvbWFjaWVrL2Rv
+d25sb2FkL2tlcm5lbC8yLjYuMjItcmM0LW1tMS8KPgo+IC0tCj4gTWFjaWVqIFJ1dGVja2kKPiBo
+dHRwOi8vd3d3Lm1hY2llay51bml4eS5wbAo+Cj4KPgo=
+------=_Part_4448_32087688.1181207368122
+Content-Type: application/octet-stream; name="t.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="t.patch"
+X-Attachment-Id: f_f2n0covq
 
-  just related to the previously-discussed DMA stuff, there are the
-variations:
-
-  * page = (void *)__get_free_page(GFP_KERNEL | GFP_DMA);
-  * (void *)__get_free_pages(__GFP_DMA,...
-  * __get_dma_pages(...)
-
-so you can use the type flag "GFP_DMA", or the modifier flag
-"__GFP_DMA", or call __get_dma_pages() directly.  so is there a
-consensus on what a uniform usage should be?  (i think it's already
-agreed that __get_dma_pages() can be tossed.)  but there's more.
-
-  while get_zeroed_page() exists to allocate a single zero-filled page
-and return its logical address, there's a number of calls to
-__get_free_page that use an action modifier of __GFP_ZERO that
-could be rewritten as get_zeroed_page(), no?
-
-  and if get_zeroed_page() is a useful shortcut, why not an equivalent
-get_zeroed_pages() for consistency with alloc_page/alloc_pages and
-__get_free_page/__get_free_pages?
-
-  a single piece of documentation explaining stuff like this would be
-handy, as well as a consistent usage of all of the above.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvYWNwaS9wcm9jZXNzb3JfdGhyb3R0bGluZy5jIGIvZHJpdmVy
+cy9hY3BpL3Byb2Nlc3Nvcl90aHJvdHRsaW5nLmMKaW5kZXggMWJhZTJlNC4uMWM5YjY5NyAxMDA2
+NDQKLS0tIGEvZHJpdmVycy9hY3BpL3Byb2Nlc3Nvcl90aHJvdHRsaW5nLmMKKysrIGIvZHJpdmVy
+cy9hY3BpL3Byb2Nlc3Nvcl90aHJvdHRsaW5nLmMKQEAgLTY0NSw3ICs2NDUsNyBAQCBzdGF0aWMg
+aW50IGFjcGlfcHJvY2Vzc29yX3Rocm90dGxpbmdfc2VxCiAJCQlwci0+dGhyb3R0bGluZy5zdGF0
+ZV9jb3VudC0xKTsKIAogCXNlcV9wdXRzKHNlcSwgInN0YXRlczpcbiIpOwotCWlmKGFjcGlfcHJv
+Y2Vzc29yX2dldF90aHJvdHRsaW5nID09IGFjcGlfcHJvY2Vzc29yX2dldF90aHJvdHRsaW5nX2Zh
+ZHQpCisJaWYocHItPnRocm90dGxpbmcuYWNwaV9wcm9jZXNzb3JfZ2V0X3Rocm90dGxpbmcgPT0g
+YWNwaV9wcm9jZXNzb3JfZ2V0X3Rocm90dGxpbmdfZmFkdCkKIAkJZm9yIChpID0gMDsgaSA8IHBy
+LT50aHJvdHRsaW5nLnN0YXRlX2NvdW50OyBpKyspCiAJCQlzZXFfcHJpbnRmKHNlcSwgIiAgICVj
+VCVkOiAgICAgICAgICAgICAgICAgICUwMmQlJVxuIiwKIAkJCSAgIChpID09IHByLT50aHJvdHRs
+aW5nLnN0YXRlID8gJyonIDogJyAnKSwgaSwK
+------=_Part_4448_32087688.1181207368122--
