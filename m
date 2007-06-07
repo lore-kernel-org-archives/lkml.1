@@ -1,42 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759169AbXFGGy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbXFGG4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759169AbXFGGy6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 02:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXFGGyu
+	id S1758593AbXFGG4y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 02:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXFGG4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 02:54:50 -0400
-Received: from holomorphy.com ([66.93.40.71]:34537 "EHLO holomorphy.com"
+	Thu, 7 Jun 2007 02:56:46 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:43806 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752103AbXFGGyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 02:54:49 -0400
-Date: Wed, 6 Jun 2007 23:55:44 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
+	id S1751777AbXFGG4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 02:56:45 -0400
+Date: Thu, 7 Jun 2007 08:54:50 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm2
-Message-ID: <20070607065544.GR6909@holomorphy.com>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <20070607064231.GQ6909@holomorphy.com> <20070606235131.a56242cd.akpm@linux-foundation.org>
+cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+In-Reply-To: <20070606164202.a3dcd176.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.61.0706070852580.1547@yvahk01.tjqt.qr>
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+ <200706062132.37430.m.kozlowski@tuxland.pl> <20070606132439.3f59f0cf.akpm@linux-foundation.org>
+ <20070606212831.GA1534@gondor.apana.org.au> <20070606164202.a3dcd176.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070606235131.a56242cd.akpm@linux-foundation.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007 23:42:31 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
->> create-the-zone_movable-zone.patch breaks the build on sparc32.
 
-On Wed, Jun 06, 2007 at 11:51:31PM -0700, Andrew Morton wrote:
-> Nope, there are no instances of GFP_HIGH_MOVABLE in the tree once all
-> patches are applied.  You hit a bad bisection point: between
-> create-the-zone_movable-zone.patch and
-> create-the-zone_movable-zone-fix.patch.
+On Jun 6 2007 16:42, Andrew Morton wrote:
 
-The fully-applied tree fails with a link error having to do with
-movable_zone. I'm not entirely sure what arches are supposed to do
-about that.
+>> If so then you sent to it me :)
+>
+>You merged it ;)
+>
+>> Should I drop it?
+>
+>Sure, Jan will fix it up, I assume.  I might have broken it while repairing
+>the reject storm which occurred when that durned HAS_IOMEM thing went in
+>all over the tree.
+
+/me points at Herbert
+Andrew would not add options between the "menuconfig CRYPTO" and
+the "if CRYPTO" line... :)
 
 
--- wli
+	Jan
+
+
+===
+
+Unbreak the crypto menu breakage.
+
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+
+---
+ crypto/Kconfig |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.22-rc4/crypto/Kconfig
+===================================================================
+--- linux-2.6.22-rc4.orig/crypto/Kconfig
++++ linux-2.6.22-rc4/crypto/Kconfig
+@@ -7,6 +7,8 @@ menuconfig CRYPTO
+ 	help
+ 	  This option provides the core Cryptographic API.
+ 
++if CRYPTO
++
+ #
+ # Generic algorithms support
+ #
+@@ -18,8 +20,6 @@ config XOR_BLOCKS
+ #
+ source "crypto/async_tx/Kconfig"
+ 
+-if CRYPTO
+-
+ config CRYPTO_ALGAPI
+ 	tristate
+ 	help
