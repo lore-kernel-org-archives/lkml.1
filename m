@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965813AbXFGTy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764065AbXFGTz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965813AbXFGTy3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 15:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965181AbXFGTyR
+	id S1764065AbXFGTz2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 15:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934177AbXFGTzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 15:54:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58456 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933293AbXFGTyO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 15:54:14 -0400
-Date: Thu, 7 Jun 2007 12:53:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@linux-foundation.org, trond.myklebust@fys.uio.no,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] NFS: Make NFS root work again
-Message-Id: <20070607125357.be46bcff.akpm@linux-foundation.org>
-In-Reply-To: <20070607164003.24322.51086.stgit@warthog.cambridge.redhat.com>
-References: <20070607164003.24322.51086.stgit@warthog.cambridge.redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 7 Jun 2007 15:55:06 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47378 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934206AbXFGTzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 15:55:04 -0400
+Subject: Re: [BUG] sysrq-m oops
+From: john stultz <johnstul@us.ibm.com>
+To: Bob Picco <bob.picco@hp.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
+       Sripathi Kodi <sripathik@in.ibm.com>, Bernhard Walle <bwalle@suse.de>,
+       acme@redhat.com, apw@shadowen.org
+In-Reply-To: <20070607182122.GE11999@localhost>
+References: <1181176035.6275.13.camel@localhost.localdomain>
+	 <4668276E.4030504@redhat.com>  <20070607182122.GE11999@localhost>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 12:54:41 -0700
+Message-Id: <1181246081.7621.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Jun 2007 17:40:03 +0100
-David Howells <dhowells@redhat.com> wrote:
-
-> Make NFS root work by creating a "/root" directory to satisfy the mount,
-> otherwise the path lookup for the mount fails with ENOENT.
+On Thu, 2007-06-07 at 14:21 -0400, Bob Picco wrote:
+> Chuck Ebbert wrote:	[Thu Jun 07 2007, 11:42:38AM EDT]
+> > On 06/06/2007 08:27 PM, john stultz wrote:
+> > > Hey All,
+> > > 	With 2.6.21 and the current -git, we're seeing the following oops when
+> > > we try sysrq-m:
+> > > 
+> > 
+> > It's here in arch/x86_64/mm/init.c::show_mem():
+> > 
+> >         for_each_online_pgdat(pgdat) {
+> >                for (i = 0; i < pgdat->node_spanned_pages; ++i) {
+> This is probably with sparsemem? I'm working with acme@redhat.com to
+> test a patch. Basically you need to validate the pfn because it
+> could be in a hole. Most arches which support sparsemem perform this
+> check.
 > 
+> 			if (!pfn_valid(pgdat->node_start_pfn + i))
+> 				continue;
 
-What did we do to make it stop working, and when did we do it??
 
-> 
-> diff --git a/init/do_mounts.c b/init/do_mounts.c
-> index 46fe407..967b852 100644
-> --- a/init/do_mounts.c
-> +++ b/init/do_mounts.c
-> @@ -270,7 +270,10 @@ static void __init get_fs_names(char *page)
->  
->  static int __init do_mount_root(char *name, char *fs, int flags, void *data)
->  {
-> -	int err = sys_mount(name, "/root", fs, flags, data);
-> +	int err;
-> +
-> +	sys_mkdir("/root", 0755);
-> +	err = sys_mount(name, "/root", fs, flags, data);
->  	if (err)
->  		return err;
->  
+Yep. That catch avoids the issue! Sounds like a 2.6.21.x candidate.
+
+thanks so much!
+-john
+
+
