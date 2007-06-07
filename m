@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758862AbXFGIQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbXFGIRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758862AbXFGIQg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 04:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbXFGIQX
+	id S1759583AbXFGIRT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 04:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbXFGIRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 04:16:23 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52217 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547AbXFGIQW (ORCPT
+	Thu, 7 Jun 2007 04:17:08 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:6246 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753987AbXFGIRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 04:16:22 -0400
-Date: Thu, 7 Jun 2007 10:16:19 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Message-ID: <20070607081619.GA15226@one.firstfloor.org>
-References: <200706061229.24486.jesse.barnes@intel.com>
+	Thu, 7 Jun 2007 04:17:04 -0400
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Martin Peschke <mp3@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, jbaron@redhat.com, rostedt@goodmis.org,
+       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
+In-Reply-To: <1181165656.7133.23.camel@dix>
+References: <1181165656.7133.23.camel@dix>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 10:17:01 +0200
+Message-Id: <1181204221.7348.238.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706061229.24486.jesse.barnes@intel.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 12:29:23PM -0700, Jesse Barnes wrote:
-> On some machines, buggy BIOSes don't properly setup WB MTRRs to
-> cover all available RAM, meaning the last few megs (or even gigs)
-> of memory will be marked uncached.  Since Linux tends to allocate
-> from high memory addresses first, this causes the machine to be
-> unusably slow as soon as the kernel starts really using memory
-> (i.e. right around init time).
+On Wed, 2007-06-06 at 23:34 +0200, Martin Peschke wrote:
 
-In theory -- while not recommended -- a BIOS could also
-use a default fallback MTRR for cached and use explicit MTRRs to 
-map the non existing ranges uncached. Would it make sense to handle this case?
+> +#ifdef CONFIG_LOCK_STAT
+> +enum lock_stat_enum {
+> +	LOCK_STAT_CONT,
+> +	LOCK_STAT_WAIT_READ,
+> +	LOCK_STAT_WAIT_WRITE,
+> +	LOCK_STAT_HOLD_READ,
+> +	LOCK_STAT_HOLD_WRITE,
+> +	_LOCK_STAT_NUMBER
+> +};
+> +#endif
+> +
+>  /*
+>   * The lock-class itself:
+>   */
+> @@ -117,30 +129,11 @@ struct lock_class {
+>  	int				name_version;
+>  
+>  #ifdef CONFIG_LOCK_STAT
+> -	unsigned long			contention_point[4];
+> +	struct statistic		stat[_LOCK_STAT_NUMBER];
+> +	struct statistic_coll		stat_coll;
+>  #endif
+>  };
 
-Right now if someone used a default WC MTRR to make the memory
-cached you would clip all memory.
 
-Perhaps a fail safe would be good -- always leave some
-memory left over even if it looks wrong.
+sizeof(struct statistic_coll) = 16+64+8+8+4+8+8 = 116
+sizeof(struct statistic) = 4+4+8+8+8+8+8+4+8+4+4 = 68
+                         + 8*NR_CPUS
+			 + kmalloc_size(obj)*nr_cpu_ids
 
-Should also probably have some command line option 
-to disable the check in case something bad happens with it.
 
-Another thing that might be sense to investigate in relationship
-to this patch is large page mappings with MTRRs. iirc P4 and also K8
-splits pages internally with MTRR boundaries and might have some other 
-bad side effects. Should we use this as hints to use 4K pages
-for the boundary areas?
+4 objs with size 40, gives 4*64 = 256 * nr_cpu_ids
+1 obj with size 32 + more
 
--Andi
+
+for 2048 total classes this gives:
+
+2048 * (116+68) = 376832
+
+for each active class this adds per cpu:
+
+  8+256+32+some = 296+
+
+we have around 1400 locks in the kernel, this would give 414400 per cpu.
+
+vs the old code:
+
+2048*(4*8) = 65536
++
+2048*(4*4*8 + 4*8) = 327680 per cpu
+
+worst case
+
+I'm not convinced 300 lines less code is worth that extra bloat.
 
