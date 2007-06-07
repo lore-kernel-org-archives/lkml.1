@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936335AbXFGD3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936465AbXFGDf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936335AbXFGD3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 23:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755631AbXFGD3h
+	id S936465AbXFGDf1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 23:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbXFGDfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 23:29:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42485 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754214AbXFGD3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 23:29:36 -0400
-Subject: Re: signalfd API issues (was Re: [PATCH/RFC] signal races/bugs,
-	losing TIF_SIGPENDING and other woes)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Paul Mackerras <paulus@samba.org>, Nicholas Miell <nmiell@comcast.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070607022002.GA11977@c2.user-mode-linux.org>
-References: <1181023787.2785.14.camel@entropy>
-	 <1181028453.31677.127.camel@localhost.localdomain>
-	 <1181087462.2788.8.camel@entropy>
-	 <Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com>
-	 <1181088936.2788.10.camel@entropy>
-	 <Pine.LNX.4.64.0706051736120.23673@alien.or.mcafeemobile.com>
-	 <1181091523.2788.28.camel@entropy>
-	 <1181098204.31677.158.camel@localhost.localdomain>
-	 <20070606125259.GA5491@c2.user-mode-linux.org>
-	 <18023.14494.889739.567439@cargo.ozlabs.ibm.com>
-	 <20070607022002.GA11977@c2.user-mode-linux.org>
+	Wed, 6 Jun 2007 23:35:18 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:52120 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754214AbXFGDfR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 23:35:17 -0400
+Subject: [PATCH] enable interrupts in user path of page fault.
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@osdl.org>,
+       Andi Kleen <ak@suse.de>
 Content-Type: text/plain
-Date: Thu, 07 Jun 2007 13:29:23 +1000
-Message-Id: <1181186963.14818.15.camel@localhost.localdomain>
+Date: Wed, 06 Jun 2007 23:34:04 -0400
+Message-Id: <1181187244.18444.45.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 22:20 -0400, Jeff Dike wrote:
-> On Thu, Jun 07, 2007 at 08:43:42AM +1000, Paul Mackerras wrote:
-> > What Ben was talking about was stealing a synchronous SEGV from a task
-> > without stopping it, and as Ben says that makes no sense.
-> > Intercepting a signal and stopping the task is reasonable, and that is
-> > what ptrace does, and I assume also UML.
-> 
-> It is, but I can also see UML stealing the SEGV from the child.  The
-> UML skas does this - a ptrace extension, PTRACE_FAULTINFO, is used to
-> extract page fault information from the child, and other pieces of the
-> patch are used to fix the fault without the child continuing until
-> it's fixed.  So, in this case, the child never sees the SEGV.
+This is a minor fix, but what is currently there is essentially wrong.
+In do_page_fault, if the faulting address from user code happens to be
+in kernel address space (int *p = (int*)-1; p = 0xbed;)  then the
+do_page_fault handler will jump over the local_irq_enable with the
 
-But you use ptrace and don't steal signals with dequeue_signal() on a
-live other task, which is ok.
+  goto bad_area_nosemaphore;
 
-Ben.
+But the first line there sees this is user code and goes through the
+process of sending a signal to send SIGSEGV to the user task. This whole
+time interrupts are disabled and the task can not be preempted by a
+higher priority task.
+
+This patch always enables interrupts in the user path of the
+bad_area_nosemaphore.
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
+index 29d7d61..1ecb3e4 100644
+--- a/arch/i386/mm/fault.c
++++ b/arch/i386/mm/fault.c
+@@ -458,6 +458,11 @@ bad_area:
+ bad_area_nosemaphore:
+ 	/* User mode accesses just cause a SIGSEGV */
+ 	if (error_code & 4) {
++		/*
++		 * It's possible to have interrupts off here.
++		 */
++		local_irq_enable();
++
+ 		/* 
+ 		 * Valid to do another page fault here because this one came 
+ 		 * from user space.
+diff --git a/arch/x86_64/mm/fault.c b/arch/x86_64/mm/fault.c
+index bfb62a1..635e58d 100644
+--- a/arch/x86_64/mm/fault.c
++++ b/arch/x86_64/mm/fault.c
+@@ -476,6 +476,12 @@ bad_area:
+ bad_area_nosemaphore:
+ 	/* User mode accesses just cause a SIGSEGV */
+ 	if (error_code & PF_USER) {
++
++		/*
++		 * It's possible to have interrupts off here.
++		 */
++		local_irq_enable();
++
+ 		if (is_prefetch(regs, address, error_code))
+ 			return;
+ 
 
 
