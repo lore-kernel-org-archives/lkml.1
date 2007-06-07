@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764995AbXFGPm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764616AbXFGPo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764995AbXFGPm5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764805AbXFGPmn
+	id S1764616AbXFGPo3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762198AbXFGPoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:42:43 -0400
-Received: from web36605.mail.mud.yahoo.com ([209.191.85.22]:21232 "HELO
-	web36605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1764768AbXFGPml (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:42:41 -0400
-X-YMail-OSG: k6nbvOgVM1kceyalr0eO14V35wkwIBMef.0VJFdu1IhRDWVvTs7T3ArboGYCvHgco1vRf9nEKIImO6ENBwOe5S6Mdt75l6UUqYYIgorE2ntXkbXq4yU-
-X-RocketYMMF: rancidfat
-Date: Thu, 7 Jun 2007 08:42:40 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Audit: Add TTY input auditing
-To: Steve Grubb <sgrubb@redhat.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Miloslav Trmac <mitr@redhat.com>, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>,
-       Alexander Viro <aviro@redhat.com>
-In-Reply-To: <200706070650.50100.sgrubb@redhat.com>
+	Thu, 7 Jun 2007 11:44:20 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:34089 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758726AbXFGPoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 11:44:19 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>
+Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Date: Thu, 7 Jun 2007 09:44:07 -0600
+User-Agent: KMail/1.9.6
+Cc: "Samuel Ortiz" <samuel@sortiz.org>, arvidjaar@mail.ru,
+       linux-kernel@vger.kernel.org,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200706051723.56436.bjorn.helgaas@hp.com> <A6D19A13FE030A409EC4362C172E091F016F51BC@eseldmw101.eemea.ericsson.se>
+In-Reply-To: <A6D19A13FE030A409EC4362C172E091F016F51BC@eseldmw101.eemea.ericsson.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <817517.5859.qm@web36605.mail.mud.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200706070944.07674.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 07 June 2007 06:23:58 am Linus Walleij (LD/EAB) wrote:
+> Björn wrote:
+> > Something's wrong with this strategy.  The BIOS is telling us 
+> > that an SMCf010 device is present, active, and responds at io 
+> > ports 0x100-0x107 and 0x2e8-0x2ef.  The fact that it happens 
+> > to be on the other side of an ISA or LPC bridge should be 
+> > immaterial to the OS driver.
+> 
+> Yes, ideally. Yes of course it is wrong, or from a platonic
+> perspective. If nobody wrote buggy BIOS:es there would be no
+> problem.
 
---- Steve Grubb <sgrubb@redhat.com> wrote:
+Yup, I agree that we will always need to work around BIOS bugs.
 
-> On Thursday 07 June 2007 04:13:42 Jan Engelhardt wrote:
-> > >Add TTY input auditing, used to audit system administrator's actions.
-> >
-> > _What_ exactly does it audit?
-> 
-> In theory, it should audit the actions performed by the sysadmin. This patch 
-> doesn't cover actions done via X windows interface.
-> 
-> > And why does it only audit sysadmin actions?
-> 
-> This is what's called out for in various security standards such as NISPOM, 
-> DCID 6/3, and PCI. Its all about non-repudiation.
-> 
-> > Is this supposed to be a keylogger?
-> 
-> Sort of. Its supposed to allow the Security Officer the ability to check on 
-> what an admin was doing if they were found to be attempting access to 
-> information outside their duties. Or if something is found to be 
-> misconfigured, they can backtrack and see how it became that way if that was 
-> important.
-> 
-> Some people try to be compliant with these security standards with user space
->  
-> tools like rootsh, but that is too easy to detect and defeat. And then it 
-> does not put its data into the audit system where its correlated with other 
-> system events. 
+But smsc-ircc2 contains a *lot* of preconfigure stuff.  I'm
+skeptical that all of it is really to work around BIOS bugs.
+I think it's more likely that Linux just isn't using the PNP
+info correctly or drivers for other southbridge devices are
+getting in the way.
 
-The evaluation teams that I have worked with (OrangeBook and CC)
-as well as their technical advisory groups have always been clear
-that keyboard logging is not an appropriate mechanism for security
-audit logging. There is insufficient correlation between what is
-typed and security relevent actions for keyboard (or mouse event)
-logging to meet the audit requirements. You have to log what happened.
-Logging what was requested is insufficient and logging what was
-typed, which may or may not have resulted in an actual request is
-not helpful to meeting security audit requirements.
+> There is some history in the preconfigure functions:
+> these come from the smcinit tool (see http://irda.sourceforge.net/smcinit/),
 
-> >What about tty output?
-> 
-> That is not required.
-> 
-> -Steve
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> 
+Thanks for the pointer.  I'll read over that and see if I can
+find a laptop to play with.
 
+Bjorn
 
-Casey Schaufler
-casey@schaufler-ca.com
