@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966366AbXFGWsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937579AbXFGWtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966366AbXFGWsA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936592AbXFGWrt
+	id S937579AbXFGWtx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936640AbXFGWtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:47:49 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:55179 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765977AbXFGWrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:47:48 -0400
-Date: Thu, 7 Jun 2007 18:47:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tejun Heo <htejun@gmail.com>, Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
-Message-ID: <20070607224746.GA23290@havoc.gtf.org>
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org> <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com> <466196AD.3090502@garzik.org> <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com> <46667466.4010500@gmail.com> <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com> <4667B347.9040900@gmail.com> <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
+	Thu, 7 Jun 2007 18:49:45 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40674 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932857AbXFGWto (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:49:44 -0400
+Date: Thu, 7 Jun 2007 23:54:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
+Subject: Re: [SERIAL] Don't optimise away baud rate changes when BOTHER is
+ used
+Message-ID: <20070607235441.17dbd5cc@the-village.bc.nu>
+In-Reply-To: <1181254517.20322.6.camel@shinybook.infradead.org>
+References: <20070523172739.1d3a918c@the-village.bc.nu>
+	<1180012135.8303.89.camel@shinybook.infradead.org>
+	<20070524144109.7bd0f4d0@the-village.bc.nu>
+	<1180014338.8303.95.camel@shinybook.infradead.org>
+	<20070524160559.54c2c639@the-village.bc.nu>
+	<1181133010.4096.26.camel@pmac.infradead.org>
+	<20070606160310.27d6d3b8@the-village.bc.nu>
+	<1181150998.2785.13.camel@pmac.infradead.org>
+	<20070607163808.19984208@the-village.bc.nu>
+	<1181231421.2785.68.camel@pmac.infradead.org>
+	<20070607225528.0d5e7b29@the-village.bc.nu>
+	<1181254517.20322.6.camel@shinybook.infradead.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 01:56:11PM -0700, Linus Torvalds wrote:
-> On Thu, 7 Jun 2007, Tejun Heo wrote:
-> > Ah.. okay.  Now I see what's going on.  Jeff, this is another device
-> > which doesn't set nsect and lbal to 1 after reset.  Gregor, please try
-> > the attached patch.
+On Thu, 07 Jun 2007 23:15:17 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-> Tejun, since Jeff is apparently traveling this week, and Gregor tested the 
-> patch successfully (and it looks sane anyway - why in Gods name _would_ we 
-> care what the initial setting of nsect/lbal is?), can you send this in 
-> with the changelog and sign-off?
+> On Thu, 2007-06-07 at 22:55 +0100, Alan Cox wrote:
+> > Umm if your struct termios has the c_ispeed/c_ospeed fields then you
+> > don't need to add the new ioctls to the PPC either - the Alpha is the
+> > same here. 
+> 
+> Well, OK -- if it only involves editing patch files I might _send_ a
+> patch tonight but I'll _test_ it in the morning... I think we only need
+> this one hunk of what I sent before.
 
-Ack'ing the sata_promise change was easy, but with this one it would
-be nice to wait a bit before changing the core probe code that [now]
-every ATA setup goes through, based on a single bug report.
+If it doesn't only involve editing the header files for this case (and
+maybe needing a define to indicate old==new) then the tty layer wants
+fixing to sort that out. Its on my todo list.
 
-The values assist in detecting ghost devices (same device appearing
-on both master and slave) and TF register malfunctions, and I would
-appreciate not breaking _that_ so late in 2.6.22-rc for a single
-report.  Thankfully we have -some- ghost device prevention code
-elsewhere, but this is part of it.
-
-Fedora 7 reports are starting to come in, and those will help point
-us in the right direction too.
-
-I'll be home for a bit in 36 hours (->net driver fixes go then)
-and for good on Tuesday, so I'm hoping you can wait until then.
-
-	Jeff
-
-
-
+Alan
