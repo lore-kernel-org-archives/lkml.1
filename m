@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935352AbXFGS5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965092AbXFGS54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935352AbXFGS5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 14:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932745AbXFGS5G
+	id S965092AbXFGS54 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 14:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932687AbXFGS5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 14:57:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40884 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932687AbXFGS5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 14:57:03 -0400
-Message-ID: <466854CE.8010504@redhat.com>
-Date: Thu, 07 Jun 2007 11:56:14 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 7 Jun 2007 14:57:46 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:52219 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932745AbXFGS5p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 14:57:45 -0400
+Message-ID: <46685508.2070805@cosmosbay.com>
+Date: Thu, 07 Jun 2007 20:57:12 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
 To: Davide Libenzi <davidel@xmailserver.org>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+CC: Ulrich Drepper <drepper@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7> <20070606235906.72439d16@the-village.bc.nu> <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com> <20070607001932.35c9591c@the-village.bc.nu> <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu> <4668155B.4020705@redhat.com> <20070607195659.c695c87d.dada1@cosmosbay.com> <46684DED.6000907@redhat.com> <Pine.LNX.4.64.0706071132130.6445@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0706071132130.6445@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7> <20070606235906.72439d16@the-village.bc.nu> <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com> <20070607001932.35c9591c@the-village.bc.nu> <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu> <4668155B.4020705@redhat.com> <20070607195659.c695c87d.dada1@cosmosbay.com> <Pine.LNX.4.64.0706071059140.6445@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0706071059140.6445@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 07 Jun 2007 20:57:18 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Davide Libenzi wrote:
->> And to add to your list:
->>
->> epoll_create().  Important if you think that's the interface people
->> should use.
+Davide Libenzi a �crit :
+> On Thu, 7 Jun 2007, Eric Dumazet wrote:
 > 
-> Can't we leave it as is, and use sys_nonseqfd() for those? So basically:
+>> accept2(int fd, ...)
+> 
+> I don't see any reason to not have it inherit the non-sequential 
+> characteristics of "fd".
+> 
+> 
+> 
+>> pipe2(int *fds, int oflags);
+> 
+> I think pipe+sys_nonseqfd should be OK for those.
 
-The problem is O_CLOEXEC.  They are all racy and if we add a variant
-with flags then we might as well support O_NONSEQFD as well.
+yes, but O_CLOEXEC/O_CLOFORK ?
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+I was refering to Uli wanting to close races on multi-threading apps doing a 
+fork() while a thread is doing :
 
-iD8DBQFGaFTO2ijCOnn/RHQRAm7uAJ9NsP6FegpO3cAnCe83eZ8awtkHawCgzKK4
-2OjiNCFJhviQSMOaKHS6cTI=
-=v9jU
------END PGP SIGNATURE-----
+fd = open()
+<----  race here  if another thread does a fork() ---->
+fcntl( CLOEXEC)
+
+> 
+> 
+> 
+>> eventfd2(int count, int oflags);
+>> signalfd2(int ufd, sigset_t __user *user_mask, size_t sizemask, int oflags);
+>> timerfd2(int ufd, int clockid, int flags,const struct itimerspec __user *utmr, int oflags) ...
+> 
+> Those I think we're still in time to change the interface. No?
+> Even if not, those are not perf-critical, so I think that 
+> syscall+sys_nonseqfd is still fine.
+
+Same point here, non a nonseqfd problem.
+
+
