@@ -1,67 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760655AbXFGN4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761062AbXFGOAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760655AbXFGN4a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 09:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXFGN4W
+	id S1761062AbXFGOAS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXFGOAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 09:56:22 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:6695 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbXFGN4V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 09:56:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Sq/UyKTlqIX8L9FzyDu9VPG655rGgQwuwaDjqsV3M5Tz0ogpgqftXQYi25H9K+AdPTqzUjioTHh9Vb6pahBOGXeZhWVXkDjMS4jCTVHOYinKr7Y2qD6Q8/f0zfI1+44tZuI/6GxNKG1GSXq5P3CNiXc/u4sYZdoNL4ZiaXWMpvI=
-Date: Thu, 7 Jun 2007 17:54:58 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] UDF: fix deadlock on inode being dropped
-Message-ID: <20070607135458.GA8393@cvg>
-References: <20070606175351.GA8397@cvg> <20070607093606.GA12549@duck.suse.cz>
+	Thu, 7 Jun 2007 10:00:06 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:46389 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751661AbXFGOAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 10:00:04 -0400
+Message-ID: <46680F5E.6070806@dgreaves.com>
+Date: Thu, 07 Jun 2007 14:59:58 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070607093606.GA12549@duck.suse.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: David Chinner <dgc@sgi.com>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+References: <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com>
+In-Reply-To: <20070607110708.GS86004887@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jan Kara - Thu, Jun 07, 2007 at 11:36:07AM +0200]
-|   Hi Cyrill!
-| 
-| On Wed 06-06-07 21:53:51, Cyrill Gorcunov wrote:
-| > This patch prevents from deadlock on inode being dropped.
-| > The deadlock is caused by inderect call of mark_inode_dirty()
-| > within udf_drop_inode() but inode lock is already kept
-| > by the kernel. So moving code from udf_drop_inode() to
-| > udf_delete_inode() we save its functionality and avoid
-| > deadlock.
-|   The patch is wrong. You cannot truncate the extent just in delete_inode.
-| That would lead to inodes with untruncated last extent on disk after
-| unmounting, which is forbidden in the specification. You need to truncate
-| the last extent whenever inode is being removed from memory or something
-| like that... I'm already thinking how to do it and avoid calling
-| mark_inode_dirty()...
-| 
-| 
-| 							Honza
-| -- 
-| Jan Kara <jack@suse.cz>
-| SuSE CR Labs
-| 
+David Chinner wrote:
+> On Thu, Jun 07, 2007 at 11:30:05AM +0100, David Greaves wrote:
+>> Tejun Heo wrote:
+>>> Hello,
+>>>
+>>> David Greaves wrote:
+>>>> Just to be clear. This problem is where my system won't resume after s2d
+>>>> unless I umount my xfs over raid6 filesystem.
+>>> This is really weird.  I don't see how xfs mount can affect this at all.
+>> Indeed.
+>> It does :)
+> 
+> Ok, so lets determine if it really is XFS.
+Seems like a good next step...
 
-Arh, thanks... Jan, actually the reason I've moved the code into
-'delete' section was that I found no reasonable difference for our
-case between 'drop' and 'delete'. Moreover, by seeing into VFS code
-the only diff between 'drop' and 'delete' is that
-inside generic_delete_inode() a few inode structure elements
-are being destroyed and then our udf_drop_inode is called. So assuming,
-that you're right in drop_inode I've code just moved to 'delete' section.
+> Does the lockup happen with a
+> different filesystem on the md device? Or if you can't test that, does
+> any other XFS filesystem you have show the same problem?
+It's a rather full 1.2Tb raid6 array - can't reformat it - sorry :)
+I only noticed the problem when I umounted the fs during tests to prevent 
+corruption - and it worked. I'm doing a sync each time it hibernates (see below) 
+and a couple of paranoia xfs_repairs haven't shown any problems.
 
-		Cyrill
+I do have another xfs filesystem on /dev/hdb2 (mentioned when I noticed the 
+md/XFS correlation). It doesn't seem to have/cause any problems.
 
+> If it is xfs that is causing the problem, what happens if you
+> remount read-only instead of unmounting before shutting down?
+Yes, I'm happy to try these tests.
+nb, the hibernate script is:
+ethtool -s eth0 wol g
+sync
+echo platform > /sys/power/disk
+echo disk > /sys/power/state
+
+So there has always been a sync before any hibernate.
+
+
+cu:~# mount -oremount,ro /huge
+cu:~# mount
+/dev/hda2 on / type xfs (rw)
+proc on /proc type proc (rw)
+sysfs on /sys type sysfs (rw)
+usbfs on /proc/bus/usb type usbfs (rw)
+tmpfs on /dev/shm type tmpfs (rw)
+devpts on /dev/pts type devpts (rw,gid=5,mode=620)
+nfsd on /proc/fs/nfsd type nfsd (rw)
+/dev/hda1 on /boot type ext3 (rw)
+/dev/md0 on /huge type xfs (ro)
+/dev/hdb2 on /scratch type xfs (rw)
+tmpfs on /dev type tmpfs (rw,size=10M,mode=0755)
+rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
+cu:(pid2862,port1022) on /net type nfs 
+(intr,rw,port=1022,toplvl,map=/usr/share/am-utils/amd.net,noac)
+elm:/space on /amd/elm/root/space type nfs (rw,vers=3,proto=tcp)
+elm:/space-backup on /amd/elm/root/space-backup type nfs (rw,vers=3,proto=tcp)
+elm:/usr/src on /amd/elm/root/usr/src type nfs (rw,vers=3,proto=tcp)
+cu:~# /usr/net/bin/hibernate
+[this works and resumes]
+
+cu:~# mount -oremount,rw /huge
+cu:~# /usr/net/bin/hibernate
+[this works and resumes too !]
+
+cu:~# touch /huge/tst
+cu:~# /usr/net/bin/hibernate
+[but this doesn't even hibernate]
+
+
+
+
+ > What about freezing the filesystem?
+cu:~# xfs_freeze -f /huge
+cu:~# /usr/net/bin/hibernate
+[but this doesn't even hibernate - same as the 'touch']
+
+Nb the screen looks like this:
+http://www.dgreaves.com/pub/2.6.21-rc4-ptched-suspend-failure.jpg
+whether it hangs on suspend or resume.
+
+So I wouldn't say it *is* XFS at fault - but there certainly seems to be an 
+interaction...
+At least it's easily reproducible :) Shame about the sysrq
+
+I can think of other permutations of freeze/ro/writing tests but I'm just 
+thrashing really. Happy for you to tell me what to try next ...
+
+
+David
