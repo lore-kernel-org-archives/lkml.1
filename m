@@ -1,42 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965645AbXFGDUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965840AbXFGDVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965645AbXFGDUN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 23:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXFGDUA
+	id S965840AbXFGDVR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 23:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935753AbXFGDVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 23:20:00 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:58757 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755144AbXFGDT7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 23:19:59 -0400
-Date: Wed, 6 Jun 2007 23:11:03 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: "Li, Xin B" <xin.b.li@intel.com>
-Cc: avi@qumranet.com, kvm-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [kvm-devel] [PATCH] KVM - Fix rmode_tss_base declaration
-Message-ID: <20070607031103.GA12462@c2.user-mode-linux.org>
-References: <20070606191925.GA8989@c2.user-mode-linux.org> <B30DA1341B0CFA4893EF8A36B40B5C5D013A32CB@pdsmsx411.ccr.corp.intel.com>
+	Wed, 6 Jun 2007 23:21:07 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59666 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935607AbXFGDVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 23:21:06 -0400
+Subject: Re: [BUG] ptraced process waiting on syscall may return kernel
+	internal errnos
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <20070606105900.DE5E94D0592@magilla.localdomain>
+References: <20070606105900.DE5E94D0592@magilla.localdomain>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 13:20:18 +1000
+Message-Id: <1181186418.14818.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <B30DA1341B0CFA4893EF8A36B40B5C5D013A32CB@pdsmsx411.ccr.corp.intel.com>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 10:13:42AM +0800, Li, Xin B wrote:
-> >-static int rmode_tss_base(struct kvm* kvm)
-> >+static unsigned long rmode_tss_base(struct kvm* kvm)
-> 
-> Should use gpa_t instead.
+On Wed, 2007-06-06 at 03:59 -0700, Roland McGrath wrote:
+> Oleg and I were just discussing this issue in relation to other problems.
+> We established that it is never safe to clear TIF_SIGPENDING on another
+> thread.  But I hadn't really thought through that it's sometimes not safe
+> to clear your own TIF_SIGPENDING either.  That is, any time you are not
+> positive you cannot be in a syscall that will return a -ERESTART* code.
+> (I had the ptrace_stop case lurking in the back of my mind but hadn't
+> considered how it would really come up.)
 
-Right you are, I didn't notice that type.
+Ah, I missed that ptrace_stop() case indeed.
 
-Will fix.
+> I have a general recollection of thinking that dequeue_signal could only
+> be called on current and that it mattered somehow.
 
-				Jeff
+I matter with that, and with the notifier thingy. It might matter for
+other things as well, I don't know for sure yet though signalfd will
+definitely cause it to be called for !current, though with my patch only
+for shared signals.
 
--- 
-Work email - jdike at linux dot intel dot com
+>   But aside from
+> avoiding recalc_sigpending, and kernel threads with notifier_mask set, I
+> can't see off hand what it is.  I won't testify that I think signalfd is
+> necessarily on safe ground, though.
+
+Yeah, I'm a little worried too, the whole thing seems a bit fragile to
+me.
+
+I'm tempted to in fact make dequeue_signal() be the only one to every
+clear TIF_SIGPENDING and only when tsk==current, but then, that does
+mean there are a few cases, like when explicitely masking signals, where
+we might end up with it spurriously set... thus causing spurrious -EINTR
+returns for blocked signals.
+
+I must admit at this point, it's becoming almost tempting to split it
+into two different flags. TIF_SIGPENDING would then be the exact logic
+"there is currently a non blocked signal pending" and could be cleared
+at any time provided the siglock is help (which btw, is another source
+of headaches if you grep ... people maniupate these things here or there
+without the lock). And another one, TIF_SIGNALED, which would be set
+always if TIG_SIGPENDING is set, and only ever cleared by
+dequeue_signal, and causes the exception path to get into do_signal.
+
+That would mean occasional spurrious trips in do_signal but that's
+totally harmless and it wouldn't, I beleive, happen often enough to
+impact performances significantly.
+
+Cheers,
+Ben.
+ 
+
