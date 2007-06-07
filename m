@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966836AbXFGWIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966847AbXFGWJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966836AbXFGWIg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966643AbXFGWGJ
+	id S966847AbXFGWJF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966740AbXFGWHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:06:09 -0400
-Received: from khc.piap.pl ([195.187.100.11]:47399 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966677AbXFGWGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:06:07 -0400
-To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, jeff@garzik.org
-Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
-References: <20070607162251.5f291325@the-village.bc.nu>
-	<m3wsyfzcpt.fsf@maximus.localdomain>
-	<200706072232.37051.s0348365@sms.ed.ac.uk>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 08 Jun 2007 00:06:05 +0200
-In-Reply-To: <200706072232.37051.s0348365@sms.ed.ac.uk> (Alistair John Strachan's message of "Thu, 7 Jun 2007 22:32:36 +0100")
-Message-ID: <m3sl93zagi.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 7 Jun 2007 18:07:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58885 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966713AbXFGWHe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:07:34 -0400
+Date: Thu, 7 Jun 2007 15:06:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: jfannin@gmail.com (Joseph Fannin)
+Cc: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
+       netdev@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: 2.6.22-rc4-mm2: Assigning IP address fails
+Message-Id: <20070607150653.b83bfc0f.akpm@linux-foundation.org>
+In-Reply-To: <20070607214609.GB8204@nineveh.local>
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
+	<20070607214609.GB8204@nineveh.local>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan <s0348365@sms.ed.ac.uk> writes:
+On Thu, 7 Jun 2007 17:46:09 -0400
+jfannin@gmail.com (Joseph Fannin) wrote:
 
-> I personally buy the argument that 80 cols helps remind people that they've 
-> used too many indentation depths and should redesign their code.
-> I think it's 
-> a good thing to stick to where possible, even if just from a design 
-> perspective.
+> On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
+> >
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
+> 
+>     I'm not able to bring an ethernet interface down and back up again
+> with this if avahi-autoipd is installed on my Ubuntu boxes.  I've seen
+> it on three different computers with different NIC hardware.
+> 
+>     I've worked out an easy way to reproduce it without
+> avahi-autoipd.  Starting with eth0 up (address assigned by DHCP):
+> 
+>   # ifdown eth0
+>   < dhclient makes the normal noise about releasing the address >
+>   # ip addr add 169.254.255.67/16 brd 169.254.255.255 label eth0:avahi scope link dev eth0
+>   # ip addr del 169.154.255.67/16 brd 169.254.255.255 label eth0:avahi scope link dev eth0
+>   # ifup eth0
+>   SIOCSIFADDR: No buffer space available    < -- first sign of trouble HERE
+>   < dhclient copyright boilerplate >
+>   Listening on LPF/eth0/<MAC addr>
+>   Sending on   LPF/eth0/<MAC addr>
+>   Sending on   Socket/fallback
+>   DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 5
+>   DHCPOFFER from < DHCP server >
+>   DHCPREQUEST on eth0 to 255.255.255.255 port 67
+>   DHCPACK from  < DHCP server >
+>   SIOCSIFADDR: No buffer space available
+>   SIOCSIFNETMASK: Cannot assign requested address
+>   SIOCSIFBRDADDR: Cannot assign requested address
+>   SIOCADDRTL No such process
+>   bound to < IP address > -- renewal in XXXX seconds
+>   #
+> 
+>     At this point, the interface is up, but has no address assigned.
+> Manually assigning one with ifconfig fails:
+> 
+>   # ifconfig eth0 netmask 255.255.255.0 172.16.0.1
+>   SIOCSIFNETMASK: Cannot assign requested address
+>   SIOCSIFADDR: No buffer space available
+>   #
+> 
+> ... and a reboot is the only way I've been able to get the interface
+> to work again.
+> 
+>     The last kernels I tried were 2.6.22-rc3 and *I think*
+> 2.6.22-rc1-mm1, neither of which had this problem.  I will test
+> 2.6.22-rc4 and 2.6.22-rc3-mm1 later, but I'm out of time today.
+> 
+>     I've attached my .config .
 
-How many is too many? A function with 2 "if" means 3 tabs = 24 characters
-for just indentation. Add a printk(KERN_DEBUG "\n"); and you can print
-ca. 30 characters without having to break the string. This is crazy.
-
-> There are some cases such as the one Alan has pointed out here where being 
-> strictly 80 cols seems more destructive than useful, but those are the 
-> exception, not the rule (IMO).
-
-Well... I was forced to split functions making the code less readable
-and more complicated just to avoid these 80-columns. A short function
-with more indent levels may be way more readable than a redesigned one
-with this requirement in mind.
-
-I'd just state the code has to be readable and laid out with some sanity
-but 80 columns give us nothing WRT this.
-
-We already review new code and spot such problems (and smaller ones)
-without using the 80-cols rule.
--- 
-Krzysztof Halasa
+Yep, thanks - Miles has reported the same thing.
