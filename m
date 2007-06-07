@@ -1,87 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936131AbXFGTgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965534AbXFGTh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936131AbXFGTgf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 15:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934693AbXFGTg2
+	id S965534AbXFGTh3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 15:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964926AbXFGThS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 15:36:28 -0400
-Received: from smtprelay02.ispgateway.de ([80.67.18.14]:56195 "EHLO
-	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760927AbXFGTg1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 15:36:27 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Nadia.Derbey@bull.net
-Subject: Re: [RFC][PATCH 1/6] Storing ipcs into radix trees
-Date: Thu, 7 Jun 2007 21:37:33 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com, ak@suse.de
-References: <20070607165302.917616000@bull.net> <20070607165555.155173000@bull.net>
-In-Reply-To: <20070607165555.155173000@bull.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jun 2007 15:37:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47699 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964802AbXFGThR (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 15:37:17 -0400
+Date: Thu, 7 Jun 2007 20:37:07 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jared Hulbert <jaredeh@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, carsteno@de.ibm.com,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Message-ID: <20070607193707.GA17144@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jared Hulbert <jaredeh@gmail.com>, carsteno@de.ibm.com,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	richard.griffiths@windriver.com,
+	Richard Griffiths <res07ml0@verizon.net>,
+	Linux-kernel@vger.kernel.org
+References: <4653F264.1030807@de.ibm.com> <465BB5BA.3050900@yahoo.com.au> <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com> <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com> <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com> <20070606113351.GA11701@infradead.org> <6934efce0706060907n209fe6bcnb470101196aa9c55@mail.gmail.com> <20070606161621.GA20247@infradead.org> <6934efce0706061126n551cccaeg68a0def87457911@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706072137.34563.ioe-lkml@rameria.de>
+In-Reply-To: <6934efce0706061126n551cccaeg68a0def87457911@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nadia,
+On Wed, Jun 06, 2007 at 11:26:38AM -0700, Jared Hulbert wrote:
+> >FYI: Cartsten had an xip fs for s390 aswell, and that evolved into
+> >the filemap.c bits after a lot of rework an quite a few round of
+> >review.
+> 
+> Right.  So now we leverage this filemap_xip.c in cramfs.  Why is this a 
+> problem?
 
-good to see someone is pounding this old beast again :-)
+Using filemap_xip.c is of course good.  Hacking cramfs up to contain
+totally different codepathes is not.
 
-On Thursday 07 June 2007, Nadia.Derbey@bull.net wrote:
-> Index: linux-2.6.21/ipc/util.h
-> ===================================================================
-> --- linux-2.6.21.orig/ipc/util.h	2007-06-07 11:00:30.000000000 +0200
-> +++ linux-2.6.21/ipc/util.h	2007-06-07 11:07:22.000000000 +0200
-> @@ -13,6 +13,8 @@
->  #define USHRT_MAX 0xffff
->  #define SEQ_MULTIPLIER	(IPCMNI)
->  
-> +#define IPCS_MAX_SCAN_ENTRIES 256
+> >> What??  You mean like use xip_file_mmap() and implement
+> >> get_xip_page()?  Did you read my latest patch?
+> >
+> >Yes.  This is the highlevel way to go, just please don't hack it into
+> >cramfs.
+> 
+> Right, so this latest patch _does_ implement get_xip_page() and
+> xip_file_mmap().  Why not hack it into cramfs?
 
-That ...
+cramfs used to be a block based filesystem.  You hack in support to
+work directly on physical addresses.  Your create a lot of different
+codepathes that are only used for one of the usecases.
 
-> Index: linux-2.6.21/ipc/util.c
-> ===================================================================
-> --- linux-2.6.21.orig/ipc/util.c	2007-06-07 11:00:30.000000000 +0200
-> +++ linux-2.6.21/ipc/util.c	2007-06-07 11:29:43.000000000 +0200
-> @@ -252,72 +241,94 @@ void __init ipc_init_proc_interface(cons
->   *	@key: The key to find
->   *	
->   *	Requires ipc_ids.mutex locked.
-> - *	Returns the identifier if found or -1 if not.
-> + *	Returns the LOCKED pointer to the ipc structure if found or NULL
-> + *	if not.
-> + *      If key is found ipc contains its ipc structure
->   */
->   
-> -int ipc_findkey(struct ipc_ids* ids, key_t key)
-> +struct kern_ipc_perm *ipc_findkey(struct ipc_ids *ids, key_t key)
->  {
-> -	int id;
-> -	struct kern_ipc_perm* p;
-> -	int max_id = ids->max_id;
-> +	struct kern_ipc_perm *ipc;
-> +	struct kern_ipc_perm *ipcs[IPCS_MAX_SCAN_ENTRIES];
+Instead of just talking here I've hacked up a small demo on how this
+should be approached.  I've taken cramfs with your modification and
+remove all the support for block devices.  In addition we now could
+rip out the mutex serializing all reads and clean up the way xip
+support is hooked in.  The result is a slightly smaller and cleaner
+filesystem that even more important doesn't require pulling in
+the whole block layer which is especially important for embedded
+devices at the lower end of the scala.  This is just a proof of
+concept and thus is still named cramfs, no docs or copyrights etc
+are updated.  It's still incomplete aswell because we'd probably
+want a better selection of files to use xip for, and we'd need
+a real API to talk to the lowlevel driver for xip instead of the
+physical address hack.  I still think it'd be even better to just
+hook xip support into jffs or logfs because they give you a full
+featured flash filesystem for all needs without the complexity
+of strictly partitioning between xip-capable and write parts
+of your storage.
 
-... together with this means 4*256 -> 1k of precious stack space used.
-Please consider either lowering IPCS_MAX_SCAN_ENTRIES or kmalloc() that.
-
-Same problem with your third patch called 
-"Changing the loops on a single ipcid into radix_tree_gang_lookup() calls"
-
-If you cannot sleep, try to lower that constant (e.g. 16-32). 
-The current users use much smaller numbers.
-
-If you can sleep and performance goes down after lowering that constant,
-try to kmalloc these arrays (since kmalloc() of that small amount 
-should succeed easily).
-
-
-
-Regards
-
-Ingo Oeser
+The code is at http://verein.lst.de/~hch/cramfs-xip.tar.gz.
