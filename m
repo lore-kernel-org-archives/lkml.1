@@ -1,55 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764603AbXFGROS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933425AbXFGROx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764603AbXFGROS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbXFGROJ
+	id S933425AbXFGROx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbXFGROo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:14:09 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:50426 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753975AbXFGROI (ORCPT
+	Thu, 7 Jun 2007 13:14:44 -0400
+Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:42757 "HELO
+	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757487AbXFGROn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:14:08 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=qVmNOrBG7mrpfmf6FdRPrTj9+dDPTDGyr5vBvSl4R+668ZUUjuSoy+WOVflAUUsf7
-	mPFyd0LSVEJxXdnvQYwpg==
-Message-ID: <6599ad830706071012u62963d4aqe2042d6af16c1c8@mail.gmail.com>
-Date: Thu, 7 Jun 2007 10:12:19 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Cedric Le Goater" <clg@fr.ibm.com>
-Subject: Re: [PATCH 03/10] Containers(V10): Add tasks file interface
-Cc: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
-       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, containers@lists.osdl.org
-In-Reply-To: <46680F76.8020803@fr.ibm.com>
+	Thu, 7 Jun 2007 13:14:43 -0400
+X-YMail-OSG: kpDhCkoVM1npB36E3mjvVE4EZJ3pJ0OaRZeF0t0FxlsJuhAk
+Date: Thu, 7 Jun 2007 11:20:04 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, ebiederm@xmission.com, pbadari@us.ibm.com,
+       torvalds@linux-foundation.org
+Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
+Message-ID: <20070607162004.GA27802@vino.hallyn.com>
+References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com> <20070606204432.b670a7b1.akpm@linux-foundation.org> <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070529130104.461765000@menage.corp.google.com>
-	 <20070529132142.428218000@menage.corp.google.com>
-	 <46680F76.8020803@fr.ibm.com>
+In-Reply-To: <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/7/07, Cedric Le Goater <clg@fr.ibm.com> wrote:
->
-> when there's no tasks in a container, opening
->
-> <containerfs>/<container>/tasks
->
-> spits the following warning because we are trying to
-> kmalloc(0).
+Quoting Albert Cahalan (acahalan@gmail.com):
+> On 6/6/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >On Wed, 6 Jun 2007 23:27:01 -0400 "Albert Cahalan" <acahalan@gmail.com> 
+> >wrote:
+> >> Eric W. Biederman writes:
+> >> > Badari Pulavarty <pbadari@us.ibm.com> writes:
+> >>
+> >> >> Your recent cleanup to shm code, namely
+> >> >>
+> >> >> [PATCH] shm: make sysv ipc shared memory use stacked files
+> >> >>
+> >> >> took away one of the debugging feature for shm segments.
+> >> >> Originally, shmid were forced to be the inode numbers and
+> >> >> they show up in /proc/pid/maps for the process which mapped
+> >> >> this shared memory segments (vma listing). That way, its easy
+> >> >> to find out who all mapped this shared memory segment. Your
+> >> >> patchset, took away the inode# setting. So, we can't easily
+> >> >> match the shmem segments to /proc/pid/maps easily. (It was
+> >> >> really useful in tracking down a customer problem recently).
+> >> >> Is this done deliberately ? Anything wrong in setting this back ?
+> >> >
+> >> > Theoretically it makes the stacked file concept more brittle,
+> >> > because it means the lower layers can't care about their inode
+> >> > number.
+> >> >
+> >> > We do need something to tie these things together.
+> >> >
+> >> > So I suspect what makes most sense is to simply rename the
+> >> > dentry SYSVID<segmentid>
+> >>
+> >> Please stop breaking things in /proc. The pmap command relys
+> >> on the old behavior.
+> >
+> >What effect did this change have upon the pmap command?  Details, please.
+> >
+> >> It's time to revert.
+> >
+> >Probably true, but we'd need to understand what the impact was.
+> 
+> Very simply, pmap reports the shmid.
+> 
+> albert 0 ~$ pmap `pidof X` | egrep -2 shmid
+> 30050000  16384K rw-s-  /dev/fb0
+> 31050000    152K rw---    [ anon ]
+> 31076000    384K rw-s-    [ shmid=0x3f428000 ]
+> 310d6000    384K rw-s-    [ shmid=0x3f430001 ]
+> 31136000    384K rw-s-    [ shmid=0x3f438002 ]
+> 31196000    384K rw-s-    [ shmid=0x3f440003 ]
+> 311f6000    384K rw-s-    [ shmid=0x3f448004 ]
+> 31256000    384K rw-s-    [ shmid=0x3f450005 ]
+> 312b6000    384K rw-s-    [ shmid=0x3f460006 ]
+> 31316000    384K rw-s-    [ shmid=0x3f870007 ]
+> 31491000    140K r----  /usr/share/fonts/type1/gsfonts/n021003l.pfb
+> 3150e000   9496K rw---    [ anon ]
 
-I guess I'm not opposed to this change - but isn't there still
-discussion going on about whether kmalloc(0) should actually produce a
-warning or not?
+Ok, so IIUC the problem was that inode->i_ino was being set to the id,
+and the id can be the same for different things in two namespaces.
 
-Thanks,
+So aside from not using the id as inode->i_ino, an alternative is to use
+a separate superblock, spearate mqeueue fs, for each ipc ns.
 
-Paul
+I haven't looked at that enough to see whether it's feasible, i.e. I 
+don't know what else mqueue fs is used for.  Eric, does that sound
+reasonable to you?
+
+thanks,
+-serge
