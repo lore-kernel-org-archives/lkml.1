@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937454AbXFGWWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937539AbXFGWXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937454AbXFGWWT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937104AbXFGWU6
+	id S937539AbXFGWXL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936935AbXFGWWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:20:58 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:43587 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936907AbXFGWU4 (ORCPT
+	Thu, 7 Jun 2007 18:22:51 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2445 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936903AbXFGWWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:20:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MU7ns/cgaLXx1G4MUehIfWsKhBokWf0G2PFL6FyZKHQcYy7vxGBePQC5SU6uw6JtNw+2GJWGvApzOcADlimWAds1ZTjhYT4gB4pxaI7t8Cj69oPrVXIyryeGTqKayHO0kAnrWg1Bsxarz0gM+7ODoF23pCPKrzOJdeuxBGtNE34=
-Message-ID: <d1af83620706071520mdfdb859o57daa16d8732ead7@mail.gmail.com>
-Date: Thu, 7 Jun 2007 19:20:55 -0300
-From: "Kevin Winchester" <kjwinchester@gmail.com>
-To: "Miles Lane" <miles.lane@gmail.com>
-Subject: Re: 2.6.22-rc4-mm2 -- ipw2200 -- SIOCSIFADDR: No buffer space available
-Cc: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <a44ae5cd0706071125p2079472eme52821bd134d26b0@mail.gmail.com>
+	Thu, 7 Jun 2007 18:22:50 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 7 Jun 2007 15:22:47 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706071521490.6445@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+ <20070606235906.72439d16@the-village.bc.nu>
+ <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a44ae5cd0706071125p2079472eme52821bd134d26b0@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/06/07, Miles Lane <miles.lane@gmail.com> wrote:
-> Hi Andrew,
->
-> This might be some problem with my kernel configuration.
-> I added:
-> CONFIG_BONDING=y
->
-> # dhclient eth1
-> There is already a pid file /var/run/dhclient.pid with pid 134993416
-> Internet Systems Consortium DHCP Client V3.0.4
-> Copyright 2004-2006 Internet Systems Consortium.
-> All rights reserved.
-> For info, please visit http://www.isc.org/sw/dhcp/
-> SIOCSIFADDR: No buffer space available
-> Listening on LPF/eth1/00:12:f0:5e:db:2f
-> Sending on   LPF/eth1/00:12:f0:5e:db:2f
-> Sending on   Socket/fallback
-> DHCPDISCOVER on eth1 to 255.255.255.255 port 67 interval 6
-> DHCPOFFER from 192.168.1.1
-> DHCPREQUEST on eth1 to 255.255.255.255 port 67
-> DHCPACK from 192.168.1.1
-> SIOCSIFADDR: No buffer space available
-> SIOCSIFNETMASK: Cannot assign requested address
-> SIOCSIFBRDADDR: Cannot assign requested address
-> SIOCADDRT: Network is unreachable
-> bound to 192.168.1.2 -- renewal in 2993 seconds.
->
-> # ping www.yahoo.com
-> ping: unknown host www.yahoo.com
->
-> Any suggestions what to try now?  I'll go ahead and turn off the
-> bonding option and see if that helps.
->
+On Thu, 7 Jun 2007, Linus Torvalds wrote:
 
-I was seeing this same error last night on my via-velocity based
-ethernet interface.  I chalked it up to some config mistake on my
-part, but I guess there might be more to it.  Whatever it is, it
-doesn't seem to be specific to the ipw2200 driver.
+> It has the disadvantage that it would need some per-architecture setup to 
+> load the actual real arguments from memory: the system call would probably 
+> look something like
+> 
+> 	syscall_indirect(unsigned long flags, sigset_t *, 
+> 			 int syscall, unsigned long args[6]);
+> 
+> and the rule would be that it would just load the six system call 
+> registers from that "args[]" array. Always load the full six registers, to 
+> make it simpler and faster, and not having any confusion or ever needing 
+> any wrappers that depend on the number of system calls.
 
--- 
-Kevin Winchester
+We'd still need sys_nonseqfd() though, to move/dup legacy fds into the 
+non-sequential area.
+
+
+
+- Davide
+
+
