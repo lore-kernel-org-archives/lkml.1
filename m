@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933840AbXFGRKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764603AbXFGROS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933840AbXFGRKI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbXFGRJ5
+	id S1764603AbXFGROS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbXFGROJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:09:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34561 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750923AbXFGRJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:09:56 -0400
-Subject: Re: ext3fs: umount+sync not enough to guarantee metadata-on-disk
-From: "Stephen C. Tweedie" <sct@redhat.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "Theodore Ts'o" <tytso@mit.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Stephen Tweedie <sct@redhat.com>
-In-Reply-To: <46682BE7.6080802@rtr.ca>
-References: <46680BB8.50404@rtr.ca>
-	 <20070607084142.42583639.akpm@linux-foundation.org>
-	 <46682BE7.6080802@rtr.ca>
-Content-Type: text/plain
-Organization: Red Hat UK Ltd, Amberley Place, 107-111 Peascod Street,
-	Windsor, Berkshire, SL4 1TE, United Kingdom. Registered in England and
-	Wales under Company Registration No. 03798903
-Date: Thu, 07 Jun 2007 18:09:41 +0100
-Message-Id: <1181236181.10245.16.camel@sisko.scot.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.0.2.el4) 
+	Thu, 7 Jun 2007 13:14:09 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:50426 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753975AbXFGROI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:14:08 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=qVmNOrBG7mrpfmf6FdRPrTj9+dDPTDGyr5vBvSl4R+668ZUUjuSoy+WOVflAUUsf7
+	mPFyd0LSVEJxXdnvQYwpg==
+Message-ID: <6599ad830706071012u62963d4aqe2042d6af16c1c8@mail.gmail.com>
+Date: Thu, 7 Jun 2007 10:12:19 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Cedric Le Goater" <clg@fr.ibm.com>
+Subject: Re: [PATCH 03/10] Containers(V10): Add tasks file interface
+Cc: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, containers@lists.osdl.org
+In-Reply-To: <46680F76.8020803@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070529130104.461765000@menage.corp.google.com>
+	 <20070529132142.428218000@menage.corp.google.com>
+	 <46680F76.8020803@fr.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 6/7/07, Cedric Le Goater <clg@fr.ibm.com> wrote:
+>
+> when there's no tasks in a container, opening
+>
+> <containerfs>/<container>/tasks
+>
+> spits the following warning because we are trying to
+> kmalloc(0).
 
-On Thu, 2007-06-07 at 12:01 -0400, Mark Lord wrote:
+I guess I'm not opposed to this change - but isn't there still
+discussion going on about whether kmalloc(0) should actually produce a
+warning or not?
 
-> >>    mount /var/lib/mythtv -oremount,ro
-> >>    sync
-> >>    umount /var/lib/mythtv
-> > 
-> > Did this succeed?  If the application is still truncating that file, the
-> > umount should have failed.
-> 
-> Actually, what I expect to happen is for the remount,ro
-> to block  until the file deletion completes.  But it doesn't.
+Thanks,
 
-No -- all that the remount,ro sees is that there's a fd still open for
-write.  It has no idea if or when that fd is going to get closed, so it
-should fail.  Returning -EBUSY is the only thing it _can_ do: waiting
-for the fs to be remountable might wait forever.
-
-So the fs is still writable after that point.
-
---Stephen
-
-
+Paul
