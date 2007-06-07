@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbXFGK1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbXFGKaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbXFGK1s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 06:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbXFGK1l
+	id S1754371AbXFGKaY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 06:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbXFGKaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 06:27:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:62159 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbXFGK1k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 06:27:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=stGk/WcimrgrcU8d1HD+b2z827PFeZFzyuk/NsV7Vyf/3pK1box0vLy/tDKrLmzqfqsVDYPJyz6KvP2eNDrryPQOkTK0aj5we35aGITiylwCLuX802rHD/ms/9oS3JWex0aS30D2JA2dQFCwLBjtCN8SlShGCFWnnkpjM8BbrrA=
-Date: Thu, 7 Jun 2007 18:27:37 +0800
-From: "Peer Chen" <peerchen@gmail.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Cc: "alan" <alan@redhat.com>, "akpm" <akpm@linux-foundation.org>,
-       "jeff" <jeff@garzik.org>, "htejun" <htejun@gmail.com>
-Subject: [PATCH 3/3] PATA: Add the MCP73/77 support to PATA driver
-Message-ID: <200706071827360318829@gmail.com>
-X-mailer: Foxmail 6, 6, 105, 21 [cn]
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-2"
+	Thu, 7 Jun 2007 06:30:11 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:58126 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbXFGKaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 06:30:09 -0400
+Message-ID: <4667DE2D.6050903@dgreaves.com>
+Date: Thu, 07 Jun 2007 11:30:05 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+References: <46608E3F.4060201@dgreaves.com> <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>
+In-Reply-To: <46679D56.7040001@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the PATA controller device ID to pci_ids.h for MCP73/MCP77.
-The patch base on kernel 2.6.22-rc4
- 
-Signed-off-by: Peer Chen <peerchen@gmail.com>
---------------------------------------------------
---- linux-2.6.22-rc4/include/linux/pci_ids.h.orig
-+++ linux-2.6.22-rc4/include/linux/pci_ids.h
-@@ -1233,6 +1233,8 @@
- #define PCI_DEVICE_ID_NVIDIA_NVENET_26              0x054E
- #define PCI_DEVICE_ID_NVIDIA_NVENET_27              0x054F
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP67_IDE       0x0560
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP73_IDE       0x056C
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP77_IDE       0x0759
- 
- #define PCI_VENDOR_ID_IMS		0x10e0
- #define PCI_DEVICE_ID_IMS_TT128		0x9128
+Tejun Heo wrote:
+> Hello,
+> 
+> David Greaves wrote:
+>> Just to be clear. This problem is where my system won't resume after s2d
+>> unless I umount my xfs over raid6 filesystem.
+> 
+> This is really weird.  I don't see how xfs mount can affect this at all.
+Indeed.
+It does :)
+
+> How hard does the machine freeze?  Can you use sysrq?  If so, please
+> dump sysrq-t.
+I suspect there is a problem writing to the consoles...
+
+I recompiled (rc4+patch) with sysrq support, suspended, resumed and tried 
+sysrq-t but got no output.
+
+I *can* change VTs and see the various login prompts, bitmap messages and the 
+console messages. Caps/Num lock lights work.
+
+Fearing incompetence I tried sysrq-s sysrq-u sysrq-b and got a reboot so sysrq 
+is OK.
+
+Any suggestions on how to see more? Or what to try next?
+
+Any other kernel debug options to set?
+
+David
+PS Back in a couple of hours...
+
 
