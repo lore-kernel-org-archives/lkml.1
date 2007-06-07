@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbXFGNc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXFGNeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759998AbXFGNc7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 09:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXFGNcv
+	id S1760766AbXFGNeE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 09:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbXFGNdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 09:32:51 -0400
-Received: from smtp-vbr7.xs4all.nl ([194.109.24.27]:3159 "EHLO
-	smtp-vbr7.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbXFGNcv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 09:32:51 -0400
-Date: Thu, 7 Jun 2007 15:32:45 +0200
-From: Erik Mouw <mouw@nl.linux.org>
-To: Christian Kujau <christian@g-house.de>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
-Subject: Re: no more git snapshots?
-Message-ID: <20070607133245.GD10981@gateway.home>
-References: <alpine.DEB.0.99.0706071253480.2151@foobar-g4> <Pine.LNX.4.61.0706071258070.20341@yvahk01.tjqt.qr> <alpine.DEB.0.99.0706071319410.2151@foobar-g4>
+	Thu, 7 Jun 2007 09:33:55 -0400
+Received: from spatial.ca ([66.11.172.77]:16980 "EHLO fawkes.spatial.ca"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752430AbXFGNdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 09:33:54 -0400
+Message-ID: <46680940.3070707@spatial.ca>
+Date: Thu, 07 Jun 2007 09:33:52 -0400
+From: Tom Moore <tmoore@spatial.ca>
+Reply-To: tmoore@spatial.ca
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="wxDdMuZNg1r63Hyj"
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.99.0706071319410.2151@foobar-g4>
-Organization: Eric Conspiracy Secret Labs
-X-Eric-Conspiracy: There is no conspiracy!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 4Gb ram not showing up
+References: <46642C60.209@spatial.ca>	 <20070604191052.GD10008@csclub.uwaterloo.ca>	 <46646B4C.2070707@spatial.ca>	 <20070605185721.GW10006@csclub.uwaterloo.ca> <a781481a0706061418m7f51dc1bke079e6e6b7d5f930@mail.gmail.com>
+In-Reply-To: <a781481a0706061418m7f51dc1bke079e6e6b7d5f930@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Sanitizer: Advosys mail filter
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---wxDdMuZNg1r63Hyj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jun 07, 2007 at 01:22:06PM +0200, Christian Kujau wrote:
-> On Thu, 7 Jun 2007, Jan Engelhardt wrote:
-> >After that came -rc4. Next one will be -rc4-git1.
->=20
-> Ah, ok. I'm using ketchup(1) to track 2.6-git, so it'd take a -rc4-git0=
-=20
-> (same as rc4) to notice that the next version came out...
+Satyam Sharma wrote:
+> On 6/6/07, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
+>> [...]
+>> A better description would be:
+>>
+>> "Select this if you have a 32-bit processor and memory mapped in the 1GB
+>> to 4GB address range."
+>> [...]
+>> That one would be better as:
+>>
+>> "Select this if you have a 32-bit processor and ram mapped in the 
+>> address
+>> range above 4GB."
+>
+> Ugh, no! How can we expect the user compiling a kernel to be *so*
+> familiar with address space re-mapping / BIOSen (_his_ particular
+> BIOS, specifically, and what / how it re-maps memory) / etc to be
+> able to answer such questions? "Select ... if you have ... RAM
+> installed" is perfectly clear, simple, and all that's needed.
+>
+However the KConfig help message as it is currently written is wrong.
+> BTW, just imagine what a user would need to do to make things
+> work as per your proposal. Build some kernel (don't care about
+> memory loss), boot and find what his firmware prefers to do with
+> address space (or else read up the BIOS documentation!) and
+> _then_ again build a new kernel, this time selecting the options
+> appropriately ...
+I tried to do this, but the Kconfig help message was misleading.  I 
+still needed to come here for help.
+>
+> Also, note that the change you're proposing is unnecessary! As
+> Andi pointed out, this issue has more to do with broken BIOSen
+> and the proper fix for Tom is to contact his vendor and flash /
+> upgrade the BIOS firmware. I don't see anything wrong with the
+> Kconfig help texts.
+Andi was wrong.  It appears that he read the first sentence of my email 
+and jumped to a conclusion.  The /proc/mtrr output that I included in my 
+first post showed the my bios was doing the right thing.  My problem was 
+that I was using CONFIG_HIGHMEM4G, which is what the KConfig help 
+message told me to do.  After switching to CONFIG_HIGHMEM64G the OS was 
+able to map all of my ram.
 
-If you want to track 2.6-git, why don't you just use git? A daily "git
-pull" keeps you up-to-date.
+             total       used       free     shared    buffers     cached
+Mem:       4016768    3924312      92456          0     360132    3030336
+-/+ buffers/cache:     533844    3482924
+Swap:      5116692       2676    5114016
 
+Thanks to those with the correct advice.  I'm sure I would have got this 
+by trying each memory model in turn, but at least now I know what is 
+going on.
 
-Erik
+Tom
 
---=20
-They're all fools. Don't worry. Darwin may be slow, but he'll
-eventually get them. -- Matthew Lammers in alt.sysadmin.recovery
-
---wxDdMuZNg1r63Hyj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGaAj9/PlVHJtIto0RAlboAJwNVmGaGwNMGPCMHgfRy2vyU2j8cACeMSpu
-bSfgH63eJ+IFCtOXZZpuBwk=
-=ac3U
------END PGP SIGNATURE-----
-
---wxDdMuZNg1r63Hyj--
