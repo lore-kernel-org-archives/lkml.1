@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763244AbXFGQ7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762840AbXFGRAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763244AbXFGQ7R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932215AbXFGQ6w
+	id S1762840AbXFGRAV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761584AbXFGRAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:58:52 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:44811 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932139AbXFGQ6v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:58:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=sn/a5mj1gZu/cJnMa1FT6wByq0PwaBimfDuw7QZ+iCZQRGpALV9v3w73D7xGLNx7dWz1NpDVvCmOYLJ59Tz59m0rVrTIe5ytrt7VuJz2pFwQCKclTGnBewrsmYZNj8DUHG2tJFIizFK5eGTsmc8DJGaC7ety92NwGRMcwhM6hpo=
-Subject: Re: Add INPUT support to toshiba_acpi
-From: Richard Hughes <hughsient@gmail.com>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Bastien Nocera <hadess@hadess.net>,
-       John Belmonte <john@neggie.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-In-Reply-To: <200706030048.40393.dtor@insightbb.com>
-References: <1180614979.2693.26.camel@localhost.localdomain>
-	 <1180788652.2355.27.camel@localhost.localdomain>
-	 <20070602142333.GA3452@srcf.ucam.org>
-	 <200706030048.40393.dtor@insightbb.com>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 17:58:59 +0100
-Message-Id: <1181235539.2610.72.camel@work>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jun 2007 13:00:01 -0400
+Received: from waste.org ([66.93.16.53]:60479 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750866AbXFGQ77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 12:59:59 -0400
+Date: Thu, 7 Jun 2007 11:59:16 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070607165916.GZ11115@waste.org>
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <20070606161936.GA8952@localhost.localdomain> <20070606110931.fda845de.akpm@linux-foundation.org> <20070607022608.GA2416@localhost.localdomain> <20070607055912.GX11166@waste.org> <20070607065158.GA1996@localhost.localdomain> <20070607140444.GR11115@waste.org> <20070607154007.GA9305@localhost.localdomain> <20070607155913.GW11115@waste.org> <20070607163930.GA11060@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607163930.GA11060@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-03 at 00:48 -0400, Dmitry Torokhov wrote:
+On Fri, Jun 08, 2007 at 12:39:30AM +0800, WANG Cong wrote:
+> >Ketchup doesn't even look inside patches, and patch doesn't invent
+> >names, so something in the bzip2 -> patch(1) -> filesystem chain got
+> >corrupted. Probably not bzip2, as it has CRCs.
+> >
 > 
-> 
-> It looks like KEY_COFFE comes from 0x0c/0x19e - AL Terminal
-> Lock/Screensaver
-> so your interpretation is indeed correct. I guess I better add an
-> alias to
-> input.h
+> Do you mean ketchup doesn't do anything if a file is corrupted?
 
-What's the status of this patch? Good for merging? Do you want me to
-redo the current patch using input-polldev and the new setkeycode stuff?
+Ketchup never even sees the filenames. It just calls bzip2 | patch. So
+it can't be responsible for damaging the filename.
+ 
+> >Do you have ECC memory?
+>
+> No. Do you mean it's an error of my RAM? I have never met such things before,
+> how often does such kind of things happen? May be less often than a bug in
+> a stable kernel?
 
-Richard.
+The best studies I've seen suggest so-called "soft errors" in DRAM
+happen at a rate of once a week to once a day per gigabyte of RAM at
+sea-level. It's unknown how many of these errors manifest by visibly
+corrupting data, but it wouldn't be surprising if it were
+significantly less than 10%. But ECC is definitely not just for the
+paranoid!
 
+So if I were to rank the reliability of everything, it'd look
+something like this, highest to lowest:
+
+ bzip: simple, stable and heavily-used codebase, built-in safeguards like CRC
+ patch: simple, stable, heavily-used, limited detection of input errors
+ CPU: heavily used, very low non-catastrophic failure rate
+ disk: heavily used, CRC on cable, ECC on disk
+ kernel: complex, rapidly-changing, but heavily-used
+ Non-ECC DRAM: significant known transient failure rate
+ 
+When the error rate for the kernel approaches that of DRAM, it gets
+very hard to assign blame.
+
+(And of course, there's the user, who tends to be near the bottom of
+this range, but I'll let you judge that.)
+
+-- 
+Mathematics is the supreme nostalgia of our time.
