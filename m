@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbXFGHVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbXFGHXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523AbXFGHVI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 03:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbXFGHU5
+	id S1759477AbXFGHXX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 03:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXFGHXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 03:20:57 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:1278 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752153AbXFGHU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 03:20:56 -0400
-Date: Thu, 7 Jun 2007 09:19:30 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: NeilBrown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH 001 of 2] Fix read/truncate race.
-Message-ID: <20070607071929.GL4735@kernel.dk>
-References: <20070607114043.26967.patches@notabene> <1070607014653.27304@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1070607014653.27304@suse.de>
+	Thu, 7 Jun 2007 03:23:15 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:38029 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbXFGHXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 03:23:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Aoy3ywkKHLZzVGD1QPuPNweQu6cNoj5ldvQ9w+85aVnnuf5pu9xfP2wR+KtyHtm6M/P1QzQ61NWCIMlHuuIVMTER55POQSG2mQrn3kJtYhwTSTTFm8JXQkhPAlX92K9zd8+5x+rfwEX1csUz9oS9/B6W2vI5sEApCFLVdZRi8Ho=
+Message-ID: <4667B241.801@gmail.com>
+Date: Thu, 07 Jun 2007 16:22:41 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+References: <200706061421.l56ELDfB004305@harpo.it.uu.se>	<4666D3F8.4010002@gmail.com> <20070606105650.bebf1c95.akpm@linux-foundation.org> <4666FBE8.3030103@gmail.com> <4667A93A.4060608@gmail.com> <4667AD3F.1010405@gmail.com> <4667AF20.4020209@gmail.com> <4667B095.5050508@gmail.com>
+In-Reply-To: <4667B095.5050508@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07 2007, NeilBrown wrote:
+Jiri Slaby wrote:
+> Tejun Heo napsal(a):
+>> Jiri Slaby wrote:
+>>> Yes. Now I'm compiling -rc4-mm2.
+>> It's probably caused by new sysfs slimdown patches and I'm pretty sure
+>> -rc4-mm2 would fail the same way.  The offending one should be one of
+>> the following patches.
 > 
-> do_generic_mapping_read currently samples the i_size at the start
-> and doesn't do so again unless it needs to call ->readpage to load
-> a page.  After ->readpage it has to re-sample i_size as a truncate
-> may have caused that page to be filled with zeros, and the read()
-> call should not see these.
-> 
-> However there are other activities that might cause ->readpage to be
-> called on a page between the time that do_generic_mapping_read
-> samples i_size and when it finds that it has an uptodate page.  These
-> include at least read-ahead and possibly another thread performing a
-> read.
-> 
-> So do_generic_mapping_read must sample i_size *after* it has an
-> uptodate page.  Thus the current sampling at the start and after a read
-> can be replaced with a sampling before the copy-out.
-> 
-> The same change applied to __generic_file_splice_read.
-> 
-> Note that this fixes any race with truncate_complete_page, but does
-> not fix a possible race with truncate_partial_page.  If a partial
-> truncate happens after do_generic_mapping_read samples i_size and
-> before the copy_out, the nuls that truncate_partial_page place in the
-> page could be copied out incorrectly.
-> 
-> I think the best fix for that is to *not* zero out parts of the page
-> in truncate_partial_page, but rather to zero out the tail of a page
-> when increasing i_size.
+> There's reverted gregkh-driver-block-device in -mm2. So I wanted to give it a
+> try. Do you think it's pointless and that patch has no impact on the behaviour?
 
-Thanks Neil, if you don't mind I'll steal the splice bits and add them
-to the splice branch, as this particular patch conflicts with other
-isize fixes that Hugh and I have been working on.
+I'm not familiar with how lvm vgscan works and the patch does look like
+it can affect that.  Please give a shot at -mm2.
+
+Thanks a lot.
 
 -- 
-Jens Axboe
-
+tejun
