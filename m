@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935898AbXFGTah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935992AbXFGTcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935898AbXFGTah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 15:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934629AbXFGTa3
+	id S935992AbXFGTcc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 15:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933250AbXFGTcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 15:30:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51845 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764394AbXFGTa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 15:30:29 -0400
-Message-ID: <46685C67.7000108@redhat.com>
-Date: Thu, 07 Jun 2007 21:28:39 +0200
-From: Miloslav Trmac <mitr@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 7 Jun 2007 15:32:25 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56591 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759724AbXFGTcY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 15:32:24 -0400
+Date: Thu, 7 Jun 2007 21:32:29 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.03
+Message-ID: <20070607193229.GQ5500@stusta.de>
+References: <0a25fd03117c678f17006c5fcefaaed0@pinky> <9a8748490706060205y1fc8e354p4af7426fd76dd816@mail.gmail.com>
 MIME-Version: 1.0
-To: casey@schaufler-ca.com
-CC: Steve Grubb <sgrubb@redhat.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@redhat.com>, Alexander Viro <aviro@redhat.com>
-Subject: Re: [PATCH] Audit: Add TTY input auditing
-References: <442798.53194.qm@web36614.mail.mud.yahoo.com>
-In-Reply-To: <442798.53194.qm@web36614.mail.mud.yahoo.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <9a8748490706060205y1fc8e354p4af7426fd76dd816@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler napsal(a):
->> If we do not get commands typed at a prompt, we have to audit by execve. 
-> I would suggest that you'll have to do that as well so that you can tell
-> the difference between typed actions like these:
-> 
-> # cat > /dev/null
-> badprogram --badthing --everyone
-> ^D
-> #
-> 
-> # badprogram --badthing --everyone
-> 
-> where the same typed line is a Bad Thing in one case and completely
-> irrelevent in the other.
-The proposed patch audits each process separately, and includes a part
-of the command name in the audit event, so it is easy to distinguish
-between data entered into (cat > /dev/null) and the shell.
+On Wed, Jun 06, 2007 at 11:05:07AM +0200, Jesper Juhl wrote:
+>...
+> - Source files should be 7bit ASCII and Documentation/Kbuild
+> files/etc should be UTF-8, test that the patch honors that and doesn't
+> put something else in (cleanups that remove 8bit ASCII etc from a
+> source file is OK though).
+>...
 
-The command name can be faked, but the actions necessary to fake the
-command name would be audited.
-	Mirek
+That's wrong:
+Code must be 7bit ASCII.
+Comments in source files can be UTF-8.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
