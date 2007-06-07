@@ -1,213 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934191AbXFGSCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934609AbXFGSDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934191AbXFGSCT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 14:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760401AbXFGSCD
+	id S934609AbXFGSDY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 14:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757842AbXFGSDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 14:02:03 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56808 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755147AbXFGSCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 14:02:01 -0400
-Date: Thu, 7 Jun 2007 13:01:58 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, vatsa@in.ibm.com,
-       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
-       rohitseth@google.com, haveblue@us.ibm.com, xemul@sw.ru, dev@sw.ru,
-       containers@lists.osdl.org, devel@openvz.org, ebiederm@xmission.com,
-       mbligh@google.com, cpw@sgi.com, menage@google.com,
-       svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ckrm-tech] [PATCH 00/10] Containers(V10): Generic Process Containers
-Message-ID: <20070607180158.GA936@sergelap.austin.ibm.com>
-References: <20070529130104.461765000@menage.corp.google.com> <20070604191412.GA901@sergelap.austin.ibm.com> <20070604123151.4db007a6.pj@sgi.com> <6599ad830706041330q1802ebf2n2bac63f706a73a50@mail.gmail.com> <20070604204131.GB19409@sergelap.austin.ibm.com> <20070604140533.65e25286.pj@sgi.com> <20070606223952.GB5626@sergelap.austin.ibm.com> <20070606154347.a155630b.pj@sgi.com> <20070607000559.GA19529@sergelap.austin.ibm.com> <20070606174609.bfa01446.pj@sgi.com>
+	Thu, 7 Jun 2007 14:03:17 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3857 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756647AbXFGSDQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 14:03:16 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 7 Jun 2007 11:03:13 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Ulrich Drepper <drepper@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <20070607195659.c695c87d.dada1@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0706071059140.6445@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+ <20070606235906.72439d16@the-village.bc.nu>
+ <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
+ <20070607001932.35c9591c@the-village.bc.nu> <466741BD.20106@redhat.com>
+ <20070607110432.73be7960@the-village.bc.nu> <4668155B.4020705@redhat.com>
+ <20070607195659.c695c87d.dada1@cosmosbay.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070606174609.bfa01446.pj@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Jackson (pj@sgi.com):
-> > I suppose as a cleaner alternative we could 
-> > add a container_subsys->inherit_defaults() handler, to be called at
-> > container_clone(), and for cpusets this would set cpus and mems to
-> > the parent values - sibling exclusive values.  If that comes to nothing,
-> > then the attach_task() is still refused, and the unshare() or clone()
-> > fails, but this time with good reason.
-> 
-> Unfortunately, I haven't spent the time I should thinking about
-> container cloning, namespaces and such.
-> 
-> I don't know, for the workloads that matter to me, when, how or
-> if this container cloning will be used.
-> 
-> I'm tempted to suggest the following.
-> 
-> First, I am assuming that the classic method of creating cpuset
-> children will still work, such as the following (which can fail
-> for certain combinations of exclusive cpus or mems):
-> 	cd /dev/cpuset/foobar
-> 	mkdir foochild
-> 	cp cpus foochild
-> 	cp mems foochild
-> 	echo $$ > foochild/tasks
-> 
-> Second, given that, how about you fail the unshare() or clone()
-> anytime that the instance to be cloned has any sibling cpusets
-> with any exclusive flags set.
+On Thu, 7 Jun 2007, Eric Dumazet wrote:
 
-The below patch (on top of my previous patch) does basically that.  But
-I wasn't able to test it, bc i wasn't able to set cpus_exclusive...
+> accept2(int fd, ...)
 
-For /cpusets/set0/set1 to have cpu 1 exclusively, does /cpusets/set0
-also have to have it exclusively?
+I don't see any reason to not have it inherit the non-sequential 
+characteristics of "fd".
 
-If so, then clearly this approach won't work, since if any container has
-exclusive cpus, then every container will have siblings with exclusive
-cpus, and unshare still isn't possible on the system.
 
-> The exclusive property is not really on friendly terms with cloning.
-> 
-> Now if the above classic code must be encoded using cloning under
-> the covers, then we've got problems, probably more problems than
-> just this.
-> 
-> -- 
->                   I won't rest till it's the best ...
->                   Programmer, Linux Scalability
->                   Paul Jackson <pj@sgi.com> 1.925.600.0401
 
-thanks,
--serge
+> pipe2(int *fds, int oflags);
 
->From 821de58b6ba446e50225606e907baac00130586c Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Thu, 7 Jun 2007 13:53:43 -0400
-Subject: [PATCH 1/1] containers: implement subsys->auto_setup
+I think pipe+sys_nonseqfd should be OK for those.
 
-container_clone() in one step creates a new container and moves
-the current task into it.  Since cpusets do not automatically
-fill in the allowed cpus and mems, and do not allow a task to
-be attached without these filled in, composing the ns subsystem,
-which uses container_clone(), and the cpuset subsystem, results
-in sys_unshare() (and clone(CLONE_NEWNS)) always being denied.
 
-To allow the two subsystems to be meaningfully composed, implement
-subsystem->auto_setup, called from container_clone() after
-creating the new container.
 
-Only the cpuset_auto_setup() is currently implemented.  If any
-sibling containers have exclusive cpus or mems, then the cpus
-and mems are not filled in for the new container, meaning that
-unshare/clone(CLONE_NEWNS) will be denied.  However so long as
-no siblings have exclusive cpus or mems, the new container's
-cpus and mems are inherited from the parent container.
+> eventfd2(int count, int oflags);
+> signalfd2(int ufd, sigset_t __user *user_mask, size_t sizemask, int oflags);
+> timerfd2(int ufd, int clockid, int flags,const struct itimerspec __user *utmr, int oflags) ...
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- Documentation/containers.txt |    7 +++++++
- include/linux/container.h    |    1 +
- kernel/container.c           |    7 +++++++
- kernel/cpuset.c              |   21 +++++++++++++++++++++
- 4 files changed, 36 insertions(+), 0 deletions(-)
+Those I think we're still in time to change the interface. No?
+Even if not, those are not perf-critical, so I think that 
+syscall+sys_nonseqfd is still fine.
 
-diff --git a/Documentation/containers.txt b/Documentation/containers.txt
-index ae159b9..28c9e10 100644
---- a/Documentation/containers.txt
-+++ b/Documentation/containers.txt
-@@ -514,6 +514,13 @@ include/linux/container.h for details).  Note that although this
- method can return an error code, the error code is currently not
- always handled well.
- 
-+void auto_setup(struct container_subsys *ss, struct container *cont)
-+
-+Called at container_clone() to do any paramater initialization
-+which might be required before a task could attach.  For example
-+in cpusets, no task may attach before 'cpus' and 'mems' are
-+set up.
-+
- void bind(struct container_subsys *ss, struct container *root)
- LL=callback_mutex
- 
-diff --git a/include/linux/container.h b/include/linux/container.h
-index 37c0bdf..d809b41 100644
---- a/include/linux/container.h
-+++ b/include/linux/container.h
-@@ -213,6 +213,7 @@ struct container_subsys {
- 	void (*exit)(struct container_subsys *ss, struct task_struct *task);
- 	int (*populate)(struct container_subsys *ss,
- 			struct container *cont);
-+	void (*auto_setup)(struct container_subsys *ss, struct container *cont);
- 	void (*bind)(struct container_subsys *ss, struct container *root);
- 	int subsys_id;
- 	int active;
-diff --git a/kernel/container.c b/kernel/container.c
-index 988cd8b..e0793f4 100644
---- a/kernel/container.c
-+++ b/kernel/container.c
-@@ -2316,6 +2316,7 @@ int container_clone(struct task_struct *tsk, struct container_subsys *subsys)
- 	struct inode *inode;
- 	struct css_group *cg;
- 	struct containerfs_root *root;
-+	struct container_subsys *ss;
- 
- 	/* We shouldn't be called by an unregistered subsystem */
- 	BUG_ON(!subsys->active);
-@@ -2397,6 +2398,12 @@ int container_clone(struct task_struct *tsk, struct container_subsys *subsys)
- 		goto again;
- 	}
- 
-+	/* do any required auto-setup */
-+	for_each_subsys(root, ss) {
-+		if (ss->auto_setup)
-+			ss->auto_setup(ss, child);
-+	}
-+
- 	/* All seems fine. Finish by moving the task into the new container */
- 	ret = attach_task(child, tsk);
- 	mutex_unlock(&container_mutex);
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 0f9ce7d..ff01aaa 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1189,6 +1189,26 @@ int cpuset_populate(struct container_subsys *ss, struct container *cont)
- 	return 0;
- }
- 
-+void cpuset_auto_setup(struct container_subsys *ss,
-+		struct container *container)
-+{
-+	struct container *parent, *child;
-+	struct cpuset *cs, *parent_cs;
-+
-+	parent = container->parent;
-+	list_for_each_entry(child, &parent->children, sibling) {
-+		cs = container_cs(child);
-+		if (is_mem_exclusive(cs) || is_cpu_exclusive(cs))
-+			return;
-+	}
-+	cs = container_cs(container);
-+	parent_cs = container_cs(parent);
-+
-+	cs->mems_allowed = parent_cs->mems_allowed;
-+	cs->cpus_allowed = parent_cs->cpus_allowed;
-+	return;
-+}
-+
- /*
-  *	cpuset_create - create a cpuset
-  *	parent:	cpuset that will be parent of the new cpuset.
-@@ -1249,6 +1269,7 @@ struct container_subsys cpuset_subsys = {
- 	.can_attach = cpuset_can_attach,
- 	.attach = cpuset_attach,
- 	.populate = cpuset_populate,
-+	.auto_setup = cpuset_auto_setup,
- 	.subsys_id = cpuset_subsys_id,
- 	.early_init = 1,
- };
--- 
-1.5.1.1.GIT
+
+
+- Davide
+
 
