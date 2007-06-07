@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936380AbXFGBrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935313AbXFGBsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936380AbXFGBrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 21:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936216AbXFGBr1
+	id S935313AbXFGBsE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 21:48:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936396AbXFGBrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 21:47:27 -0400
-Received: from ns.suse.de ([195.135.220.2]:52557 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935991AbXFGBrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 21:47:25 -0400
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 7 Jun 2007 11:47:00 +1000
-Message-Id: <1070607014700.27322@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-kernel@vger.kernel.org
-Cc: Neil Brown <neilb@suse.de>
-Subject: [PATCH 002 of 2] Make sure readv stops reading when it hits end-of-file.
-References: <20070607114043.26967.patches@notabene>
+	Wed, 6 Jun 2007 21:47:42 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:52825
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936368AbXFGBrl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 21:47:41 -0400
+From: Rob Landley <rob@landley.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH RFC 6/7] i386: make the bzImage payload an ELF file
+Date: Wed, 6 Jun 2007 21:47:20 -0400
+User-Agent: KMail/1.9.1
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <20070606225837.654272428@goop.org> <20070606230922.476662240@goop.org> <4667462A.2010404@zytor.com>
+In-Reply-To: <4667462A.2010404@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706062147.21225.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 06 June 2007 7:41 pm, H. Peter Anvin wrote:
+> This makes vmlinux (normally stripped) recoverable from the bzImage file
+> and so anything that is currently booting vmlinux would be serviced by
+> this scheme.
 
-The do_loop_readv_writev implementation of readv breaks out of the
-loop as soon as a single read request didn't fill it's buffer:
-		if (nr != len)
-			break;
+Would this make it sane to strip the initramfs image out of vmlinux with 
+objdump and replace it with another one, or are there offsets resolved during 
+the build that stop that for vmlinux?
 
-The generic_file_aio_read version doesn't.  So if it hits EOF
-before the end of the list of buffers, it will try again on the next
-buffer.  If the file was extended in the mean time, this will
-produce a bad result.
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./mm/filemap.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff .prev/mm/filemap.c ./mm/filemap.c
---- .prev/mm/filemap.c	2007-06-07 11:34:24.000000000 +1000
-+++ ./mm/filemap.c	2007-06-07 11:39:35.000000000 +1000
-@@ -1206,6 +1206,8 @@ generic_file_aio_read(struct kiocb *iocb
- 				retval = retval ?: desc.error;
- 				break;
- 			}
-+			if (desc.count > 0)
-+				break;
- 		}
- 	}
- out:
+Rob
+-- 
+The Google cluster became self-aware at 2:14am EDT August 29, 2007...
