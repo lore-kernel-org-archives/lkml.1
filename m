@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934051AbXFGRWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934313AbXFGRWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934051AbXFGRWQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762324AbXFGRWB
+	id S934313AbXFGRWe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933785AbXFGRWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:22:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38785 "EHLO mx1.redhat.com"
+	Thu, 7 Jun 2007 13:22:14 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:53839 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758820AbXFGRWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:22:00 -0400
-Message-ID: <46683E4D.9060801@redhat.com>
-Date: Thu, 07 Jun 2007 13:20:13 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Tejun Heo <htejun@gmail.com>, Mikael Pettersson <mikpe@it.uu.se>,
-       akpm@linux-foundation.org, david@dgreaves.com,
-       jean.luc.coulon@gmail.com, jgarzik@pobox.com,
-       michal.k.k.piotrowski@gmail.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [REPOST PATCH] sata_promise: use TF interface for polling NODATA
- commands
-References: <200706052131.l55LVkYN000191@harpo.it.uu.se> <20070605215256.GT31565@havoc.gtf.org> <46665AB5.6040508@gmail.com> <20070606102122.GD29122@htj.dyndns.org> <20070606160511.GA23143@havoc.gtf.org>
-In-Reply-To: <20070606160511.GA23143@havoc.gtf.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S932480AbXFGRWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:22:12 -0400
+Date: Thu, 7 Jun 2007 13:22:11 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
+Message-ID: <20070607172211.GA11882@havoc.gtf.org>
+References: <20070607162251.5f291325@the-village.bc.nu> <20070607152308.GB6653@havoc.gtf.org> <20070607164409.42635a4a@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607164409.42635a4a@the-village.bc.nu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/06/2007 12:05 PM, Jeff Garzik wrote:
-> FYI to all -- 
+On Thu, Jun 07, 2007 at 04:44:09PM +0100, Alan Cox wrote:
+> On Thu, 7 Jun 2007 11:23:08 -0400
+> Jeff Garzik <jeff@garzik.org> wrote:
 > 
-> As a reminder. the Promise hardware programs registers when it receives
-> a SET FEATURES - XFER MODE.
+> > On Thu, Jun 07, 2007 at 04:22:51PM +0100, Alan Cox wrote:
+> > > The intel-rng printed a nice well formatted message when the port was
+> > > disabled. Someone then came along and blindly trashed it by screwing up a
+> > > trim down to 80 columns.
+> > > 
+> > > Put it back into the right format and keep the overlong lines as the
+> > > result is also MUCH easier to read in this specific case.
+> > > 
+> > > Signed-off-by: Alan Cox <alan@redhat.com>
+> > 
+> > Acked-by: Jeff Garzik <jeff@garzik.org>
+> > 
+> > I'm not the driver maintainer anymore, so I'm not actually going to push
+> > this one.
 > 
-> If data transfer is occurring on OTHER ports at the time this is issued,
-> then data corruption is guaranteed to occur.  Polling will not fix this
-> problem -- all ports need to be inactive, when a SET FEATURES - XFER
-> MODE command is issued for any port.
-> 
+> Then please send a patch for the MAINTAINERS file
 
-So is this patch OK but yet more work needs to be done, or does
-this patch cause new problems?
+hrm, I thought that had already been fixed, by the new maintainer.
+
+Will do.
+
+	Jeff
+
+
+
