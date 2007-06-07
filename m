@@ -1,99 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937508AbXFGXV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937642AbXFGXW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937508AbXFGXV5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 19:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933332AbXFGXVs
+	id S937642AbXFGXW6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 19:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765588AbXFGXWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 19:21:48 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:56737 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933605AbXFGXVr (ORCPT
+	Thu, 7 Jun 2007 19:22:50 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:43668 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753620AbXFGXWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 19:21:47 -0400
-Date: Fri, 8 Jun 2007 01:21:52 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, jcm@jonmasters.org
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Jesper Juhl <jesper.juhl@gmail.com>, Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.03
-Message-ID: <20070607232152.GU5500@stusta.de>
-References: <0a25fd03117c678f17006c5fcefaaed0@pinky> <9a8748490706060205y1fc8e354p4af7426fd76dd816@mail.gmail.com> <Pine.LNX.4.64.0706071622280.8762@fbirervta.pbzchgretzou.qr> <20070607193413.GR5500@stusta.de> <20070607232248.332edee8@the-village.bc.nu>
+	Thu, 7 Jun 2007 19:22:49 -0400
+Date: Thu, 7 Jun 2007 16:16:44 -0700
+From: Greg KH <greg@kroah.com>
+To: Stuart_Hayes@Dell.com
+Cc: akpm@linux-foundation.org, gregkh@suse.de, malattia@linux.it,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH] bug removing ehci-hcd
+Message-ID: <20070607231644.GA8936@kroah.com>
+References: <20070529093324.92e571a0.akpm@linux-foundation.org> <DFEF91B22ED07447AB6AA4B237F913F9524D64@ausx3mpc125.aus.amer.dell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070607232248.332edee8@the-village.bc.nu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <DFEF91B22ED07447AB6AA4B237F913F9524D64@ausx3mpc125.aus.amer.dell.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 11:22:48PM +0100, Alan Cox wrote:
-> On Thu, 7 Jun 2007 21:34:13 +0200
-> Adrian Bunk <bunk@stusta.de> wrote:
+On Thu, May 31, 2007 at 10:26:10AM -0500, Stuart_Hayes@Dell.com wrote:
 > 
-> > On Thu, Jun 07, 2007 at 04:28:20PM +0200, Jan Engelhardt wrote:
-> > > 
-> > > On Jun 6 2007 11:05, Jesper Juhl wrote:
-> > > >
-> > > > - Source files should be 7bit ASCII
-> > > 
-> > > Nah. Think of....
-> > > 
-> > > MODULE_AUTHOR("J. Ørsted <jorsted@foobar.com>");
-> > >...
-> > 
-> > NO!
-> > 
-> > Code must be 7bit ASCII.
-> > This includes everything that gets into the kernel image.
+> I wasn't actually able to reproduce the bug myself, but I guess it is
+> pretty obvious that I shouldn't have called cpufreq_unregister_notifier
+> with a spinlock held.  I haven't been doing this long enough to know
+> exactly which kernel this patch should be against, so let me know if
+> this ins't good.  Thanks!
 > 
-> Disagree Adrian
 > 
-> For quoted strings you want to include Unicode where appropriate, and the
-> names of people happens to be highly appropriate. Trashing non US names
-> is just rude, and in many cases extremely problematic because losing
-> accent marks totally changes the meaning of the word and the
-> pronunciation of the name.
+> This patch (for the 2.6.21.3 kernel plus previously sent cpufreq
+> notifier patch) fixes a bug caused by calling
+> cpufreq_unregister_notifier (which can sleep) while holding a spinlock.
 > 
-> Now anyone who puts UTF-8 in the driver name or module options should get
-> a lot of NAKs but putting it in the Author name is precisely where it is
-> appropriate and correct. I suspect Author names are almost the only case
-> where this is appropriate and/or neccessary.
+> Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
 
-I added a MODULE_AUTHOR("J. Ørsted <jorsted@foobar.com>") into the "raw" 
-module:
+Thanks, I've merged this with your previous patch.  Sorry for the
+previous confusion as to where this patch was applied against (ended up
+in my -stable queue...)
 
-# echo $LANG
-C
-# modinfo --version
-module-init-tools version 3.3-pre11
-# modinfo raw
-filename:       /lib/modules/2.6.21.2/kernel/drivers/char/raw.ko
-author:         J. Ã
-                    ^ the cursor hangs here
+thanks,
 
-
-So for implementing your proposal, we have to:
-- get module-init-tools fixed and
-- document that 2.6.23 (or whichever will be the first kernel to support 
-  UTF-8 in MODULE_AUTHOR) will require updated module-init-tools.
-
-
-Oh, and when you are anyway planning to break older userspace, can you 
-remove the obsolete "raw" driver at the same time?  ;-)
-
-
-> Alan
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+greg k-h
 
