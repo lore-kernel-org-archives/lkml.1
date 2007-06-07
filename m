@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbXFGGvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbXFGGwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757872AbXFGGvu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 02:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757245AbXFGGvl
+	id S1758157AbXFGGwb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 02:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXFGGwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 02:51:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36943 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757123AbXFGGvk (ORCPT
+	Thu, 7 Jun 2007 02:52:22 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:2760 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752224AbXFGGwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 02:51:40 -0400
-Date: Wed, 6 Jun 2007 23:51:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm2
-Message-Id: <20070606235131.a56242cd.akpm@linux-foundation.org>
-In-Reply-To: <20070607064231.GQ6909@holomorphy.com>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-	<20070607064231.GQ6909@holomorphy.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jun 2007 02:52:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=cqE+81de4w8UtWZB777srT/Ee1uae0ebLbkkQG+VFkdgFkeaSO6S26YzEEcWXnlTdxAgNd+S8NfMM4Iq4Y+k5qBDQhuOUnfbGQGdlGrIUWi1K9y04J7l+GPGdehvFshhSRlZ1Ke/QLEpTS8RQjHIMzolc7rA+XNnxbETr4dyMZA=
+Message-ID: <4667AB10.4070201@gmail.com>
+Date: Thu, 07 Jun 2007 15:52:00 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Peer Chen <pchen@nvidia.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jeff@garzik.org
+Subject: Re: [PATCH] ahci: Add MCP73/MCP77 support to AHCI driver
+References: <15F501D1A78BD343BE8F4D8DB854566B14BFA227@hkemmail01.nvidia.com>
+In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B14BFA227@hkemmail01.nvidia.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007 23:42:31 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
+Peer Chen wrote:
+> Add the MCP73/MCP77 support to ahci driver.
+> The patch base on kernel 2.6.22-rc4
 
-> On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
-> > - Basically a bugfixed version of 2.6.22-rc4-mm1.  None of the subsystem
-> >   trees were repulled, several bad patches were dropped, a few were fixed.
-> 
-> create-the-zone_movable-zone.patch breaks the build on sparc32.
-> 
-> 
-> -- wli
-> 
-> $ good=0; bad=`quilt series -v | wc -l`; time while [[ $(( $bad - $good )) -gt 1 ]]; do cur=`quilt series -v |egrep -c '(=|\+)'`; chkpt=$(( ($good + $bad)/2 )); delta=$(( $chkpt - $cur )); if [[ $delta -lt 0 ]]; then (quilt pop $(( 0 - $delta )) ) >& /dev/null; elif [[ $delta -gt 0 ]]; then (quilt push $delta) >& /dev/null; else true; fi; cur=$chkpt; (yes "" | make ARCH=sparc CROSS_COMPILE="sparc-linux-" CC="gcc-sparc-4.1" quiet=1 -j16 defconfig) >& /dev/null; echo "last known good = $good, first known bad = $bad, trying $chkpt"; yes "" | make ARCH=sparc CROSS_COMPILE="sparc-linux-" CC="gcc-sparc-4.1" quiet=1 -j16 image modules; s=$?; if [[ $s -ne 0 ]]; then echo "$chkpt bad"; bad=$chkpt; else echo "$chkpt good"; good=$chkpt; fi; done
-> ...
-> last known good = 641, first known bad = 645, trying 643
-> scripts/kconfig/conf -s arch/sparc/Kconfig
-> drivers/macintosh/Kconfig:116:warning: 'select' used by config symbol 'PMAC_APM_EMU' refers to undefined symbol 'APM_EMULATION'
-> drivers/input/keyboard/Kconfig:170:warning: 'select' used by config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-> drivers/input/mouse/Kconfig:182:warning: 'select' used by config symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-> sound/soc/sh/Kconfig:6:warning: 'select' used by config symbol 'SND_SOC_PCM_SH7760' refers to undefined symbol 'SH_DMABRG'
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
-> <stdin>:752:2: warning: #warning syscall setresuid not implemented
-> <stdin>:756:2: warning: #warning syscall getresuid not implemented
-> <stdin>:776:2: warning: #warning syscall setresgid not implemented
-> <stdin>:780:2: warning: #warning syscall getresgid not implemented
->   CHK     include/linux/compile.h
-> mm/page_alloc.c: In function 'nr_free_pagecache_pages':
-> mm/page_alloc.c:1706: error: 'GFP_HIGH_MOVABLE' undeclared (first use in this function)
-> mm/page_alloc.c:1706: error: (Each undeclared identifier is reported only once
-> mm/page_alloc.c:1706: error: for each function it appears in.)
-> make[1]: *** [mm/page_alloc.o] Error 1
-> make[1]: *** Waiting for unfinished jobs....
-> make: *** [mm] Error 2
-> make: *** Waiting for unfinished jobs....
-> drivers/char/rtc.c:118: warning: 'hpet_rtc_interrupt' defined but not used
-> make: *** wait: No child processes.  Stop.
+Please resend in plain text.  My recommendations...
 
-Nope, there are no instances of GFP_HIGH_MOVABLE in the tree once all
-patches are applied.  You hit a bad bisection point: between
-create-the-zone_movable-zone.patch and
-create-the-zone_movable-zone-fix.patch.
+1. If you can setup a linux machine with working MTA, use
+git-format-patch and git-send-email.  If you don't feel comfortable with
+git, you can use mutt + your favorite editor (I use emacs).
+
+2. Use firefox + external editor plugin with line-wrap turned off.
+
+Thanks.
+
+-- 
+tejun
