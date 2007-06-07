@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935021AbXFGS1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932755AbXFGS2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935021AbXFGS1z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 14:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761572AbXFGS1q
+	id S932755AbXFGS2R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 14:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934511AbXFGS1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 14:27:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60084 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761027AbXFGS1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 14:27:46 -0400
-Message-ID: <46684DED.6000907@redhat.com>
-Date: Thu, 07 Jun 2007 11:26:53 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>	<20070606235906.72439d16@the-village.bc.nu>	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>	<20070607001932.35c9591c@the-village.bc.nu>	<466741BD.20106@redhat.com>	<20070607110432.73be7960@the-village.bc.nu>	<4668155B.4020705@redhat.com> <20070607195659.c695c87d.dada1@cosmosbay.com>
-In-Reply-To: <20070607195659.c695c87d.dada1@cosmosbay.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 7 Jun 2007 14:27:53 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:41542 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933770AbXFGS1v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 14:27:51 -0400
+Subject: [PATCH RT] convert RCU Preempt tasklet into softirq.
+From: Steven Rostedt <rostedt@goodmis.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       RT <linux-rt-users@vger.kernel.org>
+In-Reply-To: <20070607161754.GA11941@linux.vnet.ibm.com>
+References: <1181180051.18444.31.camel@localhost.localdomain>
+	 <20070607041411.GB1783@linux.vnet.ibm.com>
+	 <1181226138.18444.54.camel@localhost.localdomain>
+	 <20070607161754.GA11941@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 14:26:59 -0400
+Message-Id: <1181240819.10408.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Following Dipankar's lead, I converted the tasklet in rcupreempt.c into
+a softirq.
 
-Eric Dumazet wrote:
-> eventfd2(int count, int oflags);
-> 
-> signalfd2(int ufd, sigset_t __user *user_mask, size_t sizemask, int oflags);
-> 
-> timerfd2(int ufd, int clockid, int flags,const struct itimerspec __user *utmr, int oflags) ...
+I've compiled and booted with this patch, but ran no other tests.
 
-These aren't released yet, so, change them now before it's too late.
+Paul,  I'm disappointed, this was so trivial I didn't get a chance to
+learn anything ;-)
 
-And to add to your list:
 
-epoll_create().  Important if you think that's the interface people
-should use.
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Index: linux-2.6.21-rt9/include/linux/rcupreempt.h
+===================================================================
+--- linux-2.6.21-rt9.orig/include/linux/rcupreempt.h
++++ linux-2.6.21-rt9/include/linux/rcupreempt.h
+@@ -63,7 +63,9 @@ extern void rcu_check_callbacks(int cpu,
+ extern void rcu_restart_cpu(int cpu);
+ extern long rcu_batches_completed(void);
+ 
+-extern void rcu_process_callbacks(unsigned long unused);
++struct softirq_action;
++
++extern void rcu_process_callbacks(struct softirq_action *unused);
+ 
+ #endif /* __KERNEL__ */
+ #endif /* __LINUX_RCUPREEMPT_H */
+Index: linux-2.6.21-rt9/kernel/rcupreempt.c
+===================================================================
+--- linux-2.6.21-rt9.orig/kernel/rcupreempt.c
++++ linux-2.6.21-rt9/kernel/rcupreempt.c
+@@ -57,7 +57,6 @@
+ struct rcu_data {
+ 	raw_spinlock_t	lock;
+ 	long		completed;	/* Number of last completed batch. */
+-	struct tasklet_struct rcu_tasklet;
+ 	struct rcu_head *nextlist;
+ 	struct rcu_head **nexttail;
+ 	struct rcu_head *waitlist;
+@@ -255,7 +254,7 @@ void rcu_check_callbacks(int cpu, int us
+ 		spin_unlock_irqrestore(&rcu_data.lock, oldirq);
+ 	} else {
+ 		spin_unlock_irqrestore(&rcu_data.lock, oldirq);
+-		tasklet_schedule(&rcu_data.rcu_tasklet);
++		raise_softirq(RCU_SOFTIRQ);
+ 	}
+ }
+ 
+@@ -279,7 +278,7 @@ void rcu_advance_callbacks(int cpu, int 
+ 	spin_unlock_irqrestore(&rcu_data.lock, oldirq);
+ }
+ 
+-void rcu_process_callbacks(unsigned long unused)
++void rcu_process_callbacks(struct softirq_action *unused)
+ {
+ 	unsigned long flags;
+ 	struct rcu_head *next, *list;
+@@ -367,7 +366,7 @@ void __init __rcu_init(void)
+ 	rcu_data.waittail = &rcu_data.waitlist;
+ 	rcu_data.donelist = NULL;
+ 	rcu_data.donetail = &rcu_data.donelist;
+-	tasklet_init(&rcu_data.rcu_tasklet, rcu_process_callbacks, 0UL);
++	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
+ }
+ 
+ /*
 
-iD8DBQFGaE3t2ijCOnn/RHQRAqPGAJ4rhSxvWLvAseBTCZIywIpQ7JCTJACfZSdR
-fGkbIAX5l/1zISYQ6rLmIrk=
-=Ge8V
------END PGP SIGNATURE-----
+
