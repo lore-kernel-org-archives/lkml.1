@@ -1,39 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765078AbXFGPp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765504AbXFGPpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765078AbXFGPp1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbXFGPpH
+	id S1765504AbXFGPpx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764635AbXFGPpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:45:07 -0400
-Received: from rtr.ca ([64.26.128.89]:1775 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762256AbXFGPpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:45:06 -0400
-Message-ID: <466827FF.1030304@rtr.ca>
-Date: Thu, 07 Jun 2007 11:45:03 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: Bad behaviour after hdparm -M  128
-References: <fa.DWgGSeKzniALToNSyX9W5NibA1w@ifi.uio.no> <4666C4B9.8060408@shaw.ca> <20070606154442.GB13166@khazad-dum.debian.net> <20070606162425.GA3943@atjola.homenet> <20070606164854.GA18984@khazad-dum.debian.net> <20070606175112.GA4659@atjola.homenet> <20070606210337.GA31549@khazad-dum.debian.net> <20070606213617.GA6580@atjola.homenet> <20070606215232.GC31549@khazad-dum.debian.net>
-In-Reply-To: <20070606215232.GC31549@khazad-dum.debian.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 7 Jun 2007 11:45:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44218 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764522AbXFGPpj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 11:45:39 -0400
+Date: Thu, 7 Jun 2007 08:45:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tejun Heo <htejun@gmail.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       david@dgreaves.com, jean.luc.coulon@gmail.com, jgarzik@pobox.com,
+       michal.k.k.piotrowski@gmail.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REPOST PATCH] sata_promise: use TF interface for polling
+ NODATA commands
+Message-Id: <20070607084515.668ae621.akpm@linux-foundation.org>
+In-Reply-To: <20070607151717.GA6653@havoc.gtf.org>
+References: <200706052131.l55LVkYN000191@harpo.it.uu.se>
+	<20070605215256.GT31565@havoc.gtf.org>
+	<46665AB5.6040508@gmail.com>
+	<20070606102122.GD29122@htj.dyndns.org>
+	<20070607151717.GA6653@havoc.gtf.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> On Wed, 06 Jun 2007, Björn Steinbrink wrote:
->> HDAPS support is available, revision is MB2IA60A.
+On Thu, 7 Jun 2007 11:17:17 -0400 Jeff Garzik <jeff@garzik.org> wrote:
+
+> On Wed, Jun 06, 2007 at 07:21:22PM +0900, Tejun Heo wrote:
+> > sata_promise uses two different command modes - packet and TF.  Packet
+> > mode is intelligent low-overhead mode while TF is the same old
+> > taskfile interface.  As with other advanced interface (ahci/sil24),
+> > ATA_TFLAG_POLLING has no effect in packet mode.  However, PIO commands
+> > are issued using TF interface in polling mode, so pdc_interrupt()
+> > considers interrupts spurious if ATA_TFLAG_POLLING is set.
+> > 
+> > This is broken for polling NODATA commands because command is issued
+> > using packet mode but the interrupt handler ignores it due to
+> > ATA_TFLAG_POLLING.  Fix pdc_qc_issue_prot() such that ATA/ATAPI NODATA
+> > commands are issued using TF interface if ATA_TFLAG_POLLING is set.
+> > 
+> > This patch fixes detection failure introduced by polling SETXFERMODE.
+> > 
+> > Signed-off-by: Tejun Heo <htejun@gmail.com>
+> > ---
+> > David, please verify this patch.  Mikael, does this look okay?  Please
+> > push this upstream after David and Mikael's ack.
+> > 
+> > (This repost is identical to the previous posting but it's now on the
+> >  correct thread.)
 > 
-> That would usually rule out the possibility of it being the firmware, but we
-> have different disks, so different firmware.
+> Acked-by: Jeff Garzik <jeff@garzik.org>
 > 
-> It looks like I will have to try 2.6.22 to know for sure.
+> Tejun, would you mind pushing this upstream to Linus/Andrew?
+> 
+> I'm travelling this week, and my home firewall doesn't like me.
+> It is probably easier for you than me.
 > 
 
-"hdparm -I" should list "Automatic Acoustic Management feature set"
-(near the bottom) for any drive that *does* support the -M feature.
+I added the below to my next batch:
+
+
+From: Tejun Heo <htejun@gmail.com>
+
+sata_promise uses two different command modes - packet and TF.  Packet mode
+is intelligent low-overhead mode while TF is the same old taskfile
+interface.  As with other advanced interface (ahci/sil24),
+ATA_TFLAG_POLLING has no effect in packet mode.  However, PIO commands are
+issued using TF interface in polling mode, so pdc_interrupt() considers
+interrupts spurious if ATA_TFLAG_POLLING is set.
+
+This is broken for polling NODATA commands because command is issued using
+packet mode but the interrupt handler ignores it due to ATA_TFLAG_POLLING. 
+Fix pdc_qc_issue_prot() such that ATA/ATAPI NODATA commands are issued
+using TF interface if ATA_TFLAG_POLLING is set.
+
+This patch fixes detection failure introduced by polling SETXFERMODE.
+
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Acked-by: Mikael Pettersson <mikpe@it.uu.se>
+Acked-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/ata/sata_promise.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff -puN drivers/ata/sata_promise.c~sata_promise-use-tf-interface-for-polling-nodata-commands drivers/ata/sata_promise.c
+--- a/drivers/ata/sata_promise.c~sata_promise-use-tf-interface-for-polling-nodata-commands
++++ a/drivers/ata/sata_promise.c
+@@ -784,9 +784,12 @@ static unsigned int pdc_qc_issue_prot(st
+ 		if (qc->dev->flags & ATA_DFLAG_CDB_INTR)
+ 			break;
+ 		/*FALLTHROUGH*/
++	case ATA_PROT_NODATA:
++		if (qc->tf.flags & ATA_TFLAG_POLLING)
++			break;
++		/*FALLTHROUGH*/
+ 	case ATA_PROT_ATAPI_DMA:
+ 	case ATA_PROT_DMA:
+-	case ATA_PROT_NODATA:
+ 		pdc_packet_start(qc);
+ 		return 0;
+ 
+@@ -800,7 +803,7 @@ static unsigned int pdc_qc_issue_prot(st
+ static void pdc_tf_load_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
+ {
+ 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
+-		 tf->protocol == ATA_PROT_NODATA);
++		 tf->protocol == ATA_PROT_ATAPI_DMA);
+ 	ata_tf_load(ap, tf);
+ }
+ 
+@@ -808,7 +811,7 @@ static void pdc_tf_load_mmio(struct ata_
+ static void pdc_exec_command_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
+ {
+ 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
+-		 tf->protocol == ATA_PROT_NODATA);
++		 tf->protocol == ATA_PROT_ATAPI_DMA);
+ 	ata_exec_command(ap, tf);
+ }
+ 
+_
+
