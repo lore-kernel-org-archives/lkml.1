@@ -1,173 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966129AbXFGX1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966988AbXFGX20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966129AbXFGX1u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 19:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765929AbXFGX1m
+	id S966988AbXFGX20 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 19:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965199AbXFGX2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 19:27:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52457 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765426AbXFGX1l (ORCPT
+	Thu, 7 Jun 2007 19:28:14 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:57609 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965335AbXFGX2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 19:27:41 -0400
-Date: Thu, 7 Jun 2007 16:27:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: anil.s.keshavamurthy@intel.com
-Cc: linux-kernel@vger.kernel.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool
- handling
-Message-Id: <20070607162726.2236a296.akpm@linux-foundation.org>
-In-Reply-To: <20070606190042.510643000@askeshav-devel.jf.intel.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
-	<20070606190042.510643000@askeshav-devel.jf.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 7 Jun 2007 19:28:12 -0400
+Date: Thu, 7 Jun 2007 16:27:33 -0700
+From: Zach Brown <zach.brown@oracle.com>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [PATCH] Syslets - Fix cachemiss_thread return value
+Message-ID: <20070607232733.GM17082@mami.zabbo.net>
+References: <20070531181923.GA9904@c2.user-mode-linux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070531181923.GA9904@c2.user-mode-linux.org>
+User-Agent: Mutt/1.4.2.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007 11:57:00 -0700
-anil.s.keshavamurthy@intel.com wrote:
+On Thu, May 31, 2007 at 02:19:23PM -0400, Jeff Dike wrote:
+> cachemiss_thread should explicitly return 0 or error instead of
+> task_ret_reg(current) (which is -ENOSYS anyway) because
+> async_thread_helper is careful to put the return value in eax anyway.
 
-> Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+Here's the fix I came up with for this.  Untested (my test boxes are
+busy doing some aio+syslet perf runs :)).  What do you guys think?
 
-That was a terse changelog.
+- z
 
-Obvious question: how does this differ from mempools, and would it be
-better to fill in any gaps in mempool functionality instead of
-implementing something similar-looking?
+- - -
 
-The changelog very much should describe all this, as well as explaining
-what the dynamic behaviour of this new thing is, and what applications are
-envisaged, what problems it solves, etc, etc.
+async: return task_ret_reg() from async_cachemiss_loop()
 
+When a thread blocks in __async_schedule() it finds a thread waiting in
+async_cachemiss_loop() to return to userspace.  The return value of
+async_cachemiss_loop() is propagated to userspace as the return code of the
+call which the thread blocked in.
 
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6.22-rc3/lib/respool.c	2007-06-06 11:34:46.000000000 -0700
+Previously this return code was hard-coded to 0 and -1, which worked fine for
+the first syslet syscall APIs.  sys_io_submit() wants a different return call
+convention when it uses syslets.  So cachemiss_thread() was changed to return
+task_ret_reg(), sys_io_submit() would set it to the value it wanted returned to
+userspace.
 
-There are a number of coding-style glitches in here, but
-scripts/checkpatch.pl catches most of them.  Please run it, and fix.
+But this, by itself, was buggy.  The syslet syscall APIs didn't set
+task_ret_reg() like sys_io_submit() did, so they got garbage returned.  Both
+Jeff Dike and Chris Mason saw this in testing, though I was lucky enough to
+have my returned garbage pass the tests I initially tried.  It also didn't
+catch the other callers of async_cachemiss_loop() which would be returning to
+userspace on behalf of calls which blocked in __async_schedule().  This would
+be a problem, say, if people mixed sys_threadlet_on() and sys_io_submit() in
+the same task.
 
-> @@ -0,0 +1,222 @@
-> +/*
-> + * respool.c - library routines for handling generic pre-allocated pool of objects
-> + *
-> + * Copyright (c) 2006, Intel Corporation.
-> + *
-> + * This file is released under the GPLv2.
-> + *
-> + * Copyright (C) 2006 Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-> + */
-> +
-> +#include <linux/respool.h>
-> +
-> +/**
-> + * get_resource_pool_obj - gets an object from the pool
-> + * @ppool - resource pool in question
-> + * This function gets an object from the pool and
-> + * if the pool count drops below min_count, this
-> + * function schedules work to grow the pool. If
-> + * no elements are fount in the pool then this function
-> + * tries to get memory from kernel.
-> + */
-> +void * get_resource_pool_obj(struct resource_pool *ppool)
-> +{
-> +	unsigned long	flags;
-> +	struct list_head *plist;
-> +	bool queue_work = 0;
-> +
-> +	spin_lock_irqsave(&ppool->pool_lock, flags);
-> +	if (!list_empty(&ppool->pool_head)) {
-> +		plist = ppool->pool_head.next;
-> +		list_del(plist);
-> +		ppool->curr_count--;
-> +	} else {
-> +		/*Making sure that curr_count is 0 when list is empty */
-> +		plist = NULL;
-> +		BUG_ON(ppool->curr_count != 0);
-> +	}
-> +
-> +	/* Check if pool needs to grow */
-> +	if (ppool->curr_count <= ppool->min_count)
-> +		queue_work = 1;
-> +	spin_unlock_irqrestore(&ppool->pool_lock, flags);
-> +
-> +	if (queue_work)
-> +		schedule_work(&ppool->work); /* queue work to grow the pool */
-> +
-> +
-> +	if (plist) {
-> +		memset(plist, 0, ppool->alloc_size); /* Zero out memory */
-> +		return plist;
-> +	}
-> +
-> +	/* Out of luck, try to get memory from kernel */
-> +	plist = (struct list_head *)ppool->alloc_mem(ppool->alloc_size,
-> +			GFP_ATOMIC);
-> +
-> +	return plist;
-> +}
+So this patch fixes those up.
 
-A function like this should take a gfp_t from the caller, and pass it on.
+We always return task_ret_reg() from async_cachemiss_loop().  If we're
+returning to the user's stack and IP instead of on behalf of a blocking call we
+set task_ret_reg() to -1 and then return it.
 
-> +/**
-> + * put_resource_pool_obj - puts an object back to the pool
-> + * @vaddr - object's address
-> + * @ppool - resource pool in question.
-> + * This function puts an object back to the pool.
-> + */
-> +void put_resource_pool_obj(void * vaddr, struct resource_pool *ppool)
-> +{
-> +	unsigned long	flags;
-> +	struct list_head *plist = (struct list_head *)vaddr;
-> +	bool queue_work = 0;
-> +
-> +	BUG_ON(!vaddr);
-> +	BUG_ON(!ppool);
-> +
-> +	spin_lock_irqsave(&ppool->pool_lock, flags);
-> +	list_add(plist, &ppool->pool_head);
-> +	ppool->curr_count++;
-> +	if (ppool->curr_count > (ppool->min_count +
-> +		ppool->grow_count * 2))
-> +		queue_work = 1;
+__exec_atom() sets task_ret_reg() to NULL if there's a chance that it will
+block while executing the syscall in the atom.
 
-Some of the indenting is a bit funny-looking in here.
+Signed-off-by: Zach Brown <zach.brown@oracle.com>
 
-> +	spin_unlock_irqrestore(&ppool->pool_lock, flags);
-> +
-> +	if (queue_work)
-> +		schedule_work(&ppool->work); /* queue work to shrink the pool */
-> +}
-> +
-> +void
-> +__grow_resource_pool(struct resource_pool *ppool,
-> +	unsigned int grow_count)
-> +{
-> +	unsigned long	flags;
-> +	struct list_head *plist;
-> +
-> +	while(grow_count) {
-> +		plist = (struct list_head *)ppool->alloc_mem(ppool->alloc_size,
-> +			GFP_KERNEL);
-
-resource_pool.alloc_mem() already returns void *, so there is never a need
-to cast its return value.
-
-> +		if (!plist)
-> +			break;
-> +
-> +		/* Add the element to the list */
-> +		spin_lock_irqsave(&ppool->pool_lock, flags);
-> +		list_add(plist, &ppool->pool_head);
-> +		ppool->curr_count++;
-> +		spin_unlock_irqrestore(&ppool->pool_lock, flags);
-> +		grow_count--;
-> +	}
-> +}
-> +
-
+diff -r f0d8ee165e2e kernel/async.c
+--- a/kernel/async.c	Thu Jun 07 14:32:31 2007 -0700
++++ b/kernel/async.c	Thu Jun 07 16:14:16 2007 -0700
+@@ -206,6 +206,13 @@ static long __exec_atom(struct task_stru
+ 
+ 	if (unlikely(atom->nr >= atom->nr_syscalls))
+ 		return -ENOSYS;
++
++	/*
++	 * If the syslet goes asynchronous then we want the cachemiss
++	 * thread to return NULL to userspace on our behalf.
++	 */
++	if (likely(t->async_ready))
++		task_ret_reg(t) = 0;
+ 
+ 	ret = atom->call_table[atom->nr](atom->args[0], atom->args[1],
+ 					 atom->args[2], atom->args[3],
+@@ -515,7 +522,22 @@ exec_atom(struct async_head *ah, struct 
+ 
+ 	return last_uatom;
+ }
+-
++/**
++ * async_cachemiss_loop - wait as a "cachemiss" thread
++ * @at:	this thread's async_thread in its task_struct
++ * @ah:	The async_head for this thread's group of threads
++ * @t:	this thread's task_struct
++ *
++ * Sleep as a ready async "cachemiss" thread.  If another thread in our
++ * async_head blocks then __async_schedule may block that thread and transfer
++ * its userspace over to us to return in to.
++ *
++ * Before threads get to __async_schedule() they set task_ret_reg() to the
++ * value that should be returned to userspace if they block.  We return it so
++ * that our caller can return it to userspace, either through the usual syscall
++ * return path or through the helper which cachemiss_thread() returns to after
++ * being created.
++ */
+ long async_cachemiss_loop(struct async_thread *at, struct async_head *ah,
+ 			  struct task_struct *t)
+ {
+@@ -542,10 +564,13 @@ long async_cachemiss_loop(struct async_t
+ 		 */
+ 		set_task_stack_reg(t, at->user_stack);
+ 		task_ip_reg(t) = at->user_ip;
+-
+-		return -1;
+-	}
+-	return 0;
++		/*
++		 * We're not returning on behalf of some call, communicate
++		 * that.
++		 */
++		task_ret_reg(t) = -1;
++	}
++	return task_ret_reg(t);
+ }
+ 
+ struct cachemiss_args {
+@@ -559,14 +584,6 @@ struct cachemiss_args {
+  * first time: initialize, pick up the user stack/IP addresses from
+  * the head and then execute the cachemiss loop. If the cachemiss
+  * loop returns then we return back to user-space.
+- *
+- * Our return code overwrites the task_ret_reg() in ptregs in the assembly
+- * stub which execution returns to before returning to userspace.  We may
+- * be returning to userspace on behalf of an interrupted call which might
+- * want us to return something specific to user space.  We return 
+- * task_ret_reg() from this function so that the tasks we're returning
+- * on behalf of can use it to pass return codes to userspace.  Perhaps
+- * we shouldn't have the asm stub overwrite task_ret_reg() instead..
+  */
+ static long cachemiss_thread(void *data)
+ {
+@@ -606,8 +623,7 @@ static long cachemiss_thread(void *data)
+ 	}
+ 	complete(&ah->start_done);
+ 
+-	async_cachemiss_loop(at, ah, t);
+-	return task_ret_reg(t);
++	return async_cachemiss_loop(at, ah, t);
+ }
+ 
+ /**
