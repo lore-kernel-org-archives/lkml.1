@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966093AbXFGBJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935945AbXFGB1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966093AbXFGBJr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 21:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758789AbXFGBJg
+	id S935945AbXFGB1o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 21:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759299AbXFGB1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 21:09:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40800 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756938AbXFGBJf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 21:09:35 -0400
-Date: Wed, 6 Jun 2007 18:09:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Paul Menage" <menage@google.com>
-Cc: "William Lee Irwin III" <wli@holomorphy.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-Message-Id: <20070606180924.e455b13c.akpm@linux-foundation.org>
-In-Reply-To: <6599ad830706061732i1ecb70f3gf0f4c288ba74563d@mail.gmail.com>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-	<20070606163053.GM6909@holomorphy.com>
-	<20070606111315.884cf712.akpm@linux-foundation.org>
-	<20070606194329.GO6909@holomorphy.com>
-	<6599ad830706061732i1ecb70f3gf0f4c288ba74563d@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jun 2007 21:27:35 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:53725 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756938AbXFGB1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 21:27:35 -0400
+Date: Thu, 7 Jun 2007 10:26:22 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: init_task & Co.
+Message-ID: <20070607012622.GA14234@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Davide Libenzi <davidel@xmailserver.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0706061722390.10383@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706061722390.10383@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007 17:32:33 -0700 "Paul Menage" <menage@google.com> wrote:
-
-> On 6/6/07, William Lee Irwin III <wli@holomorphy.com> wrote:
-> >
-> > (1) build for i386 with my .config
-> > (2) attempt to boot in qemu's i386 system simulator
-> >
-> > I'm not seeing the sort of nondeterminism Andy Whitcroft is. It breaks
-> > every time when I try this.
-> >
+On Wed, Jun 06, 2007 at 05:26:49PM -0700, Davide Libenzi wrote:
+> I'm sure there's a good reason behind, but why are those variables 
+> replicated in every architecture?
+> Those are global variables, defined in global include files, and AFAICS 
+> they could be moved in a single kernel/init_task.c file. No?
 > 
-> Looks to be lockdep related - it's reproducible for me when I turn on
-> CONFIG_LOCKDEP and the early crash goes away when I move the
-> container_init_early() call to after lockdep_init().
-> 
+Except they aren't all the same. At the very least, most architectures
+don't agree on the linker section, some don't agree on alignment, and
+others don't agree on initialization. Most people set the initial stack
+from assembly on entry, others do it differently.
 
-ooh, yes, lockdep_init() really does want to be called before anything
-else.
+Having said that, there likely are some things that could be made
+generic, it's basically just init_task and init_thread_union where there
+are disagreements. The rest could likely be stashed in
+kernel/init_task.c (although you'd have to carefully examine the
+alignment for each architecture, particularly the ones that have special
+__asm__ labels).
 
-So do we take it that this code hasn't been tested with lockdep?  Please
-don't forget that step - lockdep finds some pretty nasty bugs sometimes.
-
-This?
-
---- a/init/main.c~containersv10-basic-container-framework-fix-2
-+++ a/init/main.c
-@@ -503,7 +503,6 @@ asmlinkage void __init start_kernel(void
- 	char * command_line;
- 	extern struct kernel_param __start___param[], __stop___param[];
- 
--	container_init_early();
- 	smp_setup_processor_id();
- 
- 	/*
-@@ -512,6 +511,7 @@ asmlinkage void __init start_kernel(void
- 	 */
- 	unwind_init();
- 	lockdep_init();
-+	container_init_early();
- 
- 	local_irq_disable();
- 	early_boot_irqs_off();
-_
-
+Perhaps having everyone use the same linker section for init_task and
+moving that to asm-generic/vmlinux.lds.h is a reasonable first step.
