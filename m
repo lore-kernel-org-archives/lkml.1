@@ -1,113 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763256AbXFGT6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764845AbXFGUA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763256AbXFGT6Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 15:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbXFGT6Q
+	id S1764845AbXFGUA2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 16:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbXFGUAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 15:58:16 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:35820 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752341AbXFGT6O (ORCPT
+	Thu, 7 Jun 2007 16:00:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:58169 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753245AbXFGUAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 15:58:14 -0400
-Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Albert Cahalan <acahalan@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, ebiederm@xmission.com,
-       torvalds@linux-foundation.org
-In-Reply-To: <20070607124824.27e909fd.akpm@linux-foundation.org>
-References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
-	 <20070606204432.b670a7b1.akpm@linux-foundation.org>
-	 <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
-	 <1181233393.9995.14.camel@dyn9047017100.beaverton.ibm.com>
-	 <787b0d920706070943h6ac65b85nee5b01600905be08@mail.gmail.com>
-	 <1181235997.9995.23.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070607124824.27e909fd.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 12:59:23 -0700
-Message-Id: <1181246363.9995.37.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+	Thu, 7 Jun 2007 16:00:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PC8vApodxt0qQpPrHB1X5dRcZsaIVkuUZX3uYs0bj0khLVd5JtW7nV62wiNOcr77NRLI2fNrEasKbo0pIZBTyfSeEDd+MxtWUooIW929U49NhiX5dTOJLQxlJc1tlpZC5hTQ1NnY+Ae0AmFLgBsukMDNqt5X4hzKs8COFca5cyo=
+Message-ID: <d9def9db0706071300h4d25a37cye1ec9bc19248bea9@mail.gmail.com>
+Date: Thu, 7 Jun 2007 22:00:10 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: pci probe
+Cc: "Manu Abraham" <abraham.manu@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070529222735.GK4644@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4648B29A.6080406@gmail.com> <4649B270.8050002@gmail.com>
+	 <20070516071851.GB19294@kroah.com> <464AF932.9070008@gmail.com>
+	 <20070529222735.GK4644@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-07 at 12:48 -0700, Andrew Morton wrote:
-> On Thu, 07 Jun 2007 10:06:37 -0700
-> Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> 
-> > On Thu, 2007-06-07 at 12:43 -0400, Albert Cahalan wrote:
-> > > On 6/7/07, Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> > > 
-> > > > BTW, I agree with Eric that its would be nice to use shmid as part
-> > > > of name instead of forcing to be as inode number. It should be
-> > > > possible for pmap to workout shmid from "key" or name. Isn't it ?
-> > > 
-> > > It is not at all nice.
-> > > 
-> > > 1. it's incompatible ABI breakage
-> > > 2. where will you put the key then, in the inode? :-)
-> > 
-> > Nope. Currently "key" is part of the name (but its not unique).
-> > 
-> > > 
-> > > Changing to "SYSVID%d" is no good either. Look, people
-> > > are ***parsing*** this stuff in /proc. The /proc filesystem
-> > > is not some random sandbox to be playing in.
-> > > 
-> > > Before you go messing with it, note that the device number
-> > > also matters. (it's per-boot dynamic, but that's OK)
-> > > That's how one knows that /SYSV00000000 is not just
-> > > a regular file; sadly these didn't get a non-/ prefix.
-> > > (and no you can't fix that now; it's way too late)
-> > > 
-> > > Next time you feel like breaking an ABI, mind putting
-> > > "LET'S BREAK AN ABI!" in the subject of your email?
-> > 
-> > I am not breaking ABI. Its already broken in the current
-> > mainline. I am trying to fix it by putting back the ino#
-> > as shmid. Eric had a suggestion that, instead of depending
-> > on the inode# to be shmid, we could embed shmid into name
-> > (instead of "key" which is currently not unique).
-> > 
-> > > BTW, I suspect this kind of thing also breaks:
-> > > a. fuser, lsof, and other resource usage display tools
-> > > b. various obscure emulators (similar to valgrind)
-> > 
-> > If you strongly feel that "old" behaviour needs to be retained, 
-> 
-> yup, we should put it back.  The change was, afaik, accidental.
-> 
-> > here is the patch I originally suggested.
-> 
-> Confused.  Will this one-liner fix all the userspace breakage to which
-> Albert refers?
+On 5/30/07, Greg KH <greg@kroah.com> wrote:
+> On Wed, May 16, 2007 at 04:29:38PM +0400, Manu Abraham wrote:
+> > Greg KH wrote:
+> > > On Tue, May 15, 2007 at 05:15:28PM +0400, Manu Abraham wrote:
+> > >> Manu Abraham wrote:
+> > >>> Hi,
+> > >>>
+> > >>> I do have a device that's a multifunction device. Eventhough a MFD, it
+> > >>> just has one Interrupt which is shared by by a Configuration space for
+> > >>> each function. ie, INTA is shared between them functions.
+> > >>>
+> > >>> In such a case, i am wondering, (since pci_probe returns a pointer to
+> > >>> one PCI function alone and i need to use both the functions in one
+> > >>> module alone rather than using a module for each function and that the
+> > >>> functions are quite similar for them to be used in different modules,
+> > >>> such that a separate probe/ISR etc is used) whether using pci_get_device
+> > >>> would be a better alternative to do manual searching for the functions
+> > >>> in such a case.
+> > >>>
+> > >> Just figured out that pci_get_subsys() does work in a better. Looking at
+> > >> kernel sources all i find is just one single user of pci_get_subsys()
+> > >>
+> > >> building the code around pci_get_subsys(), does this have any negative
+> > >> impact ?
+> > >
+> > > Yes:
+> > >     - your device will not show up properly in sysfs (no
+> > >       device/driver binding ability from userspace, no good
+> > >       information so that udev can properly name the device, etc.)
+> >
+> > This one sounds bad.
+> >
+> > >     - your driver will not work on any pci-hotplug type system (that
+> > >       includes expresscard and pccard and lots of high-end servers.
+> >
+> > This doesn't matter
+>
+> Are you sure?  PCI Hotplug is showing up in more places that people
+> realize...
 
-Yes. Albert, please correct me if I am wrong.
+In case of video4linux and dvb, there are cx88 and saa7134 based
+pcmcia devices available which show up as PCI devices, both of these
+drivers enable the interrupts as soon as they're connected and there's
+no need to access the device nodes for that.
+Another point is that they're not hotplug aware, the driver end up in
+an endless loop or crashes linux if someone unplugs the device (even
+if it's not in use).
 
-Thanks,
-Badari
+>
+> > >     - your driver will not be notified if the system is being
+> > >       suspended or resumed or wanting to drop into a low power
+> > >       state.
+> > >     - another driver can bind to your device without you ever
+> > >       knowing it.
+> >
+> > These also sound bad.
+> >
+> > > So in short, use pci_probe and just handle the fact that you need to be
+> > > called for two PCI devices and bind to both of them.  It shouldn't be
+> > > that hard...
+> >
+> > Thanks for the explanation.
+> >
+> > Do you mean to have two PCIID tables ? But then that does mean 2 modules
+> > don't you ? (i thought probe would be called once per module) Or you
+> > mean to say use PCI_ANY_ID in the table to match multiple devices and
+> > then allow probe to return a list of devices ?
+>
+>
+> No, you can specify multiple devices in the same device id table, and
+> your driver will get called for all of the matching devices.  You just
+> need to "bind" them together in your driver to be able to handle
+> everything properly.  It shouldn't be that tough.
+>
 
+Uwe posted an example how to tie multiple functions of a device
+together, there are quite a few ways how to solve that problem.
 
-> > "ino#" in /proc/pid/maps used to match "ipcs -m" output for shared 
-> > memory (shmid). It was useful in debugging, but its changed recently. 
-> > This patch sets inode number to shared memory id to match /proc/pid/maps.
-> > 
-> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> > 
-> > Index: linux-2.6.22-rc4/ipc/shm.c
-> > ===================================================================
-> > --- linux-2.6.22-rc4.orig/ipc/shm.c	2007-06-04 17:57:25.000000000 -0700
-> > +++ linux-2.6.22-rc4/ipc/shm.c	2007-06-06 08:23:57.000000000 -0700
-> > @@ -397,6 +397,7 @@ static int newseg (struct ipc_namespace 
-> >  	shp->shm_nattch = 0;
-> >  	shp->id = shm_buildid(ns, id, shp->shm_perm.seq);
-> >  	shp->shm_file = file;
-> > +	file->f_dentry->d_inode->i_ino = shp->id;
-> >  
-> >  	ns->shm_tot += numpages;
-> >  	shm_unlock(shp);
-> > 
-> > 
+http://linuxtv.org/pipermail/linux-dvb/2007-June/018481.html
 
+Markus
