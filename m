@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935481AbXFGTiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965633AbXFGTjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935481AbXFGTiL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 15:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964992AbXFGTh4
+	id S965633AbXFGTjB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 15:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935064AbXFGTix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 15:37:56 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:30482 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964926AbXFGThy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 15:37:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=WhWdX7XPTlms+2o9ZQpxzEn2CiOsoJSJCNz5PdfXSRfJiM+R4/Rf24QC2DsrdSRXU/lSxOrVXOp/zP8uAzaNb6uG+pVrd3RgLJ8ywvhV/mDLXYoUZ3q8MRFNKXlkvmcLxC4JANdWIWTLndihU6F4Crl8zeZm3oZ8Rvjc25YskKY=
-Date: Thu, 7 Jun 2007 15:37:51 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-Subject: Re: 2.6.22-rc4-mm2
-Message-ID: <20070607193751.GA8204@nineveh.local>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Thu, 7 Jun 2007 15:38:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51782 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932728AbXFGTiv (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 15:38:51 -0400
+Date: Thu, 7 Jun 2007 20:38:44 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: carsteno@de.ibm.com
+Cc: Christoph Hellwig <hch@infradead.org>, Jared Hulbert <jaredeh@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Message-ID: <20070607193844.GB17144@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	carsteno@de.ibm.com, Jared Hulbert <jaredeh@gmail.com>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	richard.griffiths@windriver.com,
+	Richard Griffiths <res07ml0@verizon.net>,
+	Linux-kernel@vger.kernel.org
+References: <4653F264.1030807@de.ibm.com> <465BB5BA.3050900@yahoo.com.au> <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com> <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com> <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com> <20070606113351.GA11701@infradead.org> <4666DD88.5030708@de.ibm.com> <20070606162305.GA20600@infradead.org> <46683B6A.6030306@de.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: jfannin@gmail.com (Joseph Fannin)
+In-Reply-To: <46683B6A.6030306@de.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
->
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
+On Thu, Jun 07, 2007 at 07:07:54PM +0200, Carsten Otte wrote:
+> I've had a few beer long discussion with Joern Engel and David 
+> Woodhouse on this one. To cut a long discussion short: the current XIP 
+> infrastructure is not sufficient to be used on top of mtd. We'd need 
+> some extenstions:
+> - on get_xip_page() we'd need to state if we want the reference 
+> read-only or read+write
+> - we need a put_xip_page() to return references
+> - and finally we need a callback for the referece, so that the mtd 
+> driver can ask to get its reference back (in order to unmap from 
+> userland when erasing a block)
 
-    I don't think this was intentional: 
+And we'll need that even when using cramfs.  There's not way we'd
+merge a hack where the user has to specify a physical address on
+the mount command line.
 
-    [   29.873254] edac_stub: module license 'unspecified' taints kernel.
+> While I fully agree, that a flash filesystem using xip would be very 
+> desireable, the proposed cramfs extension is a totaly different beast 
+> that has its own value to me: the ability to select per file whether 
+> xip or compression is more efficient.
 
---
-Joseph Fannin
-jfannin@gmail.com || jhf@columbus.rr.com
-
+You'd of course want all that for a full flash filesystem aswell.
