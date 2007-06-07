@@ -1,148 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937478AbXFGW3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937687AbXFGWbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937478AbXFGW3A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936897AbXFGW2t
+	id S937687AbXFGWbU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937203AbXFGWbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:28:49 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34640 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S937178AbXFGW2r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:28:47 -0400
-Date: Fri, 8 Jun 2007 08:28:13 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Greaves <david@dgreaves.com>
-Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Message-ID: <20070607222813.GG85884050@sgi.com>
-References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 7 Jun 2007 18:31:06 -0400
+Received: from mga03.intel.com ([143.182.124.21]:58332 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936797AbXFGWbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:31:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,396,1175497200"; 
+   d="scan'208";a="236815632"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] trim memory not covered by WB MTRRs
+Date: Thu, 7 Jun 2007 15:30:51 -0700
+User-Agent: KMail/1.9.6
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46680F5E.6070806@dgreaves.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200706071530.51552.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 02:59:58PM +0100, David Greaves wrote:
-> David Chinner wrote:
-> >On Thu, Jun 07, 2007 at 11:30:05AM +0100, David Greaves wrote:
-> >>Tejun Heo wrote:
-> >>>Hello,
-> >>>
-> >>>David Greaves wrote:
-> >>>>Just to be clear. This problem is where my system won't resume after s2d
-> >>>>unless I umount my xfs over raid6 filesystem.
-> >>>This is really weird.  I don't see how xfs mount can affect this at all.
-> >>Indeed.
-> >>It does :)
-> >
-> >Ok, so lets determine if it really is XFS.
-> Seems like a good next step...
-> 
-> >Does the lockup happen with a
-> >different filesystem on the md device? Or if you can't test that, does
-> >any other XFS filesystem you have show the same problem?
-> It's a rather full 1.2Tb raid6 array - can't reformat it - sorry :)
+On some machines, buggy BIOSes don't properly setup WB MTRRs to
+cover all available RAM, meaning the last few megs (or even gigs)
+of memory will be marked uncached.  Since Linux tends to allocate
+from high memory addresses first, this causes the machine to be
+unusably slow as soon as the kernel starts really using memory
+(i.e. right around init time).
 
-I suspected as much :/
+This patch works around the problem by scanning the MTRRs at
+boot and figuring out whether the current end_pfn value (setup
+by early e820 code) goes beyond the highest WB MTRR range, and
+if so, trimming it to match.  A fairly obnoxious KERN_WARNING
+is printed too, letting the user know that not all of their
+memory is available due to a likely BIOS bug.
 
-> I only noticed the problem when I umounted the fs during tests to prevent 
-> corruption - and it worked. I'm doing a sync each time it hibernates (see 
-> below) and a couple of paranoia xfs_repairs haven't shown any problems.
+Something similar could be done on i386 if needed, but the boot
+ordering would be slightly different, since the MTRR code on i386
+depends on the boot_cpu_data structure being setup.
 
-sync just guarantees that metadata changes are logged and data is
-on disk - it doesn't stop the filesystem from doing anything after
-the sync...
+This patch incorporates the feedback from Eric and Andi:
+  - use MAX_VAR_RANGES instead of NUM_VAR_RANGES
+  - move array declaration to header file as an extern
+  - add command line disable option "disable_mtrr_trim"
+  - don't run the trim code if the MTRR default type is cacheable
+  - don't run the trim code on non-Intel machines
 
-> I do have another xfs filesystem on /dev/hdb2 (mentioned when I noticed the 
-> md/XFS correlation). It doesn't seem to have/cause any problems.
+Justin, feel free to test again if you have time and add your
+"Tested-by" signoff.
 
-Ok, so it's not an obvious XFS problem...
+Andi, as for large pages, do you think this is ok as is, or should
+I trim a larger granularity?  If so, what granularity?
 
-> >If it is xfs that is causing the problem, what happens if you
-> >remount read-only instead of unmounting before shutting down?
-> Yes, I'm happy to try these tests.
-> nb, the hibernate script is:
-> ethtool -s eth0 wol g
-> sync
-> echo platform > /sys/power/disk
-> echo disk > /sys/power/state
-> 
-> So there has always been a sync before any hibernate.
-> 
-> 
-> cu:~# mount -oremount,ro /huge
-.....
-> [this works and resumes]
+Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
 
-Ok.
+Thanks,
+Jesse
 
-> cu:~# mount -oremount,rw /huge
-> cu:~# /usr/net/bin/hibernate
-> [this works and resumes too !]
-
-Interesting. That means something in the generic remount code
-is affecting this.
-
-> cu:~# touch /huge/tst
-> cu:~# /usr/net/bin/hibernate
-> [but this doesn't even hibernate]
-
-Ok, so a clean inode is sufficient to prevent hibernate from working.
-
-So, what's different between a sync and a remount?
-
-do_remount_sb() does:
-
-    599         shrink_dcache_sb(sb);
-    600         fsync_super(sb);
-
-of which a sync does neither. sync does what fsync_super() does in
-different sort of way, but does not call sync_blockdev() on each
-block device. It looks like that is the two main differences between
-sync and remount - remount trims the dentry cache and syncs the blockdev,
-sync doesn't.
-
-> > What about freezing the filesystem?
-> cu:~# xfs_freeze -f /huge
-> cu:~# /usr/net/bin/hibernate
-> [but this doesn't even hibernate - same as the 'touch']
-
-I suspect that the frozen filesystem might cause other problems
-in the hibernate process. However, while a freeze calls sync_blockdev()
-it does not trim the dentry cache.....
-
-So, rather than a remount before hibernate, lets see if we can 
-remove the dentries some other way to determine if removing excess
-dentries/inodes from the caches makes a difference. Can you do:
-
-# touch /huge/foo
-# sync
-# echo 1 > /proc/sys/vm/drop_caches
-# hibernate
-
-# touch /huge/bar
-# sync
-# echo 2 > /proc/sys/vm/drop_caches
-# hibernate
-
-# touch /huge/baz
-# sync
-# echo 3 > /proc/sys/vm/drop_caches
-# hibernate
-
-And see if any of those survive the suspend/resume?
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 5d0283c..cb728a8 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -553,6 +553,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			See drivers/char/README.epca and
+ 			Documentation/digiepca.txt.
+ 
++	disable_mtrr_trim [X86-64]
++			By default the kernel will trim any uncacheable
++			memory out of your available memory pool based on
++			MTRR settings.  This parameter disables that behavior,
++			possibly causing your machine to run very slowly.
++
+ 	dmascc=		[HW,AX25,SERIAL] AX.25 Z80SCC driver with DMA
+ 			support available.
+ 			Format: <io_dev0>[,<io_dev1>[,..<io_dev32>]]
+diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
+index c4ebb51..8eb3085 100644
+--- a/arch/i386/kernel/cpu/mtrr/generic.c
++++ b/arch/i386/kernel/cpu/mtrr/generic.c
+@@ -13,7 +13,7 @@
+ #include "mtrr.h"
+ 
+ struct mtrr_state {
+-	struct mtrr_var_range *var_ranges;
++	struct mtrr_var_range var_ranges[MAX_VAR_RANGES];
+ 	mtrr_type fixed_ranges[NUM_FIXED_RANGES];
+ 	unsigned char enabled;
+ 	unsigned char have_fixed;
+@@ -84,12 +84,6 @@ void get_mtrr_state(void)
+ 	struct mtrr_var_range *vrs;
+ 	unsigned lo, dummy;
+ 
+-	if (!mtrr_state.var_ranges) {
+-		mtrr_state.var_ranges = kmalloc(num_var_ranges * sizeof (struct mtrr_var_range), 
+-						GFP_KERNEL);
+-		if (!mtrr_state.var_ranges)
+-			return;
+-	} 
+ 	vrs = mtrr_state.var_ranges;
+ 
+ 	rdmsr(MTRRcap_MSR, lo, dummy);
+diff --git a/arch/i386/kernel/cpu/mtrr/if.c b/arch/i386/kernel/cpu/mtrr/if.c
+index c7d8f17..0e34a67 100644
+--- a/arch/i386/kernel/cpu/mtrr/if.c
++++ b/arch/i386/kernel/cpu/mtrr/if.c
+@@ -11,10 +11,6 @@
+ #include <asm/mtrr.h>
+ #include "mtrr.h"
+ 
+-/* RED-PEN: this is accessed without any locking */
+-extern unsigned int *usage_table;
+-
+-
+ #define FILE_FCOUNT(f) (((struct seq_file *)((f)->private_data))->private)
+ 
+ static const char *const mtrr_strings[MTRR_NUM_TYPES] =
+diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
+index 7202b98..ef552ba 100644
+--- a/arch/i386/kernel/cpu/mtrr/main.c
++++ b/arch/i386/kernel/cpu/mtrr/main.c
+@@ -38,8 +38,8 @@
+ #include <linux/cpu.h>
+ #include <linux/mutex.h>
+ 
++#include <asm/e820.h>
+ #include <asm/mtrr.h>
+-
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+ #include <asm/msr.h>
+@@ -47,7 +47,7 @@
+ 
+ u32 num_var_ranges = 0;
+ 
+-unsigned int *usage_table;
++unsigned int usage_table[MAX_VAR_RANGES];
+ static DEFINE_MUTEX(mtrr_mutex);
+ 
+ u64 size_or_mask, size_and_mask;
+@@ -121,11 +121,6 @@ static void __init init_table(void)
+ 	int i, max;
+ 
+ 	max = num_var_ranges;
+-	if ((usage_table = kmalloc(max * sizeof *usage_table, GFP_KERNEL))
+-	    == NULL) {
+-		printk(KERN_ERR "mtrr: could not allocate\n");
+-		return;
+-	}
+ 	for (i = 0; i < max; i++)
+ 		usage_table[i] = 1;
+ }
+@@ -589,16 +584,11 @@ struct mtrr_value {
+ 	unsigned long	lsize;
+ };
+ 
+-static struct mtrr_value * mtrr_state;
++static struct mtrr_value mtrr_state[MAX_VAR_RANGES];
+ 
+ static int mtrr_save(struct sys_device * sysdev, pm_message_t state)
+ {
+ 	int i;
+-	int size = num_var_ranges * sizeof(struct mtrr_value);
+-
+-	mtrr_state = kzalloc(size,GFP_ATOMIC);
+-	if (!mtrr_state)
+-		return -ENOMEM;
+ 
+ 	for (i = 0; i < num_var_ranges; i++) {
+ 		mtrr_if->get(i,
+@@ -620,7 +610,6 @@ static int mtrr_restore(struct sys_device * sysdev)
+ 				 mtrr_state[i].lsize,
+ 				 mtrr_state[i].ltype);
+ 	}
+-	kfree(mtrr_state);
+ 	return 0;
+ }
+ 
+@@ -631,6 +620,57 @@ static struct sysdev_driver mtrr_sysdev_driver = {
+ 	.resume		= mtrr_restore,
+ };
+ 
++static int disable_mtrr_trim;
++
++static int __init disable_mtrr_trim_setup(char *str)
++{
++	disable_mtrr_trim = 1;
++	return 0;
++}
++early_param("disable_mtrr_trim", disable_mtrr_trim_setup);
++
++/**
++ * mtrr_trim_uncached_memory - trim RAM not covered by MTRRs
++ *
++ * Some buggy BIOSes don't setup the MTRRs properly for systems with certain
++ * memory configurations.  This routine checks to make sure the MTRRs having
++ * a write back type cover all of the memory the kernel is intending to use.
++ * If not, it'll trim any memory off the end by adjusting end_pfn, removing
++ * it from the kernel's allocation pools, warning the user with an obnoxious
++ * message.
++ */
++void __init mtrr_trim_uncached_memory(void)
++{
++	unsigned long i, base, size, highest_addr = 0, def, dummy;
++	mtrr_type type;
++
++	/* Make sure we only trim uncachable memory on Intel machines */
++	rdmsr(MTRRdefType_MSR, def, dummy);
++	def &= 0xff;
++	if (!use_intel() || disable_mtrr_trim || def != MTRR_TYPE_UNCACHABLE)
++		return;
++
++	/* Find highest cached pfn */
++	for (i = 0; i < num_var_ranges; i++) {
++		mtrr_if->get(i, &base, &size, &type);
++		if (type != MTRR_TYPE_WRBACK)
++			continue;
++		base <<= PAGE_SHIFT;
++		size <<= PAGE_SHIFT;
++		if (highest_addr < base + size)
++			highest_addr = base + size;
++	}
++
++	if ((highest_addr >> PAGE_SHIFT) != end_pfn) {
++		printk(KERN_WARNING "***************\n");
++		printk(KERN_WARNING "**** WARNING: likely BIOS bug\n");
++		printk(KERN_WARNING "**** MTRRs don't cover all of "
++		       "memory, trimmed %ld pages\n", end_pfn -
++		       (highest_addr >> PAGE_SHIFT));
++		printk(KERN_WARNING "***************\n");
++		end_pfn = highest_addr >> PAGE_SHIFT;
++	}
++}
+ 
+ /**
+  * mtrr_bp_init - initialize mtrrs on the boot CPU
+diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
+index 289dfe6..627b339 100644
+--- a/arch/i386/kernel/cpu/mtrr/mtrr.h
++++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
+@@ -14,6 +14,7 @@
+ #define MTRRphysMask_MSR(reg) (0x200 + 2 * (reg) + 1)
+ 
+ #define NUM_FIXED_RANGES 88
++#define MAX_VAR_RANGES 256
+ #define MTRRfix64K_00000_MSR 0x250
+ #define MTRRfix16K_80000_MSR 0x258
+ #define MTRRfix16K_A0000_MSR 0x259
+@@ -34,6 +35,8 @@
+    an 8 bit field: */
+ typedef u8 mtrr_type;
+ 
++extern unsigned int usage_table[MAX_VAR_RANGES];
++
+ struct mtrr_ops {
+ 	u32	vendor;
+ 	u32	use_intel_if;
+diff --git a/arch/x86_64/kernel/bugs.c b/arch/x86_64/kernel/bugs.c
+index c3c6b91..c138eac 100644
+--- a/arch/x86_64/kernel/bugs.c
++++ b/arch/x86_64/kernel/bugs.c
+@@ -14,7 +14,6 @@
+ void __init check_bugs(void)
+ {
+ 	identify_cpu(&boot_cpu_data);
+-	mtrr_bp_init();
+ #if !defined(CONFIG_SMP)
+ 	printk("CPU: ");
+ 	print_cpu_info(&boot_cpu_data);
+diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
+index eb6524f..409b63c 100644
+--- a/arch/x86_64/kernel/setup.c
++++ b/arch/x86_64/kernel/setup.c
+@@ -266,6 +266,10 @@ void __init setup_arch(char **cmdline_p)
+ 	 * we are rounding upwards:
+ 	 */
+ 	end_pfn = e820_end_of_ram();
++	/* Trim memory not covered by WB MTRRs */
++	mtrr_bp_init();
++	mtrr_trim_uncached_memory();
++
+ 	num_physpages = end_pfn;
+ 
+ 	check_efer();
+diff --git a/include/asm-x86_64/mtrr.h b/include/asm-x86_64/mtrr.h
+index b557c48..cc62bd8 100644
+--- a/include/asm-x86_64/mtrr.h
++++ b/include/asm-x86_64/mtrr.h
+@@ -78,6 +78,7 @@ extern int mtrr_add_page (unsigned long base, unsigned long size,
+ 		     unsigned int type, char increment);
+ extern int mtrr_del (int reg, unsigned long base, unsigned long size);
+ extern int mtrr_del_page (int reg, unsigned long base, unsigned long size);
++extern void mtrr_trim_uncached_memory(void);
+ #  else
+ static __inline__ int mtrr_add (unsigned long base, unsigned long size,
+ 				unsigned int type, char increment)
