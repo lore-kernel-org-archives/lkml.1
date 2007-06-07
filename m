@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932507AbXFGUBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbXFGUEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932507AbXFGUBu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 16:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbXFGUBo
+	id S933365AbXFGUEA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 16:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbXFGUDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 16:01:44 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56616 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752706AbXFGUBn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 16:01:43 -0400
-Date: Thu, 7 Jun 2007 22:01:47 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: 2.6.22-rc4-mm2
-Message-ID: <20070607200147.GT5500@stusta.de>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <20070607064231.GQ6909@holomorphy.com> <20070607071138.GA15420@linux-sh.org> <20070607091942.GA1584@roarinelk.homelinux.net> <20070607093702.GA19759@linux-sh.org> <20070607094633.GB1672@roarinelk.homelinux.net>
+	Thu, 7 Jun 2007 16:03:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35868 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753245AbXFGUDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 16:03:51 -0400
+Message-ID: <4668644F.80708@redhat.com>
+Date: Thu, 07 Jun 2007 13:02:23 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070607094633.GB1672@roarinelk.homelinux.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7> <20070606235906.72439d16@the-village.bc.nu> <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com> <20070607001932.35c9591c@the-village.bc.nu> <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu> <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com> <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 11:46:33AM +0200, Manuel Lauss wrote:
-> On Thu, Jun 07, 2007 at 06:37:02PM +0900, Paul Mundt wrote:
-> > On Thu, Jun 07, 2007 at 11:19:42AM +0200, Manuel Lauss wrote:
-> > > On Thu, Jun 07, 2007 at 04:11:38PM +0900, Paul Mundt wrote:
-> > > > On Wed, Jun 06, 2007 at 11:42:31PM -0700, William Lee Irwin III wrote:
-> > > > > sound/soc/sh/Kconfig:6:warning: 'select' used by config symbol 'SND_SOC_PCM_SH7760' refers to undefined symbol 'SH_DMABRG'
-> > > 
-> > > ---
-> > > 
-> > > Make SND_SOC_PCM_SH7760 depend on SH_DMABRG rather than selecting it
-> > > 
-> > > Fixes Kconfig warning about undefined SH_DMABRG symbol on non-sh builds.
-> > > 
-> > Are you sure this is the way you want to go? The select here is
-> > reasonably useful.
-> 
-> I hope the other people using this code are smart enough to set SH_DMABRG in
-> their board's defconfig.  (I seem to remember there was an argument about
-> the evilness of select;  and as far as I know I am the only user of this
-> code anyway)
-> 
-> If you think select is more useful then I'll send another patch to the 
-> alsa folks.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-There's nothing that has to be fixed.
+Davide Libenzi wrote:
+> Uli, would it be OK to rely only on base randomization and use a LIFO 
+> instead? We have base randomization, plus LIFO does not mean strictly 
+> sequential like legacy allocator, just more compatc and cache friendly.
 
-Sam is working on changing Kconfig to no longer emit these bogus 
-warnings.
+If FIFO is slowing things down it's certainly OK to you LIFO.  If there
+is wiggle room (i.e., choose between two descriptors without additional
+cost) then taking advantage of this would be of advantage.  A policy
+which enforces that only the last closed descriptor is not reused
+immediately might might be enough.  Maybe that's too specific for
+people's taste.
 
-> Thanks,
-> 	Manuel Lauss
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+iD8DBQFGaGRP2ijCOnn/RHQRAv2qAJ0WzyKvOPx01PviCp4L/mUmNaehtQCfdKF5
+4Qc7Uj47zY8jdqUZf+Ht3gs=
+=jRfN
+-----END PGP SIGNATURE-----
