@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964809AbXFGRjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765973AbXFGRlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964809AbXFGRjP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760781AbXFGRjA
+	id S1765973AbXFGRlJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbXFGRk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:39:00 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:57337 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754470AbXFGRi7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:38:59 -0400
-Message-ID: <4668412D.3030506@zytor.com>
-Date: Thu, 07 Jun 2007 10:32:29 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 7 Jun 2007 13:40:57 -0400
+Received: from lucidpixels.com ([75.144.35.66]:60428 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752702AbXFGRk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:40:57 -0400
+Date: Thu, 7 Jun 2007 13:40:55 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Jesse Barnes <jesse.barnes@intel.com>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+In-Reply-To: <200706071035.18356.jesse.barnes@intel.com>
+Message-ID: <Pine.LNX.4.64.0706071340380.2477@p34.internal.lan>
+References: <200706061229.24486.jesse.barnes@intel.com>
+ <20070607081619.GA15226@one.firstfloor.org> <200706071035.18356.jesse.barnes@intel.com>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Satyam Sharma <satyam.sharma@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: why does the macro "ZERO_PAGE" take an argument?
-References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain>  <4667EC18.4080904@yahoo.com.au>  <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain> <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com> <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
->> The comment above empty_zero_page and zero_page_mask
->> declarations at arch/mips/mm/init.c:508 sheds light on this ...
-> 
-> well, it *sort of* does.  at line 64 of that file:
-> 
-> /*
->  * We have up to 8 empty zeroed pages so we can map one of the right colour
->  * when needed.  This is necessary only on R4000 / R4400 SC and MC versions
->  * where we have to avoid VCED / VECI exceptions for good performance at
->  * any price.  Since page is never written to after the initialization we
->  * don't have to care about aliases on other CPUs.
->  */
-> 
-> although it's not clear where in the source tree are the invocations
-> that would actually make a difference to a MIPS system, which is why
-> i've CC'ed ralf on this.  i'm sure he can clear this up. :-)
 
-x86 could also benefit from coloured zeropages.  In fact, I thought it
-already had them (K8 wants as many as 8.)
 
-	-hpa
+On Thu, 7 Jun 2007, Jesse Barnes wrote:
+
+> On Thursday, June 7, 2007 1:16 am Andi Kleen wrote:
+>> On Wed, Jun 06, 2007 at 12:29:23PM -0700, Jesse Barnes wrote:
+>>> On some machines, buggy BIOSes don't properly setup WB MTRRs to
+>>> cover all available RAM, meaning the last few megs (or even gigs)
+>>> of memory will be marked uncached.  Since Linux tends to allocate
+>>> from high memory addresses first, this causes the machine to be
+>>> unusably slow as soon as the kernel starts really using memory
+>>> (i.e. right around init time).
+>>
+>> In theory -- while not recommended -- a BIOS could also
+>> use a default fallback MTRR for cached and use explicit MTRRs to
+>> map the non existing ranges uncached. Would it make sense to handle
+>> this case?
+>
+> Probably.  I could just check the default memory type and bail out if
+> it's cacheable.
+>
+>> Should also probably have some command line option
+>> to disable the check in case something bad happens with it.
+>
+> Sure.
+>
+>> Another thing that might be sense to investigate in relationship
+>> to this patch is large page mappings with MTRRs. iirc P4 and also K8
+>> splits pages internally with MTRR boundaries and might have some
+>> other bad side effects. Should we use this as hints to use 4K pages
+>> for the boundary areas?
+>
+> Or I could trim to the nearest large page boundary...  We'd lose a
+> little more memory but it would keep things simple.
+>
+> Jesse
+>
+
+How much more memory are we going to lose?  Is mem= a better option if its 
+going to keep decreasing?
