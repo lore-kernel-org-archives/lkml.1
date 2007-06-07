@@ -1,56 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763206AbXFGPRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763031AbXFGPUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763206AbXFGPRu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760920AbXFGPRl
+	id S1763031AbXFGPUW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbXFGPUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:17:41 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51159 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760655AbXFGPRk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:17:40 -0400
-Date: Thu, 7 Jun 2007 16:22:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, jeff@garzik.org
-Subject: [PATCH] intel-rng: Undo mess made by an 80 column extremist
-Message-ID: <20070607162251.5f291325@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jun 2007 11:20:10 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:52812 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755883AbXFGPUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 11:20:08 -0400
+Message-ID: <46682221.8070705@dgreaves.com>
+Date: Thu, 07 Jun 2007 16:20:01 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+MIME-Version: 1.0
+To: Mark Lord <lkml@rtr.ca>
+Cc: Tejun Heo <htejun@gmail.com>, Duane Griffin <duaneg@dghda.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+References: <46608E3F.4060201@dgreaves.com> <46609FAD.7010203@dgreaves.com>	 <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>	 <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>	 <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>	 <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>	 <4667DE2D.6050903@dgreaves.com> <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com> <46680F69.60105@dgreaves.com> <46681094.4070103@gmail.com> <466817EF.7090707@rtr.ca>
+In-Reply-To: <466817EF.7090707@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The intel-rng printed a nice well formatted message when the port was
-disabled. Someone then came along and blindly trashed it by screwing up a
-trim down to 80 columns.
+Mark Lord wrote:
+> Tejun Heo wrote:
+>>
+>> Can you setup serial console and/or netconsole (not sure whether this
+>> would work tho)?
+> 
+> Since he has good console output already, capturable by digicam,
+> I think a better approach might be to provide a patch with extra 
+> instrumentation..
+> You know.. progress messages and the like, so we can see at what step
+> things stop working.  Or would that not help ?
+> 
+> David, does scrollback work on your dead console?
 
-Put it back into the right format and keep the overlong lines as the
-result is also MUCH easier to read in this specific case.
+hmmmm, scrollback doesn't currently _do_ anything.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+But the messages didn't scroll there, they just appear (as the memory is 
+restored I assume). The same messages appear during the fail-to-suspend case too.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc4-mm2/drivers/char/hw_random/intel-rng.c linux-2.6.22-rc4-mm2/drivers/char/hw_random/intel-rng.c
---- linux.vanilla-2.6.22-rc4-mm2/drivers/char/hw_random/intel-rng.c	2007-06-07 14:25:57.000000000 +0100
-+++ linux-2.6.22-rc4-mm2/drivers/char/hw_random/intel-rng.c	2007-06-07 14:32:36.000000000 +0100
-@@ -296,12 +296,10 @@
- 	     (BIOS_CNTL_LOCK_ENABLE_MASK|BIOS_CNTL_WRITE_ENABLE_MASK))
- 	    == BIOS_CNTL_LOCK_ENABLE_MASK) {
- 		static __initdata /*const*/ char warning[] =
--			KERN_WARNING PFX "Firmware space is locked read-only. "
--			KERN_WARNING PFX "If you can't or\n don't want to "
--			KERN_WARNING PFX "disable this in firmware setup, and "
--			KERN_WARNING PFX "if\n you are certain that your "
--			KERN_WARNING PFX "system has a functional\n RNG, try"
--			KERN_WARNING PFX "using the 'no_fwh_detect' option.\n";
-+			KERN_WARNING PFX "Firmware space is locked read-only. If you can't or\n"
-+			KERN_WARNING PFX "don't want to disable this in firmware setup, and if\n"
-+			KERN_WARNING PFX "you are certain that your system has a functional\n"
-+			KERN_WARNING PFX "RNG, try using the 'no_fwh_detect' option.\n";
- 
- 		if (no_fwh_detect)
- 			return -ENODEV;
+Linus said at one point:
+ > Ok, it wasn't a hidden oops. The DISABLE_CONSOLE_SUSPEND=y thing sometimes
+ > shows oopses that are otherwise hidden, but at other times it just causes
+ > more problems (hard hangs when trying to display something on a device
+ > that is suspended, or behind a bridge that got suspended).
+
+ > In your case, the screen output just shows normal resume output, and it
+ > apparently just hung for some unknown reason. It *may* be worth trying to
+ > do a SysRQ + 't' thing to see what tasks are running (or rather, not
+ > running), but since you won't be able to capture it, it's probably not
+ > going to be useful.
+
+So I've since removed DISABLE_CONSOLE_SUSPEND=y
+Should I put it back?
+
+I was actually doing the netconsole anyway - but skge is currently a module - 
+I've avoided making any changes to the config during all these tests but what 
+the heck...
+
+And wouldn't you know it.
+Get netconsole working (ie new kernel with skge builtin) and I get the hang on 
+suspend. Here's the netconsole output...
+
+swsusp: Basic memory bitmaps created
+Stopping tasks ... done.
+Shrinking memory... done (0 pages freed)
+Freed 0 kbytes in 0.03 seconds (0.00 MB/s)
+Suspending console(s)
+
+
+Given that moving something from module to builtin changes the behaviour I 
+thought I'd bring these warnings up again (Andrew or Alan mentioned similar 
+warnings being problems in another thread...)
+Now, I have mentioned these before but there's been a lot going on so here you go:
+
+   MODPOST vmlinux
+WARNING: arch/i386/kernel/built-in.o(.text+0x968f): Section mismatch: reference 
+to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0x9781): Section mismatch: reference 
+to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0x9786): Section mismatch: reference 
+to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa25c): Section mismatch: reference 
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa303): Section mismatch: reference 
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa31b): Section mismatch: reference 
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa344): Section mismatch: reference 
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.exit.text+0x19): Section mismatch: 
+reference to .init.text: (between 'cache_remove_dev' and 'powernow_k6_exit')
+WARNING: arch/i386/kernel/built-in.o(.data+0x2160): Section mismatch: reference 
+to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mce_work')
+WARNING: kernel/built-in.o(.text+0x14502): Section mismatch: reference to 
+.init.text: (between 'kthreadd' and 'init_waitqueue_head')
+
+
+David
+PS Gotta go - back in a couple of hours - let me know if there are any more 
+tests to try.
