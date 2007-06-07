@@ -1,119 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761062AbXFGOAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760742AbXFGOAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761062AbXFGOAS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXFGOAG
+	id S1760742AbXFGOAg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760233AbXFGOAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:00:06 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:46389 "EHLO mail.ukfsn.org"
+	Thu, 7 Jun 2007 10:00:15 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:46409 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbXFGOAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:00:04 -0400
-Message-ID: <46680F5E.6070806@dgreaves.com>
-Date: Thu, 07 Jun 2007 14:59:58 +0100
+	id S1759416AbXFGOAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 10:00:13 -0400
+Message-ID: <46680F69.60105@dgreaves.com>
+Date: Thu, 07 Jun 2007 15:00:09 +0100
 From: David Greaves <david@dgreaves.com>
 User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
+To: Duane Griffin <duaneg@dghda.com>
 Cc: Tejun Heo <htejun@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
 Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-References: <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com>
-In-Reply-To: <20070607110708.GS86004887@sgi.com>
+References: <46608E3F.4060201@dgreaves.com> <46609FAD.7010203@dgreaves.com>	 <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>	 <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>	 <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>	 <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>	 <4667DE2D.6050903@dgreaves.com> <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com>
+In-Reply-To: <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
-> On Thu, Jun 07, 2007 at 11:30:05AM +0100, David Greaves wrote:
->> Tejun Heo wrote:
->>> Hello,
->>>
->>> David Greaves wrote:
->>>> Just to be clear. This problem is where my system won't resume after s2d
->>>> unless I umount my xfs over raid6 filesystem.
->>> This is really weird.  I don't see how xfs mount can affect this at all.
->> Indeed.
->> It does :)
+Duane Griffin wrote:
+> On 07/06/07, David Greaves <david@dgreaves.com> wrote:
+>> > How hard does the machine freeze?  Can you use sysrq?  If so, please
+>> > dump sysrq-t.
+>> I suspect there is a problem writing to the consoles...
+>>
+>> I recompiled (rc4+patch) with sysrq support, suspended, resumed and tried
+>> sysrq-t but got no output.
+>>
+>> I *can* change VTs and see the various login prompts, bitmap messages 
+>> and the
+>> console messages. Caps/Num lock lights work.
+>>
+>> Fearing incompetence I tried sysrq-s sysrq-u sysrq-b and got a reboot 
+>> so sysrq
+>> is OK.
 > 
-> Ok, so lets determine if it really is XFS.
-Seems like a good next step...
+> Try sysrq-9 before the sysrq-t. Probably the messages are not being
+> printed to console with your default output level.
 
-> Does the lockup happen with a
-> different filesystem on the md device? Or if you can't test that, does
-> any other XFS filesystem you have show the same problem?
-It's a rather full 1.2Tb raid6 array - can't reformat it - sorry :)
-I only noticed the problem when I umounted the fs during tests to prevent 
-corruption - and it worked. I'm doing a sync each time it hibernates (see below) 
-and a couple of paranoia xfs_repairs haven't shown any problems.
+Good idea :)
+Didn't work :(
 
-I do have another xfs filesystem on /dev/hdb2 (mentioned when I noticed the 
-md/XFS correlation). It doesn't seem to have/cause any problems.
-
-> If it is xfs that is causing the problem, what happens if you
-> remount read-only instead of unmounting before shutting down?
-Yes, I'm happy to try these tests.
-nb, the hibernate script is:
-ethtool -s eth0 wol g
-sync
-echo platform > /sys/power/disk
-echo disk > /sys/power/state
-
-So there has always been a sync before any hibernate.
-
-
-cu:~# mount -oremount,ro /huge
-cu:~# mount
-/dev/hda2 on / type xfs (rw)
-proc on /proc type proc (rw)
-sysfs on /sys type sysfs (rw)
-usbfs on /proc/bus/usb type usbfs (rw)
-tmpfs on /dev/shm type tmpfs (rw)
-devpts on /dev/pts type devpts (rw,gid=5,mode=620)
-nfsd on /proc/fs/nfsd type nfsd (rw)
-/dev/hda1 on /boot type ext3 (rw)
-/dev/md0 on /huge type xfs (ro)
-/dev/hdb2 on /scratch type xfs (rw)
-tmpfs on /dev type tmpfs (rw,size=10M,mode=0755)
-rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
-cu:(pid2862,port1022) on /net type nfs 
-(intr,rw,port=1022,toplvl,map=/usr/share/am-utils/amd.net,noac)
-elm:/space on /amd/elm/root/space type nfs (rw,vers=3,proto=tcp)
-elm:/space-backup on /amd/elm/root/space-backup type nfs (rw,vers=3,proto=tcp)
-elm:/usr/src on /amd/elm/root/usr/src type nfs (rw,vers=3,proto=tcp)
-cu:~# /usr/net/bin/hibernate
-[this works and resumes]
-
-cu:~# mount -oremount,rw /huge
-cu:~# /usr/net/bin/hibernate
-[this works and resumes too !]
-
-cu:~# touch /huge/tst
-cu:~# /usr/net/bin/hibernate
-[but this doesn't even hibernate]
-
-
-
-
- > What about freezing the filesystem?
-cu:~# xfs_freeze -f /huge
-cu:~# /usr/net/bin/hibernate
-[but this doesn't even hibernate - same as the 'touch']
-
-Nb the screen looks like this:
-http://www.dgreaves.com/pub/2.6.21-rc4-ptched-suspend-failure.jpg
-whether it hangs on suspend or resume.
-
-So I wouldn't say it *is* XFS at fault - but there certainly seems to be an 
-interaction...
-At least it's easily reproducible :) Shame about the sysrq
-
-I can think of other permutations of freeze/ro/writing tests but I'm just 
-thrashing really. Happy for you to tell me what to try next ...
-
+Cheers
 
 David
