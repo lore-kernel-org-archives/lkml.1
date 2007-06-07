@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965945AbXFGAcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbXFGAdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965945AbXFGAcs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 20:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757669AbXFGAck
+	id S965292AbXFGAdD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 20:33:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965236AbXFGAcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 20:32:40 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:44277 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755655AbXFGAcj (ORCPT
+	Wed, 6 Jun 2007 20:32:42 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:22452 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755821AbXFGAck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 20:32:39 -0400
-Message-ID: <46675222.9000304@de.ibm.com>
-Date: Thu, 07 Jun 2007 02:32:34 +0200
-From: Martin Peschke <mp3@de.ibm.com>
-Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
- =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
- =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
- =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
- =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 6 Jun 2007 20:32:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=SReZgeuCq/huoEFPYAEQzxGD33lSbAv4QcHoJRqBJmjoW60qwlxvG5fUd3w6AWm6j
+	AW0Ts2ZP+sEywiGTV9YsA==
+Message-ID: <6599ad830706061732i1ecb70f3gf0f4c288ba74563d@mail.gmail.com>
+Date: Wed, 6 Jun 2007 17:32:33 -0700
+From: "Paul Menage" <menage@google.com>
+To: "William Lee Irwin III" <wli@holomorphy.com>
+Subject: Re: 2.6.22-rc4-mm1
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070606194329.GO6909@holomorphy.com>
 MIME-Version: 1.0
-To: Dave Hansen <hansendc@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, jbaron@redhat.com,
-       rostedt@goodmis.org, billh@gnuppy.monkey.org, mingo@elte.hu,
-       linux-s390@vger.kernel.org
-Subject: Re: [RFC] [Patch 1/4] statistics: no include hell for users
-References: <1181165609.7133.20.camel@dix> <1181165987.22388.81.camel@spirit.sr71.net>
-In-Reply-To: <1181165987.22388.81.camel@spirit.sr71.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+	 <20070606163053.GM6909@holomorphy.com>
+	 <20070606111315.884cf712.akpm@linux-foundation.org>
+	 <20070606194329.GO6909@holomorphy.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Wed, 2007-06-06 at 23:33 +0200, Martin Peschke wrote:
->>  struct statistic_interface {
->>  /* private: */
->>         struct list_head         list;
->> -       struct dentry           *debugfs_dir;
->> -       struct dentry           *data_file;
->> -       struct dentry           *def_file;
->> +       void                    *debugfs_dir;
->> +       void                    *data_file;
->> +       void                    *def_file; 
-> 
-> If you don't actually dereference the pointer, you should just be able
-> to declare:
-> 
-> 	struct dentry;
-> 
-> and be done with it, right?  You don't _need_ the includes to have just
-> pointers.
+On 6/6/07, William Lee Irwin III <wli@holomorphy.com> wrote:
+>
+> (1) build for i386 with my .config
+> (2) attempt to boot in qemu's i386 system simulator
+>
+> I'm not seeing the sort of nondeterminism Andy Whitcroft is. It breaks
+> every time when I try this.
+>
 
-Ah, looks like an established trick in kernel include files.
-I guess I can revert the other, seq_file related change then as well.
-Thank you. Will change my local copy.
+Looks to be lockdep related - it's reproducible for me when I turn on
+CONFIG_LOCKDEP and the early crash goes away when I move the
+container_init_early() call to after lockdep_init().
 
-Martin
-
+Paul
