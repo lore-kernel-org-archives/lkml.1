@@ -1,92 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937565AbXFGW1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937623AbXFGW20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937565AbXFGW1s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764829AbXFGW1k
+	id S937623AbXFGW20 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936489AbXFGW2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:27:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52462 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757387AbXFGW1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:27:39 -0400
-X-Authenticated: #14603182
-X-Provags-ID: V01U2FsdGVkX18Je29UzIAJS5V3HwgFqdEGPFcTrDlg6M9FgchSI+
-	7AcyWkPsVcoNAr
-Message-ID: <4668865A.5090300@gmx.de>
-Date: Fri, 08 Jun 2007 00:27:38 +0200
-From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: How to access correctly serial port inside module?
-Content-Type: multipart/mixed;
- boundary="------------000005010403010905090904"
-X-PGP-KeyID: 9D6D68DF
-X-Request-PGP: 
-X-OpenPGP-Key-ID: 000A26609D6D68DF
-X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
-X-OpenPGP-Key-URL: 
-X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
-X-Y-GMX-Trusted: 0
+	Thu, 7 Jun 2007 18:28:15 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33016 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764829AbXFGW2N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:28:13 -0400
+Date: Thu, 7 Jun 2007 23:32:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Peter Jones <pjones@redhat.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070607233258.063f6cfa@the-village.bc.nu>
+In-Reply-To: <20070607200102.GA21653@suse.de>
+References: <1181206091.3625.9.camel@lov.localdomain>
+	<4667D2DF.30207@googlemail.com>
+	<1181228660.3625.23.camel@lov.localdomain>
+	<46682385.1060802@redhat.com>
+	<20070607154342.GA16911@suse.de>
+	<20070607085200.f8d6e2d3.akpm@linux-foundation.org>
+	<20070607155953.GA17591@suse.de>
+	<20070607090632.cfcf02e6.akpm@linux-foundation.org>
+	<20070607161525.GA18363@suse.de>
+	<20070607184805.GA28551@nostromo.devel.redhat.com>
+	<20070607200102.GA21653@suse.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Ah, but the installer doesn't matter until you do a Fedora 8 release,
+> right?  This is just for people who want to run their own kernel on an
+> already-set-up Fedora machine.
 
---------------000005010403010905090904
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: quoted-printable
+People can and do roll updated install images because you get systems
+that aren't supported by the released CD boot image. The installer/initrd
+etc shouldn't keep getting broken by these kind of changes, its about
+time that all the sysfs type breakage causing patches simply got
+rejected, like such patches would in every other subsystem.
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Yes it might cause a little pain, yes someone might have to tweak sysfs a
+bit to keep compatibility and decouple the external and internal view a
+bit - Matthew and others pointed out this problem several years ago and
+predicted the current state of affairs, so its had a lot of time to get
+fixed.
 
-I asked vojtech@suse.cz as one of the driver developer
-
-this is how I did it (just prototype, with implicite line =
-discipline)
-
-(neccessary just one folder and two files)
-1. copy template linux-source/drivers/input/joystick/magellan.c
-2. insert in line 90  :
-     printk("%s:\"%s\"\n",__FUNCTION__, data);
-3. make and insert it
-4. inputattach --magellan /dev/ttyS0 &
-5. date > /dev/ttyS0
-6. dmesg | tail
-
-voil=E0!
-
-[output von dmesg]
-
-     [27336.486980] serio: Serial port ttyS0
-     [27336.487270] input: LogiCad3D Magellan / SpaceMouse as
-/class/input/input6 [27336.518603] magellan_process_packet:"Mi =
- 6 Jun
-19:22:31 CEST 2007"
-
-[/output]
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
-
-iD8DBQFGaIZbAAomYJ1taN8RAsMLAKDC1+OjCj+herKBXCNBknSu0K+uaACffNtk
-Pdo0NVAjdBapHtg38m0u6Aw=3D
-=3DDEP0
------END PGP SIGNATURE-----
-
---------------000005010403010905090904
-Content-Type: text/x-vcard; charset=utf-8;
- name="lkwg82.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="lkwg82.vcf"
-
-begin:vcard
-fn:Lars K.W. Gohlke
-n:Gohlke;Lars K.W.
-email;internet:lkwg82@gmx.de
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
-
-
---------------000005010403010905090904--
-
+Alan
