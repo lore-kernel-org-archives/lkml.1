@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761004AbXFGIyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbXFGI4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761004AbXFGIyV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 04:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174AbXFGIx5
+	id S1760787AbXFGI4g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 04:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXFGI43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 04:53:57 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:16110 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755932AbXFGIxz (ORCPT
+	Thu, 7 Jun 2007 04:56:29 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:18098 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951AbXFGI42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 04:53:55 -0400
+	Thu, 7 Jun 2007 04:56:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZOrJF6PEIfVeP6M7kB/QDG1Kb1orPNoshD+I43nM2ImyhwlOeCGq1t0LOrxs8JtKlwIQZI+qmbCIdxrY3rUdQKHEVwmLr+3azYizsMPyuI/3T8QH88AVvT2JrUP21QSk9fRKUKtveJyv9MthtREyvkrWVVDxTYMKmTcc4QgXvLk=
-Message-ID: <4cefeab80706070153p4021883aq14d3be080ba682cd@mail.gmail.com>
-Date: Thu, 7 Jun 2007 14:23:54 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Richard Purdie" <rpurdie@openedhand.com>
-Subject: Re: [PATCH -mm] Add LZO1X compression support to the kernel
-Cc: akpm <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1181204856.6086.13.camel@localhost.localdomain>
+        b=WKk91RC4MJgkg+QPqs+nuDdS3nARFN6bbZ8HYycroXvfcp7ClDQGnEWmSAO+5py46ME39RK5zNOgr40J8W7Fu/+K6gycMxRhbMmxtajM6jEPajmmbbzvBBkRqYR2SrL2j072HpulT5BFxfkoiyhak8vX9WB7owNqtjYP8FvTkUY=
+Message-ID: <5d96567b0706070156g7f94c7a3te022b4ea4cb57c74@mail.gmail.com>
+Date: Thu, 7 Jun 2007 11:56:27 +0300
+From: "Raz Ben-Jehuda(caro)" <raziebe@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: kmap_atomic in 2.6.20.x
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070606191729.GE4735@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1181150792.5686.51.camel@localhost.localdomain>
-	 <4cefeab80706062141u5fea846ane51c90dc89732db5@mail.gmail.com>
-	 <1181204856.6086.13.camel@localhost.localdomain>
+References: <5d96567b0706061003r462c324i733ad3698ac3d90c@mail.gmail.com>
+	 <20070606191729.GE4735@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/7/07, Richard Purdie <rpurdie@openedhand.com> wrote:
-> On Thu, 2007-06-07 at 10:11 +0530, Nitin Gupta wrote:
-> > Your code now looks nice and clean. But I don't know what you want. I
-> > already spent lot of time on version 7 I posted and contains all those
-> > corrections which were suggested for my earlier version. I cannot ask
-> > you to look into possible problems (if any) in my code now since  you
-> > are not interested in that anyway. So, please continue this
-> > duplication.
+On 6/6/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Wed, Jun 06 2007, Raz Ben-Jehuda(caro) wrote:
+> > Hello
+> >
+> > I am running into some problems with kmap_atomic in my driver.
+> > My driver copies some pages coming from
+> > user space to "kernel space kmalloc'ed memory".
+> > I had this code running from 2.6.5 to 2.6.17 without any problems.
+> > I have upgraded to 2.6.20.xx and this code fails to kmap_atomic.
+> > I am running a uni processor 2 GRAM machine, 32bit.
+> >
+> > Basically this is code does:
+> >
+> > get_user_pages(page,...)
+> >
+> > kmap_atomic(page,KM_USER0);
+> > .. copy and stuff
+> > kunmap_atomic(page,KM_USER0)
 >
-> What I (and others) repeatedly asked for was an explanation of why there
-> were the differences between the bytecode from your version and the
-> bytecode from mine. This was never explained by you and I was left to do
-> this myself. Sadly, doing so meant some duplication.
+> dst = kmap_atomic(page, KM_USER0);
+> ...
+> kunmap_atomic(dst, KM_USER0);
+>
+> Note the subtle difference.
+>
+> --
+> Jens Axboe
+>
 >
 
-I don't know the reason for bytecode difference. I focused on making
-sure that the C code is functionally identical to original code. I
-never did a bytecode diff.
+hmm..... hammmm....haaaa
+again...  many many thanks Jens.
+You are correct.
 
-> Anyhow, I think I can now explain the differences. Now we have two
-> versions, its a question of how to proceed. Basically one needs to be
-> merged into the other. I will try and compare the two patches and see
-> what differences we have.
-
-Sounds good.
-
-Regards,
-Nitin
+-- 
+Raz
