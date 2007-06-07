@@ -1,60 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937623AbXFGW20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937478AbXFGW3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937623AbXFGW20 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936489AbXFGW2P
+	id S937478AbXFGW3A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936897AbXFGW2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:28:15 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33016 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764829AbXFGW2N (ORCPT
+	Thu, 7 Jun 2007 18:28:49 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34640 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S937178AbXFGW2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:28:13 -0400
-Date: Thu, 7 Jun 2007 23:32:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg KH <gregkh@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Peter Jones <pjones@redhat.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-Message-ID: <20070607233258.063f6cfa@the-village.bc.nu>
-In-Reply-To: <20070607200102.GA21653@suse.de>
-References: <1181206091.3625.9.camel@lov.localdomain>
-	<4667D2DF.30207@googlemail.com>
-	<1181228660.3625.23.camel@lov.localdomain>
-	<46682385.1060802@redhat.com>
-	<20070607154342.GA16911@suse.de>
-	<20070607085200.f8d6e2d3.akpm@linux-foundation.org>
-	<20070607155953.GA17591@suse.de>
-	<20070607090632.cfcf02e6.akpm@linux-foundation.org>
-	<20070607161525.GA18363@suse.de>
-	<20070607184805.GA28551@nostromo.devel.redhat.com>
-	<20070607200102.GA21653@suse.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 7 Jun 2007 18:28:47 -0400
+Date: Fri, 8 Jun 2007 08:28:13 +1000
+From: David Chinner <dgc@sgi.com>
+To: David Greaves <david@dgreaves.com>
+Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+Message-ID: <20070607222813.GG85884050@sgi.com>
+References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46680F5E.6070806@dgreaves.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ah, but the installer doesn't matter until you do a Fedora 8 release,
-> right?  This is just for people who want to run their own kernel on an
-> already-set-up Fedora machine.
+On Thu, Jun 07, 2007 at 02:59:58PM +0100, David Greaves wrote:
+> David Chinner wrote:
+> >On Thu, Jun 07, 2007 at 11:30:05AM +0100, David Greaves wrote:
+> >>Tejun Heo wrote:
+> >>>Hello,
+> >>>
+> >>>David Greaves wrote:
+> >>>>Just to be clear. This problem is where my system won't resume after s2d
+> >>>>unless I umount my xfs over raid6 filesystem.
+> >>>This is really weird.  I don't see how xfs mount can affect this at all.
+> >>Indeed.
+> >>It does :)
+> >
+> >Ok, so lets determine if it really is XFS.
+> Seems like a good next step...
+> 
+> >Does the lockup happen with a
+> >different filesystem on the md device? Or if you can't test that, does
+> >any other XFS filesystem you have show the same problem?
+> It's a rather full 1.2Tb raid6 array - can't reformat it - sorry :)
 
-People can and do roll updated install images because you get systems
-that aren't supported by the released CD boot image. The installer/initrd
-etc shouldn't keep getting broken by these kind of changes, its about
-time that all the sysfs type breakage causing patches simply got
-rejected, like such patches would in every other subsystem.
+I suspected as much :/
 
-Yes it might cause a little pain, yes someone might have to tweak sysfs a
-bit to keep compatibility and decouple the external and internal view a
-bit - Matthew and others pointed out this problem several years ago and
-predicted the current state of affairs, so its had a lot of time to get
-fixed.
+> I only noticed the problem when I umounted the fs during tests to prevent 
+> corruption - and it worked. I'm doing a sync each time it hibernates (see 
+> below) and a couple of paranoia xfs_repairs haven't shown any problems.
 
-Alan
+sync just guarantees that metadata changes are logged and data is
+on disk - it doesn't stop the filesystem from doing anything after
+the sync...
+
+> I do have another xfs filesystem on /dev/hdb2 (mentioned when I noticed the 
+> md/XFS correlation). It doesn't seem to have/cause any problems.
+
+Ok, so it's not an obvious XFS problem...
+
+> >If it is xfs that is causing the problem, what happens if you
+> >remount read-only instead of unmounting before shutting down?
+> Yes, I'm happy to try these tests.
+> nb, the hibernate script is:
+> ethtool -s eth0 wol g
+> sync
+> echo platform > /sys/power/disk
+> echo disk > /sys/power/state
+> 
+> So there has always been a sync before any hibernate.
+> 
+> 
+> cu:~# mount -oremount,ro /huge
+.....
+> [this works and resumes]
+
+Ok.
+
+> cu:~# mount -oremount,rw /huge
+> cu:~# /usr/net/bin/hibernate
+> [this works and resumes too !]
+
+Interesting. That means something in the generic remount code
+is affecting this.
+
+> cu:~# touch /huge/tst
+> cu:~# /usr/net/bin/hibernate
+> [but this doesn't even hibernate]
+
+Ok, so a clean inode is sufficient to prevent hibernate from working.
+
+So, what's different between a sync and a remount?
+
+do_remount_sb() does:
+
+    599         shrink_dcache_sb(sb);
+    600         fsync_super(sb);
+
+of which a sync does neither. sync does what fsync_super() does in
+different sort of way, but does not call sync_blockdev() on each
+block device. It looks like that is the two main differences between
+sync and remount - remount trims the dentry cache and syncs the blockdev,
+sync doesn't.
+
+> > What about freezing the filesystem?
+> cu:~# xfs_freeze -f /huge
+> cu:~# /usr/net/bin/hibernate
+> [but this doesn't even hibernate - same as the 'touch']
+
+I suspect that the frozen filesystem might cause other problems
+in the hibernate process. However, while a freeze calls sync_blockdev()
+it does not trim the dentry cache.....
+
+So, rather than a remount before hibernate, lets see if we can 
+remove the dentries some other way to determine if removing excess
+dentries/inodes from the caches makes a difference. Can you do:
+
+# touch /huge/foo
+# sync
+# echo 1 > /proc/sys/vm/drop_caches
+# hibernate
+
+# touch /huge/bar
+# sync
+# echo 2 > /proc/sys/vm/drop_caches
+# hibernate
+
+# touch /huge/baz
+# sync
+# echo 3 > /proc/sys/vm/drop_caches
+# hibernate
+
+And see if any of those survive the suspend/resume?
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
