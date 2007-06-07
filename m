@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbXFGGmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbXFGGpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbXFGGmP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 02:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbXFGGl7
+	id S1755462AbXFGGpS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 02:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbXFGGpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 02:41:59 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:42105 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbXFGGl6 (ORCPT
+	Thu, 7 Jun 2007 02:45:07 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:62378 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752224AbXFGGpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 02:41:58 -0400
+	Thu, 7 Jun 2007 02:45:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a3BGsoY3Iet/R85Al81dsBHBkm769fYpQkHC6CYJAS1mjSpVNd4lGuTq7Tt05CSBA8z2nu1MtGDB3UZbdQHy9C7PFcWwhQCp/hDGlo7tTZLSd92c67eJUcYqLGJwY3N7XZVastrtPAZoVvgSSGhXNzCmeKc46viNI8iU4AMzKiw=
-Message-ID: <a781481a0706062314v7696ca06p47e279e626403529@mail.gmail.com>
-Date: Thu, 7 Jun 2007 11:44:02 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [linux-usb-devel] [PATCH] bug removing ehci-hcd
-Cc: Stuart_Hayes@dell.com, akpm@linux-foundation.org, malattia@linux.it,
-       gregkh@suse.de, linux-kernel@vger.kernel.org,
-       dbrownell@users.sourceforge.net, linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <a781481a0706062252oa09dcf7xc6a190d2479e837a@mail.gmail.com>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=gc31KaS2VZTHDMzjcDIVFawZ3rU20ISNOKcXpDfBcB3AwfUmV0ljd+ATD96gtREvIM3awRxOVGi7iurogl2CfrSGljdMPToys7LKH34Chmy77X7g9yLUlEZxep6UJ1wNDgQdrhlCaq95xi5GQQl2BePQc57LUqEG10zFVWVtLFU=
+Message-ID: <4667A968.9080407@gmail.com>
+Date: Thu, 07 Jun 2007 15:44:56 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1 - 'lvm vgscan' busticated again...
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <7929.1181146132@turing-police.cc.vt.edu>
+In-Reply-To: <7929.1181146132@turing-police.cc.vt.edu>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070529093324.92e571a0.akpm@linux-foundation.org>
-	 <DFEF91B22ED07447AB6AA4B237F913F9524D64@ausx3mpc125.aus.amer.dell.com>
-	 <20070607041924.GA8545@kroah.com>
-	 <a781481a0706062252oa09dcf7xc6a190d2479e837a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/7/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> Hi,
->
-> I remember this one ...
->
-> On 6/7/07, Greg KH <greg@kroah.com> wrote:
-> > On Thu, May 31, 2007 at 10:26:10AM -0500, Stuart_Hayes@Dell.com wrote:
-> > >
-> > > I wasn't actually able to reproduce the bug myself, but I guess it is
-> > > pretty obvious that I shouldn't have called cpufreq_unregister_notifier
-> > > with a spinlock held.  I haven't been doing this long enough to know
-> > > exactly which kernel this patch should be against, so let me know if
-> > > this ins't good.  Thanks!
-> > >
-> > >
-> > > This patch (for the 2.6.21.3 kernel plus previously sent cpufreq
-> > > notifier patch) fixes a bug caused by calling
-> > > cpufreq_unregister_notifier (which can sleep) while holding a spinlock.
-> > >
-> > > Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
-> >
-> > Hm, this doesn't apply to the 2.6.21.3 kernel.
->
-> The cpufreq patches only live in -mm as of now ...
+Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 06 Jun 2007 02:07:37 PDT, Andrew Morton said:
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
+> 
+> This one died a horrid death at boot time - console log indicates it found the
+> hard drive OK, found the 2 partitions on it.  But when the initrd ran a
+> 'lvm vgscan', it didn't find the LVM2 space on /dev/sda2, so it panic'ed when
+> it fell off the end of the initrd because the root= wasn't there.
+> 
+> My first guess for blame:
+> 
+> gregkh-driver-sysfs-allocate-inode-number-using-ida.patch
+> 
+> as that's awfully similar to gregkh-driver-sysfs-fix-i_ino-handling-in-sysfs.patch
+> that broke 'lvm vgscan' for me in the same way on 21-rc7-mm[12].
+> 
+> I'll hopefully get a chance to revert that one and test later today - a quick
+> 'patch -p1 -R --dry-run' shows a number of conflicts that will need hand-fixing
+> at the very least.
 
-Argh, excuse the noise!
+Did rc3-mm1 work?  Can you find out the first broken -mm?
 
-> > Can you send both patches merged together?
-> >
-> > And is the fix already in Linus's tree?
+Thanks.
 
-And you clearly meant gregkh-usb-usb-ehci-cpufreq-fix.patch
-here ... (btw, no, I don't see this in the latest git)
-
-Satyam
+-- 
+tejun
