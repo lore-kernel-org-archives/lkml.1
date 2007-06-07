@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbXFGJzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbXFGKBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbXFGJzT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 05:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXFGJzF
+	id S1754761AbXFGKBI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 06:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXFGKA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 05:55:05 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:13613 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751842AbXFGJzD (ORCPT
+	Thu, 7 Jun 2007 06:00:56 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49342 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751306AbXFGKAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 05:55:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JJeLqGQaWnNml5Q41aIwr62vSS0jlz8Alh8WVGKNa7O8HPMNX1OT6KpssGyPxnGBG1zUuBu2fBCe0dLzlE0ujvnmcAdkUrUcSRCgXgkBK51kWcuD/yoFVaEbzNj0EurfknH8zNtV3t15ahS6M/2Va6CZevGNznMPN0KkrBiL4og=
-Message-ID: <a781481a0706070255i40b1a8e0l285315febcaa471c@mail.gmail.com>
-Date: Thu, 7 Jun 2007 15:25:00 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Cc: "Jesse Barnes" <jesse.barnes@intel.com>,
-       "Justin Piszcz" <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20070607085147.GC15226@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 7 Jun 2007 06:00:55 -0400
+Date: Thu, 7 Jun 2007 11:04:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+Message-ID: <20070607110432.73be7960@the-village.bc.nu>
+In-Reply-To: <466741BD.20106@redhat.com>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+	<20070606235906.72439d16@the-village.bc.nu>
+	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
+	<20070607001932.35c9591c@the-village.bc.nu>
+	<466741BD.20106@redhat.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706061229.24486.jesse.barnes@intel.com>
-	 <200706061620.10627.jesse.barnes@intel.com>
-	 <Pine.LNX.4.64.0706061923470.2716@p34.internal.lan>
-	 <200706061627.46421.jesse.barnes@intel.com>
-	 <20070607085147.GC15226@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/7/07, Andi Kleen <andi@firstfloor.org> wrote:
-> On Wed, Jun 06, 2007 at 04:27:46PM -0700, Jesse Barnes wrote:
-> > [...]
-> > I'm not sure it's appropriate for -rc5 since it mucks around with some
-> > early boot ordering, but I'll leave that to Andi, since it does address
-> > some real bugs people have been seeing.
->
-> I don't think the patch is suitable for merging at this time. Perhaps
-> if it survives some time in -mm* / 2.6.23* it could be backported
-> in a later 2.6.22 stable release. But right now it definitely
-> needs more testing and addressing of my review comments.
+> This has nothing to do with linking and ABI.  The assumptions about
 
-BTW an unrelated/happy side-effect of the patch is that it removes
-the zero-size-guilty kmalloc()'s from the mtrr code. -mm does have
-some fixes that prevent those zero-size allocations, which could
-likely be retired if this gets merged in? ...
+It may not to someone who has their head in linkers all day and very
+defined ideas about linkers but joining to pieces of code together and
+figuring out if they can be combined is "linking", regardless of the
+whether-they-can-be-joined being down to symbol availability, instruction
+set, memory layout or assumptions about behaviour.
 
-[ On another unrelated note, could someone tell me who maintains
-i386? I've looked around, but surprisingly can't seem to find
-anybody listed anywhere. ]
+> continuous allocation are part of the API.  It's required by POSIX and
+> provided by Unix since the early days.  There are entire code bases out
+> there which depend on this assumption.  Linking with code like this,
+> before or after the new version controlled symbol is introduced, will
+> break it. 
 
-Satyam
+If your linker is doing its job then you won't be able to link them
+together because they have incompatible assumptions. Not exactly rocket
+science even if it is done a little differently to the usual symbol
+compatibility tests. 
+
+> Policies or stateful behavior, however yo want to call it, is
+> just plain wrong for this (and most other things).
+
+And the stuff you are trying to put into the kernel is better ? No, its a
+bunch of ugly hacks caused by trying to solve the problem in the wrong
+way and in the wrong place.
+
+Alan
