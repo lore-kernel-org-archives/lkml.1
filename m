@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbXFGI07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbXFGI2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758338AbXFGI07 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 04:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbXFGI0v
+	id S1759181AbXFGI2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 04:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbXFGI2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 04:26:51 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:38515 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750825AbXFGI0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 04:26:50 -0400
-Date: Thu, 7 Jun 2007 17:25:36 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: whacking out the __get_dma_pages() macro.
-Message-ID: <20070607082536.GA15790@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0706070404300.3186@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706070404300.3186@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 7 Jun 2007 04:28:04 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:47152 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752199AbXFGI2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 04:28:03 -0400
+Subject: Re: [PATCH -mm] Add LZO1X compression support to the kernel
+From: Richard Purdie <rpurdie@openedhand.com>
+To: Nitin Gupta <nitingupta910@gmail.com>
+Cc: akpm <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4cefeab80706062141u5fea846ane51c90dc89732db5@mail.gmail.com>
+References: <1181150792.5686.51.camel@localhost.localdomain>
+	 <4cefeab80706062141u5fea846ane51c90dc89732db5@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 09:27:36 +0100
+Message-Id: <1181204856.6086.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 04:07:46AM -0400, Robert P. J. Day wrote:
-> 
->   the following represents the entire set of calls to the
-> __get_dma_pages() macro that i plan on reverting back to the regular
-> get_free_pages() macro so __get_dma_pages() can be tossed.  any major
-> objections?
-> 
-> include/asm-sh/floppy.h:	return __get_dma_pages(GFP_KERNEL,get_order(size));
-Hmm, I thought I killed that a long time ago.. In any event, we never set
-ARCH_MAY_HAVE_PC_FDC, so this header is never used. Feel free to just
-kill the header entirely in your conversion patch.
+On Thu, 2007-06-07 at 10:11 +0530, Nitin Gupta wrote:
+> Your code now looks nice and clean. But I don't know what you want. I
+> already spent lot of time on version 7 I posted and contains all those
+> corrections which were suggested for my earlier version. I cannot ask
+> you to look into possible problems (if any) in my code now since  you
+> are not interested in that anyway. So, please continue this
+> duplication.
+
+What I (and others) repeatedly asked for was an explanation of why there
+were the differences between the bytecode from your version and the
+bytecode from mine. This was never explained by you and I was left to do
+this myself. Sadly, doing so meant some duplication.
+
+Anyhow, I think I can now explain the differences. Now we have two
+versions, its a question of how to proceed. Basically one needs to be
+merged into the other. I will try and compare the two patches and see
+what differences we have.
+
+Regards,
+
+Richard
+
+
