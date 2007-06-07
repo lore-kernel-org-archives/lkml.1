@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965842AbXFGAam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965945AbXFGAcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965842AbXFGAam (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 20:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764308AbXFGAaf
+	id S965945AbXFGAcs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 20:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757669AbXFGAck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 20:30:35 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:63438 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757031AbXFGAae (ORCPT
+	Wed, 6 Jun 2007 20:32:40 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:44277 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755655AbXFGAcj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 20:30:34 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Date: Thu, 7 Jun 2007 02:29:56 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
-In-Reply-To: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Wed, 6 Jun 2007 20:32:39 -0400
+Message-ID: <46675222.9000304@de.ibm.com>
+Date: Thu, 07 Jun 2007 02:32:34 +0200
+From: Martin Peschke <mp3@de.ibm.com>
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Dave Hansen <hansendc@us.ibm.com>
+CC: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, jbaron@redhat.com,
+       rostedt@goodmis.org, billh@gnuppy.monkey.org, mingo@elte.hu,
+       linux-s390@vger.kernel.org
+Subject: Re: [RFC] [Patch 1/4] statistics: no include hell for users
+References: <1181165609.7133.20.camel@dix> <1181165987.22388.81.camel@spirit.sr71.net>
+In-Reply-To: <1181165987.22388.81.camel@spirit.sr71.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706070229.57473.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+FctEUcoRcGspJ/JjQKCvVqVoDYtAF52m2AaK
- Iy/aXF4L1sJH7PtvSJL9XHe6X860iuMTy9EMpdm30R3BWsiXU7
- ZKPYk/Kd0gSe3FeEcNOlg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 June 2007, Davide Libenzi wrote:
-> The sys_socketcall() system call has been also changed to support
-> a new SYS_SOCKET2 indentifier.
+Dave Hansen wrote:
+> On Wed, 2007-06-06 at 23:33 +0200, Martin Peschke wrote:
+>>  struct statistic_interface {
+>>  /* private: */
+>>         struct list_head         list;
+>> -       struct dentry           *debugfs_dir;
+>> -       struct dentry           *data_file;
+>> -       struct dentry           *def_file;
+>> +       void                    *debugfs_dir;
+>> +       void                    *data_file;
+>> +       void                    *def_file; 
+> 
+> If you don't actually dereference the pointer, you should just be able
+> to declare:
+> 
+> 	struct dentry;
+> 
+> and be done with it, right?  You don't _need_ the includes to have just
+> pointers.
 
-I thought the general agreement was that sys_socketcall is a bad
-idea to start with. Is there any benefit in adding new calls to
-it instead of using a new system call number for sys_socket2 on
-all architectures?
+Ah, looks like an established trick in kernel include files.
+I guess I can revert the other, seq_file related change then as well.
+Thank you. Will change my local copy.
 
-	Arnd <><
+Martin
+
