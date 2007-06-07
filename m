@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbXFGFwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbXFGFxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbXFGFwg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 01:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbXFGFw1
+	id S1752971AbXFGFxs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 01:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbXFGFxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 01:52:27 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:28013 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbXFGFw0 (ORCPT
+	Thu, 7 Jun 2007 01:53:41 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:40197 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825AbXFGFxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 01:52:26 -0400
+	Thu, 7 Jun 2007 01:53:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Hn8/YC8g7BF9AvmhMdtcEBLTBPlKiKZ/1+5vcE+dObwvIFYGC5oOC3tq06k771t0ctvKiBWo4ONs62rSbT0vGCj34cpwPaU/c+jHXexVhUsOxjIr83Zb8mEiFcvpoyAbowRGlPU6QsBr2o7GGKDqICSKD1DOiDMDPOoybA+KJdk=
-Message-ID: <a781481a0706062252oa09dcf7xc6a190d2479e837a@mail.gmail.com>
-Date: Thu, 7 Jun 2007 11:22:25 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [linux-usb-devel] [PATCH] bug removing ehci-hcd
-Cc: Stuart_Hayes@dell.com, akpm@linux-foundation.org, malattia@linux.it,
-       gregkh@suse.de, linux-kernel@vger.kernel.org,
-       dbrownell@users.sourceforge.net, linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <20070607041924.GA8545@kroah.com>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=pyJrENXFdTrJjUXs86by/sMytm6V45Z8KRzOilnF8FJn81C/y6JdelinhpsF0BAy4AlisrWhf1O/5zOoXSTr8yBrdUW/v+xrqAVJAykeD08KGb/YBmdYT/E7dtaAg3jENiaP8jkXyfZe1n26RmUK6kK0mo4cgtbLUMz7/AGKiVc=
+Message-ID: <46679D56.7040001@gmail.com>
+Date: Thu, 07 Jun 2007 14:53:26 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Greaves <david@dgreaves.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+References: <46608E3F.4060201@dgreaves.com> <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com>
+In-Reply-To: <46668EE0.2030509@dgreaves.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070529093324.92e571a0.akpm@linux-foundation.org>
-	 <DFEF91B22ED07447AB6AA4B237F913F9524D64@ausx3mpc125.aus.amer.dell.com>
-	 <20070607041924.GA8545@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello,
 
-I remember this one ...
+David Greaves wrote:
+> Just to be clear. This problem is where my system won't resume after s2d
+> unless I umount my xfs over raid6 filesystem.
 
-On 6/7/07, Greg KH <greg@kroah.com> wrote:
-> On Thu, May 31, 2007 at 10:26:10AM -0500, Stuart_Hayes@Dell.com wrote:
-> >
-> > I wasn't actually able to reproduce the bug myself, but I guess it is
-> > pretty obvious that I shouldn't have called cpufreq_unregister_notifier
-> > with a spinlock held.  I haven't been doing this long enough to know
-> > exactly which kernel this patch should be against, so let me know if
-> > this ins't good.  Thanks!
-> >
-> >
-> > This patch (for the 2.6.21.3 kernel plus previously sent cpufreq
-> > notifier patch) fixes a bug caused by calling
-> > cpufreq_unregister_notifier (which can sleep) while holding a spinlock.
-> >
-> > Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
->
-> Hm, this doesn't apply to the 2.6.21.3 kernel.
+This is really weird.  I don't see how xfs mount can affect this at all.
 
-The cpufreq patches only live in -mm as of now ...
+[--snip--]
+> So now this compiles but it does cause the problem:
+> 
+> umount /huge
+> echo platform > /sys/power/disk
+> echo disk > /sys/power/state
+> # resumes fine
+> 
+> mount /huge
+> echo platform > /sys/power/disk
+> echo disk > /sys/power/state
+> # won't resume
 
-> Can you send both patches merged together?
->
-> And is the fix already in Linus's tree?
+How hard does the machine freeze?  Can you use sysrq?  If so, please
+dump sysrq-t.
 
-Andrew seems to have already fixed this in the latest -mm
-(in this very thread, funnily enough, looks like you missed it
-as the subject change broke the threading :-)
+>   Behavior difference introduced by the
+>> reimplementation is serialization of resume sequence, so it takes more
+>> time.  My test machine had problems resuming if resume took too long
+>> even with the previous implementation.  It didn't matter whether the
+>> long resuming sequence is caused by too many controllers or explicit
+>> ssleep().  If time needed for resume sequence is over certain threshold,
+>> machine hangs while resuming.  I thought it was a BIOS glitch and didn't
+>> dig into it but you might be seeing the same issue.
+> given the mount/umount thing this sounds unlikely... but what do I know?
 
-[ There is a subtle difference, however, in that Andrew's
-fix pushes the notifier unregistration /after/ the
-spin_unlock_irq(&ehci->lock) critical section whereas Stuart
-seems to be prefer doing it /before/ the corresponding
-spin_lock_irq() ... ]
+No I don't think this is the same problem either.  The problem I
+described happened during resume from s2ram.
 
-Satyam
+> resume does throw up:
+> ATA: abnormal status 0x7F on port 0x0001b007
+> ATA: abnormal status 0x7F on port 0x0001b007
+> ATA: abnormal status 0x7F on port 0x0001a407
+> ATA: abnormal status 0x7F on port 0x0001a407
+> 
+> which I've not noticed before... oh, alright, I'll check...
+> reboots to 2.6.21, suspend, resume...
+> nope, not output on resume in 2.6.21
+
+The messages don't really matter.
+
+Thanks.
+
+-- 
+tejun
