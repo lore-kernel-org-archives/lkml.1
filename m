@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936174AbXFGEl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936289AbXFGErl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936174AbXFGEl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 00:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbXFGElu
+	id S936289AbXFGErl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 00:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXFGEre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 00:41:50 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:20798 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754961AbXFGElt (ORCPT
+	Thu, 7 Jun 2007 00:47:34 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:42957 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753201AbXFGErd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 00:41:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Qrj7XimRS0bz9vaJJyTgUM0Gs6hRkOnJvLW28pvwbMiYHppuy+G4ZbHfZyeJ4RKo/Ud9VGvTxurZlddV00DQTKlljagBX4WHYTNnxqBJHzQuUGM+n91Gb77/m9yvlUglu112oaJXfTBi6IyX0xOytpUsS/IkoP2b+L2S8X+3IOk=
-Message-ID: <4cefeab80706062141u5fea846ane51c90dc89732db5@mail.gmail.com>
-Date: Thu, 7 Jun 2007 10:11:49 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Richard Purdie" <rpurdie@openedhand.com>
-Subject: Re: [PATCH -mm] Add LZO1X compression support to the kernel
-Cc: akpm <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1181150792.5686.51.camel@localhost.localdomain>
+	Thu, 7 Jun 2007 00:47:33 -0400
+Date: Wed, 6 Jun 2007 21:19:24 -0700
+From: Greg KH <greg@kroah.com>
+To: Stuart_Hayes@Dell.com
+Cc: akpm@linux-foundation.org, malattia@linux.it, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel]  [PATCH] bug removing ehci-hcd
+Message-ID: <20070607041924.GA8545@kroah.com>
+References: <20070529093324.92e571a0.akpm@linux-foundation.org> <DFEF91B22ED07447AB6AA4B237F913F9524D64@ausx3mpc125.aus.amer.dell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1181150792.5686.51.camel@localhost.localdomain>
+In-Reply-To: <DFEF91B22ED07447AB6AA4B237F913F9524D64@ausx3mpc125.aus.amer.dell.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/6/07, Richard Purdie <rpurdie@openedhand.com> wrote:
-<snip>
->
-> Nitin: Have you any objections to this version? If not, I'll finish
-> analysing the PTR_ code changes and then hopefully we can get something
-> into -mm...
->
+On Thu, May 31, 2007 at 10:26:10AM -0500, Stuart_Hayes@Dell.com wrote:
+> 
+> I wasn't actually able to reproduce the bug myself, but I guess it is
+> pretty obvious that I shouldn't have called cpufreq_unregister_notifier
+> with a spinlock held.  I haven't been doing this long enough to know
+> exactly which kernel this patch should be against, so let me know if
+> this ins't good.  Thanks!
+> 
+> 
+> This patch (for the 2.6.21.3 kernel plus previously sent cpufreq
+> notifier patch) fixes a bug caused by calling
+> cpufreq_unregister_notifier (which can sleep) while holding a spinlock.
+> 
+> Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
 
-Your code now looks nice and clean. But I don't know what you want. I
-already spent lot of time on version 7 I posted and contains all those
-corrections which were suggested for my earlier version. I cannot ask
-you to look into possible problems (if any) in my code now since  you
-are not interested in that anyway. So, please continue this
-duplication.
+Hm, this doesn't apply to the 2.6.21.3 kernel.
 
-Thanks,
-Nitin
+Can you send both patches merged together?
+
+And is the fix already in Linus's tree?
+
+thanks,
+
+greg k-h
