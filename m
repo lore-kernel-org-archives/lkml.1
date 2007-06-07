@@ -1,48 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937325AbXFGXVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937508AbXFGXV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937325AbXFGXVM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 19:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936875AbXFGXU4
+	id S937508AbXFGXV5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 19:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933332AbXFGXVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 19:20:56 -0400
-Received: from ozlabs.org ([203.10.76.45]:56269 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935898AbXFGXUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 19:20:54 -0400
-Date: Thu, 7 Jun 2007 18:16:21 -0500
-From: Anton Blanchard <anton@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Will Schmidt <will_schmidt@vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       liuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/3] [PATCH i386] during VM oom condition, kill all threads in process group
-Message-ID: <20070607231621.GB32549@kryten>
-References: <20070605174831.21740.33119.stgit@farscape.rchland.ibm.com> <20070607153459.2a1b3230.akpm@linux-foundation.org>
+	Thu, 7 Jun 2007 19:21:48 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:56737 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933605AbXFGXVr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 19:21:47 -0400
+Date: Fri, 8 Jun 2007 01:21:52 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, jcm@jonmasters.org
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Jesper Juhl <jesper.juhl@gmail.com>, Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.03
+Message-ID: <20070607232152.GU5500@stusta.de>
+References: <0a25fd03117c678f17006c5fcefaaed0@pinky> <9a8748490706060205y1fc8e354p4af7426fd76dd816@mail.gmail.com> <Pine.LNX.4.64.0706071622280.8762@fbirervta.pbzchgretzou.qr> <20070607193413.GR5500@stusta.de> <20070607232248.332edee8@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070607153459.2a1b3230.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070607232248.332edee8@the-village.bc.nu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-Hi,
-
-> zap_other_threads() requires tasklist_lock.
+On Thu, Jun 07, 2007 at 11:22:48PM +0100, Alan Cox wrote:
+> On Thu, 7 Jun 2007 21:34:13 +0200
+> Adrian Bunk <bunk@stusta.de> wrote:
 > 
-> If we're going to do this then we should probably create some new function
-> (with a better name) which takes tasklsit_lock and then calls
-> zap_other_threads().
+> > On Thu, Jun 07, 2007 at 04:28:20PM +0200, Jan Engelhardt wrote:
+> > > 
+> > > On Jun 6 2007 11:05, Jesper Juhl wrote:
+> > > >
+> > > > - Source files should be 7bit ASCII
+> > > 
+> > > Nah. Think of....
+> > > 
+> > > MODULE_AUTHOR("J. Ørsted <jorsted@foobar.com>");
+> > >...
+> > 
+> > NO!
+> > 
+> > Code must be 7bit ASCII.
+> > This includes everything that gets into the kernel image.
 > 
-> Does this patch fix any observed-in-the-real-world problem?  If so, please
-> describe it.
+> Disagree Adrian
+> 
+> For quoted strings you want to include Unicode where appropriate, and the
+> names of people happens to be highly appropriate. Trashing non US names
+> is just rude, and in many cases extremely problematic because losing
+> accent marks totally changes the meaning of the word and the
+> pronunciation of the name.
+> 
+> Now anyone who puts UTF-8 in the driver name or module options should get
+> a lot of NAKs but putting it in the Author name is precisely where it is
+> appropriate and correct. I suspect Author names are almost the only case
+> where this is appropriate and/or neccessary.
 
-Yeah we have had complaints where threaded apps have only one thread
-shot down instead of the entire process. This leaves the application in
-a bad state, whereas if it had been killed cleanly the application could
-have restarted.
+I added a MODULE_AUTHOR("J. Ørsted <jorsted@foobar.com>") into the "raw" 
+module:
 
-My understanding is that fatal signals should kill all threads in the
-group.
+# echo $LANG
+C
+# modinfo --version
+module-init-tools version 3.3-pre11
+# modinfo raw
+filename:       /lib/modules/2.6.21.2/kernel/drivers/char/raw.ko
+author:         J. Ã
+                    ^ the cursor hangs here
 
-Anton
+
+So for implementing your proposal, we have to:
+- get module-init-tools fixed and
+- document that 2.6.23 (or whichever will be the first kernel to support 
+  UTF-8 in MODULE_AUTHOR) will require updated module-init-tools.
+
+
+Oh, and when you are anyway planning to break older userspace, can you 
+remove the obsolete "raw" driver at the same time?  ;-)
+
+
+> Alan
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
