@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbXFGNMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbXFGNMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756845AbXFGNMh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 09:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXFGNMa
+	id S1759318AbXFGNMy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 09:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbXFGNMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 09:12:30 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38607 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751205AbXFGNMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 09:12:30 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX1/3JsRfSzb34uj+C9PXTXnnujtSFNpu3XJ9KSrM9p
-	oYIwPcURUd6H9o
-Message-ID: <4667A655.1040909@gmx.net>
-Date: Thu, 07 Jun 2007 08:31:49 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: emogenet@google.com
-Subject: man-pages-2.52 and man-pages-2.53 are released
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 7 Jun 2007 09:12:46 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:41268 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751405AbXFGNMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 09:12:45 -0400
+Date: Thu, 7 Jun 2007 15:12:43 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Kyle Moffett <mrmacman_g4@mac.com>,
+       Davide Libenzi <davidel@xmailserver.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+Message-Id: <20070607151243.22caab9e.dada1@cosmosbay.com>
+In-Reply-To: <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+	<20070606235906.72439d16@the-village.bc.nu>
+	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
+	<20070607001932.35c9591c@the-village.bc.nu>
+	<466741BD.20106@redhat.com>
+	<20070607110432.73be7960@the-village.bc.nu>
+	<B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"A foolish consistency is the hobgoblin of little minds, adored by little
-statesmen and philosophers and divines"
+On Thu, 7 Jun 2007 07:59:47 -0400
+Kyle Moffett <mrmacman_g4@mac.com> wrote:
 
-         Ralph Waldo Emerson (1803-1882)
 
-But damn it, those man pages were a mess!
+> Likewise there are a massive group of other libraries (especially  
+> user-interface and server related ones) that would really like to  
+> have support for creating file-descriptors without the top-level  
+> application closing them randomly (like several shells seem to).
+> 
 
-Perhaps for the first time in their 14-year history, the sections in all of
-the pages on man-pages are now in the same order...  The standard order
-(with many sections being optional) is now:
+True, shells are sometimes quite strange.
 
-            NAME
-            SYNOPSIS
-            DESCRIPTION
-            RETURN VALUE
-            ERRORS
-            ENVIRONMENT
-            FILES
-            VERSIONS
-            CONFORMING TO
-            NOTES
-            BUGS
-            EXAMPLE
-            SEE ALSO
+For example, bash uses file descriptor 255 (FD_CLOEXEC)
 
-So, I just released man-pages-2.52 and man-pages-2.53.  As well as that
-change, there are a very large number of changes to achieve greater
-consistency across man pages; full details can be found in the change logs.
+When it forks a new process, child gets a file table with 256 slots.
 
-In the upcoming man-pages-2.54 release, a new man-pages.7 page will
-describe the conventions that should be followed when writing pages for
-man-pages.
+At exec() time, 255 is closed but file table doesnt shrink.
+(shrinking is done at fork() time only)
 
-These releases are now available for download at:
+With fdmap, that means each process started by bash uses at least 
+256 * sizeof(list_head) bytes, ie 4096 bytes on x86_64, even if only three 
+file-descriptors are opened (0,1,2)
 
-    http://www.kernel.org/pub/linux/docs/manpages
-    or ftp://ftp.kernel.org/pub/linux/docs/manpages
-    or mirrors: ftp://ftp.XX.kernel.org/pub/linux/docs/manpages
+FD_CLOFORK should help here (BTW : current patch from Davide doesnt take this
+into account and might need a change in fdmap_top_open_fd())
 
-and soon at:
+Davide, are you sure we want FIFO for non sequential allocations ?
 
-    ftp://ftp.win.tue.nl/pub/linux-local/manpages
+This tends to use all the fmap slots, and not very cache friendly
+if an app does a lot of [open(),...,close()] things. We already got a 
+perf drop because of RCUification of file freeing (FIFO mode instead 
+of LIFO given by kmalloc()/kfree())
 
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
+If the idea behind this FIFO was security (ie not easy for an app to predict 
+next glibc file handle), we/glibc might use yet another FD_SECUREMODE flag, 
+wich ORed with O_NONSEQFD would ask to fdmap_newfd() to take the tail of 
+fmap->slist, not head.
 
