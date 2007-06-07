@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763654AbXFGPbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbXFGPdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763654AbXFGPbb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbXFGPbW
+	id S1762165AbXFGPdR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXFGPdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:31:22 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:58655 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761468AbXFGPbW (ORCPT
+	Thu, 7 Jun 2007 11:33:07 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49862 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750923AbXFGPdE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:31:22 -0400
-Message-ID: <466824C6.60100@s5r6.in-berlin.de>
-Date: Thu, 07 Jun 2007 17:31:18 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why is it called "asm-generic/atomic.h"?
-References: <Pine.LNX.4.64.0706070822590.17588@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0706070822590.17588@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 7 Jun 2007 11:33:04 -0400
+Date: Thu, 7 Jun 2007 16:38:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
+Subject: Re: [SERIAL] Don't optimise away baud rate changes when BOTHER is
+ used
+Message-ID: <20070607163808.19984208@the-village.bc.nu>
+In-Reply-To: <1181150998.2785.13.camel@pmac.infradead.org>
+References: <20070523172739.1d3a918c@the-village.bc.nu>
+	<1180012135.8303.89.camel@shinybook.infradead.org>
+	<20070524144109.7bd0f4d0@the-village.bc.nu>
+	<1180014338.8303.95.camel@shinybook.infradead.org>
+	<20070524160559.54c2c639@the-village.bc.nu>
+	<1181133010.4096.26.camel@pmac.infradead.org>
+	<20070606160310.27d6d3b8@the-village.bc.nu>
+	<1181150998.2785.13.camel@pmac.infradead.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
->   i'm just curious -- why does that particular header file have that
-> name?  its opening comment reads:
-> 
->  * Allows to provide arch independent atomic definitions without the need to
->  * edit all arch specific atomic.h files.
-> 
-> but that's *not* what that header file does.
+On Wed, 06 Jun 2007 18:29:58 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-The file name is correct, and the comment is correct too.  It indeed
-_allows_ to define architecture-independent operations on atomic types,
-and it currently does so for atomic_long_t.  There is no need to do so
-for atomic_t, because all architectures already had their own set of
-atomic_t operations when asm-generic/atomic.h was added.  (And I presume
-they varied too much to justify an additional generic implementation
-plus #ifndef HAVE_ARCH_SOMETHING games.)
+> On Wed, 2007-06-06 at 16:03 +0100, Alan Cox wrote:
+> > Yep - and there are some other changes needed as well once everyone
+> > gets their ports properly lined up (notably handing back the actual
+> > speed). 
+> 
+> Yeah, probably. This was was required just to get the speed thing to
+> pass basic testing though.
+> 
+> You earlier made a cryptic comment about asm-generic and said the
+> PowerPC patch wouldn't work -- I didn't understand, and it doesn't seem
+> to be empirically confirmed. Can you eludicate?
 
-PS:  The atomic_long_t operations currently don't need to be protected
-by #ifndef HAVE_ARCH_SOMETHING and won't need to be in foreseeable
-future, therefore they don't have this protection.
--- 
-Stefan Richter
--=====-=-=== -==- --===
-http://arcgraph.de/sr/
+If your termios and termios2 structures differ in size then you need to
+copy the right number of bytes or you won't get speed values into the
+kernel. If they are the same size it wont matter.
