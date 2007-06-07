@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbXFGOP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762152AbXFGORp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761638AbXFGOP1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbXFGOPR
+	id S1762152AbXFGORp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758012AbXFGORj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:15:17 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:11138 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756504AbXFGOPP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:15:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=FTZ00NElrhSkE0gex3snIu6DKK7mteZ4rCaxsqGiN7TZoN1m+/+jcbzsGorFXgLsrdiNOOhWTd+qKo7hGFUBEVZugfaONbOe61AjZMJc2ysEIifdKrUupojEDVCycqLFHVv+BusDJT0Cvbv19lUurWsjP14IM1n0n9svgrJHOR0=
-Subject: Re: [PATCH] radeonfb: Add ID for Radeon Xpress 1100
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Yen Rui <ruiyen@gmail.com>
-Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <a0b3dd8d0706070700i3b029c28h7c6c6d3f6569fe16@mail.gmail.com>
-References: <a0b3dd8d0706070700i3b029c28h7c6c6d3f6569fe16@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 22:15:06 +0800
-Message-Id: <1181225706.4502.23.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Thu, 7 Jun 2007 10:17:39 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60732 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751495AbXFGORi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 10:17:38 -0400
+Message-ID: <4668135B.4070904@suse.com>
+Date: Thu, 07 Jun 2007 10:16:59 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
+Subject: [PATCH] reiserfs: mailing list has moved
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-08 at 00:00 +1000, Yen Rui wrote:
-> Hi,
-> 
-> I have to attach the patch instead of inlining it in this e-mail
-> because gmail converts word wraps into hard returns.  Sorry.
-> 
+ This patch changes MAINTAINERS to reflect the new location of the
+ reiserfs development mailing list. The old list forwards to the new
+ one.
 
-A similar patch is already in the -mm tree.
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
 
-http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/broken-out/radeonfb-add-support-for-radeon-xpress-200m-rs485.patch
+--- 
 
-Tony
+ MAINTAINERS |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+--- a/MAINTAINERS	2007-06-05 13:25:52.000000000 -0400
++++ b/MAINTAINERS	2007-06-07 10:13:48.000000000 -0400
+@@ -3025,7 +3025,7 @@
+ REISERFS FILE SYSTEM
+ P:	Hans Reiser
+ M:	reiserfs-dev@namesys.com
+-L:	reiserfs-list@namesys.com
++L:	reiserfs-devel@vger.kernel.org
+ W:	http://www.namesys.com
+ S:	Supported
+ 
+
+-- 
+Jeff Mahoney
+SUSE Labs
