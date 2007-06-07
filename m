@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965735AbXFGCZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936348AbXFGC2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965735AbXFGCZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 22:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759933AbXFGCZc
+	id S936348AbXFGC2T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 22:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935371AbXFGC2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 22:25:32 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:30005 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753464AbXFGCZb (ORCPT
+	Wed, 6 Jun 2007 22:28:11 -0400
+Received: from mail4.webhostingstar.com ([67.106.77.50]:59350 "HELO
+	mail4.webhostingstar.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759933AbXFGC2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 22:25:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=O/7fBr6NGtzhAd8zy41qgPqnuFbqf4G9XTkcA1SYMWBKCWiST30rWvkMk6gz8TEKPkICGm6r3Bs/w9eZErIWvS5+jW0SoUGpqamuEqHW9ebsWgT08TQmypshN6Wdld2CVcRBGrX54vZjNsot+m5OxJFIdUKEVG8lUpIriP4wmwI=
-Date: Thu, 7 Jun 2007 10:26:09 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: 2.6.22-rc4-mm1
-Message-ID: <20070607022608.GA2416@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20070606020737.4663d686.akpm@linux-foundation.org> <20070606161936.GA8952@localhost.localdomain> <20070606110931.fda845de.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 6 Jun 2007 22:28:10 -0400
+Message-ID: <20070606212643.36m4bgcq8ssc4o84@67.106.77.50>
+Date: Wed, 06 Jun 2007 21:26:43 -0500
+From: art@usfltd.com
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@osdl.org, greg@kroah.com, michal.k.k.piotrowski@gmail.com
+Subject: Re: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-In-Reply-To: <20070606110931.fda845de.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 11:09:31AM -0700, Andrew Morton wrote:
->On Thu, 7 Jun 2007 00:19:36 +0800 WANG Cong <xiyou.wangcong@gmail.com> wrote:
->
->> On Wed, Jun 06, 2007 at 02:07:37AM -0700, Andrew Morton wrote:
->> >
->> >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
->> >
->> >- Somebody broke it on my powerpc G5, but I didn't have time to do yet
->> >  another bisection yet.
->> >
->> 
->> It seems strange that a new C source file (mlguest.c) appears in the top dir of the 
->> kernel source. There are some problems with it.
->> 
->> First, I used `make mlguest.o` to compile that file, but I got tons of warnings and errors.
->> (Too many to put here.) What's wrong with it? Or I didn't compile/configure it correctly?
->> 
->> Second, mlguest.c #includes a head file named "../../include/linux/lguest_launcher.h".
->> Since mlguest.c is in the top dir, so where is ../../include/linux/lguest_launcher.h?
->> 
->
->Confused.  I've grepped the entire universe here for "mlguest" and came up
->with nothing.
->
->I don't have a clue where that file came from on your system.
+greg this is part of my config
+(we are talking now 2.6.22-rc4-200706042030-cfq7 #160 SMP PREEMPT Mon  
+Jun 4 20:55:02 CDT 2007 x86_64 x86_64 x86_64 GNU/Linux)
 
+CONFIG_USB_DEVICEFS=y
+# CONFIG_USB_DEVICE_CLASS is not set ---------------------
+# CONFIG_USB_DYNAMIC_MINORS is not set
+CONFIG_USB_SUSPEND=y
+# CONFIG_USB_OTG is not set
 
-I used 'ketchup' to update my kernel from -rc3 to -rc4-mm1. I got the follow:
+i disabled libusual in my config
+# CONFIG_USB_LIBUSUAL is not set
+with libusual=y my usb-harddrives doesn't show up on desktop after  
+boot until i cycle one off/on and from this moment all of them start  
+showing up
+with libusual not set -usb-harddrives shows up but this doesn't affect  
+scanners
 
-[wangcong@localhost linux-2.6.22-rc4-mm1]$ ls
-arch     Documentation  ipc          Makefile        README          System.map
-block    drivers        Kbuild       mlguest.c       REPORTING-BUGS  usr
-COPYING  fs             kernel       mm              scripts         vmlinux
-CREDITS  include        lib          Module.symvers  security
-crypto   init           MAINTAINERS  net             sound
+btw scanners are working with standard fc7 86-x64 kernel
 
-Maybe there's something wrong with ketchup. ;(
-
-
+xboom
