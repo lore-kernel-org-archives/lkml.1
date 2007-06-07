@@ -1,53 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936778AbXFGVBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936849AbXFGVC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936778AbXFGVBO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 17:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758207AbXFGVA7
+	id S936849AbXFGVC6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 17:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbXFGVCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 17:00:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57604 "EHLO mx1.redhat.com"
+	Thu, 7 Jun 2007 17:02:51 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34702 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753575AbXFGVA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 17:00:59 -0400
-Message-ID: <466871F9.9090306@redhat.com>
-Date: Thu, 07 Jun 2007 17:00:41 -0400
-From: Peter Jones <pjones@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1752420AbXFGVCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 17:02:49 -0400
+Date: Thu, 7 Jun 2007 14:02:47 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       RT <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH RT] convert RCU Preempt tasklet into softirq.
+Message-ID: <20070607210247.GA9390@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1181180051.18444.31.camel@localhost.localdomain> <20070607041411.GB1783@linux.vnet.ibm.com> <1181226138.18444.54.camel@localhost.localdomain> <20070607161754.GA11941@linux.vnet.ibm.com> <1181240819.10408.14.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-References: <1181206091.3625.9.camel@lov.localdomain> <4667D2DF.30207@googlemail.com> <1181228660.3625.23.camel@lov.localdomain> <46682385.1060802@redhat.com> <20070607154342.GA16911@suse.de> <20070607085200.f8d6e2d3.akpm@linux-foundation.org> <20070607155953.GA17591@suse.de> <20070607090632.cfcf02e6.akpm@linux-foundation.org> <20070607161525.GA18363@suse.de> <20070607184805.GA28551@nostromo.devel.redhat.com> <20070607200102.GA21653@suse.de>
-In-Reply-To: <20070607200102.GA21653@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181240819.10408.14.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Jun 07, 2007 at 02:48:05PM -0400, Bill Nottingham wrote:
->> Greg KH (gregkh@suse.de) said: 
->>> There are a number of distros out there right now who can support that
->>> option disabled.  I'm pretty sure they are the following right now:
->>> 	Gentoo unstable (actually stable works now for me, but I'm not
->>> 			 going to guarantee it just yet...)
->>> 	Debian unstable (again stable might work, but I have not heard
->>> 			 any reports from testers.)
->>> 	openSUSE FACTORY (the 10.3 alpha releases)
->>>
->>> and now it sounds like Red Hat rawhide will also work properly.
->> I suspect while it will work for mkinitrd, the installer will not
->> work properly.
+On Thu, Jun 07, 2007 at 02:26:59PM -0400, Steven Rostedt wrote:
+> Following Dipankar's lead, I converted the tasklet in rcupreempt.c into
+> a softirq.
 > 
-> Ah, but the installer doesn't matter until you do a Fedora 8 release,
-> right?  This is just for people who want to run their own kernel on an
-> already-set-up Fedora machine.
+> I've compiled and booted with this patch, but ran no other tests.
 
-Eh, not so sure that's true.  It's really kudzu rather than the 
-installer itself, and that's used by, for example, system-config-network.
+I should be able to run rcutorture on it.
 
--- 
-   Peter
+> Paul,  I'm disappointed, this was so trivial I didn't get a chance to
+> learn anything ;-)
+
+;-)
+
+Some nits below.
+
+						Thanx, Paul
+
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> 
+> Index: linux-2.6.21-rt9/include/linux/rcupreempt.h
+> ===================================================================
+> --- linux-2.6.21-rt9.orig/include/linux/rcupreempt.h
+> +++ linux-2.6.21-rt9/include/linux/rcupreempt.h
+> @@ -63,7 +63,9 @@ extern void rcu_check_callbacks(int cpu,
+>  extern void rcu_restart_cpu(int cpu);
+>  extern long rcu_batches_completed(void);
+> 
+> -extern void rcu_process_callbacks(unsigned long unused);
+> +struct softirq_action;
+> +
+> +extern void rcu_process_callbacks(struct softirq_action *unused);
+
+I don't understand why the above is needed -- interrupt.h is included,
+and the use of rcu_process_callbacks() follows the definition.
+
+>  #endif /* __KERNEL__ */
+>  #endif /* __LINUX_RCUPREEMPT_H */
+> Index: linux-2.6.21-rt9/kernel/rcupreempt.c
+> ===================================================================
+> --- linux-2.6.21-rt9.orig/kernel/rcupreempt.c
+> +++ linux-2.6.21-rt9/kernel/rcupreempt.c
+> @@ -57,7 +57,6 @@
+>  struct rcu_data {
+>  	raw_spinlock_t	lock;
+>  	long		completed;	/* Number of last completed batch. */
+> -	struct tasklet_struct rcu_tasklet;
+>  	struct rcu_head *nextlist;
+>  	struct rcu_head **nexttail;
+>  	struct rcu_head *waitlist;
+> @@ -255,7 +254,7 @@ void rcu_check_callbacks(int cpu, int us
+>  		spin_unlock_irqrestore(&rcu_data.lock, oldirq);
+>  	} else {
+>  		spin_unlock_irqrestore(&rcu_data.lock, oldirq);
+> -		tasklet_schedule(&rcu_data.rcu_tasklet);
+> +		raise_softirq(RCU_SOFTIRQ);
+>  	}
+>  }
+> 
+> @@ -279,7 +278,7 @@ void rcu_advance_callbacks(int cpu, int 
+>  	spin_unlock_irqrestore(&rcu_data.lock, oldirq);
+>  }
+> 
+> -void rcu_process_callbacks(unsigned long unused)
+> +void rcu_process_callbacks(struct softirq_action *unused)
+>  {
+>  	unsigned long flags;
+>  	struct rcu_head *next, *list;
+> @@ -367,7 +366,7 @@ void __init __rcu_init(void)
+>  	rcu_data.waittail = &rcu_data.waitlist;
+>  	rcu_data.donelist = NULL;
+>  	rcu_data.donetail = &rcu_data.donelist;
+> -	tasklet_init(&rcu_data.rcu_tasklet, rcu_process_callbacks, 0UL);
+> +	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
+>  }
+> 
+>  /*
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
