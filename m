@@ -1,80 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966709AbXFGWJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966873AbXFGWKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966709AbXFGWJh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966609AbXFGWIS
+	id S966873AbXFGWKI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966821AbXFGWIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:08:18 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:25286 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966739AbXFGWII (ORCPT
+	Thu, 7 Jun 2007 18:08:30 -0400
+Received: from smtp109.sbc.mail.re2.yahoo.com ([68.142.229.96]:27685 "HELO
+	smtp109.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S966673AbXFGWI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:08:08 -0400
-Date: Thu, 7 Jun 2007 15:06:17 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Pavel Emelianov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-arch@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Report that kernel is tainted if there were an OOPS
- before (v3)
-Message-Id: <20070607150617.3e58d2a2.randy.dunlap@oracle.com>
-In-Reply-To: <4667FF66.4010304@openvz.org>
-References: <4667FF66.4010304@openvz.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Thu, 7 Jun 2007 18:08:27 -0400
+X-YMail-OSG: b8Gv6tkVM1nJtjbZbocaT3RJXEUlcjcWL_B9G9ki.mJbKJyAd4jpfKY2AKXQuLfTyyCul7UKVQ--
+Date: Thu, 7 Jun 2007 17:08:20 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Albert Cahalan <acahalan@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       ebiederm@xmission.com, torvalds@linux-foundation.org
+Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
+Message-ID: <20070607220820.GA1191@vino.hallyn.com>
+References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com> <20070606204432.b670a7b1.akpm@linux-foundation.org> <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com> <1181233393.9995.14.camel@dyn9047017100.beaverton.ibm.com> <787b0d920706070943h6ac65b85nee5b01600905be08@mail.gmail.com> <1181235997.9995.23.camel@dyn9047017100.beaverton.ibm.com> <20070607124824.27e909fd.akpm@linux-foundation.org> <1181246363.9995.37.camel@dyn9047017100.beaverton.ibm.com> <20070607203757.GA531@vino.hallyn.com> <1181250968.9995.41.camel@dyn9047017100.beaverton.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181250968.9995.41.camel@dyn9047017100.beaverton.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Jun 2007 16:51:50 +0400 Pavel Emelianov wrote:
-
-> If the kernel OOPSed or BUGed then it probably should
-> be considered as tainted. Thus, all subsequent OOPSes 
-> and SysRq dumps will report the tainted kernel. This 
-> saves a lot of time explaining oddities in the calltraces.
+Quoting Badari Pulavarty (pbadari@us.ibm.com):
+> On Thu, 2007-06-07 at 15:37 -0500, Serge E. Hallyn wrote:
+> > Quoting Badari Pulavarty (pbadari@us.ibm.com):
+> > > On Thu, 2007-06-07 at 12:48 -0700, Andrew Morton wrote:
+> > > > On Thu, 07 Jun 2007 10:06:37 -0700
+> > > > Badari Pulavarty <pbadari@us.ibm.com> wrote:
+> > > > 
+> > > > > On Thu, 2007-06-07 at 12:43 -0400, Albert Cahalan wrote:
+> > > > > > On 6/7/07, Badari Pulavarty <pbadari@us.ibm.com> wrote:
+> > > > > > 
+> > > > > > > BTW, I agree with Eric that its would be nice to use shmid as part
+> > > > > > > of name instead of forcing to be as inode number. It should be
+> > > > > > > possible for pmap to workout shmid from "key" or name. Isn't it ?
+> > > > > > 
+> > > > > > It is not at all nice.
+> > > > > > 
+> > > > > > 1. it's incompatible ABI breakage
+> > > > > > 2. where will you put the key then, in the inode? :-)
+> > > > > 
+> > > > > Nope. Currently "key" is part of the name (but its not unique).
+> > > > > 
+> > > > > > 
+> > > > > > Changing to "SYSVID%d" is no good either. Look, people
+> > > > > > are ***parsing*** this stuff in /proc. The /proc filesystem
+> > > > > > is not some random sandbox to be playing in.
+> > > > > > 
+> > > > > > Before you go messing with it, note that the device number
+> > > > > > also matters. (it's per-boot dynamic, but that's OK)
+> > > > > > That's how one knows that /SYSV00000000 is not just
+> > > > > > a regular file; sadly these didn't get a non-/ prefix.
+> > > > > > (and no you can't fix that now; it's way too late)
+> > > > > > 
+> > > > > > Next time you feel like breaking an ABI, mind putting
+> > > > > > "LET'S BREAK AN ABI!" in the subject of your email?
+> > > > > 
+> > > > > I am not breaking ABI. Its already broken in the current
+> > > > > mainline. I am trying to fix it by putting back the ino#
+> > > > > as shmid. Eric had a suggestion that, instead of depending
+> > > > > on the inode# to be shmid, we could embed shmid into name
+> > > > > (instead of "key" which is currently not unique).
+> > > > > 
+> > > > > > BTW, I suspect this kind of thing also breaks:
+> > > > > > a. fuser, lsof, and other resource usage display tools
+> > > > > > b. various obscure emulators (similar to valgrind)
+> > > > > 
+> > > > > If you strongly feel that "old" behaviour needs to be retained, 
+> > > > 
+> > > > yup, we should put it back.  The change was, afaik, accidental.
+> > > > 
+> > > > > here is the patch I originally suggested.
+> > > > 
+> > > > Confused.  Will this one-liner fix all the userspace breakage to which
+> > > > Albert refers?
+> > > 
+> > > Yes. Albert, please correct me if I am wrong.
+> > 
+> > It will, but could lead to two different inodes with the same i_ino,
+> > right?
 > 
-> The previous version was buggy and reported the kernel 
-> to be tainted at the very first oops as was noticed by 
-> Dave Jones in the report from Antonino Daplas.
-> 
-> Compilation is checked for i386, x86_64 and ia64 since 
-> I have no all the others at hands :)
-> 
-> Signed-off-by: Pavel Emelianov <xemul@openvz.org>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Only if we generate same ID in two different namespaces. Is it currently
+> possible ? 
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Should be nothing stopping it.
 
-I would change the doc. comment below:
+But like I say we never find the inode based on i_ino, and don't hash
+the inode, so it might be ok.
 
-
-> ---
-> 
-> diff --git a/Documentation/oops-tracing.txt b/Documentation/oops-tracing.txt
-> index 7d5b60d..610e234 100644
-> --- a/Documentation/oops-tracing.txt
-> +++ b/Documentation/oops-tracing.txt
-> @@ -237,6 +237,8 @@ characters, each representing a particul
->    7: 'U' if a user or user application specifically requested that the
->       Tainted flag be set, ' ' otherwise.
->  
-> +  8: 'D' if the kernel has died recently, i.e. there was an OOPS or BUG.
-
-something like:
-
-+  8: 'D' if the kernel has already died, i.e. there was a prior OOPS or BUG.
-
-> +
->  The primary reason for the 'Tainted: ' string is to tell kernel
->  debuggers if this is a clean kernel or if anything unusual has
->  occurred.  Tainting is permanent: even if an offending module is
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-serge
