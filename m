@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbXFGIrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760556AbXFGIsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbXFGIrg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 04:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbXFGIrU
+	id S1760556AbXFGIsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 04:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXFGIs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 04:47:20 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46257 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755639AbXFGIrN (ORCPT
+	Thu, 7 Jun 2007 04:48:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:59014 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753991AbXFGIsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 04:47:13 -0400
-Date: Thu, 7 Jun 2007 10:47:11 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
-Message-ID: <20070607084711.GB15226@one.firstfloor.org>
-References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <200706011407.51779.jbarnes@virtuousgeek.org> <20070601211943.GO7217@one.firstfloor.org> <200706011441.57149.jbarnes@virtuousgeek.org> <m1r6orwptz.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0706041420100.25811@p34.internal.lan> <20070604201823.7b7cb328@the-village.bc.nu> <m1myzfwi0x.fsf@ebiederm.dsl.xmission.com> <86802c440706041759q1b2d528ex24b3de514d09d9ef@mail.gmail.com>
+	Thu, 7 Jun 2007 04:48:25 -0400
+Subject: Re: 2.6.22-rc4-mm1
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <4667C47C.2010207@googlemail.com>
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+	 <4667018D.7020407@googlemail.com> <1181168095.3612.4.camel@lov.localdomain>
+	 <4667C47C.2010207@googlemail.com>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 10:48:11 +0200
+Message-Id: <1181206091.3625.9.camel@lov.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440706041759q1b2d528ex24b3de514d09d9ef@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18pu8zpViCl51nlgig+u8jD8rQuv/EPixcMCYC
+ 86gFpjxVenYMadT9+1sYZwXm7vYX5q5tCvZok6/ZfhfxCokMfh
+ kyrXmOXqZBsJCoy04NtN10YsezNkhDN
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 04, 2007 at 05:59:59PM -0700, Yinghai Lu wrote:
-> On 6/4/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> >
-> >Exactly, and given that this is a fairly easy thing to do, and that
-> >occasionally we see systems where this happens (even if their BIOS is
-> >later fixed).  It is likely worth it for someone to write up the patch
-> >and that compare MTRRs with available memory, and to complain and
-> >reserve all memory that MTRRs claim is not write-back.
-> >
-> that is good.
-> Sometime BIOS can not even keep mtrr to the identical between
-> different CPU in SMP system.
+On Thu, 2007-06-07 at 10:40 +0200, Michal Piotrowski wrote:
+> Kay Sievers pisze:
+> > On Wed, 2007-06-06 at 20:48 +0200, Michal Piotrowski wrote:
+> >> Andrew Morton pisze:
+> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
+> >>>
+> >> Kay, your patch gregkh-driver-block-device.patch breaks Fedora 7 initrd
+> >> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/initrd.jpg
+> >>
+> >> Please fix it ASAP, I can't test kernel...
+> > 
+> > Do you have CONFIG_SYSFS_DEPRECATED set or unset?
+> > 
+> > Kay
+> > 
+> > 
+> 
+> cat ../linux-mm-bo/.config | grep CONFIG_SYSFS_DEPRECATED
+> # CONFIG_SYSFS_DEPRECATED is not set
 
-The MTRR code already fixes this case. Or at least mostly -- 
-it doesn't do it for fixed size MTRRs.
+Oh, could you possibly try (with the block patch included) setting it to
+yes and see if it works? That would help to find what's going wrong.
 
-> Or reset mtrr according to e820 table.
+Thanks,
+Kay
 
-That would be likely dangerous.
-
--Andi
