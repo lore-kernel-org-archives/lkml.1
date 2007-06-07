@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937873AbXFGWug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966045AbXFGWxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937873AbXFGWug (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936640AbXFGWu0
+	id S966045AbXFGWxv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965681AbXFGWxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:50:26 -0400
-Received: from lucidpixels.com ([75.144.35.66]:49657 "EHLO lucidpixels.com"
+	Thu, 7 Jun 2007 18:53:44 -0400
+Received: from lucidpixels.com ([75.144.35.66]:51131 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932857AbXFGWuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:50:25 -0400
-Date: Thu, 7 Jun 2007 18:50:24 -0400 (EDT)
+	id S965380AbXFGWxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:53:43 -0400
+Date: Thu, 7 Jun 2007 18:53:42 -0400 (EDT)
 From: Justin Piszcz <jpiszcz@lucidpixels.com>
 X-X-Sender: jpiszcz@p34.internal.lan
 To: Jesse Barnes <jesse.barnes@intel.com>
@@ -17,14 +17,25 @@ cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
        "Eric W. Biederman" <ebiederm@xmission.com>
 Subject: Re: [PATCH] trim memory not covered by WB MTRRs
 In-Reply-To: <200706071530.51552.jesse.barnes@intel.com>
-Message-ID: <Pine.LNX.4.64.0706071850180.16563@p34.internal.lan>
+Message-ID: <Pine.LNX.4.64.0706071853170.16563@p34.internal.lan>
 References: <200706071530.51552.jesse.barnes@intel.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Will see if it still patches against -rc4.
+p34:/usr/src/linux# patch -p1 < ../mtrr-v2.patch
+patching file Documentation/kernel-parameters.txt
+patching file arch/i386/kernel/cpu/mtrr/generic.c
+patching file arch/i386/kernel/cpu/mtrr/if.c
+patching file arch/i386/kernel/cpu/mtrr/main.c
+patching file arch/i386/kernel/cpu/mtrr/mtrr.h
+patching file arch/x86_64/kernel/bugs.c
+patching file arch/x86_64/kernel/setup.c
+patching file include/asm-x86_64/mtrr.h
+p34:/usr/src/linux#
+
+Applies clean to 2.6.22-rc4, verifying shortly.
 
 On Thu, 7 Jun 2007, Jesse Barnes wrote:
 
