@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932638AbXFGQPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933625AbXFGQPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932638AbXFGQPg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759581AbXFGQP2
+	id S933625AbXFGQPw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932673AbXFGQPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:15:28 -0400
-Received: from ns2.suse.de ([195.135.220.15]:55475 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753620AbXFGQP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:15:28 -0400
-Date: Thu, 7 Jun 2007 09:15:25 -0700
-From: Greg KH <gregkh@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Jones <pjones@redhat.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-Message-ID: <20070607161525.GA18363@suse.de>
-References: <1181168095.3612.4.camel@lov.localdomain> <4667C47C.2010207@googlemail.com> <1181206091.3625.9.camel@lov.localdomain> <4667D2DF.30207@googlemail.com> <1181228660.3625.23.camel@lov.localdomain> <46682385.1060802@redhat.com> <20070607154342.GA16911@suse.de> <20070607085200.f8d6e2d3.akpm@linux-foundation.org> <20070607155953.GA17591@suse.de> <20070607090632.cfcf02e6.akpm@linux-foundation.org>
+	Thu, 7 Jun 2007 12:15:36 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:51898 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932211AbXFGQPf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 12:15:35 -0400
+Message-ID: <46682EFA.1020406@zytor.com>
+Date: Thu, 07 Jun 2007 09:14:50 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070607090632.cfcf02e6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Rob Landley <rob@landley.net>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC 6/7] i386: make the bzImage payload an ELF file
+References: <20070606225837.654272428@goop.org> <200706062147.21225.rob@landley.net> <46676552.4060308@zytor.com> <200706071208.04777.rob@landley.net>
+In-Reply-To: <200706071208.04777.rob@landley.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 09:06:32AM -0700, Andrew Morton wrote:
-> On Thu, 7 Jun 2007 08:59:53 -0700 Greg KH <gregkh@suse.de> wrote:
+Rob Landley wrote:
 > 
-> > On Thu, Jun 07, 2007 at 08:52:00AM -0700, Andrew Morton wrote:
-> > > On Thu, 7 Jun 2007 08:43:42 -0700 Greg KH <gregkh@suse.de> wrote:
-> > > 
-> > > > >  Fixed in mkinitrd-6.0.9-6 , which I'll build now and push to 
-> > > > >  updates-testing.  Thanks for getting my attention here.
-> > > > 
-> > > > Great, Andrew, can you please reenable the block-device patch that is in
-> > > > my tree now that the problem has been solved?
-> > > 
-> > > I think we're screwed, aren't we?  Everyone needs to upgrade mkinitrd to be
-> > > able to boot the kernel?  Not viable :(
-> > > 
-> > > For example, what about my two-year-old yellowdog machine?
-> > 
-> > Enable CONFIG_SYSFS_DEPRECATED and it should all work just fine.  That's
-> > what Michal said worked for him.
-> > 
+> Er, make that objcopy, not objdump.
 > 
-> Actually, it _was_ enabled.
+> Sane, maybe not.  Something people want to do (and under the mistaken 
+> assumption I know more about initramfs then they do, have asked me how), yes.  
+> It always boils down to "do you have a vmlinux image lying around?  Doing 
+> this with a bzImage _is_ brain surgery", and has yet to get beyond that 
+> question.  I had about half of a script worked out for this, once...
 > 
-> Ho hum, I'll have a poke at it this evening.
 
-Yeah, that sounds odd, it should have worked.
+If it can be done today on a vmlinux then it can be done the same way
+with the mechanism I have proposed.  Period, full stop.
 
-> So...  what's the story here?  Should our position be that
-> CONFIG_SYSFS_DEPRECATED=n should only be used by distro kernel-builders,
-> who are concurrently shipping userspace which can handle it?
+> You can also supply an external initramfs image through the initrd mechanism, 
+> but this is unpleasant to do with some bootloaders (or lack of bootloaders).  
+> Plus it doesn't remove the old one, and wasting space makes embedded 
+> developers itch.
 
-Yes.
+In thory one could create an extended bzImage format which could handle
+a concatenated, and easily replaceable, initrd, but if it's done on
+vmlinux today it would make a *lot* more sense to have it be done on the
+vmlinux and nothing else.
 
-There are a number of distros out there right now who can support that
-option disabled.  I'm pretty sure they are the following right now:
-	Gentoo unstable (actually stable works now for me, but I'm not
-			 going to guarantee it just yet...)
-	Debian unstable (again stable might work, but I have not heard
-			 any reports from testers.)
-	openSUSE FACTORY (the 10.3 alpha releases)
-
-and now it sounds like Red Hat rawhide will also work properly.
-
-> And that these distros should (probably) set CONFIG_SYSFS_DEPRECATED=y
-> in their update kernels for older distributions?
-
-Yes, unless they have tested things and it all works properly (all old
-usages of libsysfs need to be removed and 'odd' initrd scripts need to
-be updated as in the case of Red Hat.)
-
-thanks,
-
-greg k-h
+	-hpa
