@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936348AbXFGC2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965937AbXFGC3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936348AbXFGC2T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 22:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935371AbXFGC2L
+	id S965937AbXFGC3I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 22:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935753AbXFGC2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 22:28:11 -0400
-Received: from mail4.webhostingstar.com ([67.106.77.50]:59350 "HELO
-	mail4.webhostingstar.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759933AbXFGC2K (ORCPT
+	Wed, 6 Jun 2007 22:28:55 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:58638 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935757AbXFGC2z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 22:28:10 -0400
-Message-ID: <20070606212643.36m4bgcq8ssc4o84@67.106.77.50>
-Date: Wed, 06 Jun 2007 21:26:43 -0500
-From: art@usfltd.com
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@osdl.org, greg@kroah.com, michal.k.k.piotrowski@gmail.com
-Subject: Re: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
+	Wed, 6 Jun 2007 22:28:55 -0400
+Date: Wed, 6 Jun 2007 22:20:02 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: signalfd API issues (was Re: [PATCH/RFC] signal races/bugs, losing TIF_SIGPENDING and other woes)
+Message-ID: <20070607022002.GA11977@c2.user-mode-linux.org>
+References: <1181023787.2785.14.camel@entropy> <1181028453.31677.127.camel@localhost.localdomain> <1181087462.2788.8.camel@entropy> <Pine.LNX.4.64.0706051710140.23673@alien.or.mcafeemobile.com> <1181088936.2788.10.camel@entropy> <Pine.LNX.4.64.0706051736120.23673@alien.or.mcafeemobile.com> <1181091523.2788.28.camel@entropy> <1181098204.31677.158.camel@localhost.localdomain> <20070606125259.GA5491@c2.user-mode-linux.org> <18023.14494.889739.567439@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
+In-Reply-To: <18023.14494.889739.567439@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-greg this is part of my config
-(we are talking now 2.6.22-rc4-200706042030-cfq7 #160 SMP PREEMPT Mon  
-Jun 4 20:55:02 CDT 2007 x86_64 x86_64 x86_64 GNU/Linux)
+On Thu, Jun 07, 2007 at 08:43:42AM +1000, Paul Mackerras wrote:
+> What Ben was talking about was stealing a synchronous SEGV from a task
+> without stopping it, and as Ben says that makes no sense.
+> Intercepting a signal and stopping the task is reasonable, and that is
+> what ptrace does, and I assume also UML.
 
-CONFIG_USB_DEVICEFS=y
-# CONFIG_USB_DEVICE_CLASS is not set ---------------------
-# CONFIG_USB_DYNAMIC_MINORS is not set
-CONFIG_USB_SUSPEND=y
-# CONFIG_USB_OTG is not set
+It is, but I can also see UML stealing the SEGV from the child.  The
+UML skas does this - a ptrace extension, PTRACE_FAULTINFO, is used to
+extract page fault information from the child, and other pieces of the
+patch are used to fix the fault without the child continuing until
+it's fixed.  So, in this case, the child never sees the SEGV.
 
-i disabled libusual in my config
-# CONFIG_USB_LIBUSUAL is not set
-with libusual=y my usb-harddrives doesn't show up on desktop after  
-boot until i cycle one off/on and from this moment all of them start  
-showing up
-with libusual not set -usb-harddrives shows up but this doesn't affect  
-scanners
+				Jeff
 
-btw scanners are working with standard fc7 86-x64 kernel
-
-xboom
+-- 
+Work email - jdike at linux dot intel dot com
