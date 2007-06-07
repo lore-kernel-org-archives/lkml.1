@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbXFGOUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbXFGO0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751891AbXFGOUy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXFGOUs
+	id S1761366AbXFGO0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbXFGO0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:20:48 -0400
-Received: from mx.melware.net ([217.91.97.190]:3526 "EHLO mx.melware.net"
+	Thu, 7 Jun 2007 10:26:09 -0400
+Received: from waste.org ([66.93.16.53]:58017 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750826AbXFGOUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:20:47 -0400
-X-Greylist: delayed 1114 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jun 2007 10:20:46 EDT
-Date: Thu, 7 Jun 2007 16:02:11 +0200 (CEST)
-From: Armin Schindler <armin@melware.de>
-X-X-Sender: armin@phoenix.one.melware.de
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       kkeil@suse.de
-Subject: Re: [PATCH] isdn/diva: fix section mismatch
-In-Reply-To: <20070606142045.3bd15032.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.61.0706071558110.7490@phoenix.one.melware.de>
-References: <20070606142045.3bd15032.randy.dunlap@oracle.com>
-Organization: Cytronics & Melware
+	id S1756051AbXFGO0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 10:26:08 -0400
+Date: Thu, 7 Jun 2007 09:25:17 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Mark Hounschell <dmarkh@cfl.rr.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, markh@compro.net,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: floppy.c soft lockup
+Message-ID: <20070607142517.GS11115@waste.org>
+References: <20070601183642.GA92@tv-sign.ru> <466078FF.2080508@cfl.rr.com> <20070602123030.GA719@tv-sign.ru> <4661D698.5040009@cfl.rr.com> <20070603081417.GA81@tv-sign.ru> <46641B16.9090701@compro.net> <4666B2A4.7090603@compro.net> <20070606102828.752bf955.akpm@linux-foundation.org> <20070607013128.GW11166@waste.org> <4667DB8C.4040803@cfl.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4667DB8C.4040803@cfl.rr.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Thu, Jun 07, 2007 at 06:18:52AM -0400, Mark Hounschell wrote:
+> Matt Mackall wrote:
+> > On Wed, Jun 06, 2007 at 10:28:28AM -0700, Andrew Morton wrote:
+> >> On Wed, 06 Jun 2007 09:12:04 -0400 Mark Hounschell <markh@compro.net> wrote:
+> >>
+> >>>> As far as a 100% CPU bound task being a valid thing to do, it has been 
+> >>>> done for many years on SMP machines. Any kernel limitation on this 
+> >>>> surely must be considered a bug? 
+> >>>>
+> >>> Could someone authoritatively comment on this? Is a SCHED_RR/SCHED_FIFO
+> >>> 100% Cpu bound process supported in an SMP env on Linux? (vanilla or -rt)
+> >> It will kill the kernel, sorry.
+> >>
+> >> The only way in which we can fix that is to allow kernel threads to preempt
+> >> rt-priority userspace threads.  But if we were to do that (to benefit the
+> >> few) it would cause _all_ people's rt-prio processes to experience glitches
+> >> due to kernel activity, which we believe to be worse.
+> >>
+> >> So we're between a rock and a hard place here.
+> >>
+> >> If we really did want to solve this then I guess the kernel would need some
+> >> new code to detect a 100%-busy rt-prio process and to then start premitting
+> >> preemption of it for kernel thread activity.  That detector would need to
+> >> be smart enough to detect a number of 100%-busy rt-prio processes which are
+> >> yielding to each other, and one rt-prio process which keeps forking others,
+> >> etc.  It might get tricky.
+> > 
+> > The usual alternative is to manually chrt the relevant kernel threads
+> > to RT priority and adjust the priority scheme of their processes appropriately.
+> > 
+> 
+> >From an earlier thread member:
+> 
+> >> Mark writes:
+> >> Again I don't understand why flush_scheduled_work() running on behalf
+> >> of a process affinitized to processor-1 requires cooperation from
+> >> events/2 (affinitized to processor-2)
+> >> when there is an events/1 already affinitized to processor 1?
+> 
+> >Oleg write:
+> >flush_workqueue() blocks until any scheduled work on any CPU has run to
+> >completion. If we have some work_struct pending on CPU 2, it can be
+> >completed only when events/2 executes it.
+> 
+> Could not flush_scheduled_work() just follow the affinity mask of the
+> task that caused the call to begin with. If calling task had a cpu-mask
+> of 3 then flush_scheduled_work() would do the events/0 and events/1
+> thing and if the calling task had an affinity mask of 1 then only
+> events/0 would be done?
 
-__exit function is used by both init and exit routines, so it cannot
-be marked __init.  (from allyesconfig)
+The kernel's internal event API doesn't track any of this stuff and
+it's not clear we'd want it to. It'd be a bit simpler perhaps to
+simply allow SIGSTOPing events/0. This might even work today from
+userspace.
 
-WARNING: drivers/built-in.o(.text+0x9b83cf): Section mismatch: reference to .exit.text: (between 'divasfunc_exit' and 'didd_callback')
+In general, it's considered a mistake to mark CPU hogs as RT precisely
+because they present a starvation risk to everything else in the
+system, not just kernel threads. We could add kernel infrastructure to
+make events survive this sort of thing, but that will very likely just
+expose another kernel or userspace livelock.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Acked-by: Armin Schindler <armin@melware.de>
----
- drivers/isdn/hardware/eicon/divasfunc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2622-rc4.orig/drivers/isdn/hardware/eicon/divasfunc.c
-+++ linux-2622-rc4/drivers/isdn/hardware/eicon/divasfunc.c
-@@ -195,7 +195,7 @@ static int DIVA_INIT_FUNCTION connect_di
- /*
-  * disconnect from didd
-  */
--static void DIVA_EXIT_FUNCTION disconnect_didd(void)
-+static void disconnect_didd(void)
- {
- 	IDI_SYNC_REQ req;
- 
-
+-- 
+Mathematics is the supreme nostalgia of our time.
