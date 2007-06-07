@@ -1,99 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933292AbXFGQCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763561AbXFGQDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933292AbXFGQCi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933015AbXFGQBq
+	id S1763561AbXFGQDJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765410AbXFGQCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:01:46 -0400
-Received: from rtr.ca ([64.26.128.89]:3147 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932857AbXFGQBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:01:45 -0400
-Message-ID: <46682BE7.6080802@rtr.ca>
-Date: Thu, 07 Jun 2007 12:01:43 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 7 Jun 2007 12:02:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53892 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932935AbXFGQCV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 12:02:21 -0400
+Date: Thu, 7 Jun 2007 09:02:14 -0700
+From: Greg KH <greg@kroah.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, i2c@lm-sensors.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [i2c] i2c module aliases
+Message-ID: <20070607160214.GB17800@kroah.com>
+References: <Pine.LNX.4.64.0706062325270.30244@anakin> <20070607175342.3006e872@hyperion.delvare>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Tweedie <sct@redhat.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext3fs: umount+sync not enough to guarantee metadata-on-disk
-References: <46680BB8.50404@rtr.ca> <20070607084142.42583639.akpm@linux-foundation.org>
-In-Reply-To: <20070607084142.42583639.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607175342.3006e872@hyperion.delvare>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 07 Jun 2007 09:44:24 -0400 Mark Lord <lkml@rtr.ca> wrote:
-..
->> 2. When I trigger the shutdown whilst this is happening, Myth gets
->> killed off, and so the unlinked file is automatically closed.
->> and the kernel (filesystem) code begins finishing the delete operation.
->>
->> 3. The shutdown scripts do their thing quickly, so the delete is
->> *still* underway when the umount commands are issued.
->> On this system, I use this sequence:
->>
->>   ## /var/lib/mythtv is the recording's ext3fs, on /dev/md0 (RAID0):
+On Thu, Jun 07, 2007 at 05:53:42PM +0200, Jean Delvare wrote:
+> Hi Geert,
 > 
-> I assume the applikcaton has already been killed at this stage, and it is
-> blocked in the kernel running the truncate?
-
-Yes, I believe I saw that once.
-
->>    mount /var/lib/mythtv -oremount,ro
->>    sync
->>    umount /var/lib/mythtv
+> On Wed, 6 Jun 2007 23:32:38 +0200 (CEST), Geert Uytterhoeven wrote:
+> > >From browsing through file2alias.c, I have the impression there's a
+> > missing TO_NATIVE() conversion in the handling of 16-bit (hence,
+> > endian-affected) i2c IDs.
+> > This will cause the module aliases to be incorrect when cross-compiling
+> > for a system with a different endianness.  Is that correct?
+> > If yes, the patch below adds the missing conversion.
+> > 
+> > Of course, no driver seems to use `MODULE_DEVICE_TABLE(i2c, ...)' yet,
+> > hence nobody noticed.
+> > 
+> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> > 
+> > --- a/scripts/mod/file2alias.c
+> > +++ b/scripts/mod/file2alias.c
+> > @@ -390,6 +390,7 @@ static int do_vio_entry(const char *file
+> >  
+> >  static int do_i2c_entry(const char *filename, struct i2c_device_id *i2c, char *alias)
+> >  {
+> > +	i2c->id = TO_NATIVE(i2c->id);
+> >  	strcpy(alias, "i2c:");
+> >  	ADD(alias, "id", 1, i2c->id);
+> >  	return 1;
+> > 
 > 
-> Did this succeed?  If the application is still truncating that file, the
-> umount should have failed.
+> Looks correct. However I am curious what this "i2c->id" is supposed to
+> represent, given that I2C devices do not have any form of ID as PCI or
+> USB devices have. No driver uses "MODULE_DEVICE_TABLE(i2c, ...)"
+> probably just because it doesn't make sense. So, rather than fixing
+> this, shouldn't we simply wipe out struct i2c_device_id? Greg, David?
 
-Actually, what I expect to happen is for the remount,ro
-to block  until the file deletion completes.  But it doesn't.
+If no one is using it, then yes, it should be removed.
 
-Once a f/s is read-only, there should be NO writing to it.  Right?
+Sorry, I added it a while ago thinking it was going to be used (I had
+test patches using it in my tree, but they never worked out in the end.)
 
-I don't know if the umount worked or not, but the f/s ought to be
-read-only at this point, so why is it still writing to the device?
+thanks,
 
-I'll instrument the shutdown more for next time, to see if the remount
-and umount really do succeed or not.  Mmm.. do they log anything on failure?
-
->>    sync
->>    mount / -oremount,ro
->>    sync
->>    sleep 1
->>    hdparm -W0 /dev/sda /dev/sdb
->>    sync
->>    sleep 2
->>    halt -f -p
->>
->> 4. The hard drive light is on solid throughout, including at the point
->> when the power goes out.
->>
->> 5. On the next reboot, there is a LONG pause (20-30 seconds) at the
->> point where /var/lib/mythtv is remounted --> indicating unfinished business
->> from the journal file that needs to be replayed (eg. the file deletion).
-> 
-> That opened-but-deleted file's inode is on the orphan list.
-> 
-> See, the unlink-then-slowly-truncate trick is done in this fashion so that
-> if the box crashes during the slow unlink, the orhpan list handling on the
-> reboot will finish off the truncate for us.
-
-Yes, absolutely.
-
->> So.. how can I guarantee a quiescent filesystem before doing "halt -f -p" ??
->> This looks pretty dangerous as-is.
-> 
-> Wait for the killed-off applicaiton to actually exit, perhaps?  But
-> that unmount should have failed.
-
-But some applications just "hang" regardless, and so this cannot wait forever.
-There must be *some* way to know when a filesystem is really quiescent
-and therefore safe to power off?
-
-Cheers
-
+greg k-h
