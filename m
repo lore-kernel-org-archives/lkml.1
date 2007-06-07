@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbXFGI4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761267AbXFGI5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760787AbXFGI4g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 04:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXFGI43
+	id S1761267AbXFGI5i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 04:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXFGI5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 04:56:29 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:18098 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751951AbXFGI42 (ORCPT
+	Thu, 7 Jun 2007 04:57:30 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:38815
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752726AbXFGI53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 04:56:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WKk91RC4MJgkg+QPqs+nuDdS3nARFN6bbZ8HYycroXvfcp7ClDQGnEWmSAO+5py46ME39RK5zNOgr40J8W7Fu/+K6gycMxRhbMmxtajM6jEPajmmbbzvBBkRqYR2SrL2j072HpulT5BFxfkoiyhak8vX9WB7owNqtjYP8FvTkUY=
-Message-ID: <5d96567b0706070156g7f94c7a3te022b4ea4cb57c74@mail.gmail.com>
-Date: Thu, 7 Jun 2007 11:56:27 +0300
-From: "Raz Ben-Jehuda(caro)" <raziebe@gmail.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: kmap_atomic in 2.6.20.x
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070606191729.GE4735@kernel.dk>
+	Thu, 7 Jun 2007 04:57:29 -0400
+Date: Thu, 7 Jun 2007 01:56:45 -0700
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Peschke <mp3@de.ibm.com>, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, jbaron@redhat.com, rostedt@goodmis.org,
+       linux-s390@vger.kernel.org, "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+Message-ID: <20070607085645.GA29054@gnuppy.monkey.org>
+References: <1181165656.7133.23.camel@dix> <20070606230641.GA11592@elte.hu> <46674EA9.9090601@de.ibm.com> <20070607044017.GA3828@gnuppy.monkey.org> <4667ADDA.2070202@de.ibm.com> <20070607073021.GA21139@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5d96567b0706061003r462c324i733ad3698ac3d90c@mail.gmail.com>
-	 <20070606191729.GE4735@kernel.dk>
+In-Reply-To: <20070607073021.GA21139@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/6/07, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Wed, Jun 06 2007, Raz Ben-Jehuda(caro) wrote:
-> > Hello
-> >
-> > I am running into some problems with kmap_atomic in my driver.
-> > My driver copies some pages coming from
-> > user space to "kernel space kmalloc'ed memory".
-> > I had this code running from 2.6.5 to 2.6.17 without any problems.
-> > I have upgraded to 2.6.20.xx and this code fails to kmap_atomic.
-> > I am running a uni processor 2 GRAM machine, 32bit.
-> >
-> > Basically this is code does:
-> >
-> > get_user_pages(page,...)
-> >
-> > kmap_atomic(page,KM_USER0);
-> > .. copy and stuff
-> > kunmap_atomic(page,KM_USER0)
->
-> dst = kmap_atomic(page, KM_USER0);
-> ...
-> kunmap_atomic(dst, KM_USER0);
->
-> Note the subtle difference.
->
-> --
-> Jens Axboe
->
->
+On Thu, Jun 07, 2007 at 09:30:21AM +0200, Ingo Molnar wrote:
+> * Martin Peschke <mp3@de.ibm.com> wrote:
+> > Do mean I might submit this stuff for -rt?
+> 
+> Firstly, submit cleanup patches that _do not change the output_. If you 
+> have any output changes, do it as a separate patch, ontop of the cleanup 
+> patch. Mixing material changes and cleanups into a single patch is a 
+> basic patch submission mistake that will only earn you NACKs.
 
-hmm..... hammmm....haaaa
-again...  many many thanks Jens.
-You are correct.
+Martin,
 
--- 
-Raz
+First of all I agree with Ingo in that this needs to be seperated from
+the rest of the clean ups. However, I don't understand why all of this
+is so heavy weight when the current measurements that Peter makes is
+completely sufficient for any reasonable purpose I can think of at the
+moment. What's this stuff with labels about ?
+
+It's important to get the points of contention so that the greater
+kernel group can fix this issues and not log statistics for the purpose
+of logging it. The original purpose should not be ignore when working
+on this stuff.
+
+By the way, what's the purpose of all of this stuff ? like what do you
+intend to do with it over the long haul ?
+
+bill
+
