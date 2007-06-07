@@ -1,97 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966409AbXFGWGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966757AbXFGWHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966409AbXFGWGm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966284AbXFGWBT
+	id S966757AbXFGWHz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966569AbXFGWFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:01:19 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43897 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966356AbXFGWBP (ORCPT
+	Thu, 7 Jun 2007 18:05:16 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45840 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966443AbXFGWFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:01:15 -0400
-Date: Thu, 7 Jun 2007 15:01:13 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: serue@us.ibm.com, vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net,
-       balbir@in.ibm.com, rohitseth@google.com, haveblue@us.ibm.com,
-       xemul@sw.ru, dev@sw.ru, containers@lists.osdl.org, devel@openvz.org,
-       ebiederm@xmission.com, mbligh@google.com, cpw@sgi.com,
-       menage@google.com, svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ckrm-tech] [PATCH 00/10] Containers(V10): Generic Process
- Containers
-Message-Id: <20070607150113.f020d8f8.pj@sgi.com>
-In-Reply-To: <20070607201723.GA17011@sergelap.austin.ibm.com>
-References: <20070604123151.4db007a6.pj@sgi.com>
-	<6599ad830706041330q1802ebf2n2bac63f706a73a50@mail.gmail.com>
-	<20070604204131.GB19409@sergelap.austin.ibm.com>
-	<20070604140533.65e25286.pj@sgi.com>
-	<20070606223952.GB5626@sergelap.austin.ibm.com>
-	<20070606154347.a155630b.pj@sgi.com>
-	<20070607000559.GA19529@sergelap.austin.ibm.com>
-	<20070606174609.bfa01446.pj@sgi.com>
-	<20070607180158.GA936@sergelap.austin.ibm.com>
-	<20070607122121.24fe6ff4.pj@sgi.com>
-	<20070607201723.GA17011@sergelap.austin.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Thu, 7 Jun 2007 18:05:14 -0400
+Date: Thu, 7 Jun 2007 15:04:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Stephen Tweedie <sct@redhat.com>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ext3fs: umount+sync not enough to guarantee metadata-on-disk
+Message-Id: <20070607150455.719f9ec0.akpm@linux-foundation.org>
+In-Reply-To: <46687AEE.6030005@rtr.ca>
+References: <46680BB8.50404@rtr.ca>
+	<20070607084142.42583639.akpm@linux-foundation.org>
+	<46682E4E.1070303@redhat.com>
+	<20070607124507.79d8da54.akpm@linux-foundation.org>
+	<46687AEE.6030005@rtr.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The set of people using exclusive cpusets is roughly some subset of
-> > those running multiple, cpuset isolated, non-cooperating jobs on big
-> > iron, usually with the aid of a batch scheduler.
+On Thu, 07 Jun 2007 17:38:54 -0400
+Mark Lord <lkml@rtr.ca> wrote:
+
+> Andrew Morton wrote:
+> > On Thu, 07 Jun 2007 12:11:58 -0400
+> > Chuck Ebbert <cebbert@redhat.com> wrote:
+> > 
+> >> On 06/07/2007 11:41 AM, Andrew Morton wrote:
+> >>>>    mount /var/lib/mythtv -oremount,ro
+> >>>>    sync
+> >>>>    umount /var/lib/mythtv
+> >>> Did this succeed?  If the application is still truncating that file, the
+> >>> umount should have failed.
+> >> Shouldn't sync should wait for truncate to finish?
+> > 
+> > I can't think of anything in there at present which would cause that to
+> > happen, and it's not immediately obvious how we _could_ make it happen - we
+> > have an inode which potentially has no dirty pages and which is itself
+> > clean.  The truncate can span multiple journal commits, so forcing a
+> > journal commit in sync() won't necessarily block behind the truncate.
+> > 
+> > I guess we could ask sync to speculatively take and release every inode's
+> > i_mutex or something.  But even that would involve quite some hoop-jumping
+> > due to those infuriating spinlock-protected list_heads on the superblock.
+> > 
+> > hmm.
 > 
-> Unfortunately I would imagine these users to be very intereseted in
-> providing checkpoint/restart/migrate functionality.
+> Yeah, I really don't know what to do with this either.
+> We have to have a bounds on how long we wait at shutdown,
+> but there doesn't seem to be an easy way to get notified
+> once a filesystem becomes idle (?).
+> 
+> I suppose I could have the script loop on /proc/interrupts until
+> it sees the disk activity has tapered off..
+> 
 
-Yup - such customers are very interested in checkpoint, restart, and
-migrate functionality.
+I don't recall clarity on this question: did the umount fail?
 
-> Surely if the admin wants to give cpus 5-6 exclusively to /cpusets/set0/set4
-> later, those cpus can just be taken away from set3?
+Because it should have, in which case your script can poll that.
 
-Yeah - that works, so far as I know (which isn't all that far ..')
-
-But both:
- 1) that (using whatever cpus are still available) and
- 2) my other idea, of not allowing any cloning of cpusets with
-    exclusive siblings at all,
-
-looked a little ugly to me.
-
-For example, such customers as above would not appreciate having their
-checkpoint/restart/migrate fail in any case where there weren't spare
-non-exclusive cpus, which for users of the exclusive flag, is often the
-more common case.
-
-My rule of thumb when doing ugly stuff is to constrain it as best
-I can -- minimize what it allows.  This led me to prefer (2) above
-over (1) above.
-
-Perhaps there's a better way to think of this ...  When we clone
-like this for checkpoint/restart/migrate functionality, perhaps
-we are not really starting up a new, separate, competing job that
-should have its resources isolated and separated from the original.
-
-Perhaps instead we are firing up a convenient alter-ego of the
-original job, which will be co-operatively using the same resources
-by default.  If that's the normal case, then it seems wrong to
-force the clone onto disjoint CPUs, or fail for lack thereof.
-
-So perhaps we should refine the meaning of 'exclusive', from:
- - no overlapping siblings
-to:
- - no overlapping siblings other than clones of ones self.
-
-Then default to cloning right on the same CPU resources as the
-original, possibly with both original and clone marked exclusive.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
