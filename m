@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935082AbXFGUGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934621AbXFGUKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935082AbXFGUGA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 16:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934374AbXFGUFs
+	id S934621AbXFGUKN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 16:10:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbXFGUKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 16:05:48 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:33751 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934100AbXFGUFr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 16:05:47 -0400
-Message-ID: <466864F8.2050903@cosmosbay.com>
-Date: Thu, 07 Jun 2007 22:05:12 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Thu, 7 Jun 2007 16:10:01 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41108 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752341AbXFGUKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 16:10:00 -0400
+Date: Thu, 7 Jun 2007 13:01:02 -0700
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>, Peter Jones <pjones@redhat.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070607200102.GA21653@suse.de>
+References: <1181206091.3625.9.camel@lov.localdomain> <4667D2DF.30207@googlemail.com> <1181228660.3625.23.camel@lov.localdomain> <46682385.1060802@redhat.com> <20070607154342.GA16911@suse.de> <20070607085200.f8d6e2d3.akpm@linux-foundation.org> <20070607155953.GA17591@suse.de> <20070607090632.cfcf02e6.akpm@linux-foundation.org> <20070607161525.GA18363@suse.de> <20070607184805.GA28551@nostromo.devel.redhat.com>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Kyle Moffett <mrmacman_g4@mac.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7> <20070606235906.72439d16@the-village.bc.nu> <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com> <20070607001932.35c9591c@the-village.bc.nu> <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu> <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com> <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 07 Jun 2007 22:05:18 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607184805.GA28551@nostromo.devel.redhat.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi a écrit :
-> On Thu, 7 Jun 2007, Eric Dumazet wrote:
+On Thu, Jun 07, 2007 at 02:48:05PM -0400, Bill Nottingham wrote:
+> Greg KH (gregkh@suse.de) said: 
+> > There are a number of distros out there right now who can support that
+> > option disabled.  I'm pretty sure they are the following right now:
+> > 	Gentoo unstable (actually stable works now for me, but I'm not
+> > 			 going to guarantee it just yet...)
+> > 	Debian unstable (again stable might work, but I have not heard
+> > 			 any reports from testers.)
+> > 	openSUSE FACTORY (the 10.3 alpha releases)
+> > 
+> > and now it sounds like Red Hat rawhide will also work properly.
 > 
->> Davide, are you sure we want FIFO for non sequential allocations ?
->>
->> This tends to use all the fmap slots, and not very cache friendly
->> if an app does a lot of [open(),...,close()] things. We already got a 
->> perf drop because of RCUification of file freeing (FIFO mode instead 
->> of LIFO given by kmalloc()/kfree())
->>
->> If the idea behind this FIFO was security (ie not easy for an app to predict 
->> next glibc file handle), we/glibc might use yet another FD_SECUREMODE flag, 
->> wich ORed with O_NONSEQFD would ask to fdmap_newfd() to take the tail of 
->> fmap->slist, not head.
-> 
-> Uli, would it be OK to rely only on base randomization and use a LIFO 
-> instead? We have base randomization, plus LIFO does not mean strictly 
-> sequential like legacy allocator, just more compatc and cache friendly.
-> 
+> I suspect while it will work for mkinitrd, the installer will not
+> work properly.
 
-I am afraid randomization wont really work if /sbin/init or /bin/bash for 
-example uses one (or more) unseq fd :
-The 'random base' will be propagated at fork()/exec() time ?
+Ah, but the installer doesn't matter until you do a Fedora 8 release,
+right?  This is just for people who want to run their own kernel on an
+already-set-up Fedora machine.
 
+thanks,
 
-
-
-
+greg k-h
