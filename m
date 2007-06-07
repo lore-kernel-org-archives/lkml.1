@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbXFGKCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbXFGKF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbXFGKCe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 06:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXFGKCY
+	id S1755937AbXFGKF1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 06:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXFGKFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 06:02:24 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57123 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752665AbXFGKCX (ORCPT
+	Thu, 7 Jun 2007 06:05:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:35987 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751839AbXFGKFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 06:02:23 -0400
-Date: Thu, 7 Jun 2007 11:06:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070607110623.53322dae@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0706061619560.10383@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
-	<20070606235906.72439d16@the-village.bc.nu>
-	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
-	<20070607001932.35c9591c@the-village.bc.nu>
-	<Pine.LNX.4.64.0706061619560.10383@alien.or.mcafeemobile.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 7 Jun 2007 06:05:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=YLlr51StdF0jN2HQ7H4L8+Bb8Ch0DNfaPPLrSa5fPDesKN67nLU9XxG7FKliYPbgSnBCB5Jd24yZ2CUp2QByRVZLN44+c0m2gxylBSSdpo/2CrBTqQT3eFlYvOQKoY6sUMVhgm3uNRu8TNMja+ECeplioXoeNmmlTFfw8XljdlA=
+Date: Thu, 7 Jun 2007 18:05:12 +0800
+From: "Peer Chen" <peerchen@gmail.com>
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Cc: "akpm" <akpm@linux-foundation.org>, "jeff" <jeff@garzik.org>,
+       "htejun" <htejun@gmail.com>
+Subject: [PATCH] ahci: Add MCP73/MCP77 support to AHCI driver
+Message-ID: <200706071805105304242@gmail.com>
+X-mailer: Foxmail 6, 6, 105, 21 [cn]
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I don't think it's a matter of versioning. Many userspace libraries 
-> expects their fds to be compact (for many reasons - they use select, they 
-> use them to index 0-based arrays, etc...), and if the kernel suddendly 
-> starts returning values in the 1<<28 up arena, they sure won't be happy.
-> So I believe that the correct way is that the caller specifically selects 
-> the feature, leaving the legacy fd allocation as default.
+Add the MCP73/MCP77 support to ahci driver.
+The patch base on kernel 2.6.22-rc4
+ 
+Signed-off-by: Peer Chen <peerchen@gmail.com>
+------------------------------------------------
+--- linux-2.6.22-rc4/drivers/ata/ahci.c.orig
++++ linux-2.6.22-rc4/drivers/ata/ahci.c
+@@ -426,6 +426,30 @@ static const struct pci_device_id ahci_p
+ 	{ PCI_VDEVICE(NVIDIA, 0x0559), board_ahci },		/* MCP67 */
+ 	{ PCI_VDEVICE(NVIDIA, 0x055a), board_ahci },		/* MCP67 */
+ 	{ PCI_VDEVICE(NVIDIA, 0x055b), board_ahci },		/* MCP67 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f0), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f1), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f2), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f3), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f4), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f5), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f6), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f7), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f8), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07f9), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07fa), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x07fb), board_ahci },		/* MCP73 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad0), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad1), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad2), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad3), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad4), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad5), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad6), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad7), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad8), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ad9), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ada), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0adb), board_ahci },		/* MCP77 */
+ 
+ 	/* SiS */
+ 	{ PCI_VDEVICE(SI, 0x1184), board_ahci }, /* SiS 966 */
 
-I don't understand the connection between this paragraph (with which I
-agree) and the urge to add a ton of ugly syscall hacks. "Caller
-specifically selects feature" - > prctl(). Libraries get unhappy ->
-linker issue.
