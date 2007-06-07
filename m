@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763026AbXFGQyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933873AbXFGQyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763026AbXFGQyq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933800AbXFGQyP
+	id S933873AbXFGQyZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763296AbXFGQwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:54:15 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:1544 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933791AbXFGQyN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:54:13 -0400
-Date: Thu, 7 Jun 2007 18:54:11 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Gene Heskett <gene.heskett@gmail.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: Linux 2.6.22-rc4
-In-Reply-To: <200706071206.06298.gene.heskett@gmail.com>
-Message-ID: <Pine.LNX.4.64.0706071853080.15778@fbirervta.pbzchgretzou.qr>
-References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org>
- <200706071124.30128.gene.heskett@gmail.com>
- <Pine.LNX.4.64.0706071738240.13101@fbirervta.pbzchgretzou.qr>
- <200706071206.06298.gene.heskett@gmail.com>
+	Thu, 7 Jun 2007 12:52:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53009 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765429AbXFGQwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 12:52:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Greaves <david@dgreaves.com>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+Date: Thu, 7 Jun 2007 18:58:03 +0200
+User-Agent: KMail/1.9.5
+Cc: Mark Lord <lkml@rtr.ca>, Tejun Heo <htejun@gmail.com>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, xfs@oss.sgi.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+References: <46608E3F.4060201@dgreaves.com> <466817EF.7090707@rtr.ca> <46682221.8070705@dgreaves.com>
+In-Reply-To: <46682221.8070705@dgreaves.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706071858.05000.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, 7 June 2007 17:20, David Greaves wrote:
+> Mark Lord wrote:
+> > Tejun Heo wrote:
+> >>
+> >> Can you setup serial console and/or netconsole (not sure whether this
+> >> would work tho)?
+> > 
+> > Since he has good console output already, capturable by digicam,
+> > I think a better approach might be to provide a patch with extra 
+> > instrumentation..
+> > You know.. progress messages and the like, so we can see at what step
+> > things stop working.  Or would that not help ?
+> > 
+> > David, does scrollback work on your dead console?
+> 
+> hmmmm, scrollback doesn't currently _do_ anything.
+> 
+> But the messages didn't scroll there, they just appear (as the memory is 
+> restored I assume). The same messages appear during the fail-to-suspend case too.
+> 
+> Linus said at one point:
+>  > Ok, it wasn't a hidden oops. The DISABLE_CONSOLE_SUSPEND=y thing sometimes
+>  > shows oopses that are otherwise hidden, but at other times it just causes
+>  > more problems (hard hangs when trying to display something on a device
+>  > that is suspended, or behind a bridge that got suspended).
+> 
+>  > In your case, the screen output just shows normal resume output, and it
+>  > apparently just hung for some unknown reason. It *may* be worth trying to
+>  > do a SysRQ + 't' thing to see what tasks are running (or rather, not
+>  > running), but since you won't be able to capture it, it's probably not
+>  > going to be useful.
+> 
+> So I've since removed DISABLE_CONSOLE_SUSPEND=y
+> Should I put it back?
 
-On Jun 7 2007 12:06, Gene Heskett wrote:
->
->On Thursday 07 June 2007, Jan Engelhardt wrote:
->>On Jun 7 2007 11:24, Gene Heskett wrote:
->>>>>> It is too stable for me.
->>>>>
->>>>>I wish all our testers were you ;)
->>>>
->>>>It [2.6.22-rc4] did not die on me so far, unlike that stock FC7 kernel
->>>>(same config but without fc patches).
->>>
->>>Oh its stable allright, but why do I have to turn the monitor off by hand
->>> when I leave.  None of that is working, not even the screen blanker.
->>
->>VC or X?
->
->Regular X
+I would do that.
 
-Most likely an X incompatibility then?
+Apart from this, your observations don't directly imply that XFS is to blame
+here.  It might be involved somehow, but it's also possible that RAID6 alone
+would suffice to trigger the problem.
 
-> fc6 box, amd xp2800.  Using NVIDIA's latest driver, and it works 
->when booted to a 2.6.21 era kernel.
-
-Well, NVIDIA is your first stop then. What about nv?
-
-
-
-	Jan
--- 
+Greetings,
+Rafael
