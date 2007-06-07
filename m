@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbXFGHNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbXFGHPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760737AbXFGHNW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 03:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759849AbXFGHNK
+	id S1758076AbXFGHPf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 03:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXFGHP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 03:13:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45237 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758957AbXFGHNI (ORCPT
+	Thu, 7 Jun 2007 03:15:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:28868 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbXFGHP0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 03:13:08 -0400
-Date: Thu, 7 Jun 2007 00:12:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       linux-kernel@vger.kernel.org
+	Thu, 7 Jun 2007 03:15:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=KbGZFII0silOtNA3LCr/Wb1RAZN6REJnWA9anh3ZTsfGvq6yBF/qpV2lAatEurO1Te/NABj5sB+0X9063GDPuy0r+7O6DDD92GeJ34BMaVZ7aidv0dsn4rs+HSCuOQGqNyVXvEGQSIltU4srW2XRhh2MNz1fiI//e2JoMWqfLWw=
+Message-ID: <4667B095.5050508@gmail.com>
+Date: Thu, 07 Jun 2007 09:15:33 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
 Subject: Re: 2.6.22-rc4-mm1
-Message-Id: <20070607001218.742c0ba5.akpm@linux-foundation.org>
-In-Reply-To: <20070607070108.GA8013@gondor.apana.org.au>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-	<200706062132.37430.m.kozlowski@tuxland.pl>
-	<20070606132439.3f59f0cf.akpm@linux-foundation.org>
-	<20070606212831.GA1534@gondor.apana.org.au>
-	<20070606164202.a3dcd176.akpm@linux-foundation.org>
-	<Pine.LNX.4.61.0706070852580.1547@yvahk01.tjqt.qr>
-	<20070607070108.GA8013@gondor.apana.org.au>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <200706061421.l56ELDfB004305@harpo.it.uu.se>	<4666D3F8.4010002@gmail.com> <20070606105650.bebf1c95.akpm@linux-foundation.org> <4666FBE8.3030103@gmail.com> <4667A93A.4060608@gmail.com> <4667AD3F.1010405@gmail.com> <4667AF20.4020209@gmail.com>
+In-Reply-To: <4667AF20.4020209@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007 17:01:08 +1000 Herbert Xu <herbert@gondor.apana.org.au> wrote:
-
-> On Thu, Jun 07, 2007 at 08:54:50AM +0200, Jan Engelhardt wrote:
-> > 
-> > /me points at Herbert
-> > Andrew would not add options between the "menuconfig CRYPTO" and
-> > the "if CRYPTO" line... :)
+Tejun Heo napsal(a):
+> Jiri Slaby wrote:
+>> Yes. Now I'm compiling -rc4-mm2.
 > 
-> Actually this patch is not even in my tree :)
+> It's probably caused by new sysfs slimdown patches and I'm pretty sure
+> -rc4-mm2 would fail the same way.  The offending one should be one of
+> the following patches.
 
-uh, OK, sorry.
+There's reverted gregkh-driver-block-device in -mm2. So I wanted to give it a
+try. Do you think it's pointless and that patch has no impact on the behaviour?
 
-> > Index: linux-2.6.22-rc4/crypto/Kconfig
-> > ===================================================================
-> > --- linux-2.6.22-rc4.orig/crypto/Kconfig
-> > +++ linux-2.6.22-rc4/crypto/Kconfig
-> > @@ -7,6 +7,8 @@ menuconfig CRYPTO
-> >  	help
-> >  	  This option provides the core Cryptographic API.
-> >  
-> > +if CRYPTO
-> > +
-> >  #
-> >  # Generic algorithms support
-> >  #
-> > @@ -18,8 +20,6 @@ config XOR_BLOCKS
-> >  #
-> >  source "crypto/async_tx/Kconfig"
+> gregkh-driver-sysfs-fix-parent-refcounting-during-rename-and-move.patch
+> gregkh-driver-sysfs-reorganize-sysfs_new_indoe-and-sysfs_create.patch
+> gregkh-driver-sysfs-use-iget_locked-instead-of-new_inode.patch
+> gregkh-driver-sysfs-fix-root-sysfs_dirent-root-dentry-association.patch
+> gregkh-driver-sysfs-move-s_active-functions-to-fs-sysfs-dirc.patch
+> gregkh-driver-sysfs-slim-down-sysfs_dirent-s_active.patch
+> gregkh-driver-sysfs-use-singly-linked-list-for-sysfs_dirent-tree.patch
 > 
-> Andrew, do you want me to pick the async_tx stuff up instead?
-> 
+> Can you bisect the above patches?
 
-I wouldn't recommend it.  It's an ongoing source of bustage frankly, has a
-habit of getting unpleasantly tangled with git-ioat.patch and afaik is
-still awaiting a go-ahead from Neil.
+Sure, in 12 hours or tomorrow.
+
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
 
