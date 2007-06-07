@@ -1,54 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbXFGLwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758936AbXFGL4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758002AbXFGLwp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 07:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXFGLwh
+	id S1758936AbXFGL4B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 07:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXFGLzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 07:52:37 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:65448 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751033AbXFGLwg (ORCPT
+	Thu, 7 Jun 2007 07:55:54 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:43158 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbXFGLzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 07:52:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qUoZ7DExzckwM6PY1LURKG6Mu1fnc9mlZ3W2S3T/pbUhSjdhPrYpcURofPePfe3Lx+gpWbGTR0tT4h6ZnS2SIaA+4aE/vOLeomh4MScpw7Esb64WLl6xL9qHVOSWx0YQaBvdh0hcFTiUs2a0Ek/l+8Ga4re7w++gV+OgdBrfKNc=
-Message-ID: <9a8748490706070452l4e4965b0r2ff6999bac10e237@mail.gmail.com>
-Date: Thu, 7 Jun 2007 13:52:35 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: [PATCH] update checkpatch.pl to version 0.03
-Cc: "Andrew Morton" <akpm@osdl.org>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Joel Schopp" <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4667F00A.106@shadowen.org>
+	Thu, 7 Jun 2007 07:55:53 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 7 Jun 2007 07:53:08 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Satyam Sharma <satyam.sharma@gmail.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: why does the macro "ZERO_PAGE" take an argument?
+In-Reply-To: <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain>
+References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain> 
+ <4667EC18.4080904@yahoo.com.au>  <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain>
+ <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <0a25fd03117c678f17006c5fcefaaed0@pinky>
-	 <9a8748490706060449s1df41fd5qbd77f6fa07289eaa@mail.gmail.com>
-	 <4667F00A.106@shadowen.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/06/07, Andy Whitcroft <apw@shadowen.org> wrote:
-> Jesper Juhl wrote:
-> > On 04/06/07, Andy Whitcroft <apw@shadowen.org> wrote:
-> >>
-> >> This version brings a host of changes to cure false positives and
-> >> bugs detected on patches submitted to lkml and -mm.  It also brings
-> >> a number of new tests in response to reviews, of particular note:
-> >>
-> > A  chmod +x scripts/checkpatch.pl  would be nice :)
->
-> While git carries the permissions I am am pretty sure a straight patch
-> doesn't.  Where did you pick up your copy from linus' tree or from the
-> -mm one?
->
-via 'git pull' from Linus' tree.
+On Thu, 7 Jun 2007, Satyam Sharma wrote:
 
+> On 6/7/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+> > On Thu, 7 Jun 2007, Nick Piggin wrote:
+> >
+> > > Robert P. J. Day wrote:
+> > > >   probably making a fool of myself here, but what is the purpose of
+> > > > that single argument to the macro "ZERO_PAGE"?
+> > > >
+> > > > $ grep -r "define ZERO_PAGE" include
+> > > > include/asm-frv/pgtable.h:#define ZERO_PAGE(vaddr)      ({ BUG(); NULL;
+> > })
+> > > > include/asm-frv/pgtable.h:#define ZERO_PAGE(vaddr)
+> > > > virt_to_page(empty_zero_page)
+> > > > include/asm-v850/pgtable.h:#define ZERO_PAGE(vaddr)     ((void
+> > *)0x87654321)
+> > > > include/asm-mips/pgtable.h:#define ZERO_PAGE(vaddr) \
+> > > > include/asm-blackfin/pgtable.h:#define ZERO_PAGE(vaddr)
+> > (virt_to_page(0))
+> > > > include/asm-parisc/pgtable.h:#define ZERO_PAGE(vaddr)
+> > > > (virt_to_page(empty_zero_page))
+> > > > include/asm-alpha/pgtable.h:#define ZERO_PAGE(vaddr)
+> > > > (virt_to_page(ZERO_PGE))
+> > > > ...
+> > > >
+> > > >   AFAICT, there are no definitions of that macro that actually use
+> > > > that argument.  is that some kind of historical cruft?
+> > >
+> > > MIPS?
+> >
+> > argh. that would be the *one* definition whose output got chopped
+> > because of line continuation, and it would be only one that actually
+> > uses the argument:
+> >
+> > #define ZERO_PAGE(vaddr) \
+> >         (virt_to_page((void *)(empty_zero_page + (((unsigned long)(vaddr)) &
+> > zero_page_mask))))
+> >
+> >
+> > but it still leaves the question -- if ZERO_PAGE is meant to represent
+> > a single, global shared page that is always zero, why would it *ever*
+> > need to take an argument?  and what's so special about MIPS that it
+> > differs from all the rest?
+>
+> The comment above empty_zero_page and zero_page_mask
+> declarations at arch/mips/mm/init.c:508 sheds light on this ...
+
+well, it *sort of* does.  at line 64 of that file:
+
+/*
+ * We have up to 8 empty zeroed pages so we can map one of the right colour
+ * when needed.  This is necessary only on R4000 / R4400 SC and MC versions
+ * where we have to avoid VCED / VECI exceptions for good performance at
+ * any price.  Since page is never written to after the initialization we
+ * don't have to care about aliases on other CPUs.
+ */
+
+although it's not clear where in the source tree are the invocations
+that would actually make a difference to a MIPS system, which is why
+i've CC'ed ralf on this.  i'm sure he can clear this up. :-)
+
+rday
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
