@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbXFGFxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbXFGF7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752971AbXFGFxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 01:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbXFGFxl
+	id S1752989AbXFGF7i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 01:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbXFGF7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 01:53:41 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:40197 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750825AbXFGFxk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 01:53:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=pyJrENXFdTrJjUXs86by/sMytm6V45Z8KRzOilnF8FJn81C/y6JdelinhpsF0BAy4AlisrWhf1O/5zOoXSTr8yBrdUW/v+xrqAVJAykeD08KGb/YBmdYT/E7dtaAg3jENiaP8jkXyfZe1n26RmUK6kK0mo4cgtbLUMz7/AGKiVc=
-Message-ID: <46679D56.7040001@gmail.com>
-Date: Thu, 07 Jun 2007 14:53:26 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Thu, 7 Jun 2007 01:59:30 -0400
+Received: from waste.org ([66.93.16.53]:58167 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750825AbXFGF73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 01:59:29 -0400
+Date: Thu, 7 Jun 2007 00:59:13 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070607055912.GX11166@waste.org>
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <20070606161936.GA8952@localhost.localdomain> <20070606110931.fda845de.akpm@linux-foundation.org> <20070607022608.GA2416@localhost.localdomain>
 MIME-Version: 1.0
-To: David Greaves <david@dgreaves.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-References: <46608E3F.4060201@dgreaves.com> <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com>
-In-Reply-To: <46668EE0.2030509@dgreaves.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607022608.GA2416@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-David Greaves wrote:
-> Just to be clear. This problem is where my system won't resume after s2d
-> unless I umount my xfs over raid6 filesystem.
-
-This is really weird.  I don't see how xfs mount can affect this at all.
-
-[--snip--]
-> So now this compiles but it does cause the problem:
+On Thu, Jun 07, 2007 at 10:26:09AM +0800, WANG Cong wrote:
+> On Wed, Jun 06, 2007 at 11:09:31AM -0700, Andrew Morton wrote:
+> >On Thu, 7 Jun 2007 00:19:36 +0800 WANG Cong <xiyou.wangcong@gmail.com> wrote:
+> >
+> >> On Wed, Jun 06, 2007 at 02:07:37AM -0700, Andrew Morton wrote:
+> >> >
+> >> >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
+> >> >
+> >> >- Somebody broke it on my powerpc G5, but I didn't have time to do yet
+> >> >  another bisection yet.
+> >> >
+> >> 
+> >> It seems strange that a new C source file (mlguest.c) appears in the top dir of the 
+> >> kernel source. There are some problems with it.
+> >> 
+> >> First, I used `make mlguest.o` to compile that file, but I got tons of warnings and errors.
+> >> (Too many to put here.) What's wrong with it? Or I didn't compile/configure it correctly?
+> >> 
+> >> Second, mlguest.c #includes a head file named "../../include/linux/lguest_launcher.h".
+> >> Since mlguest.c is in the top dir, so where is ../../include/linux/lguest_launcher.h?
+> >> 
+> >
+> >Confused.  I've grepped the entire universe here for "mlguest" and came up
+> >with nothing.
+> >
+> >I don't have a clue where that file came from on your system.
 > 
-> umount /huge
-> echo platform > /sys/power/disk
-> echo disk > /sys/power/state
-> # resumes fine
 > 
-> mount /huge
-> echo platform > /sys/power/disk
-> echo disk > /sys/power/state
-> # won't resume
-
-How hard does the machine freeze?  Can you use sysrq?  If so, please
-dump sysrq-t.
-
->   Behavior difference introduced by the
->> reimplementation is serialization of resume sequence, so it takes more
->> time.  My test machine had problems resuming if resume took too long
->> even with the previous implementation.  It didn't matter whether the
->> long resuming sequence is caused by too many controllers or explicit
->> ssleep().  If time needed for resume sequence is over certain threshold,
->> machine hangs while resuming.  I thought it was a BIOS glitch and didn't
->> dig into it but you might be seeing the same issue.
-> given the mount/umount thing this sounds unlikely... but what do I know?
-
-No I don't think this is the same problem either.  The problem I
-described happened during resume from s2ram.
-
-> resume does throw up:
-> ATA: abnormal status 0x7F on port 0x0001b007
-> ATA: abnormal status 0x7F on port 0x0001b007
-> ATA: abnormal status 0x7F on port 0x0001a407
-> ATA: abnormal status 0x7F on port 0x0001a407
+> I used 'ketchup' to update my kernel from -rc3 to -rc4-mm1. I got the follow:
 > 
-> which I've not noticed before... oh, alright, I'll check...
-> reboots to 2.6.21, suspend, resume...
-> nope, not output on resume in 2.6.21
+> [wangcong@localhost linux-2.6.22-rc4-mm1]$ ls
+> arch     Documentation  ipc          Makefile        README          System.map
+> block    drivers        Kbuild       mlguest.c       REPORTING-BUGS  usr
+> COPYING  fs             kernel       mm              scripts         vmlinux
+> CREDITS  include        lib          Module.symvers  security
+> crypto   init           MAINTAINERS  net             sound
+> 
+> Maybe there's something wrong with ketchup. ;(
 
-The messages don't really matter.
+Can you do an 'lsdiff | grep lguest' on the patch in your ~/.ketchup directory?
 
-Thanks.
+Ketchup simply applies patches, it never touches filenames directly.
+So for something to go wrong here and drop a file in the tree with a
+damaged pathname, you've either got a damaged patch, a bug in patch
+itself, or some form of filesystem corruption.
 
 -- 
-tejun
+Mathematics is the supreme nostalgia of our time.
