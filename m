@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbXFGOpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbXFGOwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761364AbXFGOpk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbXFGOpd
+	id S1761334AbXFGOwX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbXFGOwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:45:33 -0400
-Received: from waste.org ([66.93.16.53]:43562 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756393AbXFGOpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:45:32 -0400
-Date: Thu, 7 Jun 2007 09:45:08 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bzolnier@gmail.com, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 3/6] lguest suppress IDE probing
-Message-ID: <20070607144508.GV11115@waste.org>
-References: <1181055308.14054.36.camel@localhost.localdomain> <1181055396.14054.38.camel@localhost.localdomain> <1181055483.14054.40.camel@localhost.localdomain> <20070605170747.256f6631@the-village.bc.nu> <1181092258.14054.87.camel@localhost.localdomain> <20070606112308.49a652f6@the-village.bc.nu> <1181182387.14054.157.camel@localhost.localdomain>
+	Thu, 7 Jun 2007 10:52:15 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:28167 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755875AbXFGOwO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 10:52:14 -0400
+Date: Thu, 7 Jun 2007 16:22:19 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andy Whitcroft <apw@shadowen.org>
+cc: Jesper Juhl <jesper.juhl@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.03
+In-Reply-To: <4667F00A.106@shadowen.org>
+Message-ID: <Pine.LNX.4.64.0706071622070.8762@fbirervta.pbzchgretzou.qr>
+References: <0a25fd03117c678f17006c5fcefaaed0@pinky>
+ <9a8748490706060449s1df41fd5qbd77f6fa07289eaa@mail.gmail.com>
+ <4667F00A.106@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181182387.14054.157.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 12:13:07PM +1000, Rusty Russell wrote:
-> On Wed, 2007-06-06 at 11:23 +0100, Alan Cox wrote:
-> > > > Better yet just don't compile in the old IDE stuff, lguest doesn't have a
-> > > > PCI or ISA bus anyway.
-> > > 
-> > > Sure, but the "run the same kernel as guest and host" is a really nice
-> > > feature.
-> > 
-> > Modules dear boy, modules ;)
-> 
-> For some reason, pulling half the kernel's brains out into a separately
-> maintained userspace seems to make things less reliable.  I always build
-> in everything I need to boot.
-> 
-> Perhaps this makes me an old-timer.
-> 
-> > > > Alternatively make the IDE I/O space return 0xFF and it'll skip them
-> > > > anyway.
-> > > 
-> > > Hmm, every "in" should be returning 0xFFs, but I still get the delay and
-> > > the probing.  Xen domU gets it too.
-> > 
-> > Can you see in a debugger where it is spending the time. 0xFF should be
-> > taken as "no port, move on nothing to see"
-> 
-> Well, the code is a little opaque to me, but do_probe() calls msleep(50)
-> three times.  According to gdb this gets called 27 times -> 4.05
-> seconds.
 
-Yep. libata somehow manages to avoid most of these, it'd be
-interesting to work out why.
+On Jun 7 2007 12:46, Andy Whitcroft wrote:
+>
+>Jesper Juhl wrote:
+>> On 04/06/07, Andy Whitcroft <apw@shadowen.org> wrote:
+>>>
+>>> This version brings a host of changes to cure false positives and
+>>> bugs detected on patches submitted to lkml and -mm.  It also brings
+>>> a number of new tests in response to reviews, of particular note:
+>>>
+>> A  chmod +x scripts/checkpatch.pl  would be nice :)
+>
+>While git carries the permissions I am am pretty sure a straight patch
+>doesn't.  Where did you pick up your copy from linus' tree or from the
+>-mm one?
 
+Linus's tree lacks the +x bit...
+
+
+	Jan
 -- 
-Mathematics is the supreme nostalgia of our time.
