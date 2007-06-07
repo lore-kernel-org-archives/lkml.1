@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934183AbXFGRfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbXFGRha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934183AbXFGRfk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXFGRfb
+	id S933236AbXFGRha (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760781AbXFGRhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:35:31 -0400
-Received: from mga03.intel.com ([143.182.124.21]:34490 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750870AbXFGRfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:35:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,395,1175497200"; 
-   d="scan'208";a="236712863"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Date: Thu, 7 Jun 2007 10:35:18 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Justin Piszcz <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200706061229.24486.jesse.barnes@intel.com> <20070607081619.GA15226@one.firstfloor.org>
-In-Reply-To: <20070607081619.GA15226@one.firstfloor.org>
+	Thu, 7 Jun 2007 13:37:23 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:24379 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760834AbXFGRhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:37:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ToRQseaGLUhxeepiNCmDHCA4zVRDI/MIGlTBpyeoiajWofe/zkiAPZEihFjl1V7zebqVlXiBSb6W34E1db+kZ3u1FngzvybHDup0RAOWIcUa/FDvfy0z111+/jJHuBW5tYOWNV9Pm9pQZwWSpitVFHZH2LevSHDHib7r6NJkQ3g=
+Message-ID: <f4527be0706071037l5278fe61v1a733ab874aec136@mail.gmail.com>
+Date: Thu, 7 Jun 2007 18:37:21 +0100
+From: "Andrew Lyon" <andrew.lyon@gmail.com>
+To: "Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] Re: 4Gb ram not showing up
+In-Reply-To: <46682FED.2080506@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706071035.18356.jesse.barnes@intel.com>
+References: <Pine.LNX.4.58.0706061356310.2657@be1.lrz>
+	 <20070606143723.GF10008@csclub.uwaterloo.ca>
+	 <46673135.30105@zytor.com>
+	 <f4527be0706061541ifd49a8fg60442532d72f1d06@mail.gmail.com>
+	 <46682FED.2080506@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, June 7, 2007 1:16 am Andi Kleen wrote:
-> On Wed, Jun 06, 2007 at 12:29:23PM -0700, Jesse Barnes wrote:
-> > On some machines, buggy BIOSes don't properly setup WB MTRRs to
-> > cover all available RAM, meaning the last few megs (or even gigs)
-> > of memory will be marked uncached.  Since Linux tends to allocate
-> > from high memory addresses first, this causes the machine to be
-> > unusably slow as soon as the kernel starts really using memory
-> > (i.e. right around init time).
+On 6/7/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Andrew Lyon wrote:
+> >
+> > Could this also cause a system to be unstable? my abit athlon64 at
+> > work will not run x64 with more than 1gb ram, and i have a colo server
+> > with supermicro & 2 x dual core xeons that will not run with more than
+> > 2gb.
+> >
+> > Both systems have long uptimes but if i add ram they crash within
+> > minutes of booting.
+> >
 >
-> In theory -- while not recommended -- a BIOS could also
-> use a default fallback MTRR for cached and use explicit MTRRs to
-> map the non existing ranges uncached. Would it make sense to handle
-> this case?
+> That's much more likely to be caused by bad memory bus layout so that it
+> doesn't handle the higher loading.
+>
+> Run memtest86+ on the expanded memory for some time.
+>
+>         -hpa
+>
 
-Probably.  I could just check the default memory type and bail out if 
-it's cacheable.
+I have run memtest86+ for days at a time on both systems with no errors at all.
 
-> Should also probably have some command line option
-> to disable the check in case something bad happens with it.
+broken hardware i guess, i am not surprised about the abit board, ive
+had nothing but trouble with abit motherboards and do not use them any
+more, but the supermicro is a xeon server board and i was using
+kingston ram, i wouldnt expect that to have issues.
 
-Sure.
+latest bios on both.
 
-> Another thing that might be sense to investigate in relationship
-> to this patch is large page mappings with MTRRs. iirc P4 and also K8
-> splits pages internally with MTRR boundaries and might have some
-> other bad side effects. Should we use this as hints to use 4K pages
-> for the boundary areas?
-
-Or I could trim to the nearest large page boundary...  We'd lose a 
-little more memory but it would keep things simple.
-
-Jesse
+Andy
