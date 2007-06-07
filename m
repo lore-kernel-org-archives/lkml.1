@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967093AbXFGXk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966443AbXFGXnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967093AbXFGXk2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 19:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763659AbXFGXkU
+	id S966443AbXFGXnz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 19:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762575AbXFGXns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 19:40:20 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:44657 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934798AbXFGXkT (ORCPT
+	Thu, 7 Jun 2007 19:43:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44360 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753620AbXFGXnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 19:40:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=R1zUkHM5USDO4D9oagS/xVVLllpHUYOlhvVYcvC7qJTzJGyl7Z5ct/rzM9p+L8aQjy6wk6o6OtkSYwROKHA4/1UzkSPLJOK2ebVnZCxtZqita1QAcML+eU+8Po7uyU5rRk77kKhXm/cqouWqzeKIecvzA0ATCERYG2x/QKZyDZc=
-Message-ID: <9a8748490706071640m4726c39ch1bba246386681ead@mail.gmail.com>
-Date: Fri, 8 Jun 2007 01:40:18 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Some ATARI config option confusion
+	Thu, 7 Jun 2007 19:43:47 -0400
+Date: Thu, 7 Jun 2007 16:42:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <Pine.LNX.4.64.0706071521490.6445@alien.or.mcafeemobile.com>
+Message-ID: <alpine.LFD.0.98.0706071642000.4205@woody.linux-foundation.org>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+ <20070606235906.72439d16@the-village.bc.nu>
+ <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706071521490.6445@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FYI
 
-I just finished configuring my freshly git pull'ed kernel source and
-then when I started building it some ATARI related config symbols
-yelled at me :(
 
-$ make -j 3
-scripts/kconfig/conf -s arch/i386/Kconfig
-drivers/input/keyboard/Kconfig:170:warning: 'select' used by config
-symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-drivers/input/mouse/Kconfig:182:warning: 'select' used by config
-symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-...
+On Thu, 7 Jun 2007, Davide Libenzi wrote:
+> 
+> We'd still need sys_nonseqfd() though, to move/dup legacy fds into the 
+> non-sequential area.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Umm. No we don't. Because it's no more than 
+
+	indirect_syscall(dup, FD_NONSEQ)
+
+isn't it?
+
+		Linus
