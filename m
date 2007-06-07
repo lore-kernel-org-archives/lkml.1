@@ -1,75 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbXFGGt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbXFGGvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbXFGGt2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 02:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXFGGtV
+	id S1756853AbXFGGvg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 02:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXFGGva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 02:49:21 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:49203 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbXFGGtU (ORCPT
+	Thu, 7 Jun 2007 02:51:30 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:44731 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbXFGGv3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 02:49:20 -0400
+	Thu, 7 Jun 2007 02:51:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oy0MKmiXIaaqujm1+awiO4x+JRtbF+f0Zzg6y3pkPCti1/qDpkcm8LDLNXlyZ7WwCQ0r+nknRvpsBKtJDMSsKjeR5qHRfGrzOM+xUCVrhSJwidE1nvS5PRt7KB1kPphmtL4MGf1g8HRcQsPsoIEQdGk2Rxtw7PZn0zvdWdllBe8=
-Message-ID: <4cefeab80706062349s264648fbr25ccbc9884be2057@mail.gmail.com>
-Date: Thu, 7 Jun 2007 12:19:19 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "Nitin Gupta" <nitingupta910@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Richard Purdie" <richard@openedhand.com>
-Subject: Re: [RFC] LZO de/compression support - take 7
-In-Reply-To: <4cefeab80706060705o210f6a71od074d6cc60e113a9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=bwZVrYe68QWRopDeaMC0gjqDJ2Je4PeiSTuIxIvGwYrJTDtreg7zqSyWdDGlfCb58VkH5szkr54Xw1W+e+W99MqWb5CooJCi+2bq8l9Y6/f49083QI+KL3HST+80SqDrfu03KMNRqtK6hACbBJqxi0Fh928RhMg9UB8amz2ZY0k=
+Date: Thu, 7 Jun 2007 14:51:58 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070607065158.GA1996@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <20070606161936.GA8952@localhost.localdomain> <20070606110931.fda845de.akpm@linux-foundation.org> <20070607022608.GA2416@localhost.localdomain> <20070607055912.GX11166@waste.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4cefeab80706060534h2461ddffu35f463d7728519a0@mail.gmail.com>
-	 <20070606125130.GA13419@infradead.org>
-	 <4cefeab80706060705o210f6a71od074d6cc60e113a9@mail.gmail.com>
+In-Reply-To: <20070607055912.GX11166@waste.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/6/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
-> On 6/6/07, Christoph Hellwig <hch@infradead.org> wrote:
-> > On Wed, Jun 06, 2007 at 06:04:17PM +0530, Nitin Gupta wrote:
-> > > Hi,
-> > >
-> > > This is kernel port of LZO1X-1 compressor and LZO1X decompressor (safe
-> > > version only).
-> > >
-> > > * Changes since 'take 6' (Full Changelog after this):
-> > > 1) Fixed unaligned memory access problems as pointed out by author --
-> > > LZO_UNALIGNED_OK_{2,4} collapsed to UNALIGNED_OK which is #defined for
-> > > archs that allow unaligned access (see lib/lzo1x/Makefile). For other
-> > > archs, we fall down to byte-by-byte access avoiding any unaligned
-> > > access. In original code, LZO_UNALIGNED_OK_{2,4} resp. describe if we
-> > > can do unaligned access for ushort and uint32.
-> >
-> > Please use get_unaligned() for any unaligned access in kernel space.
-> >
-> >
+On Thu, Jun 07, 2007 at 12:59:13AM -0500, Matt Mackall wrote:
+>On Thu, Jun 07, 2007 at 10:26:09AM +0800, WANG Cong wrote:
+>> On Wed, Jun 06, 2007 at 11:09:31AM -0700, Andrew Morton wrote:
+>> >On Thu, 7 Jun 2007 00:19:36 +0800 WANG Cong <xiyou.wangcong@gmail.com> wrote:
+>> >
+>> >> On Wed, Jun 06, 2007 at 02:07:37AM -0700, Andrew Morton wrote:
+>> >> >
+>> >> >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
+>> >> >
+>> >> >- Somebody broke it on my powerpc G5, but I didn't have time to do yet
+>> >> >  another bisection yet.
+>> >> >
+>> >> 
+>> >> It seems strange that a new C source file (mlguest.c) appears in the top dir of the 
+>> >> kernel source. There are some problems with it.
+>> >> 
+>> >> First, I used `make mlguest.o` to compile that file, but I got tons of warnings and errors.
+>> >> (Too many to put here.) What's wrong with it? Or I didn't compile/configure it correctly?
+>> >> 
+>> >> Second, mlguest.c #includes a head file named "../../include/linux/lguest_launcher.h".
+>> >> Since mlguest.c is in the top dir, so where is ../../include/linux/lguest_launcher.h?
+>> >> 
+>> >
+>> >Confused.  I've grepped the entire universe here for "mlguest" and came up
+>> >with nothing.
+>> >
+>> >I don't have a clue where that file came from on your system.
+>> 
+>> 
+>> I used 'ketchup' to update my kernel from -rc3 to -rc4-mm1. I got the follow:
+>> 
+>> [wangcong@localhost linux-2.6.22-rc4-mm1]$ ls
+>> arch     Documentation  ipc          Makefile        README          System.map
+>> block    drivers        Kbuild       mlguest.c       REPORTING-BUGS  usr
+>> COPYING  fs             kernel       mm              scripts         vmlinux
+>> CREDITS  include        lib          Module.symvers  security
+>> crypto   init           MAINTAINERS  net             sound
+>> 
+>> Maybe there's something wrong with ketchup. ;(
 >
-> Done.
+>Can you do an 'lsdiff | grep lguest' on the patch in your ~/.ketchup directory?
 >
+>Ketchup simply applies patches, it never touches filenames directly.
+>So for something to go wrong here and drop a file in the tree with a
+>damaged pathname, you've either got a damaged patch, a bug in patch
+>itself, or some form of filesystem corruption.
 
-Just as a side note: I think retaining code to do byte-by-byte access
-also is worth it, such as:
-+ #ifdef UNALIGNED_OK
-+		if (get_unaligned((const unsigned short *)m_pos) ==
-+				get_unaligned((const unsigned short *)ip)) {
-+#else
-+		if (m_pos[0] != ip[0] || m_pos[1] != ip[1]) {
-+#endif
+Thanks for your point.
 
-Since on archs where unaligned access is slower than byte-by-byte
-access (e.g. where unaligned access dirty work is done in s/w), we do
-not want to use get_unaligned() - instead simply byte-by-byte access
-is better.
+It should be Documentation/lguest/lguest.c, maybe it was corrupted and ketchup
+backuped it as mlguest.c.
 
-- Nitin
+Sorry for this.
+
