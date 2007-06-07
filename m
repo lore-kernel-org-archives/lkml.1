@@ -1,37 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbXFGK6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbXFGLFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbXFGK6t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 06:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbXFGK6m
+	id S1754784AbXFGLFE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 07:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbXFGLEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 06:58:42 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:54394 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750985AbXFGK6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 06:58:42 -0400
-Date: Thu, 7 Jun 2007 12:58:25 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Christian Kujau <lists@nerdbynature.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: no more git snapshots?
-In-Reply-To: <alpine.DEB.0.99.0706071253480.2151@foobar-g4>
-Message-ID: <Pine.LNX.4.61.0706071258070.20341@yvahk01.tjqt.qr>
-References: <alpine.DEB.0.99.0706071253480.2151@foobar-g4>
+	Thu, 7 Jun 2007 07:04:54 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:4887 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbXFGLEx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 07:04:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=qePapN7wtfnQTXhO89lBxua1LqHtfmAR3tX7Y71Wsg/ZvfeKj+GWj5ItyVWAEzyskLDJw/WuY7fnnAaHcv5h0QTogd5AvBs+gvlFxilDC7F0su6HBjdyBdD+C9aTY59FOAlvHbmOVtd6vHaKMbMU8EMKY3AoMcgO0puTyU8KQMY=
+Message-ID: <a781481a0706070404r67a02caoc1b8b0f3a8f0f00b@mail.gmail.com>
+Date: Thu, 7 Jun 2007 16:34:52 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] i386/x86_64: NMI watchdog: Remove spurious local_irq_enable() in check_nmi_watchdog()
+Cc: "Ingo Molnar" <mingo@redhat.com>, "Andi Kleen" <ak@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There appears to be a spurious local_irq_enable() in the
+check_nmi_watchdog() of both i386 and x86_64, I cannot see
+when are interrupts being disabled before it. In fact we
+seem to be allocating with GFP_KERNEL and calling
+smp_call_function() just before this call, which suggests
+this call to local_irq_enable() is spurious and can be
+removed.
 
-On Jun 7 2007 12:57, Christian Kujau wrote:
->
-> Just wondering: the last git snapshot is -rc3-git7 from 04.06.2007, have they
-> been discontinued or is some magic script just on vacation for a few days?
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Andi Kleen <ak@suse.de>
 
-After that came -rc4. Next one will be -rc4-git1.
+---
 
+ arch/i386/kernel/nmi.c   |    1 -
+ arch/x86_64/kernel/nmi.c |    1 -
+ 2 files changed, 2 deletions(-)
 
-	Jan
--- 
+---
+
+diff -ruNp a/arch/i386/kernel/nmi.c b/arch/i386/kernel/nmi.c
+--- a/arch/i386/kernel/nmi.c	2007-06-07 12:46:34.000000000 +0530
++++ b/arch/i386/kernel/nmi.c	2007-06-07 15:37:57.000000000 +0530
+@@ -94,7 +94,6 @@ static int __init check_nmi_watchdog(voi
+
+ 	for_each_possible_cpu(cpu)
+ 		prev_nmi_count[cpu] = per_cpu(irq_stat, cpu).__nmi_count;
+-	local_irq_enable();
+ 	mdelay((20*1000)/nmi_hz); // wait 20 ticks
+
+ 	for_each_possible_cpu(cpu) {
+diff -ruNp a/arch/x86_64/kernel/nmi.c b/arch/x86_64/kernel/nmi.c
+--- a/arch/x86_64/kernel/nmi.c	2007-06-07 12:46:39.000000000 +0530
++++ b/arch/x86_64/kernel/nmi.c	2007-06-07 15:34:19.000000000 +0530
+@@ -104,7 +104,6 @@ int __init check_nmi_watchdog (void)
+
+ 	for (cpu = 0; cpu < NR_CPUS; cpu++)
+ 		counts[cpu] = cpu_pda(cpu)->__nmi_count;
+-	local_irq_enable();
+ 	mdelay((20*1000)/nmi_hz); // wait 20 ticks
+
+ 	for_each_online_cpu(cpu) {
