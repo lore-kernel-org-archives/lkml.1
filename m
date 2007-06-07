@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764618AbXFGP7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764003AbXFGQAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764618AbXFGP7u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757387AbXFGP7m
+	id S1764003AbXFGQAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764059AbXFGP7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:59:42 -0400
-Received: from waste.org ([66.93.16.53]:37331 "EHLO waste.org"
+	Thu, 7 Jun 2007 11:59:48 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51582 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755932AbXFGP7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:59:41 -0400
-Date: Thu, 7 Jun 2007 10:59:14 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
+	id S1763975AbXFGP7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 11:59:47 -0400
+Date: Thu, 7 Jun 2007 08:43:42 -0700
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Jones <pjones@redhat.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
 Subject: Re: 2.6.22-rc4-mm1
-Message-ID: <20070607155913.GW11115@waste.org>
-References: <20070606020737.4663d686.akpm@linux-foundation.org> <20070606161936.GA8952@localhost.localdomain> <20070606110931.fda845de.akpm@linux-foundation.org> <20070607022608.GA2416@localhost.localdomain> <20070607055912.GX11166@waste.org> <20070607065158.GA1996@localhost.localdomain> <20070607140444.GR11115@waste.org> <20070607154007.GA9305@localhost.localdomain>
+Message-ID: <20070607154342.GA16911@suse.de>
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <4667018D.7020407@googlemail.com> <1181168095.3612.4.camel@lov.localdomain> <4667C47C.2010207@googlemail.com> <1181206091.3625.9.camel@lov.localdomain> <4667D2DF.30207@googlemail.com> <1181228660.3625.23.camel@lov.localdomain> <46682385.1060802@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070607154007.GA9305@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <46682385.1060802@redhat.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 11:40:08PM +0800, WANG Cong wrote:
-> On Thu, Jun 07, 2007 at 09:04:44AM -0500, Matt Mackall wrote:
-> >On Thu, Jun 07, 2007 at 02:51:58PM +0800, WANG Cong wrote:
-> >> >> Maybe there's something wrong with ketchup. ;(
-> >> >
-> >> >Can you do an 'lsdiff | grep lguest' on the patch in your ~/.ketchup directory?
-> >> >
-> >> >Ketchup simply applies patches, it never touches filenames directly.
-> >> >So for something to go wrong here and drop a file in the tree with a
-> >> >damaged pathname, you've either got a damaged patch, a bug in patch
-> >> >itself, or some form of filesystem corruption.
-> >> 
-> >> Thanks for your point.
-> >> 
-> >> It should be Documentation/lguest/lguest.c, maybe it was corrupted and ketchup
-> >> backuped it as mlguest.c.
-> >
-> >It'd be interesting to figure out how that happened, still.
-> >
-> >If your patch file is intact (are you using GPG's signature-checking
-> >support?), the most likely explanation is an operating system or
-> >filesystem bug.
+On Thu, Jun 07, 2007 at 11:25:57AM -0400, Peter Jones wrote:
+>  Kay Sievers wrote:
+> > On Thu, 2007-06-07 at 11:41 +0200, Michal Piotrowski wrote:
+> >> Kay Sievers pisze:
+> >>> On Thu, 2007-06-07 at 10:40 +0200, Michal Piotrowski wrote:
+> >>>> Kay Sievers pisze:
+> >>>>> On Wed, 2007-06-06 at 20:48 +0200, Michal Piotrowski wrote:
+> >>>>>> Andrew Morton pisze:
+> >>>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
+> >>>>>>>
+> >>>>>> Kay, your patch gregkh-driver-block-device.patch breaks Fedora 7 
+> >>>>>> initrd
+> >>>>>> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm1/initrd.jpg
+> >>>>>>
+> >>>>>> Please fix it ASAP, I can't test kernel...
+> >>>>> Do you have CONFIG_SYSFS_DEPRECATED set or unset?
+> >>>>>
+> >>>>> Kay
+> >>>>>
+> >>>>>
+> >>>> cat ../linux-mm-bo/.config | grep CONFIG_SYSFS_DEPRECATED
+> >>>> # CONFIG_SYSFS_DEPRECATED is not set
+> >>> Oh, could you possibly try (with the block patch included) setting it to
+> >>> yes and see if it works? That would help to find what's going wrong.
+> >> I enabled CONFIG_SYSFS_DEPRECATED and 2.6.22-rc4-mm2 boots fine.
+> > Michal, thanks a lot for the testing.
+> > Peter, looking at your mkinitrd code, it works only with
+> > CONFIG_SYSFS_DEPRECATED enabled when block devices are converted to
+> > class devices.
+> > Any chance to replace lstat() with stat() while looking for devices in
+> > sysfs? Remember, _anything_ in sysfs can be symlink or a directory, you
+> > can't assume one or the other. When things change internally in the
+> > kernel, we can often provide symlinks for backwards compatibility, but
+> > lstat() obviously can't works here.
 > 
-> Yes, I am using GPG's checking.
+>  Fixed in mkinitrd-6.0.9-6 , which I'll build now and push to 
+>  updates-testing.  Thanks for getting my attention here.
 
-Well that gives a pretty solid assurance that the patch you downloaded
-matches the one on kernel.org. And that one doesn't contain an
-mlguest.c. 
+Great, Andrew, can you please reenable the block-device patch that is in
+my tree now that the problem has been solved?
 
-Ketchup doesn't even look inside patches, and patch doesn't invent
-names, so something in the bzip2 -> patch(1) -> filesystem chain got
-corrupted. Probably not bzip2, as it has CRCs.
+thanks,
 
-Do you have ECC memory?
-
--- 
-Mathematics is the supreme nostalgia of our time.
+greg k-h
