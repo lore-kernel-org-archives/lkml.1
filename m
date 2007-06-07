@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbXFGMX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbXFGMYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757536AbXFGMX2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 08:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXFGMXS
+	id S1759296AbXFGMYQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 08:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbXFGMYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 08:23:18 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3567 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754115AbXFGMXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 08:23:17 -0400
-Date: Thu, 7 Jun 2007 12:23:04 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-Message-ID: <20070607122303.GA8938@ucw.cz>
-References: <878xb35sje.fsf@goat.bogus.local> <200706012340.54394.rjw@sisk.pl> <87hcpr2ubl.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl> <87wsykpweu.fsf@goat.bogus.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87wsykpweu.fsf@goat.bogus.local>
-User-Agent: Mutt/1.5.9i
+	Thu, 7 Jun 2007 08:24:03 -0400
+Received: from mailgw4.ericsson.se ([193.180.251.62]:41790 "EHLO
+	mailgw4.ericsson.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755636AbXFGMYA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 08:24:00 -0400
+X-AuditID: c1b4fb3e-ae9ecbb0000061ca-44-4667f8dff4ad 
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Date: Thu, 7 Jun 2007 14:23:58 +0200
+Message-ID: <A6D19A13FE030A409EC4362C172E091F016F51BC@eseldmw101.eemea.ericsson.se>
+In-Reply-To: <200706051723.56436.bjorn.helgaas@hp.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Thread-Index: AcenyJ+XAlqYHhyQQD+3xkILXFiOXABNQF9w
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <7VXmfiOJ.1181030230.9946640.samuel@sortiz.org> <A6D19A13FE030A409EC4362C172E091F016F51B1@eseldmw101.eemea.ericsson.se> <200706051723.56436.bjorn.helgaas@hp.com>
+From: "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>
+To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
+Cc: "Samuel Ortiz" <samuel@sortiz.org>, <arvidjaar@mail.ru>,
+       <linux-kernel@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       <ambx1@neo.rr.com>
+X-OriginalArrivalTime: 07 Jun 2007 12:23:58.0854 (UTC) FILETIME=[B95F5260:01C7A8FE]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Björn wrote:
 
-> > Second, you can use PM_TRACE (Documentation/power/s2ram.txt) to find the
-> > place where it really fails.
-> 
-> First I augmented my minimal config kernel with some TRACE_RESUME()s:
-> 
-> --- a/kernel/power/main.c	2007-05-27 23:48:05.000000000 +0200
-> +++ b/kernel/power/main.c	2007-06-03 22:28:46.000000000 +0200
-> @@ -223,6 +223,7 @@
->  	pr_debug("PM: Finishing wakeup.\n");
->  	suspend_finish(state);
->   Unlock:
-> +	TRACE_RESUME(error);
->  	mutex_unlock(&pm_mutex);
->  	return error;
->  }
-> @@ -303,6 +304,7 @@
->  		error = enter_state(state);
->  	else
->  		error = -EINVAL;
-> +	TRACE_RESUME(error);
->  	return error ? error : n;
->  }
-...
-> I got alternating
->   hash matches drivers/base/power/resume.c:58
-> and
->   hash matches kernel/power/main.c:307
-> 
-> > First, you can check if the patch
-> >
-> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/20-ACPI-preserve-the-ebx-value-in-acpi_copy_wakeup_routine.patch
-> 
-> Then I applied this patch, but it doesn't change anything.
-> 
-> But either way the script never reaches "shutdown -rn now". So, it
-> seems, that my laptop does a full resume every other reboot, but it
-> never returns to userspace.
+> Something's wrong with this strategy.  The BIOS is telling us 
+> that an SMCf010 device is present, active, and responds at io 
+> ports 0x100-0x107 and 0x2e8-0x2ef.  The fact that it happens 
+> to be on the other side of an ISA or LPC bridge should be 
+> immaterial to the OS driver.
 
-But it returns to kernel... can you use more trace points to figure
-out where it hangs?
+Yes, ideally. Yes of course it is wrong, or from a platonic
+perspective. If nobody wrote buggy BIOS:es there would be no
+problem.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+There is some history in the preconfigure functions:
+these come from the smcinit tool (see http://irda.sourceforge.net/smcinit/),
+the hacks target laptops where the (buggy) BIOS does not properly
+preconfigure the bridge. The assumption in the current code
+is that Toshiba laptops with this smscchip will have the problem,
+because they always had in the past...
+
+I have no idea how bridges on such laptops are really preconfigured,
+possibly with some special hacks to the (manufacturer-supplied-assumed)
+"driver CD" for Windows only that apply some low-level tweaks to the
+WinNT/XP boot process. All info an reverse-engineering on this subject
+is warmly welcomed.
+
+There are some troubles further related to issues due to laptops
+supporting both ACPI and APM too I think, never dug into it.
+
+Linus
