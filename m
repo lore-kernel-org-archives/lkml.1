@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934587AbXFGSKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934936AbXFGSVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934587AbXFGSKq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 14:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764855AbXFGSK3
+	id S934936AbXFGSVi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 14:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760597AbXFGSV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 14:10:29 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:50083 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764786AbXFGSK2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 14:10:28 -0400
-Message-ID: <46684894.5010506@zytor.com>
-Date: Thu, 07 Jun 2007 11:04:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why does the macro "ZERO_PAGE" take an argument?
-References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain> <4667EC18.4080904@yahoo.com.au> <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain> <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com> <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain> <20070607163731.GB30044@linux-mips.org>
-In-Reply-To: <20070607163731.GB30044@linux-mips.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jun 2007 14:21:29 -0400
+Received: from mailhub.hp.com ([192.151.27.10]:42408 "EHLO mailhub.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758069AbXFGSV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 14:21:28 -0400
+From: "Bob Picco" <bob.picco@hp.com>
+Date: Thu, 7 Jun 2007 14:21:22 -0400
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Sripathi Kodi <sripathik@in.ibm.com>, Bernhard Walle <bwalle@suse.de>,
+       "Eric W. Biederman"@redhat.com, acme@redhat.com, apw@shadowen.org
+Subject: Re: [BUG] sysrq-m oops
+Message-ID: <20070607182122.GE11999@localhost>
+References: <1181176035.6275.13.camel@localhost.localdomain> <4668276E.4030504@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4668276E.4030504@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ralf Baechle wrote:
-> Cache aliases.  When the same page of physical memory is mapped twice to
-> user space, let's say at address addr and addr + PAGE_SIZE this is normally
-> harmless although wasteful on processors with virtually indexed caches as
-> long as the page is mapped read-only such as in case of ZERO_PAGE.
+Chuck Ebbert wrote:	[Thu Jun 07 2007, 11:42:38AM EDT]
+> On 06/06/2007 08:27 PM, john stultz wrote:
+> > Hey All,
+> > 	With 2.6.21 and the current -git, we're seeing the following oops when
+> > we try sysrq-m:
+> > 
 > 
-> If the same thing happens with a writable page there is the chance of
-> severe data corruption.  Some members of the R4000 family are now trying
-> to be helpful by throwing the kernel a "virtual coherency" exception.  The
-> bad news about this exception is there might be thousands (the theoretical
-> worst case would be millions) of it in a single second, so servicing can be
-> very expensive.  For the ZERO page this can be avoided by using several
-> pages mapped in a way such that their addresses don't conflict.
+> It's here in arch/x86_64/mm/init.c::show_mem():
+> 
+>         for_each_online_pgdat(pgdat) {
+>                for (i = 0; i < pgdat->node_spanned_pages; ++i) {
+This is probably with sparsemem? I'm working with acme@redhat.com to
+test a patch. Basically you need to validate the pfn because it
+could be in a hole. Most arches which support sparsemem perform this
+check.
 
-Note that it can be a *very expensive* waste even on machines that do
-this in hardware.  Colouring the zeropage can have sizable performance
-advantages for virtually no cost.
-
-	-hpa
-
+			if (!pfn_valid(pgdat->node_start_pfn + i))
+				continue;
+bob
+>                         page = pfn_to_page(pgdat->node_start_pfn + i);
+>                         total++;
+>  ======>                if (PageReserved(page))
+>                                 reserved++;
+>                         else if (PageSwapCache(page))
+>                                 cached++;
+>                         else if (page_count(page))
+>                                 shared += page_count(page) - 1;
+>                }
+>         }
+> 
+> page is completely bogus (it's 0x0000000003480000)
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
