@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbXFGIrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbXFGIrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbXFGIrW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 04:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbXFGIrK
+	id S1755935AbXFGIrg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 04:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbXFGIrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 04:47:10 -0400
-Received: from frosty.hhs.nl ([145.52.2.15]:39915 "EHLO frosty.hhs.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751776AbXFGIrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 04:47:08 -0400
-X-Greylist: delayed 1271 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jun 2007 04:47:08 EDT
-Message-ID: <4667C00D.40708@hhs.nl>
-Date: Thu, 07 Jun 2007 10:21:33 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: vojtech@suse.cz
-Subject: problem with softraw and keycodes > 128
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.2/RELEASE, bases: 07062007 #319870, status: clean
+	Thu, 7 Jun 2007 04:47:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46257 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755639AbXFGIrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 04:47:13 -0400
+Date: Thu, 7 Jun 2007 10:47:11 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: Intel's response Linux/MTRR/8GB Memory Support / Why doesn't the kernel realize the BIOS has problems and re-map appropriately?
+Message-ID: <20070607084711.GB15226@one.firstfloor.org>
+References: <Pine.LNX.4.64.0706011410130.3716@p34.internal.lan> <200706011407.51779.jbarnes@virtuousgeek.org> <20070601211943.GO7217@one.firstfloor.org> <200706011441.57149.jbarnes@virtuousgeek.org> <m1r6orwptz.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0706041420100.25811@p34.internal.lan> <20070604201823.7b7cb328@the-village.bc.nu> <m1myzfwi0x.fsf@ebiederm.dsl.xmission.com> <86802c440706041759q1b2d528ex24b3de514d09d9ef@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440706041759q1b2d528ex24b3de514d09d9ef@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<Note: I'm not on the please keep me CC-ed>
+On Mon, Jun 04, 2007 at 05:59:59PM -0700, Yinghai Lu wrote:
+> On 6/4/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> >
+> >Exactly, and given that this is a fairly easy thing to do, and that
+> >occasionally we see systems where this happens (even if their BIOS is
+> >later fixed).  It is likely worth it for someone to write up the patch
+> >and that compare MTRRs with available memory, and to complain and
+> >reserve all memory that MTRRs claim is not write-back.
+> >
+> that is good.
+> Sometime BIOS can not even keep mtrr to the identical between
+> different CPU in SMP system.
 
-Hi all,
+The MTRR code already fixes this case. Or at least mostly -- 
+it doesn't do it for fixed size MTRRs.
 
-First a short intro I'm a Linux enthousiast and developer. I mainly write
-userspace code, but I've also written 2 kernel drivers of which one is in the
-mainline and the other is waiting for review.
+> Or reset mtrr according to e820 table.
 
-I've been experimenting with getting the internetkeys on several keyboards to
-work. My biggest problem with this currently is the following:
+That would be likely dangerous.
 
-Step 1: press key, dmesg says:
-atkbd.c: Unknown key released (translated set 2, code 0xa3 on isa0060/serio0).
-atkbd.c: Use 'setkeycodes e023 <keycode>' to make it known.
-
-Step 2: map key: setkeycodes e023 163
-
-Step 3: run xev, press key. X-keycode is: 153 instead of 163 ?
-
-Problem, as the xkb files for these keyboards expect the X-keycode to be 163,
-as just it is under the console. Now I know that X-keycodes !=
-console-keycodes, for example the A key is 30 on the console and 38 in X, but
-in the case of this special keys, both the xkb files for these internet
-keyboards (written by suse) and config files for special daemons like lineak,
-expect them to be identical. Doing:
-echo -n 0 >/sys/devices/platform/i8042/serio1/softraw
-However does make them identical.
-
-I don't know if this is an xorg or a kernel problem, but I do know that this
-behavior is rather annoying, and IMHO a bug. I've been reading the kernel code
-from input.c and atkbd.c but I cannot find anything explaining this there, so
-now I'm looking at the xorg kbd driver. I have the feeling though that this
-require someone with some more knowledge of the whole input subsystem, hence
-this mail.
-
-<Note: I'm not on the please keep me CC-ed>
-
-Thanks & Regards,
-
-Hans
-
-
+-Andi
