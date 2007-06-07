@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936211AbXFGCNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936390AbXFGCOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936211AbXFGCNe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 22:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935495AbXFGCN1
+	id S936390AbXFGCOT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 22:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935510AbXFGCOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 22:13:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:47261 "EHLO ozlabs.org"
+	Wed, 6 Jun 2007 22:14:09 -0400
+Received: from mga09.intel.com ([134.134.136.24]:53059 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759462AbXFGCN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 22:13:26 -0400
-Subject: Re: [PATCH 3/6] lguest suppress IDE probing
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bzolnier@gmail.com, Matt Mackall <mpm@selenic.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <20070606112308.49a652f6@the-village.bc.nu>
-References: <1181055308.14054.36.camel@localhost.localdomain>
-	 <1181055396.14054.38.camel@localhost.localdomain>
-	 <1181055483.14054.40.camel@localhost.localdomain>
-	 <20070605170747.256f6631@the-village.bc.nu>
-	 <1181092258.14054.87.camel@localhost.localdomain>
-	 <20070606112308.49a652f6@the-village.bc.nu>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 12:13:07 +1000
-Message-Id: <1181182387.14054.157.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1759462AbXFGCOI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 22:14:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,391,1175497200"; 
+   d="scan'208";a="94260577"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [kvm-devel] [PATCH] KVM - Fix rmode_tss_base declaration
+Date: Thu, 7 Jun 2007 10:13:42 +0800
+Message-ID: <B30DA1341B0CFA4893EF8A36B40B5C5D013A32CB@pdsmsx411.ccr.corp.intel.com>
+In-Reply-To: <20070606191925.GA8989@c2.user-mode-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [kvm-devel] [PATCH] KVM - Fix rmode_tss_base declaration
+Thread-Index: AceocNjdLwCMqFCHQIeWffjFYgelsAAOIr6Q
+References: <20070606191925.GA8989@c2.user-mode-linux.org>
+From: "Li, Xin B" <xin.b.li@intel.com>
+To: "Jeff Dike" <jdike@addtoit.com>, <avi@qumranet.com>
+Cc: <kvm-devel@lists.sourceforge.net>, "LKML" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 07 Jun 2007 02:13:46.0159 (UTC) FILETIME=[7A816BF0:01C7A8A9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 11:23 +0100, Alan Cox wrote:
-> > > Better yet just don't compile in the old IDE stuff, lguest doesn't have a
-> > > PCI or ISA bus anyway.
-> > 
-> > Sure, but the "run the same kernel as guest and host" is a really nice
-> > feature.
+>
+>The long return value of rmode_tss_base is truncated by its declared
+>return type of int.
+>
+>Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+>--
+> drivers/kvm/vmx.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>Index: kvm/drivers/kvm/vmx.c
+>===================================================================
+>--- kvm.orig/drivers/kvm/vmx.c
+>+++ kvm/drivers/kvm/vmx.c
+>@@ -884,7 +884,7 @@ static void enter_pmode(struct kvm_vcpu 
+> 	vmcs_write32(GUEST_CS_AR_BYTES, 0x9b);
+> }
 > 
-> Modules dear boy, modules ;)
+>-static int rmode_tss_base(struct kvm* kvm)
+>+static unsigned long rmode_tss_base(struct kvm* kvm)
 
-For some reason, pulling half the kernel's brains out into a separately
-maintained userspace seems to make things less reliable.  I always build
-in everything I need to boot.
-
-Perhaps this makes me an old-timer.
-
-> > > Alternatively make the IDE I/O space return 0xFF and it'll skip them
-> > > anyway.
-> > 
-> > Hmm, every "in" should be returning 0xFFs, but I still get the delay and
-> > the probing.  Xen domU gets it too.
-> 
-> Can you see in a debugger where it is spending the time. 0xFF should be
-> taken as "no port, move on nothing to see"
-
-Well, the code is a little opaque to me, but do_probe() calls msleep(50)
-three times.  According to gdb this gets called 27 times -> 4.05
-seconds.
-
-Cheers,
-Rusty.
-
-
+Should use gpa_t instead.
+-Xin 
