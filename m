@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934830AbXFGUhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936748AbXFGUiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934830AbXFGUhY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 16:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760755AbXFGUhG
+	id S936748AbXFGUiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 16:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934808AbXFGUiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 16:37:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:33731 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758791AbXFGUhE (ORCPT
+	Thu, 7 Jun 2007 16:38:07 -0400
+Received: from smtp113.sbc.mail.re2.yahoo.com ([68.142.229.92]:49073 "HELO
+	smtp113.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S934450AbXFGUiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 16:37:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TmoKo8hLivs0S0Liq996xknnwMiQAPK6QTXHB7yIYVNypKjLRffLek3FEvgQfFw4faA6xJrtdpUH4pIZCBOsluHcC9aQF2qfgind62JORCSMgZikJD2klUdlpqpb7rAH7U9Cktvnzb4JEorJTiJJMkXSkL3HDcCEqAQDlRnTITE=
-Message-ID: <9d2cd630706071337j76cfb3c0h93b1150064b2ce59@mail.gmail.com>
-Date: Thu, 7 Jun 2007 22:37:03 +0200
-From: "Gregor Jasny" <gjasny@googlemail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
-Cc: "Jeff Garzik" <jeff@garzik.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <4667B347.9040900@gmail.com>
+	Thu, 7 Jun 2007 16:38:06 -0400
+X-YMail-OSG: DX_bQXMVM1mayb29uJ3Wg62p7HlH3bz9cQI5zLDvmQz1OSvOgiJEpeWHDUMISQy0bEys4rJ5NV_B1LYFonOfnVt3GtPz83EKBm.CwawbFjkWYR2nDS60JQ--
+Date: Thu, 7 Jun 2007 15:37:57 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Albert Cahalan <acahalan@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       ebiederm@xmission.com, torvalds@linux-foundation.org
+Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
+Message-ID: <20070607203757.GA531@vino.hallyn.com>
+References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com> <20070606204432.b670a7b1.akpm@linux-foundation.org> <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com> <1181233393.9995.14.camel@dyn9047017100.beaverton.ibm.com> <787b0d920706070943h6ac65b85nee5b01600905be08@mail.gmail.com> <1181235997.9995.23.camel@dyn9047017100.beaverton.ibm.com> <20070607124824.27e909fd.akpm@linux-foundation.org> <1181246363.9995.37.camel@dyn9047017100.beaverton.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
-	 <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>
-	 <466196AD.3090502@garzik.org>
-	 <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com>
-	 <46667466.4010500@gmail.com>
-	 <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com>
-	 <4667B347.9040900@gmail.com>
+In-Reply-To: <1181246363.9995.37.camel@dyn9047017100.beaverton.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/6/7, Tejun Heo <htejun@gmail.com>:
-> Ah.. okay.  Now I see what's going on.  Jeff, this is another device
-> which doesn't set nsect and lbal to 1 after reset.  Gregor, please try
-> the attached patch.
+Quoting Badari Pulavarty (pbadari@us.ibm.com):
+> On Thu, 2007-06-07 at 12:48 -0700, Andrew Morton wrote:
+> > On Thu, 07 Jun 2007 10:06:37 -0700
+> > Badari Pulavarty <pbadari@us.ibm.com> wrote:
+> > 
+> > > On Thu, 2007-06-07 at 12:43 -0400, Albert Cahalan wrote:
+> > > > On 6/7/07, Badari Pulavarty <pbadari@us.ibm.com> wrote:
+> > > > 
+> > > > > BTW, I agree with Eric that its would be nice to use shmid as part
+> > > > > of name instead of forcing to be as inode number. It should be
+> > > > > possible for pmap to workout shmid from "key" or name. Isn't it ?
+> > > > 
+> > > > It is not at all nice.
+> > > > 
+> > > > 1. it's incompatible ABI breakage
+> > > > 2. where will you put the key then, in the inode? :-)
+> > > 
+> > > Nope. Currently "key" is part of the name (but its not unique).
+> > > 
+> > > > 
+> > > > Changing to "SYSVID%d" is no good either. Look, people
+> > > > are ***parsing*** this stuff in /proc. The /proc filesystem
+> > > > is not some random sandbox to be playing in.
+> > > > 
+> > > > Before you go messing with it, note that the device number
+> > > > also matters. (it's per-boot dynamic, but that's OK)
+> > > > That's how one knows that /SYSV00000000 is not just
+> > > > a regular file; sadly these didn't get a non-/ prefix.
+> > > > (and no you can't fix that now; it's way too late)
+> > > > 
+> > > > Next time you feel like breaking an ABI, mind putting
+> > > > "LET'S BREAK AN ABI!" in the subject of your email?
+> > > 
+> > > I am not breaking ABI. Its already broken in the current
+> > > mainline. I am trying to fix it by putting back the ino#
+> > > as shmid. Eric had a suggestion that, instead of depending
+> > > on the inode# to be shmid, we could embed shmid into name
+> > > (instead of "key" which is currently not unique).
+> > > 
+> > > > BTW, I suspect this kind of thing also breaks:
+> > > > a. fuser, lsof, and other resource usage display tools
+> > > > b. various obscure emulators (similar to valgrind)
+> > > 
+> > > If you strongly feel that "old" behaviour needs to be retained, 
+> > 
+> > yup, we should put it back.  The change was, afaik, accidental.
+> > 
+> > > here is the patch I originally suggested.
+> > 
+> > Confused.  Will this one-liner fix all the userspace breakage to which
+> > Albert refers?
+> 
+> Yes. Albert, please correct me if I am wrong.
 
-It works like a charm.
+It will, but could lead to two different inodes with the same i_ino,
+right?
 
-Thanks for debugging.
-
-Gregor
-
-
-[  307.605884] ata_piix 0000:00:07.1: version 2.11
-[  307.606268] scsi0 : ata_piix
-[  307.606728] scsi1 : ata_piix
-[  307.607080] ata1: PATA max UDMA/33 cmd 0x000101f0 ctl 0x000103f6
-bmdma 0x00010860 irq 14
-[  307.607790] ata2: PATA max UDMA/33 cmd 0x00010170 ctl 0x00010376
-bmdma 0x00010868 irq 15
-[    0.656666] Marking TSC unstable due to: possible TSC halt in C2.
-[    0.659999] Time: acpi_pm clocksource has been installed.
-[    0.659999] Switched to NOHz mode on CPU #0
-[    0.703333] ata1: ata_bus_post_reset: EXIT3
-[    0.709999] ata1.00: ata_hpa_resize 1: sectors = 78242976,
-hpa_sectors = 78242976
-[    0.723333] ata1.00: ATA-7: SAMSUNG MP0402H, UC100-14, max UDMA/100
-[    0.739999] ata1.00: 78242976 sectors, multi 8: LBA48
-[    0.763333] ata1.00: ata_hpa_resize 1: sectors = 78242976,
-hpa_sectors = 78242976
-[    0.776666] ata1.00: configured for UDMA/33
-[    0.799999] ata2: ata_bus_post_reset: EXIT3
-[    0.973333] ata2.00: ATAPI, max UDMA/33
-[    1.146666] ata2.00: configured for UDMA/33
-[    1.159999] scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG
-MP0402H  UC10 PQ: 0 ANSI: 5
-[...]
-[    1.326666] scsi 1:0:0:0: CD-ROM            SAMSUNG  CD-ROM SN-124
-  N102 PQ: 0
+thanks,
+-serge
