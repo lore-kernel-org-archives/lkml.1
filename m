@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937539AbXFGWXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764544AbXFGWZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937539AbXFGWXL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936935AbXFGWWv
+	id S1764544AbXFGWZX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765977AbXFGWZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:22:51 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2445 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936903AbXFGWWu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:22:50 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 7 Jun 2007 15:22:47 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
+	Thu, 7 Jun 2007 18:25:06 -0400
+Received: from gate.crashing.org ([63.228.1.57]:50761 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932654AbXFGWZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:25:04 -0400
+Subject: Re: [BUG] ptraced process waiting on syscall may return kernel
+	internal errnos
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
+       Roland McGrath <roland@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706071521490.6445@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
- <20070606235906.72439d16@the-village.bc.nu>
- <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <alpine.LFD.0.98.0706070852390.4205@woody.linux-foundation.org>
+References: <20070606105900.DE5E94D0592@magilla.localdomain>
+	 <alpine.LFD.0.98.0706060811470.4205@woody.linux-foundation.org>
+	 <87sl949eyx.wl%takeuchi_satoru@jp.fujitsu.com>
+	 <alpine.LFD.0.98.0706070852390.4205@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 08 Jun 2007 08:24:27 +1000
+Message-Id: <1181255068.14818.77.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007, Linus Torvalds wrote:
-
-> It has the disadvantage that it would need some per-architecture setup to 
-> load the actual real arguments from memory: the system call would probably 
-> look something like
+On Thu, 2007-06-07 at 08:54 -0700, Linus Torvalds wrote:
 > 
-> 	syscall_indirect(unsigned long flags, sigset_t *, 
-> 			 int syscall, unsigned long args[6]);
+> On Thu, 7 Jun 2007, Satoru Takeuchi wrote:
+> > 
+> > I tested your patch and my problem didn't occur again, so it seems to my
+> > this case at least.
 > 
-> and the rule would be that it would just load the six system call 
-> registers from that "args[]" array. Always load the full six registers, to 
-> make it simpler and faster, and not having any confusion or ever needing 
-> any wrappers that depend on the number of system calls.
+> Ok. I applied Roland's slightly bigger patch instead, since Ben and Paul
+> pointed out that some kernel threads depend on dequeue_signal clearing the 
+> bit. You might want to test that one too (or just get current git), just 
+> in case there are any differences in behaviour (not bloody likely, but 
+> still..)
 
-We'd still need sys_nonseqfd() though, to move/dup legacy fds into the 
-non-sequential area.
+Looks good to me. Do you think we need to do something about the DRM
+notifier thingy too ? Or just let the code as-is, that is use the
+notifier/mask (if any) of the task doing the dequeue_signal() ? I don't
+see anybody insane enough to use signalfd read() with the DRM lock held
+but who knows ...
 
+Oh and Roland patch doesn't prevent signalfd() from stealing synchronous
+signals such as SIGSEGV etc... which I think would result in random
+behaviour.... do you want a patch for that or we just consider it broken
+API usage and let it as it is ?
 
-
-- Davide
+Cheers,
+Ben.
 
 
