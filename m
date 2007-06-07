@@ -1,56 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbXFGPdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbXFGPda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762165AbXFGPdR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXFGPdH
+	id S1759645AbXFGPda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760770AbXFGPdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:33:07 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49862 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750923AbXFGPdE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:33:04 -0400
-Date: Thu, 7 Jun 2007 16:38:08 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: Re: [SERIAL] Don't optimise away baud rate changes when BOTHER is
- used
-Message-ID: <20070607163808.19984208@the-village.bc.nu>
-In-Reply-To: <1181150998.2785.13.camel@pmac.infradead.org>
-References: <20070523172739.1d3a918c@the-village.bc.nu>
-	<1180012135.8303.89.camel@shinybook.infradead.org>
-	<20070524144109.7bd0f4d0@the-village.bc.nu>
-	<1180014338.8303.95.camel@shinybook.infradead.org>
-	<20070524160559.54c2c639@the-village.bc.nu>
-	<1181133010.4096.26.camel@pmac.infradead.org>
-	<20070606160310.27d6d3b8@the-village.bc.nu>
-	<1181150998.2785.13.camel@pmac.infradead.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jun 2007 11:33:15 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47702 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759974AbXFGPdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 11:33:14 -0400
+Message-ID: <46682537.8030303@austin.ibm.com>
+Date: Thu, 07 Jun 2007 10:33:11 -0500
+From: jschopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch.pl: should be executable
+References: <0a25fd03117c678f17006c5fcefaaed0@pinky>	 <9a8748490706060449s1df41fd5qbd77f6fa07289eaa@mail.gmail.com>	 <4667F00A.106@shadowen.org> <9a8748490706070452l4e4965b0r2ff6999bac10e237@mail.gmail.com> <46682158.6060709@shadowen.org>
+In-Reply-To: <46682158.6060709@shadowen.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007 18:29:58 +0100
-David Woodhouse <dwmw2@infradead.org> wrote:
-
-> On Wed, 2007-06-06 at 16:03 +0100, Alan Cox wrote:
-> > Yep - and there are some other changes needed as well once everyone
-> > gets their ports properly lined up (notably handing back the actual
-> > speed). 
+Andy Whitcroft wrote:
+> scripts/checkpatch.pl should be executable, make it so.
 > 
-> Yeah, probably. This was was required just to get the speed thing to
-> pass basic testing though.
+> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+> ---
+> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> old mode 100644
+> new mode 100755
 > 
-> You earlier made a cryptic comment about asm-generic and said the
-> PowerPC patch wouldn't work -- I didn't understand, and it doesn't seem
-> to be empirically confirmed. Can you eludicate?
 
-If your termios and termios2 structures differ in size then you need to
-copy the right number of bytes or you won't get speed values into the
-kernel. If they are the same size it wont matter.
+Acked-by: Joel Schopp <jschopp@austin.ibm.com>
