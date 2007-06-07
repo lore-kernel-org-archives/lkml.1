@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbXFGHPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760939AbXFGHPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbXFGHPf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 03:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXFGHP1
+	id S1760939AbXFGHPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 03:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbXFGHP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 03:15:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:28868 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676AbXFGHP0 (ORCPT
+	Thu, 7 Jun 2007 03:15:28 -0400
+Received: from ccerelbas02.cce.hp.com ([161.114.21.105]:59065 "EHLO
+	ccerelbas02.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbXFGHP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 03:15:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=KbGZFII0silOtNA3LCr/Wb1RAZN6REJnWA9anh3ZTsfGvq6yBF/qpV2lAatEurO1Te/NABj5sB+0X9063GDPuy0r+7O6DDD92GeJ34BMaVZ7aidv0dsn4rs+HSCuOQGqNyVXvEGQSIltU4srW2XRhh2MNz1fiI//e2JoMWqfLWw=
-Message-ID: <4667B095.5050508@gmail.com>
-Date: Thu, 07 Jun 2007 09:15:33 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-References: <200706061421.l56ELDfB004305@harpo.it.uu.se>	<4666D3F8.4010002@gmail.com> <20070606105650.bebf1c95.akpm@linux-foundation.org> <4666FBE8.3030103@gmail.com> <4667A93A.4060608@gmail.com> <4667AD3F.1010405@gmail.com> <4667AF20.4020209@gmail.com>
-In-Reply-To: <4667AF20.4020209@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jun 2007 03:15:27 -0400
+Date: Thu, 7 Jun 2007 00:15:24 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/22] 2.6.22-rc3 perfmon2 : new system calls support
+Message-ID: <20070607071524.GA14081@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <200705291348.l4TDmHQd019645@frankl.hpl.hp.com> <alpine.DEB.0.99.0706040729230.10505@chino.kir.corp.google.com> <20070605211711.GD11693@frankl.hpl.hp.com> <alpine.DEB.0.99.0706051826330.23799@chino.kir.corp.google.com> <20070606222721.GB13713@frankl.hpl.hp.com> <alpine.DEB.0.99.0706061551210.23328@chino.kir.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.0.99.0706061551210.23328@chino.kir.corp.google.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo napsal(a):
-> Jiri Slaby wrote:
->> Yes. Now I'm compiling -rc4-mm2.
+David,
+
+On Wed, Jun 06, 2007 at 03:53:06PM -0700, David Rientjes wrote:
+> On Wed, 6 Jun 2007, Stephane Eranian wrote:
 > 
-> It's probably caused by new sysfs slimdown patches and I'm pretty sure
-> -rc4-mm2 would fail the same way.  The offending one should be one of
-> the following patches.
-
-There's reverted gregkh-driver-block-device in -mm2. So I wanted to give it a
-try. Do you think it's pointless and that patch has no impact on the behaviour?
-
-> gregkh-driver-sysfs-fix-parent-refcounting-during-rename-and-move.patch
-> gregkh-driver-sysfs-reorganize-sysfs_new_indoe-and-sysfs_create.patch
-> gregkh-driver-sysfs-use-iget_locked-instead-of-new_inode.patch
-> gregkh-driver-sysfs-fix-root-sysfs_dirent-root-dentry-association.patch
-> gregkh-driver-sysfs-move-s_active-functions-to-fs-sysfs-dirc.patch
-> gregkh-driver-sysfs-slim-down-sysfs_dirent-s_active.patch
-> gregkh-driver-sysfs-use-singly-linked-list-for-sysfs_dirent-tree.patch
+> > > Is this ia64 patch the one you mentioned that you did not post to LKML 
+> > > because it was too large in patch 0?  Is there any way you could break 
+> > > that patch up itself and post it for comments?
+> > > 
+> > Yes, this is the patch. It would be hard to break up in pieces.
+> > The reason it is big is because it has to remove the older IA-64-only
+> > implementation which was all in a single file whose size
+> > was bigger than 100kB. It is hard to break this, unless I explicitely
+> > remove the 'remove old file' diff from the patch.
+> > 
 > 
-> Can you bisect the above patches?
+> Could you provide it online somewhere so it can be downloaded, reviewed, 
+> and tested?
 
-Sure, in 12 hours or tomorrow.
-
-thanks,
+All the perfmon patches are available at:
+	http://perfmon2.sf.net
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
 
+-Stephane
