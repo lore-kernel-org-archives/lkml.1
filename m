@@ -1,117 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937420AbXFGWVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937454AbXFGWWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937420AbXFGWVp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937412AbXFGWU4
+	id S937454AbXFGWWT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937104AbXFGWU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 7 Jun 2007 18:20:58 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:43587 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936907AbXFGWU4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 Jun 2007 18:20:56 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:47743 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937405AbXFGWUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:20:54 -0400
-Message-ID: <466884CF.2060802@us.ibm.com>
-Date: Thu, 07 Jun 2007 15:21:03 -0700
-From: Badari Pulavarty <pbadari@us.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:0.9.4.1) Gecko/20020508 Netscape6/6.2.3
-X-Accept-Language: en-us
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MU7ns/cgaLXx1G4MUehIfWsKhBokWf0G2PFL6FyZKHQcYy7vxGBePQC5SU6uw6JtNw+2GJWGvApzOcADlimWAds1ZTjhYT4gB4pxaI7t8Cj69oPrVXIyryeGTqKayHO0kAnrWg1Bsxarz0gM+7ODoF23pCPKrzOJdeuxBGtNE34=
+Message-ID: <d1af83620706071520mdfdb859o57daa16d8732ead7@mail.gmail.com>
+Date: Thu, 7 Jun 2007 19:20:55 -0300
+From: "Kevin Winchester" <kjwinchester@gmail.com>
+To: "Miles Lane" <miles.lane@gmail.com>
+Subject: Re: 2.6.22-rc4-mm2 -- ipw2200 -- SIOCSIFADDR: No buffer space available
+Cc: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <a44ae5cd0706071125p2079472eme52821bd134d26b0@mail.gmail.com>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serge@hallyn.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Albert Cahalan <acahalan@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       ebiederm@xmission.com, torvalds@linux-foundation.org
-Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com> <20070606204432.b670a7b1.akpm@linux-foundation.org> <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com> <1181233393.9995.14.camel@dyn9047017100.beaverton.ibm.com> <787b0d920706070943h6ac65b85nee5b01600905be08@mail.gmail.com> <1181235997.9995.23.camel@dyn9047017100.beaverton.ibm.com> <20070607124824.27e909fd.akpm@linux-foundation.org> <1181246363.9995.37.camel@dyn9047017100.beaverton.ibm.com> <20070607203757.GA531@vino.hallyn.com> <1181250968.9995.41.camel@dyn9047017100.beaverton.ibm.com> <20070607220820.GA1191@vino.hallyn.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a44ae5cd0706071125p2079472eme52821bd134d26b0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Serge E. Hallyn wrote:
-
->Quoting Badari Pulavarty (pbadari@us.ibm.com):
+On 07/06/07, Miles Lane <miles.lane@gmail.com> wrote:
+> Hi Andrew,
 >
->>On Thu, 2007-06-07 at 15:37 -0500, Serge E. Hallyn wrote:
->>
->>>Quoting Badari Pulavarty (pbadari@us.ibm.com):
->>>
->>>>On Thu, 2007-06-07 at 12:48 -0700, Andrew Morton wrote:
->>>>
->>>>>On Thu, 07 Jun 2007 10:06:37 -0700
->>>>>Badari Pulavarty <pbadari@us.ibm.com> wrote:
->>>>>
->>>>>>On Thu, 2007-06-07 at 12:43 -0400, Albert Cahalan wrote:
->>>>>>
->>>>>>>On 6/7/07, Badari Pulavarty <pbadari@us.ibm.com> wrote:
->>>>>>>
->>>>>>>>BTW, I agree with Eric that its would be nice to use shmid as part
->>>>>>>>of name instead of forcing to be as inode number. It should be
->>>>>>>>possible for pmap to workout shmid from "key" or name. Isn't it ?
->>>>>>>>
->>>>>>>It is not at all nice.
->>>>>>>
->>>>>>>1. it's incompatible ABI breakage
->>>>>>>2. where will you put the key then, in the inode? :-)
->>>>>>>
->>>>>>Nope. Currently "key" is part of the name (but its not unique).
->>>>>>
->>>>>>>Changing to "SYSVID%d" is no good either. Look, people
->>>>>>>are ***parsing*** this stuff in /proc. The /proc filesystem
->>>>>>>is not some random sandbox to be playing in.
->>>>>>>
->>>>>>>Before you go messing with it, note that the device number
->>>>>>>also matters. (it's per-boot dynamic, but that's OK)
->>>>>>>That's how one knows that /SYSV00000000 is not just
->>>>>>>a regular file; sadly these didn't get a non-/ prefix.
->>>>>>>(and no you can't fix that now; it's way too late)
->>>>>>>
->>>>>>>Next time you feel like breaking an ABI, mind putting
->>>>>>>"LET'S BREAK AN ABI!" in the subject of your email?
->>>>>>>
->>>>>>I am not breaking ABI. Its already broken in the current
->>>>>>mainline. I am trying to fix it by putting back the ino#
->>>>>>as shmid. Eric had a suggestion that, instead of depending
->>>>>>on the inode# to be shmid, we could embed shmid into name
->>>>>>(instead of "key" which is currently not unique).
->>>>>>
->>>>>>>BTW, I suspect this kind of thing also breaks:
->>>>>>>a. fuser, lsof, and other resource usage display tools
->>>>>>>b. various obscure emulators (similar to valgrind)
->>>>>>>
->>>>>>If you strongly feel that "old" behaviour needs to be retained, 
->>>>>>
->>>>>yup, we should put it back.  The change was, afaik, accidental.
->>>>>
->>>>>>here is the patch I originally suggested.
->>>>>>
->>>>>Confused.  Will this one-liner fix all the userspace breakage to which
->>>>>Albert refers?
->>>>>
->>>>Yes. Albert, please correct me if I am wrong.
->>>>
->>>It will, but could lead to two different inodes with the same i_ino,
->>>right?
->>>
->>Only if we generate same ID in two different namespaces. Is it currently
->>possible ? 
->>
+> This might be some problem with my kernel configuration.
+> I added:
+> CONFIG_BONDING=y
 >
->Should be nothing stopping it.
+> # dhclient eth1
+> There is already a pid file /var/run/dhclient.pid with pid 134993416
+> Internet Systems Consortium DHCP Client V3.0.4
+> Copyright 2004-2006 Internet Systems Consortium.
+> All rights reserved.
+> For info, please visit http://www.isc.org/sw/dhcp/
+> SIOCSIFADDR: No buffer space available
+> Listening on LPF/eth1/00:12:f0:5e:db:2f
+> Sending on   LPF/eth1/00:12:f0:5e:db:2f
+> Sending on   Socket/fallback
+> DHCPDISCOVER on eth1 to 255.255.255.255 port 67 interval 6
+> DHCPOFFER from 192.168.1.1
+> DHCPREQUEST on eth1 to 255.255.255.255 port 67
+> DHCPACK from 192.168.1.1
+> SIOCSIFADDR: No buffer space available
+> SIOCSIFNETMASK: Cannot assign requested address
+> SIOCSIFBRDADDR: Cannot assign requested address
+> SIOCADDRT: Network is unreachable
+> bound to 192.168.1.2 -- renewal in 2993 seconds.
 >
->But like I say we never find the inode based on i_ino, and don't hash
->the inode, so it might be ok.
+> # ping www.yahoo.com
+> ping: unknown host www.yahoo.com
 >
-Correct. We might end up with same shmid - which mean same inode# shows 
-up in /proc/pid/maps.
-If we don't unshare pid namespace or look from parent namespace - we 
-will end up seeing same
-shmid/inode# in different /proc/pid/maps, even though they are 
-different. But I guess its okay..
+> Any suggestions what to try now?  I'll go ahead and turn off the
+> bonding option and see if that helps.
+>
 
-Thanks,
-Badari
+I was seeing this same error last night on my via-velocity based
+ethernet interface.  I chalked it up to some config mistake on my
+part, but I guess there might be more to it.  Whatever it is, it
+doesn't seem to be specific to the ipw2200 driver.
 
-
-
+-- 
+Kevin Winchester
