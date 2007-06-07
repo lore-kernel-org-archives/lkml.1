@@ -1,105 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbXFGQBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932565AbXFGQCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933039AbXFGQBr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbXFGQBB
+	id S932565AbXFGQCQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764954AbXFGQBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:01:01 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:51580 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932834AbXFGQA7 (ORCPT
+	Thu, 7 Jun 2007 12:01:22 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53881 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932686AbXFGQBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:00:59 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 7 Jun 2007 11:58:30 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] Replace simple comments regarding compiler headers with
- preprocessor errors.
-Message-ID: <Pine.LNX.4.64.0706071156180.28633@localhost.localdomain>
+	Thu, 7 Jun 2007 12:01:21 -0400
+Date: Thu, 7 Jun 2007 09:01:07 -0700
+From: Greg KH <greg@kroah.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070607160107.GA17800@kroah.com>
+References: <200706061421.l56ELDfB004305@harpo.it.uu.se> <4666D3F8.4010002@gmail.com> <20070606105650.bebf1c95.akpm@linux-foundation.org> <4666FBE8.3030103@gmail.com> <4667A93A.4060608@gmail.com> <4667AD3F.1010405@gmail.com> <4667AF20.4020209@gmail.com> <4667B095.5050508@gmail.com> <4667B241.801@gmail.com> <46682A25.5070409@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46682A25.5070409@gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 07, 2007 at 05:54:13PM +0200, Jiri Slaby wrote:
+> Tejun Heo napsal(a):
+> > Jiri Slaby wrote:
+> >> Tejun Heo napsal(a):
+> >>> Jiri Slaby wrote:
+> >>>> Yes. Now I'm compiling -rc4-mm2.
+> >>> It's probably caused by new sysfs slimdown patches and I'm pretty sure
+> >>> -rc4-mm2 would fail the same way.  The offending one should be one of
+> >>> the following patches.
+> >> There's reverted gregkh-driver-block-device in -mm2. So I wanted to give it a
+> >> try. Do you think it's pointless and that patch has no impact on the behaviour?
+> > 
+> > I'm not familiar with how lvm vgscan works and the patch does look like
+> > it can affect that.  Please give a shot at -mm2.
+> 
+> Yup, it works without any further patches. So it seems like
+> gregkh-driver-block-device is the culprit?
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Culprit for what kind of symptom?  Is CONFIG_SYSFS_DEPRECATED enabled?
+If not, can you try that?
 
----
+thanks,
 
-  never send a comment to do a preprocessor directive's job.
-
-(note:  no one's actually doing this, so this shouldn't break any
-builds.)
-
- include/linux/compiler-gcc.h   |    4 +++-
- include/linux/compiler-gcc3.h  |    4 +++-
- include/linux/compiler-gcc4.h  |    4 +++-
- include/linux/compiler-intel.h |    4 +++-
- 4 files changed, 12 insertions(+), 4 deletions(-)
-
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index 03ec231..4590df2 100644
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -1,4 +1,6 @@
--/* Never include this file directly.  Include <linux/compiler.h> instead.  */
-+#ifndef _LINUX_COMPILER_H
-+#error "Please don't include <linux/compiler-gcc.h> directly, include <linux/compiler.h> instead."
-+#endif
-
- /*
-  * Common definitions for all gcc versions go here.
-diff --git a/include/linux/compiler-gcc3.h b/include/linux/compiler-gcc3.h
-index a9e2863..66af0be 100644
---- a/include/linux/compiler-gcc3.h
-+++ b/include/linux/compiler-gcc3.h
-@@ -1,4 +1,6 @@
--/* Never include this file directly.  Include <linux/compiler.h> instead.  */
-+#ifndef _LINUX_COMPILER_H
-+#error "Please don't include <linux/compiler-gcc3.h> directly, include <linux/compiler.h> instead."
-+#endif
-
- /* These definitions are for GCC v3.x.  */
- #include <linux/compiler-gcc.h>
-diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
-index a03e939..03ce2dd 100644
---- a/include/linux/compiler-gcc4.h
-+++ b/include/linux/compiler-gcc4.h
-@@ -1,4 +1,6 @@
--/* Never include this file directly.  Include <linux/compiler.h> instead.  */
-+#ifndef _LINUX_COMPILER_H
-+#error "Please don't include <linux/compiler-gcc4.h> directly, include <linux/compiler.h> instead."
-+#endif
-
- /* These definitions are for GCC v4.x.  */
- #include <linux/compiler-gcc.h>
-diff --git a/include/linux/compiler-intel.h b/include/linux/compiler-intel.h
-index b769961..2851a7f 100644
---- a/include/linux/compiler-intel.h
-+++ b/include/linux/compiler-intel.h
-@@ -1,4 +1,6 @@
--/* Never include this file directly.  Include <linux/compiler.h> instead.  */
-+#ifndef _LINUX_COMPILER_H
-+#error "Please don't include <linux/compiler-intel.h> directly, include <linux/compiler.h> instead."
-+#endif
-
- #ifdef __ECC
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+greg k-h
