@@ -1,91 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbXFGO0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762197AbXFGO1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761366AbXFGO0T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbXFGO0J
+	id S1762197AbXFGO1U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbXFGO1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:26:09 -0400
-Received: from waste.org ([66.93.16.53]:58017 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756051AbXFGO0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:26:08 -0400
-Date: Thu, 7 Jun 2007 09:25:17 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Mark Hounschell <dmarkh@cfl.rr.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, markh@compro.net,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: floppy.c soft lockup
-Message-ID: <20070607142517.GS11115@waste.org>
-References: <20070601183642.GA92@tv-sign.ru> <466078FF.2080508@cfl.rr.com> <20070602123030.GA719@tv-sign.ru> <4661D698.5040009@cfl.rr.com> <20070603081417.GA81@tv-sign.ru> <46641B16.9090701@compro.net> <4666B2A4.7090603@compro.net> <20070606102828.752bf955.akpm@linux-foundation.org> <20070607013128.GW11166@waste.org> <4667DB8C.4040803@cfl.rr.com>
+	Thu, 7 Jun 2007 10:27:13 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:18432 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752310AbXFGO1M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 10:27:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=mySJpA98S1Er+x+TzR2hLsi/NfHjhAQf15t+veQLrzrp/iGIvC8PcoQvBSz4Cu3PWY14CVGO/txNW+33Y8q/s8UrA/+tAe0o6qashWJQzFeeGjAM2UkKzdXkgF6uWkMsjJv3Uzw9I6vFxNnZ3etMtGfAaswAB95r2xZPQwYxGpc=
+Message-ID: <4bacf17f0706070727x3714fe68n19d0fa59a4dacc79@mail.gmail.com>
+Date: Thu, 7 Jun 2007 16:27:06 +0200
+From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
+To: mchehab@infradead.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: bttv on 2.6.21.3: possible circular locking dependency detected
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4667DB8C.4040803@cfl.rr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 06:18:52AM -0400, Mark Hounschell wrote:
-> Matt Mackall wrote:
-> > On Wed, Jun 06, 2007 at 10:28:28AM -0700, Andrew Morton wrote:
-> >> On Wed, 06 Jun 2007 09:12:04 -0400 Mark Hounschell <markh@compro.net> wrote:
-> >>
-> >>>> As far as a 100% CPU bound task being a valid thing to do, it has been 
-> >>>> done for many years on SMP machines. Any kernel limitation on this 
-> >>>> surely must be considered a bug? 
-> >>>>
-> >>> Could someone authoritatively comment on this? Is a SCHED_RR/SCHED_FIFO
-> >>> 100% Cpu bound process supported in an SMP env on Linux? (vanilla or -rt)
-> >> It will kill the kernel, sorry.
-> >>
-> >> The only way in which we can fix that is to allow kernel threads to preempt
-> >> rt-priority userspace threads.  But if we were to do that (to benefit the
-> >> few) it would cause _all_ people's rt-prio processes to experience glitches
-> >> due to kernel activity, which we believe to be worse.
-> >>
-> >> So we're between a rock and a hard place here.
-> >>
-> >> If we really did want to solve this then I guess the kernel would need some
-> >> new code to detect a 100%-busy rt-prio process and to then start premitting
-> >> preemption of it for kernel thread activity.  That detector would need to
-> >> be smart enough to detect a number of 100%-busy rt-prio processes which are
-> >> yielding to each other, and one rt-prio process which keeps forking others,
-> >> etc.  It might get tricky.
-> > 
-> > The usual alternative is to manually chrt the relevant kernel threads
-> > to RT priority and adjust the priority scheme of their processes appropriately.
-> > 
-> 
-> >From an earlier thread member:
-> 
-> >> Mark writes:
-> >> Again I don't understand why flush_scheduled_work() running on behalf
-> >> of a process affinitized to processor-1 requires cooperation from
-> >> events/2 (affinitized to processor-2)
-> >> when there is an events/1 already affinitized to processor 1?
-> 
-> >Oleg write:
-> >flush_workqueue() blocks until any scheduled work on any CPU has run to
-> >completion. If we have some work_struct pending on CPU 2, it can be
-> >completed only when events/2 executes it.
-> 
-> Could not flush_scheduled_work() just follow the affinity mask of the
-> task that caused the call to begin with. If calling task had a cpu-mask
-> of 3 then flush_scheduled_work() would do the events/0 and events/1
-> thing and if the calling task had an affinity mask of 1 then only
-> events/0 would be done?
-
-The kernel's internal event API doesn't track any of this stuff and
-it's not clear we'd want it to. It'd be a bit simpler perhaps to
-simply allow SIGSTOPing events/0. This might even work today from
-userspace.
-
-In general, it's considered a mistake to mark CPU hogs as RT precisely
-because they present a starvation risk to everything else in the
-system, not just kernel threads. We could add kernel infrastructure to
-make events survive this sort of thing, but that will very likely just
-expose another kernel or userspace livelock.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+[  170.012538]
+[  170.012540] =======================================================
+[  170.012545] [ INFO: possible circular locking dependency detected ]
+[  170.012547] 2.6.21.3 #1
+[  170.012549] -------------------------------------------------------
+[  170.012551] tvtime/6727 is trying to acquire lock:
+[  170.012554]  (&mm->mmap_sem){----}, at: [<ffffffff88053cf4>]
+videobuf_dma_init_user+0xd4/0x180 [video_buf]
+[  170.012564]
+[  170.012565] but task is already holding lock:
+[  170.012567]  (&q->lock#2){--..}, at: [<ffffffff80267399>] mutex_lock+0x9/0x10
+[  170.012575]
+[  170.012576] which lock already depends on the new lock.
+[  170.012577]
+[  170.012579]
+[  170.012579] the existing dependency chain (in reverse order) is:
+[  170.012581]
+[  170.012582] -> #1 (&q->lock#2){--..}:
+[  170.012585]        [<ffffffff802a6922>] __lock_acquire+0xc82/0xf30
+[  170.012593]        [<ffffffff8805e86f>] bttv_do_ioctl+0x152f/0x2460 [bttv]
+[  170.012608]        [<ffffffff80267399>] mutex_lock+0x9/0x10
+[  170.012615]        [<ffffffff802a6c58>] lock_acquire+0x88/0xc0
+[  170.012621]        [<ffffffff80267399>] mutex_lock+0x9/0x10
+[  170.012627]        [<ffffffff802671dc>] __mutex_lock_slowpath+0xec/0x2a0
+[  170.012634]        [<ffffffff80207131>] check_poison_obj+0x31/0x1f0
+[  170.012640]        [<ffffffff802c979b>] kmem_cache_zalloc+0x8b/0xe0
+[  170.012647]        [<ffffffff80267399>] mutex_lock+0x9/0x10
+[  170.012653]        [<ffffffff880528bc>]
+videobuf_mmap_mapper+0x1c/0x290 [video_buf]
+[  170.012662]        [<ffffffff8805bfcb>] bttv_mmap+0x5b/0x60 [bttv]
+[  170.012673]        [<ffffffff8020dc83>] do_mmap_pgoff+0x4e3/0x800
+[  170.012679]        [<ffffffff8026921b>] _spin_unlock_irq+0x2b/0x60
+[  170.012685]        [<ffffffff8022455b>] sys_mmap+0x9b/0x130
+[  170.012691]        [<ffffffff8025f71e>] system_call+0x7e/0x83
+[  170.012697]        [<ffffffffffffffff>] 0xffffffffffffffff
+[  170.012727]
+[  170.012728] -> #0 (&mm->mmap_sem){----}:
+[  170.012731]        [<ffffffff802a67de>] __lock_acquire+0xb3e/0xf30
+[  170.012737]        [<ffffffff88053cf4>]
+videobuf_dma_init_user+0xd4/0x180 [video_buf]
+[  170.012745]        [<ffffffff802a6c58>] lock_acquire+0x88/0xc0
+[  170.012751]        [<ffffffff88053cf4>]
+videobuf_dma_init_user+0xd4/0x180 [video_buf]
+[  170.012760]        [<ffffffff802a1098>] down_read+0x28/0x40
+[  170.012765]        [<ffffffff88053cf4>]
+videobuf_dma_init_user+0xd4/0x180 [video_buf]
+[  170.012774]        [<ffffffff802a572b>] trace_hardirqs_on+0x14b/0x180
+[  170.012780]        [<ffffffff880540bc>] videobuf_iolock+0x9c/0x100
+[video_buf]
+[  170.012788]        [<ffffffff8805bece>]
+bttv_prepare_buffer+0x2ae/0x310 [bttv]
+[  170.012800]        [<ffffffff8805bf62>] buffer_prepare+0x32/0x40 [bttv]
+[  170.012811]        [<ffffffff80267399>] mutex_lock+0x9/0x10
+[  170.012818]        [<ffffffff880548ca>] videobuf_qbuf+0x2ea/0x3a0 [video_buf]
+[  170.012826]        [<ffffffff8805e8ab>] bttv_do_ioctl+0x156b/0x2460 [bttv]
+[  170.012838]        [<ffffffff802a6b39>] __lock_acquire+0xe99/0xf30
+[  170.012844]        [<ffffffff80209225>] __handle_mm_fault+0xb45/0xb80
+[  170.012850]        [<ffffffff80222b4a>] __up_read+0x2a/0xa0
+[  170.012856]        [<ffffffff8802ec09>] video_usercopy+0x189/0x250 [videodev]
+[  170.012865]        [<ffffffff8805d340>] bttv_do_ioctl+0x0/0x2460 [bttv]
+[  170.012877]        [<ffffffff8026b8cb>] do_page_fault+0x4bb/0x8f0
+[  170.012883]        [<ffffffff8023136a>] __up_write+0xfa/0x110
+[  170.012889]        [<ffffffff802691b5>] _spin_unlock_irqrestore+0x45/0x80
+[  170.012895]        [<ffffffff8805c0af>] bttv_ioctl+0x6f/0x80 [bttv]
+[  170.012907]        [<ffffffff80242ebb>] do_ioctl+0x6b/0xa0
+[  170.012913]        [<ffffffff8023124b>] vfs_ioctl+0x2ab/0x2d0
+[  170.012919]        [<ffffffff8024de1a>] sys_ioctl+0x4a/0x80
+[  170.012925]        [<ffffffff8025f71e>] system_call+0x7e/0x83
+[  170.012931]        [<ffffffffffffffff>] 0xffffffffffffffff
+[  170.012937]
+[  170.012938] other info that might help us debug this:
+[  170.012939]
+[  170.012941] 1 lock held by tvtime/6727:
+[  170.012943]  #0:  (&q->lock#2){--..}, at: [<ffffffff80267399>]
+mutex_lock+0x9/0x10
+[  170.012950]
+[  170.012950] stack backtrace:
+[  170.012952]
+[  170.012953] Call Trace:
+[  170.012957]  [<ffffffff802a47a6>] print_circular_bug_tail+0x76/0x90
+[  170.012962]  [<ffffffff802a67de>] __lock_acquire+0xb3e/0xf30
+[  170.012969]  [<ffffffff88053cf4>]
+:video_buf:videobuf_dma_init_user+0xd4/0x180
+[  170.012974]  [<ffffffff802a6c58>] lock_acquire+0x88/0xc0
+[  170.012979]  [<ffffffff88053cf4>]
+:video_buf:videobuf_dma_init_user+0xd4/0x180
+[  170.012984]  [<ffffffff802a1098>] down_read+0x28/0x40
+[  170.012989]  [<ffffffff88053cf4>]
+:video_buf:videobuf_dma_init_user+0xd4/0x180
+[  170.012993]  [<ffffffff802a572b>] trace_hardirqs_on+0x14b/0x180
+[  170.013000]  [<ffffffff880540bc>] :video_buf:videobuf_iolock+0x9c/0x100
+[  170.013010]  [<ffffffff8805bece>] :bttv:bttv_prepare_buffer+0x2ae/0x310
+[  170.013021]  [<ffffffff8805bf62>] :bttv:buffer_prepare+0x32/0x40
+[  170.013025]  [<ffffffff80267399>] mutex_lock+0x9/0x10
+[  170.013030]  [<ffffffff880548ca>] :video_buf:videobuf_qbuf+0x2ea/0x3a0
+[  170.013041]  [<ffffffff8805e8ab>] :bttv:bttv_do_ioctl+0x156b/0x2460
+[  170.013045]  [<ffffffff802a6b39>] __lock_acquire+0xe99/0xf30
+[  170.013049]  [<ffffffff80209225>] __handle_mm_fault+0xb45/0xb80
+[  170.013054]  [<ffffffff80222b4a>] __up_read+0x2a/0xa0
+[  170.013060]  [<ffffffff8802ec09>] :videodev:video_usercopy+0x189/0x250
+[  170.013069]  [<ffffffff8805d340>] :bttv:bttv_do_ioctl+0x0/0x2460
+[  170.013075]  [<ffffffff8026b8cb>] do_page_fault+0x4bb/0x8f0
+[  170.013079]  [<ffffffff8023136a>] __up_write+0xfa/0x110
+[  170.013082]  [<ffffffff802691b5>] _spin_unlock_irqrestore+0x45/0x80
+[  170.013093]  [<ffffffff8805c0af>] :bttv:bttv_ioctl+0x6f/0x80
+[  170.013097]  [<ffffffff80242ebb>] do_ioctl+0x6b/0xa0
+[  170.013101]  [<ffffffff8023124b>] vfs_ioctl+0x2ab/0x2d0
+[  170.013105]  [<ffffffff8024de1a>] sys_ioctl+0x4a/0x80
+[  170.013110]  [<ffffffff8025f71e>] system_call+0x7e/0x83
+[  170.013113]
