@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935155AbXFGSju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934668AbXFGSvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935155AbXFGSju (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 14:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761619AbXFGSjm
+	id S934668AbXFGSvY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 14:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761062AbXFGSvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 14:39:42 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1065 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756794AbXFGSjl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 14:39:41 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 7 Jun 2007 11:39:39 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ulrich Drepper <drepper@redhat.com>
-cc: Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <46684DED.6000907@redhat.com>
-Message-ID: <Pine.LNX.4.64.0706071132130.6445@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
- <20070606235906.72439d16@the-village.bc.nu>
- <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
- <20070607001932.35c9591c@the-village.bc.nu> <466741BD.20106@redhat.com>
- <20070607110432.73be7960@the-village.bc.nu> <4668155B.4020705@redhat.com>
- <20070607195659.c695c87d.dada1@cosmosbay.com> <46684DED.6000907@redhat.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 7 Jun 2007 14:51:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38923 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756794AbXFGSvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 14:51:14 -0400
+Date: Thu, 7 Jun 2007 14:48:05 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Peter Jones <pjones@redhat.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070607184805.GA28551@nostromo.devel.redhat.com>
+Mail-Followup-To: Greg KH <gregkh@suse.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Jones <pjones@redhat.com>, Kay Sievers <kay.sievers@vrfy.org>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <4667C47C.2010207@googlemail.com> <1181206091.3625.9.camel@lov.localdomain> <4667D2DF.30207@googlemail.com> <1181228660.3625.23.camel@lov.localdomain> <46682385.1060802@redhat.com> <20070607154342.GA16911@suse.de> <20070607085200.f8d6e2d3.akpm@linux-foundation.org> <20070607155953.GA17591@suse.de> <20070607090632.cfcf02e6.akpm@linux-foundation.org> <20070607161525.GA18363@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607161525.GA18363@suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007, Ulrich Drepper wrote:
-
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+Greg KH (gregkh@suse.de) said: 
+> There are a number of distros out there right now who can support that
+> option disabled.  I'm pretty sure they are the following right now:
+> 	Gentoo unstable (actually stable works now for me, but I'm not
+> 			 going to guarantee it just yet...)
+> 	Debian unstable (again stable might work, but I have not heard
+> 			 any reports from testers.)
+> 	openSUSE FACTORY (the 10.3 alpha releases)
 > 
-> Eric Dumazet wrote:
-> > eventfd2(int count, int oflags);
-> > 
-> > signalfd2(int ufd, sigset_t __user *user_mask, size_t sizemask, int oflags);
-> > 
-> > timerfd2(int ufd, int clockid, int flags,const struct itimerspec __user *utmr, int oflags) ...
-> 
-> These aren't released yet, so, change them now before it's too late.
+> and now it sounds like Red Hat rawhide will also work properly.
 
-Linus, Andrew, would it be OK to change?
+I suspect while it will work for mkinitrd, the installer will not
+work properly.
 
-
-
-> And to add to your list:
-> 
-> epoll_create().  Important if you think that's the interface people
-> should use.
-
-Can't we leave it as is, and use sys_nonseqfd() for those? So basically:
-
-pipe(2)			-> Use sys_nonseqfd
-epoll_create(2)		-> Use sys_nonseqfd
-accept(2)		-> Inherit the "origin" fd characteristics
-open(2)			-> Add O_NONSEQFD
-socket(2)		-> Introduce socket2()
-
-
-
-- Davide
-
-
+Bill
