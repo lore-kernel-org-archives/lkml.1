@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934865AbXFGSZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935021AbXFGS1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934865AbXFGSZi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 14:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762745AbXFGSZb
+	id S935021AbXFGS1z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 14:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761572AbXFGS1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 14:25:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:48302 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761368AbXFGSZa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 14:25:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=jZ4AlGV5wp7NhR/Y8cIgDVK4sFZjm5Il//PVhfWC7lG6D6RDEZL+szD74kkwkvhHynYF+her+ClBlEK02c/7a0IniwFZC49o9MirEv7Y/RrNoxZn4bSw/pvARRvPz/6sIo/EDJdxHhXlLhUTYncLE/T7BWHbm/AQIBdnSnB7pwA=
-Message-ID: <a44ae5cd0706071125p2079472eme52821bd134d26b0@mail.gmail.com>
-Date: Thu, 7 Jun 2007 11:25:30 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.22-rc4-mm2 -- ipw2200 -- SIOCSIFADDR: No buffer space available
+	Thu, 7 Jun 2007 14:27:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60084 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761027AbXFGS1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 14:27:46 -0400
+Message-ID: <46684DED.6000907@redhat.com>
+Date: Thu, 07 Jun 2007 11:26:53 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>	<20070606235906.72439d16@the-village.bc.nu>	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>	<20070607001932.35c9591c@the-village.bc.nu>	<466741BD.20106@redhat.com>	<20070607110432.73be7960@the-village.bc.nu>	<4668155B.4020705@redhat.com> <20070607195659.c695c87d.dada1@cosmosbay.com>
+In-Reply-To: <20070607195659.c695c87d.dada1@cosmosbay.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-This might be some problem with my kernel configuration.
-I added:
-CONFIG_BONDING=y
+Eric Dumazet wrote:
+> eventfd2(int count, int oflags);
+> 
+> signalfd2(int ufd, sigset_t __user *user_mask, size_t sizemask, int oflags);
+> 
+> timerfd2(int ufd, int clockid, int flags,const struct itimerspec __user *utmr, int oflags) ...
 
-# dhclient eth1
-There is already a pid file /var/run/dhclient.pid with pid 134993416
-Internet Systems Consortium DHCP Client V3.0.4
-Copyright 2004-2006 Internet Systems Consortium.
-All rights reserved.
-For info, please visit http://www.isc.org/sw/dhcp/
-SIOCSIFADDR: No buffer space available
-Listening on LPF/eth1/00:12:f0:5e:db:2f
-Sending on   LPF/eth1/00:12:f0:5e:db:2f
-Sending on   Socket/fallback
-DHCPDISCOVER on eth1 to 255.255.255.255 port 67 interval 6
-DHCPOFFER from 192.168.1.1
-DHCPREQUEST on eth1 to 255.255.255.255 port 67
-DHCPACK from 192.168.1.1
-SIOCSIFADDR: No buffer space available
-SIOCSIFNETMASK: Cannot assign requested address
-SIOCSIFBRDADDR: Cannot assign requested address
-SIOCADDRT: Network is unreachable
-bound to 192.168.1.2 -- renewal in 2993 seconds.
+These aren't released yet, so, change them now before it's too late.
 
-# ping www.yahoo.com
-ping: unknown host www.yahoo.com
+And to add to your list:
 
-Any suggestions what to try now?  I'll go ahead and turn off the
-bonding option and see if that helps.
+epoll_create().  Important if you think that's the interface people
+should use.
 
-           Miles
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFGaE3t2ijCOnn/RHQRAqPGAJ4rhSxvWLvAseBTCZIywIpQ7JCTJACfZSdR
+fGkbIAX5l/1zISYQ6rLmIrk=
+=Ge8V
+-----END PGP SIGNATURE-----
