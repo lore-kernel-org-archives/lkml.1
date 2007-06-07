@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbXFGKe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbXFGKeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757604AbXFGKe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 06:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbXFGKeR
+	id S1759065AbXFGKeh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 06:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbXFGKeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 06:34:17 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:42463 "EHLO
+	Thu, 7 Jun 2007 06:34:19 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:42477 "EHLO
 	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750836AbXFGKeQ (ORCPT
+	with ESMTP id S1751035AbXFGKeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 06:34:16 -0400
-Subject: [KJ][PATCH]is_power_of_2-block/rd.c
+	Thu, 7 Jun 2007 06:34:17 -0400
+Subject: [KJ][PATCH]is_power_of_2-sparc/mm/srmmu.c
 From: vignesh babu <vignesh.babu@wipro.com>
 Reply-To: vignesh.babu@wipro.com
-To: axboe@kernel.dk, page0588@sundance.sjsu.edu
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+To: wli@holomorphy.com, davem@caip.rutgers.edu, zaitcev@yahoo.com,
+       ecd@skynet.be, jj@sunsite.ms.mff.cuni.cz, anton@samba.org
+Cc: sparclinux@vger.kernel.org, linux-mm@kvack.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
        Kernel Janitors List <kernel-janitors@lists.osdl.org>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Organization: WIPRO Technologies
-Date: Thu, 07 Jun 2007 15:27:39 +0530
-Message-Id: <1181210259.11218.0.camel@merlin.linuxcoe.com>
+Date: Thu, 07 Jun 2007 15:27:43 +0530
+Message-Id: <1181210263.11218.2.camel@merlin.linuxcoe.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-X-OriginalArrivalTime: 07 Jun 2007 09:57:55.0652 (UTC) FILETIME=[5218D040:01C7A8EA]
+X-OriginalArrivalTime: 07 Jun 2007 09:58:07.0855 (UTC) FILETIME=[595ED7F0:01C7A8EA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -33,27 +35,28 @@ with is_power_of_2
 
 Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
 --- 
-diff --git a/drivers/block/rd.c b/drivers/block/rd.c
-index a1512da..e57f729 100644
---- a/drivers/block/rd.c
-+++ b/drivers/block/rd.c
-@@ -56,6 +56,7 @@
- #include <linux/backing-dev.h>
- #include <linux/blkpg.h>
- #include <linux/writeback.h>
+diff --git a/arch/sparc/mm/srmmu.c b/arch/sparc/mm/srmmu.c
+index e5eaa80..741d303 100644
+--- a/arch/sparc/mm/srmmu.c
++++ b/arch/sparc/mm/srmmu.c
+@@ -19,6 +19,7 @@
+#include <linux/fs.h>
+#include <linux/seq_file.h>
+#include <linux/kdebug.h>
 +#include <linux/log2.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -422,7 +423,7 @@ static int __init rd_init(void)
- 	int err = -ENOMEM;
- 
- 	if (rd_blocksize > PAGE_SIZE || rd_blocksize < 512 ||
--			(rd_blocksize & (rd_blocksize-1))) {
-+			!is_power_of_2(rd_blocksize)) {
- 		printk("RAMDISK: wrong blocksize %d, reverting to defaults\n",
- 		       rd_blocksize);
- 		rd_blocksize = BLOCK_SIZE;
+
+#include <asm/bitext.h>
+#include <asm/page.h>
+@@ -354,7 +355,7 @@ void srmmu_free_nocache(unsigned long vaddr, int
+size)
+    vaddr, srmmu_nocache_end);
+BUG();
+}
+- if (size & (size-1)) {
++ if (!is_power_of_2(size)) {
+printk("Size 0x%x is not a power of 2\n", size);
+BUG();
+}
 
 -- 
 Vignesh Babu BM 
