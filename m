@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765973AbXFGRlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932608AbXFGRoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765973AbXFGRlJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbXFGRk5
+	id S932608AbXFGRoj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758338AbXFGRo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:40:57 -0400
-Received: from lucidpixels.com ([75.144.35.66]:60428 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752702AbXFGRk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:40:57 -0400
-Date: Thu, 7 Jun 2007 13:40:55 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jesse Barnes <jesse.barnes@intel.com>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-In-Reply-To: <200706071035.18356.jesse.barnes@intel.com>
-Message-ID: <Pine.LNX.4.64.0706071340380.2477@p34.internal.lan>
-References: <200706061229.24486.jesse.barnes@intel.com>
- <20070607081619.GA15226@one.firstfloor.org> <200706071035.18356.jesse.barnes@intel.com>
+	Thu, 7 Jun 2007 13:44:28 -0400
+Received: from wf1.mips-uk.com ([194.74.144.154]:48411 "EHLO
+	dl5rb.ham-radio-op.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756772AbXFGRo1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:44:27 -0400
+X-Greylist: delayed 3714 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jun 2007 13:44:25 EDT
+Date: Thu, 7 Jun 2007 17:37:31 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: why does the macro "ZERO_PAGE" take an argument?
+Message-ID: <20070607163731.GB30044@linux-mips.org>
+References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain> <4667EC18.4080904@yahoo.com.au> <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain> <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com> <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 07, 2007 at 07:53:08AM -0400, Robert P. J. Day wrote:
 
+> > > > MIPS?
+> > >
+> > > argh. that would be the *one* definition whose output got chopped
+> > > because of line continuation, and it would be only one that actually
+> > > uses the argument:
+> > >
+> > > #define ZERO_PAGE(vaddr) \
+> > >         (virt_to_page((void *)(empty_zero_page + (((unsigned long)(vaddr)) &
+> > > zero_page_mask))))
+> > >
+> > >
+> > > but it still leaves the question -- if ZERO_PAGE is meant to represent
+> > > a single, global shared page that is always zero, why would it *ever*
+> > > need to take an argument?  and what's so special about MIPS that it
+> > > differs from all the rest?
+> >
+> > The comment above empty_zero_page and zero_page_mask
+> > declarations at arch/mips/mm/init.c:508 sheds light on this ...
+> 
+> well, it *sort of* does.  at line 64 of that file:
+> 
+> /*
+>  * We have up to 8 empty zeroed pages so we can map one of the right colour
+>  * when needed.  This is necessary only on R4000 / R4400 SC and MC versions
+>  * where we have to avoid VCED / VECI exceptions for good performance at
+>  * any price.  Since page is never written to after the initialization we
+>  * don't have to care about aliases on other CPUs.
+>  */
+> 
+> although it's not clear where in the source tree are the invocations
+> that would actually make a difference to a MIPS system, which is why
+> i've CC'ed ralf on this.  i'm sure he can clear this up. :-)
 
-On Thu, 7 Jun 2007, Jesse Barnes wrote:
+Cache aliases.  When the same page of physical memory is mapped twice to
+user space, let's say at address addr and addr + PAGE_SIZE this is normally
+harmless although wasteful on processors with virtually indexed caches as
+long as the page is mapped read-only such as in case of ZERO_PAGE.
 
-> On Thursday, June 7, 2007 1:16 am Andi Kleen wrote:
->> On Wed, Jun 06, 2007 at 12:29:23PM -0700, Jesse Barnes wrote:
->>> On some machines, buggy BIOSes don't properly setup WB MTRRs to
->>> cover all available RAM, meaning the last few megs (or even gigs)
->>> of memory will be marked uncached.  Since Linux tends to allocate
->>> from high memory addresses first, this causes the machine to be
->>> unusably slow as soon as the kernel starts really using memory
->>> (i.e. right around init time).
->>
->> In theory -- while not recommended -- a BIOS could also
->> use a default fallback MTRR for cached and use explicit MTRRs to
->> map the non existing ranges uncached. Would it make sense to handle
->> this case?
->
-> Probably.  I could just check the default memory type and bail out if
-> it's cacheable.
->
->> Should also probably have some command line option
->> to disable the check in case something bad happens with it.
->
-> Sure.
->
->> Another thing that might be sense to investigate in relationship
->> to this patch is large page mappings with MTRRs. iirc P4 and also K8
->> splits pages internally with MTRR boundaries and might have some
->> other bad side effects. Should we use this as hints to use 4K pages
->> for the boundary areas?
->
-> Or I could trim to the nearest large page boundary...  We'd lose a
-> little more memory but it would keep things simple.
->
-> Jesse
->
+If the same thing happens with a writable page there is the chance of
+severe data corruption.  Some members of the R4000 family are now trying
+to be helpful by throwing the kernel a "virtual coherency" exception.  The
+bad news about this exception is there might be thousands (the theoretical
+worst case would be millions) of it in a single second, so servicing can be
+very expensive.  For the ZERO page this can be avoided by using several
+pages mapped in a way such that their addresses don't conflict.
 
-How much more memory are we going to lose?  Is mem= a better option if its 
-going to keep decreasing?
+  Ralf
