@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935842AbXFGBcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935796AbXFGBkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935842AbXFGBcs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 21:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbXFGBcj
+	id S935796AbXFGBkm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 21:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbXFGBkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 21:32:39 -0400
-Received: from waste.org ([66.93.16.53]:35296 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755972AbXFGBci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 21:32:38 -0400
-Date: Wed, 6 Jun 2007 20:31:28 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: markh@compro.net, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Mark Hounschell <dmarkh@cfl.rr.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: floppy.c soft lockup
-Message-ID: <20070607013128.GW11166@waste.org>
-References: <20070601151605.GA108@tv-sign.ru> <4660534E.6050903@cfl.rr.com> <20070601183642.GA92@tv-sign.ru> <466078FF.2080508@cfl.rr.com> <20070602123030.GA719@tv-sign.ru> <4661D698.5040009@cfl.rr.com> <20070603081417.GA81@tv-sign.ru> <46641B16.9090701@compro.net> <4666B2A4.7090603@compro.net> <20070606102828.752bf955.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070606102828.752bf955.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 6 Jun 2007 21:40:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45787 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756938AbXFGBkc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 21:40:32 -0400
+Date: Wed, 6 Jun 2007 18:38:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Stable Team <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>, Andi Kleen <ak@suse.de>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] ACPI: Move timer broadcast and pmtimer access before C3
+ arbiter shutdown
+Message-Id: <20070606183857.caa243d4.akpm@linux-foundation.org>
+In-Reply-To: <1181122673.4404.200.camel@chaos>
+References: <1181122673.4404.200.camel@chaos>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 10:28:28AM -0700, Andrew Morton wrote:
-> On Wed, 06 Jun 2007 09:12:04 -0400 Mark Hounschell <markh@compro.net> wrote:
-> 
-> > > 
-> > > As far as a 100% CPU bound task being a valid thing to do, it has been 
-> > > done for many years on SMP machines. Any kernel limitation on this 
-> > > surely must be considered a bug? 
-> > > 
-> > 
-> > Could someone authoritatively comment on this? Is a SCHED_RR/SCHED_FIFO
-> > 100% Cpu bound process supported in an SMP env on Linux? (vanilla or -rt)
-> 
-> It will kill the kernel, sorry.
-> 
-> The only way in which we can fix that is to allow kernel threads to preempt
-> rt-priority userspace threads.  But if we were to do that (to benefit the
-> few) it would cause _all_ people's rt-prio processes to experience glitches
-> due to kernel activity, which we believe to be worse.
-> 
-> So we're between a rock and a hard place here.
-> 
-> If we really did want to solve this then I guess the kernel would need some
-> new code to detect a 100%-busy rt-prio process and to then start premitting
-> preemption of it for kernel thread activity.  That detector would need to
-> be smart enough to detect a number of 100%-busy rt-prio processes which are
-> yielding to each other, and one rt-prio process which keeps forking others,
-> etc.  It might get tricky.
+On Wed, 06 Jun 2007 11:37:53 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-The usual alternative is to manually chrt the relevant kernel threads
-to RT priority and adjust the priority scheme of their processes appropriately.
+> From: Udo A. Steinberg <us15@os.inf.tu-dresden.de>
+> 
+> The chip set doc for IHC4 says:
+> 
+> 1.In general, software should not attempt any non-posted accesses during
+> arbiter disable except to the ICH4's power management registers. This
+> implies that interrupt handlers for any unmasked hardware interrupts and
+> SMI/NMI should check ARB_DIS status before reading from ICH devices.
+> 
+> So it's not a good idea to access ICH devices after arbiter shut down. 
+> 
+> Signed-off-by: Udo A. Steinberg <us15@os.inf.tu-dresden.de>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> ---
+>  drivers/acpi/processor_idle.c |    9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6.22-rc4/drivers/acpi/processor_idle.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/acpi/processor_idle.c	2007-06-06 11:47:21.000000000 +0200
+> +++ linux-2.6.22-rc4/drivers/acpi/processor_idle.c	2007-06-06 11:48:21.000000000 +0200
+> @@ -488,6 +488,11 @@ static void acpi_processor_idle(void)
+>  
+>  	case ACPI_STATE_C3:
+>  
+> +		/* Get start time (ticks) */
+> +		t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
+> +		/* Handle timer broadcast before bus arbiter shutdown ! */
+> +		acpi_state_timer_broadcast(pr, cx, 1);
+> +
+>  		if (pr->flags.bm_check) {
+>  			if (atomic_inc_return(&c3_cpu_count) ==
+>  			    num_online_cpus()) {
+> @@ -502,10 +507,7 @@ static void acpi_processor_idle(void)
+>  			ACPI_FLUSH_CPU_CACHE();
+>  		}
+>  
+> -		/* Get start time (ticks) */
+> -		t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
+>  		/* Invoke C3 */
+> -		acpi_state_timer_broadcast(pr, cx, 1);
+>  		acpi_cstate_enter(cx);
+>  		/* Get end time (ticks) */
+>  		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
 
--- 
-Mathematics is the supreme nostalgia of our time.
+hm, this needs a bit of help to get it to work against Len's current tree.
+
+However, if by "non-posted accesses" you're referring to that inl(), how
+come the second one which was left in place isn't also a problem?
+
