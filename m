@@ -1,236 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966790AbXFGW4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966591AbXFGW7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966790AbXFGW4m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966500AbXFGW4H
+	id S966591AbXFGW7T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933414AbXFGW7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:56:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60151 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966489AbXFGW4E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:56:04 -0400
-Date: Thu, 7 Jun 2007 15:54:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: menage@google.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
-       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-Subject: Re: Per container statistics (containerstats)
-Message-Id: <20070607155445.edd5fded.akpm@linux-foundation.org>
-In-Reply-To: <20070606115813.GA32197@linux.vnet.ibm.com>
-References: <20070606115813.GA32197@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jun 2007 18:59:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:21799 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933374AbXFGW7B (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:59:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=J4CCAvT1B+hKFpjv+EbyRGYStoZmIZqKH20YIRG3IHUSfbRIbmyjlHvYmg8GmAYW1sZ9g+ph59E1jTtNRHgp/E6l9jjGjH1hjSMKzCaz6tTJWgfvddzke4QSeiKEHHOQPv4HFVwUNeaCcwzOqVQk0r2r7S4E8sBML/j9YBS8iMM=
+Message-ID: <6934efce0706071559j24978c15kc42914677dc8408e@mail.gmail.com>
+Date: Thu, 7 Jun 2007 15:59:00 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Christoph Hellwig" <hch@infradead.org>,
+       "Jared Hulbert" <jaredeh@gmail.com>, carsteno@de.ibm.com,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       "Richard Griffiths" <res07ml0@verizon.net>,
+       Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+In-Reply-To: <20070607211519.GA22348@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com>
+	 <46641472.3080802@de.ibm.com>
+	 <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com>
+	 <20070606113351.GA11701@infradead.org>
+	 <6934efce0706060907n209fe6bcnb470101196aa9c55@mail.gmail.com>
+	 <20070606161621.GA20247@infradead.org>
+	 <6934efce0706061126n551cccaeg68a0def87457911@mail.gmail.com>
+	 <20070607193707.GA17144@infradead.org>
+	 <6934efce0706071411y6d184629i5ce0694175bef164@mail.gmail.com>
+	 <20070607211519.GA22348@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007 17:28:13 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> If if were actually talking about complex filesystem I'd agree.  But
+> the cramfs xip patch posted here touches about 2/3 of the number of
+> lines that cramfs has in total.
 
-> Hi, Andrew/Paul,
-> 
-> Here's the latest version of containerstats ported to v10. Could you
-> please consider it for inclusion
-> 
-> Changelog
-> 
-> 1. Instead of parsing long container path's use the dentry to match the
->    container for which stats are required. The user space application
->    opens the container directory and passes the file descriptor, which
->    is used to determine the container for which stats are required.
->    This approach was suggested by Paul Menage
-> 
-> This patch is inspired by the discussion at http://lkml.org/lkml/2007/4/11/187
-> and implements per container statistics as suggested by Andrew Morton
-> in http://lkml.org/lkml/2007/4/11/263. The patch is on top of 2.6.21-mm1
-> with Paul's containers v9 patches (forward ported)
-> 
-> This patch implements per container statistics infrastructure and re-uses
-> code from the taskstats interface. A new set of container operations are
-> registered with commands and attributes. It should be very easy to
-> *extend* per container statistics, by adding members to the containerstats
-> structure.
-> 
-> The current model for containerstats is a pull, a push model (to post
-> statistics on interesting events), should be very easy to add. Currently
-> user space requests for statistics by passing the container file descriptor.
-> Statistics about the state of all the tasks in the container is returned to
-> user space.
-> 
-> TODO's/NOTE:
-> 
-> This patch provides an infrastructure for implementing container statistics.
-> Based on the needs of each controller, we can incrementally add more statistics,
-> event based support for notification of statistics, accumulation of taskstats
-> into container statistics in the future.
-> 
-> Sample output
-> 
-> # ./containerstats -C /container/a
-> sleeping 2, blocked 0, running 1, stopped 0, uninterruptible 0
-> 
-> # ./containerstats -C /container/
-> sleeping 154, blocked 0, running 0, stopped 0, uninterruptible 0
-> 
-> If the approach looks good, I'll enhance and post the user space utility for
-> the same
-> 
-> Feedback, comments, test results are always welcome!
-> 
-> 
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  Documentation/accounting/containerstats.txt |   27 ++++++++++
->  include/linux/Kbuild                        |    1 
->  include/linux/container.h                   |    8 +++
->  include/linux/containerstats.h              |   70 ++++++++++++++++++++++++++++
->  include/linux/delayacct.h                   |   11 ++++
->  kernel/container.c                          |   63 +++++++++++++++++++++++++
->  kernel/sched.c                              |    4 +
->  kernel/taskstats.c                          |   66 ++++++++++++++++++++++++++
->  8 files changed, 250 insertions(+)
+Fair enough.  But look at the complexity rather than number of lines.
+It adds tedium to the cramfs_fill_super and one extra level of
+indirection to a hand full of ops like mmap() and cramfs_read().  But
+the changes to the real meat of cramfs, cramfs_readpage(), are limited
+to the XIP changes, which I want on block devices anyway.
 
-I'd have hoped to see containerstats.c in here.
+So if we did fork cramfs I would submit a simple patch to cramfs for
+XIP support on block devices and I would submit a patch for a new
+filesystem, cramfs-linear.  Cramfs-linear would have an exact copy of
+1/3 of the cramfs code such as cramfs_readpage(), it would use the
+same headers, and it would use the same userspace tools.
 
-> diff -puN /dev/null include/linux/containerstats.h
-> --- /dev/null	2007-06-01 20:42:04.000000000 +0530
-> +++ linux-2.6.22-rc2-mm1-balbir/include/linux/containerstats.h	2007-06-05 17:23:56.000000000 +0530
-> @@ -0,0 +1,70 @@
-> +/* containerstats.h - exporting per-container statistics
-> + *
-> + * __ Copyright IBM Corporation, 2007
-> + * Author Balbir Singh <balbir@linux.vnet.ibm.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of version 2.1 of the GNU Lesser General Public License
-> + * as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it would be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> + */
-> +
-> +#ifndef _LINUX_CONTAINERSTATS_H
-> +#define _LINUX_CONTAINERSTATS_H
-> +
-> +#include <linux/taskstats.h>
+This fork is what the community wants?  Speak up!
 
-I don't understand the relationship between containerstats and taskstats. 
-afacit it's using the same genetlink channel?
+>And cramfs is not exactly the best base to start with..
 
-> +/*
-> + * Data shared between user space and kernel space on a per container
-> + * basis. This data is shared using taskstats.
-> + *
-> + * Most of these states are derived by looking at the task->state value
-> + * For the nr_io_wait state, a flag in the delay accounting structure
-> + * indicates that the task is waiting on IO
-> + *
-> + * Each member is aligned to a 8 byte boundary.
-> + */
-> +struct containerstats {
-> +	__u64	nr_sleeping;		/* Number of tasks sleeping */
-> +	__u64	nr_running;		/* Number of tasks running */
-> +	__u64	nr_stopped;		/* Number of tasks in stopped state */
-> +	__u64	nr_uninterruptible;	/* Number of tasks in uninterruptible */
-> +					/* state */
-> +	__u64	nr_io_wait;		/* Number of tasks waiting on IO */
-> +};
-> +
-> +/*
-> + * Commands sent from userspace
-> + * Not versioned. New commands should only be inserted at the enum's end
-> + * prior to __CONTAINERSTATS_CMD_MAX
-> + */
-> +
-> +enum {
-> +	CONTAINERSTATS_CMD_UNSPEC = __TASKSTATS_CMD_MAX,	/* Reserved */
+This is a moot point, there is a significant installed base issue.
+There are lots of cramfs-linear-xip based systems in existance with
+can't be easily ported to newer kernel because of a lack of support.
 
-This seems to mean that the containerstats commands all get renumbered if
-we add new taskstats commands.  That would be bad?
+> > This is nirvana.   But it is not the goal of the patches in question.
+> > In fact there are several use cases that don't need and don't value
+> > the writeability and don't need therefore the overhead.  It is a long
+> > term goal never the less.
+>
+> With the filemap_xip.c helpers adding xip support to any filesystem
+> is pretty trivial for the highlevel filesystem operations.  The only
+> interesting bit is the lowlevel code (the get_xip_page method and
+> the others Carsten mentioned), but we need to do these lowlevel
+> code in a generic and proper way anyway.
 
-> + */
-> +int containerstats_build(struct containerstats *stats, struct dentry *dentry)
-> +{
-> +	int ret = -EINVAL;
-> +	struct task_struct *g, *p;
-> +	struct container *cont, *root_cont;
-> +	struct container *src_cont;
-> +	int subsys_id;
-> +	struct containerfs_root *root;
-> +
-> +	/*
-> +	 * Validate dentry by checking the superblock operations
-> +	 */
-> +	if (dentry->d_sb->s_op != &container_ops)
-> +		 goto err;
-> +
-> +	ret = 0;
-> +	src_cont = (struct container *)dentry->d_fsdata;
+It's not that trivial.  The filesystem needs to meet several
+requirements such as, having data nodes that are page aligned.
+Anytime any changes are made to any page in the underlying Flash block
+or if the Flash physical partition goes out of read mode you've got to
+hide that from userspace or otherwise deal with it.  A filesystem that
+doesn't understand these subtle hardware requirements would either not
+work at all, have lots of deadlock issues, or at least have terrible
+performance problems.  Nevertheless I supose a simple, but invasive,
+hack could likely produce a worthwhile proof of concept.
 
-Unneeded cast.
+I think this is worthy of it's own thread....
 
-> +	rcu_read_lock();
-> +
-> +	for_each_root(root) {
-> +		if (!root->subsys_bits)
-> +			continue;
-> +		root_cont = &root->top_container;
-> +		get_first_subsys(root_cont, NULL, &subsys_id);
-> +		do_each_thread(g, p) {
+> I'll try to hack up an xip prototype for jffs2 next week.
 
-this needs tasklist_lock?
+Very cool.  I can't wait to see what you have in mind.  But remember
+this doesn't solve the problem of the huge installed base of
+cramfs-linear-xip images.
 
-> +			cont = task_container(p, subsys_id);
-> +			if (cont == src_cont) {
-> +				switch (p->state) {
-> +				case TASK_RUNNING:
-> +					stats->nr_running++;
-> +					break;
-> +				case TASK_INTERRUPTIBLE:
-> +					stats->nr_sleeping++;
-> +					break;
-> +				case TASK_UNINTERRUPTIBLE:
-> +					stats->nr_uninterruptible++;
-> +					break;
-> +				case TASK_STOPPED:
-> +					stats->nr_stopped++;
-> +					break;
-> +				default:
-> +					if (delayacct_is_task_waiting_on_io(p))
-> +						stats->nr_io_wait++;
-> +					break;
-> +				}
-> +			}
-> +		} while_each_thread(g, p);
-> +	}
-> +	rcu_read_unlock();
-> +err:
-> +	return ret;
-> +}
-> +
->  static int cmppid(const void *a, const void *b)
->  {
->  	return *(pid_t *)a - *(pid_t *)b;
-> diff -puN kernel/sched.c~containers-taskstats kernel/sched.c
-> --- linux-2.6.22-rc2-mm1/kernel/sched.c~containers-taskstats	2007-06-05 17:21:57.000000000 +0530
-> +++ linux-2.6.22-rc2-mm1-balbir/kernel/sched.c	2007-06-05 17:21:57.000000000 +0530
-> @@ -4280,11 +4280,13 @@ void __sched io_schedule(void)
->  {
->  	struct rq *rq = &__raw_get_cpu_var(runqueues);
->  
-> +	delayacct_set_flag(DELAYACCT_PF_BLKIO);
->  	delayacct_blkio_start();
-
-Would it be suitable and appropriate to embed the delayacct_set_flag() call
-inside delayacct_blkio_start()?
-
-
+Gee I think it seems logfs would be a better choice.  Jffs2 and
+ubifs(jffs3) for that matter combine node and node header in series
+which means your data nodes aren't aligned to page boundarys. Logfs
+nodes could be more easily aligned.
