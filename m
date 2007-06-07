@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966847AbXFGWJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966709AbXFGWJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966847AbXFGWJF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966740AbXFGWHi
+	id S966709AbXFGWJh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966609AbXFGWIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:07:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58885 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966713AbXFGWHe (ORCPT
+	Thu, 7 Jun 2007 18:08:18 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:25286 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966739AbXFGWII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:07:34 -0400
-Date: Thu, 7 Jun 2007 15:06:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: jfannin@gmail.com (Joseph Fannin)
-Cc: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
-       netdev@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: 2.6.22-rc4-mm2: Assigning IP address fails
-Message-Id: <20070607150653.b83bfc0f.akpm@linux-foundation.org>
-In-Reply-To: <20070607214609.GB8204@nineveh.local>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-	<20070607214609.GB8204@nineveh.local>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 7 Jun 2007 18:08:08 -0400
+Date: Thu, 7 Jun 2007 15:06:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Pavel Emelianov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-arch@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Report that kernel is tainted if there were an OOPS
+ before (v3)
+Message-Id: <20070607150617.3e58d2a2.randy.dunlap@oracle.com>
+In-Reply-To: <4667FF66.4010304@openvz.org>
+References: <4667FF66.4010304@openvz.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007 17:46:09 -0400
-jfannin@gmail.com (Joseph Fannin) wrote:
+On Thu, 07 Jun 2007 16:51:50 +0400 Pavel Emelianov wrote:
 
-> On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
-> >
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
+> If the kernel OOPSed or BUGed then it probably should
+> be considered as tainted. Thus, all subsequent OOPSes 
+> and SysRq dumps will report the tainted kernel. This 
+> saves a lot of time explaining oddities in the calltraces.
 > 
->     I'm not able to bring an ethernet interface down and back up again
-> with this if avahi-autoipd is installed on my Ubuntu boxes.  I've seen
-> it on three different computers with different NIC hardware.
+> The previous version was buggy and reported the kernel 
+> to be tainted at the very first oops as was noticed by 
+> Dave Jones in the report from Antonino Daplas.
 > 
->     I've worked out an easy way to reproduce it without
-> avahi-autoipd.  Starting with eth0 up (address assigned by DHCP):
+> Compilation is checked for i386, x86_64 and ia64 since 
+> I have no all the others at hands :)
 > 
->   # ifdown eth0
->   < dhclient makes the normal noise about releasing the address >
->   # ip addr add 169.254.255.67/16 brd 169.254.255.255 label eth0:avahi scope link dev eth0
->   # ip addr del 169.154.255.67/16 brd 169.254.255.255 label eth0:avahi scope link dev eth0
->   # ifup eth0
->   SIOCSIFADDR: No buffer space available    < -- first sign of trouble HERE
->   < dhclient copyright boilerplate >
->   Listening on LPF/eth0/<MAC addr>
->   Sending on   LPF/eth0/<MAC addr>
->   Sending on   Socket/fallback
->   DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 5
->   DHCPOFFER from < DHCP server >
->   DHCPREQUEST on eth0 to 255.255.255.255 port 67
->   DHCPACK from  < DHCP server >
->   SIOCSIFADDR: No buffer space available
->   SIOCSIFNETMASK: Cannot assign requested address
->   SIOCSIFBRDADDR: Cannot assign requested address
->   SIOCADDRTL No such process
->   bound to < IP address > -- renewal in XXXX seconds
->   #
-> 
->     At this point, the interface is up, but has no address assigned.
-> Manually assigning one with ifconfig fails:
-> 
->   # ifconfig eth0 netmask 255.255.255.0 172.16.0.1
->   SIOCSIFNETMASK: Cannot assign requested address
->   SIOCSIFADDR: No buffer space available
->   #
-> 
-> ... and a reboot is the only way I've been able to get the interface
-> to work again.
-> 
->     The last kernels I tried were 2.6.22-rc3 and *I think*
-> 2.6.22-rc1-mm1, neither of which had this problem.  I will test
-> 2.6.22-rc4 and 2.6.22-rc3-mm1 later, but I'm out of time today.
-> 
->     I've attached my .config .
+> Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
 
-Yep, thanks - Miles has reported the same thing.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+I would change the doc. comment below:
+
+
+> ---
+> 
+> diff --git a/Documentation/oops-tracing.txt b/Documentation/oops-tracing.txt
+> index 7d5b60d..610e234 100644
+> --- a/Documentation/oops-tracing.txt
+> +++ b/Documentation/oops-tracing.txt
+> @@ -237,6 +237,8 @@ characters, each representing a particul
+>    7: 'U' if a user or user application specifically requested that the
+>       Tainted flag be set, ' ' otherwise.
+>  
+> +  8: 'D' if the kernel has died recently, i.e. there was an OOPS or BUG.
+
+something like:
+
++  8: 'D' if the kernel has already died, i.e. there was a prior OOPS or BUG.
+
+> +
+>  The primary reason for the 'Tainted: ' string is to tell kernel
+>  debuggers if this is a clean kernel or if anything unusual has
+>  occurred.  Tainting is permanent: even if an offending module is
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
