@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936945AbXFGVPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936938AbXFGVPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936945AbXFGVPd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 17:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934830AbXFGVPR
+	id S936938AbXFGVPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 17:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936951AbXFGVP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 17:15:17 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:34176 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934799AbXFGVPP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 17:15:15 -0400
-Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Albert Cahalan <acahalan@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       ebiederm@xmission.com, torvalds@linux-foundation.org
-In-Reply-To: <20070607203757.GA531@vino.hallyn.com>
-References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
-	 <20070606204432.b670a7b1.akpm@linux-foundation.org>
-	 <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
-	 <1181233393.9995.14.camel@dyn9047017100.beaverton.ibm.com>
-	 <787b0d920706070943h6ac65b85nee5b01600905be08@mail.gmail.com>
-	 <1181235997.9995.23.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070607124824.27e909fd.akpm@linux-foundation.org>
-	 <1181246363.9995.37.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070607203757.GA531@vino.hallyn.com>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 14:16:08 -0700
-Message-Id: <1181250968.9995.41.camel@dyn9047017100.beaverton.ibm.com>
+	Thu, 7 Jun 2007 17:15:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45446 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935743AbXFGVP1 (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 17:15:27 -0400
+Date: Thu, 7 Jun 2007 22:15:19 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jared Hulbert <jaredeh@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, carsteno@de.ibm.com,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Message-ID: <20070607211519.GA22348@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jared Hulbert <jaredeh@gmail.com>, carsteno@de.ibm.com,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	richard.griffiths@windriver.com,
+	Richard Griffiths <res07ml0@verizon.net>,
+	Linux-kernel@vger.kernel.org
+References: <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com> <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com> <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com> <20070606113351.GA11701@infradead.org> <6934efce0706060907n209fe6bcnb470101196aa9c55@mail.gmail.com> <20070606161621.GA20247@infradead.org> <6934efce0706061126n551cccaeg68a0def87457911@mail.gmail.com> <20070607193707.GA17144@infradead.org> <6934efce0706071411y6d184629i5ce0694175bef164@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6934efce0706071411y6d184629i5ce0694175bef164@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-07 at 15:37 -0500, Serge E. Hallyn wrote:
-> Quoting Badari Pulavarty (pbadari@us.ibm.com):
-> > On Thu, 2007-06-07 at 12:48 -0700, Andrew Morton wrote:
-> > > On Thu, 07 Jun 2007 10:06:37 -0700
-> > > Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> > > 
-> > > > On Thu, 2007-06-07 at 12:43 -0400, Albert Cahalan wrote:
-> > > > > On 6/7/07, Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> > > > > 
-> > > > > > BTW, I agree with Eric that its would be nice to use shmid as part
-> > > > > > of name instead of forcing to be as inode number. It should be
-> > > > > > possible for pmap to workout shmid from "key" or name. Isn't it ?
-> > > > > 
-> > > > > It is not at all nice.
-> > > > > 
-> > > > > 1. it's incompatible ABI breakage
-> > > > > 2. where will you put the key then, in the inode? :-)
-> > > > 
-> > > > Nope. Currently "key" is part of the name (but its not unique).
-> > > > 
-> > > > > 
-> > > > > Changing to "SYSVID%d" is no good either. Look, people
-> > > > > are ***parsing*** this stuff in /proc. The /proc filesystem
-> > > > > is not some random sandbox to be playing in.
-> > > > > 
-> > > > > Before you go messing with it, note that the device number
-> > > > > also matters. (it's per-boot dynamic, but that's OK)
-> > > > > That's how one knows that /SYSV00000000 is not just
-> > > > > a regular file; sadly these didn't get a non-/ prefix.
-> > > > > (and no you can't fix that now; it's way too late)
-> > > > > 
-> > > > > Next time you feel like breaking an ABI, mind putting
-> > > > > "LET'S BREAK AN ABI!" in the subject of your email?
-> > > > 
-> > > > I am not breaking ABI. Its already broken in the current
-> > > > mainline. I am trying to fix it by putting back the ino#
-> > > > as shmid. Eric had a suggestion that, instead of depending
-> > > > on the inode# to be shmid, we could embed shmid into name
-> > > > (instead of "key" which is currently not unique).
-> > > > 
-> > > > > BTW, I suspect this kind of thing also breaks:
-> > > > > a. fuser, lsof, and other resource usage display tools
-> > > > > b. various obscure emulators (similar to valgrind)
-> > > > 
-> > > > If you strongly feel that "old" behaviour needs to be retained, 
-> > > 
-> > > yup, we should put it back.  The change was, afaik, accidental.
-> > > 
-> > > > here is the patch I originally suggested.
-> > > 
-> > > Confused.  Will this one-liner fix all the userspace breakage to which
-> > > Albert refers?
-> > 
-> > Yes. Albert, please correct me if I am wrong.
+On Thu, Jun 07, 2007 at 02:11:44PM -0700, Jared Hulbert wrote:
+> >that even more important doesn't require pulling in
+> >the whole block layer which is especially important for embedded
+> >devices at the lower end of the scala.
 > 
-> It will, but could lead to two different inodes with the same i_ino,
-> right?
+> Good point.  That is a big oversight.  Though I would prefer to handle
+> that in the same fs rather than fork.
 
-Only if we generate same ID in two different namespaces. Is it currently
-possible ? 
+If if were actually talking about complex filesystem I'd agree.  But
+the cramfs xip patch posted here touches about 2/3 of the number of
+lines that cramfs has in total.  And cramfs is not exactly the best
+base to start with..
 
-Thanks,
-Badari
+> >I still think it'd be even better to just
+> >hook xip support into jffs or logfs because they give you a full
+> >featured flash filesystem for all needs without the complexity
+> >of strictly partitioning between xip-capable and write parts
+> >of your storage.
+> 
+> This is nirvana.   But it is not the goal of the patches in question.
+> In fact there are several use cases that don't need and don't value
+> the writeability and don't need therefore the overhead.  It is a long
+> term goal never the less.
 
+With the filemap_xip.c helpers adding xip support to any filesystem
+is pretty trivial for the highlevel filesystem operations.  The only
+interesting bit is the lowlevel code (the get_xip_page method and
+the others Carsten mentioned), but we need to do these lowlevel
+code in a generic and proper way anyway.
 
+I'll try to hack up an xip prototype for jffs2 next week.
