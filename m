@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbXFGKs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbXFGKuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327AbXFGKs0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 06:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbXFGKsS
+	id S1757592AbXFGKuw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 06:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbXFGKup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 06:48:18 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:39052 "EHLO pfx2.jmh.fr"
+	Thu, 7 Jun 2007 06:50:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49406 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750836AbXFGKsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 06:48:17 -0400
-Date: Thu, 7 Jun 2007 12:45:05 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-Id: <20070607124505.2d829b9b.dada1@cosmosbay.com>
-In-Reply-To: <20070607110623.53322dae@the-village.bc.nu>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
-	<20070606235906.72439d16@the-village.bc.nu>
-	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
-	<20070607001932.35c9591c@the-village.bc.nu>
-	<Pine.LNX.4.64.0706061619560.10383@alien.or.mcafeemobile.com>
-	<20070607110623.53322dae@the-village.bc.nu>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1750930AbXFGKuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 06:50:44 -0400
+From: Steve Grubb <sgrubb@redhat.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: [PATCH] Audit: Add TTY input auditing
+Date: Thu, 7 Jun 2007 06:50:49 -0400
+User-Agent: KMail/1.9.6
+Cc: Miloslav Trmac <mitr@redhat.com>, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>,
+       Alexander Viro <aviro@redhat.com>
+References: <4666832D.8080603@redhat.com> <Pine.LNX.4.61.0706071010510.1547@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0706071010510.1547@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706070650.50100.sgrubb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007 11:06:23 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Thursday 07 June 2007 04:13:42 Jan Engelhardt wrote:
+> >Add TTY input auditing, used to audit system administrator's actions.
+>
+> _What_ exactly does it audit?
 
-> > I don't think it's a matter of versioning. Many userspace libraries 
-> > expects their fds to be compact (for many reasons - they use select, they 
-> > use them to index 0-based arrays, etc...), and if the kernel suddendly 
-> > starts returning values in the 1<<28 up arena, they sure won't be happy.
-> > So I believe that the correct way is that the caller specifically selects 
-> > the feature, leaving the legacy fd allocation as default.
-> 
-> I don't understand the connection between this paragraph (with which I
-> agree) and the urge to add a ton of ugly syscall hacks. "Caller
-> specifically selects feature" - > prctl(). Libraries get unhappy ->
-> linker issue.
-> 
+In theory, it should audit the actions performed by the sysadmin. This patch 
+doesn't cover actions done via X windows interface.
 
-Alan, prctl() things are usually inherited at fork()/exec() time.
+> And why does it only audit sysadmin actions?
 
-If you fork() from a new application , then exec an old one 
-(eventually a statically linked program), we have a problem ?
+This is what's called out for in various security standards such as NISPOM, 
+DCID 6/3, and PCI. Its all about non-repudiation.
+
+> Is this supposed to be a keylogger?
+
+Sort of. Its supposed to allow the Security Officer the ability to check on 
+what an admin was doing if they were found to be attempting access to 
+information outside their duties. Or if something is found to be 
+misconfigured, they can backtrack and see how it became that way if that was 
+important.
+
+Some people try to be compliant with these security standards with user space  
+tools like rootsh, but that is too easy to detect and defeat. And then it 
+does not put its data into the audit system where its correlated with other 
+system events. 
+
+>What about tty output?
+
+That is not required.
+
+-Steve
