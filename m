@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932608AbXFGRoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765713AbXFGRvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932608AbXFGRoj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758338AbXFGRo2
+	id S1765713AbXFGRvy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758338AbXFGRvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:44:28 -0400
-Received: from wf1.mips-uk.com ([194.74.144.154]:48411 "EHLO
-	dl5rb.ham-radio-op.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756772AbXFGRo1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:44:27 -0400
-X-Greylist: delayed 3714 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jun 2007 13:44:25 EDT
-Date: Thu, 7 Jun 2007 17:37:31 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why does the macro "ZERO_PAGE" take an argument?
-Message-ID: <20070607163731.GB30044@linux-mips.org>
-References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain> <4667EC18.4080904@yahoo.com.au> <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain> <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com> <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain>
+	Thu, 7 Jun 2007 13:51:46 -0400
+Received: from smtp3.versatel.nl ([62.58.50.90]:49923 "EHLO smtp3.versatel.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756647AbXFGRvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:51:45 -0400
+Message-ID: <466848F6.9010707@hhs.nl>
+Date: Thu, 07 Jun 2007 20:05:42 +0200
+From: Hans de Goede <j.w.r.degoede@hhs.nl>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070414)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Vojtech Pavlik <vojtech@suse.cz>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: problem with softraw and keycodes > 128
+References: <4667C00D.40708@hhs.nl> <20070607131503.GA26905@suse.cz> <46681C5B.80201@hhs.nl> <20070607153639.GB5775@suse.cz>
+In-Reply-To: <20070607153639.GB5775@suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 07:53:08AM -0400, Robert P. J. Day wrote:
-
-> > > > MIPS?
-> > >
-> > > argh. that would be the *one* definition whose output got chopped
-> > > because of line continuation, and it would be only one that actually
-> > > uses the argument:
-> > >
-> > > #define ZERO_PAGE(vaddr) \
-> > >         (virt_to_page((void *)(empty_zero_page + (((unsigned long)(vaddr)) &
-> > > zero_page_mask))))
-> > >
-> > >
-> > > but it still leaves the question -- if ZERO_PAGE is meant to represent
-> > > a single, global shared page that is always zero, why would it *ever*
-> > > need to take an argument?  and what's so special about MIPS that it
-> > > differs from all the rest?
-> >
-> > The comment above empty_zero_page and zero_page_mask
-> > declarations at arch/mips/mm/init.c:508 sheds light on this ...
+Vojtech Pavlik wrote:
+> On Thu, Jun 07, 2007 at 04:55:23PM +0200, Hans de Goede wrote:
 > 
-> well, it *sort of* does.  at line 64 of that file:
+>> 2) Somehow fix things so that selecting the right model in gnome/kde
+>>    keyboard-preferences will make the keys work. Like it does now with
+>>    softraw=0. Which leads me to asking what are the downsides of using
+>>    softraw=0?
 > 
-> /*
->  * We have up to 8 empty zeroed pages so we can map one of the right colour
->  * when needed.  This is necessary only on R4000 / R4400 SC and MC versions
->  * where we have to avoid VCED / VECI exceptions for good performance at
->  * any price.  Since page is never written to after the initialization we
->  * don't have to care about aliases on other CPUs.
->  */
+> It doesn't work with anything else but PS/2 keyboards. It's useless on
+> eg. USB.
 > 
-> although it's not clear where in the source tree are the invocations
-> that would actually make a difference to a MIPS system, which is why
-> i've CC'ed ralf on this.  i'm sure he can clear this up. :-)
 
-Cache aliases.  When the same page of physical memory is mapped twice to
-user space, let's say at address addr and addr + PAGE_SIZE this is normally
-harmless although wasteful on processors with virtually indexed caches as
-long as the page is mapped read-only such as in case of ZERO_PAGE.
+This is an atkbd only setting, right, so indeed it doesn't affect USB, right?
 
-If the same thing happens with a writable page there is the chance of
-severe data corruption.  Some members of the R4000 family are now trying
-to be helpful by throwing the kernel a "virtual coherency" exception.  The
-bad news about this exception is there might be thousands (the theoretical
-worst case would be millions) of it in a single second, so servicing can be
-very expensive.  For the ZERO page this can be avoided by using several
-pages mapped in a way such that their addresses don't conflict.
+What I'm wondering if is there is any harm to setting softraw to 0, atleast 
+until there is a better fix. With it set to 0, for ps/2 keyboards all the user 
+addtionally needs todo is select the correct model, for which there are nice 
+gui tools.
 
-  Ralf
+Add a usb-keyboard (which in reality is the linuxkeyboard) model to the mix, 
+for the user to select / to make default even, and things will work for usb 
+users to, right?
+
+>>    Since the xkb discriptions for most of the easy access keyboards
+>>    have been written by Suse, I assume the tested them and it works
+>>    for them. Does anyone know how suse does this?
+> 
+> I don't think it does work. One of our guys is trying to fix it by
+> 
+> 	1) Converting the xkb multimedia keyboard descriptions to setkeycodes descriptions
+> 	2) Creating a "linux keyboard" X xkb description
+> 
+> Then, after loading the setkeycodes at boot for the right keyboard
+> ty[e, AT keyboard will work fine, and USB and other keyboards will not
+> need *any* setup to have their multimedia keys working out of the box.
+> 
+
+Thats good news, but what about gui tools to select the model, as this cannot 
+be autoprobed? And what about portability of said tools to for example freebsd?
+
+Using xkb models should work across different OS's, and is available now. All 
+that is needed (for ps2 keyboards) is for the path of the special keys from the 
+kernel to X-server to not change the codes.
+
+Regards,
+
+Hans
+
