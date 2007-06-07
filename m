@@ -1,50 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbXFGOwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762258AbXFGOxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761334AbXFGOwX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbXFGOwP
+	id S1762258AbXFGOxi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXFGOxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:52:15 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:28167 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755875AbXFGOwO (ORCPT
+	Thu, 7 Jun 2007 10:53:31 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:47609 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753506AbXFGOxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:52:14 -0400
-Date: Thu, 7 Jun 2007 16:22:19 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Jesper Juhl <jesper.juhl@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.03
-In-Reply-To: <4667F00A.106@shadowen.org>
-Message-ID: <Pine.LNX.4.64.0706071622070.8762@fbirervta.pbzchgretzou.qr>
-References: <0a25fd03117c678f17006c5fcefaaed0@pinky>
- <9a8748490706060449s1df41fd5qbd77f6fa07289eaa@mail.gmail.com>
- <4667F00A.106@shadowen.org>
+	Thu, 7 Jun 2007 10:53:30 -0400
+Date: Thu, 7 Jun 2007 10:53:29 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Grant Wilson <gww@swandive.no-ip.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: 2.6.22-rc4-mm1
+In-Reply-To: <20070606163713.250a127a.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0706071042410.3516-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 6 Jun 2007, Andrew Morton wrote:
 
-On Jun 7 2007 12:46, Andy Whitcroft wrote:
->
->Jesper Juhl wrote:
->> On 04/06/07, Andy Whitcroft <apw@shadowen.org> wrote:
->>>
->>> This version brings a host of changes to cure false positives and
->>> bugs detected on patches submitted to lkml and -mm.  It also brings
->>> a number of new tests in response to reviews, of particular note:
->>>
->> A  chmod +x scripts/checkpatch.pl  would be nice :)
->
->While git carries the permissions I am am pretty sure a straight patch
->doesn't.  Where did you pick up your copy from linus' tree or from the
->-mm one?
+> On Wed, 6 Jun 2007 21:58:38 +0100 Grant Wilson <gww@swandive.no-ip.com> wrote:
+> 
+> > On Wednesday 06 June 2007 10:07:37 Andrew Morton wrote:
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/
+> > 
+> > Patch 'usb-try-to-debug-bug-8561' triggers when I plug in a usb flash drive:
+> 
+> Cool, thanks.
+> 
+> > [10998.881000] usb 1-10: new high speed USB device using ehci_hcd and address 3
+> > [10999.001000] usb 1-10: new device found, idVendor=13fe, idProduct=1a00
+> > [10999.002000] usb 1-10: new device strings: Mfr=1, Product=2, SerialNumber=3
+> > [10999.016000] usb 1-10: Product: USB DISK 2.0
+> > [10999.025000] usb 1-10: Manufacturer:
+> > [10999.033000] usb 1-10: SerialNumber: 07720947018D
+> > [10999.034000] usb 1-10: configuration #1 chosen from 1 choice
+> > [10999.047000] scsi8 : SCSI emulation for USB Mass Storage devices
+> > [11004.055000] WARNING: at drivers/usb/core/urb.c:293 usb_submit_urb()
+> > [11004.055000]
+> > [11004.055000] Call Trace:
+> > [11004.055000]  [<ffffffff8020d30f>] dump_trace+0x43f/0x480
+> > [11004.055000]  [<ffffffff8020d393>] show_trace+0x43/0x70
+> > [11004.055000]  [<ffffffff8020d3d5>] dump_stack+0x15/0x20
+> > [11004.055000]  [<ffffffff804b4314>] usb_submit_urb+0x224/0x240
+> > [11004.055000]  [<ffffffff804b5ff5>] usb_sg_wait+0xd5/0x180
+> > [11004.055000]  [<ffffffff804cf464>] usb_stor_bulk_transfer_sg+0xc4/0x120
+> > [11004.055000]  [<ffffffff804cf611>] usb_stor_Bulk_transport+0x151/0x2e0
+> > [11004.055000]  [<ffffffff804cfb57>] usb_stor_invoke_transport+0x37/0x380
+> > [11004.055000]  [<ffffffff804ce9f9>] usb_stor_transparent_scsi_command+0x9/0x10
+> > [11004.055000]  [<ffffffff804d0aea>] usb_stor_control_thread+0x18a/0x230
+> > [11004.055000]  [<ffffffff8024927d>] kthread+0x4d/0x80
+> > [11004.055000]  [<ffffffff8020c868>] child_rip+0xa/0x12
+> > 
+> 
+> Alan, you got a bite - reel her in!
 
-Linus's tree lacks the +x bit...
+Thanks for forwarding the message.  Unforunately it's a false alarm.  
+As mentioned in the original patch, the test it uses isn't precise.
+
+To tell you the truth, I rather think there's not much point in keeping
+usb-try-to-debug-bug-8561.patch around.  Anything seriously wrong that
+it could catch ought to have shown up long ago.  And it is now clear
+that bug 8561 has nothing to do with this; it is a programming error
+common to many of the USB serial drivers.  (Still waiting to hear back 
+from Paulo Pereira whether the fix to the USB Option driver works...)
+
+My vote goes toward reverting usb-try-to-debug-bug-8561.patch.  
+However just to be thorough, for anyone wants to keep it here's an
+untested patch to remove those false alarms.
+
+Alan Stern
+
+---------------------------------
+
+Remove some false alarms generated by usb-try-to-debug-bug-8561.patch.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+---
+
+Index: usb-2.6/drivers/usb/core/message.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/core/message.c
++++ usb-2.6/drivers/usb/core/message.c
+@@ -404,8 +404,6 @@ int usb_sg_init (
+ 
+ 		io->urbs [i]->complete = sg_complete;
+ 		io->urbs [i]->context = io;
+-		io->urbs [i]->status = -EINPROGRESS;
+-		io->urbs [i]->actual_length = 0;
+ 
+ 		/*
+ 		 * Some systems need to revert to PIO when DMA is temporarily
 
 
-	Jan
--- 
