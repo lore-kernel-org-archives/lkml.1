@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765713AbXFGRvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934158AbXFGRwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765713AbXFGRvy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758338AbXFGRvq
+	id S934158AbXFGRwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763738AbXFGRvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:51:46 -0400
-Received: from smtp3.versatel.nl ([62.58.50.90]:49923 "EHLO smtp3.versatel.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756647AbXFGRvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:51:45 -0400
-Message-ID: <466848F6.9010707@hhs.nl>
-Date: Thu, 07 Jun 2007 20:05:42 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070414)
+	Thu, 7 Jun 2007 13:51:49 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:7050 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762960AbXFGRvr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:51:47 -0400
+Date: Thu, 7 Jun 2007 19:51:27 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] Make smp_call_function{_single} go WARNING and return -EINVAL on !SMP (was Re: [PATCH] i386/x86_64: NMI watchdog: Protect smp_call_function() within CONFIG_SMP)
+Message-ID: <20070607175127.GA22844@osiris.ibm.com>
+References: <a781481a0706070848j2256cc1elea8723778ab7da5b@mail.gmail.com> <a781481a0706070933ld67e06escaddf1b7be2b017@mail.gmail.com>
 MIME-Version: 1.0
-To: Vojtech Pavlik <vojtech@suse.cz>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: problem with softraw and keycodes > 128
-References: <4667C00D.40708@hhs.nl> <20070607131503.GA26905@suse.cz> <46681C5B.80201@hhs.nl> <20070607153639.GB5775@suse.cz>
-In-Reply-To: <20070607153639.GB5775@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a781481a0706070933ld67e06escaddf1b7be2b017@mail.gmail.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vojtech Pavlik wrote:
-> On Thu, Jun 07, 2007 at 04:55:23PM +0200, Hans de Goede wrote:
-> 
->> 2) Somehow fix things so that selecting the right model in gnome/kde
->>    keyboard-preferences will make the keys work. Like it does now with
->>    softraw=0. Which leads me to asking what are the downsides of using
->>    softraw=0?
-> 
-> It doesn't work with anything else but PS/2 keyboards. It's useless on
-> eg. USB.
-> 
+> The smp_call_function{_single} functions are used to run
+> given function on all {or speicified} *other* CPUs. For
+> UP systems, "other" CPUs simply don't exist, so we flag
+> such incorrect usage of these functions using a WARNING.
 
-This is an atkbd only setting, right, so indeed it doesn't affect USB, right?
+If other cpus don't exist then smp_call_function() should just do
+*nothing* (there is no other cpu right?). We don't want to sprinkle
+a ton of #ifdef CONFIG_SMP around each smp_call_function().
 
-What I'm wondering if is there is any harm to setting softraw to 0, atleast 
-until there is a better fix. With it set to 0, for ps/2 keyboards all the user 
-addtionally needs todo is select the correct model, for which there are nice 
-gui tools.
+> Also, -EBUSY is generally returned by arch implementations
+> when they find that target_cpu == current_cpu, which is not
+> a comparable case to the !SMP case. Use -EINVAL instead,
+> similar to what powerpc does for !cpu_online(target), which
+> is somewhat more analogous.
 
-Add a usb-keyboard (which in reality is the linuxkeyboard) model to the mix, 
-for the user to select / to make default even, and things will work for usb 
-users to, right?
-
->>    Since the xkb discriptions for most of the easy access keyboards
->>    have been written by Suse, I assume the tested them and it works
->>    for them. Does anyone know how suse does this?
-> 
-> I don't think it does work. One of our guys is trying to fix it by
-> 
-> 	1) Converting the xkb multimedia keyboard descriptions to setkeycodes descriptions
-> 	2) Creating a "linux keyboard" X xkb description
-> 
-> Then, after loading the setkeycodes at boot for the right keyboard
-> ty[e, AT keyboard will work fine, and USB and other keyboards will not
-> need *any* setup to have their multimedia keys working out of the box.
-> 
-
-Thats good news, but what about gui tools to select the model, as this cannot 
-be autoprobed? And what about portability of said tools to for example freebsd?
-
-Using xkb models should work across different OS's, and is available now. All 
-that is needed (for ps2 keyboards) is for the path of the special keys from the 
-kernel to X-server to not change the codes.
-
-Regards,
-
-Hans
-
+No. Current semantics of smp_call_function_single() are that it
+returns -EBUSY if called on the *current* cpu. Since on !CONFIG_SMP the
+only possible cpu it can be called on is the current one, the only
+sane return value is -EBUSY.
