@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937949AbXFHPHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938165AbXFHPLE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937949AbXFHPHB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 11:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762719AbXFHPGw
+	id S938165AbXFHPLE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 11:11:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761049AbXFHPKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 11:06:52 -0400
-Received: from marvin.h-e-r-e-s-y.com ([87.106.62.5]:54232 "EHLO
-	marvin.h-e-r-e-s-y.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758448AbXFHPGw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 11:06:52 -0400
-From: Andrew Walrond <andrew@walrond.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: What's up with 2.6.20?
-Date: Fri, 8 Jun 2007 16:06:48 +0100
-User-Agent: KMail/1.9.6
-Cc: Paul Albrecht <albrecht@rdi1.com>
-References: <1181311065.3606.0.camel@albrecht.rdi1.com>
-In-Reply-To: <1181311065.3606.0.camel@albrecht.rdi1.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jun 2007 11:10:52 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2712 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760162AbXFHPKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 11:10:52 -0400
+Date: Thu, 7 Jun 2007 14:41:02 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Message-ID: <20070607144102.GC9094@ucw.cz>
+References: <200706061229.24486.jesse.barnes@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706081606.49074.andrew@walrond.org>
+In-Reply-To: <200706061229.24486.jesse.barnes@intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 June 2007 14:57:45 Paul Albrecht wrote:
->
-> Seems like an obvious regression so I was wondering if I could get some
-> help resolving the problem here?
->
+Hi!
 
-I see a reply from Dimitry Torokhov which you haven't acknowledged. Did you 
-miss it?
+> This patch works around the problem by scanning the MTRRs at
+> boot and figuring out whether the current end_pfn value (setup
+> by early e820 code) goes beyond the highest WB MTRR range, and
+> if so, trimming it to match.  A fairly obnoxious KERN_WARNING
+> is printed too, letting the user know that not all of their
+> memory is available due to a likely BIOS bug.
 
-Andrew Walrond
+Way too obnoxious warning, I'd say. Just drop the *s.
 
-PS 'Nudge' messages like this should be in reply to your original message. 
-People aren't going to hunt back through 450 messages to find out what you 
-said yesterday...
+> +	if ((highest_addr >> PAGE_SHIFT) != end_pfn) {
+> +		printk(KERN_WARNING "***************\n");
+> +		printk(KERN_WARNING "**** WARNING: likely BIOS bug\n");
+> +		printk(KERN_WARNING "**** MTRRs don't cover all of "
+> +		       "memory, trimmed %ld pages\n", end_pfn -
+> +		       (highest_addr >> PAGE_SHIFT));
+> +		printk(KERN_WARNING "***************\n");
+> +		end_pfn = highest_addr >> PAGE_SHIFT;
 
+...and I'd print lost memory in kilobytes, to be more luser-friendly.
+
+							Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
