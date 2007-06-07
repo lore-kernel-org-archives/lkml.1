@@ -1,97 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933425AbXFGROx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933651AbXFGRSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933425AbXFGROx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbXFGROo
+	id S933651AbXFGRSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760492AbXFGRSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:14:44 -0400
-Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:42757 "HELO
-	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757487AbXFGROn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:14:43 -0400
-X-YMail-OSG: kpDhCkoVM1npB36E3mjvVE4EZJ3pJ0OaRZeF0t0FxlsJuhAk
-Date: Thu, 7 Jun 2007 11:20:04 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, ebiederm@xmission.com, pbadari@us.ibm.com,
-       torvalds@linux-foundation.org
-Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-Message-ID: <20070607162004.GA27802@vino.hallyn.com>
-References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com> <20070606204432.b670a7b1.akpm@linux-foundation.org> <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
+	Thu, 7 Jun 2007 13:18:14 -0400
+Received: from bastart.eu.org ([87.230.120.248]:48985 "EHLO router.bastart.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761332AbXFGRSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:18:13 -0400
+X-Greylist: delayed 373 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jun 2007 13:18:11 EDT
+Message-ID: <46683DF4.1040703@bastart.eu.org>
+Date: Thu, 07 Jun 2007 19:18:44 +0200
+From: Axel Gembe <ago@bastart.eu.org>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 90.0.1.55
+X-SA-Exim-Mail-From: ago@bastart.eu.org
+Subject: Speed problem with device mapper or dm-crypt
+X-SA-Exim-Version: 4.2.1 (built Thu, 26 Apr 2007 18:30:04 +0000)
+X-SA-Exim-Scanned: Yes (on router.bastart.net)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Albert Cahalan (acahalan@gmail.com):
-> On 6/6/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >On Wed, 6 Jun 2007 23:27:01 -0400 "Albert Cahalan" <acahalan@gmail.com> 
-> >wrote:
-> >> Eric W. Biederman writes:
-> >> > Badari Pulavarty <pbadari@us.ibm.com> writes:
-> >>
-> >> >> Your recent cleanup to shm code, namely
-> >> >>
-> >> >> [PATCH] shm: make sysv ipc shared memory use stacked files
-> >> >>
-> >> >> took away one of the debugging feature for shm segments.
-> >> >> Originally, shmid were forced to be the inode numbers and
-> >> >> they show up in /proc/pid/maps for the process which mapped
-> >> >> this shared memory segments (vma listing). That way, its easy
-> >> >> to find out who all mapped this shared memory segment. Your
-> >> >> patchset, took away the inode# setting. So, we can't easily
-> >> >> match the shmem segments to /proc/pid/maps easily. (It was
-> >> >> really useful in tracking down a customer problem recently).
-> >> >> Is this done deliberately ? Anything wrong in setting this back ?
-> >> >
-> >> > Theoretically it makes the stacked file concept more brittle,
-> >> > because it means the lower layers can't care about their inode
-> >> > number.
-> >> >
-> >> > We do need something to tie these things together.
-> >> >
-> >> > So I suspect what makes most sense is to simply rename the
-> >> > dentry SYSVID<segmentid>
-> >>
-> >> Please stop breaking things in /proc. The pmap command relys
-> >> on the old behavior.
-> >
-> >What effect did this change have upon the pmap command?  Details, please.
-> >
-> >> It's time to revert.
-> >
-> >Probably true, but we'd need to understand what the impact was.
-> 
-> Very simply, pmap reports the shmid.
-> 
-> albert 0 ~$ pmap `pidof X` | egrep -2 shmid
-> 30050000  16384K rw-s-  /dev/fb0
-> 31050000    152K rw---    [ anon ]
-> 31076000    384K rw-s-    [ shmid=0x3f428000 ]
-> 310d6000    384K rw-s-    [ shmid=0x3f430001 ]
-> 31136000    384K rw-s-    [ shmid=0x3f438002 ]
-> 31196000    384K rw-s-    [ shmid=0x3f440003 ]
-> 311f6000    384K rw-s-    [ shmid=0x3f448004 ]
-> 31256000    384K rw-s-    [ shmid=0x3f450005 ]
-> 312b6000    384K rw-s-    [ shmid=0x3f460006 ]
-> 31316000    384K rw-s-    [ shmid=0x3f870007 ]
-> 31491000    140K r----  /usr/share/fonts/type1/gsfonts/n021003l.pfb
-> 3150e000   9496K rw---    [ anon ]
+My system is the latest Gentoo with kernel 2.6.22-rc3 on an Athlon XP box.
+The kernel version didn't make a difference, I've only recently tried 
+many 2.6 kernels.
 
-Ok, so IIUC the problem was that inode->i_ino was being set to the id,
-and the id can be the same for different things in two namespaces.
+I'm using the command
 
-So aside from not using the id as inode->i_ino, an alternative is to use
-a separate superblock, spearate mqeueue fs, for each ipc ns.
+    cryptsetup -c aes -s 128 -h sha256 create crypt-theke /dev/hdg5
 
-I haven't looked at that enough to see whether it's feasible, i.e. I 
-don't know what else mqueue fs is used for.  Eric, does that sound
-reasonable to you?
+to create a encrypted mapper device on which an ext3 filesystem lives 
+with these mount options:
 
-thanks,
--serge
+    /dev/mapper/crypt-theke   /mnt/hd/wd200   ext3   noatime,noauto   0 0
+
+The speed from the device is fine when I read from /dev/mapper/crypt-theke:
+
+    cat /dev/mapper/crypt-theke > /dev/null
+
+    this is very fast and produces this vmstat 1:
+    procs -----------memory---------- ---swap-- -----io---- -system-- 
+----cpu----
+     r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us 
+sy id wa
+     1  1    160   8260 216060 367104    0    0 34560     0  533 1285  0 
+81  0 19
+     2  1    160   8608 248296 334100    0    0 34304     0  525 1273  1 
+80  0 19
+     1  1    160   8336 281056 301084    0    0 34560     0  535 1277  0 
+82  0 18
+
+
+but it is very sluggish when I read from /mnt/hd/wd200:
+
+    cat /mnt/hd/wd200/bigfile > /dev/null
+
+    this is lagging the whole system and produces this vmstat 1:
+    procs -----------memory---------- ---swap-- -----io---- -system-- 
+----cpu----
+     r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us 
+sy id wa
+     1  1    160   8004 494120  65388    0    0  4248     0  550 1582  3 
+14  0 83
+     1  1    160   7764 490284  69484    0    0  4100     0  537 1364  0 
+12  0 88
+     1  1    160   7884 486448  73196    0    0  3716     0  503 1280  0 
+12  0 88
+
+This confuses me. Why would using a filesystem in between produce such 
+high wait times ?
+Is the IO cat makes any different ?
+
+Here are some more values:
+
+Reading from the underlying device:
+
+    filesrv1 ~ # dd if=/dev/hdg5 of=/dev/null bs=1024 count=256000
+    256000+0 records in
+    256000+0 records out
+    262144000 bytes (262 MB) copied, 4.35061 s, 60.3 MB/s
+
+    Produced this vmstat 1:
+    procs -----------memory---------- ---swap-- -----io---- -system-- 
+----cpu----
+     r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us 
+sy id wa
+     1  1    160   8428 388644 180548    0    0 26112     0  477 1128  1 
+16 52 31
+     2  0    160   7936 386904 180512    0    0 59008    88  753 1926  0 
+41  0 59
+     1  1    160   8164 404388 160256    0    0 59776     0  751 1911  2 
+40  0 58
+     2  0    160   7876 461776  99924    0    0 59520     0  754 1903  1 
+41  0 58
+     1  0    160   7804 507704  51560    0    0 51584     0  686 1722  0 
+38 13 49
+
+Reading from the mapper device:
+
+    filesrv1 ~ # dd if=/dev/mapper/crypt-theke of=/dev/null bs=1024 
+count=256000
+    256000+0 records in
+    256000+0 records out
+    262144000 bytes (262 MB) copied, 7.8481 s, 33.4 MB/s
+
+    Produced this vmstat 1:
+    procs -----------memory---------- ---swap-- -----io---- -system-- 
+----cpu----
+     r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us 
+sy id wa
+     1  1    160   7664 527800  31244    0    0 28476    60  524 1135  1 
+71 10 18
+     1  1    160   7508 529224  30788    0    0 33024     0  532 1237  1 
+77  0 22
+     2  1    160   8412 534228  26708    0    0 32644    96  549 1240  1 
+83  0 16
+     2  0    160   8332 535992  26004    0    0 32768     0  539 1217  2 
+80  0 18
+     2  1    160   8412 537180  26020    0    0 32940     0  548 1257  2 
+84  0 14
+     3  1    160   8152 538752  26012    0    0 33280     8  525 1244  1 
+77  0 22
+     2  1    160   7660 540568  26016    0    0 32788     0  537 1302  1 
+82  0 17
+     1  0    160   8240 541296  25984    0    0 30336     0  516 1184  0 
+74  8 18
+
+Reading from a big file on the mounted filesystem:
+
+    filesrv1 ~ # dd if=/mnt/hd/wd200/bigfile of=/dev/null bs=1024 
+count=256000
+    256000+0 records in
+    256000+0 records out
+    262144000 bytes (262 MB) copied, 67.2541 s, 3.9 MB/s
+
+    Produced this vmstat 1:
+    procs -----------memory---------- ---swap-- -----io---- -system-- 
+----cpu----
+     r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us 
+sy id wa
+     3  1    160   7556 264780 292864    0    0  4484   112  538 1576  4 
+16  0 80
+     1  1    160   7916 260816 296448    0    0  3588     0  492 1205  0 
+12  0 88
+     1  1    160   8036 256852 300288    0    0  3844     8  541 1307  
+1  8  0 91
+     1  1    160   7632 253272 304640    0    0  4356     0  527 1359  7 
+14  0 79
+     1  1    160   8348 248540 308608    0    0  3972     0  516 1261  
+0  9  0 91
+     1  1    160   8168 244964 312448    0    0  3844     0  501 1254  0 
+12  0 88
+     1  1    160   8352 240312 316848    0    0  4484     0  505 1241  0 
+10  0 90
+     1  1    160   7896 237764 320304    0    0  3588    48  490 1232  6 
+12  0 82
+
