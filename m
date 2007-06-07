@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbXFGOi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762791AbXFGOjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762609AbXFGOi2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbXFGOiV
+	id S1762791AbXFGOjp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbXFGOji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:38:21 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:60069 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbXFGOiT (ORCPT
+	Thu, 7 Jun 2007 10:39:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:2774 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751100AbXFGOjh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:38:19 -0400
+	Thu, 7 Jun 2007 10:39:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=UlZzNFzPdV/8qMexEqmO1dBbsy1cK9pUJ0j/md/MYOZOukeolCwSn7AJuV3q9h0eKSJsy0VlfullmFt9x8tnpAAQWlMdGy8uKMHfO5J6X2DPBnaXvzaSlexvcQev2oNsAkIP6YLBjELjpKn6f5RDrf44HCyuMzW4c1IDMcbiY0M=
-Date: Thu, 7 Jun 2007 18:36:57 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] UDF: fix deadlock on inode being dropped
-Message-ID: <20070607143657.GB8393@cvg>
-References: <20070606175351.GA8397@cvg> <20070607093606.GA12549@duck.suse.cz> <20070607135458.GA8393@cvg> <20070607144121.GC12549@duck.suse.cz>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vr6XaFO98vpVwMhc/WUFrrvbYaRI7UaBv3q0RTHUEY7jyYglt1PAz5QR9xnANFmJ/8gsAyr+2B1APaMJvOyFotlhkZ42vaCBl6DvwLHvRi06ZvEriF6L3fdIc0WCMtsraMqAJ3p3FIxtvrWn0i4D7SFBhrgkXLilAvZhKDdC0xM=
+Message-ID: <9a8748490706070739l14dbebb0s87d6cfe6bd93b164@mail.gmail.com>
+Date: Thu, 7 Jun 2007 16:39:35 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.03
+Cc: "Andy Whitcroft" <apw@shadowen.org>, "Andrew Morton" <akpm@osdl.org>,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Joel Schopp" <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0706071622280.8762@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070607144121.GC12549@duck.suse.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <0a25fd03117c678f17006c5fcefaaed0@pinky>
+	 <9a8748490706060205y1fc8e354p4af7426fd76dd816@mail.gmail.com>
+	 <Pine.LNX.4.64.0706071622280.8762@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jan Kara - Thu, Jun 07, 2007 at 04:41:21PM +0200]
-| On Thu 07-06-07 17:54:58, Cyrill Gorcunov wrote:
-| > [Jan Kara - Thu, Jun 07, 2007 at 11:36:07AM +0200]
-| > |   Hi Cyrill!
-| > | 
-| > | On Wed 06-06-07 21:53:51, Cyrill Gorcunov wrote:
-| > | > This patch prevents from deadlock on inode being dropped.
-| > | > The deadlock is caused by inderect call of mark_inode_dirty()
-| > | > within udf_drop_inode() but inode lock is already kept
-| > | > by the kernel. So moving code from udf_drop_inode() to
-| > | > udf_delete_inode() we save its functionality and avoid
-| > | > deadlock.
-| > |   The patch is wrong. You cannot truncate the extent just in delete_inode.
-| > | That would lead to inodes with untruncated last extent on disk after
-| > | unmounting, which is forbidden in the specification. You need to truncate
-| > | the last extent whenever inode is being removed from memory or something
-| > | like that... I'm already thinking how to do it and avoid calling
-| > | mark_inode_dirty()...
-| > | 
-| > 
-| > Arh, thanks... Jan, actually the reason I've moved the code into
-| > 'delete' section was that I found no reasonable difference for our
-| > case between 'drop' and 'delete'. Moreover, by seeing into VFS code
-| > the only diff between 'drop' and 'delete' is that
-| > inside generic_delete_inode() a few inode structure elements
-| > are being destroyed and then our udf_drop_inode is called. So assuming,
-| > that you're right in drop_inode I've code just moved to 'delete' section.
-|   The difference is that udf_delete_inode() is called only when inode has
-| i_nlink == 0 and thus it's being deleted on disk. udf_drop_inode() is
-| called whenever inode is removed from memory which is what we want.
-|   I'm already testing a patch which should fix the problem...
-| 
-| 								Honza
-| -- 
-| Jan Kara <jack@suse.cz>
-| SuSE CR Labs
-| 
+On 07/06/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>
+> On Jun 6 2007 11:05, Jesper Juhl wrote:
+> >
+> > - Source files should be 7bit ASCII
+>
+> Nah. Think of....
+>
+> MODULE_AUTHOR("J. Ørsted <jorsted@foobar.com>");
+>
+That's true. I wrote that comment shortly after reading
+http://lkml.org/lkml/2007/6/4/448 , but you are right, 7bit ASCII can
+be too limiting at times... Hmmm...
 
-Thanks for eplanation, Jan
+> > - Maybe warn about usage of float/double in source files?
+>
+> Generally yes, maybe, but see arch/i386/kernel/cpu/bugs.c,
+> arch/i386/math-emu/. Generally there is nothing to it. I think the
+> feature to allow the kernel to use [i387] FP without manually
+> saving/restoring the FP stack has been added some time ago.
+>
+I know there are places where floats and doubles can be used safely,
+but for those rare occasions wouldn't it make sense to have the script
+warn and require the submitter to justify the use?  After all, the
+general rule is to not use floating point in the kernel, so such a
+patch is suspicious.
 
-		Cyrill
+> > - 'return' is not a function, so warn about patches that think it is
+> > and use 'return(expr);' (this one is tricky since 'return (expr);' can
+> > be OK in some cases.
+>
+> Now, if we could detect superfluous parentheses and branches,
+> that'd be cool ;-) there are too many if ((a < 5) || (b > 6)) around.
+>
+Yeah wouldn't it be cool :-)  It might require a bit too much perl
+magic to actually implement something sane, but I just threw every
+idea that came into my mind into the mail, assuming Andy could sort
+out the ones that were a little too crazy ;)
 
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
