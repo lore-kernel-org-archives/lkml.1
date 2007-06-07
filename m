@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935945AbXFGB1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935842AbXFGBcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935945AbXFGB1o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 21:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759299AbXFGB1f
+	id S935842AbXFGBcs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 21:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbXFGBcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 21:27:35 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:53725 "EHLO smtp.ocgnet.org"
+	Wed, 6 Jun 2007 21:32:39 -0400
+Received: from waste.org ([66.93.16.53]:35296 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756938AbXFGB1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 21:27:35 -0400
-Date: Thu, 7 Jun 2007 10:26:22 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: init_task & Co.
-Message-ID: <20070607012622.GA14234@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Davide Libenzi <davidel@xmailserver.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0706061722390.10383@alien.or.mcafeemobile.com>
+	id S1755972AbXFGBci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 21:32:38 -0400
+Date: Wed, 6 Jun 2007 20:31:28 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: markh@compro.net, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Mark Hounschell <dmarkh@cfl.rr.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: floppy.c soft lockup
+Message-ID: <20070607013128.GW11166@waste.org>
+References: <20070601151605.GA108@tv-sign.ru> <4660534E.6050903@cfl.rr.com> <20070601183642.GA92@tv-sign.ru> <466078FF.2080508@cfl.rr.com> <20070602123030.GA719@tv-sign.ru> <4661D698.5040009@cfl.rr.com> <20070603081417.GA81@tv-sign.ru> <46641B16.9090701@compro.net> <4666B2A4.7090603@compro.net> <20070606102828.752bf955.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706061722390.10383@alien.or.mcafeemobile.com>
+In-Reply-To: <20070606102828.752bf955.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 05:26:49PM -0700, Davide Libenzi wrote:
-> I'm sure there's a good reason behind, but why are those variables 
-> replicated in every architecture?
-> Those are global variables, defined in global include files, and AFAICS 
-> they could be moved in a single kernel/init_task.c file. No?
+On Wed, Jun 06, 2007 at 10:28:28AM -0700, Andrew Morton wrote:
+> On Wed, 06 Jun 2007 09:12:04 -0400 Mark Hounschell <markh@compro.net> wrote:
 > 
-Except they aren't all the same. At the very least, most architectures
-don't agree on the linker section, some don't agree on alignment, and
-others don't agree on initialization. Most people set the initial stack
-from assembly on entry, others do it differently.
+> > > 
+> > > As far as a 100% CPU bound task being a valid thing to do, it has been 
+> > > done for many years on SMP machines. Any kernel limitation on this 
+> > > surely must be considered a bug? 
+> > > 
+> > 
+> > Could someone authoritatively comment on this? Is a SCHED_RR/SCHED_FIFO
+> > 100% Cpu bound process supported in an SMP env on Linux? (vanilla or -rt)
+> 
+> It will kill the kernel, sorry.
+> 
+> The only way in which we can fix that is to allow kernel threads to preempt
+> rt-priority userspace threads.  But if we were to do that (to benefit the
+> few) it would cause _all_ people's rt-prio processes to experience glitches
+> due to kernel activity, which we believe to be worse.
+> 
+> So we're between a rock and a hard place here.
+> 
+> If we really did want to solve this then I guess the kernel would need some
+> new code to detect a 100%-busy rt-prio process and to then start premitting
+> preemption of it for kernel thread activity.  That detector would need to
+> be smart enough to detect a number of 100%-busy rt-prio processes which are
+> yielding to each other, and one rt-prio process which keeps forking others,
+> etc.  It might get tricky.
 
-Having said that, there likely are some things that could be made
-generic, it's basically just init_task and init_thread_union where there
-are disagreements. The rest could likely be stashed in
-kernel/init_task.c (although you'd have to carefully examine the
-alignment for each architecture, particularly the ones that have special
-__asm__ labels).
+The usual alternative is to manually chrt the relevant kernel threads
+to RT priority and adjust the priority scheme of their processes appropriately.
 
-Perhaps having everyone use the same linker section for init_task and
-moving that to asm-generic/vmlinux.lds.h is a reasonable first step.
+-- 
+Mathematics is the supreme nostalgia of our time.
