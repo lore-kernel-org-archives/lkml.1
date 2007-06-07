@@ -1,171 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764939AbXFGQWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763704AbXFGQ2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764939AbXFGQWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbXFGQWL
+	id S1763704AbXFGQ2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbXFGQ2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:22:11 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:49378 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752245AbXFGQWJ (ORCPT
+	Thu, 7 Jun 2007 12:28:09 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:3065 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbXFGQ2I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:22:09 -0400
-Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       ebiederm@xmission.com, torvalds@linux-foundation.org
-In-Reply-To: <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
-References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
-	 <20070606204432.b670a7b1.akpm@linux-foundation.org>
-	 <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 07 Jun 2007 09:23:12 -0700
-Message-Id: <1181233393.9995.14.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jun 2007 12:28:08 -0400
+Date: Thu, 7 Jun 2007 18:27:43 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Jan Glauber <jan.glauber@de.ibm.com>, David Miller <davem@davemloft.net>,
+       akpm@osdl.org, mingo@elte.hu, ak@suse.de, schwidefsky@de.ibm.com,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
+Subject: Re: [patch] i386/x86_64: smp_call_function locking inconsistency
+Message-ID: <20070607162743.GA9433@osiris.ibm.com>
+References: <20070208203210.GB9798@osiris.ibm.com> <20070208.124328.88477956.davem@davemloft.net> <20070209084221.GA8259@osiris.boeblingen.de.ibm.com> <1171025838.5349.14.camel@localhost.localdomain> <a781481a0706070707j301ba886h10f4607fd6a6e8de@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a781481a0706070707j301ba886h10f4607fd6a6e8de@mail.gmail.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-07 at 00:53 -0400, Albert Cahalan wrote:
-> On 6/6/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Wed, 6 Jun 2007 23:27:01 -0400 "Albert Cahalan" <acahalan@gmail.com> wrote:
-> > > Eric W. Biederman writes:
-> > > > Badari Pulavarty <pbadari@us.ibm.com> writes:
-> > >
-> > > >> Your recent cleanup to shm code, namely
-> > > >>
-> > > >> [PATCH] shm: make sysv ipc shared memory use stacked files
-> > > >>
-> > > >> took away one of the debugging feature for shm segments.
-> > > >> Originally, shmid were forced to be the inode numbers and
-> > > >> they show up in /proc/pid/maps for the process which mapped
-> > > >> this shared memory segments (vma listing). That way, its easy
-> > > >> to find out who all mapped this shared memory segment. Your
-> > > >> patchset, took away the inode# setting. So, we can't easily
-> > > >> match the shmem segments to /proc/pid/maps easily. (It was
-> > > >> really useful in tracking down a customer problem recently).
-> > > >> Is this done deliberately ? Anything wrong in setting this back ?
-> > > >
-> > > > Theoretically it makes the stacked file concept more brittle,
-> > > > because it means the lower layers can't care about their inode
-> > > > number.
-> > > >
-> > > > We do need something to tie these things together.
-> > > >
-> > > > So I suspect what makes most sense is to simply rename the
-> > > > dentry SYSVID<segmentid>
-> > >
-> > > Please stop breaking things in /proc. The pmap command relys
-> > > on the old behavior.
-> >
-> > What effect did this change have upon the pmap command?  Details, please.
-> >
-> > > It's time to revert.
-> >
-> > Probably true, but we'd need to understand what the impact was.
+> >So either all spin_lock_bh's should be converted to spin_lock,
+> >which would limit smp_call_function()/smp_call_function_single()
+> >to process context & irqs enabled.
+> >Or the spin_lock's could be converted to spin_lock_bh which would
+> >make it possible to call these two functions even if in softirq
+> >context. AFAICS this should be safe.
 > 
-> Very simply, pmap reports the shmid.
+> Actually, I agree with David and Andi here:
 > 
-> albert 0 ~$ pmap `pidof X` | egrep -2 shmid
-> 30050000  16384K rw-s-  /dev/fb0
-> 31050000    152K rw---    [ anon ]
-> 31076000    384K rw-s-    [ shmid=0x3f428000 ]
-> 310d6000    384K rw-s-    [ shmid=0x3f430001 ]
-> 31136000    384K rw-s-    [ shmid=0x3f438002 ]
-> 31196000    384K rw-s-    [ shmid=0x3f440003 ]
-> 311f6000    384K rw-s-    [ shmid=0x3f448004 ]
-> 31256000    384K rw-s-    [ shmid=0x3f450005 ]
-> 312b6000    384K rw-s-    [ shmid=0x3f460006 ]
-> 31316000    384K rw-s-    [ shmid=0x3f870007 ]
-> 31491000    140K r----  /usr/share/fonts/type1/gsfonts/n021003l.pfb
-> 3150e000   9496K rw---    [ anon ]
+> On 2/9/07, David Miller <davem@davemloft.net> wrote:
+> >I think it's logically simpler if we disallow smp_call_function*()
+> >from any kind of asynchronous context.  But I'm sure your driver
+> >has a true need for this for some reason.
+> 
+> and
+> 
+> On 2/9/07, Andi Kleen <ak@suse.de> wrote:
+> >I'm not so sure. Perhaps drop _bh in both and stick a WARN_ON_ONCE in
+> >to catch the cases?
+> 
+> Replacing the _bh variants and making smp_call_function{_single}
+> illegal from all contexts but process is fine for x86_64, as we
+> don't really have any driver that needs to use this from softirq
+> context in the x86_64 tree. This means it becomes dissimilar to
+> s390, but similar to powerpc, mips, alpha, sparc64 semantics.
+> I'll prepare and submit a patch for the same, shortly.
 
-pmap seems to get shmid from "ino#" field of /proc/pid/map.
-Its already broken in current mainline.
+Calling an smp_call_* function from any context but process context is
+a bug. We didn't notice this initially when we used smp_call_function
+from softirq context... until we deadlocked ;)
+So s390 is the same as any other architecture wrt this.
 
-But, the breakage is not due to namespaces or container effort :(
-Its due to noble effort from Eric to clean up the shm code,
-take out the hacks to handle hugetlbfs and make the code
-more streamlined and readable.
+> On 2/9/07, Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> >Another thing that comes into my mind is smp_call_function together
+> >with cpu hotplug. Who is responsible that preemption and with that
+> >cpu hotplug is disabled?
+> >Is it the caller or smp_call_function itself?
+> >If it's smp_call_function then s390 would be broken, since
+> >then we would have
+> >int cpus = num_online_cpus()-1;
+> >in preemptible context... I agree: what a mess :)
+> 
+> and
+> 
+> On 2/9/07, Jan Glauber <jan.glauber@de.ibm.com> wrote:
+> >If preemption must be disabled before smp_call_function() we should have
+> >the same semantics for all smp_call_function_* variants.
+> 
+> I don't see any CPU hotplug / preemption disabling issues here.
+> Note that both smp_call_function() and smp_call_function_single()
+> on x86_64 acquire the call_lock spinlock before using cpu_online_map
+> via num_online_cpus(). And spin_lock() does preempt_disable() on both
+> SMP and !SMP, so we're safe. [ But we're not explicitly disabling
+> preemption and depending on spin_lock() instead, so a comment would
+> be in order? ]
 
-If we really really want old behaviour, we need my one line
-patch to force shmid as inode# :(
+Calling smp_call_function_single() with preemption enabled is pointless.
+You might be scheduled on the cpu you want to send an IPI to and get
+-EBUSY as return... If cpu hotplug is enabled the target cpu might even
+be gone when smp_call_function_single() gets executed.
 
-BTW, I agree with Eric that its would be nice to use shmid as part
-of name instead of forcing to be as inode number. It should be
-possible for pmap to workout shmid from "key" or name. Isn't it ?
+Avi Kivity has already a patch which introduces an on_cpu() function which
+looks quite like on_each_cpu(). That way you don't have to open code this
+stuff over and over again:
 
-Andrew/Linus, its up to you to figure out if its worth breaking.
-Here is the patch to base dentry-name on shmid - so we don't
-need to use ino# to identify shmid.
+preempt_disable();
+if (cpu == smp_processor_id())
+	func();
+else
+	smp_call_function_single(...);
+preempt_enable();
 
-Thanks,
-Badari
-
-Instead of basing dentry name on the shm "key", base it on
-"shmid" - so it shows up clearly in /proc/pid/maps. Earlier
-we were forcing ino# to match shmid.
-
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-Index: linux-2.6.22-rc4/ipc/shm.c
-===================================================================
---- linux-2.6.22-rc4.orig/ipc/shm.c	2007-06-04 17:57:25.000000000 -0700
-+++ linux-2.6.22-rc4/ipc/shm.c	2007-06-06 13:43:36.000000000 -0700
-@@ -364,6 +364,14 @@ static int newseg (struct ipc_namespace 
- 		return error;
- 	}
- 
-+	error = -ENOSPC;
-+	id = shm_addid(ns, shp);
-+	if(id == -1)
-+		goto no_id;
-+
-+	/* Build an id, so we can use it for filename */
-+	shp->id = shm_buildid(ns, id, shp->shm_perm.seq);
-+
- 	if (shmflg & SHM_HUGETLB) {
- 		/* hugetlb_zero_setup takes care of mlock user accounting */
- 		file = hugetlb_zero_setup(size);
-@@ -377,34 +385,28 @@ static int newseg (struct ipc_namespace 
- 		if  ((shmflg & SHM_NORESERVE) &&
- 				sysctl_overcommit_memory != OVERCOMMIT_NEVER)
- 			acctflag = 0;
--		sprintf (name, "SYSV%08x", key);
-+		sprintf (name, "SYSVID%d", shp->id);
- 		file = shmem_file_setup(name, size, acctflag);
- 	}
- 	error = PTR_ERR(file);
- 	if (IS_ERR(file))
- 		goto no_file;
- 
--	error = -ENOSPC;
--	id = shm_addid(ns, shp);
--	if(id == -1) 
--		goto no_id;
--
- 	shp->shm_cprid = current->tgid;
- 	shp->shm_lprid = 0;
- 	shp->shm_atim = shp->shm_dtim = 0;
- 	shp->shm_ctim = get_seconds();
- 	shp->shm_segsz = size;
- 	shp->shm_nattch = 0;
--	shp->id = shm_buildid(ns, id, shp->shm_perm.seq);
- 	shp->shm_file = file;
- 
- 	ns->shm_tot += numpages;
- 	shm_unlock(shp);
- 	return shp->id;
- 
--no_id:
--	fput(file);
- no_file:
-+	shm_rmid(ns, shp->id);
-+no_id:
- 	security_shm_free(shp);
- 	ipc_rcu_putref(shp);
- 	return error;
-
-
+There are already quite a few of these around.
