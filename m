@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758172AbXFGKjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbXFGKro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758172AbXFGKjr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 06:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXFGKjk
+	id S1755909AbXFGKro (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 06:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbXFGKrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 06:39:40 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:38846 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751033AbXFGKjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 06:39:39 -0400
-Date: Thu, 7 Jun 2007 12:39:37 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-Id: <20070607123937.db4a9f30.dada1@cosmosbay.com>
-In-Reply-To: <Pine.LNX.4.64.0706070004470.4875@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169031.1>
-	<4667AB97.8090603@cosmosbay.com>
-	<Pine.LNX.4.64.0706070004470.4875@alien.or.mcafeemobile.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
+	Thu, 7 Jun 2007 06:47:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:21858 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbXFGKrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 06:47:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=i7PXy6vzsD/Wrq4KkiEqcrqmeDQHCEV/hzKSW6cdApd0g7hWZj+DJ3RSCpPrg1gMlPGpM8+PeTzMNVs7WJivZYnw2YOQl+DJHBT3FZFPCYMPOByfL6uz+l+uiuzu1gaLfrvZSclcCOae8bW+YfD0hzxTDGFGSGwdC1EaJiOIwp4=
+Date: Thu, 7 Jun 2007 18:47:32 +0800
+From: "Peer Chen" <peerchen@gmail.com>
+To: "alsa-devel" <alsa-devel@lists.sourceforge.net>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "akpm" <akpm@linux-foundation.org>
+Subject: [PATCH] alsa: Add the MCP73/77 support to hda_intel driver
+Message-ID: <200706071847303435644@gmail.com>
+X-mailer: Foxmail 6, 6, 105, 21 [cn]
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi <davidel@xmailserver.org> wrote:
-
-> The sys_accept() system call has been modified to return a file
-> descriptor inside the non-sequential area, if the listening fd is.
-
-> -   newfd = sock_alloc_fd(&newfile);
-> +   newfd = sock_alloc_fd(&newfile,
-> +         fd > current->signal->rlim[RLIMIT_NOFILE].rlim_cur ? O_NONSEQFD: 0);
-
-This will break apps that change/downgrade their rlimit (after getting a high fd listen socket)
-Yes probably insane, but who knows...
-
-sock = socket(...);
-bind(...);
-listen(sock, backlog); ...
-fd = dup2(sock, 1023);
-close(sock);
-
-setrlimit( RLIMIT_NOFILE, rlim.rlim_cur = 256);
-...
-while ((newsock = accept(fd, ...)) != -1) {
-     fork();...
-     Plain legacy code, expecting newsock being *small*
-     FD_SET(newsock , &rd_set);
-     ...oops... fd is too large to fit in fd_set
-     select(newsock + 1, &rd_set, ...);
-     }
-
-
-So you might change logic to straight :
-
-newfd = sock_alloc_fd(&newfile, (fd >= FDMAP_NONSEQ_BASE) ? O_NONSEQFD: 0);
+Add the MCP73/MCP77 support to hda driver.
+The patch base on kernel 2.6.22-rc4
+ 
+Signed-off-by: Peer Chen <peerchen@gmail.com>
+---
+--- linux-2.6.22-rc4/sound/pci/hda/hda_intel.c.orig
++++ linux-2.6.22-rc4/sound/pci/hda/hda_intel.c
+@@ -1788,6 +1788,12 @@ static struct pci_device_id azx_ids[] = 
+ 	{ 0x10de, 0x044b, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_NVIDIA }, /* NVIDIA MCP65 */
+ 	{ 0x10de, 0x055c, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_NVIDIA }, /* NVIDIA MCP67 */
+ 	{ 0x10de, 0x055d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_NVIDIA }, /* NVIDIA MCP67 */
++	{ 0x10de, 0x07fc, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_NVIDIA }, /* NVIDIA MCP73 */
++	{ 0x10de, 0x07fd, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_NVIDIA }, /* NVIDIA MCP73 */
++	{ 0x10de, 0x0774, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_NVIDIA }, /* NVIDIA MCP77 */
++	{ 0x10de, 0x0775, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_NVIDIA }, /* NVIDIA MCP77 */
++	{ 0x10de, 0x0776, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_NVIDIA }, /* NVIDIA MCP77 */
++	{ 0x10de, 0x0777, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_NVIDIA }, /* NVIDIA MCP77 */
+ 	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci, azx_ids);
 
