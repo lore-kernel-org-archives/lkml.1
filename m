@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966027AbXFGTtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966038AbXFGTwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966027AbXFGTtu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 15:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965195AbXFGTte
+	id S966038AbXFGTwW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 15:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965425AbXFGTwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 15:49:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:64424 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965143AbXFGTtd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 15:49:33 -0400
-From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-References: <878xb35sje.fsf@goat.bogus.local> <200706041013.49428.rjw@sisk.pl>
-	<87hcpnpt4k.fsf@goat.bogus.local> <200706042302.45628.rjw@sisk.pl>
-Date: Thu, 07 Jun 2007 21:50:28 +0200
-In-Reply-To: <200706042302.45628.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Mon, 4 Jun 2007 23:02:45 +0200")
-Message-ID: <87y7ivo86z.fsf@goat.bogus.local>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+	Thu, 7 Jun 2007 15:52:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47748 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965475AbXFGTwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 15:52:09 -0400
+Date: Thu, 7 Jun 2007 21:51:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Carter <jwcart2@tycho.nsa.gov>, Paul Moore <paul.moore@hp.com>,
+       James Morris <jmorris@namei.org>
+Subject: Re: [bug] very high non-preempt latency in
+	context_struct_compute_av()
+Message-ID: <20070607195151.GA30899@elte.hu>
+References: <20070604112745.GA26350@elte.hu> <1181244850.11979.66.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX18YAmC4BZzi7dg7Kj/dzzyrpmsaGKkGgOgUpHc
- bQ/0PAtSSe0FSVU2ga44x2Z+gAK1BNV9GekIpdLeA08nv2OWm7
- 02avAZWIFqQwIhVC+WKMg==
+Content-Disposition: inline
+In-Reply-To: <1181244850.11979.66.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> You may try to use 's2ram --force --vbe_post --vbe_mode', if you haven't tried
-> that already.
+* Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-Unfortunately, this doesn't work either.
+> Can you try the patch below to see whether it helps?
+> 
+> In security_get_user_sids, move the transition permission checks 
+> outside of the section holding the policy rdlock, and use the AVC to 
+> perform the checks, calling cond_resched after each one.  These 
+> changes should allow preemption between the individual checks and 
+> enable caching of the results.  It may however increase the overall 
+> time spent in the function in some cases, particularly in the cache 
+> miss case.
+> 
+> The long term fix will be to take much of this logic to userspace by 
+> exporting additional state via selinuxfs, and ultimately deprecating 
+> and eliminating this interface from the kernel.
+> 
+> Signed-off-by: Stephen Smalley <sds@tycho.nsa.gov>
 
-> Still, if the card is a 7300 or higher, that need not work (at present we don't
-> know what magic is required to make these cards work).
+i have just tried your patch and it completely solves the issue! Without 
+the patch, a simple script that keeps logging in on a box:
 
-It's a GeForce 6600 Go. Anyway, you were right with your assumption.
+	while :; do ssh testbox true; done
 
-I installed the nvidia.ko (1.0-9755) kernel module and now the machine
-comes back to life. Although the screen stays black as before, I can
-type blindly "shutdown -r now" or ssh into the laptop.
+would cause glxgears to get into a very jerky motion due to the 
+latencies. With the patch it's 100%, totally smooth! Thanks!
 
-Regards, Olaf.
+Tested-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
