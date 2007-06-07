@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761680AbXFGOg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbXFGOi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761680AbXFGOg4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756500AbXFGOgg
+	id S1762609AbXFGOi2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbXFGOiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:36:36 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:25436 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755389AbXFGOge (ORCPT
+	Thu, 7 Jun 2007 10:38:21 -0400
+Received: from wx-out-0506.google.com ([66.249.82.232]:60069 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbXFGOiT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:36:34 -0400
-Date: Thu, 7 Jun 2007 16:36:33 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Another version of cleanfile/cleanpatch
-In-Reply-To: <20070606191426.GT7266@flower.upol.cz>
-Message-ID: <Pine.LNX.4.64.0706071634470.8762@fbirervta.pbzchgretzou.qr>
-References: <20070603204700.GH9240@uranus.ravnborg.org> <20070605073335.GM7266@flower.upol.cz>
- <20070605081959.GB21991@uranus.ravnborg.org> <20070605133834.GO7266@flower.upol.cz>
- <20070605141254.GA24722@uranus.ravnborg.org> <20070605145759.GP7266@flower.upol.cz>
- <20070605151101.GQ7266@flower.upol.cz> <20070606174556.GS7266@flower.upol.cz>
- <20070606175026.GA6303@uranus.ravnborg.org> <20070606191426.GT7266@flower.upol.cz>
+	Thu, 7 Jun 2007 10:38:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=UlZzNFzPdV/8qMexEqmO1dBbsy1cK9pUJ0j/md/MYOZOukeolCwSn7AJuV3q9h0eKSJsy0VlfullmFt9x8tnpAAQWlMdGy8uKMHfO5J6X2DPBnaXvzaSlexvcQev2oNsAkIP6YLBjELjpKn6f5RDrf44HCyuMzW4c1IDMcbiY0M=
+Date: Thu, 7 Jun 2007 18:36:57 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] UDF: fix deadlock on inode being dropped
+Message-ID: <20070607143657.GB8393@cvg>
+References: <20070606175351.GA8397@cvg> <20070607093606.GA12549@duck.suse.cz> <20070607135458.GA8393@cvg> <20070607144121.GC12549@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607144121.GC12549@duck.suse.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Jan Kara - Thu, Jun 07, 2007 at 04:41:21PM +0200]
+| On Thu 07-06-07 17:54:58, Cyrill Gorcunov wrote:
+| > [Jan Kara - Thu, Jun 07, 2007 at 11:36:07AM +0200]
+| > |   Hi Cyrill!
+| > | 
+| > | On Wed 06-06-07 21:53:51, Cyrill Gorcunov wrote:
+| > | > This patch prevents from deadlock on inode being dropped.
+| > | > The deadlock is caused by inderect call of mark_inode_dirty()
+| > | > within udf_drop_inode() but inode lock is already kept
+| > | > by the kernel. So moving code from udf_drop_inode() to
+| > | > udf_delete_inode() we save its functionality and avoid
+| > | > deadlock.
+| > |   The patch is wrong. You cannot truncate the extent just in delete_inode.
+| > | That would lead to inodes with untruncated last extent on disk after
+| > | unmounting, which is forbidden in the specification. You need to truncate
+| > | the last extent whenever inode is being removed from memory or something
+| > | like that... I'm already thinking how to do it and avoid calling
+| > | mark_inode_dirty()...
+| > | 
+| > 
+| > Arh, thanks... Jan, actually the reason I've moved the code into
+| > 'delete' section was that I found no reasonable difference for our
+| > case between 'drop' and 'delete'. Moreover, by seeing into VFS code
+| > the only diff between 'drop' and 'delete' is that
+| > inside generic_delete_inode() a few inode structure elements
+| > are being destroyed and then our udf_drop_inode is called. So assuming,
+| > that you're right in drop_inode I've code just moved to 'delete' section.
+|   The difference is that udf_delete_inode() is called only when inode has
+| i_nlink == 0 and thus it's being deleted on disk. udf_drop_inode() is
+| called whenever inode is removed from memory which is what we want.
+|   I'm already testing a patch which should fix the problem...
+| 
+| 								Honza
+| -- 
+| Jan Kara <jack@suse.cz>
+| SuSE CR Labs
+| 
 
-On Jun 6 2007 21:14, Oleg Verych wrote:
->[]
->> > Many things in XXI century still can be done by tools founded 20-30
->> > years ago. Why not try to?
->> 
->> Because your shell script is unreadable by normal human beings[*]
->> while the perl script for people with a bit of perl fu can read it
->> and fix/modify it.
+Thanks for eplanation, Jan
 
-And because at the end of the day, the perl script might be faster
-than the shell script. Yes, UNIX was designed to handle fork-exec
-efficiently, thank God. But still.
+		Cyrill
 
->> We want tools that can be maintained and enhanced by most people.
->> 
->> [*] Normal human beings are people with same level of shell
->> scripting/sed skills that I have just to put that straight.
->
->In many cases i think, it's limiting one's imagination and expanding
->laziness[0].
->
->In the school algebra (usually) there are many exercises with
->plain-useless equations and formulas you must solve or simplify.
->Guess why? Thus my proposition. ;)
->
->---
->[0] Now, when most UNIX tools done with good quality (courtesy of the
->    GNU project), it's time not to convert programmer's laziness[1] to
->    ordinary one. Why there's one big and slow Bourne again shell, yet
->    to have fast ([d]ash) and tiny one took more time? As result more
->    efforts to remove bashizms...
-
-I prefer bashisms over using a shell [referring to original sh or ksh]
-that can't do a sane thing.
-
->
->[1] Ironically connected to Perl chapter of UNIX Power Tools
->    <http://unix.org.ua/orelly/unix/upt/ch37_02.htm>
-
-
-	Jan
--- 
