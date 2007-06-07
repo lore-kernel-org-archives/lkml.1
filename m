@@ -1,303 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937687AbXFGWbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937756AbXFGWbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937687AbXFGWbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937203AbXFGWbG
+	id S937756AbXFGWbh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937462AbXFGWbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:31:06 -0400
-Received: from mga03.intel.com ([143.182.124.21]:58332 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936797AbXFGWbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:31:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,396,1175497200"; 
-   d="scan'208";a="236815632"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] trim memory not covered by WB MTRRs
-Date: Thu, 7 Jun 2007 15:30:51 -0700
-User-Agent: KMail/1.9.6
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
+	Thu, 7 Jun 2007 18:31:13 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:50148 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S937401AbXFGWbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:31:11 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] CFS scheduler, -v14
+Date: Fri, 8 Jun 2007 01:29:25 +0300
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, pranith-kumar_d@mentorg.com
+References: <20070523120616.GA23407@elte.hu> <200706011635.02774.caglar@pardus.org.tr> <alpine.LFD.0.98.0706010829041.3957@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706010829041.3957@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: multipart/signed;
+  boundary="nextPart1328215.Pd3fz7NFma";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706071530.51552.jesse.barnes@intel.com>
+Message-Id: <200706080129.28487.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On some machines, buggy BIOSes don't properly setup WB MTRRs to
-cover all available RAM, meaning the last few megs (or even gigs)
-of memory will be marked uncached.  Since Linux tends to allocate
-from high memory addresses first, this causes the machine to be
-unusably slow as soon as the kernel starts really using memory
-(i.e. right around init time).
+--nextPart1328215.Pd3fz7NFma
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This patch works around the problem by scanning the MTRRs at
-boot and figuring out whether the current end_pfn value (setup
-by early e820 code) goes beyond the highest WB MTRR range, and
-if so, trimming it to match.  A fairly obnoxious KERN_WARNING
-is printed too, letting the user know that not all of their
-memory is available due to a likely BIOS bug.
+Hi;
 
-Something similar could be done on i386 if needed, but the boot
-ordering would be slightly different, since the MTRR code on i386
-depends on the boot_cpu_data structure being setup.
+01 Haz 2007 Cum tarihinde, Linus Torvalds =C5=9Funlar=C4=B1 yazm=C4=B1=C5=
+=9Ft=C4=B1:=20
+> Has it been hot where you are lately? Is your fan working?
 
-This patch incorporates the feedback from Eric and Andi:
-  - use MAX_VAR_RANGES instead of NUM_VAR_RANGES
-  - move array declaration to header file as an extern
-  - add command line disable option "disable_mtrr_trim"
-  - don't run the trim code if the MTRR default type is cacheable
-  - don't run the trim code on non-Intel machines
+=46irst of all sorry for late reply.
 
-Justin, feel free to test again if you have time and add your
-"Tested-by" signoff.
+=46or a while =C4=B0stanbul is not really hot [~26 C] :) and yes fans are/s=
+eems=20
+working without a problem.
 
-Andi, as for large pages, do you think this is ok as is, or should
-I trim a larger granularity?  If so, what granularity?
+> Hardware that acts up under load is quite often thermal-related,
+> especially if it starts happening during summer and didn't happen before
+> that... ESPECIALLY the kinds of behaviours you see: the "sudden power-off"
+> is the normal behaviour for a CPU that trips a critial overheating point,
+> and the slowdown is also one normal response to overheating (CPU
+> throttling).
 
-Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
+According to ACPI output;
 
-Thanks,
-Jesse
+[caglar@zangetsu][~]> cat /proc/acpi/thermal_zone/THRM/*
+<setting not supported>
+cooling mode:   passive
+<polling disabled>
+state:                   ok
+temperature:             56 C
+critical (S5):           105 C
+passive:                 95 C: tc1=3D1 tc2=3D5 tsp=3D10 devices=3D0xc20deec8
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 5d0283c..cb728a8 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -553,6 +553,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 			See drivers/char/README.epca and
- 			Documentation/digiepca.txt.
- 
-+	disable_mtrr_trim [X86-64]
-+			By default the kernel will trim any uncacheable
-+			memory out of your available memory pool based on
-+			MTRR settings.  This parameter disables that behavior,
-+			possibly causing your machine to run very slowly.
-+
- 	dmascc=		[HW,AX25,SERIAL] AX.25 Z80SCC driver with DMA
- 			support available.
- 			Format: <io_dev0>[,<io_dev1>[,..<io_dev32>]]
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index c4ebb51..8eb3085 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -13,7 +13,7 @@
- #include "mtrr.h"
- 
- struct mtrr_state {
--	struct mtrr_var_range *var_ranges;
-+	struct mtrr_var_range var_ranges[MAX_VAR_RANGES];
- 	mtrr_type fixed_ranges[NUM_FIXED_RANGES];
- 	unsigned char enabled;
- 	unsigned char have_fixed;
-@@ -84,12 +84,6 @@ void get_mtrr_state(void)
- 	struct mtrr_var_range *vrs;
- 	unsigned lo, dummy;
- 
--	if (!mtrr_state.var_ranges) {
--		mtrr_state.var_ranges = kmalloc(num_var_ranges * sizeof (struct mtrr_var_range), 
--						GFP_KERNEL);
--		if (!mtrr_state.var_ranges)
--			return;
--	} 
- 	vrs = mtrr_state.var_ranges;
- 
- 	rdmsr(MTRRcap_MSR, lo, dummy);
-diff --git a/arch/i386/kernel/cpu/mtrr/if.c b/arch/i386/kernel/cpu/mtrr/if.c
-index c7d8f17..0e34a67 100644
---- a/arch/i386/kernel/cpu/mtrr/if.c
-+++ b/arch/i386/kernel/cpu/mtrr/if.c
-@@ -11,10 +11,6 @@
- #include <asm/mtrr.h>
- #include "mtrr.h"
- 
--/* RED-PEN: this is accessed without any locking */
--extern unsigned int *usage_table;
--
--
- #define FILE_FCOUNT(f) (((struct seq_file *)((f)->private_data))->private)
- 
- static const char *const mtrr_strings[MTRR_NUM_TYPES] =
-diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-index 7202b98..ef552ba 100644
---- a/arch/i386/kernel/cpu/mtrr/main.c
-+++ b/arch/i386/kernel/cpu/mtrr/main.c
-@@ -38,8 +38,8 @@
- #include <linux/cpu.h>
- #include <linux/mutex.h>
- 
-+#include <asm/e820.h>
- #include <asm/mtrr.h>
--
- #include <asm/uaccess.h>
- #include <asm/processor.h>
- #include <asm/msr.h>
-@@ -47,7 +47,7 @@
- 
- u32 num_var_ranges = 0;
- 
--unsigned int *usage_table;
-+unsigned int usage_table[MAX_VAR_RANGES];
- static DEFINE_MUTEX(mtrr_mutex);
- 
- u64 size_or_mask, size_and_mask;
-@@ -121,11 +121,6 @@ static void __init init_table(void)
- 	int i, max;
- 
- 	max = num_var_ranges;
--	if ((usage_table = kmalloc(max * sizeof *usage_table, GFP_KERNEL))
--	    == NULL) {
--		printk(KERN_ERR "mtrr: could not allocate\n");
--		return;
--	}
- 	for (i = 0; i < max; i++)
- 		usage_table[i] = 1;
- }
-@@ -589,16 +584,11 @@ struct mtrr_value {
- 	unsigned long	lsize;
- };
- 
--static struct mtrr_value * mtrr_state;
-+static struct mtrr_value mtrr_state[MAX_VAR_RANGES];
- 
- static int mtrr_save(struct sys_device * sysdev, pm_message_t state)
- {
- 	int i;
--	int size = num_var_ranges * sizeof(struct mtrr_value);
--
--	mtrr_state = kzalloc(size,GFP_ATOMIC);
--	if (!mtrr_state)
--		return -ENOMEM;
- 
- 	for (i = 0; i < num_var_ranges; i++) {
- 		mtrr_if->get(i,
-@@ -620,7 +610,6 @@ static int mtrr_restore(struct sys_device * sysdev)
- 				 mtrr_state[i].lsize,
- 				 mtrr_state[i].ltype);
- 	}
--	kfree(mtrr_state);
- 	return 0;
- }
- 
-@@ -631,6 +620,57 @@ static struct sysdev_driver mtrr_sysdev_driver = {
- 	.resume		= mtrr_restore,
- };
- 
-+static int disable_mtrr_trim;
-+
-+static int __init disable_mtrr_trim_setup(char *str)
-+{
-+	disable_mtrr_trim = 1;
-+	return 0;
-+}
-+early_param("disable_mtrr_trim", disable_mtrr_trim_setup);
-+
-+/**
-+ * mtrr_trim_uncached_memory - trim RAM not covered by MTRRs
-+ *
-+ * Some buggy BIOSes don't setup the MTRRs properly for systems with certain
-+ * memory configurations.  This routine checks to make sure the MTRRs having
-+ * a write back type cover all of the memory the kernel is intending to use.
-+ * If not, it'll trim any memory off the end by adjusting end_pfn, removing
-+ * it from the kernel's allocation pools, warning the user with an obnoxious
-+ * message.
-+ */
-+void __init mtrr_trim_uncached_memory(void)
-+{
-+	unsigned long i, base, size, highest_addr = 0, def, dummy;
-+	mtrr_type type;
-+
-+	/* Make sure we only trim uncachable memory on Intel machines */
-+	rdmsr(MTRRdefType_MSR, def, dummy);
-+	def &= 0xff;
-+	if (!use_intel() || disable_mtrr_trim || def != MTRR_TYPE_UNCACHABLE)
-+		return;
-+
-+	/* Find highest cached pfn */
-+	for (i = 0; i < num_var_ranges; i++) {
-+		mtrr_if->get(i, &base, &size, &type);
-+		if (type != MTRR_TYPE_WRBACK)
-+			continue;
-+		base <<= PAGE_SHIFT;
-+		size <<= PAGE_SHIFT;
-+		if (highest_addr < base + size)
-+			highest_addr = base + size;
-+	}
-+
-+	if ((highest_addr >> PAGE_SHIFT) != end_pfn) {
-+		printk(KERN_WARNING "***************\n");
-+		printk(KERN_WARNING "**** WARNING: likely BIOS bug\n");
-+		printk(KERN_WARNING "**** MTRRs don't cover all of "
-+		       "memory, trimmed %ld pages\n", end_pfn -
-+		       (highest_addr >> PAGE_SHIFT));
-+		printk(KERN_WARNING "***************\n");
-+		end_pfn = highest_addr >> PAGE_SHIFT;
-+	}
-+}
- 
- /**
-  * mtrr_bp_init - initialize mtrrs on the boot CPU
-diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
-index 289dfe6..627b339 100644
---- a/arch/i386/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
-@@ -14,6 +14,7 @@
- #define MTRRphysMask_MSR(reg) (0x200 + 2 * (reg) + 1)
- 
- #define NUM_FIXED_RANGES 88
-+#define MAX_VAR_RANGES 256
- #define MTRRfix64K_00000_MSR 0x250
- #define MTRRfix16K_80000_MSR 0x258
- #define MTRRfix16K_A0000_MSR 0x259
-@@ -34,6 +35,8 @@
-    an 8 bit field: */
- typedef u8 mtrr_type;
- 
-+extern unsigned int usage_table[MAX_VAR_RANGES];
-+
- struct mtrr_ops {
- 	u32	vendor;
- 	u32	use_intel_if;
-diff --git a/arch/x86_64/kernel/bugs.c b/arch/x86_64/kernel/bugs.c
-index c3c6b91..c138eac 100644
---- a/arch/x86_64/kernel/bugs.c
-+++ b/arch/x86_64/kernel/bugs.c
-@@ -14,7 +14,6 @@
- void __init check_bugs(void)
- {
- 	identify_cpu(&boot_cpu_data);
--	mtrr_bp_init();
- #if !defined(CONFIG_SMP)
- 	printk("CPU: ");
- 	print_cpu_info(&boot_cpu_data);
-diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
-index eb6524f..409b63c 100644
---- a/arch/x86_64/kernel/setup.c
-+++ b/arch/x86_64/kernel/setup.c
-@@ -266,6 +266,10 @@ void __init setup_arch(char **cmdline_p)
- 	 * we are rounding upwards:
- 	 */
- 	end_pfn = e820_end_of_ram();
-+	/* Trim memory not covered by WB MTRRs */
-+	mtrr_bp_init();
-+	mtrr_trim_uncached_memory();
-+
- 	num_physpages = end_pfn;
- 
- 	check_efer();
-diff --git a/include/asm-x86_64/mtrr.h b/include/asm-x86_64/mtrr.h
-index b557c48..cc62bd8 100644
---- a/include/asm-x86_64/mtrr.h
-+++ b/include/asm-x86_64/mtrr.h
-@@ -78,6 +78,7 @@ extern int mtrr_add_page (unsigned long base, unsigned long size,
- 		     unsigned int type, char increment);
- extern int mtrr_del (int reg, unsigned long base, unsigned long size);
- extern int mtrr_del_page (int reg, unsigned long base, unsigned long size);
-+extern void mtrr_trim_uncached_memory(void);
- #  else
- static __inline__ int mtrr_add (unsigned long base, unsigned long size,
- 				unsigned int type, char increment)
+105 C is critical for that CPU, for a while (this is why i reply late) i'm=
+=20
+constantly monitoring the temprature under low and high load.=20
+
+Its in 50-70 C interval in normal usage/idle and 80-100 C interval under hi=
+gh=20
+load (compiling some applications, using cpuburn to test etc.), so seems it=
+=20
+can handle overheating issues
+
+But digging the kern.log shows some strange values also;
+
+May 24 10:39:23 localhost kernel: [    0.000000] Detected 897.748 MHz=20
+processor. <--- 2.6.21.2-CFS-v14
+=2E..
+May 30 00:59:11 localhost kernel: [    0.000000] Detected 898.726 MHz=20
+processor. <--- 2.6.21.2-CFS-v15
+=2E..
+Jun  1 02:09:44 localhost kernel: [    0.000000] Detected 897.591 MHz=20
+processor. <--- 2.6.21.3-CFS-v15
+=2E..
+
+And according to same log these slowdowns occured after i compiled/installe=
+d=20
+these kernel versions into system(cause these are the first appearence of=20
+this versions in kern.log). So as you said it seems definetly a overheating=
+=20
+issue. I'll continue to test/monitor and report back if i can find anything=
+=2E=20
+Thanks!
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart1328215.Pd3fz7NFma
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGaIbIy7E6i0LKo6YRAkSgAKCmr0DoEy3E+5S8lS+uEtWyq3TCRgCfVTTS
+v3EzGeywu6XhLs3xMFRui9o=
+=M8rK
+-----END PGP SIGNATURE-----
+
+--nextPart1328215.Pd3fz7NFma--
