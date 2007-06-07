@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938514AbXFHPL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938814AbXFHPMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938514AbXFHPL1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 11:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936465AbXFHPK5
+	id S938814AbXFHPMR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 11:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938322AbXFHPLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 11:10:57 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2717 "EHLO spitz.ucw.cz"
+	Fri, 8 Jun 2007 11:11:18 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2730 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762996AbXFHPKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 11:10:55 -0400
-Date: Thu, 7 Jun 2007 20:08:01 +0000
+	id S1756645AbXFHPLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 11:11:17 -0400
+Date: Thu, 7 Jun 2007 14:28:02 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Len Brown <lenb@kernel.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, trenn@suse.de,
-       linux-acpi <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ACPI Debug - for test, devel and possibly even for production kernels
-Message-ID: <20070607200800.GA10323@ucw.cz>
-References: <1180624839.10908.71.camel@queen.suse.de> <84144f020705311157n6bede2c7ga234d70823d5869f@mail.gmail.com> <200705311556.17966.lenb@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Eric Paris <eparis@redhat.com>, Alan Cox <alan@redhat.com>,
+       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, drepper@redhat.com, roland@redhat.com,
+       arjan@infradead.org, mingo@elte.hu, viro@zeniv.linux.org.uk,
+       chrisw@redhat.com, sds@tycho.nsa.gov, sgrubb@redhat.com
+Subject: Re: [PATCH] Protection for exploiting null dereference using mmap
+Message-ID: <20070607142802.GB9094@ucw.cz>
+References: <1180561713.3633.27.camel@dhcp231-215.rdu.redhat.com> <20070603205653.GE25869@devserv.devel.redhat.com> <1180964306.14220.34.camel@moss-spartans.epoch.ncsc.mil> <1181075666.3978.31.camel@localhost.localdomain> <Line.LNX.4.64.0706051658170.23379@d.namei> <20070605211616.GE23291@devserv.devel.redhat.com> <1181078927.3978.42.camel@localhost.localdomain> <4665E7CA.8030907@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705311556.17966.lenb@kernel.org>
+In-Reply-To: <4665E7CA.8030907@zytor.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > > (This should efficiently be the same as the proposed big patch a year
-> > > ago from Pekka Enberg, just a bit smaller and should make ACPICA and
-> > > kernel/linux people happy:
-> > > http://marc.info/?l=linux-kernel&m=113699535303722&w=2)
+> > While I understand, there are a few users who will have problems with
+> > this default are we really better to not provide this defense in depth
+> > for the majority of users and let those with problems turn it off rather
+> > than provide no defense by default?  I could even provide a different
+> > default for SELinux and non-SELinux if anyone saw value in that?  But if
+> > others think that off default is  best I'll send another patch shortly
+> > with the unsigned long fix and the default set to 0.  My hope is then
+> > that distros will figure out to turn this on.
 > > 
-> > No, you're keeping these obfuscating macros around:
-> > 
-> > +#define return_VOID                     return
-> > +#define return_ACPI_STATUS(s)           return(s)
-> > +#define return_VALUE(s)                 return(s)
-> > +#define return_UINT8(s)                 return(s)
-> > 
-> > Making the ACPI code look like regular Linux kernel code (or even
-> > regular C for that matter) was the whole point of my patch. Your patch
-> > doesn't change that.
 > 
-> I think that Thomas's point is that he is optimally removing
-> function tracing via #ifdef.
-> Your 600KB patch, on the other hand, permanently removed the feature
-> and touched every file in ACPICA.
+> I hope not.  This breaks any hardware virtualizer.
 > 
-> The net effect to the user is the same, the ability to enable
-> ACPI_DEBUG and not enable ACPICA function tracing.
-> 
-> As I probably wrote a year ago, it isn't viable to completely
-> remove the tracing code --
-> until Linux reaches a point where vendors certify that their
-> BIOS is compatible with Linux before they ship, rather than the Linux
-> community having to debug some Windows-compatible systems into
-> Linux-compatibility well after they have shipped into the field.
+> So yes, we're better off not having this on, and require it to be
+> explicitly enabled by the end user.
 
-Well, those obfuscating macros pretty much make acpi code unreadable
-:-(. If function-level tracing is desired, perhaps it can be done via
-linker magic?
+You could do something like 4G+4G patches.... but performance penalty
+would be ugly.
+
+But no, we cant break userspace 'by default'.
 							Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
