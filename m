@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760989AbXFGOgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762225AbXFGOhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760989AbXFGOgm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXFGOgd
+	id S1762225AbXFGOhg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbXFGOh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:36:33 -0400
-Received: from rtr.ca ([64.26.128.89]:4181 "EHLO mail.rtr.ca"
+	Thu, 7 Jun 2007 10:37:27 -0400
+Received: from mx.melware.net ([217.91.97.190]:1428 "EHLO mx.melware.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751540AbXFGOgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:36:33 -0400
-Message-ID: <466817EF.7090707@rtr.ca>
-Date: Thu, 07 Jun 2007 10:36:31 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1751540AbXFGOh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 10:37:26 -0400
+Date: Thu, 7 Jun 2007 16:06:17 +0200 (CEST)
+From: Armin Schindler <armin@melware.de>
+X-X-Sender: armin@phoenix.one.melware.de
+To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Leak in eicon/idifunc.c
+Message-ID: <Pine.LNX.4.61.0706071604360.7559@phoenix.one.melware.de>
+Organization: Cytronics & Melware
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: David Greaves <david@dgreaves.com>, Duane Griffin <duaneg@dghda.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-References: <46608E3F.4060201@dgreaves.com> <46609FAD.7010203@dgreaves.com>	 <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>	 <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>	 <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>	 <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>	 <4667DE2D.6050903@dgreaves.com> <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com> <46680F69.60105@dgreaves.com> <46681094.4070103@gmail.com>
-In-Reply-To: <46681094.4070103@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
->
-> Can you setup serial console and/or netconsole (not sure whether this
-> would work tho)?
+Hi,
 
-Since he has good console output already, capturable by digicam,
-I think a better approach might be to provide a patch with extra instrumentation..
-You know.. progress messages and the like, so we can see at what step
-things stop working.  Or would that not help ?
+coverity spotted a possible leak in the idifunc.c file (bug id #1252),
+in um_new_card(), if the diva_user_mode_idi_create_adapter() fails,
+we dont free the memory allocated for card
 
-David, does scrollback work on your dead console?
+Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
+Acked-by: Armin Schindler <armin@melware.de>
 
-Cheers
+--- linux-2.6/drivers/isdn/hardware/eicon/idifunc.c.orig	2007-05-22 00:22:02.000000000 +0200
++++ linux-2.6/drivers/isdn/hardware/eicon/idifunc.c	2007-05-22 00:22:52.000000000 +0200
+@@ -106,6 +106,7 @@ static void um_new_card(DESCRIPTOR * d)
+ 	} else {
+ 		DBG_ERR(("could not create user mode idi card %d",
+ 			 adapter_nr));
++		diva_os_free(0, card);
+ 	}
+ }
+ 
