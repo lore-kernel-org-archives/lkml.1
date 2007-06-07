@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936564AbXFGU17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936667AbXFGU3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936564AbXFGU17 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 16:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933651AbXFGU1t
+	id S936667AbXFGU3Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 16:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759193AbXFGU27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 16:27:49 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:11494 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761190AbXFGU1r (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 16:27:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=arbCEt698XEfykTgp5rNrMjtTe7qRdFkF98F26GtmMcOzVGBxDcYzBhGc3IRcx8bpKbzrJa01N73zMrW+t6e7VxdP8k5QVqi+gthSCI/uUBnktloVaEPqntOqFM+oMP/r6tqJPgmH64sdtF2v8O/O5tZjL2/3SkGE4XF59TI3yE=
-Message-ID: <6934efce0706071327v7d98af2cs90bca7348cab9271@mail.gmail.com>
-Date: Thu, 7 Jun 2007 13:27:46 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "Jared Hulbert" <jaredeh@gmail.com>, carsteno@de.ibm.com,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       richard.griffiths@windriver.com,
-       "Richard Griffiths" <res07ml0@verizon.net>,
-       Linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-In-Reply-To: <20070607194054.GC17144@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 7 Jun 2007 16:28:59 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:54129 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934770AbXFGU26 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 16:28:58 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Tejun Heo <htejun@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1 - 'lvm vgscan' busticated again...
+In-Reply-To: Your message of "Thu, 07 Jun 2007 15:44:56 +0900."
+             <4667A968.9080407@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <7929.1181146132@turing-police.cc.vt.edu>
+            <4667A968.9080407@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1181248131_4816P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <465BB5BA.3050900@yahoo.com.au> <46612D6F.6000002@yahoo.com.au>
-	 <46641472.3080802@de.ibm.com>
-	 <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com>
-	 <20070606113351.GA11701@infradead.org>
-	 <6934efce0706060907n209fe6bcnb470101196aa9c55@mail.gmail.com>
-	 <20070606161621.GA20247@infradead.org>
-	 <6934efce0706061126n551cccaeg68a0def87457911@mail.gmail.com>
-	 <20070607193707.GA17144@infradead.org>
-	 <20070607194054.GC17144@infradead.org>
+Date: Thu, 07 Jun 2007 16:28:51 -0400
+Message-ID: <23214.1181248131@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/7/07, Christoph Hellwig <hch@infradead.org> wrote:
-> On Thu, Jun 07, 2007 at 08:37:07PM +0100, Christoph Hellwig wrote:
-> > The code is at http://verein.lst.de/~hch/cramfs-xip.tar.gz.
->
-> And for thus just wanting to take a quick glance, this is the
-> diff vs an out of tree cramfs where uncompress.c and cramfs_fs_sb.h
-> are merged into inode.c:
+--==_Exmh_1181248131_4816P
+Content-Type: text/plain; charset=us-ascii
 
-Cool.  I notice you removed my UML hacks... Why?
+On Thu, 07 Jun 2007 15:44:56 +0900, Tejun Heo said:
+> Valdis.Kletnieks@vt.edu wrote:
+> > On Wed, 06 Jun 2007 02:07:37 PDT, Andrew Morton said:
+> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2
+.6.22-rc4-mm1/
+> > 
+> > This one died a horrid death at boot time - console log indicates it found 
+the
+> > hard drive OK, found the 2 partitions on it.  But when the initrd ran a
+> > 'lvm vgscan', it didn't find the LVM2 space on /dev/sda2, so it panic'ed wh
+en
+> > it fell off the end of the initrd because the root= wasn't there.
+> > 
+> > My first guess for blame:
+> > 
+> > gregkh-driver-sysfs-allocate-inode-number-using-ida.patch
+> > 
+> > as that's awfully similar to gregkh-driver-sysfs-fix-i_ino-handling-in-sysfs.patch
+> > that broke 'lvm vgscan' for me in the same way on 21-rc7-mm[12].
+> > 
+> > I'll hopefully get a chance to revert that one and test later today - a quick
+> > 'patch -p1 -R --dry-run' shows a number of conflicts that will need hand-fixing
+> > at the very least.
+> 
+> Did rc3-mm1 work?  Can you find out the first broken -mm?
 
-I just don't get one thing.  This is almost a duplicate of
-cramfs-block.  Why would we prefer a fork with a lot of code
-duplication to adding a couple alternate code paths in cramfs-block?
+21-rc5-mm2 worked, -rc6-mm* were busticated for other reasons on my laptop,
+21-rc7-mm[12] were broken, 21-mm1 through 21-rc3-mm1 worked, -rc4-mm1 broke,
+and -rc4-mm2 works. I could bisect through -rc4-mm1 if it's deemed useful,
+Andrew just pushed -mm2 before I had a chance.
 
-Also keep in mind there are several reasons why you might want to have
-block access to to a XIP built cramfs image.  I am unpersuaded that
-this fork approach is fundamentally better.
+--==_Exmh_1181248131_4816P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGaGqDcC3lWbTT17ARAqmNAKDjrvIpzvxRO6AeNW/68a2U4tdplgCfYvpR
+jsecD3CInnR1IGJfle89AXw=
+=Ol+e
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1181248131_4816P--
