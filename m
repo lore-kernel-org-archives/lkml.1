@@ -1,56 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760742AbXFGOAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761671AbXFGOBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760742AbXFGOAg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760233AbXFGOAP
+	id S1761671AbXFGOBN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:01:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761412AbXFGOAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:00:15 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:46409 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759416AbXFGOAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:00:13 -0400
-Message-ID: <46680F69.60105@dgreaves.com>
-Date: Thu, 07 Jun 2007 15:00:09 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+	Thu, 7 Jun 2007 10:00:42 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:17424 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761433AbXFGOAk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 10:00:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=rcLPjz8mM1teEAY2ILQO+W6hGgWb8V7m4sy1dhSO9BheTq1Xo6Q9Jfa6Xoxw+zs81a+NvBTZ3kDCbIzHcRgJzhUdU0hoVfpPK+PhN6JodALZ/I8jYCoI5ueW1pTSxkYDfezv5bzx+liookpOpxi9iZoSvuNxatLtMhgt/n6TRqU=
+Message-ID: <a0b3dd8d0706070700i3b029c28h7c6c6d3f6569fe16@mail.gmail.com>
+Date: Fri, 8 Jun 2007 00:00:38 +1000
+From: "Yen Rui" <ruiyen@gmail.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] radeonfb: Add ID for Radeon Xpress 1100
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Duane Griffin <duaneg@dghda.com>
-Cc: Tejun Heo <htejun@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-References: <46608E3F.4060201@dgreaves.com> <46609FAD.7010203@dgreaves.com>	 <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>	 <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>	 <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>	 <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>	 <4667DE2D.6050903@dgreaves.com> <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com>
-In-Reply-To: <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_48141_7784175.1181224838950"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duane Griffin wrote:
-> On 07/06/07, David Greaves <david@dgreaves.com> wrote:
->> > How hard does the machine freeze?  Can you use sysrq?  If so, please
->> > dump sysrq-t.
->> I suspect there is a problem writing to the consoles...
->>
->> I recompiled (rc4+patch) with sysrq support, suspended, resumed and tried
->> sysrq-t but got no output.
->>
->> I *can* change VTs and see the various login prompts, bitmap messages 
->> and the
->> console messages. Caps/Num lock lights work.
->>
->> Fearing incompetence I tried sysrq-s sysrq-u sysrq-b and got a reboot 
->> so sysrq
->> is OK.
-> 
-> Try sysrq-9 before the sysrq-t. Probably the messages are not being
-> printed to console with your default output level.
+------=_Part_48141_7784175.1181224838950
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Good idea :)
-Didn't work :(
+Hi,
 
-Cheers
+I have to attach the patch instead of inlining it in this e-mail
+because gmail converts word wraps into hard returns.  Sorry.
 
-David
+-- Yen Rui
+
+------=_Part_48141_7784175.1181224838950
+Content-Type: text/x-diff; name=add-radeon-xpress-1100-id.patch; 
+	charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f2naqqtu
+Content-Disposition: attachment; filename="add-radeon-xpress-1100-id.patch"
+
+cmFkZW9uZmI6IEFkZCBJRCBmb3IgUmFkZW9uIFhwcmVzcyAxMTAwCgpUZXN0ZWQgb24gYW4gQWNl
+ciBBc3BpcmUgNTA1MCBTZXJpZXMgbm90ZWJvb2suCgpTaWduZWQtb2ZmLWJ5OiBZZW4gUnVpIDxy
+dWl5ZW5AZ21haWwuY29tPgoKZGlmZiAtdXByTiBsaW51eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJp
+dmVycy92aWRlby9hdHkvYXRpX2lkcy5oIGxpbnV4LTIuNi4yMi1yYzQvZHJpdmVycy92aWRlby9h
+dHkvYXRpX2lkcy5oCi0tLSBsaW51eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJpdmVycy92aWRlby9h
+dHkvYXRpX2lkcy5oCTIwMDctMDYtMDcgMjI6MjA6MzAuMDAwMDAwMDAwICsxMDAwCisrKyBsaW51
+eC0yLjYuMjItcmM0L2RyaXZlcnMvdmlkZW8vYXR5L2F0aV9pZHMuaAkyMDA3LTA2LTA3IDIyOjI2
+OjA4LjAwMDAwMDAwMCArMTAwMApAQCAtMjEwLDMgKzIxMCw0IEBACiAjZGVmaW5lIFBDSV9DSElQ
+X1JTMzUwXzc4MzQgICAgICAgICAgICAgMHg3ODM0CiAjZGVmaW5lIFBDSV9DSElQX1JTMzUwXzc4
+MzUgICAgICAgICAgICAgMHg3ODM1CiAjZGVmaW5lIFBDSV9DSElQX1JTNDgwXzU5NTUgICAgICAg
+ICAgICAgMHg1OTU1CisjZGVmaW5lIFBDSV9DSElQX1JTNDgyXzU5NzUJCTB4NTk3NQpkaWZmIC11
+cHJOIGxpbnV4LTIuNi4yMi1yYzQtdmFuaWxsYS9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25fYmFz
+ZS5jIGxpbnV4LTIuNi4yMi1yYzQvZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2Jhc2UuYwotLS0g
+bGludXgtMi42LjIyLXJjNC12YW5pbGxhL2RyaXZlcnMvdmlkZW8vYXR5L3JhZGVvbl9iYXNlLmMJ
+MjAwNy0wNi0wNyAyMjoyMDozMC4wMDAwMDAwMDAgKzEwMDAKKysrIGxpbnV4LTIuNi4yMi1yYzQv
+ZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2Jhc2UuYwkyMDA3LTA2LTA3IDIyOjI5OjI0LjAwMDAw
+MDAwMCArMTAwMApAQCAtMTAwLDggKzEwMCw5IEBACiAJeyBQQ0lfVkVORE9SX0lEX0FUSSwgaWQs
+IFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIDAsIDAsIChmbGFncykgfCAoQ0hJUF9GQU1JTFlfIyNm
+YW1pbHkpIH0KIAogc3RhdGljIHN0cnVjdCBwY2lfZGV2aWNlX2lkIHJhZGVvbmZiX3BjaV90YWJs
+ZVtdID0gewotICAgICAgICAvKiBSYWRlb24gWHByZXNzIDIwMG0gKi8KLQlDSElQX0RFRihQQ0lf
+Q0hJUF9SUzQ4MF81OTU1LCAgIFJTNDgwLCAgQ0hJUF9IQVNfQ1JUQzIgfCBDSElQX0lTX0lHUCB8
+IENISVBfSVNfTU9CSUxJVFkpLAorCS8qIFJhZGVvbiBYcHJlc3MgMjAwbSAqLworCUNISVBfREVG
+KFBDSV9DSElQX1JTNDgwXzU5NTUsCVJTNDgwLAlDSElQX0hBU19DUlRDMiB8IENISVBfSVNfSUdQ
+IHwgQ0hJUF9JU19NT0JJTElUWSksCisJQ0hJUF9ERUYoUENJX0NISVBfUlM0ODJfNTk3NSwJUlM0
+ODAsCUNISVBfSEFTX0NSVEMyIHwgQ0hJUF9JU19JR1AgfCBDSElQX0lTX01PQklMSVRZKSwKIAkv
+KiBNb2JpbGl0eSBNNiAqLwogCUNISVBfREVGKFBDSV9DSElQX1JBREVPTl9MWSwgCVJWMTAwLAlD
+SElQX0hBU19DUlRDMiB8IENISVBfSVNfTU9CSUxJVFkpLAogCUNISVBfREVGKFBDSV9DSElQX1JB
+REVPTl9MWiwJUlYxMDAsCUNISVBfSEFTX0NSVEMyIHwgQ0hJUF9JU19NT0JJTElUWSksCmRpZmYg
+LXVwck4gbGludXgtMi42LjIyLXJjNC12YW5pbGxhL2RyaXZlcnMvdmlkZW8vYXR5L3JhZGVvbmZi
+LmggbGludXgtMi42LjIyLXJjNC9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25mYi5oCi0tLSBsaW51
+eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJpdmVycy92aWRlby9hdHkvcmFkZW9uZmIuaAkyMDA3LTA2
+LTA3IDIyOjIwOjMwLjAwMDAwMDAwMCArMTAwMAorKysgbGludXgtMi42LjIyLXJjNC9kcml2ZXJz
+L3ZpZGVvL2F0eS9yYWRlb25mYi5oCTIwMDctMDYtMDcgMjI6MzU6NDMuMDAwMDAwMDAwICsxMDAw
+CkBAIC00OCw3ICs0OCw3IEBAIGVudW0gcmFkZW9uX2ZhbWlseSB7CiAJQ0hJUF9GQU1JTFlfUlYz
+NTAsCiAJQ0hJUF9GQU1JTFlfUlYzODAsICAgIC8qIFJWMzcwL1JWMzgwL00yMi9NMjQgKi8KIAlD
+SElQX0ZBTUlMWV9SNDIwLCAgICAgLyogUjQyMC9SNDIzL00xOCAqLwotCUNISVBfRkFNSUxZX1JT
+NDgwLAorCUNISVBfRkFNSUxZX1JTNDgwLCAgICAvKiBSUzQ4MC9SUzQ4MiAqLwogCUNISVBfRkFN
+SUxZX0xBU1QsCiB9OwogCkBAIC02Niw3ICs2Niw3IEBAIGVudW0gcmFkZW9uX2ZhbWlseSB7CiAJ
+CQkJKChyaW5mbyktPmZhbWlseSA9PSBDSElQX0ZBTUlMWV9SMzUwKSAgfHwgXAogCQkJCSgocmlu
+Zm8pLT5mYW1pbHkgPT0gQ0hJUF9GQU1JTFlfUlYzODApIHx8IFwKIAkJCQkoKHJpbmZvKS0+ZmFt
+aWx5ID09IENISVBfRkFNSUxZX1I0MjApICB8fCBcCi0JCSAgICAgICAgICAgICAgICAoKHJpbmZv
+KS0+ZmFtaWx5ID09IENISVBfRkFNSUxZX1JTNDgwKSApCisJCQkJKChyaW5mbyktPmZhbWlseSA9
+PSBDSElQX0ZBTUlMWV9SUzQ4MCkpCiAKIC8qCiAgKiBDaGlwIGZsYWdzCg==
+------=_Part_48141_7784175.1181224838950--
