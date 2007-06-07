@@ -1,30 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbXFGK5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbXFGK6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbXFGK5T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 06:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXFGK5L
+	id S1755582AbXFGK6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 06:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbXFGK6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 06:57:11 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:46359 "EHLO mail.g-house.de"
+	Thu, 7 Jun 2007 06:58:42 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:54394 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751626AbXFGK5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 06:57:10 -0400
-Date: Thu, 7 Jun 2007 12:57:13 +0200 (CEST)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: dummy@foobar-g4
-To: linux-kernel@vger.kernel.org
-Subject: no more git snapshots?
-Message-ID: <alpine.DEB.0.99.0706071253480.2151@foobar-g4>
+	id S1750985AbXFGK6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 06:58:42 -0400
+Date: Thu, 7 Jun 2007 12:58:25 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Christian Kujau <lists@nerdbynature.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: no more git snapshots?
+In-Reply-To: <alpine.DEB.0.99.0706071253480.2151@foobar-g4>
+Message-ID: <Pine.LNX.4.61.0706071258070.20341@yvahk01.tjqt.qr>
+References: <alpine.DEB.0.99.0706071253480.2151@foobar-g4>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just wondering: the last git snapshot is -rc3-git7 from 04.06.2007, have 
-they been discontinued or is some magic script just on vacation for a 
-few days?
 
-thanks,
-Christian.
---
-make bzImage, not war
+On Jun 7 2007 12:57, Christian Kujau wrote:
+>
+> Just wondering: the last git snapshot is -rc3-git7 from 04.06.2007, have they
+> been discontinued or is some magic script just on vacation for a few days?
+
+After that came -rc4. Next one will be -rc4-git1.
+
+
+	Jan
+-- 
