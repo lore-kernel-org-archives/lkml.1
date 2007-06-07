@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXFGQGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932967AbXFGQHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932579AbXFGQGZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXFGQGO
+	id S932967AbXFGQHT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763561AbXFGQG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:06:14 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:45126 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbXFGQGM (ORCPT
+	Thu, 7 Jun 2007 12:06:58 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60916 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761174AbXFGQG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:06:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=B+PSekpNG7ZhBurCjYbJeUdeAWjzJmYqU6Y8WXjSAHaoCnKZhz6j9N7OMQs3K59yDhWws6uYzc+rCm9IyF64FIkmF+oMD23WJvGnc6YCrCZYftp4exrd5Yk2KtaiPCMquOs3CRz/97J0IngcThyaWyKBbCSeIcNpWiO/GfugAR4=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: Linux 2.6.22-rc4
-Date: Thu, 7 Jun 2007 12:06:05 -0400
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 7 Jun 2007 12:06:57 -0400
+Date: Thu, 7 Jun 2007 09:06:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Peter Jones <pjones@redhat.com>, Kay Sievers <kay.sievers@vrfy.org>,
        Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>
-References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org> <200706071124.30128.gene.heskett@gmail.com> <Pine.LNX.4.64.0706071738240.13101@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0706071738240.13101@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1
+Message-Id: <20070607090632.cfcf02e6.akpm@linux-foundation.org>
+In-Reply-To: <20070607155953.GA17591@suse.de>
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+	<4667018D.7020407@googlemail.com>
+	<1181168095.3612.4.camel@lov.localdomain>
+	<4667C47C.2010207@googlemail.com>
+	<1181206091.3625.9.camel@lov.localdomain>
+	<4667D2DF.30207@googlemail.com>
+	<1181228660.3625.23.camel@lov.localdomain>
+	<46682385.1060802@redhat.com>
+	<20070607154342.GA16911@suse.de>
+	<20070607085200.f8d6e2d3.akpm@linux-foundation.org>
+	<20070607155953.GA17591@suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706071206.06298.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 June 2007, Jan Engelhardt wrote:
->On Jun 7 2007 11:24, Gene Heskett wrote:
->>>>> It is too stable for me.
->>>>
->>>>I wish all our testers were you ;)
->>>
->>>It [2.6.22-rc4] did not die on me so far, unlike that stock FC7 kernel
->>>(same config but without fc patches).
->>
->>Oh its stable allright, but why do I have to turn the monitor off by hand
->> when I leave.  None of that is working, not even the screen blanker.
->
->VC or X?
->
->
->	Jan
+On Thu, 7 Jun 2007 08:59:53 -0700 Greg KH <gregkh@suse.de> wrote:
 
-Regular X, fc6 box, amd xp2800.  Using NVIDIA's latest driver, and it works 
-when booted to a 2.6.21 era kernel.
+> On Thu, Jun 07, 2007 at 08:52:00AM -0700, Andrew Morton wrote:
+> > On Thu, 7 Jun 2007 08:43:42 -0700 Greg KH <gregkh@suse.de> wrote:
+> > 
+> > > >  Fixed in mkinitrd-6.0.9-6 , which I'll build now and push to 
+> > > >  updates-testing.  Thanks for getting my attention here.
+> > > 
+> > > Great, Andrew, can you please reenable the block-device patch that is in
+> > > my tree now that the problem has been solved?
+> > 
+> > I think we're screwed, aren't we?  Everyone needs to upgrade mkinitrd to be
+> > able to boot the kernel?  Not viable :(
+> > 
+> > For example, what about my two-year-old yellowdog machine?
+> 
+> Enable CONFIG_SYSFS_DEPRECATED and it should all work just fine.  That's
+> what Michal said worked for him.
+> 
 
-Just about up to date, seems I have to do the kde stuffs one or two pieces at 
-a time as yumex isn't handling the deps well otherwise.
+Actually, it _was_ enabled.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The inherent vice of capitalism is the unequal sharing of blessings;
-the inherent virtue of socialism is the equal sharing of misery.
-		-- Churchill
+Ho hum, I'll have a poke at it this evening.
+
+
+So...  what's the story here?  Should our position be that
+CONFIG_SYSFS_DEPRECATED=n should only be used by distro kernel-builders,
+who are concurrently shipping userspace which can handle it?  And that
+these distros should (probably) set CONFIG_SYSFS_DEPRECATED=y in their
+update kernels for older distributions?
