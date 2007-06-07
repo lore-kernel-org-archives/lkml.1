@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937139AbXFGVdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937144AbXFGVeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937139AbXFGVdB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 17:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935198AbXFGVcr
+	id S937144AbXFGVeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 17:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758791AbXFGVeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 17:32:47 -0400
-Received: from smtp.bulldogdsl.com ([212.158.248.7]:2904 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935055AbXFGVcq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 17:32:46 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
-Date: Thu, 7 Jun 2007 22:32:36 +0100
-User-Agent: KMail/1.9.7
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, jeff@garzik.org
-References: <20070607162251.5f291325@the-village.bc.nu> <m3wsyfzcpt.fsf@maximus.localdomain>
-In-Reply-To: <m3wsyfzcpt.fsf@maximus.localdomain>
+	Thu, 7 Jun 2007 17:34:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40843 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755239AbXFGVeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 17:34:11 -0400
+Message-ID: <46686810.6030805@redhat.com>
+Date: Thu, 07 Jun 2007 13:18:24 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706072232.37051.s0348365@sms.ed.ac.uk>
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7> <20070606235906.72439d16@the-village.bc.nu> <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com> <20070607001932.35c9591c@the-village.bc.nu> <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu> <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com> <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com> <466864F8.2050903@cosmosbay.com>
+In-Reply-To: <466864F8.2050903@cosmosbay.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 June 2007 22:17:18 Krzysztof Halasa wrote:
-> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-> > The intel-rng printed a nice well formatted message when the port was
-> > disabled. Someone then came along and blindly trashed it by screwing up a
-> > trim down to 80 columns.
->
-> Perhaps we should drop that 80-column style and use some 120+?
-> X or no X, almost all people now have more lines and columns on their
-> displays than MDA 20 years ago.
->
-> 132 to match text VGA perhaps?
-> 80 can be left for the actual _output_, I mean number of chars printed
-> by kernel code.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-I personally buy the argument that 80 cols helps remind people that they've 
-used too many indentation depths and should redesign their code. I think it's 
-a good thing to stick to where possible, even if just from a design 
-perspective.
+Eric Dumazet wrote:
+> I am afraid randomization wont really work if /sbin/init or /bin/bash
+> for example uses one (or more) unseq fd :
+> The 'random base' will be propagated at fork()/exec() time ?
 
-There are some cases such as the one Alan has pointed out here where being 
-strictly 80 cols seems more destructive than useful, but those are the 
-exception, not the rule (IMO).
+The base certainly should be reset o fork.  Yes, this might expand the
+region in which descriptors are allocated due to inherited descriptors.
+ But I consider this the application's problem and it usually is not
+really an issue.  Apps have to explicitly request using the new
+descriptors and they can use CLOEXEC (CLOFORK) correctly.
 
--- 
-Cheers,
-Alistair.
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+iD8DBQFGaGgQ2ijCOnn/RHQRAutyAKChp9KT9NVfUTD76GRhyY62GUTtaACglgxi
+N/4+vmcUPEYtLmUTYKVjMvg=
+=otvw
+-----END PGP SIGNATURE-----
