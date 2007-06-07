@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764616AbXFGPo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765260AbXFGPon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764616AbXFGPo3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762198AbXFGPoU
+	id S1765260AbXFGPon (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764569AbXFGPoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:44:20 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:34089 "EHLO atlrel6.hp.com"
+	Thu, 7 Jun 2007 11:44:25 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:40175 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758726AbXFGPoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:44:19 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>
-Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
-Date: Thu, 7 Jun 2007 09:44:07 -0600
-User-Agent: KMail/1.9.6
-Cc: "Samuel Ortiz" <samuel@sortiz.org>, arvidjaar@mail.ru,
-       linux-kernel@vger.kernel.org,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com
-References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200706051723.56436.bjorn.helgaas@hp.com> <A6D19A13FE030A409EC4362C172E091F016F51BC@eseldmw101.eemea.ericsson.se>
-In-Reply-To: <A6D19A13FE030A409EC4362C172E091F016F51BC@eseldmw101.eemea.ericsson.se>
+	id S1764416AbXFGPoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 11:44:23 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [patch/rfc] implement memmem() locally in kallsyms.c
+Date: Thu, 7 Jun 2007 11:44:49 -0400
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200706070116.32042.vapier@gentoo.org> <9a8748490706070236ob529fedn2ea1d9797e575976@mail.gmail.com>
+In-Reply-To: <9a8748490706070236ob529fedn2ea1d9797e575976@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200706070944.07674.bjorn.helgaas@hp.com>
+Content-Type: multipart/signed;
+  boundary="nextPart31105051.pjLX6Bq6xv";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706071144.50242.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 June 2007 06:23:58 am Linus Walleij (LD/EAB) wrote:
-> Björn wrote:
-> > Something's wrong with this strategy.  The BIOS is telling us 
-> > that an SMCf010 device is present, active, and responds at io 
-> > ports 0x100-0x107 and 0x2e8-0x2ef.  The fact that it happens 
-> > to be on the other side of an ISA or LPC bridge should be 
-> > immaterial to the OS driver.
-> 
-> Yes, ideally. Yes of course it is wrong, or from a platonic
-> perspective. If nobody wrote buggy BIOS:es there would be no
-> problem.
+--nextPart31105051.pjLX6Bq6xv
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yup, I agree that we will always need to work around BIOS bugs.
+On Thursday 07 June 2007, Jesper Juhl wrote:
+> On 07/06/07, Mike Frysinger <vapier@gentoo.org> wrote:
+> > This patch basically copies the gnulib version of memmem() into
+> > scripts/kallsyms.c.  While a useful function, it isn't in POSIX so some
+> > systems (like Darwin) choose to omit it.  How do others feel ?
+>
+> Do people actually build Linux kernels on Darwin & *BSD systems? If
+> they do then why?
 
-But smsc-ircc2 contains a *lot* of preconfigure stuff.  I'm
-skeptical that all of it is really to work around BIOS bugs.
-I think it's more likely that Linux just isn't using the PNP
-info correctly or drivers for other southbridge devices are
-getting in the way.
+in the embedded world,  yes ... everything is being cross-compiled and=20
+deployed on different hardware anyways, so the build env shouldnt matter
 
-> There is some history in the preconfigure functions:
-> these come from the smcinit tool (see http://irda.sourceforge.net/smcinit/),
+> What I'm getting at is; why do we care if it will build there?
 
-Thanks for the pointer.  I'll read over that and see if I can
-find a laptop to play with.
+that was the [rfc] part of the e-mail ... i got enough complaints from peop=
+le=20
+OS X people to put together the patch
+=2Dmike
 
-Bjorn
+--nextPart31105051.pjLX6Bq6xv
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iQIVAwUARmgn8kFjO5/oN/WBAQIdNQ/6A/aZ3MzPNmPbYBRDQMq4wSAKpcjSSNkO
+unBKNT/X0XdXnAIGT546kwe1Od7NM4HARWiVhfOZ0wR8QbWKL3hh9CLYkDyOZCni
+V5yOVr+6r03cBsrk6Zn3dBu1SEsdmi7AK82oO63f/Ia3CROanVlvCtPaao26EwTv
+jjZfa/CJaxEHegL/opHtYXfM3nJKyk39UBHukcOsCzAzHUB4TjiHee9d1hUK2XFU
+LsqjTO86/C2+ZWKe0EcvgWWqtpoYMPFENf8fib29iBtVLBfAF0nR+yArkT8/mPKH
+Ts7msGj7xopB1SJR1+1UFQhC9CPiHuMB2UNi9I+s4uttSrkv7Wstlu0uuqekrCT6
+4RK8sHJQ5ylkQjFrQdW1XoMnUjh//0zsO88l1lHF6GnZSZEmquII9GmPC2vrDa2p
+u/WC2uJK0c/XOrWXPmu6ukkGnjmu6HcANZIiEwAbEkDz7jFzlgxjlGxmbGtBBHg5
+xxJu/o9I0NxUUF225oQg8dSGs4ElCUEWFu1QOd6gWEkf547C48N+8MvtBA8gcBzI
+GD+nh3I3x1oLSELqXxHtl7dkDUGl7U/x2OpB38U75DBuwpCsec4cZV1kqqgdxHMF
+ScZ/f1nuj9yRws8cByZYNueKSLdn393UI80Cfmex8iBJsG7PRk+YdLx7xkvV0wB2
+3gWnkjMJn+I=
+=tCX1
+-----END PGP SIGNATURE-----
+
+--nextPart31105051.pjLX6Bq6xv--
