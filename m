@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbXFGNog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760788AbXFGNp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760233AbXFGNog (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 09:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbXFGNo1
+	id S1760788AbXFGNp7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 09:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757019AbXFGNpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 09:44:27 -0400
-Received: from rtr.ca ([64.26.128.89]:1326 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751891AbXFGNo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 09:44:27 -0400
-Message-ID: <46680BB8.50404@rtr.ca>
-Date: Thu, 07 Jun 2007 09:44:24 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 7 Jun 2007 09:45:52 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:56407 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753815AbXFGNpv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 09:45:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Gx1aMSxT6YyS+GXubG8hK0AH6GXpsEgR5tOF/8lxXl1sfv7QR7LsEj+d7vJBNWSIpgL1TOlTNsZ7p9VOXPnexcpwHKK5hqMZndyWMzCjX+JFiipp9I4ZAj4Q9Yqif6sGMiAm4t4SrjTvZ6sfPr8EgYNjenTompjakNVX3/Qc6co=
+Message-ID: <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com>
+Date: Thu, 7 Jun 2007 14:45:51 +0100
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "David Greaves" <david@dgreaves.com>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+Cc: "Tejun Heo" <htejun@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, "Neil Brown" <neilb@suse.de>
+In-Reply-To: <4667DE2D.6050903@dgreaves.com>
 MIME-Version: 1.0
-To: Stephen Tweedie <sct@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: ext3fs: umount+sync not enough to guarantee metadata-on-disk
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46608E3F.4060201@dgreaves.com> <46609FAD.7010203@dgreaves.com>
+	 <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>
+	 <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
+	 <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>
+	 <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>
+	 <4667DE2D.6050903@dgreaves.com>
+X-Google-Sender-Auth: 749024c516b999cd
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew / Stephen / Ted,
+On 07/06/07, David Greaves <david@dgreaves.com> wrote:
+> > How hard does the machine freeze?  Can you use sysrq?  If so, please
+> > dump sysrq-t.
+> I suspect there is a problem writing to the consoles...
+>
+> I recompiled (rc4+patch) with sysrq support, suspended, resumed and tried
+> sysrq-t but got no output.
+>
+> I *can* change VTs and see the various login prompts, bitmap messages and the
+> console messages. Caps/Num lock lights work.
+>
+> Fearing incompetence I tried sysrq-s sysrq-u sysrq-b and got a reboot so sysrq
+> is OK.
 
-I have a MythTV PVR box here, which has had intermittent shutdown issues
-over the past while.
+Try sysrq-9 before the sysrq-t. Probably the messages are not being
+printed to console with your default output level.
 
-The main storage for recordings is a 2-drive RAID0 array,
-formatted with ext3fs.  The system runs a 2.6.17 Ubuntu kernel
-that I've tailored/rebuild for this specific machine.
+Cheers,
+Duane Griffin.
 
-My observation is, if I delete a couple of 25+ GByte files,
-and then immediately shutdown the system, the disks are still being
-written to at the point when the power goes off (halt -f -p).
-
-The overall sequence is something like this:
-
-1. Delete the files in Myth, which uses a "delete slowly" function
-to avoid locking up the machine for the 30-60 seconds that this would
-otherwise require.  Myth appears to open the file, unlink it, and then
-sit in a loop doing small ftruncate's until nothing is left.
-
-2. When I trigger the shutdown whilst this is happening, Myth gets
-killed off, and so the unlinked file is automatically closed.
-and the kernel (filesystem) code begins finishing the delete operation.
-
-3. The shutdown scripts do their thing quickly, so the delete is
-*still* underway when the umount commands are issued.
-On this system, I use this sequence:
-
-  ## /var/lib/mythtv is the recording's ext3fs, on /dev/md0 (RAID0):
-   mount /var/lib/mythtv -oremount,ro
-   sync
-   umount /var/lib/mythtv
-   sync
-   mount / -oremount,ro
-   sync
-   sleep 1
-   hdparm -W0 /dev/sda /dev/sdb
-   sync
-   sleep 2
-   halt -f -p
-
-4. The hard drive light is on solid throughout, including at the point
-when the power goes out.
-
-5. On the next reboot, there is a LONG pause (20-30 seconds) at the
-point where /var/lib/mythtv is remounted --> indicating unfinished business
-from the journal file that needs to be replayed (eg. the file deletion).
-
-So.. how can I guarantee a quiescent filesystem before doing "halt -f -p" ??
-This looks pretty dangerous as-is.
-
-Thanks
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
