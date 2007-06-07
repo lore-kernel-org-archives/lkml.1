@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937460AbXFGWqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966366AbXFGWsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937460AbXFGWqe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763911AbXFGWq0
+	id S966366AbXFGWsA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936592AbXFGWrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:46:26 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:49928 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935230AbXFGWqZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:46:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=E572VGhkC6g52M7FzPz2cg7IXezX/Gm0M3o5YnX23sV50Z1Cu+wjzlSA1K5pICID3iwK+4BR89Rg8h8fl8IH2ROLu5flhxes04mgT+KFQvkOpZCcU5248p5a9jp7csO/JjoQRXEcXSJv6KQol3IkMnM38+ZIk5pZ+1ZDy/S5wzc=
-Message-ID: <9a8748490706071546k1f34a39s92102f7345ba4192@mail.gmail.com>
-Date: Fri, 8 Jun 2007 00:46:25 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Daniel Hazelton" <dhazelton@enter.net>
-Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
-Cc: "Krzysztof Halasa" <khc@pm.waw.pl>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org, jeff@garzik.org
-In-Reply-To: <200706071832.13486.dhazelton@enter.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jun 2007 18:47:49 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:55179 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765977AbXFGWrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:47:48 -0400
+Date: Thu, 7 Jun 2007 18:47:46 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tejun Heo <htejun@gmail.com>, Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
+Message-ID: <20070607224746.GA23290@havoc.gtf.org>
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org> <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com> <466196AD.3090502@garzik.org> <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com> <46667466.4010500@gmail.com> <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com> <4667B347.9040900@gmail.com> <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070607162251.5f291325@the-village.bc.nu>
-	 <m3wsyfzcpt.fsf@maximus.localdomain>
-	 <200706071832.13486.dhazelton@enter.net>
+In-Reply-To: <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/07, Daniel Hazelton <dhazelton@enter.net> wrote:
-> On Thursday 07 June 2007 17:17:18 Krzysztof Halasa wrote:
-> > Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-> > > The intel-rng printed a nice well formatted message when the port was
-> > > disabled. Someone then came along and blindly trashed it by screwing up a
-> > > trim down to 80 columns.
-> >
-> > Perhaps we should drop that 80-column style and use some 120+?
-> > X or no X, almost all people now have more lines and columns on their
-> > displays than MDA 20 years ago.
-> >
-> > 132 to match text VGA perhaps?
-> > 80 can be left for the actual _output_, I mean number of chars printed
-> > by kernel code.
->
-> Why? My consoles are *all* still 80x24 text mode. It's only if I decide to
-> monkey with the settings (and why fix what isn't broken?) or when I'm in X
-> that I get a bigger screen than that.
->
-> I think the general consensus on the 80 character lines isn't for the average
-> home user, but for the people that have things like old Wyse terminals and
-> such hooked up.
->
+On Thu, Jun 07, 2007 at 01:56:11PM -0700, Linus Torvalds wrote:
+> On Thu, 7 Jun 2007, Tejun Heo wrote:
+> > Ah.. okay.  Now I see what's going on.  Jeff, this is another device
+> > which doesn't set nsect and lbal to 1 after reset.  Gregor, please try
+> > the attached patch.
 
-Hmm, perhaps my eyes are just not as good as other peoples, but my X
-runs at 1600x1200 and I have konsole in KDE configured so that when it
-is maximized it is very close to a 80x25 window (actually it is 82x31
-with a size 18 font).
-Nice and readable, if I make the font any smaller to fit more
-cols/rows then the text gets too small and my eyes hurt.
-Reading kernel code formatted for 80cols fits perfectly for me.
+> Tejun, since Jeff is apparently traveling this week, and Gregor tested the 
+> patch successfully (and it looks sane anyway - why in Gods name _would_ we 
+> care what the initial setting of nsect/lbal is?), can you send this in 
+> with the changelog and sign-off?
+
+Ack'ing the sata_promise change was easy, but with this one it would
+be nice to wait a bit before changing the core probe code that [now]
+every ATA setup goes through, based on a single bug report.
+
+The values assist in detecting ghost devices (same device appearing
+on both master and slave) and TF register malfunctions, and I would
+appreciate not breaking _that_ so late in 2.6.22-rc for a single
+report.  Thankfully we have -some- ghost device prevention code
+elsewhere, but this is part of it.
+
+Fedora 7 reports are starting to come in, and those will help point
+us in the right direction too.
+
+I'll be home for a bit in 36 hours (->net driver fixes go then)
+and for good on Tuesday, so I'm hoping you can wait until then.
+
+	Jeff
 
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+
