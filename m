@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965531AbXFGAV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965706AbXFGAWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965531AbXFGAV1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jun 2007 20:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbXFGAVU
+	id S965706AbXFGAWR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jun 2007 20:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965063AbXFGAWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jun 2007 20:21:20 -0400
-Received: from gw.goop.org ([64.81.55.164]:55206 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755655AbXFGAVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jun 2007 20:21:20 -0400
-Message-ID: <46674F68.6030100@goop.org>
-Date: Wed, 06 Jun 2007 17:20:56 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 6 Jun 2007 20:22:04 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:15123 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755972AbXFGAWD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jun 2007 20:22:03 -0400
+Message-ID: <46674FA6.8060904@de.ibm.com>
+Date: Thu, 07 Jun 2007 02:21:58 +0200
+From: Martin Peschke <mp3@de.ibm.com>
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andi Kleen <ak@suse.de>,
-       v12n <virtualization@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC 6/7] i386: make the bzImage payload an ELF file
-References: <20070606225837.654272428@goop.org> <20070606230922.476662240@goop.org> <4667462A.2010404@zytor.com> <466749C8.2010700@goop.org> <46674C96.7090104@zytor.com>
-In-Reply-To: <46674C96.7090104@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, jbaron@redhat.com,
+       rostedt@goodmis.org, linux-s390@vger.kernel.org
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+References: <1181165656.7133.23.camel@dix> <20070606231041.GB11592@elte.hu>
+In-Reply-To: <20070606231041.GB11592@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> I was thinking prescriptive, having the decompressor read the output
-> stream and interpret it as ELF.  I guess a descriptive approach could be
-> made to work, too (I haven't really thought about that avenue of
-> approach), but the prescriptive model seems more powerful, at least to me.
+Ingo Molnar wrote:
+> * Martin Peschke <mp3@de.ibm.com> wrote:
+> 
+>> - lock_time_inc() vs. statistic_add_util()
+> 
+> please fix the coding style in lib/statistic.c. It's full of:
+> 
+> {
+>         unsigned long long i;
+>         if (value <= stat->u.histogram.range_min)
+>                 return 0;
+> 
+> put a newline after variable sections.
+> 
+> and:
+> 
+>         on_each_cpu(_statistic_barrier, NULL, 0, 1);
+>         return 0;
+> 
+> preferably use a newline before 'return' statements as well. (this is 
+> not always necessary, but in the above case it looks better)
 
-Certainly, but much harder to implement.  The ELF parser needs to be
-prepared to move itself around to get out of the way of the ELF file. 
-It's a fairly large change from how it works now.
+Will do (in my local tree, for the time being).
 
-I was thinking of making the ELF file entirely descriptive, since its
-just a set of ELF headers inserted into the existing bzImage structure,
-and it still relies on the bzImage being build properly in the first place.
+Good points. Thnaks for reviewing.
 
-    J
+
+	Martin
+
