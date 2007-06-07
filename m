@@ -1,165 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762743AbXFGPAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbXFGPA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762743AbXFGPAA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbXFGO7w
+	id S1762891AbXFGPA6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758324AbXFGPAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:59:52 -0400
-Received: from frosty.hhs.nl ([145.52.2.15]:47556 "EHLO frosty.hhs.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbXFGO7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:59:51 -0400
-Message-ID: <46681C5B.80201@hhs.nl>
-Date: Thu, 07 Jun 2007 16:55:23 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Vojtech Pavlik <vojtech@suse.cz>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: problem with softraw and keycodes > 128
-References: <4667C00D.40708@hhs.nl> <20070607131503.GA26905@suse.cz>
-In-Reply-To: <20070607131503.GA26905@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 7 Jun 2007 11:00:52 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:58901 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbXFGPAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 11:00:51 -0400
+Subject: Re: LZO patch comparision
+From: Richard Purdie <rpurdie@openedhand.com>
+To: Nitin Gupta <nitingupta910@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4cefeab80706070710x79ee3ca8h5ae8419bec2edce3@mail.gmail.com>
+References: <1181217390.6086.108.camel@localhost.localdomain>
+	 <4cefeab80706070710x79ee3ca8h5ae8419bec2edce3@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 16:00:27 +0100
+Message-Id: <1181228427.6086.165.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.2/RELEASE, bases: 07062007 #320093, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vojtech Pavlik wrote:
-> On Thu, Jun 07, 2007 at 10:21:33AM +0200, Hans de Goede wrote:
-> 
-> Hans,
-> 
->> I've been experimenting with getting the internetkeys on several
->> keyboards to work. My biggest problem with this currently is the
->> following:
-> 
->> Step 1: press key, dmesg says:
->> 	atkbd.c: Unknown key released (translated set 2, code 0xa3 on  isa0060/serio0).
->> 	atkbd.c: Use 'setkeycodes e023 <keycode>' to make it known.
->> Step 2: map key: setkeycodes e023 163
->> Step 3: run xev, press key. X-keycode is: 153 instead of 163 ?
-> 
-> 
->> Doing:
->> 	echo -n 0 >/sys/devices/platform/i8042/serio1/softraw
->> However does make them identical.
-> 
-> this is a well known problem. It's not easy to explain and next to
-> impossible to fix within the scope of operation of your test case -
-> otherwsie it'd be fixed ages ago.
-> 
-> The explanation why this happen will be a little longer, and will follow
-> the life of a keystroke as it passes through the different layers.
-> 
-> 	1. First, the user presses a key. Since we're talking a 102-key
-> 	PS/2-type keyboard here, the keyboard scans its matrix and figures out
-> 	the position of the key. Then, since the connection to the PC is running
-> 	in AT mode, it translates the key to a string (one to eight bytes) of
-> 	AT-compatible scancodes.
-> 
-> 	2. The i8042 in the computer receives the scancodes, translates them to
-> 	XT-compatible scancodes and makes them available to the OS.
-> 
-> 	3. In OS the i8042.c gets the scancodes and forwards them to atkbd.c
-> 
-> 	4. atkbd.c decodes the string of scancodes and turns them into a single
-> 	Linux input event, and forwards it to the input core.
-> 
-> 	5. The Linux input core dispatches the events to char/keyboard.c.
-> 
-> 	6. keyboard.c, a part of the VT driver, sees that X told the VT that it
-> 	wants the "raw mode", which means that the VT should give the keystrokes
-> 	as the original string of XT scancodes. Hence (when softraw is 1), it
-> 	consults a table and synthesizes what it thinks the original string of
-> 	bytes could have been and gives that to X. For all keys that atkbd.c
-> 	knows by default, this string is IDENTICAL to what atkbd.c has received.
-> 
-> 	7. X takes the string, and using an algorithm similar to, but DIFFERENT
-> 	from the algoithm that atkbd.c uses, it converts them to an X scancode.
-> 	The X scancodes are similar to, but different from the Linux event
-> 	keycodes, for historical reasons going back to the 90's.
-> 
-> 	8. Using an xmodmap table compiled from xkb sources, X converts the X
-> 	scancode to an X keysym.
-> 
-> In the softraw == 0 case, the original string of XT scancodes is passed
-> all along the path to X, so that X really gets what the keyboard sent.
-> 
-> Since the table mapping Linux event keycodes to the synthesized XT
-> scancodes in step 6. is constant and shared for all (even USB and other)
-> keyboards, this means that the Linux kernel always presents a virtual
-> "Linux keyboard" to X.
-> 
-> The "Linux keyboard" always sends the same scancodes for keys with the
-> same meaning, regardless of what the real hardware does.
-> 
+On Thu, 2007-06-07 at 19:40 +0530, Nitin Gupta wrote:
+> On 6/7/07, Richard Purdie <rpurdie@openedhand.com> wrote:
+> > In the following,
+> > - is Nitin's patch
+> > + is my version.
 
-But doesn't it only know the meaning after doing a setkeycodes for easy-access 
-keys? I find it somewhat counter inituitive that doing "setkeycodes e023 163" 
-will give me a keycode 163 on the console (as reported by showkeys), but will 
-send a scancode of 153 to the X-server.
-
-> And this is why X sees a different code in softraw==1 mode than in
-> softraw==0 mode: In the first it gets the virtual "Linux keyboard", in
-> the other it gets access to the real hardware.
+> > +       for (;;) {
+> > -               DINDEX1(dindex, ip);
+> > +               dindex = DMS((0x21 * DX3(ip,5,5,6)) >> 5, 0);
+> >                 m_pos = dict[dindex];
+> >
+> > Probably makes sense to expand the define since its single use.
 > 
->> Problem, as the xkb files for these keyboards expect the X-keycode to
->> be 163, as just it is under the console. Now I know that X-keycodes !=
->> console-keycodes, for example the A key is 30 on the console and 38 in
->> X, but in the case of this special keys, both the xkb files for these
->> internet keyboards (written by suse) and config files for special
->> daemons like lineak, expect them to be identical.
+> DINDEX{1,2} definition varies with LZO flavours (lzo1x, lzo1y etc.),
+> so its better to leave this macro as such.
+
+Ok, I've no real preference.
+
+> > -                               op[-2] |= (unsigned char)t;
+> > +                               op[-2] |= t;
+> > The unsigned char casts are all unneeded.
+> > I'll skip future cases of these issues but there are more.
 > 
-> This is wrong. Someone simply needs to write a xkb/lineak description
-> for the "Linux keyboard", and then all these problems will go away.
+> 't' is size_t, so shouldn't we do this casting while doing OR b/w
+> unsigned char and size_t ? I'm not sure here.
+
+op is an unsigned char. The assignment implies the cast and it will make
+no difference to the output code (I've checked).
+
+> >
+> > @@ -203,61 +165,60 @@
+> >                         break;
+> >         }
+> >
+> > -       *out_len = (size_t)(op - out);
+> > -       return (size_t)(in_end - ii);
+> > +       *out_len = op - out;
+> > +       return in_end - ii;
+> >
+> > unneeded casts.
 > 
+> You pointed out _lots_ of such unnecessary casts. I wonder why author
+> did these in first place? He aims "unlimited" backward compatibility
+> but I'm not too sure if removing these castings can break code on any
+> of archs that Linux supports.
 
-Well to be honest I'm looking for a somewhat more quick fix then that. Let me 
-try to explain. Xorg comes with keyboard descriptions for many special-access 
-keys having keyboards. These descriptions can be easily selected by the end 
-user from the kde / gnome keyboard properties applets.
+The author supports any compiler on any arch with a wide range of
+compiler flags. If we assume gcc and the standard kernel coding
+standards/flags, the casts are not needed. All the casts I've suggested
+removing are implied by the assignments made.
 
-This however only works with softraw=0 for 2 reasons:
-1) without softraw=0 the key presses never reach the server when there hasn't
-    been an setkeycodes command for the easy access key
-2) even if a setkeycodes command was given, then the keycode given to
-    setkeycodes doesn't match the scancode seen by xorg, messing things up.
-    (unless one uses setkeycodes with a reverse mapping of the mapping done in
-     the kernel)
+FWIW, my bytecode comparisons also confirm there are no bytecode changes
+on the arches I made the tests on.
 
-There are 3 ways out of this:
-1) write special loadkey maps for all the easy access keyboards, since unlike X
-    loadkeys AFAIK doesn't support inheriting keys from a global layout, the
-    number of language-layout <-> keyboard model variants would become quite
-    frightening.
+> > -       if (!workmem)
+> > -               return -EINVAL;
+> >
+> > Could be confused with LZO's own error codes. Do we need this?
+> 
+> This is basic (good-to-have) sanity check. s/-EINVAL/LZO_E_ERROR
 
-    When loadkeys has been thought to map the special keys according to the
-    linuxkeyboard codes, then X needs to be tought how to handle a linux
-    keyboard and default to this
+It should never happen and I'm not sure its worth guarding against but
+LZO_E_ERROR is better.
 
-    Also configuration utils need to be written to properly set things up for
-    loadkeys, as autodetecting this is impossible
+> > +#define HAVE_IP_OR(x, ip_end, ip) ((ip_end - ip) < (size_t)(x))
+> > +#define HAVE_OP_OR(x, op_end, op) ((op_end - op) < (size_t)(x))
+> > +#define HAVE_LB_OR(m_pos, out, op) (m_pos < out || m_pos >= op)
+> >
+> > Your NEED_* defines affect flow control contra to CodingStyle, hence my
+> > choice of these instead and the associated code changes which I'll skip
+> > over.
+> 
+> 1. Why did you remove (size_t) cast in LHS? It's now like comparison
+> between signed and unsigned int.
 
-2) Somehow fix things so that selecting the right model in gnome/kde
-    keyboard-preferences will make the keys work. Like it does now with
-    softraw=0. Which leads me to asking what are the downsides of using
-    softraw=0?
-    What about be default defining keycodes for all the 128+ scancodes not yet
-    defined, and defining these in such a way that the actual scancodes is what
-    gets send to X?
-    Or maybe it would be an option to send the raw scancode just like is done
-    with softraw=0 when there is no mapping (instead of ignoring the key as is
-    done now).
+Where does the int come from? op_end, op and friends are all pointers
+and will hence be unsigned...
 
-    Since the xkb discriptions for most of the easy access keyboards have been
-    written by Suse, I assume the tested them and it works for them. Does anyone
-    know how suse does this?
+> 2. Naming is strange. I suggest:
+> HAVE_IP_OR -> CHECK_IP
+> HAVE_OP_OR -> CHECK_OP
+> HAVE_LB_OR -> CHECK_LB
 
-3) Forget about all this and leave things as is, this one clearly does not have
-    my preference.
+ok.
 
-Regards,
+> > -               /* copy literals */
+> > -               NEED_OP(t + 3);
+> > -               NEED_IP(t + 4);
+> > -#ifndef UNALIGNED_OK
+> > -               if (((ip | op ) & 3) == 0) {
+> > -#endif
+> > +               if (HAVE_OP_OR(t + 3, op_end, op))
+> > +                       goto output_overrun;
+> > +               if (HAVE_IP_OR(t + 4, ip_end, ip))
+> > +                       goto input_overrun;
+> > +
+> > +#if defined(LZO_UNALIGNED_OK_4)
+> >                         COPY4(op, ip);
+> >                         op += 4;
+> >                         ip += 4;
+> >
+> 
+> There is no need to have separate LZO_UNALIGNED_OK_{2,4}. If unaligned
+> access is allowed and is faster than byte-by-byte access, set
+> UNALIGNED_OK otherwise not.
 
-Hans
+There was no real added complication in leaving them separate. Some
+archs support LZO_UNALIGNED_OK_4 but not LZO_UNALIGNED_OK_2 (AVR32
+according to the kernel headers). 
+
+Anyhow, this is pending a look at what get/put_unaligned does to the
+bytecode...
+
+> > We have a fairly major difference in the code here. This is where you've
+> > assumed LZO_ALIGNED_OK_4 was set and it wasn't set in any in LZO in any
+> > of my tests. Assuming LZO_ALIGNED_OK_4 should be safe for the kernel and
+> > the code path you've added probably performs better but why was it
+> > disabled in minilzo?
+> >
+> > -#ifdef UNALIGNED_OK
+> > +#if defined(LZO_UNALIGNED_OK_4)
+> >                         if (t >= 2 * 4 - (3 - 1) && (op - m_pos) >= 4) {
+> > -#else
+> > -                       if (t >= 2 * 4 - (3 - 1) &&
+> > -                                       (((op | m_pos) &  3) == 0)) {
+> > -#endif
+> >
+> > Same again here.
+> 
+> Here, you are avoiding optimization in case op, m_pos happen to be
+> (4-byte) aligned.
+
+Yes, for the reason I described - minilzo didn't enable that
+optimisation / codepath - why?
+
+> > diff -uwr 1/lzodefs.h 2/lzodefs.h
+> > --- 1/lzodefs.h 2007-06-07 09:33:34.000000000 +0100
+> > +++ 2/lzodefs.h 2007-06-06 17:40:56.000000000 +0100
+> >
+> > -#ifndef __LZO1X_INT_H
+> > -#define __LZO1X_INT_H
+> >
+> > Pointless since only the LZO code will include this and it will do it
+> > once.
+> 
+> No header file should ever be without these.
+
+Plenty of kernel header files are...
+
+> > +/* Which machines to allow unaligned accesses on */
+> > +#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+> > +#define LZO_UNALIGNED_OK_2
+> > +#define LZO_UNALIGNED_OK_4
+> >  #endif
+> 
+> > Probably preferable to do this here using CONFIG options rather than in
+> > the Makefile.
+> 
+> I think, CONFIG_* option is not present for all archs (ARM/PPC?). The
+> arch is simply picked up as a compilation arg (ARCH=x) or using `uname
+> -m`. So I think its better to leave this in Makefile as simple list.
+
+Ok, this will need some further thought. Its probably not worth
+discussing until the implications of get/put_unaligned have been looked
+at. A lot of effort has gone into those header files and we should
+probably try and use them if its not going to affect performance too
+much.
+
+> > I still need to do some further tests to ascertain whether
+> > we can use get/put_unaligned without affecting performance instead.
+> 
+> I think, get/put_unaligned should not be used on archs where these are
+> slower than simple byte-by-byte access. I suspect this is the case
+> where dirty work behind unaligned access is done in s/w (though I have
+> not done any benchmarks myself).
+>
+> > So in summary apart from style issues, the code is the same apart from
+> > the alignment access issues.
+> 
+> Yes. I will look into these alignment issues again.
+
+Likewise.
+
+Cheers,
+
+Richard
+
 
