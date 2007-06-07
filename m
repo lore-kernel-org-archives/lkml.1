@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965967AbXFGTx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965813AbXFGTy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965967AbXFGTx4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 15:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932802AbXFGTxr
+	id S965813AbXFGTy3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 15:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965181AbXFGTyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 15:53:47 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:58436 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762225AbXFGTxq (ORCPT
+	Thu, 7 Jun 2007 15:54:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58456 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933293AbXFGTyO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 15:53:46 -0400
-From: Olaf Dietsche <olaf.dietsche@olafdietsche.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-References: <878xb35sje.fsf@goat.bogus.local> <200706012340.54394.rjw@sisk.pl>
-	<87hcpr2ubl.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl>
-	<87wsykpweu.fsf@goat.bogus.local> <20070607122303.GA8938@ucw.cz>
-Date: Thu, 07 Jun 2007 21:54:51 +0200
-In-Reply-To: <20070607122303.GA8938@ucw.cz> (Pavel Machek's message of "Thu, 7
-	Jun 2007 12:23:04 +0000")
-Message-ID: <87tztjo7zo.fsf@goat.bogus.local>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX1+7b0XJt1mH4Ftl1LqP2LW/I9ZUm+Gw4FxstDt
- huLrTgwFKO5lmnm1qyu1AqvNSz9gMTgdO7+iybx67oEf7Wm4YT
- Yj0ZSskozwKetYMLe3UYQ==
+	Thu, 7 Jun 2007 15:54:14 -0400
+Date: Thu, 7 Jun 2007 12:53:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, trond.myklebust@fys.uio.no,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] NFS: Make NFS root work again
+Message-Id: <20070607125357.be46bcff.akpm@linux-foundation.org>
+In-Reply-To: <20070607164003.24322.51086.stgit@warthog.cambridge.redhat.com>
+References: <20070607164003.24322.51086.stgit@warthog.cambridge.redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
+On Thu, 07 Jun 2007 17:40:03 +0100
+David Howells <dhowells@redhat.com> wrote:
 
->> But either way the script never reaches "shutdown -rn now". So, it
->> seems, that my laptop does a full resume every other reboot, but it
->> never returns to userspace.
->
-> But it returns to kernel... can you use more trace points to figure
-> out where it hangs?
+> Make NFS root work by creating a "/root" directory to satisfy the mount,
+> otherwise the path lookup for the mount fails with ENOENT.
+> 
 
-I haven't looked, but I guess this is somewhere in sysfs.
+What did we do to make it stop working, and when did we do it??
 
-I made some small progress. With the nvidia.ko kernel module loaded,
-my laptop returns to userspace. I'll investigate this further.
-
-Regards, Olaf.
+> 
+> diff --git a/init/do_mounts.c b/init/do_mounts.c
+> index 46fe407..967b852 100644
+> --- a/init/do_mounts.c
+> +++ b/init/do_mounts.c
+> @@ -270,7 +270,10 @@ static void __init get_fs_names(char *page)
+>  
+>  static int __init do_mount_root(char *name, char *fs, int flags, void *data)
+>  {
+> -	int err = sys_mount(name, "/root", fs, flags, data);
+> +	int err;
+> +
+> +	sys_mkdir("/root", 0755);
+> +	err = sys_mount(name, "/root", fs, flags, data);
+>  	if (err)
+>  		return err;
+>  
