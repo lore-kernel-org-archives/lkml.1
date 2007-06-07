@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbXFGKS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbXFGKTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbXFGKS7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 06:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbXFGKSv
+	id S1757057AbXFGKTe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 06:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbXFGKT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 06:18:51 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:23813 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbXFGKSu (ORCPT
+	Thu, 7 Jun 2007 06:19:26 -0400
+Received: from ms-smtp-03.tampabay.rr.com ([65.32.5.133]:59623 "EHLO
+	ms-smtp-03.tampabay.rr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750812AbXFGKTZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 06:18:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=k7lIshoXxf3IoyBpYv3Eis77ZUqC5IGkpegmbps0lia42YFunJ8C0/H1yAgkXoiDzdkfzFAw3C1qC2vvXV3ePjMTXy9MNPCjmTYJD2UIou/HxR0O7+Eh286FmmSoeANjLZl6DRnMOYbEj6RQrbzSLNEGyEYY+sr66ggX/E6Feek=
-Message-ID: <4667DB6F.8090204@gmail.com>
-Date: Thu, 07 Jun 2007 19:18:23 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Thu, 7 Jun 2007 06:19:25 -0400
+Message-ID: <4667DB8C.4040803@cfl.rr.com>
+Date: Thu, 07 Jun 2007 06:18:52 -0400
+From: Mark Hounschell <dmarkh@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-To: Peer Chen <peerchen@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, jeff <jeff@garzik.org>
-Subject: Re: [PATCH] ahci: Add MCP73/MCP77 support to AHCI driver
-References: <200706071805105304242@gmail.com>
-In-Reply-To: <200706071805105304242@gmail.com>
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, markh@compro.net,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: floppy.c soft lockup
+References: <20070601151605.GA108@tv-sign.ru> <4660534E.6050903@cfl.rr.com> <20070601183642.GA92@tv-sign.ru> <466078FF.2080508@cfl.rr.com> <20070602123030.GA719@tv-sign.ru> <4661D698.5040009@cfl.rr.com> <20070603081417.GA81@tv-sign.ru> <46641B16.9090701@compro.net> <4666B2A4.7090603@compro.net> <20070606102828.752bf955.akpm@linux-foundation.org> <20070607013128.GW11166@waste.org>
+In-Reply-To: <20070607013128.GW11166@waste.org>
 X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Matt Mackall wrote:
+> On Wed, Jun 06, 2007 at 10:28:28AM -0700, Andrew Morton wrote:
+>> On Wed, 06 Jun 2007 09:12:04 -0400 Mark Hounschell <markh@compro.net> wrote:
+>>
+>>>> As far as a 100% CPU bound task being a valid thing to do, it has been 
+>>>> done for many years on SMP machines. Any kernel limitation on this 
+>>>> surely must be considered a bug? 
+>>>>
+>>> Could someone authoritatively comment on this? Is a SCHED_RR/SCHED_FIFO
+>>> 100% Cpu bound process supported in an SMP env on Linux? (vanilla or -rt)
+>> It will kill the kernel, sorry.
+>>
+>> The only way in which we can fix that is to allow kernel threads to preempt
+>> rt-priority userspace threads.  But if we were to do that (to benefit the
+>> few) it would cause _all_ people's rt-prio processes to experience glitches
+>> due to kernel activity, which we believe to be worse.
+>>
+>> So we're between a rock and a hard place here.
+>>
+>> If we really did want to solve this then I guess the kernel would need some
+>> new code to detect a 100%-busy rt-prio process and to then start premitting
+>> preemption of it for kernel thread activity.  That detector would need to
+>> be smart enough to detect a number of 100%-busy rt-prio processes which are
+>> yielding to each other, and one rt-prio process which keeps forking others,
+>> etc.  It might get tricky.
+> 
+> The usual alternative is to manually chrt the relevant kernel threads
+> to RT priority and adjust the priority scheme of their processes appropriately.
+> 
 
-This one looks much better.  Just few more things.
+>From an earlier thread member:
 
-Peer Chen wrote:
-> Add the MCP73/MCP77 support to ahci driver.
-> The patch base on kernel 2.6.22-rc4
->  
-> Signed-off-by: Peer Chen <peerchen@gmail.com>
-> ------------------------------------------------
+>> Mark writes:
+>> Again I don't understand why flush_scheduled_work() running on behalf
+>> of a process affinitized to processor-1 requires cooperation from
+>> events/2 (affinitized to processor-2)
+>> when there is an events/1 already affinitized to processor 1?
 
-The separator is '---'.  Automated tools are used, so sticking to it
-makes things easier.
+>Oleg write:
+>flush_workqueue() blocks until any scheduled work on any CPU has run to
+>completion. If we have some work_struct pending on CPU 2, it can be
+>completed only when events/2 executes it.
 
-> --- linux-2.6.22-rc4/drivers/ata/ahci.c.orig
-> +++ linux-2.6.22-rc4/drivers/ata/ahci.c
-> @@ -426,6 +426,30 @@ static const struct pci_device_id ahci_p
->  	{ PCI_VDEVICE(NVIDIA, 0x0559), board_ahci },		/* MCP67 */
->  	{ PCI_VDEVICE(NVIDIA, 0x055a), board_ahci },		/* MCP67 */
->  	{ PCI_VDEVICE(NVIDIA, 0x055b), board_ahci },		/* MCP67 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x07f0), board_ahci },		/* MCP73 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x07f1), board_ahci },		/* MCP73 */
-[--snip--]
+Could not flush_scheduled_work() just follow the affinity mask of the
+task that caused the call to begin with. If calling task had a cpu-mask
+of 3 then flush_scheduled_work() would do the events/0 and events/1
+thing and if the calling task had an affinity mask of 1 then only
+events/0 would be done?
 
-Whoa, that's a lot of PCI IDs.  AHCI PCI class code doesn't catch them?
+In other words changing what Oleg says above just slightly:
 
--- 
-tejun
+flush_workqueue() blocks until any scheduled work on any CPU in the
+calling tasks affinity mask has run to completion?
+
+Thanks
+Mark
+
