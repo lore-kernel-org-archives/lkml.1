@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765958AbXFGPxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXFGPyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765958AbXFGPxy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765580AbXFGPxX
+	id S932579AbXFGPyb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765580AbXFGPyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:53:23 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:2438 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932310AbXFGPxV (ORCPT
+	Thu, 7 Jun 2007 11:54:07 -0400
+Received: from ik-out-1112.google.com ([66.249.90.182]:38587 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765973AbXFGPyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:53:21 -0400
-Date: Thu, 7 Jun 2007 17:53:42 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: i2c@lm-sensors.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, David Brownell <david-b@pacbell.net>
-Subject: Re: [i2c] i2c module aliases
-Message-ID: <20070607175342.3006e872@hyperion.delvare>
-In-Reply-To: <Pine.LNX.4.64.0706062325270.30244@anakin>
-References: <Pine.LNX.4.64.0706062325270.30244@anakin>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jun 2007 11:54:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=He56IWjtSp3U0Xbxi0ui/RWVfxyLprhL3ClFK2HRgmPhfuYoghcGVM5GNEBuYp0CYR5JDPWgyufwOtJbaDTBaHb0AEd3mvEkOCxm2jOM5ocV6uGhIz7Dzs1VNyf/joA94cEX2j5AIo0VJ1NQc5W3C3uv5kjGxT4s/A4Imu+Z2qg=
+Message-ID: <46682A25.5070409@gmail.com>
+Date: Thu, 07 Jun 2007 17:54:13 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: 2.6.22-rc4-mm1
+References: <200706061421.l56ELDfB004305@harpo.it.uu.se>	<4666D3F8.4010002@gmail.com> <20070606105650.bebf1c95.akpm@linux-foundation.org> <4666FBE8.3030103@gmail.com> <4667A93A.4060608@gmail.com> <4667AD3F.1010405@gmail.com> <4667AF20.4020209@gmail.com> <4667B095.5050508@gmail.com> <4667B241.801@gmail.com>
+In-Reply-To: <4667B241.801@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
+Tejun Heo napsal(a):
+> Jiri Slaby wrote:
+>> Tejun Heo napsal(a):
+>>> Jiri Slaby wrote:
+>>>> Yes. Now I'm compiling -rc4-mm2.
+>>> It's probably caused by new sysfs slimdown patches and I'm pretty sure
+>>> -rc4-mm2 would fail the same way.  The offending one should be one of
+>>> the following patches.
+>> There's reverted gregkh-driver-block-device in -mm2. So I wanted to give it a
+>> try. Do you think it's pointless and that patch has no impact on the behaviour?
+> 
+> I'm not familiar with how lvm vgscan works and the patch does look like
+> it can affect that.  Please give a shot at -mm2.
 
-On Wed, 6 Jun 2007 23:32:38 +0200 (CEST), Geert Uytterhoeven wrote:
-> >From browsing through file2alias.c, I have the impression there's a
-> missing TO_NATIVE() conversion in the handling of 16-bit (hence,
-> endian-affected) i2c IDs.
-> This will cause the module aliases to be incorrect when cross-compiling
-> for a system with a different endianness.  Is that correct?
-> If yes, the patch below adds the missing conversion.
-> 
-> Of course, no driver seems to use `MODULE_DEVICE_TABLE(i2c, ...)' yet,
-> hence nobody noticed.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> 
-> --- a/scripts/mod/file2alias.c
-> +++ b/scripts/mod/file2alias.c
-> @@ -390,6 +390,7 @@ static int do_vio_entry(const char *file
->  
->  static int do_i2c_entry(const char *filename, struct i2c_device_id *i2c, char *alias)
->  {
-> +	i2c->id = TO_NATIVE(i2c->id);
->  	strcpy(alias, "i2c:");
->  	ADD(alias, "id", 1, i2c->id);
->  	return 1;
-> 
+Yup, it works without any further patches. So it seems like
+gregkh-driver-block-device is the culprit?
 
-Looks correct. However I am curious what this "i2c->id" is supposed to
-represent, given that I2C devices do not have any form of ID as PCI or
-USB devices have. No driver uses "MODULE_DEVICE_TABLE(i2c, ...)"
-probably just because it doesn't make sense. So, rather than fixing
-this, shouldn't we simply wipe out struct i2c_device_id? Greg, David?
-
+regards,
 -- 
-Jean Delvare
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
