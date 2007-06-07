@@ -1,91 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761671AbXFGOBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761568AbXFGOAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761671AbXFGOBN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 10:01:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761412AbXFGOAm
+	id S1761568AbXFGOAv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 10:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758729AbXFGOAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 10:00:42 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:17424 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761433AbXFGOAk (ORCPT
+	Thu, 7 Jun 2007 10:00:30 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:37025 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758696AbXFGOA1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 10:00:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=rcLPjz8mM1teEAY2ILQO+W6hGgWb8V7m4sy1dhSO9BheTq1Xo6Q9Jfa6Xoxw+zs81a+NvBTZ3kDCbIzHcRgJzhUdU0hoVfpPK+PhN6JodALZ/I8jYCoI5ueW1pTSxkYDfezv5bzx+liookpOpxi9iZoSvuNxatLtMhgt/n6TRqU=
-Message-ID: <a0b3dd8d0706070700i3b029c28h7c6c6d3f6569fe16@mail.gmail.com>
-Date: Fri, 8 Jun 2007 00:00:38 +1000
-From: "Yen Rui" <ruiyen@gmail.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH] radeonfb: Add ID for Radeon Xpress 1100
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+	Thu, 7 Jun 2007 10:00:27 -0400
+Message-ID: <46680F76.8020803@fr.ibm.com>
+Date: Thu, 07 Jun 2007 16:00:22 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_48141_7784175.1181224838950"
+To: menage@google.com
+CC: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, containers@lists.osdl.org
+Subject: Re: [PATCH 03/10] Containers(V10): Add tasks file interface
+References: <20070529130104.461765000@menage.corp.google.com> <20070529132142.428218000@menage.corp.google.com>
+In-Reply-To: <20070529132142.428218000@menage.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_48141_7784175.1181224838950
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello Paul !
 
-Hi,
+menage@google.com wrote:
+> This patch adds the per-directory "tasks" file for containerfs mounts;
+> this allows the user to determine which tasks are members of a
+> container by reading a container's "tasks", and to move a task into a
+> container by writing its pid to its "tasks".
 
-I have to attach the patch instead of inlining it in this e-mail
-because gmail converts word wraps into hard returns.  Sorry.
+here's a small fix for 2.6.22-rc4-mm2.
 
--- Yen Rui
+C.
 
-------=_Part_48141_7784175.1181224838950
-Content-Type: text/x-diff; name=add-radeon-xpress-1100-id.patch; 
-	charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f2naqqtu
-Content-Disposition: attachment; filename="add-radeon-xpress-1100-id.patch"
+when there's no tasks in a container, opening 
+	
+<containerfs>/<container>/tasks
 
-cmFkZW9uZmI6IEFkZCBJRCBmb3IgUmFkZW9uIFhwcmVzcyAxMTAwCgpUZXN0ZWQgb24gYW4gQWNl
-ciBBc3BpcmUgNTA1MCBTZXJpZXMgbm90ZWJvb2suCgpTaWduZWQtb2ZmLWJ5OiBZZW4gUnVpIDxy
-dWl5ZW5AZ21haWwuY29tPgoKZGlmZiAtdXByTiBsaW51eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJp
-dmVycy92aWRlby9hdHkvYXRpX2lkcy5oIGxpbnV4LTIuNi4yMi1yYzQvZHJpdmVycy92aWRlby9h
-dHkvYXRpX2lkcy5oCi0tLSBsaW51eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJpdmVycy92aWRlby9h
-dHkvYXRpX2lkcy5oCTIwMDctMDYtMDcgMjI6MjA6MzAuMDAwMDAwMDAwICsxMDAwCisrKyBsaW51
-eC0yLjYuMjItcmM0L2RyaXZlcnMvdmlkZW8vYXR5L2F0aV9pZHMuaAkyMDA3LTA2LTA3IDIyOjI2
-OjA4LjAwMDAwMDAwMCArMTAwMApAQCAtMjEwLDMgKzIxMCw0IEBACiAjZGVmaW5lIFBDSV9DSElQ
-X1JTMzUwXzc4MzQgICAgICAgICAgICAgMHg3ODM0CiAjZGVmaW5lIFBDSV9DSElQX1JTMzUwXzc4
-MzUgICAgICAgICAgICAgMHg3ODM1CiAjZGVmaW5lIFBDSV9DSElQX1JTNDgwXzU5NTUgICAgICAg
-ICAgICAgMHg1OTU1CisjZGVmaW5lIFBDSV9DSElQX1JTNDgyXzU5NzUJCTB4NTk3NQpkaWZmIC11
-cHJOIGxpbnV4LTIuNi4yMi1yYzQtdmFuaWxsYS9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25fYmFz
-ZS5jIGxpbnV4LTIuNi4yMi1yYzQvZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2Jhc2UuYwotLS0g
-bGludXgtMi42LjIyLXJjNC12YW5pbGxhL2RyaXZlcnMvdmlkZW8vYXR5L3JhZGVvbl9iYXNlLmMJ
-MjAwNy0wNi0wNyAyMjoyMDozMC4wMDAwMDAwMDAgKzEwMDAKKysrIGxpbnV4LTIuNi4yMi1yYzQv
-ZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2Jhc2UuYwkyMDA3LTA2LTA3IDIyOjI5OjI0LjAwMDAw
-MDAwMCArMTAwMApAQCAtMTAwLDggKzEwMCw5IEBACiAJeyBQQ0lfVkVORE9SX0lEX0FUSSwgaWQs
-IFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIDAsIDAsIChmbGFncykgfCAoQ0hJUF9GQU1JTFlfIyNm
-YW1pbHkpIH0KIAogc3RhdGljIHN0cnVjdCBwY2lfZGV2aWNlX2lkIHJhZGVvbmZiX3BjaV90YWJs
-ZVtdID0gewotICAgICAgICAvKiBSYWRlb24gWHByZXNzIDIwMG0gKi8KLQlDSElQX0RFRihQQ0lf
-Q0hJUF9SUzQ4MF81OTU1LCAgIFJTNDgwLCAgQ0hJUF9IQVNfQ1JUQzIgfCBDSElQX0lTX0lHUCB8
-IENISVBfSVNfTU9CSUxJVFkpLAorCS8qIFJhZGVvbiBYcHJlc3MgMjAwbSAqLworCUNISVBfREVG
-KFBDSV9DSElQX1JTNDgwXzU5NTUsCVJTNDgwLAlDSElQX0hBU19DUlRDMiB8IENISVBfSVNfSUdQ
-IHwgQ0hJUF9JU19NT0JJTElUWSksCisJQ0hJUF9ERUYoUENJX0NISVBfUlM0ODJfNTk3NSwJUlM0
-ODAsCUNISVBfSEFTX0NSVEMyIHwgQ0hJUF9JU19JR1AgfCBDSElQX0lTX01PQklMSVRZKSwKIAkv
-KiBNb2JpbGl0eSBNNiAqLwogCUNISVBfREVGKFBDSV9DSElQX1JBREVPTl9MWSwgCVJWMTAwLAlD
-SElQX0hBU19DUlRDMiB8IENISVBfSVNfTU9CSUxJVFkpLAogCUNISVBfREVGKFBDSV9DSElQX1JB
-REVPTl9MWiwJUlYxMDAsCUNISVBfSEFTX0NSVEMyIHwgQ0hJUF9JU19NT0JJTElUWSksCmRpZmYg
-LXVwck4gbGludXgtMi42LjIyLXJjNC12YW5pbGxhL2RyaXZlcnMvdmlkZW8vYXR5L3JhZGVvbmZi
-LmggbGludXgtMi42LjIyLXJjNC9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25mYi5oCi0tLSBsaW51
-eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJpdmVycy92aWRlby9hdHkvcmFkZW9uZmIuaAkyMDA3LTA2
-LTA3IDIyOjIwOjMwLjAwMDAwMDAwMCArMTAwMAorKysgbGludXgtMi42LjIyLXJjNC9kcml2ZXJz
-L3ZpZGVvL2F0eS9yYWRlb25mYi5oCTIwMDctMDYtMDcgMjI6MzU6NDMuMDAwMDAwMDAwICsxMDAw
-CkBAIC00OCw3ICs0OCw3IEBAIGVudW0gcmFkZW9uX2ZhbWlseSB7CiAJQ0hJUF9GQU1JTFlfUlYz
-NTAsCiAJQ0hJUF9GQU1JTFlfUlYzODAsICAgIC8qIFJWMzcwL1JWMzgwL00yMi9NMjQgKi8KIAlD
-SElQX0ZBTUlMWV9SNDIwLCAgICAgLyogUjQyMC9SNDIzL00xOCAqLwotCUNISVBfRkFNSUxZX1JT
-NDgwLAorCUNISVBfRkFNSUxZX1JTNDgwLCAgICAvKiBSUzQ4MC9SUzQ4MiAqLwogCUNISVBfRkFN
-SUxZX0xBU1QsCiB9OwogCkBAIC02Niw3ICs2Niw3IEBAIGVudW0gcmFkZW9uX2ZhbWlseSB7CiAJ
-CQkJKChyaW5mbyktPmZhbWlseSA9PSBDSElQX0ZBTUlMWV9SMzUwKSAgfHwgXAogCQkJCSgocmlu
-Zm8pLT5mYW1pbHkgPT0gQ0hJUF9GQU1JTFlfUlYzODApIHx8IFwKIAkJCQkoKHJpbmZvKS0+ZmFt
-aWx5ID09IENISVBfRkFNSUxZX1I0MjApICB8fCBcCi0JCSAgICAgICAgICAgICAgICAoKHJpbmZv
-KS0+ZmFtaWx5ID09IENISVBfRkFNSUxZX1JTNDgwKSApCisJCQkJKChyaW5mbyktPmZhbWlseSA9
-PSBDSElQX0ZBTUlMWV9SUzQ4MCkpCiAKIC8qCiAgKiBDaGlwIGZsYWdzCg==
-------=_Part_48141_7784175.1181224838950--
+spits the following warning because we are trying to 
+kmalloc(0). 
+
+WARNING: at mm/slab.c:777 __find_general_cachep()
+ [<c0102b01>] show_trace_log_lvl+0x1a/0x2f
+ [<c0103627>] show_trace+0x12/0x14
+ [<c010363e>] dump_stack+0x15/0x17
+ [<c0148040>] __kmalloc+0x56/0xf3
+ [<c012d030>] container_tasks_open+0x56/0x131
+ [<c012cdf8>] container_file_open+0x32/0x3a
+ [<c014964d>] __dentry_open+0x99/0x13c
+ [<c0149771>] nameidata_to_filp+0x27/0x37
+ [<c01497b4>] do_filp_open+0x33/0x3b
+ [<c0149801>] do_sys_open+0x45/0xc9
+ [<c01498bd>] sys_open+0x1c/0x1e
+ [<c0102540>] syscall_call+0x7/0xb
+
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Paul Menage <menage@google.com>
+---
+ kernel/container.c |   33 +++++++++++++++++++--------------
+ 1 file changed, 19 insertions(+), 14 deletions(-)
+
+Index: 2.6.22-rc4-mm2/kernel/container.c
+===================================================================
+--- 2.6.22-rc4-mm2.orig/kernel/container.c
++++ 2.6.22-rc4-mm2/kernel/container.c
+@@ -1651,21 +1651,26 @@ static int container_tasks_open(struct i
+ 	 * show up until sometime later on.
+ 	 */
+ 	npids = container_task_count(cont);
+-	pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
+-	if (!pidarray)
+-		goto err1;
+-
+-	npids = pid_array_load(pidarray, npids, cont);
+-	sort(pidarray, npids, sizeof(pid_t), cmppid, NULL);
+-
+-	/* Call pid_array_to_buf() twice, first just to get bufsz */
+-	ctr->bufsz = pid_array_to_buf(&c, sizeof(c), pidarray, npids) + 1;
+-	ctr->buf = kmalloc(ctr->bufsz, GFP_KERNEL);
+-	if (!ctr->buf)
+-		goto err2;
+-	ctr->bufsz = pid_array_to_buf(ctr->buf, ctr->bufsz, pidarray, npids);
++	if (npids) {
++		pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
++		if (!pidarray)
++			goto err1;
++
++		npids = pid_array_load(pidarray, npids, cont);
++		sort(pidarray, npids, sizeof(pid_t), cmppid, NULL);
++
++		/* Call pid_array_to_buf() twice, first just to get bufsz */
++		ctr->bufsz = pid_array_to_buf(&c, sizeof(c), pidarray, npids) + 1;
++		ctr->buf = kmalloc(ctr->bufsz, GFP_KERNEL);
++		if (!ctr->buf)
++			goto err2;
++		ctr->bufsz = pid_array_to_buf(ctr->buf, ctr->bufsz, pidarray, npids);
+ 
+-	kfree(pidarray);
++		kfree(pidarray);
++	} else {
++		ctr->buf = 0;
++		ctr->bufsz = 0;
++	}
+ 	file->private_data = ctr;
+ 	return 0;
+ 
