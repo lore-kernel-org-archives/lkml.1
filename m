@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932967AbXFGQHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933447AbXFGQIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932967AbXFGQHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763561AbXFGQG6
+	id S933447AbXFGQIe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXFGQI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:06:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60916 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761174AbXFGQG5 (ORCPT
+	Thu, 7 Jun 2007 12:08:26 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:58451
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374AbXFGQIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:06:57 -0400
-Date: Thu, 7 Jun 2007 09:06:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Peter Jones <pjones@redhat.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-Message-Id: <20070607090632.cfcf02e6.akpm@linux-foundation.org>
-In-Reply-To: <20070607155953.GA17591@suse.de>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-	<4667018D.7020407@googlemail.com>
-	<1181168095.3612.4.camel@lov.localdomain>
-	<4667C47C.2010207@googlemail.com>
-	<1181206091.3625.9.camel@lov.localdomain>
-	<4667D2DF.30207@googlemail.com>
-	<1181228660.3625.23.camel@lov.localdomain>
-	<46682385.1060802@redhat.com>
-	<20070607154342.GA16911@suse.de>
-	<20070607085200.f8d6e2d3.akpm@linux-foundation.org>
-	<20070607155953.GA17591@suse.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jun 2007 12:08:25 -0400
+From: Rob Landley <rob@landley.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH RFC 6/7] i386: make the bzImage payload an ELF file
+Date: Thu, 7 Jun 2007 12:08:04 -0400
+User-Agent: KMail/1.9.1
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <20070606225837.654272428@goop.org> <200706062147.21225.rob@landley.net> <46676552.4060308@zytor.com>
+In-Reply-To: <46676552.4060308@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706071208.04777.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007 08:59:53 -0700 Greg KH <gregkh@suse.de> wrote:
-
-> On Thu, Jun 07, 2007 at 08:52:00AM -0700, Andrew Morton wrote:
-> > On Thu, 7 Jun 2007 08:43:42 -0700 Greg KH <gregkh@suse.de> wrote:
+On Wednesday 06 June 2007 9:54 pm, H. Peter Anvin wrote:
+> Rob Landley wrote:
+> > On Wednesday 06 June 2007 7:41 pm, H. Peter Anvin wrote:
+> >> This makes vmlinux (normally stripped) recoverable from the bzImage file
+> >> and so anything that is currently booting vmlinux would be serviced by
+> >> this scheme.
 > > 
-> > > >  Fixed in mkinitrd-6.0.9-6 , which I'll build now and push to 
-> > > >  updates-testing.  Thanks for getting my attention here.
-> > > 
-> > > Great, Andrew, can you please reenable the block-device patch that is in
-> > > my tree now that the problem has been solved?
+> > Would this make it sane to strip the initramfs image out of vmlinux with 
+> > objdump and replace it with another one, or are there offsets resolved 
+during 
+> > the build that stop that for vmlinux?
 > > 
-> > I think we're screwed, aren't we?  Everyone needs to upgrade mkinitrd to be
-> > able to boot the kernel?  Not viable :(
-> > 
-> > For example, what about my two-year-old yellowdog machine?
 > 
-> Enable CONFIG_SYSFS_DEPRECATED and it should all work just fine.  That's
-> what Michal said worked for him.
-> 
+> There probably are offsets resolved during the build.  However, that
+> wouldn't be all that hard to fix.  Still, one can argue whether or not
+> it is sane under any definition to do this kind of unpacking-repacking
+> of ELF files.
 
-Actually, it _was_ enabled.
+Er, make that objcopy, not objdump.
 
-Ho hum, I'll have a poke at it this evening.
+Sane, maybe not.  Something people want to do (and under the mistaken 
+assumption I know more about initramfs then they do, have asked me how), yes.  
+It always boils down to "do you have a vmlinux image lying around?  Doing 
+this with a bzImage _is_ brain surgery", and has yet to get beyond that 
+question.  I had about half of a script worked out for this, once...
 
+You can also supply an external initramfs image through the initrd mechanism, 
+but this is unpleasant to do with some bootloaders (or lack of bootloaders).  
+Plus it doesn't remove the old one, and wasting space makes embedded 
+developers itch.
 
-So...  what's the story here?  Should our position be that
-CONFIG_SYSFS_DEPRECATED=n should only be used by distro kernel-builders,
-who are concurrently shipping userspace which can handle it?  And that
-these distros should (probably) set CONFIG_SYSFS_DEPRECATED=y in their
-update kernels for older distributions?
+Rob
+-- 
+The Google cluster became self-aware at 2:14am EDT August 29, 2007...
