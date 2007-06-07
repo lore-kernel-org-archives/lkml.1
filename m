@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936206AbXFGTpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965664AbXFGTtH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936206AbXFGTpf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 15:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765887AbXFGTpZ
+	id S965664AbXFGTtH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 15:49:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765887AbXFGTs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 15:45:25 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58048 "EHLO
+	Thu, 7 Jun 2007 15:48:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39838 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765675AbXFGTpZ (ORCPT
+	by vger.kernel.org with ESMTP id S1764242AbXFGTsy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 15:45:25 -0400
-Date: Thu, 7 Jun 2007 12:45:07 -0700
+	Thu, 7 Jun 2007 15:48:54 -0400
+Date: Thu, 7 Jun 2007 12:48:24 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Mark Lord <lkml@rtr.ca>, Stephen Tweedie <sct@redhat.com>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext3fs: umount+sync not enough to guarantee metadata-on-disk
-Message-Id: <20070607124507.79d8da54.akpm@linux-foundation.org>
-In-Reply-To: <46682E4E.1070303@redhat.com>
-References: <46680BB8.50404@rtr.ca>
-	<20070607084142.42583639.akpm@linux-foundation.org>
-	<46682E4E.1070303@redhat.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Albert Cahalan <acahalan@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, ebiederm@xmission.com,
+       torvalds@linux-foundation.org
+Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
+Message-Id: <20070607124824.27e909fd.akpm@linux-foundation.org>
+In-Reply-To: <1181235997.9995.23.camel@dyn9047017100.beaverton.ibm.com>
+References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
+	<20070606204432.b670a7b1.akpm@linux-foundation.org>
+	<787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
+	<1181233393.9995.14.camel@dyn9047017100.beaverton.ibm.com>
+	<787b0d920706070943h6ac65b85nee5b01600905be08@mail.gmail.com>
+	<1181235997.9995.23.camel@dyn9047017100.beaverton.ibm.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,27 +32,76 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Jun 2007 12:11:58 -0400
-Chuck Ebbert <cebbert@redhat.com> wrote:
+On Thu, 07 Jun 2007 10:06:37 -0700
+Badari Pulavarty <pbadari@us.ibm.com> wrote:
 
-> On 06/07/2007 11:41 AM, Andrew Morton wrote:
-> >>    mount /var/lib/mythtv -oremount,ro
-> >>    sync
-> >>    umount /var/lib/mythtv
+> On Thu, 2007-06-07 at 12:43 -0400, Albert Cahalan wrote:
+> > On 6/7/07, Badari Pulavarty <pbadari@us.ibm.com> wrote:
 > > 
-> > Did this succeed?  If the application is still truncating that file, the
-> > umount should have failed.
+> > > BTW, I agree with Eric that its would be nice to use shmid as part
+> > > of name instead of forcing to be as inode number. It should be
+> > > possible for pmap to workout shmid from "key" or name. Isn't it ?
+> > 
+> > It is not at all nice.
+> > 
+> > 1. it's incompatible ABI breakage
+> > 2. where will you put the key then, in the inode? :-)
 > 
-> Shouldn't sync should wait for truncate to finish?
+> Nope. Currently "key" is part of the name (but its not unique).
+> 
+> > 
+> > Changing to "SYSVID%d" is no good either. Look, people
+> > are ***parsing*** this stuff in /proc. The /proc filesystem
+> > is not some random sandbox to be playing in.
+> > 
+> > Before you go messing with it, note that the device number
+> > also matters. (it's per-boot dynamic, but that's OK)
+> > That's how one knows that /SYSV00000000 is not just
+> > a regular file; sadly these didn't get a non-/ prefix.
+> > (and no you can't fix that now; it's way too late)
+> > 
+> > Next time you feel like breaking an ABI, mind putting
+> > "LET'S BREAK AN ABI!" in the subject of your email?
+> 
+> I am not breaking ABI. Its already broken in the current
+> mainline. I am trying to fix it by putting back the ino#
+> as shmid. Eric had a suggestion that, instead of depending
+> on the inode# to be shmid, we could embed shmid into name
+> (instead of "key" which is currently not unique).
+> 
+> > BTW, I suspect this kind of thing also breaks:
+> > a. fuser, lsof, and other resource usage display tools
+> > b. various obscure emulators (similar to valgrind)
+> 
+> If you strongly feel that "old" behaviour needs to be retained, 
 
-I can't think of anything in there at present which would cause that to
-happen, and it's not immediately obvious how we _could_ make it happen - we
-have an inode which potentially has no dirty pages and which is itself
-clean.  The truncate can span multiple journal commits, so forcing a
-journal commit in sync() won't necessarily block behind the truncate.
+yup, we should put it back.  The change was, afaik, accidental.
 
-I guess we could ask sync to speculatively take and release every inode's
-i_mutex or something.  But even that would involve quite some hoop-jumping
-due to those infuriating spinlock-protected list_heads on the superblock.
+> here is the patch I originally suggested.
 
-hmm.
+Confused.  Will this one-liner fix all the userspace breakage to which
+Albert refers?
+
+> Thanks,
+> Badari
+> 
+> "ino#" in /proc/pid/maps used to match "ipcs -m" output for shared 
+> memory (shmid). It was useful in debugging, but its changed recently. 
+> This patch sets inode number to shared memory id to match /proc/pid/maps.
+> 
+> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> 
+> Index: linux-2.6.22-rc4/ipc/shm.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/ipc/shm.c	2007-06-04 17:57:25.000000000 -0700
+> +++ linux-2.6.22-rc4/ipc/shm.c	2007-06-06 08:23:57.000000000 -0700
+> @@ -397,6 +397,7 @@ static int newseg (struct ipc_namespace 
+>  	shp->shm_nattch = 0;
+>  	shp->id = shm_buildid(ns, id, shp->shm_perm.seq);
+>  	shp->shm_file = file;
+> +	file->f_dentry->d_inode->i_ino = shp->id;
+>  
+>  	ns->shm_tot += numpages;
+>  	shm_unlock(shp);
+> 
+> 
