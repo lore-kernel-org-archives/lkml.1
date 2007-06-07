@@ -1,133 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765504AbXFGPpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932221AbXFGPsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765504AbXFGPpx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764635AbXFGPpl
+	id S932221AbXFGPsr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762197AbXFGPsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:45:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44218 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764522AbXFGPpj (ORCPT
+	Thu, 7 Jun 2007 11:48:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:2760 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752341AbXFGPsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:45:39 -0400
-Date: Thu, 7 Jun 2007 08:45:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Tejun Heo <htejun@gmail.com>, Mikael Pettersson <mikpe@it.uu.se>,
-       david@dgreaves.com, jean.luc.coulon@gmail.com, jgarzik@pobox.com,
-       michal.k.k.piotrowski@gmail.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [REPOST PATCH] sata_promise: use TF interface for polling
- NODATA commands
-Message-Id: <20070607084515.668ae621.akpm@linux-foundation.org>
-In-Reply-To: <20070607151717.GA6653@havoc.gtf.org>
-References: <200706052131.l55LVkYN000191@harpo.it.uu.se>
-	<20070605215256.GT31565@havoc.gtf.org>
-	<46665AB5.6040508@gmail.com>
-	<20070606102122.GD29122@htj.dyndns.org>
-	<20070607151717.GA6653@havoc.gtf.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jun 2007 11:48:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=azf2qnX9vRwC+Ag7NBCiV1bwp7e7tpHHYEfECDMvOCvF6OvjE1jZY4D104BKppyb8iGD1apaUW1WSsQm5CDfxnJFfCZjnV60sXP6RYAgeUO72TDxa6n6suzqQIy0ATMyMWV2iANEM1s98EwL0lutBId/yPZks/FbEibxperUQBU=
+Message-ID: <a781481a0706070848j2256cc1elea8723778ab7da5b@mail.gmail.com>
+Date: Thu, 7 Jun 2007 21:18:37 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Make smp_call_function{_single} go WARNING and return -EINVAL on !SMP (was Re: [PATCH] i386/x86_64: NMI watchdog: Protect smp_call_function() within CONFIG_SMP)
+Cc: "Ingo Molnar" <mingo@redhat.com>, "Andi Kleen" <andi@firstfloor.org>,
+       "Alan Cox" <alan@redhat.com>,
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Miller" <davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007 11:17:17 -0400 Jeff Garzik <jeff@garzik.org> wrote:
+On 6/7/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> [...]
+> BTW: smp_call_function() simply returns 0 and
+> smp_call_function_single() simply returns -EBUSY when !SMP.
+> These appear to be just some ad hoc values. IMHO, we should
+> be going BUG() in both these cases because "other" CPUs for
+> !SMP are undefined / meaningless.
 
-> On Wed, Jun 06, 2007 at 07:21:22PM +0900, Tejun Heo wrote:
-> > sata_promise uses two different command modes - packet and TF.  Packet
-> > mode is intelligent low-overhead mode while TF is the same old
-> > taskfile interface.  As with other advanced interface (ahci/sil24),
-> > ATA_TFLAG_POLLING has no effect in packet mode.  However, PIO commands
-> > are issued using TF interface in polling mode, so pdc_interrupt()
-> > considers interrupts spurious if ATA_TFLAG_POLLING is set.
-> > 
-> > This is broken for polling NODATA commands because command is issued
-> > using packet mode but the interrupt handler ignores it due to
-> > ATA_TFLAG_POLLING.  Fix pdc_qc_issue_prot() such that ATA/ATAPI NODATA
-> > commands are issued using TF interface if ATA_TFLAG_POLLING is set.
-> > 
-> > This patch fixes detection failure introduced by polling SETXFERMODE.
-> > 
-> > Signed-off-by: Tejun Heo <htejun@gmail.com>
-> > ---
-> > David, please verify this patch.  Mikael, does this look okay?  Please
-> > push this upstream after David and Mikael's ack.
-> > 
-> > (This repost is identical to the previous posting but it's now on the
-> >  correct thread.)
-> 
-> Acked-by: Jeff Garzik <jeff@garzik.org>
-> 
-> Tejun, would you mind pushing this upstream to Linus/Andrew?
-> 
-> I'm travelling this week, and my home firewall doesn't like me.
-> It is probably easier for you than me.
-> 
+79974a0e4c6be6e9a3717b4c5a5d5c44c36b1653 from a couple
+weeks back (discussed on http://lkml.org/lkml/2007/5/14/68 i.e.
+[patch] Let smp_call_function_single return -EBUSY.) introduced
+this behaviour. [ Adding Heiko Carstens, Andrew and David Miller
+to Cc: list. ]
 
-I added the below to my next batch:
+I realized a warning would be more appropriate for this case than
+a BUG at the last moment ... this doesn't quite meet Linus' "You
+killed my father; prepare to die!" criterion :-)
 
-
-From: Tejun Heo <htejun@gmail.com>
-
-sata_promise uses two different command modes - packet and TF.  Packet mode
-is intelligent low-overhead mode while TF is the same old taskfile
-interface.  As with other advanced interface (ahci/sil24),
-ATA_TFLAG_POLLING has no effect in packet mode.  However, PIO commands are
-issued using TF interface in polling mode, so pdc_interrupt() considers
-interrupts spurious if ATA_TFLAG_POLLING is set.
-
-This is broken for polling NODATA commands because command is issued using
-packet mode but the interrupt handler ignores it due to ATA_TFLAG_POLLING. 
-Fix pdc_qc_issue_prot() such that ATA/ATAPI NODATA commands are issued
-using TF interface if ATA_TFLAG_POLLING is set.
-
-This patch fixes detection failure introduced by polling SETXFERMODE.
-
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Acked-by: Mikael Pettersson <mikpe@it.uu.se>
-Acked-by: Jeff Garzik <jeff@garzik.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/ata/sata_promise.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+The smp_call_function{_single} functions are used to run
+given function on all {or speicified} *other* CPUs. For
+UP systems, "other" CPUs simply don't exist, so we flag
+such incorrect usage of these functions using a WARNING.
 
-diff -puN drivers/ata/sata_promise.c~sata_promise-use-tf-interface-for-polling-nodata-commands drivers/ata/sata_promise.c
---- a/drivers/ata/sata_promise.c~sata_promise-use-tf-interface-for-polling-nodata-commands
-+++ a/drivers/ata/sata_promise.c
-@@ -784,9 +784,12 @@ static unsigned int pdc_qc_issue_prot(st
- 		if (qc->dev->flags & ATA_DFLAG_CDB_INTR)
- 			break;
- 		/*FALLTHROUGH*/
-+	case ATA_PROT_NODATA:
-+		if (qc->tf.flags & ATA_TFLAG_POLLING)
-+			break;
-+		/*FALLTHROUGH*/
- 	case ATA_PROT_ATAPI_DMA:
- 	case ATA_PROT_DMA:
--	case ATA_PROT_NODATA:
- 		pdc_packet_start(qc);
- 		return 0;
- 
-@@ -800,7 +803,7 @@ static unsigned int pdc_qc_issue_prot(st
- static void pdc_tf_load_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
- {
- 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
--		 tf->protocol == ATA_PROT_NODATA);
-+		 tf->protocol == ATA_PROT_ATAPI_DMA);
- 	ata_tf_load(ap, tf);
- }
- 
-@@ -808,7 +811,7 @@ static void pdc_tf_load_mmio(struct ata_
- static void pdc_exec_command_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
- {
- 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
--		 tf->protocol == ATA_PROT_NODATA);
-+		 tf->protocol == ATA_PROT_ATAPI_DMA);
- 	ata_exec_command(ap, tf);
- }
- 
-_
+Also, -EBUSY is generally returned by arch implementations
+when they find that target_cpu == current_cpu, which is not
+a comparable case to the !SMP case. Use -EINVAL instead,
+similar to what powerpc does for !cpu_online(target), which
+is somewhat more analogous.
 
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Alan Cox <alan@redhat.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>
+
+---
+
+ include/linux/smp.h |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+---
+
+diff -ruNp a/include/linux/smp.h b/include/linux/smp.h
+--- a/include/linux/smp.h	2007-06-07 12:46:50.000000000 +0530
++++ b/include/linux/smp.h	2007-06-07 21:13:29.000000000 +0530
+@@ -6,6 +6,7 @@
+  *		Alan Cox. <alan@redhat.com>
+  */
+
++#include <linux/bug.h>
+ #include <linux/errno.h>
+
+ extern void cpu_idle(void);
+@@ -84,11 +85,6 @@ void smp_prepare_boot_cpu(void);
+  *	These macros fold the SMP functionality into a single CPU system
+  */
+ #define raw_smp_processor_id()			0
+-static inline int up_smp_call_function(void)
+-{
+-	return 0;
+-}
+-#define smp_call_function(func,info,retry,wait)	(up_smp_call_function())
+ #define on_each_cpu(func,info,retry,wait)	\
+ 	({					\
+ 		local_irq_disable();		\
+@@ -99,10 +95,17 @@ static inline int up_smp_call_function(v
+ static inline void smp_send_reschedule(int cpu) { }
+ #define num_booting_cpus()			1
+ #define smp_prepare_boot_cpu()			do {} while (0)
++static inline int smp_call_function(void (*func)(void *info),
++				    void *info, int retry, int wait)
++{
++	WARN_ON(1);
++	return -EINVAL;
++}
+ static inline int smp_call_function_single(int cpuid, void (*func)
+(void *info),
+ 					   void *info, int retry, int wait)
+ {
+-	return -EBUSY;
++	WARN_ON(1);
++	return -EINVAL;
+ }
+
+ #endif /* !SMP */
