@@ -1,83 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbXFGG4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbXFGG6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758593AbXFGG4y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 02:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXFGG4q
+	id S1758762AbXFGG6B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 02:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbXFGG5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 02:56:46 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:43806 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbXFGG4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 02:56:45 -0400
-Date: Thu, 7 Jun 2007 08:54:50 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-In-Reply-To: <20070606164202.a3dcd176.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.61.0706070852580.1547@yvahk01.tjqt.qr>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
- <200706062132.37430.m.kozlowski@tuxland.pl> <20070606132439.3f59f0cf.akpm@linux-foundation.org>
- <20070606212831.GA1534@gondor.apana.org.au> <20070606164202.a3dcd176.akpm@linux-foundation.org>
+	Thu, 7 Jun 2007 02:57:54 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:49159 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752103AbXFGG5x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 02:57:53 -0400
+Message-ID: <4667AB97.8090603@cosmosbay.com>
+Date: Thu, 07 Jun 2007 08:54:15 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 1/8] fdmap v2 - fdmap core
+References: <send-serie.davidel@xmailserver.org.4625.1181169031.1>
+In-Reply-To: <send-serie.davidel@xmailserver.org.4625.1181169031.1>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 07 Jun 2007 08:54:21 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Davide Libenzi a écrit :
+ > Core code for the fdmap implementation. Random allocation, exact allocation,
+ > de-allocation and lookup are all O(1) operations. It also support the "legacy"
+ > sequential (compact) file descriptor allocation, that is O(N) like the old
+ > fdtable implementation.
+ > Like the old "struct fdtable", fdmap is RCU friendly too.
+ >
 
-On Jun 6 2007 16:42, Andrew Morton wrote:
+Hi Davide
 
->> If so then you sent to it me :)
->
->You merged it ;)
->
->> Should I drop it?
->
->Sure, Jan will fix it up, I assume.  I might have broken it while repairing
->the reject storm which occurred when that durned HAS_IOMEM thing went in
->all over the tree.
-
-/me points at Herbert
-Andrew would not add options between the "menuconfig CRYPTO" and
-the "if CRYPTO" line... :)
+I just took a 10 minutes look before running away this morning, I'll try to 
+test this to get performance numbers in about 12 hours.
 
 
-	Jan
+
+> + */
+> +int fdmap_newfd_seq(struct fd_map *fmap, unsigned int start,
+> +		    unsigned int limit, unsigned long flags)
+> +{
+> +	int fd;
+> +
+> +	if (unlikely(start))
+> +		start = start - fmap->base;
+> +	if (likely(start < fmap->fdnext))
+> +		start = fmap->fdnext;
+> +	fd = find_next_zero_bit(fmap->map, fmap->size, start);
+> +	if (unlikely(fd >= limit))
+> +		return -EMFILE;
+> +	if (unlikely(fd >= fmap->size))
+> +		return -ENOSPC;
+
+> +	fmap->fdnext = fd + 1;
+
+Here you broke POSIX I'm afraid.
+
+You might need some test like
+
+     if (start <= fmap->fdnext)
+         fmap->fdnext = fd + 1;
+
+Also I'm not sure the first unlikely() and likely() are worth it.
+
+They probably match the user code you wrote yourself :)
+
+Best thing is probably let the compiler generate a 50/50 code and let CPU uses 
+its predictors.
 
 
-===
+> +
+> +	return fdmap_alloc_tail(fmap, fd, flags);
+> +}
 
-Unbreak the crypto menu breakage.
-
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-
----
- crypto/Kconfig |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.22-rc4/crypto/Kconfig
-===================================================================
---- linux-2.6.22-rc4.orig/crypto/Kconfig
-+++ linux-2.6.22-rc4/crypto/Kconfig
-@@ -7,6 +7,8 @@ menuconfig CRYPTO
- 	help
- 	  This option provides the core Cryptographic API.
- 
-+if CRYPTO
-+
- #
- # Generic algorithms support
- #
-@@ -18,8 +20,6 @@ config XOR_BLOCKS
- #
- source "crypto/async_tx/Kconfig"
- 
--if CRYPTO
--
- config CRYPTO_ALGAPI
- 	tristate
- 	help
+/*
+  * untested prog
+  * should not fail if/when (ulimit -n 1024)
+  */
+#include <fcntl.h>
+int main()
+{
+int highfd = fcntl(0, F_DUPFD, 1023);
+int fd = open("/dev/null", O_RDONLY);
+if (fd == -1) {
+     perror("open /dev/null");
+     return 1;
+     }
+return 0;
+}
