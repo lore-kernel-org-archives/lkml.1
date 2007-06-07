@@ -1,78 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936667AbXFGU3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936638AbXFGU22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936667AbXFGU3Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 16:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759193AbXFGU27
+	id S936638AbXFGU22 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 16:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934770AbXFGU2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 16:28:59 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:54129 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934770AbXFGU26 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 16:28:58 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Tejun Heo <htejun@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1 - 'lvm vgscan' busticated again...
-In-Reply-To: Your message of "Thu, 07 Jun 2007 15:44:56 +0900."
-             <4667A968.9080407@gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070606020737.4663d686.akpm@linux-foundation.org> <7929.1181146132@turing-police.cc.vt.edu>
-            <4667A968.9080407@gmail.com>
+	Thu, 7 Jun 2007 16:28:09 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47514 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936587AbXFGU2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 16:28:07 -0400
+Date: Thu, 7 Jun 2007 22:29:07 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Meelis Roos <mroos@linux.ee>, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] alpha: fix trivial section mismatch warnings
+Message-ID: <20070607202907.GA16553@uranus.ravnborg.org>
+References: <Pine.SOC.4.64.0706041308560.7370@math> <20070605053502.GB21745@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1181248131_4816P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 07 Jun 2007 16:28:51 -0400
-Message-ID: <23214.1181248131@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070605053502.GB21745@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1181248131_4816P
-Content-Type: text/plain; charset=us-ascii
+Fix the following section mismatch warnings:
+WARNING: arch/alpha/kernel/built-in.o(.text+0x7c78): Section mismatch: reference to .init.text:init_rtc_irq (between 'common_init_rtc' and 'timer_interrupt')
+WARNING: arch/alpha/kernel/built-in.o(.text+0x7c7c): Section mismatch: reference to .init.text:init_rtc_irq (between 'common_init_rtc' and 'timer_interrupt')
+WARNING: arch/alpha/kernel/built-in.o(.data+0x2c30): Section mismatch: reference to .init.text:srm_console_setup (between 'srmcons' and 'tsunami_pci_ops')
 
-On Thu, 07 Jun 2007 15:44:56 +0900, Tejun Heo said:
-> Valdis.Kletnieks@vt.edu wrote:
-> > On Wed, 06 Jun 2007 02:07:37 PDT, Andrew Morton said:
-> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2
-.6.22-rc4-mm1/
-> > 
-> > This one died a horrid death at boot time - console log indicates it found 
-the
-> > hard drive OK, found the 2 partitions on it.  But when the initrd ran a
-> > 'lvm vgscan', it didn't find the LVM2 space on /dev/sda2, so it panic'ed wh
-en
-> > it fell off the end of the initrd because the root= wasn't there.
-> > 
-> > My first guess for blame:
-> > 
-> > gregkh-driver-sysfs-allocate-inode-number-using-ida.patch
-> > 
-> > as that's awfully similar to gregkh-driver-sysfs-fix-i_ino-handling-in-sysfs.patch
-> > that broke 'lvm vgscan' for me in the same way on 21-rc7-mm[12].
-> > 
-> > I'll hopefully get a chance to revert that one and test later today - a quick
-> > 'patch -p1 -R --dry-run' shows a number of conflicts that will need hand-fixing
-> > at the very least.
-> 
-> Did rc3-mm1 work?  Can you find out the first broken -mm?
+In all three cases functions marked __init was called outside __init context.
+So the fix was to just drop the __init attribute.
 
-21-rc5-mm2 worked, -rc6-mm* were busticated for other reasons on my laptop,
-21-rc7-mm[12] were broken, 21-mm1 through 21-rc3-mm1 worked, -rc4-mm1 broke,
-and -rc4-mm2 works. I could bisect through -rc4-mm1 if it's deemed useful,
-Andrew just pushed -mm2 before I had a chance.
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+Andrew - these are trivial so I would like you to take these.
+The alpha people (at least rth) are struggling with some glibc issues atm.
 
---==_Exmh_1181248131_4816P
-Content-Type: application/pgp-signature
+There are still a few section mismatch warnings pending for alpha but they
+require more surgery than I am willing to look into.
+Maybe we should just use __init_refok to ignore them,
+but I will await until the alpha people has a few moments lefts.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+	Sam
 
-iD8DBQFGaGqDcC3lWbTT17ARAqmNAKDjrvIpzvxRO6AeNW/68a2U4tdplgCfYvpR
-jsecD3CInnR1IGJfle89AXw=
-=Ol+e
------END PGP SIGNATURE-----
-
---==_Exmh_1181248131_4816P--
+diff --git a/arch/alpha/kernel/srmcons.c b/arch/alpha/kernel/srmcons.c
+index 930cedc..783f4e5 100644
+--- a/arch/alpha/kernel/srmcons.c
++++ b/arch/alpha/kernel/srmcons.c
+@@ -289,7 +289,7 @@ srm_console_device(struct console *co, int *index)
+ 	return srmcons_driver;
+ }
+ 
+-static int __init
++static int
+ srm_console_setup(struct console *co, char *options)
+ {
+ 	return 0;
+diff --git a/arch/alpha/kernel/sys_marvel.c b/arch/alpha/kernel/sys_marvel.c
+index e349f03..acc93ac 100644
+--- a/arch/alpha/kernel/sys_marvel.c
++++ b/arch/alpha/kernel/sys_marvel.c
+@@ -422,7 +422,7 @@ marvel_init_pci(void)
+ 		io7_clear_errors(io7);
+ }
+ 
+-static void
++static void __init
+ marvel_init_rtc(void)
+ {
+ 	init_rtc_irq();
+diff --git a/arch/alpha/kernel/time.c b/arch/alpha/kernel/time.c
+index 4748e14..1dd50d0 100644
+--- a/arch/alpha/kernel/time.c
++++ b/arch/alpha/kernel/time.c
+@@ -144,7 +144,7 @@ irqreturn_t timer_interrupt(int irq, void *dev)
+ 	return IRQ_HANDLED;
+ }
+ 
+-void
++void __init
+ common_init_rtc(void)
+ {
+ 	unsigned char x;
