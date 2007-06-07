@@ -1,69 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934510AbXFGRWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934223AbXFGRZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934510AbXFGRWw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 13:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933982AbXFGRWP
+	id S934223AbXFGRZl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 13:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759932AbXFGRZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 13:22:15 -0400
-Received: from il.qumranet.com ([82.166.9.18]:44107 "EHLO il.qumranet.com"
+	Thu, 7 Jun 2007 13:25:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40029 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933651AbXFGRWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 13:22:14 -0400
-Message-ID: <46683EC4.4030604@qumranet.com>
-Date: Thu, 07 Jun 2007 20:22:12 +0300
-From: Avi Kivity <avi@qumranet.com>
+	id S1761195AbXFGRZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 13:25:32 -0400
+Message-ID: <4668155B.4020705@redhat.com>
+Date: Thu, 07 Jun 2007 07:25:31 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Glauber <jan.glauber@de.ibm.com>,
-       David Miller <davem@davemloft.net>, akpm@osdl.org, mingo@elte.hu,
-       ak@suse.de, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@redhat.com>
-Subject: Re: [patch] i386/x86_64: smp_call_function locking inconsistency
-References: <20070208203210.GB9798@osiris.ibm.com>	 <20070208.124328.88477956.davem@davemloft.net>	 <20070209084221.GA8259@osiris.boeblingen.de.ibm.com>	 <1171025838.5349.14.camel@localhost.localdomain>	 <a781481a0706070707j301ba886h10f4607fd6a6e8de@mail.gmail.com>	 <20070607162743.GA9433@osiris.ibm.com>	 <a781481a0706070954l636d752am82ef7ca9703788aa@mail.gmail.com> <a781481a0706071018t26e75c84jba5314dde3fc6019@mail.gmail.com>
-In-Reply-To: <a781481a0706071018t26e75c84jba5314dde3fc6019@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Thu, 07 Jun 2007 20:22:12 +0300 (IDT)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>	<20070606235906.72439d16@the-village.bc.nu>	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>	<20070607001932.35c9591c@the-village.bc.nu>	<466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu>
+In-Reply-To: <20070607110432.73be7960@the-village.bc.nu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
->
-> Oh wait, the on_one_cpu() patch proposes on UP:
->
-> +static inline int on_one_cpu(int cpu, void (*func)(void *info), void
-> *info,
-> +                 int retry, int wait)
-> +{
->
-> /* this needs a if (cpu == 0) check here, IMO */
->
-> +    local_irq_disable();
-> +    func(info);
-> +    local_irq_enable();
-> +    return 0;
->
-> /* else WARN and return -EINVAL; */
->
-> +}
->
-> which is broken without the suggested additions, IMHO
-> (this is what got me into this in the first place). There
-> _is_ a difference between on_each_cpu() and the
-> smp_call_function* semantics (as discussed on the other
-> thread -- gargh! my mistake for opening this discussion up
-> on so many threads), and in its current form on_one_cpu()
-> has quite confused semantics, trying to mix the two. I guess
-> on_one_cpu() would be better off simply being just an
-> atomic wrapper over smp_processor_id() and
-> smp_call_function_single() (which is the *real* issue that
-> needs solving in the first place), and do it well.
->
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-This is on UP, so (cpu == 0) is trivially true.
+Alan Cox wrote:
+>> continuous allocation are part of the API.  It's required by POSIX and
+>> provided by Unix since the early days.  There are entire code bases out
+>> there which depend on this assumption.  Linking with code like this,
+>> before or after the new version controlled symbol is introduced, will
+>> break it. 
+> 
+> If your linker is doing its job then you won't be able to link them
+> together because they have incompatible assumptions. Not exactly rocket
+> science even if it is done a little differently to the usual symbol
+> compatibility tests. 
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+No.  You still don't appreciate the problem.
 
+Assume I would change code so that newly compiled programs which use
+open, socket, etc generate different references which cannot be
+satisfied by old runtimes.  That and only that is something linkers can
+see, linkers deal with symbols and references.
+
+If I would do that and people would recompile their existing code this
+*still* does not change the fact that the program behavior would be
+changed and the code might break.  It can be something as simple as
+
+   int fd = open(...);
+   ...
+   close(fd);
+   ...
+   close(STDIN_FILENO);
+   open(...);
+
+The last open is supposed to open a new file with descriptor 0 (i.e.,
+STDIN_FILENO).  By using non-sequential descriptors this is not guaranteed.
+
+This is nothing you can change with linker magic.  It is embedded in the
+code.  It's behavior *guaranteed* by POSIX and Unix before it for
+decades.  This isn't anything you can change.
+
+
+> And the stuff you are trying to put into the kernel is better ? No, its a
+> bunch of ugly hacks caused by trying to solve the problem in the wrong
+> way and in the wrong place.
+
+Go back 30 years and convince people to not guarantee first-match
+allocation of descriptors.  Then you can stand up and demand purity.
+But just as in many other cases, legacy demands its price.  We sometimes
+have to pay the price for compatibility and if it isn't high it's worth
+it.  I don't say the current proposed code is the answer but iff
+Davide's unified code does not perform worse than the current code I
+don't see the harm since, for instance, extending socket() is in any
+case necessary.  I mentioned that close_on_exit must be set on open,
+else leaks are risked.  This will come naturally with a flags parameter
+which already takes O_NONSEQFD.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFGaBVb2ijCOnn/RHQRAnzGAJwLY3dDc9nl69yFPZfYUr8qbIeXygCfTqMd
+u5Jofy3gFB5bWEHdnPtUhJY=
+=Jz/g
+-----END PGP SIGNATURE-----
