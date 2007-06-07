@@ -1,72 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764235AbXFGPl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764503AbXFGPmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764235AbXFGPl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 11:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbXFGPlV
+	id S1764503AbXFGPmS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 11:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbXFGPmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 11:41:21 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2488 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbXFGPlU (ORCPT
+	Thu, 7 Jun 2007 11:42:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47476 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756155AbXFGPmC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 11:41:20 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 7 Jun 2007 08:41:18 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <20070607110623.53322dae@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0706070811270.6059@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
- <20070606235906.72439d16@the-village.bc.nu>
- <Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>
- <20070607001932.35c9591c@the-village.bc.nu>
- <Pine.LNX.4.64.0706061619560.10383@alien.or.mcafeemobile.com>
- <20070607110623.53322dae@the-village.bc.nu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Jun 2007 11:42:02 -0400
+Date: Thu, 7 Jun 2007 08:41:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Stephen Tweedie <sct@redhat.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ext3fs: umount+sync not enough to guarantee metadata-on-disk
+Message-Id: <20070607084142.42583639.akpm@linux-foundation.org>
+In-Reply-To: <46680BB8.50404@rtr.ca>
+References: <46680BB8.50404@rtr.ca>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007, Alan Cox wrote:
+On Thu, 07 Jun 2007 09:44:24 -0400 Mark Lord <lkml@rtr.ca> wrote:
 
-> > I don't think it's a matter of versioning. Many userspace libraries 
-> > expects their fds to be compact (for many reasons - they use select, they 
-> > use them to index 0-based arrays, etc...), and if the kernel suddendly 
-> > starts returning values in the 1<<28 up arena, they sure won't be happy.
-> > So I believe that the correct way is that the caller specifically selects 
-> > the feature, leaving the legacy fd allocation as default.
+> Andrew / Stephen / Ted,
 > 
-> I don't understand the connection between this paragraph (with which I
-> agree) and the urge to add a ton of ugly syscall hacks. "Caller
-> specifically selects feature" - > prctl(). Libraries get unhappy ->
-> linker issue.
+> I have a MythTV PVR box here, which has had intermittent shutdown issues
+> over the past while.
+> 
+> The main storage for recordings is a 2-drive RAID0 array,
+> formatted with ext3fs.  The system runs a 2.6.17 Ubuntu kernel
+> that I've tailored/rebuild for this specific machine.
+> 
+> My observation is, if I delete a couple of 25+ GByte files,
+> and then immediately shutdown the system, the disks are still being
+> written to at the point when the power goes off (halt -f -p).
+> 
+> The overall sequence is something like this:
+> 
+> 1. Delete the files in Myth, which uses a "delete slowly" function
+> to avoid locking up the machine for the 30-60 seconds that this would
+> otherwise require.  Myth appears to open the file, unlink it, and then
+> sit in a loop doing small ftruncate's until nothing is left.
 
-I meant, caller specifically selects the feature, on a per-fd basis. If 
-you select the task flag runtime, then all the allocated fds will be in 
-the non-sequential area. Even fds allocated inside the library code, with 
-libraries not expecting this. I fail to understand how a linker can nicely 
-solve this. If my app is using, for its own reasons, fds in the 
-non-sequential area, and library XYZ internally uses fds and does not like 
-them in that area, I still want to link to that library. As long as I do 
-not pass my fds to the library ("XYZ internally .."), this must still 
-work. The contrary is also true. If my app is not non-sequential fd aware, 
-and my library wants to use them in order to keep them alive from apps 
-doing the for-each-fd-close loop, with a per-fd policy, you can still mix 
-them together.
-Or are you planning to have two sets of each userspace (userspace is not 
-only glibc, there's other stuff too) libraries?
+sigh.  yup.
 
+> 2. When I trigger the shutdown whilst this is happening, Myth gets
+> killed off, and so the unlinked file is automatically closed.
+> and the kernel (filesystem) code begins finishing the delete operation.
+> 
+> 3. The shutdown scripts do their thing quickly, so the delete is
+> *still* underway when the umount commands are issued.
+> On this system, I use this sequence:
+> 
+>   ## /var/lib/mythtv is the recording's ext3fs, on /dev/md0 (RAID0):
 
+I assume the applikcaton has already been killed at this stage, and it is
+blocked in the kernel running the truncate?
 
-- Davide
+>    mount /var/lib/mythtv -oremount,ro
+>    sync
+>    umount /var/lib/mythtv
+
+Did this succeed?  If the application is still truncating that file, the
+umount should have failed.
+
+>    sync
+>    mount / -oremount,ro
+>    sync
+>    sleep 1
+>    hdparm -W0 /dev/sda /dev/sdb
+>    sync
+>    sleep 2
+>    halt -f -p
+> 
+> 4. The hard drive light is on solid throughout, including at the point
+> when the power goes out.
+> 
+> 5. On the next reboot, there is a LONG pause (20-30 seconds) at the
+> point where /var/lib/mythtv is remounted --> indicating unfinished business
+> from the journal file that needs to be replayed (eg. the file deletion).
+
+That opened-but-deleted file's inode is on the orphan list.
+
+See, the unlink-then-slowly-truncate trick is done in this fashion so that
+if the box crashes during the slow unlink, the orhpan list handling on the
+reboot will finish off the truncate for us.
+
+> So.. how can I guarantee a quiescent filesystem before doing "halt -f -p" ??
+> This looks pretty dangerous as-is.
+
+Wait for the killed-off applicaiton to actually exit, perhaps?  But
+that unmount should have failed.
 
 
