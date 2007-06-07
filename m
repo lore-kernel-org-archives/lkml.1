@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937011AbXFGVTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936902AbXFGVWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937011AbXFGVTh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 17:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762882AbXFGVT3
+	id S936902AbXFGVWm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 17:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758791AbXFGVWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 17:19:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:42158 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760090AbXFGVT3 (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 17:19:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tx4QpgDi2UPm1TX922jDKEkf4CjxcRxwGn8DQ26+CplaxlSQEAvt6GqfFyfYtUZU5P96rV0K2PCur6GnLgO+EhqWeGNlYei9BidFn2q+GDBZ6pwe4ky4TlmOnX0LUqCXBTy8lKSDUSdtODO6SZPaEhZ1kw+VFjYcnvv9LsDVOU4=
-Message-ID: <6934efce0706071419n2557603cl85e820d0612787a@mail.gmail.com>
-Date: Thu, 7 Jun 2007 14:19:28 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: carsteno@de.ibm.com
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-Cc: "Christoph Hellwig" <hch@infradead.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       richard.griffiths@windriver.com,
-       "Richard Griffiths" <res07ml0@verizon.net>,
-       Linux-kernel@vger.kernel.org
-In-Reply-To: <46683B6A.6030306@de.ibm.com>
+	Thu, 7 Jun 2007 17:22:34 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:48198 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755239AbXFGVWe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 17:22:34 -0400
+Message-ID: <46687598.2040701@zytor.com>
+Date: Thu, 07 Jun 2007 14:16:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: William Lee Irwin III <wli@holomorphy.com>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: why does the macro "ZERO_PAGE" take an argument?
+References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain> <4667EC18.4080904@yahoo.com.au> <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain> <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com> <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain> <4668412D.3030506@zytor.com> <20070607192911.GV6909@holomorphy.com>
+In-Reply-To: <20070607192911.GV6909@holomorphy.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1179871779.24163.11.camel@localhost.localdomain>
-	 <465BB5BA.3050900@yahoo.com.au>
-	 <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com>
-	 <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com>
-	 <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com>
-	 <20070606113351.GA11701@infradead.org> <4666DD88.5030708@de.ibm.com>
-	 <20070606162305.GA20600@infradead.org> <46683B6A.6030306@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I've had a few beer long discussion with Joern Engel and David
-> Woodhouse on this one. To cut a long discussion short: the current XIP
-> infrastructure is not sufficient to be used on top of mtd. We'd need
-> some extenstions:
-> - on get_xip_page() we'd need to state if we want the reference
-> read-only or read+write
-> - we need a put_xip_page() to return references
-> - and finally we need a callback for the referece, so that the mtd
-> driver can ask to get its reference back (in order to unmap from
-> userland when erasing a block)
+William Lee Irwin III wrote:
+> Robert P. J. Day wrote:
+>>> although it's not clear where in the source tree are the invocations
+>>> that would actually make a difference to a MIPS system, which is why
+>>> i've CC'ed ralf on this.  i'm sure he can clear this up. :-)
+> 
+> On Thu, Jun 07, 2007 at 10:32:29AM -0700, H. Peter Anvin wrote:
+>> x86 could also benefit from coloured zeropages.  In fact, I thought it
+>> already had them (K8 wants as many as 8.)
+> 
+> How would one demonstrate the beneficial effect of such?
 
-Yes. And one more thing.  We can't assume every page in a file is XIP or not.
+Dean Gaudet at Transmeta did some benchmarking using SPEC.  If I recall
+his numbers correctly (this is from memory, mind you) on Transmeta
+Efficeon, which has 2-way virtual cache tagging with hardware recovery,
+zeropage coloring was a 1.5% performance improvement.
 
-However, I still can't get even the existing get_xip_page() to work
-for me so we are getting ahead of ourselves;)  Looking back on this
-thread I realize I haven't confirmed if my cramfs_get_xip_page() gets
-a page struct.  I assume that is my problem?  The UML find_iomem()
-probably returns psuedo iomem with page structs.  While ioremap() does
-not return with page struct backed memory.
+	-hpa
+
