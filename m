@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966757AbXFGWHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966836AbXFGWIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966757AbXFGWHz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966569AbXFGWFQ
+	id S966836AbXFGWIg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966643AbXFGWGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 18:05:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45840 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966443AbXFGWFO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 18:05:14 -0400
-Date: Thu, 7 Jun 2007 15:04:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Stephen Tweedie <sct@redhat.com>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext3fs: umount+sync not enough to guarantee metadata-on-disk
-Message-Id: <20070607150455.719f9ec0.akpm@linux-foundation.org>
-In-Reply-To: <46687AEE.6030005@rtr.ca>
-References: <46680BB8.50404@rtr.ca>
-	<20070607084142.42583639.akpm@linux-foundation.org>
-	<46682E4E.1070303@redhat.com>
-	<20070607124507.79d8da54.akpm@linux-foundation.org>
-	<46687AEE.6030005@rtr.ca>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jun 2007 18:06:09 -0400
+Received: from khc.piap.pl ([195.187.100.11]:47399 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966677AbXFGWGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 18:06:07 -0400
+To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
+References: <20070607162251.5f291325@the-village.bc.nu>
+	<m3wsyfzcpt.fsf@maximus.localdomain>
+	<200706072232.37051.s0348365@sms.ed.ac.uk>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 08 Jun 2007 00:06:05 +0200
+In-Reply-To: <200706072232.37051.s0348365@sms.ed.ac.uk> (Alistair John Strachan's message of "Thu, 7 Jun 2007 22:32:36 +0100")
+Message-ID: <m3sl93zagi.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Jun 2007 17:38:54 -0400
-Mark Lord <lkml@rtr.ca> wrote:
+Alistair John Strachan <s0348365@sms.ed.ac.uk> writes:
 
-> Andrew Morton wrote:
-> > On Thu, 07 Jun 2007 12:11:58 -0400
-> > Chuck Ebbert <cebbert@redhat.com> wrote:
-> > 
-> >> On 06/07/2007 11:41 AM, Andrew Morton wrote:
-> >>>>    mount /var/lib/mythtv -oremount,ro
-> >>>>    sync
-> >>>>    umount /var/lib/mythtv
-> >>> Did this succeed?  If the application is still truncating that file, the
-> >>> umount should have failed.
-> >> Shouldn't sync should wait for truncate to finish?
-> > 
-> > I can't think of anything in there at present which would cause that to
-> > happen, and it's not immediately obvious how we _could_ make it happen - we
-> > have an inode which potentially has no dirty pages and which is itself
-> > clean.  The truncate can span multiple journal commits, so forcing a
-> > journal commit in sync() won't necessarily block behind the truncate.
-> > 
-> > I guess we could ask sync to speculatively take and release every inode's
-> > i_mutex or something.  But even that would involve quite some hoop-jumping
-> > due to those infuriating spinlock-protected list_heads on the superblock.
-> > 
-> > hmm.
-> 
-> Yeah, I really don't know what to do with this either.
-> We have to have a bounds on how long we wait at shutdown,
-> but there doesn't seem to be an easy way to get notified
-> once a filesystem becomes idle (?).
-> 
-> I suppose I could have the script loop on /proc/interrupts until
-> it sees the disk activity has tapered off..
-> 
+> I personally buy the argument that 80 cols helps remind people that they've 
+> used too many indentation depths and should redesign their code.
+> I think it's 
+> a good thing to stick to where possible, even if just from a design 
+> perspective.
 
-I don't recall clarity on this question: did the umount fail?
+How many is too many? A function with 2 "if" means 3 tabs = 24 characters
+for just indentation. Add a printk(KERN_DEBUG "\n"); and you can print
+ca. 30 characters without having to break the string. This is crazy.
 
-Because it should have, in which case your script can poll that.
+> There are some cases such as the one Alan has pointed out here where being 
+> strictly 80 cols seems more destructive than useful, but those are the 
+> exception, not the rule (IMO).
 
+Well... I was forced to split functions making the code less readable
+and more complicated just to avoid these 80-columns. A short function
+with more indent levels may be way more readable than a redesigned one
+with this requirement in mind.
+
+I'd just state the code has to be readable and laid out with some sanity
+but 80 columns give us nothing WRT this.
+
+We already review new code and spot such problems (and smaller ones)
+without using the 80-cols rule.
+-- 
+Krzysztof Halasa
