@@ -1,113 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbXFGHiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbXFGHoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758005AbXFGHiu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 03:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbXFGHil
+	id S1758957AbXFGHoc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 03:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbXFGHoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 03:38:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:56000 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751924AbXFGHik (ORCPT
+	Thu, 7 Jun 2007 03:44:23 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:31221 "EHLO
+	viefep25-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751282AbXFGHoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 03:38:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=pD94UJJpZGMhUTfbOylFTp0k/zL2Wofv2Q6icD/dJxBFPQyJXjrfX5CqevPRdBmMhPl6S9bwAcvxz9xiSLwewTvKmjc3DZopIOAHBKVbA18MiceqO9IEfrs9MQVXge3OtJfecM9G5LFpN1GeAPnmdl42ICzIQJFOHLP0d2L2jrQ=
-Message-ID: <4667B39D.209@gmail.com>
-Date: Thu, 07 Jun 2007 16:28:29 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Robert de Rooy <robert.de.rooy@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       linux-pcmcia@lists.infradead.org
-Subject: Re: libata and legacy ide pcmcia failure
-References: <464A0321.3080201@gmail.com>	<464C1575.8070005@gmail.com>	<464CB7C9.2080807@gmail.com>	<46503192.1040300@gmail.com>	<4650B9E3.7070409@gmail.com>	<46518798.2020808@gmail.com>	<4651B66E.6030505@gmail.com>	<4651B834.3060702@gmail.com>	<4651C4A1.6000101@gmail.com>	<4651C74B.7020108@gmail.com>	<46520B36.90409@garzik.org> <20070523150229.00a0c3c4@the-village.bc.nu> <466718B6.4080105@gmail.com>
-In-Reply-To: <466718B6.4080105@gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------060806070008010309040601"
+	Thu, 7 Jun 2007 03:44:22 -0400
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Martin Peschke <mp3@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, jbaron@redhat.com, rostedt@goodmis.org,
+       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
+In-Reply-To: <1181165656.7133.23.camel@dix>
+References: <1181165656.7133.23.camel@dix>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 09:44:18 +0200
+Message-Id: <1181202258.7348.217.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060806070008010309040601
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Wed, 2007-06-06 at 23:34 +0200, Martin Peschke wrote:
 
-Robert de Rooy wrote:
-> Alan Cox wrote:
->>>>   http://thread.gmane.org/gmane.linux.kernel/530099
->>>>
->>>> It seems we're losing interrupts from the CFA device.  Any ideas?
->>>>       
->>> Alan probably knows more, but ISTR some CFA PCMCIA devices that
->>> needed polling...
->>>     
->>
->> Not that I know of. Not devices anyway - there are embedded boxes with no
->> IRQ configuration for the CF slot but we've never supported those (indeed
->> there are even people who bitbang ATA on GPIO pins...)
->>
->>   
-> I was able to test the same PCMCIA adapter in a different ThinkPad, an X40.
-> The X40 also fails although it has a totally different Cardbus
-> controller (TI on the T40 vs Ricoh on the X40)
 > 
-> Here is the log from the X40 running the same kernel as before
-> (2.6.22rc1-git5 + timing-debug.patch +
-> disable-dev_init_param-and-setxfermode-for-CFA.patch)
+> Signed-off-by: Martin Peschke <mp3@de.ibm.com>
+> ---
+> 
+>  include/linux/lockdep.h |   35 ++---
+>  kernel/lockdep.c        |  122 ++-----------------
+>  kernel/lockdep_proc.c   |  294 +++++++-----------------------------------------
+>  3 files changed, 76 insertions(+), 375 deletions(-)
+> 
+> Index: linux/kernel/lockdep.c
+> ===================================================================
+> --- linux.orig/kernel/lockdep.c
+> +++ linux/kernel/lockdep.c
+> @@ -37,6 +37,7 @@
+>  #include <linux/debug_locks.h>
+>  #include <linux/irqflags.h>
+>  #include <linux/utsname.h>
+> +#include <linux/statistic.h>
+>  
+>  #include <asm/sections.h>
+>  
+> @@ -119,93 +120,9 @@ unsigned long nr_lock_classes;
+>  static struct lock_class lock_classes[MAX_LOCKDEP_KEYS];
+>  
+>  #ifdef CONFIG_LOCK_STAT
+>  static void lock_release_holdtime(struct held_lock *hlock)
+>  {
+> +	struct statistic *stat = hlock->class->stat;
+>  	s64 holdtime;
+>  
+>  	if (!lock_stat)
+> @@ -213,12 +130,10 @@ static void lock_release_holdtime(struct
+>  
+>  	holdtime = sched_clock() - hlock->holdtime_stamp;
+>  
+>  	if (hlock->read)
+> +		statistic_inc(stat, LOCK_STAT_HOLD_READ, holdtime);
+>  	else
+> +		statistic_inc(stat, LOCK_STAT_HOLD_WRITE, holdtime);
+>  }
+>  #else
+>  static inline void lock_release_holdtime(struct held_lock *hlock)
+> @@ -2745,9 +2660,8 @@ __lock_contended(struct lockdep_map *loc
+>  {
+>  	struct task_struct *curr = current;
+>  	struct held_lock *hlock, *prev_hlock;
+>  	unsigned int depth;
+> +	int i;
+>  
+>  	depth = curr->lockdep_depth;
+>  	if (DEBUG_LOCKS_WARN_ON(!depth))
+> @@ -2761,22 +2675,15 @@ __lock_contended(struct lockdep_map *loc
+>  		 */
+>  		if (prev_hlock && prev_hlock->irq_context != hlock->irq_context)
+>  			break;
+> +		if (hlock->instance == lock) {
+> +			hlock->waittime_stamp = sched_clock();
+> +			_statistic_inc(hlock->class->stat, LOCK_STAT_CONT, ip);
+> +			return;
+> +		}
+>  		prev_hlock = hlock;
+>  	}
+>  	print_lock_contention_bug(curr, lock, ip);
+>  	return;
+>  }
+>  
+>  static void
+> @@ -2784,7 +2691,7 @@ __lock_acquired(struct lockdep_map *lock
+>  {
+>  	struct task_struct *curr = current;
+>  	struct held_lock *hlock, *prev_hlock;
+> +	struct statistic *stat;
+>  	unsigned int depth;
+>  	u64 now;
+>  	s64 waittime;
+> @@ -2817,12 +2724,11 @@ found_it:
+>  	waittime = now - hlock->waittime_stamp;
+>  	hlock->holdtime_stamp = now;
+>  
+> +	stat = hlock->class->stat;
+>  	if (hlock->read)
+> +		_statistic_inc(stat, LOCK_STAT_WAIT_READ, waittime);
+>  	else
+> +		_statistic_inc(stat, LOCK_STAT_WAIT_WRITE, waittime);
+>  }
+>  
+>  void lock_contended(struct lockdep_map *lock, unsigned long ip)
+> Index: linux/include/linux/lockdep.h
+> ===================================================================
+> --- linux.orig/include/linux/lockdep.h
+> +++ linux/include/linux/lockdep.h
+> @@ -17,6 +17,7 @@ struct lockdep_map;
+>  #include <linux/list.h>
+>  #include <linux/debug_locks.h>
+>  #include <linux/stacktrace.h>
+> +#include <linux/statistic.h>
+>  
+>  /*
+>   * Lock-class usage-state bits:
+> @@ -72,6 +73,17 @@ struct lock_class_key {
+>  	struct lockdep_subclass_key	subkeys[MAX_LOCKDEP_SUBCLASSES];
+>  };
+>  
+> +#ifdef CONFIG_LOCK_STAT
+> +enum lock_stat_enum {
+> +	LOCK_STAT_CONT,
+> +	LOCK_STAT_WAIT_READ,
+> +	LOCK_STAT_WAIT_WRITE,
+> +	LOCK_STAT_HOLD_READ,
+> +	LOCK_STAT_HOLD_WRITE,
+> +	_LOCK_STAT_NUMBER
+> +};
+> +#endif
+> +
+>  /*
+>   * The lock-class itself:
+>   */
+> @@ -117,30 +129,11 @@ struct lock_class {
+>  	int				name_version;
+>  
+>  #ifdef CONFIG_LOCK_STAT
+> +	struct statistic		stat[_LOCK_STAT_NUMBER];
+> +	struct statistic_coll		stat_coll;
+>  #endif
+>  };
+>  
+>  /*
+>   * Map the lock object (the lock instance) to the lock-class object.
+>   * This is embedded into specific lock instances:
+> Index: linux/kernel/lockdep_proc.c
+> ===================================================================
+> --- linux.orig/kernel/lockdep_proc.c
+> +++ linux/kernel/lockdep_proc.c
+> @@ -349,260 +349,64 @@ static const struct file_operations proc
+>  };
+>  
+>  #ifdef CONFIG_LOCK_STAT
+> +struct statistic_info lock_stat_info[_LOCK_STAT_NUMBER] = {
+> +	[LOCK_STAT_CONT] = {
+> +		.name	  = "contentions",
+> +		.x_unit	  = "instruction_pointer",
+> +		.y_unit	  = "occurrence",
+> +		.defaults = "type=sparse entries=4",
+> +		.flags	  = STATISTIC_FLAGS_LABEL,
+> +	},
+> +	[LOCK_STAT_WAIT_READ] = {
+> +		.name	  = "wait_read",
+> +		.x_unit	  = "nanoseconds",
+> +		.y_unit	  = "occurrence",
+> +		.defaults = "type=utilisation",
+> +	},
+> +	[LOCK_STAT_WAIT_WRITE] = {
+> +		.name	  = "wait_write",
+> +		.x_unit	  = "nanoseconds",
+> +		.y_unit	  = "occurrence",
+> +		.defaults = "type=utilisation",
+> +	},
+> +	[LOCK_STAT_HOLD_READ] = {
+> +		.name	  = "hold_read",
+> +		.x_unit	  = "nanoseconds",
+> +		.y_unit	  = "occurrence",
+> +		.defaults = "type=utilisation",
+> +	},
+> +	[LOCK_STAT_HOLD_WRITE] = {
+> +		.name	  = "hold_write",
+> +		.x_unit	  = "nanoseconds",
+> +		.y_unit	  = "occurrence",
+> +		.defaults = "type=utilisation",
+>  	}
+>  };
+>  
+> +struct statistic_ui lock_stat_ui;
+>  
+> +static void lock_stat_label(struct statistic_coll *coll, int i,
+> +			    void *key, char *buf, int size)
+> +{
+> +	sprint_symbol(buf, *(unsigned long *)key);
+>  }
+>  
+> +static void lock_stat_init(void)
+>  {
+>  	struct lock_class *class;
+> +	statistic_create(&lock_stat_ui, "lockstat");
+> +	list_for_each_entry(class, &all_lock_classes, lock_entry) {
+> +		class->stat_coll.stat = class->stat;
+> +		class->stat_coll.info = lock_stat_info;
+> +		class->stat_coll.number  = _LOCK_STAT_NUMBER;
+> +		class->stat_coll.label = lock_stat_label;
+> +		strncpy(class->stat_coll.name, class->name,
+> +			STATISTIC_COLL_NAME_SIZE - 1);
+> +		statistic_attach(&class->stat_coll, &lock_stat_ui);
+>  	}
+>  }
+> +#endif
+>  
+>  static int __init lockdep_proc_init(void)
+>  {
+> @@ -617,9 +421,7 @@ static int __init lockdep_proc_init(void
+>  		entry->proc_fops = &proc_lockdep_stats_operations;
+>  
+>  #ifdef CONFIG_LOCK_STAT
+> +	lock_stat_init();
+>  #endif
+>  
+>  	return 0;
 
-Can you test the attached patch?
+I'm confused as to where the class->stat objects are initialised? Is
+that done in lock_stat_init()? If so, then you have a bug.
 
--- 
-tejun
-
---------------060806070008010309040601
-Content-Type: text/x-patch;
- name*0="libata-dont-test-slave-register-readiness-after-srst.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="libata-dont-test-slave-register-readiness-after-srst.patch"
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 4733f00..bac5e1f 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -3042,7 +3042,6 @@ int ata_wait_ready(struct ata_port *ap, unsigned long deadline)
- static int ata_bus_post_reset(struct ata_port *ap, unsigned int devmask,
- 			      unsigned long deadline)
- {
--	struct ata_ioports *ioaddr = &ap->ioaddr;
- 	unsigned int dev0 = devmask & (1 << 0);
- 	unsigned int dev1 = devmask & (1 << 1);
- 	int rc, ret = 0;
-@@ -3059,22 +3058,9 @@ static int ata_bus_post_reset(struct ata_port *ap, unsigned int devmask,
- 		}
- 	}
- 
--	/* if device 1 was found in ata_devchk, wait for
--	 * register access, then wait for BSY to clear
--	 */
--	while (dev1) {
--		u8 nsect, lbal;
--
--		ap->ops->dev_select(ap, 1);
--		nsect = ioread8(ioaddr->nsect_addr);
--		lbal = ioread8(ioaddr->lbal_addr);
--		if ((nsect == 1) && (lbal == 1))
--			break;
--		if (time_after(jiffies, deadline))
--			return -EBUSY;
--		msleep(50);	/* give drive a breather */
--	}
-+	/* wait for device 1 */
- 	if (dev1) {
-+		ap->ops->dev_select(ap, 1);
- 		rc = ata_wait_ready(ap, deadline);
- 		if (rc) {
- 			if (rc != -ENODEV)
-
---------------060806070008010309040601--
