@@ -1,88 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936302AbXFGUVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936381AbXFGUXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936302AbXFGUVa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 16:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765854AbXFGUVV
+	id S936381AbXFGUXg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 16:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763399AbXFGUXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 16:21:21 -0400
-Received: from vms040pub.verizon.net ([206.46.252.40]:53504 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764845AbXFGUVU (ORCPT
+	Thu, 7 Jun 2007 16:23:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43032
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1762479AbXFGUXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 16:21:20 -0400
-Date: Thu, 07 Jun 2007 16:21:00 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Linux 2.6.22-rc4
-In-reply-to: <Pine.LNX.4.64.0706071853080.15778@fbirervta.pbzchgretzou.qr>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>
-Message-id: <200706071621.00687.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org>
- <200706071206.06298.gene.heskett@gmail.com>
- <Pine.LNX.4.64.0706071853080.15778@fbirervta.pbzchgretzou.qr>
-User-Agent: KMail/1.9.6
+	Thu, 7 Jun 2007 16:23:24 -0400
+Date: Thu, 07 Jun 2007 13:23:39 -0700 (PDT)
+Message-Id: <20070607.132339.82695611.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: penguin-kernel@I-love.SAKURA.ne.jp, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [2.6.22-rc4] UDP's local port assignment not working correctly.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070607151839.d8f1c164.dada1@cosmosbay.com>
+References: <200706072040.BEC00116.MQFFtSOVOHFOLJ@I-love.SAKURA.ne.jp>
+	<20070607151839.d8f1c164.dada1@cosmosbay.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 June 2007, Jan Engelhardt wrote:
->On Jun 7 2007 12:06, Gene Heskett wrote:
->>On Thursday 07 June 2007, Jan Engelhardt wrote:
->>>On Jun 7 2007 11:24, Gene Heskett wrote:
->>>>>>> It is too stable for me.
->>>>>>
->>>>>>I wish all our testers were you ;)
->>>>>
->>>>>It [2.6.22-rc4] did not die on me so far, unlike that stock FC7 kernel
->>>>>(same config but without fc patches).
->>>>
->>>>Oh its stable allright, but why do I have to turn the monitor off by hand
->>>> when I leave.  None of that is working, not even the screen blanker.
->>>
->>>VC or X?
->>
->>Regular X
->
->Most likely an X incompatibility then?
->
->> fc6 box, amd xp2800.  Using NVIDIA's latest driver, and it works
->>when booted to a 2.6.21 era kernel.
->
->Well, NVIDIA is your first stop then. What about nv?
->
->
->
->	Jan
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Thu, 7 Jun 2007 15:18:39 +0200
 
-Don't know Jan.  nv, the last time I tried that bucket of molasses in january, 
-couldn't drive this card at more than 800x600, and I am used to double that 
-both ways.
+> Yes, this was discovered two days ago and David reverted four commits.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/davem/net-2.6.git;a=commitdiff;h=82c5fde20031375cd93fa5a247cf15603ea1f152
+> 
+> So it should probably be included in Linus tree very very soon.
 
-The last time I booted to nv, it took me a week to get all the crap fixed that 
-it overwrote trying to fit the default screens I use while trying to make 
-them fit in an 800x600 window.
-
-I run 1600x1200, on either an ati card (but the radeon driver quit supporting  
-the r280 chipset according to boot messages, the main reason I bought this 
-nvidia card) or on an older nvidia card that nv was quite happy with.  That 
-card went belly up and took the motherboard with it 2 years ago though.
-
-Did you miss the comment that it works with a 2.6.21ish kernel?  Everything 
-else being equal.  I will boot to one of them later tonight and test it to 
-make sure its not some update to kde though, and let the list know.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Vote anarchist.
+Right.
