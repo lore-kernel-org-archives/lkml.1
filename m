@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765675AbXFGQfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763740AbXFGQis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765675AbXFGQfE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760934AbXFGQey
+	id S1763740AbXFGQis (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbXFGQik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:34:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51889 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757834AbXFGQex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:34:53 -0400
-From: Steve Grubb <sgrubb@redhat.com>
-Organization: Red Hat
-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Audit: Add TTY input auditing
-Date: Thu, 7 Jun 2007 12:31:43 -0400
-User-Agent: KMail/1.9.4
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Miloslav Trmac <mitr@redhat.com>,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@redhat.com>, Alexander Viro <aviro@redhat.com>
-References: <817517.5859.qm@web36605.mail.mud.yahoo.com>
-In-Reply-To: <817517.5859.qm@web36605.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jun 2007 12:38:40 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:9156 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754637AbXFGQij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 12:38:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=l04CfNSGZ+hWJUzs86k8aaEvAKmc1W6ejLgn2D/JvrvjNq/CjnC9AHHQr2Cw0XfnELGbjW1T51VjeCip625NLm4KNL4FE1osFikvypvUDsEwJUB9kxzCEMdtAGFzJrxx2Cov3wGeiq77iZ156SrN8ZQDuZ0JTDSfcYezgt9SnDg=
+Date: Fri, 8 Jun 2007 00:39:30 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: 2.6.22-rc4-mm1
+Message-ID: <20070607163930.GA11060@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <20070606161936.GA8952@localhost.localdomain> <20070606110931.fda845de.akpm@linux-foundation.org> <20070607022608.GA2416@localhost.localdomain> <20070607055912.GX11166@waste.org> <20070607065158.GA1996@localhost.localdomain> <20070607140444.GR11115@waste.org> <20070607154007.GA9305@localhost.localdomain> <20070607155913.GW11115@waste.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706071231.43843.sgrubb@redhat.com>
+In-Reply-To: <20070607155913.GW11115@waste.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 June 2007 11:42, Casey Schaufler wrote:
-> > tools like rootsh, but that is too easy to detect and defeat. And then it
-> > does not put its data into the audit system where its correlated with
-> > other system events.
+On Thu, Jun 07, 2007 at 10:59:14AM -0500, Matt Mackall wrote:
+>On Thu, Jun 07, 2007 at 11:40:08PM +0800, WANG Cong wrote:
+>> On Thu, Jun 07, 2007 at 09:04:44AM -0500, Matt Mackall wrote:
+>> >On Thu, Jun 07, 2007 at 02:51:58PM +0800, WANG Cong wrote:
+>> >> >> Maybe there's something wrong with ketchup. ;(
+>> >> >
+>> >> >Can you do an 'lsdiff | grep lguest' on the patch in your ~/.ketchup directory?
+>> >> >
+>> >> >Ketchup simply applies patches, it never touches filenames directly.
+>> >> >So for something to go wrong here and drop a file in the tree with a
+>> >> >damaged pathname, you've either got a damaged patch, a bug in patch
+>> >> >itself, or some form of filesystem corruption.
+>> >> 
+>> >> Thanks for your point.
+>> >> 
+>> >> It should be Documentation/lguest/lguest.c, maybe it was corrupted and ketchup
+>> >> backuped it as mlguest.c.
+>> >
+>> >It'd be interesting to figure out how that happened, still.
+>> >
+>> >If your patch file is intact (are you using GPG's signature-checking
+>> >support?), the most likely explanation is an operating system or
+>> >filesystem bug.
+>> 
+>> Yes, I am using GPG's checking.
 >
-> The evaluation teams that I have worked with (OrangeBook and CC)
-> as well as their technical advisory groups have always been clear
-> that keyboard logging is not an appropriate mechanism for security
-> audit logging. There is insufficient correlation between what is
-> typed and security relevent actions for keyboard (or mouse event)
-> logging to meet the audit requirements.
+>Well that gives a pretty solid assurance that the patch you downloaded
+>matches the one on kernel.org. And that one doesn't contain an
+>mlguest.c. 
+>
 
-Ok, this is a sample set of requirements we are trying to meet:
+I agree.
 
-Implement automated audit trails for all system components to reconstruct the 
-following events:
-  All actions taken by any individual with root or administrative privileges
+>Ketchup doesn't even look inside patches, and patch doesn't invent
+>names, so something in the bzip2 -> patch(1) -> filesystem chain got
+>corrupted. Probably not bzip2, as it has CRCs.
+>
 
-If we do not get commands typed at a prompt, we have to audit by execve. 
-Auditing execve for uid = 0 produces millions of events since that includes 
-daemons. If we get clever and restrict auditing to events for root uid and 
-auid >= 500, we still wind up with millions of events because of shell 
-scripts. 
+Do you mean ketchup doesn't do anything if a file is corrupted?
 
-People in control of some of these security targets said to me that auditing 
-by execve cannot be the solution, because the audit trail becomes too big, 
-unwieldy, full of irrelavent events, and not easily analysed. So, that 
-approach does not work for people either.
+>Do you have ECC memory?
+>
 
-Casey, so what approach would you take to meet the requirement?
+No. Do you mean it's an error of my RAM? I have never met such things before,
+how often does such kind of things happen? May be less often than a bug in
+a stable kernel?
 
-> You have to log what happened.
+Thanks!
 
-Which can be done by auditing for execution of specific apps or watching 
-access to certain files. So, I don't see tty auditing as something that 
-replaces other auditing, it allows us to form a better picture of what 
-happened to the system.
-
-> Logging what was requested is insufficient and logging what was
-> typed, which may or may not have resulted in an actual request is
-> not helpful to meeting security audit requirements.
-
-I would disagree. Its helpful to complete the picture of what's happening on 
-the system.
-
--Steve
