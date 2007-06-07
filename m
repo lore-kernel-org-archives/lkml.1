@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933873AbXFGQyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761098AbXFGQ6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933873AbXFGQyZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763296AbXFGQwh
+	id S1761098AbXFGQ6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbXFGQ6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:52:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53009 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765429AbXFGQwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:52:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Greaves <david@dgreaves.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Date: Thu, 7 Jun 2007 18:58:03 +0200
-User-Agent: KMail/1.9.5
-Cc: Mark Lord <lkml@rtr.ca>, Tejun Heo <htejun@gmail.com>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, xfs@oss.sgi.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
-References: <46608E3F.4060201@dgreaves.com> <466817EF.7090707@rtr.ca> <46682221.8070705@dgreaves.com>
-In-Reply-To: <46682221.8070705@dgreaves.com>
+	Thu, 7 Jun 2007 12:58:40 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:2142 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751749AbXFGQ6j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 12:58:39 -0400
+Date: Thu, 7 Jun 2007 18:58:38 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+cc: Eric Paris <eparis@redhat.com>, Alan Cox <alan@redhat.com>,
+       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, drepper@redhat.com, roland@redhat.com,
+       arjan@infradead.org, mingo@elte.hu, viro@zeniv.linux.org.uk,
+       chrisw@redhat.com, sgrubb@redhat.com
+Subject: Re: [PATCH] Protection for exploiting null dereference using mmap
+In-Reply-To: <1181134068.3699.31.camel@moss-spartans.epoch.ncsc.mil>
+Message-ID: <Pine.LNX.4.64.0706071858270.15778@fbirervta.pbzchgretzou.qr>
+References: <1180561713.3633.27.camel@dhcp231-215.rdu.redhat.com> 
+ <20070603205653.GE25869@devserv.devel.redhat.com> 
+ <1180964306.14220.34.camel@moss-spartans.epoch.ncsc.mil> 
+ <1181075666.3978.31.camel@localhost.localdomain>  <Line.LNX.4.64.0706051658170.23379@d.namei>
+  <20070605211616.GE23291@devserv.devel.redhat.com> 
+ <1181078927.3978.42.camel@localhost.localdomain>
+ <1181134068.3699.31.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706071858.05000.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 7 June 2007 17:20, David Greaves wrote:
-> Mark Lord wrote:
-> > Tejun Heo wrote:
-> >>
-> >> Can you setup serial console and/or netconsole (not sure whether this
-> >> would work tho)?
-> > 
-> > Since he has good console output already, capturable by digicam,
-> > I think a better approach might be to provide a patch with extra 
-> > instrumentation..
-> > You know.. progress messages and the like, so we can see at what step
-> > things stop working.  Or would that not help ?
-> > 
-> > David, does scrollback work on your dead console?
-> 
-> hmmmm, scrollback doesn't currently _do_ anything.
-> 
-> But the messages didn't scroll there, they just appear (as the memory is 
-> restored I assume). The same messages appear during the fail-to-suspend case too.
-> 
-> Linus said at one point:
->  > Ok, it wasn't a hidden oops. The DISABLE_CONSOLE_SUSPEND=y thing sometimes
->  > shows oopses that are otherwise hidden, but at other times it just causes
->  > more problems (hard hangs when trying to display something on a device
->  > that is suspended, or behind a bridge that got suspended).
-> 
->  > In your case, the screen output just shows normal resume output, and it
->  > apparently just hung for some unknown reason. It *may* be worth trying to
->  > do a SysRQ + 't' thing to see what tasks are running (or rather, not
->  > running), but since you won't be able to capture it, it's probably not
->  > going to be useful.
-> 
-> So I've since removed DISABLE_CONSOLE_SUSPEND=y
-> Should I put it back?
 
-I would do that.
+On Jun 6 2007 08:47, Stephen Smalley wrote:
+>
+>I'd be ok with having a different default for SELinux vs. non-SELinux,
+>i.e. no restrictions by default under dummy/capability, but restrict it
+>by default to 64k if selinux is enabled.  Then we can use policy to
+>grant it as needed to the specific programs.
 
-Apart from this, your observations don't directly imply that XFS is to blame
-here.  It might be involved somehow, but it's also possible that RAID6 alone
-would suffice to trigger the problem.
+640k?
 
-Greetings,
-Rafael
+
+
+	Jan
+-- 
