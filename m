@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760426AbXFGNSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXFGNTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760426AbXFGNSv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 09:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbXFGNSl
+	id S1760766AbXFGNTI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 09:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760359AbXFGNSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 09:18:41 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:41366 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751813AbXFGNSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 09:18:40 -0400
-Date: Thu, 7 Jun 2007 15:18:39 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-kernel@vger.kernel.org,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: [2.6.22-rc4] UDP's local port assignment not working correctly.
-Message-Id: <20070607151839.d8f1c164.dada1@cosmosbay.com>
-In-Reply-To: <200706072040.BEC00116.MQFFtSOVOHFOLJ@I-love.SAKURA.ne.jp>
-References: <200706072040.BEC00116.MQFFtSOVOHFOLJ@I-love.SAKURA.ne.jp>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jun 2007 09:18:51 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:19478 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760018AbXFGNSu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 09:18:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=c5L9AoNwxA3mfklRux6ep8+1/zHixmSMbJaYffbS0zLIfVe+ATs3lRZR8G/CrznB7CzxRdJdq0VuWI483AXHlioR3H0TyWTlOR9/Wkzz28gp3Nv1QFQII6ss86ncCi91zSkw/TNyF9ZROgO/qjQsYin6conukRrR5O6/qWh9jvg=
+Message-ID: <9a8748490706070618t3c27c1b3hb10846cf5355653b@mail.gmail.com>
+Date: Thu, 7 Jun 2007 15:18:48 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] Add missing files and dirs to 00-INDEX in Documentation/
+Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20070606093651.179a13ef.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200706061620.33881.jesper.juhl@gmail.com>
+	 <20070606093651.179a13ef.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007 20:40:39 +0900
-Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
-
-> Hello.
-> 
-> Same local ports are assigned to multiple sockets.
-> The following program should print different local port number.
-> 
-> ----- Start of program -----
-> #include <stdio.h>
-> #include <unistd.h>
-> #include <sys/socket.h>
-> #include <sys/types.h>
-> #include <netinet/in.h>
-> 
-> int main(int argc, char *argv[]) {
-> 	struct sockaddr_in addr;
-> 	socklen_t size = sizeof(addr);
-> 	int server = socket(PF_INET, SOCK_DGRAM, 0), client = socket(PF_INET, SOCK_DGRAM, 0);
-> 	addr.sin_family = AF_INET;
-> 	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-> 	addr.sin_port = htons(0);
-> 	
-> 	printf("Server: Binding UDP 127.0.0.1 0 ... ");
-> 	bind(server, (struct sockaddr *) &addr, sizeof(addr));
-> 	getsockname(server, (struct sockaddr *) &addr, &size);
-> 	printf("bound to port %d\n", ntohs(addr.sin_port));
-> 	
-> 	printf("Client: Connecting UDP 127.0.0.1 %d ... ", ntohs(addr.sin_port));
-> 	connect(client, (struct sockaddr *) &addr, sizeof(addr));
-> 	getsockname(client, (struct sockaddr *) &addr, &size);
-> 	printf("bound to port %d\n", ntohs(addr.sin_port));
-> 	
-> 	return 0;
-> }
-> ----- End of program -----
-> 
-> I told YOSHIFUJI Hideaki and he answered me that
-> this is a regression caused by changing UDP's hash search algorithm to 2-pass.
-> 
+On 06/06/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Wed, 6 Jun 2007 16:20:32 +0200 Jesper Juhl wrote:
+>
+> >
+> > This patch adds descriptions for a number of missing files and directories
+> > to the Documentation/00-INDEX file.
+> > People really should learn to keep this file up-to-date when adding or
+> > moving documentation...
+>
+> /me raises hand.
 > Thanks.
+>
+I'll take that as an implicit ACK ;-)
 
-CC netdev
+Now we just need someone to merge the patch (optimistically adding
+akpm to Cc - for real this time) ...
 
-Yes, this was discovered two days ago and David reverted four commits.
+> > Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-http://git.kernel.org/?p=linux/kernel/git/davem/net-2.6.git;a=commitdiff;h=82c5fde20031375cd93fa5a247cf15603ea1f152
+http://lkml.org/lkml/diff/2007/6/6/191/1
 
-So it should probably be included in Linus tree very very soon.
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
