@@ -1,195 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936398AbXFGUz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936794AbXFGU4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936398AbXFGUz0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 16:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759193AbXFGUzR
+	id S936794AbXFGU4r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 16:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763523AbXFGU4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 16:55:17 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:47788 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755118AbXFGUzO (ORCPT
+	Thu, 7 Jun 2007 16:56:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53686 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755118AbXFGU4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 16:55:14 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jun 2007 16:55:14 EDT
-Date: Thu, 7 Jun 2007 23:47:59 +0300
-From: Samuel Ortiz <samuel@sortiz.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>,
-       "Linus Walleij \(LD/EAB\)" <linus.walleij@ericsson.com>,
-       linux-kernel@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com
-Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
-Message-ID: <20070607204759.GA6809@sortiz.org>
-Reply-To: Samuel Ortiz <samuel@sortiz.org>
-References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200706061309.28633.bjorn.helgaas@hp.com> <200706070045.14040.arvidjaar@mail.ru> <200706070952.36823.bjorn.helgaas@hp.com>
+	Thu, 7 Jun 2007 16:56:37 -0400
+Date: Thu, 7 Jun 2007 13:56:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Tejun Heo <htejun@gmail.com>
+cc: Gregor Jasny <gjasny@googlemail.com>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
+In-Reply-To: <4667B347.9040900@gmail.com>
+Message-ID: <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
+  <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com> 
+ <466196AD.3090502@garzik.org>  <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com>
+  <46667466.4010500@gmail.com> <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com>
+ <4667B347.9040900@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706070952.36823.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Ovh-Remote: 90.28.102.240 (aannecy-257-1-23-240.w90-28.abo.wanadoo.fr)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bjorn,
 
-On 6/7/2007, "Bjorn Helgaas" <bjorn.helgaas@hp.com> wrote:
 
->On Wednesday 06 June 2007 02:45:01 pm Andrey Borzenkov wrote:
->> On Wednesday 06 June 2007, Bjorn Helgaas wrote:
->> > On Tuesday 05 June 2007 09:29:11 pm Andrey Borzenkov wrote:
->> > > On Wednesday 06 June 2007, Bjorn Helgaas wrote:
->> > > > Something's wrong with this strategy.  The BIOS is telling us that an
->> > > > SMCf010 device is present, active, and responds at io ports 0x100-0x107
->> > > > and 0x2e8-0x2ef.  The fact that it happens to be on the other side of
->> > > > an ISA or LPC bridge should be immaterial to the OS driver.
->> > >
->> > > I thought this as well.
->> >
->> > If this is really true, it also means we shouldn't twiddle with the
->> > bridge.  If the BIOS left us a working setup, the preconfiguration
->> > is certainly going to change it to something incompatible with the
->> > PNP info.
->> >
->> > What if we try the following patch, which keeps the FIR/SIR swap and
->> > just removes the preconfiguration?
->>
->> I already tried different patch but with similar effect (switch off
->> preconfiguration) - it does not work. I am beginning to doubt whether drier
->> works on my system at all (i.e. before PnP change); have to find time to
->> test.
+On Thu, 7 Jun 2007, Tejun Heo wrote:
 >
->OK.  My patch wasn't the right approach anyway.  Attached is what I
->think we should do instead -- do the preconfig if we're not using PNP.
-Thats sounds good, yes.
-Maybe we should also run the legacy probe when the PnP one fails. I
-don't know how the preconfiguration stuff will behave with the device
-being PnP enabled, but with your patch Andrey will still need to
-modprobe smsc-ircc with smsc_nopnp.
+> Ah.. okay.  Now I see what's going on.  Jeff, this is another device
+> which doesn't set nsect and lbal to 1 after reset.  Gregor, please try
+> the attached patch.
 
-So, here is the patch I propose (I had to move smsc_ircc_legacy_probe()
-a bit earlier in the code to avoid forward declaration, but it's
-basically your patch plus a call to smsc_ircc_legacy_probe() from the
-pnp_probe() routine):
+Tejun, since Jeff is apparently traveling this week, and Gregor tested the 
+patch successfully (and it looks sane anyway - why in Gods name _would_ we 
+care what the initial setting of nsect/lbal is?), can you send this in 
+with the changelog and sign-off?
 
+Maybe it can go through Andrew like the other patch (the sata_promise 
+irq/polling handling), but I can take it directly too. Whatever seems 
+best.
 
-diff --git a/drivers/net/irda/smsc-ircc2.c b/drivers/net/irda/smsc-ircc2.c
-index 9043bf4..1d7ab3f 100644
---- a/drivers/net/irda/smsc-ircc2.c
-+++ b/drivers/net/irda/smsc-ircc2.c
-@@ -366,6 +366,44 @@ static inline void register_bank(int iobase, int bank)
-                iobase + IRCC_MASTER);
- }
- 
-+
-+static int __init smsc_ircc_legacy_probe(void)
-+{
-+	int ret = 0;
-+
-+#ifdef CONFIG_PCI
-+	if (smsc_ircc_preconfigure_subsystems(ircc_cfg, ircc_fir, ircc_sir,
-+					      ircc_dma, ircc_irq) < 0) {
-+		/* Ignore errors from preconfiguration */
-+		IRDA_ERROR("%s, Preconfiguration failed !\n", driver_name);
-+	}
-+#endif
-+
-+	if (ircc_fir > 0 && ircc_sir > 0) {
-+		IRDA_MESSAGE(" Overriding FIR address 0x%04x\n", ircc_fir);
-+		IRDA_MESSAGE(" Overriding SIR address 0x%04x\n", ircc_sir);
-+
-+		if (smsc_ircc_open(ircc_fir, ircc_sir, ircc_dma, ircc_irq))
-+			ret = -ENODEV;
-+	} else {
-+		ret = -ENODEV;
-+
-+		/* try user provided configuration register base address */
-+		if (ircc_cfg > 0) {
-+			IRDA_MESSAGE(" Overriding configuration address "
-+				     "0x%04x\n", ircc_cfg);
-+			if (!smsc_superio_fdc(ircc_cfg))
-+				ret = 0;
-+			if (!smsc_superio_lpc(ircc_cfg))
-+				ret = 0;
-+		}
-+
-+		if (smsc_ircc_look_for_chips() > 0)
-+			ret = 0;
-+	}
-+	return ret;
-+}
-+
- /* PNP hotplug support */
- static const struct pnp_device_id smsc_ircc_pnp_table[] = {
- 	{ .id = "SMCf010", .driver_data = 0 },
-@@ -391,9 +429,14 @@ static int __init smsc_ircc_pnp_probe(struct pnp_dev *dev,
- 	dma = pnp_dma(dev, 0);
- 	irq = pnp_irq(dev, 0);
- 
--	if (smsc_ircc_open(firbase, sirbase, dma, irq))
--		return -ENODEV;
--
-+	if (smsc_ircc_open(firbase, sirbase, dma, irq)) {
-+		IRDA_ERROR("PnP probe failed\n");
-+		if (smsc_ircc_legacy_probe()) {
-+			IRDA_ERROR("Legacy probe failed\n");
-+			return -ENODEV;
-+		}
-+	}
-+	
- 	return 0;
- }
- 
-@@ -412,35 +455,6 @@ static struct pnp_driver smsc_ircc_pnp_driver = {
-  *
-  *******************************************************************************/
- 
--static int __init smsc_ircc_legacy_probe(void)
--{
--	int ret = 0;
--
--	if (ircc_fir > 0 && ircc_sir > 0) {
--		IRDA_MESSAGE(" Overriding FIR address 0x%04x\n", ircc_fir);
--		IRDA_MESSAGE(" Overriding SIR address 0x%04x\n", ircc_sir);
--
--		if (smsc_ircc_open(ircc_fir, ircc_sir, ircc_dma, ircc_irq))
--			ret = -ENODEV;
--	} else {
--		ret = -ENODEV;
--
--		/* try user provided configuration register base address */
--		if (ircc_cfg > 0) {
--			IRDA_MESSAGE(" Overriding configuration address "
--				     "0x%04x\n", ircc_cfg);
--			if (!smsc_superio_fdc(ircc_cfg))
--				ret = 0;
--			if (!smsc_superio_lpc(ircc_cfg))
--				ret = 0;
--		}
--
--		if (smsc_ircc_look_for_chips() > 0)
--			ret = 0;
--	}
--	return ret;
--}
--
- /*
-  * Function smsc_ircc_init ()
-  *
-@@ -459,13 +473,6 @@ static int __init smsc_ircc_init(void)
- 		return ret;
- 	}
- 
--#ifdef CONFIG_PCI
--	if (smsc_ircc_preconfigure_subsystems(ircc_cfg, ircc_fir, ircc_sir, ircc_dma, ircc_irq) < 0) {
--		/* Ignore errors from preconfiguration */
--		IRDA_ERROR("%s, Preconfiguration failed !\n", driver_name);
--	}
--#endif
--
- 	dev_count = 0;
- 
- 	if (smsc_nopnp || !pnp_platform_devices ||
-
+		Linus
