@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933221AbXFGQGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXFGQGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933221AbXFGQGB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 12:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXFGQFx
+	id S932579AbXFGQGZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 12:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXFGQGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 12:05:53 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:32844 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751427AbXFGQFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 12:05:51 -0400
-Date: Thu, 7 Jun 2007 09:05:49 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: rostedt@goodmis.org, akpm@linuxfoundation.org, dipankar@in.ibm.com
-Subject: [PATCH] Document the fact that RCU callbacks can run in parallel
-Message-ID: <20070607160549.GA27243@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Thu, 7 Jun 2007 12:06:14 -0400
+Received: from wx-out-0506.google.com ([66.249.82.227]:45126 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbXFGQGM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 12:06:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=B+PSekpNG7ZhBurCjYbJeUdeAWjzJmYqU6Y8WXjSAHaoCnKZhz6j9N7OMQs3K59yDhWws6uYzc+rCm9IyF64FIkmF+oMD23WJvGnc6YCrCZYftp4exrd5Yk2KtaiPCMquOs3CRz/97J0IngcThyaWyKBbCSeIcNpWiO/GfugAR4=
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: Linux 2.6.22-rc4
+Date: Thu, 7 Jun 2007 12:06:05 -0400
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>
+References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org> <200706071124.30128.gene.heskett@gmail.com> <Pine.LNX.4.64.0706071738240.13101@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0706071738240.13101@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706071206.06298.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an item to the RCU documentation checklist noting that RCU callbacks
-can run in parallel.
+On Thursday 07 June 2007, Jan Engelhardt wrote:
+>On Jun 7 2007 11:24, Gene Heskett wrote:
+>>>>> It is too stable for me.
+>>>>
+>>>>I wish all our testers were you ;)
+>>>
+>>>It [2.6.22-rc4] did not die on me so far, unlike that stock FC7 kernel
+>>>(same config but without fc patches).
+>>
+>>Oh its stable allright, but why do I have to turn the monitor off by hand
+>> when I leave.  None of that is working, not even the screen blanker.
+>
+>VC or X?
+>
+>
+>	Jan
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+Regular X, fc6 box, amd xp2800.  Using NVIDIA's latest driver, and it works 
+when booted to a 2.6.21 era kernel.
 
- checklist.txt |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+Just about up to date, seems I have to do the kde stuffs one or two pieces at 
+a time as yumex isn't handling the deps well otherwise.
 
-diff -urpNa -X dontdiff linux-2.6.21/Documentation/RCU/checklist.txt linux-2.6.21-RCUdoc/Documentation/RCU/checklist.txt
---- linux-2.6.21/Documentation/RCU/checklist.txt	2007-04-25 20:08:32.000000000 -0700
-+++ linux-2.6.21-RCUdoc/Documentation/RCU/checklist.txt	2007-06-07 08:58:52.000000000 -0700
-@@ -222,7 +222,15 @@ over a rather long period of time, but i
- 	deadlock as soon as the RCU callback happens to interrupt that
- 	acquisition's critical section.
- 
--13.	SRCU (srcu_read_lock(), srcu_read_unlock(), and synchronize_srcu())
-+13.	RCU callbacks can be and are executed in parallel.  In many cases,
-+	the callback code simply wrappers around kfree(), so that this
-+	is not an issue (or, more accurately, to the extent that it is
-+	an issue, the memory-allocator locking handles it).  However,
-+	if the callbacks do manipulate a shared data structure, they
-+	must use whatever locking or other synchronization is required
-+	to safely access and/or modify that data structure.
-+
-+14.	SRCU (srcu_read_lock(), srcu_read_unlock(), and synchronize_srcu())
- 	may only be invoked from process context.  Unlike other forms of
- 	RCU, it -is- permissible to block in an SRCU read-side critical
- 	section (demarked by srcu_read_lock() and srcu_read_unlock()),
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The inherent vice of capitalism is the unequal sharing of blessings;
+the inherent virtue of socialism is the equal sharing of misery.
+		-- Churchill
