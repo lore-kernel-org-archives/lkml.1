@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966318AbXFGWAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966334AbXFGWBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966318AbXFGWAs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 18:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965987AbXFGV7P
+	id S966334AbXFGWBR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 18:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966100AbXFGV73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 17:59:15 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43723 "EHLO
+	Thu, 7 Jun 2007 17:59:29 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43760 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965384AbXFGV7J (ORCPT
+	with ESMTP id S965878AbXFGV7L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 17:59:09 -0400
-Message-Id: <20070607215908.260429511@sgi.com>
+	Thu, 7 Jun 2007 17:59:11 -0400
+Message-Id: <20070607215910.833944456@sgi.com>
 References: <20070607215529.147027769@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 07 Jun 2007 14:55:30 -0700
+Date: Thu, 07 Jun 2007 14:55:41 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
@@ -21,249 +21,227 @@ Cc: linux-mm@kvack.org
 Cc: dgc@sgi.com
 Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Cc: Mel Gorman <mel@skynet.ie>
-Subject: [patch 01/12] SLUB: Add support for kmem_cache_ops
-Content-Disposition: inline; filename=slab_defrag_kmem_cache_ops
+Subject: [patch 12/12] SLUB: Support memory defrag through kmem_cache_vacate() 
+Content-Disposition: inline; filename=slab_defrag_kmem_cache_vacate
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We use the parameter formerly used by the destructor to pass an optional
-pointer to a kmem_cache_ops structure to kmem_cache_create.
+Special function kmem_cache_vacate() to push out the objects in a
+specified slab. In order to make that work we will have to handle
+slab page allocations in such a way that we can determine if a slab is valid whenever we access it regardless of its time in life.
 
-kmem_cache_ops is created as empty. Later patches populate kmem_cache_ops.
+A valid slab that can be freed has PageSlab(page) and page->inuse > 0 set.
+So we need to make sure in allocate_slab that page->inuse is zero before
+PageSlab is set otherwise kmem_cache_vacate may operate on a slab that
+has not been properly setup yet.
 
-Create a KMEM_CACHE_OPS macro that allows the specification of a the
-kmem_cache_ops.
-
-Code to handle kmem_cache_ops is added to SLUB. SLAB and SLOB are updated
-to be able to accept a kmem_cache_ops structure but will ignore it.
+There is currently no in kernel user. The hope is that Mel's defragmentation
+method can at some point use this functionality to make slabs movable
+so that the reclaimable type of pages may not be necessary anymore.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/linux/slab.h     |   13 +++++++++----
- include/linux/slub_def.h |    1 +
- mm/slab.c                |    6 +++---
- mm/slob.c                |    2 +-
- mm/slub.c                |   44 ++++++++++++++++++++++++++++++--------------
- 5 files changed, 44 insertions(+), 22 deletions(-)
+ include/linux/slab.h |    1 
+ mm/slab.c            |    9 ++++
+ mm/slob.c            |    9 ++++
+ mm/slub.c            |  109 ++++++++++++++++++++++++++++++++++++++++++++++-----
+ 4 files changed, 119 insertions(+), 9 deletions(-)
 
 Index: slub/include/linux/slab.h
 ===================================================================
---- slub.orig/include/linux/slab.h	2007-06-04 20:12:56.000000000 -0700
-+++ slub/include/linux/slab.h	2007-06-04 20:13:58.000000000 -0700
-@@ -38,10 +38,13 @@
- void __init kmem_cache_init(void);
- int slab_is_available(void);
+--- slub.orig/include/linux/slab.h	2007-06-07 14:36:09.000000000 -0700
++++ slub/include/linux/slab.h	2007-06-07 14:36:15.000000000 -0700
+@@ -86,6 +86,7 @@ unsigned int kmem_cache_size(struct kmem
+ const char *kmem_cache_name(struct kmem_cache *);
+ int kmem_ptr_validate(struct kmem_cache *cachep, const void *ptr);
+ int kmem_cache_defrag(int percentage, int node);
++int kmem_cache_vacate(struct page *);
  
-+struct kmem_cache_ops {
-+};
-+
- struct kmem_cache *kmem_cache_create(const char *, size_t, size_t,
- 			unsigned long,
- 			void (*)(void *, struct kmem_cache *, unsigned long),
--			void (*)(void *, struct kmem_cache *, unsigned long));
-+			const struct kmem_cache_ops *s);
- void kmem_cache_destroy(struct kmem_cache *);
- int kmem_cache_shrink(struct kmem_cache *);
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
-@@ -59,9 +62,11 @@ int kmem_ptr_validate(struct kmem_cache 
-  * f.e. add ____cacheline_aligned_in_smp to the struct declaration
-  * then the objects will be properly aligned in SMP configurations.
-  */
--#define KMEM_CACHE(__struct, __flags) kmem_cache_create(#__struct,\
--		sizeof(struct __struct), __alignof__(struct __struct),\
--		(__flags), NULL, NULL)
-+#define KMEM_CACHE_OPS(__struct, __flags, __ops) \
-+	kmem_cache_create(#__struct, sizeof(struct __struct), \
-+	__alignof__(struct __struct), (__flags), NULL, (__ops))
-+
-+#define KMEM_CACHE(__struct, __flags) KMEM_CACHE_OPS(__struct, __flags, NULL)
- 
- #ifdef CONFIG_NUMA
- extern void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
-Index: slub/mm/slub.c
-===================================================================
---- slub.orig/mm/slub.c	2007-06-04 20:13:58.000000000 -0700
-+++ slub/mm/slub.c	2007-06-04 20:13:58.000000000 -0700
-@@ -294,6 +294,9 @@ static inline int check_valid_pointer(st
- 	return 1;
- }
- 
-+struct kmem_cache_ops slub_default_ops = {
-+};
-+
  /*
-  * Slow version of get and set free pointer.
-  *
-@@ -2057,11 +2060,13 @@ static int calculate_sizes(struct kmem_c
- static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
- 		const char *name, size_t size,
- 		size_t align, unsigned long flags,
--		void (*ctor)(void *, struct kmem_cache *, unsigned long))
-+		void (*ctor)(void *, struct kmem_cache *, unsigned long),
-+		const struct kmem_cache_ops *ops)
- {
- 	memset(s, 0, kmem_size);
- 	s->name = name;
- 	s->ctor = ctor;
-+	s->ops = ops;
- 	s->objsize = size;
- 	s->flags = flags;
- 	s->align = align;
-@@ -2244,7 +2249,7 @@ static struct kmem_cache *create_kmalloc
- 
- 	down_write(&slub_lock);
- 	if (!kmem_cache_open(s, gfp_flags, name, size, ARCH_KMALLOC_MINALIGN,
--			flags, NULL))
-+			flags, NULL, &slub_default_ops))
- 		goto panic;
- 
- 	list_add(&s->list, &slab_caches);
-@@ -2575,12 +2580,16 @@ static int slab_unmergeable(struct kmem_
- 	if (s->refcount < 0)
- 		return 1;
- 
-+	if (s->ops != &slub_default_ops)
-+		return 1;
-+
+  * Please use this macro to create slab caches. Simply specify the
+Index: slub/mm/slab.c
+===================================================================
+--- slub.orig/mm/slab.c	2007-06-07 14:36:09.000000000 -0700
++++ slub/mm/slab.c	2007-06-07 14:36:15.000000000 -0700
+@@ -2521,6 +2521,15 @@ int kmem_cache_defrag(int percent, int n
  	return 0;
  }
  
- static struct kmem_cache *find_mergeable(size_t size,
- 		size_t align, unsigned long flags,
--		void (*ctor)(void *, struct kmem_cache *, unsigned long))
-+		void (*ctor)(void *, struct kmem_cache *, unsigned long),
-+		const struct kmem_cache_ops *ops)
- {
- 	struct kmem_cache *s;
- 
-@@ -2590,6 +2599,9 @@ static struct kmem_cache *find_mergeable
- 	if (ctor)
- 		return NULL;
- 
-+	if (ops != &slub_default_ops)
-+		return NULL;
++/*
++ * SLAB does not support slab defragmentation
++ */
++int kmem_cache_vacate(struct page *page)
++{
++	return 0;
++}
++EXPORT_SYMBOL(kmem_cache_vacate);
 +
- 	size = ALIGN(size, sizeof(void *));
- 	align = calculate_alignment(flags, align, size);
- 	size = ALIGN(size, align);
-@@ -2622,13 +2634,15 @@ static struct kmem_cache *find_mergeable
- struct kmem_cache *kmem_cache_create(const char *name, size_t size,
- 		size_t align, unsigned long flags,
- 		void (*ctor)(void *, struct kmem_cache *, unsigned long),
--		void (*dtor)(void *, struct kmem_cache *, unsigned long))
-+		const struct kmem_cache_ops *ops)
- {
- 	struct kmem_cache *s;
- 
--	BUG_ON(dtor);
-+	if (!ops)
-+		ops = &slub_default_ops;
-+
- 	down_write(&slub_lock);
--	s = find_mergeable(size, align, flags, ctor);
-+	s = find_mergeable(size, align, flags, ctor, ops);
- 	if (s) {
- 		s->refcount++;
- 		/*
-@@ -2642,7 +2656,7 @@ struct kmem_cache *kmem_cache_create(con
- 	} else {
- 		s = kmalloc(kmem_size, GFP_KERNEL);
- 		if (s && kmem_cache_open(s, GFP_KERNEL, name,
--				size, align, flags, ctor)) {
-+				size, align, flags, ctor, ops)) {
- 			if (sysfs_slab_add(s)) {
- 				kfree(s);
- 				goto err;
-@@ -3267,16 +3281,18 @@ static ssize_t order_show(struct kmem_ca
- }
- SLAB_ATTR_RO(order);
- 
--static ssize_t ctor_show(struct kmem_cache *s, char *buf)
-+static ssize_t ops_show(struct kmem_cache *s, char *buf)
- {
--	if (s->ctor) {
--		int n = sprint_symbol(buf, (unsigned long)s->ctor);
-+	int x = 0;
- 
--		return n + sprintf(buf + n, "\n");
-+	if (s->ctor) {
-+		x += sprintf(buf + x, "ctor : ");
-+		x += sprint_symbol(buf + x, (unsigned long)s->ctor);
-+		x += sprintf(buf + x, "\n");
- 	}
--	return 0;
-+	return x;
- }
--SLAB_ATTR_RO(ctor);
-+SLAB_ATTR_RO(ops);
- 
- static ssize_t aliases_show(struct kmem_cache *s, char *buf)
- {
-@@ -3508,7 +3524,7 @@ static struct attribute * slab_attrs[] =
- 	&slabs_attr.attr,
- 	&partial_attr.attr,
- 	&cpu_slabs_attr.attr,
--	&ctor_attr.attr,
-+	&ops_attr.attr,
- 	&aliases_attr.attr,
- 	&align_attr.attr,
- 	&sanity_checks_attr.attr,
-Index: slub/include/linux/slub_def.h
-===================================================================
---- slub.orig/include/linux/slub_def.h	2007-06-04 20:13:53.000000000 -0700
-+++ slub/include/linux/slub_def.h	2007-06-04 20:13:58.000000000 -0700
-@@ -41,6 +41,7 @@ struct kmem_cache {
- 	int objects;		/* Number of objects in slab */
- 	int refcount;		/* Refcount for slab cache destroy */
- 	void (*ctor)(void *, struct kmem_cache *, unsigned long);
-+	const struct kmem_cache_ops *ops;
- 	int inuse;		/* Offset to metadata */
- 	int align;		/* Alignment */
- 	const char *name;	/* Name (only for display!) */
-Index: slub/mm/slab.c
-===================================================================
---- slub.orig/mm/slab.c	2007-06-04 20:12:56.000000000 -0700
-+++ slub/mm/slab.c	2007-06-04 20:13:58.000000000 -0700
-@@ -2100,7 +2100,7 @@ static int __init_refok setup_cpu_cache(
-  * @align: The required alignment for the objects.
-  * @flags: SLAB flags
-  * @ctor: A constructor for the objects.
-- * @dtor: A destructor for the objects (not implemented anymore).
-+ * @ops: A kmem_cache_ops structure (ignored).
-  *
-  * Returns a ptr to the cache on success, NULL on failure.
-  * Cannot be called within a int, but can be interrupted.
-@@ -2126,7 +2126,7 @@ struct kmem_cache *
- kmem_cache_create (const char *name, size_t size, size_t align,
- 	unsigned long flags,
- 	void (*ctor)(void*, struct kmem_cache *, unsigned long),
--	void (*dtor)(void*, struct kmem_cache *, unsigned long))
-+	const struct kmem_cache_ops *ops)
- {
- 	size_t left_over, slab_size, ralign;
- 	struct kmem_cache *cachep = NULL, *pc;
-@@ -2135,7 +2135,7 @@ kmem_cache_create (const char *name, siz
- 	 * Sanity checks... these are all serious usage bugs.
- 	 */
- 	if (!name || in_interrupt() || (size < BYTES_PER_WORD) ||
--	    size > KMALLOC_MAX_SIZE || dtor) {
-+	    size > KMALLOC_MAX_SIZE) {
- 		printk(KERN_ERR "%s: Early error in slab %s\n", __FUNCTION__,
- 				name);
- 		BUG();
+ /**
+  * kmem_cache_destroy - delete a cache
+  * @cachep: the cache to destroy
 Index: slub/mm/slob.c
 ===================================================================
---- slub.orig/mm/slob.c	2007-06-04 20:12:56.000000000 -0700
-+++ slub/mm/slob.c	2007-06-04 20:13:58.000000000 -0700
-@@ -483,7 +483,7 @@ struct kmem_cache {
- struct kmem_cache *kmem_cache_create(const char *name, size_t size,
- 	size_t align, unsigned long flags,
- 	void (*ctor)(void*, struct kmem_cache *, unsigned long),
--	void (*dtor)(void*, struct kmem_cache *, unsigned long))
-+	const struct kmem_cache_ops *o)
- {
- 	struct kmem_cache *c;
+--- slub.orig/mm/slob.c	2007-06-07 14:36:09.000000000 -0700
++++ slub/mm/slob.c	2007-06-07 14:36:15.000000000 -0700
+@@ -596,6 +596,15 @@ int kmem_cache_defrag(int percentage, in
+ 	return 0;
+ }
  
++/*
++ * SLOB does not support slab defragmentation
++ */
++int kmem_cache_vacate(struct page *page)
++{
++	return 0;
++}
++EXPORT_SYMBOL(kmem_cache_vacate);
++
+ int kmem_ptr_validate(struct kmem_cache *a, const void *b)
+ {
+ 	return 0;
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-06-07 14:11:29.000000000 -0700
++++ slub/mm/slub.c	2007-06-07 14:36:15.000000000 -0700
+@@ -1032,6 +1032,7 @@ static inline int slab_pad_check(struct 
+ static inline int check_object(struct kmem_cache *s, struct page *page,
+ 			void *object, int active) { return 1; }
+ static inline void add_full(struct kmem_cache_node *n, struct page *page) {}
++static inline void remove_full(struct kmem_cache *s, struct page *page) {}
+ static inline void kmem_cache_open_debug_check(struct kmem_cache *s) {}
+ #define slub_debug 0
+ #endif
+@@ -1097,12 +1098,11 @@ static struct page *new_slab(struct kmem
+ 	n = get_node(s, page_to_nid(page));
+ 	if (n)
+ 		atomic_long_inc(&n->nr_slabs);
++
++	page->inuse = 0;
++	page->lockless_freelist = NULL;
+ 	page->offset = s->offset / sizeof(void *);
+ 	page->slab = s;
+-	page->flags |= 1 << PG_slab;
+-	if (s->flags & (SLAB_DEBUG_FREE | SLAB_RED_ZONE | SLAB_POISON |
+-			SLAB_STORE_USER | SLAB_TRACE))
+-		SetSlabDebug(page);
+ 
+ 	start = page_address(page);
+ 	end = start + s->objects * s->size;
+@@ -1120,11 +1120,20 @@ static struct page *new_slab(struct kmem
+ 	set_freepointer(s, last, NULL);
+ 
+ 	page->freelist = start;
+-	page->lockless_freelist = NULL;
+-	page->inuse = 0;
+-out:
+-	if (flags & __GFP_WAIT)
+-		local_irq_disable();
++
++	/*
++	 * page->inuse must be 0 when PageSlab(page) becomes
++	 * true so that defrag knows that this slab is not in use.
++	 */
++	smp_wmb();
++	__SetPageSlab(page);
++	if (s->flags & (SLAB_DEBUG_FREE | SLAB_RED_ZONE | SLAB_POISON |
++			SLAB_STORE_USER | SLAB_TRACE))
++		SetSlabDebug(page);
++
++ out:
++ 	if (flags & __GFP_WAIT)
++ 		local_irq_disable();
+ 	return page;
+ }
+ 
+@@ -2575,6 +2584,88 @@ static unsigned long __kmem_cache_shrink
+ }
+ 
+ /*
++ * Get a page off a list and freeze it. Must be holding slab lock.
++ */
++static void freeze_from_list(struct kmem_cache *s, struct page *page)
++{
++	if (page->inuse < s->objects)
++		remove_partial(s, page);
++	else if (s->flags & SLAB_STORE_USER)
++		remove_full(s, page);
++	SetSlabFrozen(page);
++}
++
++/*
++ * Attempt to free objects in a page. Return 1 if succesful.
++ */
++int kmem_cache_vacate(struct page *page)
++{
++	unsigned long flags;
++	struct kmem_cache *s;
++	int vacated = 0;
++	void **vector = NULL;
++
++	/*
++	 * Get a reference to the page. Return if its freed or being freed.
++	 * This is necessary to make sure that the page does not vanish
++	 * from under us before we are able to check the result.
++	 */
++	if (!get_page_unless_zero(page))
++		return 0;
++
++	if (!PageSlab(page))
++		goto out;
++
++	s = page->slab;
++	if (!s)
++		goto out;
++
++	vector = kmalloc(s->objects * sizeof(void *), GFP_KERNEL);
++	if (!vector)
++		goto out2;
++
++	local_irq_save(flags);
++	/*
++	 * The implicit memory barrier in slab_lock guarantees that page->inuse
++	 * is loaded after PageSlab(page) has been established to be true. This is
++	 * only revelant for a  newly created slab.
++	 */
++	slab_lock(page);
++
++	/*
++	 * We may now have locked a page that may be in various stages of
++	 * being freed. If the PageSlab bit is off then we have already
++	 * reached the page allocator. If page->inuse is zero then we are
++	 * in SLUB but freeing or allocating the page.
++	 * page->inuse is never modified without the slab lock held.
++	 *
++	 * Also abort if the page happens to be already frozen. If its
++	 * frozen then a concurrent vacate may be in progress.
++	 */
++	if (!PageSlab(page) || SlabFrozen(page) || !page->inuse)
++		goto out_locked;
++
++	/*
++	 * We are holding a lock on a slab page and all operations on the
++	 * slab are blocking.
++	 */
++	if (!s->ops->get || !s->ops->kick)
++		goto out_locked;
++	freeze_from_list(s, page);
++	vacated = __kmem_cache_vacate(s, page, flags, vector);
++out:
++	kfree(vector);
++out2:
++	put_page(page);
++	return vacated == 0;
++out_locked:
++	slab_unlock(page);
++	local_irq_restore(flags);
++	goto out;
++
++}
++
++/*
+  * kmem_cache_shrink removes empty slabs from the partial lists and sorts
+  * the remaining slabs by the number of items in use. The slabs with the
+  * most items in use come first. New allocations will then fill those up
 
 -- 
