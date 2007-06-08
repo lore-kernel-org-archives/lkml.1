@@ -1,124 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031600AbXFHTk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939637AbXFHTl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031600AbXFHTk1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbXFHTkS
+	id S939637AbXFHTl6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbXFHTlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:40:18 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59313 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750792AbXFHTkQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:40:16 -0400
-Date: Fri, 8 Jun 2007 12:40:15 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, dgc@sgi.com, Mel Gorman <mel@skynet.ie>
-Subject: Re: [patch 00/12] Slab defragmentation V3
-In-Reply-To: <Pine.LNX.4.64.0706081207400.2082@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0706081239340.2447@schroedinger.engr.sgi.com>
-References: <20070607215529.147027769@sgi.com>  <466999A2.8020608@googlemail.com>
-  <Pine.LNX.4.64.0706081110580.1464@schroedinger.engr.sgi.com>
- <6bffcb0e0706081156u4ad0cc9dkf6d55ebcbd79def2@mail.gmail.com>
- <Pine.LNX.4.64.0706081207400.2082@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 Jun 2007 15:41:50 -0400
+Received: from lazybastard.de ([212.112.238.170]:45122 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbXFHTlt (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 15:41:49 -0400
+Date: Fri, 8 Jun 2007 21:36:07 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: carsteno@de.ibm.com
+Cc: Christoph Hellwig <hch@infradead.org>, Jared Hulbert <jaredeh@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Message-ID: <20070608193606.GH20718@lazybastard.org>
+References: <46690A39.3010402@de.ibm.com> <20070608075717.GA16927@infradead.org> <46690C58.7090304@de.ibm.com> <20070608080401.GA17684@infradead.org> <6934efce0706080905h253d9e3apd4168c5d14d305e5@mail.gmail.com> <20070608160929.GA3366@infradead.org> <6934efce0706080911y601a8377oad7b1251a95acd64@mail.gmail.com> <20070608161526.GA3729@infradead.org> <20070608175152.GG20718@lazybastard.org> <4669A831.3040105@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4669A831.3040105@de.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007, Christoph Lameter wrote:
+Whenever writes/erases to the device happen, the device driver would
+need to call a function like
 
-> On Fri, 8 Jun 2007, Michal Piotrowski wrote:
-> 
-> > Yes, it does. Thanks!
-> 
-> Ahhh... That leds to the discovery more sysfs problems. I need to make 
-> sure not to be holding locks while calling into sysfs. More cleanup...
+/**
+ * unmap_page_range - remove all mapping to the given range of an address space
+ * @mapping - the address space in question
+ * @start_index - index of the first page in the range
+ * @no_pages - number of pages to get unmapped
+ *
+ * Returns 0 on success or a negative errno value.
+ */
+int unmap_page_range(struct address_space *mapping, loff_t start_index,
+		loff_t no_pages);
 
-Could you remove the trylock patch and see how this one fares? We may need 
-both but this should avoid taking the slub_lock around any possible alloc 
-of sysfs.
+or implement something equivalent itself.  Your filesystem callback
+looks like it would be just that, although I may be misreading you.
 
+On Fri, 8 June 2007 21:04:17 +0200, Carsten Otte wrote:
+> I think it needs to work like this:
+> - temporary references (for read/write syscalls and friends) get 
+> retrieved via get_xip_page and returned again via to-be-invented 
+> put_page/page_cache_release
 
-SLUB: Move sysfs operations outside of slub_lock
+Either that or using standard mtd->read() and mtd->write() calls.  I see
+some advantages to mtd->write() in particular, as the device driver
+needs some notification to trigger unmap_page_range() before the actual
+write and chip state transitions happen.  mtd->write() seems much easier
+than something like
 
-Sysfs can do a gazillion things when called. Make sure that we do
-not call any sysfs functions while holding the slub_lock. Let sysfs
-fend for itself locking wise.
+mtd->pre_write()
+get_xip_page()
+...
+put_page()
+mtd->post_write()
 
-Just protect the essentials: The modifications to the slab lists
-and the ref counters of the slabs.
+If get_xip_page() only has userland consumers all the locking can be
+kept inside device drivers.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> - permanent references (for mapping to userland) get retrieved via 
+> get_xip_page and don't get returned until unmap
 
----
- mm/slub.c |   34 +++++++++++++++++++++-------------
- 1 file changed, 21 insertions(+), 13 deletions(-)
+Yep.
 
-Index: slub/mm/slub.c
-===================================================================
---- slub.orig/mm/slub.c	2007-06-08 12:21:56.000000000 -0700
-+++ slub/mm/slub.c	2007-06-08 12:30:23.000000000 -0700
-@@ -2179,12 +2179,13 @@ void kmem_cache_destroy(struct kmem_cach
- 	s->refcount--;
- 	if (!s->refcount) {
- 		list_del(&s->list);
-+		up_write(&slub_lock);
- 		if (kmem_cache_close(s))
- 			WARN_ON(1);
- 		sysfs_slab_remove(s);
- 		kfree(s);
--	}
--	up_write(&slub_lock);
-+	} else
-+		up_write(&slub_lock);
- }
- EXPORT_SYMBOL(kmem_cache_destroy);
- 
-@@ -2637,26 +2638,33 @@ struct kmem_cache *kmem_cache_create(con
- 		 */
- 		s->objsize = max(s->objsize, (int)size);
- 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
-+		up_write(&slub_lock);
-+
- 		if (sysfs_slab_alias(s, name))
- 			goto err;
--	} else {
--		s = kmalloc(kmem_size, GFP_KERNEL);
--		if (s && kmem_cache_open(s, GFP_KERNEL, name,
-+
-+		return s;
-+	}
-+
-+	s = kmalloc(kmem_size, GFP_KERNEL);
-+	if (s) {
-+		if (kmem_cache_open(s, GFP_KERNEL, name,
- 				size, align, flags, ctor)) {
--			if (sysfs_slab_add(s)) {
--				kfree(s);
--				goto err;
--			}
- 			list_add(&s->list, &slab_caches);
-+			up_write(&slub_lock);
- 			raise_kswapd_order(s->order);
--		} else
--			kfree(s);
-+
-+			if (sysfs_slab_add(s))
-+				goto err;
-+
-+			return s;
-+
-+		}
-+		kfree(s);
- 	}
- 	up_write(&slub_lock);
--	return s;
- 
- err:
--	up_write(&slub_lock);
- 	if (flags & SLAB_PANIC)
- 		panic("Cannot create slabcache %s\n", name);
- 	else
+> - the device driver can access page->count via a helper function 
+> provided by mm. This way, it can identify which pages are in use.
+
+One of us is confused here.  The driver would have to check page->count
+for a large range of pages, usually the whole chip.  And it would have
+to tear down every single mapping before starting to write.  Is that
+possible and desirable to do with page->count?  Unsure.
+
+> - In order to get references back, the device driver can call a 
+> callback provided by the file system. A default implementation will go 
+> to filemap_xip.c. This callback would use rmap to find all mappings, 
+> and unmap the page via xip_file_unmap()[mm/filemap_xip.c].
+
+Jörn
+
+-- 
+Time? What's that? Time is only worth what you do with it.
+-- Theo de Raadt
