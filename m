@@ -1,99 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936103AbXFHGpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936028AbXFHGwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936103AbXFHGpm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 02:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758264AbXFHGpe
+	id S936028AbXFHGwN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 02:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758172AbXFHGv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 02:45:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54053 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757168AbXFHGpd (ORCPT
+	Fri, 8 Jun 2007 02:51:58 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:43602 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756583AbXFHGv5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 02:45:33 -0400
-Date: Thu, 7 Jun 2007 23:44:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: kbuild-devel@lists.sourceforge.net, "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] scripts: clean-whitespace.sh
-Message-Id: <20070607234459.e4dffd65.akpm@linux-foundation.org>
-In-Reply-To: <E1HwY9K-0008Jz-CG@flower>
-References: <20070605073335.GM7266@flower.upol.cz>
-	<20070605081959.GB21991@uranus.ravnborg.org>
-	<20070605133834.GO7266@flower.upol.cz>
-	<20070605141254.GA24722@uranus.ravnborg.org>
-	<20070605145759.GP7266@flower.upol.cz>
-	<20070605151101.GQ7266@flower.upol.cz>
-	<20070606174556.GS7266@flower.upol.cz>
-	<20070606175026.GA6303@uranus.ravnborg.org>
-	<20070606191426.GT7266@flower.upol.cz>
-	<Pine.LNX.4.64.0706071634470.8762@fbirervta.pbzchgretzou.qr>
-	<20070607230657.GV7266@flower.upol.cz>
-	<4668929C.7040209@zytor.com>
-	<E1HwY9K-0008Jz-CG@flower>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 8 Jun 2007 02:51:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VXRseYfssxKb7ArR2YumBlu2Xjf7PfxO45BahAoXwy/UJvGYfzmJxBsfyhEm9u1UILwYTq+rQLJ4tdZ2PxPWyIz/JP0LwPw/6dD9tap2D6qAZHvVWz2WQ/v2YcWlUrJLhBx0VSt+M6jnO0+3UsihnyBvh62BaXkDF/jVCbmiGBg=
+Message-ID: <787b0d920706072351s6917ad77oe0bf381a5d5817d0@mail.gmail.com>
+Date: Fri, 8 Jun 2007 02:51:56 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
+Cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, pbadari@us.ibm.com,
+       torvalds@linux-foundation.org
+In-Reply-To: <m1ejknrnva.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
+	 <20070606204432.b670a7b1.akpm@linux-foundation.org>
+	 <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
+	 <20070607162004.GA27802@vino.hallyn.com>
+	 <m1ir9zrtwe.fsf@ebiederm.dsl.xmission.com>
+	 <787b0d920706072141s5a34ecb3n97007ad857ba4dc9@mail.gmail.com>
+	 <m1ejknrnva.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007 08:40:42 +0200 Oleg Verych <olecom@flower.upol.cz> wrote:
+On 6/8/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> "Albert Cahalan" <acahalan@gmail.com> writes:
+> > On 6/7/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-> After running this script with filename as parameter,
-> look (with diff) for, what can be corrected.
+> >> So it looks to me like we need to do three things:
+> >> - Fix the inode number
+> >> - Fix the name on the hugetlbfs dentry to hold the key
+> >> - Add a big fat comment that user space programs depend on this
+> >>   behavior of both the dentry name and the inode number.
+> >
+> > Assuming that this proposed fix goes in:
+> >
+> > Since the inode number is the shmid, and this is a number
+> > that the kernel randomly chooses AFAIK, there should be
+> > no need to have different shm segments sharing the same
+> > inode number.
+>
+> Where we run into inode number confusion is that all of
+> these shm segments are actually files on a tmpfs filesystem
+> somewhere, and by making the inode number the shmid we loose
+> the tmpfs inode number.  So it is possible we get tmpfs inode
+> number conflicts.  However the inode number is not used for
+> anything, and the files are not visible in any other way except
+> as shm segments so it doesn't matter.
 
-Sorry, but "run it and see what it did" is pretty poor documentation.
+Eh, the kernel choses both shmid and tmpfs inode number.
+You could set a high bit in one or the other.
 
-> Only "*.diff" and "*.patch" files are handled as patches.
-> 
-> Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
-> --
->  Two clean rules added, that can change look of damaged lines.
->  Yet script still fits one ordinary screen, so read the code!
-> 
->  test cases: include/linux/ipv6.h, arch/x86_64/lib/{copy_user, memcpy}.S
-> 
->  It's like lguest -- just for fun.
-> 
->  clean-whitespace.sh |   28 ++++++++++++++++++++++++++++
->   1 file changed, 28 insertions(+)
-> 
-> --- /dev/null	2007-04-04 10:55:19.204075250 +0200
-> +++ linux-just-for-fun/scripts/clean-whitespace.sh	2007-06-08 07:53:21.000000000 +0200
-> @@ -0,0 +1,28 @@
-> +#!/bin/sh -e
-> +# clean whitespace damage; i/o = $1/$1.clean
-> +
-> +IFS='' ; t="`printf '\t'`" ; s=' ' ; s4="$s$s$s$s" ; w79=79 ;
-> +i="$1" ; o="$1.clean"
-> +strip_file_end='/^$/{N;s_^\n$_&_;T e;:n;N;s_^.*\n\n$_&_;t n;:e;};'
-> +not_patch_line='/^+[^+]/'
-> +
-> +case $1 in *[.]diff | *[.]patch)
-> +	file=patch ; sp='+[!+]' ; p='+' ; addr="$not_patch_line";;
-> +esac
-> +
-> +sed -n "${addr:-$strip_file_end} {
-> +s|[$t$s]*$||;	# trailing whitespace
-> +:next;		# x*8 spaces on the line start -> x*tabs
-> +s|^\([\n]*\)$p\($t*\)$s4$s4|\1$p\2$t|;t next;	# \n is needed after N command
-> +s|^\([\n]*\)$p\($t*\)$s*$t|\1$p\2$t|g;		# strip spaces between tabs
-> +s|$s4$s4$s$s*|$t$t|g				# more than 8 spaces -> 2 tabs
-> +s|$s*$t|$t|g	# strip spaces before tab; tradeoff: may break some alignment !
-> +};p" -- "$i" >"$o" && echo "
-> +please, see clean ${file:=source} file: $o
-> +"
-> +exec expand $i | while read -r line # check for long line
-> +do   [ ${#line} -gt $w79 ] && case "$line" in $sp*) echo \
-> +"at least one line wider than $w79 chars, found
-> +check your $file, please
-> +" 1>&2 ; exit ;; esac
-> +done
+> There is another case with ipc namespaces where we ultimately need
+> to support duplicate shmids on the same machine (so migration
+> is a possibility).  However by and large the user space
+> processes with duplicate ids should be invisible to each other.
 
-Then again, it's a better strategy than trying to read the code ;)
+On the bright side, this only screws up people who get the
+crazy idea that processes can be migrated.
 
-Please, tell us what it does, so that we can decide whether we want it in
-Linux.
+> > The situation with the key is a bit more disturbing, though
+> > we already hit that anyway when IPC_PRIVATE is used.
+> > (why anybody would NOT use IPC_PRIVATE is a mystery)
+> > So having the key in the name doesn't make things worse.
+>
+> Having "SYSV" in the name appears mandatory.  Otherwise you
+> don't even know it is a shm file. Although I may be confused.
 
+It's mandatory for a different reason: to satisfy parsers.
+
+It is nearly useless for identifying shm files. Look what I can do:
+    touch /SYSV00000000
+    touch '/SYSV00000000 (deleted)'
+
+(so pmap creates a shm, looks for the address in /proc/self/maps,
+determines the device major/minor in use, and then uses that)
+
+> Hmm.  Thinking about this I have just realized that we may want
+> to approach this a little differently.  Currently I am reusing
+> the dentry and inode structure that hugetlbfs and tmpfs return
+> me, and simply have a distinct struct file for each shm mapping.
+>
+> There is a little more cost but it may actually make sense to have
+> a dentry and inode that is specific to shm.c so we can do whatever
+> we need to without adding requirements to the normal tmpfs or hugtlb
+> code.
+
+Piggybacking on tmpfs has always seemed a bit dirty to me.
