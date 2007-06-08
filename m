@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939019AbXFHLBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939068AbXFHLFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939019AbXFHLBW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 07:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937992AbXFHLBQ
+	id S939068AbXFHLFy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 07:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938246AbXFHLFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 07:01:16 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:42673 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937981AbXFHLBP (ORCPT
+	Fri, 8 Jun 2007 07:05:44 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52356 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S938240AbXFHLFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 07:01:15 -0400
-Subject: Re: [SERIAL] Don't optimise away baud rate changes when BOTHER is
-	used
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
-In-Reply-To: <20070607235441.17dbd5cc@the-village.bc.nu>
-References: <20070523172739.1d3a918c@the-village.bc.nu>
-	 <1180012135.8303.89.camel@shinybook.infradead.org>
-	 <20070524144109.7bd0f4d0@the-village.bc.nu>
-	 <1180014338.8303.95.camel@shinybook.infradead.org>
-	 <20070524160559.54c2c639@the-village.bc.nu>
-	 <1181133010.4096.26.camel@pmac.infradead.org>
-	 <20070606160310.27d6d3b8@the-village.bc.nu>
-	 <1181150998.2785.13.camel@pmac.infradead.org>
-	 <20070607163808.19984208@the-village.bc.nu>
-	 <1181231421.2785.68.camel@pmac.infradead.org>
-	 <20070607225528.0d5e7b29@the-village.bc.nu>
-	 <1181254517.20322.6.camel@shinybook.infradead.org>
-	 <20070607235441.17dbd5cc@the-village.bc.nu>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 12:01:07 +0100
-Message-Id: <1181300467.2801.20.camel@pmac.infradead.org>
+	Fri, 8 Jun 2007 07:05:43 -0400
+Date: Fri, 8 Jun 2007 12:10:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Albert Cahalan" <acahalan@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: JIT emulator needs
+Message-ID: <20070608121059.4efcd338@the-village.bc.nu>
+In-Reply-To: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
+References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-07 at 23:54 +0100, Alan Cox wrote:
-> If it doesn't only involve editing the header files for this case (and
-> maybe needing a define to indicate old==new) then the tty layer wants
-> fixing to sort that out. Its on my todo list. 
+> There is an SE Linux execmem restriction that enforces W^X.
 
-It works fine. The only problem is that if I set a _standard_ baud rate
-with BOTHER and then read it back with something that doesn't grok
-BOTHER, I get it back just as I set it.
+This depends on whatever SELinux rulesets you are running. Its just a
+good rule to have present that most programs shouldn't be self patching,
+and then label those that do differently.
 
-[root@pegasos ~]# ./testit1 
-Get: c_flag 0x1f0b1f(31,31), ispeed 38400, ospeed 38400
-[root@pegasos ~]# stty
-speed 0 baud; line = 0;
+> Sometimes it is very helpful to have the read/write mapping
+> be a fixed offset from the read/exec mapping. A power of 2
+> can be especially desirable.
 
-It might be better if it was returning B38400, rather than BOTHER.
-Should we be using tty_termios_encode_baud_rate() for TCGETS()?
+mmap MAP_FIXED can do this but you need to know a lot about the memory
+layout of the system so it gets a bit platform specific.
 
--- 
-dwmw2
+> Emulators often need a cheap way to change page permissions.
+
+mprotect(, range) rather than a page at a time. The kernel will do
+merging. 
+
+> a. sysctl to set IPC_RMID by default
+> b. shmget() flag to set IPC_RMID by default
+
+Use POSIX shared memory
+
+> c. open() flag to unlink a file before returning the fd
+
+Is it really that costly to create a blank file, why do you need to do it
+a lot in a JIT ?
+
+> e. mremap() flag to get a read/write mapping of a read/exec one
+> f. mremap() flag to get a read/exec mapping of a read/write one
+> g. mremap() flag to make the 5th arg (new addr) be the upper limit
+
+This is all mprotect and munmap.
+
+> h. 6-bit wide mremap() "flag" to set the upper limit above given base
+> i. support the prot argument to remap_file_pages
+> j. a documented way (madvise?) to punch same-VMA zero-page holes
+
+mmap (although you get more VMAs from that) so memset() is probably
+genuinely cheaper if the permissions are not changing.
 
