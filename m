@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967185AbXFHCAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937401AbXFHCFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967185AbXFHCAE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 22:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965302AbXFHB7y
+	id S937401AbXFHCFA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 22:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932156AbXFHCEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 21:59:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52826 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965033AbXFHB7x (ORCPT
+	Thu, 7 Jun 2007 22:04:53 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:33452 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764091AbXFHCEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 21:59:53 -0400
-Date: Thu, 7 Jun 2007 18:58:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] enable interrupts in user path of page fault.
-Message-Id: <20070607185851.faf36f95.akpm@linux-foundation.org>
-In-Reply-To: <1181187244.18444.45.camel@localhost.localdomain>
-References: <1181187244.18444.45.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jun 2007 22:04:52 -0400
+Date: Thu, 07 Jun 2007 20:04:41 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] Make i386 kernel show the segfaults in kernel dmesg,
+ like x86_64.
+In-reply-to: <fa.FB3wQKN6ltiEi81XcB14YVcLGgE@ifi.uio.no>
+To: Masoud Asgharifard Sharbiani <masouds@google.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Message-id: <4668B939.1070304@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.FB3wQKN6ltiEi81XcB14YVcLGgE@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jun 2007 23:34:04 -0400
-Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> This is a minor fix, but what is currently there is essentially wrong.
-> In do_page_fault, if the faulting address from user code happens to be
-> in kernel address space (int *p = (int*)-1; p = 0xbed;)  then the
-> do_page_fault handler will jump over the local_irq_enable with the
+Masoud Asgharifard Sharbiani wrote:
+> Hello,
+> This patch makes the i386 behave the same way that x86_64 does when a
+> segfault happens. A line gets printed to the kernel log so that tools
+> that need to check for failures can behave more uniformly between
+> different kernels. Like x86_64, it can be disabled by setting
+> debug.exception-trace sysctl variable to 0 (or by doing
+> echo 0 > /proc/sys/debug/exception-trace)
 > 
->   goto bad_area_nosemaphore;
+> Same behaviour can be extended to other architectures, if needed.
+> cheers,
+> Masoud.
 > 
-> But the first line there sees this is user code and goes through the
-> process of sending a signal to send SIGSEGV to the user task. This whole
-> time interrupts are disabled and the task can not be preempted by a
-> higher priority task.
-> 
-> This patch always enables interrupts in the user path of the
-> bad_area_nosemaphore.
-> 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> Signed-off-by: Masoud Sharbiani <masouds@google.com>
 > 
 > diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
-> index 29d7d61..1ecb3e4 100644
+> index 29d7d61..6aa56db 100644
 > --- a/arch/i386/mm/fault.c
 > +++ b/arch/i386/mm/fault.c
-> @@ -458,6 +458,11 @@ bad_area:
->  bad_area_nosemaphore:
->  	/* User mode accesses just cause a SIGSEGV */
->  	if (error_code & 4) {
-> +		/*
-> +		 * It's possible to have interrupts off here.
-> +		 */
-> +		local_irq_enable();
+> @@ -283,6 +283,8 @@ static inline int vmalloc_fault(unsigned long address)
+>  	return 0;
+>  }
+>  
+> +int exception_trace = 1;
 > +
+>  /*
+>   * This routine handles page faults.  It determines the address,
+>   * and the problem, and then passes it off to one of the appropriate
+> @@ -464,7 +466,14 @@ bad_area_nosemaphore:
+>  		 */
+>  		if (is_prefetch(regs, address, error_code))
+>  			return;
+> -
+> +		if (exception_trace && unhandled_signal(tsk, SIGSEGV)) {
+> +			printk(
+> +		       "%s%s[%d]: segfault at %08lx eip %08lx esp %08lx error %lx\n",
+> +					tsk->pid > 1 ? KERN_INFO : KERN_EMERG,
+> +					tsk->comm, tsk->pid, address, regs->eip,
+> +					regs->esp, error_code);
 
-Interrupts got disabled here because do_page_fault() is an
-interrupt-disabling trap, yes?
+Shouldn't we use printk_ratelimit() here, to prevent some nasty person 
+from creating some rapidly-segfaulting process that floods the kernel 
+logs? (Same with the x86_64 version if it doesn't already..)
 
-The patch looks reasonable to me: a slight reduction in interrupt-off
-latency when really weird things are happening.
-
-The patch also breaks things, I think: if userspace is running with
-interrupts disabled and tries to access kernel memory it will presently
-whizz through the kernel without ever enabling interrupts.  With this
-change, the kernel will now enable interrupts, which is presumably not what
-the application wanted.
-
-However it's surely already the case that most pagefaults will go and
-enable interrupts on this process anyway, so no big loss there.  I'd expect
-the kernel to spit piles of might_sleep() warnings when all this happens, so
-maybe it just doesn't happen for some reason.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
