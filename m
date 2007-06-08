@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938888AbXFHHrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939281AbXFHHrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938888AbXFHHrP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937120AbXFHHYr
+	id S939281AbXFHHrp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937970AbXFHHYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:24:47 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55271 "EHLO
+	Fri, 8 Jun 2007 03:24:49 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55280 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938376AbXFHHYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:24:45 -0400
-Message-Id: <20070608072208.773460000@sous-sol.org>
+	id S938380AbXFHHYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:24:47 -0400
+Message-Id: <20070608072205.028590000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:51 -0700
+Date: Fri, 08 Jun 2007 00:21:48 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,47 +23,66 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jason Gaston <jason.d.gaston@intel.com>, Greg KH <greg@kroah.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 24/54] pci_ids: update patch for Intel ICH9M
-Content-Disposition: inline; filename=pci_ids-update-patch-for-intel-ich9m.patch
+       Tejun Heo <htejun@gmail.com>,
+       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Jeff Garzik <jeff@garzik.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 21/54] ahci: disable 64bit dma on sb600
+Content-Disposition: inline; filename=ahci-disable-64bit-dma-on-sb600.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jason Gaston <jason.d.gaston@intel.com>
+From: Tejun Heo <htejun@gmail.com>
 
-This patch updates the Intel ICH9M LPC Controller DID's, due to a
-specification change.
+SB600 claims it can do 64bit DMA but it can't.  Disable it.
 
-Signed-off-by: Jason Gaston <jason.d.gaston@intel.com>
-Cc: <stable@kernel.org>
-Cc: Greg KH <greg@kroah.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/pci_ids.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+This is backport of commit c7a42156d99bcea7f8173ba7a6034bbaa2ecb77c.
+Due to initialization changes in devel branch, it looks a bit
+different but does the same thing.  This problem makes sb600 ahci
+controller malfunction if some memory is over 4G.  Please consider for
+-stable.  Thanks.
 
---- linux-2.6.21.4.orig/include/linux/pci_ids.h
-+++ linux-2.6.21.4/include/linux/pci_ids.h
-@@ -2260,11 +2260,11 @@
- #define PCI_DEVICE_ID_INTEL_ICH8_5	0x283e
- #define PCI_DEVICE_ID_INTEL_ICH8_6	0x2850
- #define PCI_DEVICE_ID_INTEL_ICH9_0	0x2910
--#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2911
-+#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2917
- #define PCI_DEVICE_ID_INTEL_ICH9_2	0x2912
- #define PCI_DEVICE_ID_INTEL_ICH9_3	0x2913
- #define PCI_DEVICE_ID_INTEL_ICH9_4	0x2914
--#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2915
-+#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2919
- #define PCI_DEVICE_ID_INTEL_ICH9_6	0x2930
- #define PCI_DEVICE_ID_INTEL_82855PM_HB	0x3340
- #define PCI_DEVICE_ID_INTEL_82830_HB	0x3575
+ drivers/ata/ahci.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+--- linux-2.6.21.4.orig/drivers/ata/ahci.c
++++ linux-2.6.21.4/drivers/ata/ahci.c
+@@ -170,6 +170,7 @@ enum {
+ 	AHCI_FLAG_IGN_IRQ_IF_ERR	= (1 << 25), /* ignore IRQ_IF_ERR */
+ 	AHCI_FLAG_HONOR_PI		= (1 << 26), /* honor PORTS_IMPL */
+ 	AHCI_FLAG_IGN_SERR_INTERNAL	= (1 << 27), /* ignore SERR_INTERNAL */
++	AHCI_FLAG_32BIT_ONLY		= (1 << 28), /* force 32bit */
+ };
+ 
+ struct ahci_cmd_hdr {
+@@ -370,7 +371,8 @@ static const struct ata_port_info ahci_p
+ 		.flags		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
+ 				  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
+ 				  ATA_FLAG_SKIP_D2H_BSY |
+-				  AHCI_FLAG_IGN_SERR_INTERNAL,
++				  AHCI_FLAG_IGN_SERR_INTERNAL |
++				  AHCI_FLAG_32BIT_ONLY,
+ 		.pio_mask	= 0x1f, /* pio0-4 */
+ 		.udma_mask	= 0x7f, /* udma0-6 ; FIXME */
+ 		.port_ops	= &ahci_ops,
+@@ -1579,6 +1581,12 @@ static int ahci_host_init(struct ata_pro
+ 		probe_ent->n_ports = cap_n_ports;
+ 
+ 	using_dac = hpriv->cap & HOST_CAP_64;
++	if (using_dac && (probe_ent->port_flags & AHCI_FLAG_32BIT_ONLY)) {
++		dev_printk(KERN_INFO, &pdev->dev,
++			   "controller can't do 64bit DMA, forcing 32bit\n");
++		using_dac = 0;
++	}
++
+ 	if (using_dac &&
+ 	    !pci_set_dma_mask(pdev, DMA_64BIT_MASK)) {
+ 		rc = pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK);
 
 -- 
