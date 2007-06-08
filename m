@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970238AbXFHRvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970421AbXFHRvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970238AbXFHRvQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 13:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969312AbXFHRvA
+	id S970421AbXFHRvo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 13:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969312AbXFHRvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 13:51:00 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:50742 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967008AbXFHRu7 (ORCPT
+	Fri, 8 Jun 2007 13:51:33 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:21833 "EHLO
+	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S969586AbXFHRvc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 13:50:59 -0400
-Date: Fri, 8 Jun 2007 13:50:58 -0400
-To: Mike Schmidt <mike@intello.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6 kernel: Cannot make multiple dummy network interfaces
-Message-ID: <20070608175058.GG10008@csclub.uwaterloo.ca>
-References: <46699318.3060209@intello.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46699318.3060209@intello.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Fri, 8 Jun 2007 13:51:32 -0400
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Martin Peschke <mp3@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, jbaron@redhat.com, rostedt@goodmis.org,
+       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
+In-Reply-To: <466993CF.4050804@de.ibm.com>
+References: <1181165656.7133.23.camel@dix> <1181202258.7348.217.camel@twins>
+	 <46698B1D.3000806@de.ibm.com> <1181322460.5728.2.camel@lappy>
+	 <46698F7F.4090407@de.ibm.com> <1181323622.5728.6.camel@lappy>
+	 <466993CF.4050804@de.ibm.com>
+Content-Type: text/plain
+Date: Fri, 08 Jun 2007 19:50:30 +0200
+Message-Id: <1181325030.5728.14.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 01:34:16PM -0400, Mike Schmidt wrote:
-> (please cc me directly with any responses - I am not (yet) a member of 
-> this mailing list.
+On Fri, 2007-06-08 at 19:37 +0200, Martin Peschke wrote:
+> Peter Zijlstra wrote:
+> > On Fri, 2007-06-08 at 19:18 +0200, Martin Peschke wrote:
+> >> Peter Zijlstra wrote:
+> >>> On Fri, 2007-06-08 at 19:00 +0200, Martin Peschke wrote:
+> >>>> Peter Zijlstra wrote:
+> >>>>> I'm confused as to where the class->stat objects are initialised? Is
+> >>>>> that done in lock_stat_init()? If so, then you have a bug.
+> >>>> static struct lock_class lock_classes[MAX_LOCKDEP_KEYS];
+> >>>>
+> >>>> I assume this gets us class structures containing all zeros, doesn't it?
+> >>>> Then class->stat is zeros as well, which is handled by lib/statistics.
+> >>>> (In this case, data gathering hasn't been turned on yet, and statistic_inc()
+> >>>> and similar functions don't access other areas of struct statistic.)
+> >>> Who eventually calls percpu_alloc?
+> >> There is a small state machine calling percpu_alloc when users do
+> >>
+> >>     echo state=on > /debug/statistics/lockdep/definition
+> >>
+> >> So data gathering is off by default.
+> >>
+> >> It might make sense to allow "state=on" as a default. Then allocation would
+> >> be done in the context of statistic_attach().
+> > 
+> > Right, the problem here is that you iterate over all_lock_classes once
+> > at init.
+> > 
+> > Contrary to what the name might suggest, it are not all possible
+> > classes, just all active ones. So you'll only attach the classes which
+> > have been used up until the init point. All other classes used later
+> > will never be initialized.
 > 
-> *2.6 kernel: Cannot make multiple dummy network interfaces*
-> ------------------------------------------------------------------------
-> I'm trying to set up a number of dummy interfaces but FC6 (Centos4, even 
-> RHEL4) won't make more than 1. a modprobe -c lists two default dummy 
-> interfaces, dumm0 and dummy1, just as it did even back to rh8. On my 
-> rh8/rh9 systems, there is no problem, I can generate as many dummy n as 
-> I want by adding alias and options lines in modules.conf. On 
-> FC6/Centos/RHEL (I assume as of kernel 2.6, but I don't have any early 
-> FC systems running) I can only create 1 dummy. I am trying to build a 
-> network simulator for testing purposes - a bridge with 100+ network 
-> interfaces. They have to be dummy (not just an alias) because they need 
-> separate MAC addresses.  I have tried the same thing on Knoppix, running 
-> 2.6.17, with the same results. Centos4 and RHEL4 use kernel 2.6.9
+> Ah..
+> 
+> Do you know where a class is setup for first use?
 
-# modinfo dummy
-filename:       /lib/modules/2.6.18-4-gx1/kernel/drivers/net/dummy.ko
-license:        GPL
-vermagic:       2.6.18-4-gx1 preempt mod_unload GEODEGX1 gcc-3.3
-depends:
-parm:           numdummies:Number of dummy pseudo devices (int)
+Somewhere down the line of lock_acquire()->register_lock_class().
+It is then stuck onto the all_lock_classes list in mark_lock(). However
+this would be a very bad place to run init code, since percpu_alloc()
+can schedule and we're in the middle of a locking primitive :-)
 
-Perhaps you want to pass that numdummies aregument with some value.  The
-default may be pretty low.
+> I guess it is feasible to move statistic initialisation to that place.
+> 
+> Is there a place where a class becomes unused again?
 
---
-Len Sorensen
+Yes, it is possible to clear the task list, however that part of lockdep
+is a tag fragile - look for the call-chain leading to zap_class().
+
