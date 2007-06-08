@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939709AbXFHTh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031492AbXFHTjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939709AbXFHTh4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937752AbXFHThr
+	id S1031492AbXFHTjE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbXFHTiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:37:47 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3627 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752819AbXFHThq (ORCPT
+	Fri, 8 Jun 2007 15:38:54 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59250 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752170AbXFHTix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:37:46 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 8 Jun 2007 12:37:44 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Ulrich Drepper <drepper@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <20070608203007.3c50eb66@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0706081229030.5795@alien.or.mcafeemobile.com>
-References: <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu>
- <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
- <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
- <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
- <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
- <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
- <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
- <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com>
- <20070608203007.3c50eb66@the-village.bc.nu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Fri, 8 Jun 2007 15:38:53 -0400
+Date: Fri, 8 Jun 2007 12:38:51 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, dgc@sgi.com, Mel Gorman <mel@skynet.ie>
+Subject: Re: [patch 00/12] Slab defragmentation V3
+In-Reply-To: <4669AED3.8020204@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0706081238001.2420@schroedinger.engr.sgi.com>
+References: <20070607215529.147027769@sgi.com>  <466999A2.8020608@googlemail.com>
+  <Pine.LNX.4.64.0706081110580.1464@schroedinger.engr.sgi.com>
+ <6bffcb0e0706081156u4ad0cc9dkf6d55ebcbd79def2@mail.gmail.com>
+ <Pine.LNX.4.64.0706081207400.2082@schroedinger.engr.sgi.com>
+ <4669AED3.8020204@googlemail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007, Alan Cox wrote:
+On Fri, 8 Jun 2007, Michal Piotrowski wrote:
 
-> On Fri, 08 Jun 2007 11:43:29 -0700
-> Ulrich Drepper <drepper@redhat.com> wrote:
-> 
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> > 
-> > Alan Cox wrote:
-> > > Why does he want an unpredictable algorithm
-> > 
-> > To avoid exactly the kind of problem we have now in future: programs
-> > relying on specific patterns.
-> 
-> Which you seem to think is a bad thing, yet is actually a very good thing
-> because it means that crashes are repeatable and problems are debuggable
-> from end user reports.
-> 
-> Trying to randomize filehandles for the general case is not a productive
-> activity. If you want to debug cases write yourself a glibc wrapper that
-> does annoying things but don't inflict it on people who actually want to
-> build working, testable, debuggable systems (ie most of us)
-
-So, what do you plan to do? Those handle won't be zero-based. Your 
-"working" system I immagine will do:
-
-	bleeh[handle - BASE].duh = ...;
-
-How nice for a working system. If you *store* the handle returned by the 
-OS, and you *use* the handle to call for OS services, you will be fine 
-independently from the value handed out by the OS.
+> 0xc1081630 is in list_locations (mm/slub.c:3388).
+> 3383                    struct page *page;
+> 3384
+> 3385                    if (!atomic_read(&n->nr_slabs))
+> 3386                            continue;
+> 3387
+> 3388                    spin_lock_irqsave(&n->list_lock, flags);
+> 3389                    list_for_each_entry(page, &n->partial, lru)
+> 3390                            process_slab(&t, s, page, alloc);
+> 3391                    list_for_each_entry(page, &n->full, lru)
+> 3392                            process_slab(&t, s, page, alloc);
 
 
+Yes process slab needs some temporary data to generate the lists of 
+functions calling etc and that is a GFP_TEMPORARY alloc.
 
-- Davide
+Does this fix it?
 
+---
+ mm/slub.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-06-08 12:35:56.000000000 -0700
++++ slub/mm/slub.c	2007-06-08 12:37:32.000000000 -0700
+@@ -2930,7 +2930,7 @@ static int alloc_loc_track(struct loc_tr
+ 
+ 	order = get_order(sizeof(struct location) * max);
+ 
+-	l = (void *)__get_free_pages(GFP_TEMPORARY, order);
++	l = (void *)__get_free_pages(GFP_ATOMIC, order);
+ 
+ 	if (!l)
+ 		return 0;
