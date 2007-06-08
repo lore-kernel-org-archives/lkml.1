@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939494AbXFHHux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938804AbXFHHvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939494AbXFHHux (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967762AbXFHHZC
+	id S938804AbXFHHvY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967776AbXFHHZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:25:02 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55310 "EHLO
+	Fri, 8 Jun 2007 03:25:06 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55323 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938400AbXFHHYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:24:55 -0400
-Message-Id: <20070608072216.627543000@sous-sol.org>
+	id S938407AbXFHHY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:24:58 -0400
+Message-Id: <20070608072235.857532000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:58 -0700
+Date: Fri, 08 Jun 2007 00:22:16 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,62 +23,62 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Michael Chan" <mchan@broadcom.com>,
-       David S Miller <davem@davemloft.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 31/54] TG3: Fix link problem on Dells onboard 5906.
-Content-Disposition: inline; filename=tg3-fix-link-problem-on-dell-s-onboard-5906.patch
+       David Miller <davem@davemloft.net>, bunk@stusta.de,
+       Vasily Averin <vvs@sw.ru>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 49/54] NET: "wrong timeout value" in sk_wait_data() v2
+Content-Disposition: inline; filename=net-wrong-timeout-value-in-sk_wait_data-v2.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From:  <mchan@broadcom.com>
+From: Vasily Averin <vvs@sw.ru>
 
-The bug is caused by code that always set
-(TG3_FLAG_USE_MI_INTERRUPT | TG3_FLAG_USE_LINKCHG_REG) on all Dell's
-onboard devices.  With these 2 flags set, the link status is polled
-by tg3_timer() and will only work when the PHY is set up to interrupt
-the MAC on link changes.  This breaks 5906 because the 5906 PHY does
-not support TG3_FLAG_USE_MI_INTERRUPT the same as other PHYs.
+sys_setsockopt() do not check properly timeout values for
+SO_RCVTIMEO/SO_SNDTIMEO, for example it's possible to set negative timeout
+values. POSIX do not defines behaviour for sys_setsockopt in case negative
+timeouts, but requires that setsockopt() shall fail with -EDOM if the send and
+receive timeout values are too big to fit into the timeout fields in the socket
+structure.
+In current implementation negative timeout can lead to error messages like
+"schedule_timeout: wrong timeout value".
 
-For correctness, only 5701 on Dell systems needs these 2 flags to be
-set.  This change will fix the 5906 problem and will change other
-Dell devices except 5700 and 5701 to use the more efficient
-interrupt-driven link changes.
+Proposed patch:
+- checks tv_usec and returns -EDOM if it is wrong
+- do not allows to set negative timeout values (sets 0 instead) and outputs
+ratelimited information message about such attempts.
 
-Update version to 3.75.2.
-
-Signed-off-by: Michael Chan <mchan@broadcom.com>
+Signed-off-By: Vasily Averin <vvs@sw.ru>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/tg3.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ net/core/sock.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
---- linux-2.6.21.4.orig/drivers/net/tg3.c
-+++ linux-2.6.21.4/drivers/net/tg3.c
-@@ -64,8 +64,8 @@
+--- linux-2.6.21.4.orig/net/core/sock.c
++++ linux-2.6.21.4/net/core/sock.c
+@@ -204,7 +204,19 @@ static int sock_set_timeout(long *timeo_
+ 		return -EINVAL;
+ 	if (copy_from_user(&tv, optval, sizeof(tv)))
+ 		return -EFAULT;
++	if (tv.tv_usec < 0 || tv.tv_usec >= USEC_PER_SEC)
++		return -EDOM;
  
- #define DRV_MODULE_NAME		"tg3"
- #define PFX DRV_MODULE_NAME	": "
--#define DRV_MODULE_VERSION	"3.75.1"
--#define DRV_MODULE_RELDATE	"May 7, 2007"
-+#define DRV_MODULE_VERSION	"3.75.2"
-+#define DRV_MODULE_RELDATE	"June 5, 2007"
- 
- #define TG3_DEF_MAC_MODE	0
- #define TG3_DEF_RX_MODE		0
-@@ -10942,6 +10942,7 @@ static int __devinit tg3_get_invariants(
- 	 * upon subsystem IDs.
- 	 */
- 	if (tp->pdev->subsystem_vendor == PCI_VENDOR_ID_DELL &&
-+	    GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5701 &&
- 	    !(tp->tg3_flags2 & TG3_FLG2_PHY_SERDES)) {
- 		tp->tg3_flags |= (TG3_FLAG_USE_MI_INTERRUPT |
- 				  TG3_FLAG_USE_LINKCHG_REG);
++	if (tv.tv_sec < 0) {
++		static int warned = 0;
++		*timeo_p = 0;
++		if (warned < 10 && net_ratelimit())
++			warned++;
++			printk(KERN_INFO "sock_set_timeout: `%s' (pid %d) "
++			       "tries to set negative timeout\n",
++			        current->comm, current->pid);
++		return 0;
++	}
+ 	*timeo_p = MAX_SCHEDULE_TIMEOUT;
+ 	if (tv.tv_sec == 0 && tv.tv_usec == 0)
+ 		return 0;
 
 -- 
