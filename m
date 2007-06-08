@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938248AbXFHPpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765260AbXFHPqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938248AbXFHPpw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 11:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbXFHPpn
+	id S1765260AbXFHPqW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 11:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762222AbXFHPpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 11:45:43 -0400
-Received: from smtprelay08.ispgateway.de ([80.67.29.8]:37429 "EHLO
-	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbXFHPpn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 11:45:43 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Jun 2007 11:45:42 EDT
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: Re: [RFC][PATCH 1/6] Storing ipcs into radix trees
-Date: Fri, 8 Jun 2007 17:40:16 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com, ak@suse.de
-References: <20070607165302.917616000@bull.net> <200706072137.34563.ioe-lkml@rameria.de> <46692B7E.40000@bull.net>
-In-Reply-To: <46692B7E.40000@bull.net>
+	Fri, 8 Jun 2007 11:45:46 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33249 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758713AbXFHPpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 11:45:45 -0400
+Date: Fri, 8 Jun 2007 08:45:24 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [patch 00/32] 2.6.20-stable review
+Message-ID: <20070608154524.GR3723@sequoia.sous-sol.org>
+References: <20070608071511.159309000@sous-sol.org> <F1D642E5A91BC94D9504EC83AE19E6B01289C1@ecqcmtlmail3.quebec.int.ec.gc.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706081740.17732.ioe-lkml@rameria.de>
+In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B01289C1@ecqcmtlmail3.quebec.int.ec.gc.ca>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Friday 08 June 2007, Nadia Derbey wrote:
-> Ingo Oeser wrote:
-> > ... together with this means 4*256 -> 1k of precious stack space used.
-> > Please consider either lowering IPCS_MAX_SCAN_ENTRIES or kmalloc() that.
-> You're completely right, but trying to lower the extraction size, I'm 
-> afraid this will have an impact on performances.
+* Fortier,Vincent [Montreal] (Vincent.Fortier1@EC.GC.CA) wrote:
+> I have encoutered a bug using fixdep when compiling the Apani VPN
+> contivity client v3.3 (v3.5 seems fine).  The bug started happening with
+> the release of the 2948 build of FC6 kernel (corresponding to a post
+> 2.6.20.7) and caused fixdep to segfault.  This has been fixed in 2.6.21.
+> I tried to trigger the bug using the 2.6.21 patch (thnx to the raw ouput
+> option in git.kernel.org) and it really seems to resolve the problem.
 > 
-> Here are the results of a small test I did: I have run ctxbench on both 
-> the 256 and and 16 entries versions
+> The original commit:
+> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.20.y.git;a=commit;h=3dedd29b0ef5c7a36ac835ac5524a6a8e22c22ab
 > 
-> 1) 256 entries:
-> 42523679 itterations in 300.005423 seconds = 141743/sec
-> 2) 16 entries:
-> 41774255 itterations in 300.005334 seconds = 139245/sec
+> The fix:
+> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.21.y.git;a=commit;h=1ea6b2418cd2c6a6f31067ed6ece5cd12c69351e
+> 
+> Could it be included in this new stable release of 2.6.20 ?
 
-So that is around 1.8% in a benchmark. 
+That patch is actually in this review cycle.  If you want to grab the
+roll-up patch and test, that would be great.
 
-Not bad, if one considers, that this is an expensive syncronisation primitive 
-anyway (and thus shouldn't dominate any real workload). At least _much_
-better than possible stack underflow :-)
+http://www.kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.20.14-rc1.{gz,bz2}
 
-BTW: You forgot to include measurements with the unmodified code 
-	as it is in Linus' tree now. They woule be a nice data point here.
-
-> Will try with a dynamic allocation.
-
-But than you have an additional error path 
-or have to sleep until memory becomes available.
-
-Maybe try doubling IPCS_MAX_SCAN_ENTRIES - until the performance impact
-is in the noise - is simpler. Up to 64 seems acceptable.
-
-Best Regards
-
-Ingo Oeser
+thanks,
+-chris
