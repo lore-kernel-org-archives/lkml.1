@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966864AbXFHHJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937311AbXFHHLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966864AbXFHHJg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764164AbXFHHJ3
+	id S937311AbXFHHLS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762819AbXFHHLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:09:29 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:56694 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763664AbXFHHJ2 (ORCPT
+	Fri, 8 Jun 2007 03:11:05 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:10489 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756583AbXFHHLC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:09:28 -0400
-Message-ID: <4669009E.3000702@cosmosbay.com>
-Date: Fri, 08 Jun 2007 09:09:18 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Fri, 8 Jun 2007 03:11:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=H8Y8TXeYc/lcLXnRXnwlyVIiVSapV//mo4B2LeBFfVZInmHj3lxsy4dSInjNXp3BIgmI2XZTVdo0wAuXddFmZTq0eQHg+k/l8XMrrm2k4tc2atBPOp9V0anS8310JJlkucowE9gyTA4/Ay2k4tKg7GCsTcMbxSZneJ9Ga0kHSPo=
+Message-ID: <466900F3.7040801@gmail.com>
+Date: Fri, 08 Jun 2007 16:10:43 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Albert Cahalan <acahalan@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: JIT emulator needs
-References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
-In-Reply-To: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Fri, 08 Jun 2007 09:09:26 +0200 (CEST)
+To: Robert de Rooy <robert.de.rooy@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, bzolnier@gmail.com,
+       linux-pcmcia@lists.infradead.org,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       Mark Lord <mlord@pobox.com>
+Subject: Re: libata and legacy ide pcmcia failure
+References: <464A0321.3080201@gmail.com>	<464C1575.8070005@gmail.com>	<464CB7C9.2080807@gmail.com>	<46503192.1040300@gmail.com>	<4650B9E3.7070409@gmail.com>	<46518798.2020808@gmail.com>	<4651B66E.6030505@gmail.com>	<4651B834.3060702@gmail.com>	<4651C4A1.6000101@gmail.com>	<4651C74B.7020108@gmail.com>	<46520B36.90409@garzik.org> <20070523150229.00a0c3c4@the-village.bc.nu> <466718B6.4080105@gmail.com> <4667B39D.209@gmail.com> <46685AE5.4010908@gmail.com>
+In-Reply-To: <46685AE5.4010908@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Albert Cahalan a écrit :
-> Right now, Linux isn't all that friendly to JIT emulators.
-> Here are the problems and suggestions to improve the situation.
-> 
-> There is an SE Linux execmem restriction that enforces W^X.
-> Assuming you don't wish to just disable SE Linux, there are
-> two ugly ways around the problem. You can mmap a file twice,
-> or you can abuse SysV shared memory. The mmap method requires
-> that you know of a filesystem mounted rw,exec where you can
-> write a very large temporary file. This arbitrary filesystem,
-> rather than swap space, will be the backing store. The SysV
-> shared memory method requires an undocumented flag and is
-> subject to some annoying size limits. Both methods create
-> objects that will fail to be deleted if the program dies
-> before marking the objects for deletion.
-> 
-> Processors often have annoying limits on the immediate values
-> in instructions. An x86 or x86_64 JIT can go a bit faster if
-> all allocations are kept to the low 2 GB of address space.
-> There are also reasons for a 32bit-to-x86_64 JIT to chose
-> a nearly arbitrary 2 GB region that lies above 4 GB.
-> Other archs have other limits, such as 32 MB or 256 MB.
-> 
-> Sometimes it is very helpful to have the read/write mapping
-> be a fixed offset from the read/exec mapping. A power of 2
-> can be especially desirable.
-> 
-> Emulators often need a cheap way to change page permissions.
-> One VMA per page is no good. Besides taking up space and making
-> many things generally slower, having one VMA per page causes
-> a huge performance loss for snapshot roll-back operations.
-> Just tearing down all those VMAs takes a good while.
-> 
-> Additions to better support JIT emulators:
-> 
-> a. sysctl to set IPC_RMID by default
+Hello,
 
-Not very good, this will break some apps.
+Robert de Rooy wrote:
+> Jun  7 21:10:28 localhost kernel: ata3: soft resetting port
+> Jun  7 21:10:28 localhost kernel: ata3: reset complete
+> Jun  7 21:10:28 localhost kernel: ATA: abnormal status 0x80 on port
+> 0x00014107
+> Jun  7 21:10:28 localhost kernel: ATA: abnormal status 0x80 on port
+> 0x00014107
+> Jun  7 21:10:28 localhost kernel: ata3.00: issuing IDENTIFY
+> Jun  7 21:10:29 localhost kernel: ata3.00: IDENTIFY complete
+> Jun  7 21:10:29 localhost kernel: ata3.00: CFA: Memory Card Adapter,
+> 20011212, max PIO1
+> Jun  7 21:10:29 localhost kernel: ata3.00: 253696 sectors, multi 0: LBA
+> Jun  7 21:10:29 localhost kernel: ata3.00: issuing IDENTIFY
+> Jun  7 21:10:29 localhost kernel: ata3.00: IDENTIFY complete
+> Jun  7 21:10:29 localhost kernel: ata3.00: configured for PIO0
+> Jun  7 21:10:29 localhost kernel: ata3: EH complete
+> Jun  7 21:10:29 localhost kernel: scsi 3:0:0:0: Direct-Access    
+> ATA      Memory Card Adap 2001 PQ: 0 ANSI: 5
+> Jun  7 21:10:29 localhost kernel: sd 3:0:0:0: [sdd] 253696 512-byte
+> hardware sectors (130 MB)
+> Jun  7 21:10:29 localhost kernel: sd 3:0:0:0: [sdd] Write Protect is off
+> Jun  7 21:10:29 localhost kernel: sd 3:0:0:0: [sdd] Write cache:
+> disabled, read cache: enabled, doesn't support DPO or FUA
+> Jun  7 21:10:29 localhost kernel: sd 3:0:0:0: [sdd] 253696 512-byte
+> hardware sectors (130 MB)
+> Jun  7 21:10:29 localhost kernel: sd 3:0:0:0: [sdd] Write Protect is off
+> Jun  7 21:10:29 localhost kernel: sd 3:0:0:0: [sdd] Write cache:
+> disabled, read cache: enabled, doesn't support DPO or FUA
 
-> b. shmget() flag to set IPC_RMID by default
+So, that made it go through detection okay.  That's a good news.
 
-This is better :)
+> Jun  7 21:10:59 localhost kernel:  sdd:<3>ata3.00: exception Emask 0x0
+> SAct 0x0 SErr 0x0 action 0x2 frozen
+> Jun  7 21:10:59 localhost kernel: ata3.00: cmd
+> 20/00:08:00:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 in
+> Jun  7 21:10:59 localhost kernel:          res
+> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
 
-> c. open() flag to unlink a file before returning the fd
+But, read for partition table failed miserably and took the device
+offline completely.
 
+Whee... Cc'ing linux-ide and Mark Lord.  The original thread is..
 
-Well, I assume you would like fd = open("/path/somefile", O_RDWR | O_CREAT | 
-O_UNLINK, 0644)
+  http://thread.gmane.org/gmane.linux.kernel/530099
 
-(ie allocate a file handle but no name ?)
+Any ideas?
 
-Quite difficult to implement this atomically with current vfs, maybe a new 
-syscall would be better. (Linus will kill me for that :) )
-
-(We dont need to insert "somefile" in one directory, then unlink it, we only 
-need to allocate an unnamed inode to get some backing store)
-
-This is a generalization of anonymous inodes ( fs/anon_inodes.c  )
-
-
+-- 
+tejun
