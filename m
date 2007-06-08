@@ -1,84 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031344AbXFHSUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938466AbXFHSVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031344AbXFHSUd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 14:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968903AbXFHSUZ
+	id S938466AbXFHSVc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 14:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966932AbXFHSVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 14:20:25 -0400
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:47649 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762787AbXFHSUY (ORCPT
+	Fri, 8 Jun 2007 14:21:25 -0400
+Received: from mail-gw3.adaptec.com ([216.52.22.36]:51228 "EHLO
+	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932790AbXFHSVY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 14:20:24 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: "John Stoffel" <john@stoffel.org>
-Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
-Date: Fri, 8 Jun 2007 20:21:41 +0200
-User-Agent: KMail/1.9.6
-Cc: Jeff Garzik <jeff@garzik.org>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-References: <20070607162251.5f291325@the-village.bc.nu> <20070608020730.GD23290@havoc.gtf.org> <18024.47852.272454.21519@stoffel.org>
-In-Reply-To: <18024.47852.272454.21519@stoffel.org>
+	Fri, 8 Jun 2007 14:21:24 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706082021.42698.ioe-lkml@rameria.de>
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [stable] [patch 37/54] SCSI: aacraid: Correct sa platformsupport. (Was: [Bug 8469] Bad EIP value on pentium3 SMPkernel-2.6.21.1)
+Date: Fri, 8 Jun 2007 14:21:21 -0400
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01AB8567@otce2k301.adaptec.com>
+In-reply-to: <20070608174545.GZ3723@sequoia.sous-sol.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [stable] [patch 37/54] SCSI: aacraid: Correct sa platformsupport. (Was: [Bug 8469] Bad EIP value on pentium3 SMPkernel-2.6.21.1)
+Thread-Index: Acep9N4qQEiR4j4ESSqSmMvSvM1toQABMQGg
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "Chris Wright" <chrisw@sous-sol.org>,
+       "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
+Cc: "James Bottomley" <James.Bottomley@steeleye.com>,
+       "AACRAID" <aacraid@adaptec.com>, "Greg Kroah-Hartman" <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>, <stable@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 June 2007, John Stoffel wrote:
-> Jeff> On Thu, Jun 07, 2007 at 09:56:06PM -0400, John Stoffel wrote:
-> >> Thinking about it more, I wonder if Krysztof is bitching more about
-> >> the tab width of 8 characters?   I know that it ticks me off,
+Yes, split the patch into the two pieces for 2.6.21.1/2.6.21.4
+
+Sincerely -- Mark Salyzyn
+
+> -----Original Message-----
+> From: Chris Wright [mailto:chrisw@sous-sol.org] 
+> Sent: Friday, June 08, 2007 1:46 PM
+> To: Stefan Lippers-Hollmann
+> Cc: Chris Wright; James Bottomley; AACRAID; Greg 
+> Kroah-Hartman; linux-kernel@vger.kernel.org; stable@kernel.org
+> Subject: Re: [stable] [patch 37/54] SCSI: aacraid: Correct sa 
+> platformsupport. (Was: [Bug 8469] Bad EIP value on pentium3 
+> SMPkernel-2.6.21.1)
 > 
-> Jeff> Even if he is, _that_ is definitely not getting changed.
 > 
-> Oh sure... I know that part is written in stone.  
-
-Yes, and as a person doing Linux code review for 12 years now,
-I'm really thankful for it. 8 char tab, 80 column rule and 25-50 lines
-of code per function actually enable effective review of code snippets.
-Because you can see more code flow per patch.
-
-And enables high code reuse. If you can get within 1-5min, 
-what a functions does and match it with your actually 
-written down last 20 code lines, you just reuse it more often.
-
-If you have more to choose from, you reuse naturally. 
-Personally I find best candidates by code position in tree and 
-function signature.
-
-> Jeff> If code starts creeping way right due to indentation levels,
-> Jeff> create a new function.
+> * Stefan Lippers-Hollmann (s.L-H@gmx.de) wrote:
+> > This patch fails to compile on amd64 and i386 with the 
+> attached config 
+> > (CONFIG_SCSI_AACRAID=m, 2.6.21.5-rc1):
+> >   CC [M]  drivers/scsi/aacraid/linit.o
+> >   CC [M]  drivers/scsi/aacraid/aachba.o
+> >   CC [M]  drivers/scsi/aacraid/commctrl.o
+> >   CC [M]  drivers/scsi/aacraid/comminit.o
+> >   CC [M]  drivers/scsi/aacraid/commsup.o
+> >   CC [M]  drivers/scsi/aacraid/dpcsup.o
+> >   CC [M]  drivers/scsi/aacraid/rx.o
+> >   CC [M]  drivers/scsi/aacraid/sa.o
+> > drivers/scsi/aacraid/sa.c: In function 'aac_sa_init':
+> > drivers/scsi/aacraid/sa.c:375: error: 'struct adapter_ops' 
+> has no member 
+> > named 'adapter_restart'
 > 
-> Sure... compilers are good, us humans haven't gotten much better, make
-> it easier on us and harder on the computer.   
-
-Yes, let compile remove all the abstraction overhead. 
-GCC does a pretty good job there, I think.
-
-I recently analyzed some code and it took much, much longer (factor 2-3), 
-because of laxer coding rules similiar to the ones you suggest.
-
-I even asked the developers, who wrote that code and to ones who work 
-daily with that code base and they had the same problems. They all couldn't 
-explain the "Why?" only the "How?". Not to mention, that this was a core 
-component.
-
-After refactoring some big messy parts into smaller functions,
-identical, missing, unhandled cases became visible, inappropriate usages
-were identified and even some loops could be removed.
-
-Now try to find such problems within Linux. They should be a small percentage 
-and not within core components.
-
-So a big THANKS to all the code cops here: You actually make the 
-	damn fast change rate of Linux possible by keeping the base clean 
-	and neat.
-
-Best Regards
-
-Ingo oeser
+> Mark, this patch is apparently against a slightly newer kernel which
+> includes 8418852d11f0bbaeebeedd4243560d8fdc85410d:
+> 	[SCSI] aacraid: add restart adapter platform function
+> 
+> See any issue with this against 2.6.21.4 (simply drops adapter_restart
+> bits).
+> 
+> thanks,
+> -chris
+> --
+> 
+> From: Salyzyn, Mark <mark_salyzyn@adaptec.com>
+> Subject: SCSI: aacraid: Correct sa platform support. (Was: 
+> [Bug 8469] Bad EIP value on pentium3 SMP kernel-2.6.21.1)
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=8469
+> 
+> As discussed in the bugzilla outlined below, we have an sa based
+> (Mustang) RAID adapter on the system, a Dell PERC2/QC. Affected
+> controllers are HP NetRAID, Adaptec AAC-364, Dell PERC2/QC or Adaptec
+> 5400S. This problem  coincides with the introduction of the 
+> adapter_comm
+> and adapter_deliver platform functions (Message [PATCH 1/4] aacraid:
+> rework communication support code, January 23 2007, which initially
+> migrated to 2.6.21)
+> 
+> The panic occurs with an uninitialized adapter_deliver 
+> platform function
+> pointer. The enclosed patch, unmodified as tested by Rainer, 
+> solves the
+> problem.
+> 
+> Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
+> Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> [chrisw: backport to 2.6.21.4]
+> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+> 
+> ---
+>  drivers/scsi/aacraid/aacraid.h |    1 +
+>  drivers/scsi/aacraid/rx.c      |    2 +-
+>  drivers/scsi/aacraid/sa.c      |    3 ++-
+>  3 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> --- linux-2.6.21.4.orig/drivers/scsi/aacraid/aacraid.h
+> +++ linux-2.6.21.4/drivers/scsi/aacraid/aacraid.h
+> @@ -1840,6 +1840,7 @@ struct aac_driver_ident* aac_get_driver_
+>  int aac_get_adapter_info(struct aac_dev* dev);
+>  int aac_send_shutdown(struct aac_dev *dev);
+>  int aac_probe_container(struct aac_dev *dev, int cid);
+> +int aac_rx_deliver_producer(struct fib * fib);
+>  extern int numacb;
+>  extern int acbsize;
+>  extern char aac_driver_version[];
+> --- linux-2.6.21.4.orig/drivers/scsi/aacraid/rx.c
+> +++ linux-2.6.21.4/drivers/scsi/aacraid/rx.c
+> @@ -378,7 +378,7 @@ static int aac_rx_check_health(struct aa
+>   *
+>   *	Will send a fib, returning 0 if successful.
+>   */
+> -static int aac_rx_deliver_producer(struct fib * fib)
+> +int aac_rx_deliver_producer(struct fib * fib)
+>  {
+>  	struct aac_dev *dev = fib->dev;
+>  	struct aac_queue *q = &dev->queues->queue[AdapNormCmdQueue];
+> --- linux-2.6.21.4.orig/drivers/scsi/aacraid/sa.c
+> +++ linux-2.6.21.4/drivers/scsi/aacraid/sa.c
+> @@ -5,7 +5,7 @@
+>   * based on the old aacraid driver that is..
+>   * Adaptec aacraid device driver for Linux.
+>   *
+> - * Copyright (c) 2000 Adaptec, Inc. (aacraid@adaptec.com)
+> + * Copyright (c) 2000-2007 Adaptec, Inc. (aacraid@adaptec.com)
+>   *
+>   * This program is free software; you can redistribute it 
+> and/or modify
+>   * it under the terms of the GNU General Public License as 
+> published by
+> @@ -368,6 +368,7 @@ int aac_sa_init(struct aac_dev *dev)
+>  	dev->a_ops.adapter_sync_cmd = sa_sync_cmd;
+>  	dev->a_ops.adapter_check_health = aac_sa_check_health;
+>  	dev->a_ops.adapter_intr = aac_sa_intr;
+> +	dev->a_ops.adapter_deliver = aac_rx_deliver_producer;
+>  	dev->a_ops.adapter_ioremap = aac_sa_ioremap;
+>  
+>  	/*
+> 
