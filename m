@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939318AbXFHHsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939391AbXFHHtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939318AbXFHHsq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938404AbXFHHYz
+	id S939391AbXFHHtY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938405AbXFHHY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:24:55 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55296 "EHLO
+	Fri, 8 Jun 2007 03:24:57 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55300 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938157AbXFHHYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:24:51 -0400
-Message-Id: <20070608072220.006310000@sous-sol.org>
+	id S938390AbXFHHYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:24:52 -0400
+Message-Id: <20070608072220.735514000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:22:01 -0700
+Date: Fri, 08 Jun 2007 00:22:02 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,42 +23,49 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 34/54] Fix roundup_pow_of_two(1)
-Content-Disposition: inline; filename=fix-roundup_pow_of_two.patch
+Subject: [patch 35/54] USB: set the correct Interrupt interval in usb_bulk_msg
+Content-Disposition: inline; filename=usb-set-the-correct-interrupt-interval-in-usb_bulk_msg.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-Fix roundup_pow_of_two(1)
+This patch (as902) fixes a mistake I introduced into usb_bulk_msg().
+usb_fill_int_urb() already does the bit-shifting calculation for
+high-speed Interrupt intervals; it shouldn't be done twice.
 
-1 is a power of two, therefore roundup_pow_of_two(1) should return 1. It does
-in case the argument is a variable but in case it's a constant it behaves
-wrong and returns 0. Probably nobody ever did it so this was never noticed.
-
-Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+
 ---
+ drivers/usb/core/message.c |    9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
- include/linux/log2.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.21.4.orig/include/linux/log2.h
-+++ linux-2.6.21.4/include/linux/log2.h
-@@ -159,7 +159,7 @@ unsigned long __roundup_pow_of_two(unsig
- #define roundup_pow_of_two(n)			\
- (						\
- 	__builtin_constant_p(n) ? (		\
--		(n == 1) ? 0 :			\
-+		(n == 1) ? 1 :			\
- 		(1UL << (ilog2((n) - 1) + 1))	\
- 				   ) :		\
- 	__roundup_pow_of_two(n)			\
+--- linux-2.6.21.4.orig/drivers/usb/core/message.c
++++ linux-2.6.21.4/drivers/usb/core/message.c
+@@ -221,15 +221,10 @@ int usb_bulk_msg(struct usb_device *usb_
+ 
+ 	if ((ep->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
+ 			USB_ENDPOINT_XFER_INT) {
+-		int interval;
+-
+-		if (usb_dev->speed == USB_SPEED_HIGH)
+-			interval = 1 << min(15, ep->desc.bInterval - 1);
+-		else
+-			interval = ep->desc.bInterval;
+ 		pipe = (pipe & ~(3 << 30)) | (PIPE_INTERRUPT << 30);
+ 		usb_fill_int_urb(urb, usb_dev, pipe, data, len,
+-				usb_api_blocking_completion, NULL, interval);
++				usb_api_blocking_completion, NULL,
++				ep->desc.bInterval);
+ 	} else
+ 		usb_fill_bulk_urb(urb, usb_dev, pipe, data, len,
+ 				usb_api_blocking_completion, NULL);
 
 -- 
