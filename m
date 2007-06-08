@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971304AbXFHWbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032421AbXFHWcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971304AbXFHWbn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 18:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971175AbXFHWai
+	id S1032421AbXFHWcH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 18:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032388AbXFHWbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 18:30:38 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41354 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1032315AbXFHWag (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 18:30:36 -0400
-Date: Fri, 8 Jun 2007 23:35:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Korb <ml@akana.de>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
-Message-ID: <20070608233512.69988f57@the-village.bc.nu>
-In-Reply-To: <200706090042.50287.bzolnier@gmail.com>
-References: <20601315171560711667@wsc.cz>
-	<200706081418.56217.bzolnier@gmail.com>
-	<20070608223505.3ff1a662@the-village.bc.nu>
-	<200706090042.50287.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 8 Jun 2007 18:31:37 -0400
+Received: from ns1.suse.de ([195.135.220.2]:38267 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1032378AbXFHWbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 18:31:35 -0400
+From: Andi Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+Date: Sat, 9 Jun 2007 00:31:04 +0200
+User-Agent: KMail/1.9.1
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
+       davem@davemloft.net
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <6901450.1181335390183.SLOX.WebMail.wwwrun@imap-dhs.suse.de> <20070608135555.e580ada3.akpm@linux-foundation.org>
+In-Reply-To: <20070608135555.e580ada3.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706090031.05531.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007 00:42:50 +0200
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+On Friday 08 June 2007 22:55, Andrew Morton wrote:
+> On Fri, 8 Jun 2007 22:43:10 +0200 (CEST)
+>
+> Andreas Kleen <ak@suse.de> wrote:
+> > > That's what kmem_cache_alloc() is for?!?!
+> >
+> > Tradtionally that was not allowed in block layer path. Not sure
+> > it is fully obsolete with the recent dirty tracking work, probably not.
+> >
+> > Besides it would need to be GFP_ATOMIC and the default
+> > atomic pools are not that big.
+>
+> That in itself is a problem.  What do we have to do to be able
+> to make these allocations use the *much* stronger GFP_NOIO?
 
-> On Friday 08 June 2007, Alan Cox wrote:
-> > On Fri, 8 Jun 2007 14:18:55 +0200
-> > Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > 
-> > > On Monday 04 June 2007, Jiri Slaby wrote:
-> > > > ide-generic, add another device exception
-> > > 
-> > > ide-generic is a generic ISA IDE driver, this one is drivers/ide/pci/generic
-> > > (a generic IDE PCI driver) - fixed patch description to avoid confusion.
-> > 
-> > Nope ide-generic is a generic I/O based ST506 interface. It covers a bit
-> > more than just ISA bus.
-> 
-> If so then can we finally get rid of hd.c?
+That still sleeps.
 
-Ok ST-506 register set. ST-506 MFM command set is a bit different and
-does need hd.c (SFF only deals with PCI controllers)
+Allow networking and block drivers (and other device drivers) to
+map SGs without holding spinlocks. 
 
-> > > [ Yes, both drivers need a rename - patches are welcomed. ]
-> > 
-> > Good way to break everyones module settings
-> 
-> MODULE_ALIAS() should cover this up nicely.
+Would be major work. I've been asking for it for years
+because it would also avoid other nasty problem, like the panic-on-overflow
+issues with swiotlb/AMD GART iommu -- it could just block for free
+space instead.
 
-No problem with that. Just need to be sure it gets done.
-
+-Andi
