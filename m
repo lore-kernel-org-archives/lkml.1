@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763105AbXFHGYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764887AbXFHG27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763105AbXFHGYO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 02:24:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXFHGX7
+	id S1764887AbXFHG27 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 02:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbXFHG2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 02:23:59 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52016 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754695AbXFHGX6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 02:23:58 -0400
-Date: Thu, 7 Jun 2007 23:23:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 1/7] lguest documentation: infrastructure and Chapter I
-Message-Id: <20070607232349.b4673058.akpm@linux-foundation.org>
-In-Reply-To: <1181272257.24958.12.camel@localhost.localdomain>
-References: <1181272257.24958.12.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jun 2007 02:28:51 -0400
+Received: from raven.upol.cz ([158.194.120.4]:41955 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751781AbXFHG2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 02:28:50 -0400
+To: kbuild-devel@lists.sourceforge.net
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [patch] scripts: clean-whitespace.sh
+In-Reply-To: <4668929C.7040209@zytor.com>
+References: <20070605073335.GM7266@flower.upol.cz> <20070605081959.GB21991@uranus.ravnborg.org> <20070605133834.GO7266@flower.upol.cz> <20070605141254.GA24722@uranus.ravnborg.org> <20070605145759.GP7266@flower.upol.cz> <20070605151101.GQ7266@flower.upol.cz> <20070606174556.GS7266@flower.upol.cz> <20070606175026.GA6303@uranus.ravnborg.org> <20070606191426.GT7266@flower.upol.cz> <Pine.LNX.4.64.0706071634470.8762@fbirervta.pbzchgretzou.qr> <20070607230657.GV7266@flower.upol.cz> <4668929C.7040209@zytor.com>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: jed + slrn (x86_64-pc-linux-glibc-debian)
+Date: Fri, 8 Jun 2007 08:40:42 +0200
+Message-Id: <E1HwY9K-0008Jz-CG@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 08 Jun 2007 13:10:57 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+After running this script with filename as parameter,
+look (with diff) for, what can be corrected.
 
-> The netfilter code had very good documentation: the Netfilter Hacking
-> HOWTO.  Noone ever read it.
-> 
-> So this time I'm trying something different, using a bit of
-> Knuthiness.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  Documentation/lguest/extract          |   58 +++++++++++++++++++++++++++++++++
->  Documentation/lguest/lguest.c         |    9 +++--
->  drivers/lguest/Makefile               |   12 ++++++
->  drivers/lguest/README                 |   47 ++++++++++++++++++++++++++
->  drivers/lguest/core.c                 |    7 ++-
->  drivers/lguest/hypercalls.c           |    9 +++--
->  drivers/lguest/interrupts_and_traps.c |   13 +++++++
->  drivers/lguest/io.c                   |    8 +++-
->  drivers/lguest/lguest.c               |   31 ++++++++++++++++-
->  drivers/lguest/lguest_bus.c           |    3 +
->  drivers/lguest/lguest_user.c          |    7 +++
->  drivers/lguest/page_tables.c          |   10 ++++-
->  drivers/lguest/segments.c             |   11 ++++++
->  drivers/lguest/switcher.S             |   13 +++----
->  14 files changed, 219 insertions(+), 19 deletions(-)
+Only "*.diff" and "*.patch" files are handled as patches.
 
-This patch series craps all over the existing one:
+Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
+--
+ Two clean rules added, that can change look of damaged lines.
+ Yet script still fits one ordinary screen, so read the code!
 
-lguest-export-symbols-for-lguest-as-a-module.patch
-lguest-the-guest-code.patch
-lguest-the-host-code.patch
-lguest-the-asm-offsets.patch
-lguest-the-makefile-and-kconfig.patch
-lguest-the-console-driver.patch
-lguest-the-net-driver.patch
-lguest-the-block-driver.patch
-lguest-the-documentation-example-launcher.patch
+ test cases: include/linux/ipv6.h, arch/x86_64/lib/{copy_user, memcpy}.S
 
-obviously we could append this new series to the existing one, but that
-limits our ability to make further changes over the next few weeks.  Or we
-just give up trying to present the series nicely and it hits mainline with
-a random stream of uninteresting and irrelevant afterthoughts at the end,
-like we're some lameo git users or something.
+ It's like lguest -- just for fun.
 
-(I could split all this up, but I'm getting kinda bored of preventing you
-from mucking up your own patch series)
+ clean-whitespace.sh |   28 ++++++++++++++++++++++++++++
+  1 file changed, 28 insertions(+)
 
-So... what course dost thou wish to take?
+--- /dev/null	2007-04-04 10:55:19.204075250 +0200
++++ linux-just-for-fun/scripts/clean-whitespace.sh	2007-06-08 07:53:21.000000000 +0200
+@@ -0,0 +1,28 @@
++#!/bin/sh -e
++# clean whitespace damage; i/o = $1/$1.clean
++
++IFS='' ; t="`printf '\t'`" ; s=' ' ; s4="$s$s$s$s" ; w79=79 ;
++i="$1" ; o="$1.clean"
++strip_file_end='/^$/{N;s_^\n$_&_;T e;:n;N;s_^.*\n\n$_&_;t n;:e;};'
++not_patch_line='/^+[^+]/'
++
++case $1 in *[.]diff | *[.]patch)
++	file=patch ; sp='+[!+]' ; p='+' ; addr="$not_patch_line";;
++esac
++
++sed -n "${addr:-$strip_file_end} {
++s|[$t$s]*$||;	# trailing whitespace
++:next;		# x*8 spaces on the line start -> x*tabs
++s|^\([\n]*\)$p\($t*\)$s4$s4|\1$p\2$t|;t next;	# \n is needed after N command
++s|^\([\n]*\)$p\($t*\)$s*$t|\1$p\2$t|g;		# strip spaces between tabs
++s|$s4$s4$s$s*|$t$t|g				# more than 8 spaces -> 2 tabs
++s|$s*$t|$t|g	# strip spaces before tab; tradeoff: may break some alignment !
++};p" -- "$i" >"$o" && echo "
++please, see clean ${file:=source} file: $o
++"
++exec expand $i | while read -r line # check for long line
++do   [ ${#line} -gt $w79 ] && case "$line" in $sp*) echo \
++"at least one line wider than $w79 chars, found
++check your $file, please
++" 1>&2 ; exit ;; esac
++done
