@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967126AbXFHIUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967748AbXFHIVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967126AbXFHIUc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 04:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932131AbXFHIUG
+	id S967748AbXFHIVR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 04:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936377AbXFHIU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 04:20:06 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44645 "EHLO thunker.thunk.org"
+	Fri, 8 Jun 2007 04:20:58 -0400
+Received: from lucidpixels.com ([75.144.35.66]:50437 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763659AbXFHIUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 04:20:03 -0400
-Date: Fri, 8 Jun 2007 04:19:44 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
-       Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [patch 34/54] Fix roundup_pow_of_two(1)
-Message-ID: <20070608081944.GA12687@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-	stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-	Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-	Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
-	Chuck Wolber <chuckw@quantumlinux.com>,
-	Chris Wedgwood <reviews@ml.cw.f00f.org>,
-	Michael Krufky <mkrufky@linuxtv.org>,
-	Chuck Ebbert <cebbert@redhat.com>,
-	Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-	akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-	Rolf Eike Beer <eike-kernel@sf-tec.de>,
-	Greg Kroah-Hartman <gregkh@suse.de>
-References: <20070608072127.352723000@sous-sol.org> <20070608072220.006310000@sous-sol.org>
+	id S936302AbXFHIU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 04:20:56 -0400
+Date: Fri, 8 Jun 2007 04:20:55 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Jesse Barnes <jesse.barnes@intel.com>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+In-Reply-To: <200706071530.51552.jesse.barnes@intel.com>
+Message-ID: <Pine.LNX.4.64.0706080419260.29016@p34.internal.lan>
+References: <200706071530.51552.jesse.barnes@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070608072220.006310000@sous-sol.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 12:22:01AM -0700, Chris Wright wrote:
-> -stable review patch.  If anyone has any objections, please let us know.
-> ---------------------
-> 
-> From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-> 
-> Fix roundup_pow_of_two(1)
-> 
-> 1 is a power of two, therefore roundup_pow_of_two(1) should return 1. It does
-> in case the argument is a variable but in case it's a constant it behaves
-> wrong and returns 0. Probably nobody ever did it so this was never noticed.
 
-If this doesn't fix a user-visiable bug, should we be including it in
-the stable patch series?  (Assuming that it doesn't, I wouldn't, but I
-tend to be more conservative about what I would include in a stable
-production release.)
 
-Regards,
+On Thu, 7 Jun 2007, Jesse Barnes wrote:
 
-						- Ted
+> On some machines, buggy BIOSes don't properly setup WB MTRRs to
+> cover all available RAM, meaning the last few megs (or even gigs)
+> of memory will be marked uncached.  Since Linux tends to allocate
+> from high memory addresses first, this causes the machine to be
+> unusably slow as soon as the kernel starts really using memory
+> (i.e. right around init time).
+>
+> This patch works around the problem by scanning the MTRRs at
+> boot and figuring out whether the current end_pfn value (setup
+> by early e820 code) goes beyond the highest WB MTRR range, and
+> if so, trimming it to match.  A fairly obnoxious KERN_WARNING
+> is printed too, letting the user know that not all of their
+> memory is available due to a likely BIOS bug.
+>
+> Something similar could be done on i386 if needed, but the boot
+> ordering would be slightly different, since the MTRR code on i386
+> depends on the boot_cpu_data structure being setup.
+>
+> This patch incorporates the feedback from Eric and Andi:
+>  - use MAX_VAR_RANGES instead of NUM_VAR_RANGES
+>  - move array declaration to header file as an extern
+>  - add command line disable option "disable_mtrr_trim"
+>  - don't run the trim code if the MTRR default type is cacheable
+>  - don't run the trim code on non-Intel machines
+>
+> Justin, feel free to test again if you have time and add your
+> "Tested-by" signoff.
+>
+> Andi, as for large pages, do you think this is ok as is, or should
+> I trim a larger granularity?  If so, what granularity?
+>
+> Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
+>
+> Thanks,
+> Jesse
+>
+
+Looks good, it sustained many backups, bzip2, and even some encoding
+processes, no issues.  Let me know if you need me to test any future
+iterations of the patch, so far each has been fine, no problems to
+report using the 965WH motherboard with 8GB of memory.
+
+Signed-off-by:  Justin Piszcz <jpiszcz@lucidpixels.com>
+
