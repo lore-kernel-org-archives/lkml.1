@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032421AbXFHWcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971385AbXFHWch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032421AbXFHWcH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 18:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032388AbXFHWbh
+	id S971385AbXFHWch (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 18:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031588AbXFHWcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 18:31:37 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38267 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032378AbXFHWbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 18:31:35 -0400
-From: Andi Kleen <ak@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
+	Fri, 8 Jun 2007 18:32:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57722 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1032423AbXFHWcJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 18:32:09 -0400
+Date: Fri, 8 Jun 2007 15:32:08 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ak@suse.de, gregkh@suse.de, muli@il.ibm.com, asit.k.mallick@intel.com,
+       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
+       shaohua.li@intel.com, davem@davemloft.net
 Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
-Date: Sat, 9 Jun 2007 00:31:04 +0200
-User-Agent: KMail/1.9.1
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <6901450.1181335390183.SLOX.WebMail.wwwrun@imap-dhs.suse.de> <20070608135555.e580ada3.akpm@linux-foundation.org>
-In-Reply-To: <20070608135555.e580ada3.akpm@linux-foundation.org>
+In-Reply-To: <20070608182156.GA24865@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0706081531161.3966@schroedinger.engr.sgi.com>
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
+ <20070606190042.510643000@askeshav-devel.jf.intel.com>
+ <20070607162726.2236a296.akpm@linux-foundation.org>
+ <20070608182156.GA24865@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706090031.05531.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 June 2007 22:55, Andrew Morton wrote:
-> On Fri, 8 Jun 2007 22:43:10 +0200 (CEST)
->
-> Andreas Kleen <ak@suse.de> wrote:
-> > > That's what kmem_cache_alloc() is for?!?!
-> >
-> > Tradtionally that was not allowed in block layer path. Not sure
-> > it is fully obsolete with the recent dirty tracking work, probably not.
-> >
-> > Besides it would need to be GFP_ATOMIC and the default
-> > atomic pools are not that big.
->
-> That in itself is a problem.  What do we have to do to be able
-> to make these allocations use the *much* stronger GFP_NOIO?
+On Fri, 8 Jun 2007, Keshavamurthy, Anil S wrote:
 
-That still sleeps.
+> In the IOMMU case, we need exactly opposite of what mempool provides,
+> i.e we always want to look for the element in the pool and if the pool
+> has no element then go to OS as a worst case. This resource pool
+> library routines do the same. Again, this resource pools 
+> grows and shrinks automatically to maintain the minimum pool 
+> elements in the background. I am not sure whether this totally
+> opposite functionality of mempools and resource pools can be 
+> merged.
 
-Allow networking and block drivers (and other device drivers) to
-map SGs without holding spinlocks. 
-
-Would be major work. I've been asking for it for years
-because it would also avoid other nasty problem, like the panic-on-overflow
-issues with swiotlb/AMD GART iommu -- it could just block for free
-space instead.
-
--Andi
+What functionality are you missing in the page allocator? It seems that is 
+does what you want?
