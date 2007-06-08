@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969649AbXFHQIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969113AbXFHQIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969649AbXFHQIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 12:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968310AbXFHQHt
+	id S969113AbXFHQIm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 12:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969848AbXFHQHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 12:07:49 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:50122 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S969908AbXFHQHr (ORCPT
+	Fri, 8 Jun 2007 12:07:55 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:12148 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S969050AbXFHQHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 12:07:47 -0400
-Message-ID: <46697EDA.9000209@us.ibm.com>
-Date: Fri, 08 Jun 2007 09:07:54 -0700
-From: Badari Pulavarty <pbadari@us.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:0.9.4.1) Gecko/20020508 Netscape6/6.2.3
-X-Accept-Language: en-us
+	Fri, 8 Jun 2007 12:07:53 -0400
+Message-ID: <46697ED4.3050403@de.ibm.com>
+Date: Fri, 08 Jun 2007 18:07:48 +0200
+From: Martin Peschke <mp3@de.ibm.com>
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "Serge E. Hallyn" <serge@hallyn.com>, Albert Cahalan <acahalan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, torvalds@linux-foundation.org
-Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com> <20070606204432.b670a7b1.akpm@linux-foundation.org> <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com> <20070607162004.GA27802@vino.hallyn.com> <m1ir9zrtwe.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       jbaron@redhat.com, rostedt@goodmis.org, linux-s390@vger.kernel.org
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+References: <1181165656.7133.23.camel@dix> <20070606230641.GA11592@elte.hu> <46674EA9.9090601@de.ibm.com> <1181198376.7348.202.camel@twins> <4667ACC3.60009@de.ibm.com> <20070607072720.GA19976@elte.hu>
+In-Reply-To: <20070607072720.GA19976@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> if the infrastructure your are advocating does not allow us to keep the 
+> existing output then it's simply not flexible enough.
 
+Let's be precise. If "keep the existing output" means any format change is
+unacceptible to you, then I broke things. If it means that my method provides
+data equivalent in respect of content, then I didn't break the lock contention
+output.
 
-Eric W. Biederman wrote:
+> Why on earth are you even arguing about this?
+ > A "cleanup" should not change the output, simple as that.
+ > Do a patch that has the _same_ output and then we can
+> see whether it's a good patch. You made the same mistake with your 
+> /proc/timer_stats cleanups.
 
->
->At this point given that we actually have a small user space dependency
->and the fact that after I have reviewed the code it looks harmless to
->change the inode number of those inodes, in both cases they are just
->anonymous inodes generated with new_inode, and anything that we wrap
->is likely to be equally so.
->
->So it looks to me like we need to do three things:
->- Fix the inode number
->
-Okay. its already done.
+We got to be careful here. My other proposal was doomed because timerstat became 
+kernel ABI in the meantime. We won't break the kernel ABI. I was late, as simple 
+as that.
 
->
->- Fix the name on the hugetlbfs dentry to hold the key
->
-I don't see need for doing this for hugetlbfs inodes. Currently, they 
-don't base their
-name on "key" + basing on the "key" is kind of useless anyway (its not 
-unique).
+The lock contention stuff isn't kernel ABI yet. This is -mm code, stuff
+intented for a wider audience and discussion. It should be perfectly fine
+to scrutinize kernel ABI additions before we get beyond the point of no return.
 
->
->- Add a big fat comment that user space programs depend on this
->  behavior of both the dentry name and the inode number.
->
-I don't think, the user-space can depend on the dentry-name. It can only 
-depend
-on inode# to match shmid. (since key is not unique esp. for key=0x00000000).
+> I dont like NACK-ing patches but you seem to 
+> be missing the basic precondition of cleanups: no functional effect to 
+> the code, and certainly no change in output.
 
-BTW, I agree that shmid is not unique even without namespaces as its 
-based on
-seq# and we wrap seq#.
+I don't see the point of judging something by goals that have not been set.
+I have advertised my patches as: same purpose, different or generalised method,
+differences in output format, output equivalent in respect of content,
+much more code sharing.
 
-Thanks,
-Badari
-
-
-
+Martin
 
