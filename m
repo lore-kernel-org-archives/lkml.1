@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936632AbXFHHSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965869AbXFHHTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936632AbXFHHSs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937803AbXFHHRI
+	id S965869AbXFHHTR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936694AbXFHHRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:17:08 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33120 "EHLO
+	Fri, 8 Jun 2007 03:17:10 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33132 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937142AbXFHHRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:17:05 -0400
-Message-Id: <20070608071537.374741000@sous-sol.org>
+	id S937777AbXFHHRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:17:07 -0400
+Message-Id: <20070608071548.844618000@sous-sol.org>
 References: <20070608071511.159309000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:15:18 -0700
+Date: Fri, 08 Jun 2007 00:15:28 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,54 +23,43 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tejun Heo <htejun@gmail.com>, Jeroen Janssen <jeroen.janssen@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 07/32] sata_via: add missing PM hooks
-Content-Disposition: inline; filename=sata_via-add-missing-pm-hooks.patch
+       Sam Ravnborg <sam@ravnborg.org>, Andy Green <andy@warmcat.com>
+Subject: [patch 17/32] kbuild: fixdep segfault on pathological string-o-death
+Content-Disposition: inline; filename=kbuild-fixdep-segfault-on-pathological-string-o-death.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Tejun Heo <htejun@gmail.com>
+From: Andy Green <andy@warmcat.com>
 
-For some reason, sata_via is missing PM hooks.  Add them.  Spotted by
-Jeroen Janssen <jeroen.janssen@gmail.com>.
+build scripts: fixdep blows segfault on string CONFIG_MODULE seen
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Jeroen Janssen <jeroen.janssen@gmail.com>
+The string "CONFIG_MODULE" appearing anywhere in a source file causes
+fixdep to segfault.  This string appeared in the wild in the current
+mISDN sources (I think they meant CONFIG_MODULES).  But it shouldn't
+segfault (esp as CONFIG_MODULE appeared in a quoted string).
+
+Signed-off-by: Andy Green <andy@warmcat.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
-[chrisw: trivial 2.6.20 backport]
+Fixes https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=241915
 
- drivers/ata/sata_via.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ scripts/basic/fixdep.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- linux-2.6.20.13.orig/drivers/ata/sata_via.c
-+++ linux-2.6.20.13/drivers/ata/sata_via.c
-@@ -90,6 +90,10 @@ static struct pci_driver svia_pci_driver
- 	.name			= DRV_NAME,
- 	.id_table		= svia_pci_tbl,
- 	.probe			= svia_init_one,
-+#ifdef CONFIG_PM
-+	.suspend		= ata_pci_device_suspend,
-+	.resume			= ata_pci_device_resume,
-+#endif
- 	.remove			= ata_pci_remove_one,
- };
- 
-@@ -109,6 +113,10 @@ static struct scsi_host_template svia_sh
- 	.slave_configure	= ata_scsi_slave_config,
- 	.slave_destroy		= ata_scsi_slave_destroy,
- 	.bios_param		= ata_std_bios_param,
-+#ifdef CONFIG_PM
-+	.suspend		= ata_scsi_device_suspend,
-+	.resume			= ata_scsi_device_resume,
-+#endif
- };
- 
- static const struct ata_port_operations vt6420_sata_ops = {
+--- linux-2.6.20.13.orig/scripts/basic/fixdep.c
++++ linux-2.6.20.13/scripts/basic/fixdep.c
+@@ -249,6 +249,8 @@ void parse_config_file(char *map, size_t
+ 	found:
+ 		if (!memcmp(q - 7, "_MODULE", 7))
+ 			q -= 7;
++		if( (q-p-7) < 0 )
++			continue;
+ 		use_config(p+7, q-p-7);
+ 	}
+ }
 
 -- 
