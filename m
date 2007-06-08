@@ -1,393 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971185AbXFHW3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032232AbXFHW3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971185AbXFHW3S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 18:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971138AbXFHW22
+	id S1032232AbXFHW3k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 18:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971155AbXFHW2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 18:28:28 -0400
-Received: from CHOKECHERRY.SRV.CS.CMU.EDU ([128.2.185.41]:48404 "EHLO
-	chokecherry.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S971132AbXFHW20 (ORCPT
+	Fri, 8 Jun 2007 18:28:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:37315 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S971141AbXFHW23 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 18:28:26 -0400
-From: Benjamin Gilbert <bgilbert@cs.cmu.edu>
-Subject: [PATCH 3/3] [CRYPTO] Add optimized SHA-1 implementation for x86_64
-To: akpm@linux-foundation.org
-Cc: herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Fri, 08 Jun 2007 17:42:58 -0400
-Message-ID: <20070608214258.23949.67358.stgit@dev>
-In-Reply-To: <20070608214242.23949.30350.stgit@dev>
-References: <20070608214242.23949.30350.stgit@dev>
-User-Agent: StGIT/0.12.1
+	Fri, 8 Jun 2007 18:28:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=U3n99/mIoHCQBzW6Tj2tLzTZZvozKwLBUjAw8UJrMqUDAfZgJnpfI8vVihv/7JM0/UWZtLDIhuAep5/SSRniU9oHDygZrksIf5UOfyNSfElkvwevpAzS0xfg2y9363q7TZbWyobN/MfYLm5UDfU10gMLhcRsB6eJRVCYSQF98ZY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
+Date: Sat, 9 Jun 2007 00:42:50 +0200
+User-Agent: KMail/1.9.6
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Korb <ml@akana.de>, linux-ide@vger.kernel.org
+References: <20601315171560711667@wsc.cz> <200706081418.56217.bzolnier@gmail.com> <20070608223505.3ff1a662@the-village.bc.nu>
+In-Reply-To: <20070608223505.3ff1a662@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200706090042.50287.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add optimized implementation of the SHA-1 hash function for x86_64, ported
-from the x86 implementation in Nettle (which is LGPLed).
+On Friday 08 June 2007, Alan Cox wrote:
+> On Fri, 8 Jun 2007 14:18:55 +0200
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> 
+> > On Monday 04 June 2007, Jiri Slaby wrote:
+> > > ide-generic, add another device exception
+> > 
+> > ide-generic is a generic ISA IDE driver, this one is drivers/ide/pci/generic
+> > (a generic IDE PCI driver) - fixed patch description to avoid confusion.
+> 
+> Nope ide-generic is a generic I/O based ST506 interface. It covers a bit
+> more than just ISA bus.
 
-The code has been tested with tcrypt and the NIST test vectors.
+If so then can we finally get rid of hd.c?
 
-Signed-off-by: Benjamin Gilbert <bgilbert@cs.cmu.edu>
----
+> > [ Yes, both drivers need a rename - patches are welcomed. ]
+> 
+> Good way to break everyones module settings
 
- arch/x86_64/kernel/x8664_ksyms.c |    3 
- arch/x86_64/lib/Makefile         |    2 
- arch/x86_64/lib/sha1.S           |  281 ++++++++++++++++++++++++++++++++++++++
- include/linux/cryptohash.h       |    2 
- lib/Kconfig                      |    7 +
- 5 files changed, 293 insertions(+), 2 deletions(-)
+MODULE_ALIAS() should cover this up nicely.
 
-diff --git a/arch/x86_64/kernel/x8664_ksyms.c b/arch/x86_64/kernel/x8664_ksyms.c
-index 77c25b3..bc641ab 100644
---- a/arch/x86_64/kernel/x8664_ksyms.c
-+++ b/arch/x86_64/kernel/x8664_ksyms.c
-@@ -3,6 +3,7 @@
- 
- #include <linux/module.h>
- #include <linux/smp.h>
-+#include <linux/cryptohash.h>
- 
- #include <asm/semaphore.h>
- #include <asm/processor.h>
-@@ -60,3 +61,5 @@ EXPORT_SYMBOL(init_level4_pgt);
- EXPORT_SYMBOL(load_gs_index);
- 
- EXPORT_SYMBOL(_proxy_pda);
-+
-+EXPORT_SYMBOL(sha_transform);
-diff --git a/arch/x86_64/lib/Makefile b/arch/x86_64/lib/Makefile
-index c943271..6c8110b 100644
---- a/arch/x86_64/lib/Makefile
-+++ b/arch/x86_64/lib/Makefile
-@@ -9,5 +9,5 @@ obj-$(CONFIG_SMP)	+= msr-on-cpu.o
- 
- lib-y := csum-partial.o csum-copy.o csum-wrappers.o delay.o \
- 	usercopy.o getuser.o putuser.o  \
--	thunk.o clear_page.o copy_page.o bitstr.o bitops.o
-+	thunk.o clear_page.o copy_page.o bitstr.o bitops.o sha1.o
- lib-y += memcpy.o memmove.o memset.o copy_user.o rwlock.o copy_user_nocache.o
-diff --git a/arch/x86_64/lib/sha1.S b/arch/x86_64/lib/sha1.S
-new file mode 100644
-index 0000000..48f4fde
---- /dev/null
-+++ b/arch/x86_64/lib/sha1.S
-@@ -0,0 +1,281 @@
-+/*
-+ * sha1-x86_64 - x86_64-optimized SHA1 hash algorithm
-+ *
-+ * Originally from Nettle
-+ * Ported from M4 to cpp by Benjamin Gilbert <bgilbert@cs.cmu.edu>
-+ * Ported from x86 to x86_64 by Benjamin Gilbert
-+ *
-+ * Copyright (C) 2004, Niels Möller
-+ * Copyright (C) 2006-2007 Carnegie Mellon University
-+ *
-+ * This library is free software; you can redistribute it and/or modify it
-+ * under the terms of version 2.1 of the GNU Lesser General Public License as
-+ * published by the Free Software Foundation.  A copy of the GNU Lesser General
-+ * Public License should have been distributed along with this library in the
-+ * file LICENSE.LGPL.
-+ *
-+ * This library is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
-+ * for more details.
-+ */
-+
-+#include <linux/linkage.h>
-+#include <asm/dwarf2.h>
-+
-+/* Register usage.  r12-15 must be saved if they will be used.  Accessing
-+   r8-r15 takes an extra instruction byte. */
-+#define P_STATE	%rdi			/* Pointer parameter */
-+#define P_DATA	%rsi			/* Pointer parameter */
-+#define DATA	%rdx			/* Pointer parameter */
-+#define SA	%edi			/* Reuses P_STATE */
-+#define SB	%esi			/* Reuses P_DATA */
-+#define SC	%eax
-+#define SD	%ebx			/* Callee-saved */
-+#define SE	%ebp			/* Callee-saved */
-+#define TMP	%ecx
-+#define TMP2	%r8d			/* Used by F3 */
-+#define CONST	%r9d
-+#define STATE	%r10
-+
-+/* Constants */
-+#define K1VALUE	$0x5A827999		/* Rounds  0-19 */
-+#define K2VALUE	$0x6ED9EBA1		/* Rounds 20-39 */
-+#define K3VALUE	$0x8F1BBCDC		/* Rounds 40-59 */
-+#define K4VALUE	$0xCA62C1D6		/* Rounds 60-79 */
-+
-+/* Convert stack offsets in 32-bit words to offsets in bytes */
-+#define OFFSET(i) 4*(i)
-+
-+/* Reads the input via P_DATA into register, byteswaps it, and stores it in
-+   the DATA array. */
-+#define SWAP(index, register)					\
-+	movl	OFFSET(index)(P_DATA), register;		\
-+	bswap	register;					\
-+	movl	register, OFFSET(index)(DATA)
-+
-+/* push/pop wrappers that update the DWARF unwind table */
-+#define PUSH(regname)						\
-+	push			%regname;			\
-+	CFI_ADJUST_CFA_OFFSET	8;				\
-+	CFI_REL_OFFSET		regname, 0
-+
-+#define POP(regname)						\
-+	pop			%regname;			\
-+	CFI_ADJUST_CFA_OFFSET	-8;				\
-+	CFI_RESTORE		regname
-+
-+/*
-+ * expand(i) is the expansion function
-+ *
-+ *   W[i] = (W[i - 16] ^ W[i - 14] ^ W[i - 8] ^ W[i - 3]) <<< 1
-+ *
-+ * where W[i] is stored in DATA[i mod 16].
-+ *
-+ * Result is stored back in W[i], and also left in TMP, the only
-+ * register that is used.
-+ */
-+#define EXPAND(i)						\
-+	movl	OFFSET(i % 16)(DATA), TMP;			\
-+	xorl	OFFSET((i + 2) % 16)(DATA), TMP;		\
-+	xorl	OFFSET((i + 8) % 16)(DATA), TMP;		\
-+	xorl	OFFSET((i + 13) % 16)(DATA), TMP;		\
-+	roll	$1, TMP;					\
-+	movl	TMP, OFFSET(i % 16)(DATA)
-+
-+/*
-+ * The f functions,
-+ *
-+ *  f1(x,y,z) = z ^ (x & (y ^ z))
-+ *  f2(x,y,z) = x ^ y ^ z
-+ *  f3(x,y,z) = (x & y) | (z & (x | y))
-+ *  f4 = f2
-+ *
-+ * The macro Fk(x,y,z) computes = fk(x,y,z).
-+ * Result is left in TMP.
-+ */
-+#define F1(x,y,z)						\
-+	movl	z, TMP;						\
-+	xorl	y, TMP;						\
-+	andl	x, TMP;						\
-+	xorl	z, TMP
-+
-+#define F2(x,y,z)						\
-+	movl	x, TMP;						\
-+	xorl	y, TMP;						\
-+	xorl	z, TMP
-+
-+#define F3(x,y,z)						\
-+	movl	x, TMP2;					\
-+	andl	y, TMP2;					\
-+	movl	x, TMP;						\
-+	orl	y, TMP;						\
-+	andl	z, TMP;						\
-+	orl	TMP2, TMP
-+
-+/*
-+ * The form of one sha1 round is
-+ *
-+ *   a' = e + a <<< 5 + f( b, c, d ) + k + w;
-+ *   b' = a;
-+ *   c' = b <<< 30;
-+ *   d' = c;
-+ *   e' = d;
-+ *
-+ * where <<< denotes rotation. We permute our variables, so that we
-+ * instead get
-+ *
-+ *   e += a <<< 5 + f( b, c, d ) + k + w;
-+ *   b <<<= 30
-+ *
-+ * k is not an explicit parameter; it's always stored in CONST.
-+ *
-+ * Using the TMP register for the rotate could be avoided, by rotating
-+ * %a in place, adding, and then rotating back.
-+ */
-+#define ROUND(a,b,c,d,e,f,w)					\
-+	addl	CONST, e;					\
-+	addl	w, e;						\
-+	f(b,c,d);						\
-+	addl	TMP, e;						\
-+	movl	a, TMP;						\
-+	roll	$5, TMP;					\
-+	addl	TMP, e;						\
-+	roll	$30, b;
-+
-+/* sha_transform(__u32 *digest, const char *in, __u32 *W) */
-+/* We expect a 64-byte workspace. */
-+.text
-+ENTRY(sha_transform)
-+	CFI_STARTPROC
-+	PUSH(rbx)
-+	PUSH(rbp)
-+
-+	/* Load and byteswap data */
-+	SWAP( 0,  %eax); SWAP( 1,  %ebx); SWAP( 2,  %ecx); SWAP( 3,  %ebp)
-+	SWAP( 4,  %r8d); SWAP( 5,  %r9d); SWAP( 6, %r10d); SWAP( 7, %r11d)
-+	SWAP( 8,  %eax); SWAP( 9,  %ebx); SWAP(10,  %ecx); SWAP(11,  %ebp)
-+	SWAP(12,  %r8d); SWAP(13,  %r9d); SWAP(14, %r10d); SWAP(15, %r11d)
-+
-+	/* P_DATA now dead; free up P_STATE for other uses */
-+	movq	P_STATE, STATE
-+
-+	/* load the state vector */
-+	movl	(STATE),   SA
-+	movl	4(STATE),  SB
-+	movl	8(STATE),  SC
-+	movl	12(STATE), SD
-+	movl	16(STATE), SE
-+
-+	movl	K1VALUE, CONST
-+	ROUND(SA, SB, SC, SD, SE, F1, OFFSET( 0)(DATA))
-+	ROUND(SE, SA, SB, SC, SD, F1, OFFSET( 1)(DATA))
-+	ROUND(SD, SE, SA, SB, SC, F1, OFFSET( 2)(DATA))
-+	ROUND(SC, SD, SE, SA, SB, F1, OFFSET( 3)(DATA))
-+	ROUND(SB, SC, SD, SE, SA, F1, OFFSET( 4)(DATA))
-+
-+	ROUND(SA, SB, SC, SD, SE, F1, OFFSET( 5)(DATA))
-+	ROUND(SE, SA, SB, SC, SD, F1, OFFSET( 6)(DATA))
-+	ROUND(SD, SE, SA, SB, SC, F1, OFFSET( 7)(DATA))
-+	ROUND(SC, SD, SE, SA, SB, F1, OFFSET( 8)(DATA))
-+	ROUND(SB, SC, SD, SE, SA, F1, OFFSET( 9)(DATA))
-+
-+	ROUND(SA, SB, SC, SD, SE, F1, OFFSET(10)(DATA))
-+	ROUND(SE, SA, SB, SC, SD, F1, OFFSET(11)(DATA))
-+	ROUND(SD, SE, SA, SB, SC, F1, OFFSET(12)(DATA))
-+	ROUND(SC, SD, SE, SA, SB, F1, OFFSET(13)(DATA))
-+	ROUND(SB, SC, SD, SE, SA, F1, OFFSET(14)(DATA))
-+
-+	ROUND(SA, SB, SC, SD, SE, F1, OFFSET(15)(DATA))
-+	EXPAND(16); ROUND(SE, SA, SB, SC, SD, F1, TMP)
-+	EXPAND(17); ROUND(SD, SE, SA, SB, SC, F1, TMP)
-+	EXPAND(18); ROUND(SC, SD, SE, SA, SB, F1, TMP)
-+	EXPAND(19); ROUND(SB, SC, SD, SE, SA, F1, TMP)
-+
-+	movl	K2VALUE, CONST
-+	EXPAND(20); ROUND(SA, SB, SC, SD, SE, F2, TMP)
-+	EXPAND(21); ROUND(SE, SA, SB, SC, SD, F2, TMP)
-+	EXPAND(22); ROUND(SD, SE, SA, SB, SC, F2, TMP)
-+	EXPAND(23); ROUND(SC, SD, SE, SA, SB, F2, TMP)
-+	EXPAND(24); ROUND(SB, SC, SD, SE, SA, F2, TMP)
-+
-+	EXPAND(25); ROUND(SA, SB, SC, SD, SE, F2, TMP)
-+	EXPAND(26); ROUND(SE, SA, SB, SC, SD, F2, TMP)
-+	EXPAND(27); ROUND(SD, SE, SA, SB, SC, F2, TMP)
-+	EXPAND(28); ROUND(SC, SD, SE, SA, SB, F2, TMP)
-+	EXPAND(29); ROUND(SB, SC, SD, SE, SA, F2, TMP)
-+
-+	EXPAND(30); ROUND(SA, SB, SC, SD, SE, F2, TMP)
-+	EXPAND(31); ROUND(SE, SA, SB, SC, SD, F2, TMP)
-+	EXPAND(32); ROUND(SD, SE, SA, SB, SC, F2, TMP)
-+	EXPAND(33); ROUND(SC, SD, SE, SA, SB, F2, TMP)
-+	EXPAND(34); ROUND(SB, SC, SD, SE, SA, F2, TMP)
-+
-+	EXPAND(35); ROUND(SA, SB, SC, SD, SE, F2, TMP)
-+	EXPAND(36); ROUND(SE, SA, SB, SC, SD, F2, TMP)
-+	EXPAND(37); ROUND(SD, SE, SA, SB, SC, F2, TMP)
-+	EXPAND(38); ROUND(SC, SD, SE, SA, SB, F2, TMP)
-+	EXPAND(39); ROUND(SB, SC, SD, SE, SA, F2, TMP)
-+
-+	movl	K3VALUE, CONST
-+	EXPAND(40); ROUND(SA, SB, SC, SD, SE, F3, TMP)
-+	EXPAND(41); ROUND(SE, SA, SB, SC, SD, F3, TMP)
-+	EXPAND(42); ROUND(SD, SE, SA, SB, SC, F3, TMP)
-+	EXPAND(43); ROUND(SC, SD, SE, SA, SB, F3, TMP)
-+	EXPAND(44); ROUND(SB, SC, SD, SE, SA, F3, TMP)
-+
-+	EXPAND(45); ROUND(SA, SB, SC, SD, SE, F3, TMP)
-+	EXPAND(46); ROUND(SE, SA, SB, SC, SD, F3, TMP)
-+	EXPAND(47); ROUND(SD, SE, SA, SB, SC, F3, TMP)
-+	EXPAND(48); ROUND(SC, SD, SE, SA, SB, F3, TMP)
-+	EXPAND(49); ROUND(SB, SC, SD, SE, SA, F3, TMP)
-+
-+	EXPAND(50); ROUND(SA, SB, SC, SD, SE, F3, TMP)
-+	EXPAND(51); ROUND(SE, SA, SB, SC, SD, F3, TMP)
-+	EXPAND(52); ROUND(SD, SE, SA, SB, SC, F3, TMP)
-+	EXPAND(53); ROUND(SC, SD, SE, SA, SB, F3, TMP)
-+	EXPAND(54); ROUND(SB, SC, SD, SE, SA, F3, TMP)
-+
-+	EXPAND(55); ROUND(SA, SB, SC, SD, SE, F3, TMP)
-+	EXPAND(56); ROUND(SE, SA, SB, SC, SD, F3, TMP)
-+	EXPAND(57); ROUND(SD, SE, SA, SB, SC, F3, TMP)
-+	EXPAND(58); ROUND(SC, SD, SE, SA, SB, F3, TMP)
-+	EXPAND(59); ROUND(SB, SC, SD, SE, SA, F3, TMP)
-+
-+	movl	K4VALUE, CONST
-+	EXPAND(60); ROUND(SA, SB, SC, SD, SE, F2, TMP)
-+	EXPAND(61); ROUND(SE, SA, SB, SC, SD, F2, TMP)
-+	EXPAND(62); ROUND(SD, SE, SA, SB, SC, F2, TMP)
-+	EXPAND(63); ROUND(SC, SD, SE, SA, SB, F2, TMP)
-+	EXPAND(64); ROUND(SB, SC, SD, SE, SA, F2, TMP)
-+
-+	EXPAND(65); ROUND(SA, SB, SC, SD, SE, F2, TMP)
-+	EXPAND(66); ROUND(SE, SA, SB, SC, SD, F2, TMP)
-+	EXPAND(67); ROUND(SD, SE, SA, SB, SC, F2, TMP)
-+	EXPAND(68); ROUND(SC, SD, SE, SA, SB, F2, TMP)
-+	EXPAND(69); ROUND(SB, SC, SD, SE, SA, F2, TMP)
-+
-+	EXPAND(70); ROUND(SA, SB, SC, SD, SE, F2, TMP)
-+	EXPAND(71); ROUND(SE, SA, SB, SC, SD, F2, TMP)
-+	EXPAND(72); ROUND(SD, SE, SA, SB, SC, F2, TMP)
-+	EXPAND(73); ROUND(SC, SD, SE, SA, SB, F2, TMP)
-+	EXPAND(74); ROUND(SB, SC, SD, SE, SA, F2, TMP)
-+
-+	EXPAND(75); ROUND(SA, SB, SC, SD, SE, F2, TMP)
-+	EXPAND(76); ROUND(SE, SA, SB, SC, SD, F2, TMP)
-+	EXPAND(77); ROUND(SD, SE, SA, SB, SC, F2, TMP)
-+	EXPAND(78); ROUND(SC, SD, SE, SA, SB, F2, TMP)
-+	EXPAND(79); ROUND(SB, SC, SD, SE, SA, F2, TMP)
-+
-+	/* Update the state vector */
-+	addl	SA, (STATE)
-+	addl	SB, 4(STATE)
-+	addl	SC, 8(STATE)
-+	addl	SD, 12(STATE)
-+	addl	SE, 16(STATE)
-+
-+	POP(rbp)
-+	POP(rbx)
-+	ret
-+	CFI_ENDPROC
-+ENDPROC(sha_transform)
-diff --git a/include/linux/cryptohash.h b/include/linux/cryptohash.h
-index 0da331c..b3b14a3 100644
---- a/include/linux/cryptohash.h
-+++ b/include/linux/cryptohash.h
-@@ -7,6 +7,8 @@
- 
- #if defined(CONFIG_SHA1_X86)
- #define SHA_WORKSPACE_WORDS 0
-+#elif defined(CONFIG_SHA1_X86_64)
-+#define SHA_WORKSPACE_WORDS 16
- #else
- #define SHA_WORKSPACE_WORDS 80
- #endif
-diff --git a/lib/Kconfig b/lib/Kconfig
-index 69fdb64..23a84ed 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -132,9 +132,14 @@ config SHA1_X86
- 	depends on (X86 || UML_X86) && !64BIT && X86_BSWAP
- 	default y
- 
-+config SHA1_X86_64
-+	bool
-+	depends on (X86 || UML_X86) && 64BIT
-+	default y
-+
- config SHA1_GENERIC
- 	bool
--	depends on !SHA1_X86
-+	depends on !SHA1_X86 && !SHA1_X86_64
- 	default y
- 
- endmenu
-
+Thanks,
+Bart
