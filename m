@@ -1,147 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970443AbXFHQT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970310AbXFHQUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970443AbXFHQT7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 12:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969933AbXFHQRQ
+	id S970310AbXFHQUf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 12:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969972AbXFHQRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 12:17:16 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:24624 "EHLO
-	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S969522AbXFHQRM (ORCPT
+	Fri, 8 Jun 2007 12:17:18 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:25279 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S969942AbXFHQRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 12:17:12 -0400
-Date: Fri, 08 Jun 2007 09:52:49 -0600
-From: dougthompson@xmission.com
-To: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH 6/6]
-Message-ID: <46697b51.cOyXsBgSAGMv1m+t%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.1 6/15/06
+	Fri, 8 Jun 2007 12:17:16 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=YRD3iKDfX+X6iKPhDYTz75PFttYbWBVPTiljqy9I/cgksB4hV+tPYJBI+n9HhMbNo
+	rvzLugLap4eoDSkKcCtMQ==
+Message-ID: <6599ad830706080916j477e08c0l8b142d9a0d832c76@mail.gmail.com>
+Date: Fri, 8 Jun 2007 09:16:45 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Subject: Re: [ckrm-tech] [PATCH 00/10] Containers(V10): Generic Process Containers
+Cc: "Paul Jackson" <pj@sgi.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
+       rohitseth@google.com, haveblue@us.ibm.com, xemul@sw.ru, dev@sw.ru,
+       containers@lists.osdl.org, devel@openvz.org, ebiederm@xmission.com,
+       mbligh@google.com, cpw@sgi.com, svaidy@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070608160840.GA11133@vino.hallyn.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070606223952.GB5626@sergelap.austin.ibm.com>
+	 <20070607000559.GA19529@sergelap.austin.ibm.com>
+	 <20070606174609.bfa01446.pj@sgi.com>
+	 <20070607180158.GA936@sergelap.austin.ibm.com>
+	 <20070607122121.24fe6ff4.pj@sgi.com>
+	 <20070607201723.GA17011@sergelap.austin.ibm.com>
+	 <20070607150113.f020d8f8.pj@sgi.com>
+	 <20070608143250.GA7728@vino.hallyn.com>
+	 <6599ad830706080855n22612814u4805d34a295b165f@mail.gmail.com>
+	 <20070608160840.GA11133@vino.hallyn.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Douglas Thompson <dougthompson@xmission.com>
+On 6/8/07, Serge E. Hallyn <serge@hallyn.com> wrote:
+>
+> The problem is container_clone() doesn't call ->create explicitly, it
+> does vfs_mkdir.  So we have no real way of passing in clone_task.
+>
 
-Patches to conform to coding style, namely static don't need to be
-initialized to NULL nor '0', as that is the default
+Good point.
 
-Signed-off-by:	Douglas Thompson <dougthompson@xmission.com>
----
- edac_mc_sysfs.c  |    2 +-
- edac_module.c    |    2 +-
- edac_pci.c       |    2 +-
- edac_pci_sysfs.c |    4 ++--
- i3000_edac.c     |    2 +-
- i82860_edac.c    |    2 +-
- i82875p_edac.c   |    2 +-
- r82600_edac.c    |    2 +-
- 8 files changed, 9 insertions(+), 9 deletions(-)
+Looking at vfs_mkdir(), it's pretty simple, and really the only bits
+that apply to container_clone() are the call to ->mkdir() and possibly
+the call to fsnotify_mkdir(). (I think that's maybe how you did it
+originally?)
 
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_mc_sysfs.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_mc_sysfs.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_mc_sysfs.c
-@@ -17,7 +17,7 @@
- /* MC EDAC Controls, setable by module parameter, and sysfs */
- static int edac_mc_log_ue = 1;
- static int edac_mc_log_ce = 1;
--static int edac_mc_panic_on_ue = 0;
-+static int edac_mc_panic_on_ue;
- static int edac_mc_poll_msec = 1000;
- 
- /* Getter functions for above */
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_module.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_module.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_module.c
-@@ -32,7 +32,7 @@ struct workqueue_struct *edac_workqueue;
- static struct sysdev_class edac_class = {
- 	set_kset_name("edac"),
- };
--static int edac_class_valid = 0;
-+static int edac_class_valid;
- 
- /*
-  * edac_op_state_toString()
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_pci.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_pci.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_pci.c
-@@ -385,7 +385,7 @@ void edac_pci_generic_check(struct edac_
- 	edac_pci_do_parity_check();
- }
- 
--static int edac_pci_idx = 0;
-+static int edac_pci_idx;
- #define EDAC_PCI_GENCTL_NAME	"EDAC PCI controller"
- 
- struct edac_pci_gen_data {
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_pci_sysfs.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_pci_sysfs.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_pci_sysfs.c
-@@ -17,8 +17,8 @@
- 
- #define EDAC_PCI_SYMLINK	"device"
- 
--static int check_pci_errors = 0;	/* default YES check PCI parity */
--static int edac_pci_panic_on_pe = 0;	/* default no panic on PCI Parity */
-+static int check_pci_errors;	/* default YES check PCI parity */
-+static int edac_pci_panic_on_pe;	/* default no panic on PCI Parity */
- static int edac_pci_log_pe = 1;	/* log PCI parity errors */
- static int edac_pci_log_npe = 1;	/* log PCI non-parity error errors */
- static atomic_t pci_parity_count = ATOMIC_INIT(0);
-Index: linux-2.6.22-rc4-mm2/drivers/edac/i3000_edac.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/i3000_edac.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/i3000_edac.c
-@@ -151,7 +151,7 @@ static const struct i3000_dev_info i3000
- 		.ctl_name = "i3000"},
- };
- 
--static struct pci_dev *mci_pdev = NULL;
-+static struct pci_dev *mci_pdev;
- static int i3000_registered = 1;
- static struct edac_pci_ctl_info *i3000_pci;
- 
-Index: linux-2.6.22-rc4-mm2/drivers/edac/i82860_edac.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/i82860_edac.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/i82860_edac.c
-@@ -57,7 +57,7 @@ static const struct i82860_dev_info i828
- 		.ctl_name = "i82860"},
- };
- 
--static struct pci_dev *mci_pdev = NULL;	/* init dev: in case that AGP code
-+static struct pci_dev *mci_pdev;	/* init dev: in case that AGP code
- 					 * has already registered driver
- 					 */
- static struct edac_pci_ctl_info *i82860_pci;
-Index: linux-2.6.22-rc4-mm2/drivers/edac/i82875p_edac.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/i82875p_edac.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/i82875p_edac.c
-@@ -177,7 +177,7 @@ static const struct i82875p_dev_info i82
- 		.ctl_name = "i82875p"},
- };
- 
--static struct pci_dev *mci_pdev = NULL;	/* init dev: in case that AGP code has
-+static struct pci_dev *mci_pdev;	/* init dev: in case that AGP code has
- 					 * already registered driver
- 					 */
- 
-Index: linux-2.6.22-rc4-mm2/drivers/edac/r82600_edac.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/r82600_edac.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/r82600_edac.c
-@@ -131,7 +131,7 @@ struct r82600_error_info {
- 	u32 eapr;
- };
- 
--static unsigned int disable_hardware_scrub = 0;
-+static unsigned int disable_hardware_scrub;
- 
- static struct edac_pci_ctl_info *r82600_pci;
- 
+Maybe it would make sense to just call container_create() at that
+point directly, which would allow us more parameters.
+
+Paul
