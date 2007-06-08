@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966709AbXFHBpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937250AbXFHBr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966709AbXFHBpb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 21:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964853AbXFHBpT
+	id S937250AbXFHBr0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 21:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933063AbXFHBrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 21:45:19 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:65351 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964968AbXFHBpS (ORCPT
+	Thu, 7 Jun 2007 21:47:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55197
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932072AbXFHBrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 21:45:18 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 7 Jun 2007 21:47:15 -0400
+Date: Thu, 07 Jun 2007 18:47:31 -0700 (PDT)
+Message-Id: <20070607.184731.10907840.davem@davemloft.net>
+To: miklos@szeredi.hu
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix race in AF_UNIX
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu>
+References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
+	<20070605.224128.104032917.davem@davemloft.net>
+	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18024.46233.432086.424311@stoffel.org>
-Date: Thu, 7 Jun 2007 21:44:57 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, jeff@garzik.org
-Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
-In-Reply-To: <m3wsyfzcpt.fsf@maximus.localdomain>
-References: <20070607162251.5f291325@the-village.bc.nu>
-	<m3wsyfzcpt.fsf@maximus.localdomain>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 06 Jun 2007 10:08:29 +0200
 
-Krzysztof> Perhaps we should drop that 80-column style and use some
-Krzysztof> 120+?  X or no X, almost all people now have more lines and
-Krzysztof> columns on their displays than MDA 20 years ago.
+> There are races involving the garbage collector, that can throw away
+> perfectly good packets with AF_UNIX sockets in them.
+> 
+> The problems arise when a socket goes from installed to in-flight or
+> vice versa during garbage collection.  Since gc is done with a
+> spinlock held, this only shows up on SMP.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 
-I don't.  I use a pair of 80x48 xterms or emacs windows side by side
-on my monitor with a nice big clear easy to read font.  Itty bitty
-fonts are a total pain...
+I'm going to hold off on this one for now.
 
-John
+Holding all of the read locks kind of defeats the purpose of using
+the per-socket lock.
 
+Can't you just lock purely around the receive queue operation?
