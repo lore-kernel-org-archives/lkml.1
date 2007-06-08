@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938664AbXFHHkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968319AbXFHHlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938664AbXFHHkp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:40:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938237AbXFHHYU
+	id S968319AbXFHHlW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967760AbXFHHYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:24:20 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55168 "EHLO
+	Fri, 8 Jun 2007 03:24:23 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55181 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938207AbXFHHYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:24:18 -0400
-Message-Id: <20070608072213.788213000@sous-sol.org>
+	id S938270AbXFHHYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:24:22 -0400
+Message-Id: <20070608072233.592004000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:57 -0700
+Date: Fri, 08 Jun 2007 00:22:13 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,94 +23,92 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Antonino A Daplas <adaplas@gmail.com>, penberg@cs.helsinki.fi,
-       teanropo@jyu.fi, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 30/54] neofb: Fix pseudo_palette array overrun in neofb_setcolreg
-Content-Disposition: inline; filename=neofb-fix-pseudo_palette-array-overrun-in-neofb_setcolreg.patch
+       David Miller <davem@davemloft.net>, bunk@stusta.de,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 46/54] NET: Fix race condition about network device name allocation.
+Content-Disposition: inline; filename=net-fix-race-condition-about-network-device-name-allocation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Antonino A Daplas <adaplas@gmail.com>
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-The pseudo_palette has room for 16 entries only, but in truecolor mode, it
-attempts to write 256.
+Kenji Kaneshige found this race between device removal and
+registration.  On unregister it is possible for the old device to
+exist, because sysfs file is still open.  A new device with 'eth%d'
+will select the same name, but sysfs kobject register will fial.
 
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-Acked-by: Tero Roponen <teanropo@jyu.fi>
+The following changes the shutdown order slightly. It hold a removes
+the sysfs entries earlier (on unregister_netdevice), but holds a
+kobject reference.  Then when todo runs the actual last put free
+happens.
+
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
-This fixes the following regression/bug reported as follows:
+ net/core/dev.c       |   10 ++++++----
+ net/core/net-sysfs.c |    8 +++++++-
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
-Subject    : tty-related oops in latest kernel(s)
-References : http://lkml.org/lkml/2007/5/27/104
-Submitter  : Tero Roponen <teanropo@jyu.fi>
-Status     : problem is being debugged
-
-According to Tero, this is also reproducible with 2.6.21.3.
-
-(Resending, wrong email address for stable@kernel.org)
-
-Tony
-
- drivers/video/neofb.c |   30 ++++++++++++++++--------------
- 1 file changed, 16 insertions(+), 14 deletions(-)
-
---- linux-2.6.21.4.orig/drivers/video/neofb.c
-+++ linux-2.6.21.4/drivers/video/neofb.c
-@@ -1285,34 +1285,36 @@ static int neofb_setcolreg(u_int regno, 
- 	if (regno >= fb->cmap.len || regno > 255)
- 		return -EINVAL;
+--- linux-2.6.21.4.orig/net/core/dev.c
++++ linux-2.6.21.4/net/core/dev.c
+@@ -3135,7 +3135,6 @@ void netdev_run_todo(void)
+ 			continue;
+ 		}
  
--	switch (fb->var.bits_per_pixel) {
--	case 8:
-+	if (fb->var.bits_per_pixel <= 8) {
- 		outb(regno, 0x3c8);
+-		netdev_unregister_sysfs(dev);
+ 		dev->reg_state = NETREG_UNREGISTERED;
  
- 		outb(red >> 10, 0x3c9);
- 		outb(green >> 10, 0x3c9);
- 		outb(blue >> 10, 0x3c9);
--		break;
--	case 16:
--		((u32 *) fb->pseudo_palette)[regno] =
-+	} else if (regno < 16) {
-+		switch (fb->var.bits_per_pixel) {
-+		case 16:
-+			((u32 *) fb->pseudo_palette)[regno] =
- 				((red & 0xf800)) | ((green & 0xfc00) >> 5) |
- 				((blue & 0xf800) >> 11);
--		break;
--	case 24:
--		((u32 *) fb->pseudo_palette)[regno] =
-+			break;
-+		case 24:
-+			((u32 *) fb->pseudo_palette)[regno] =
- 				((red & 0xff00) << 8) | ((green & 0xff00)) |
- 				((blue & 0xff00) >> 8);
--		break;
-+			break;
- #ifdef NO_32BIT_SUPPORT_YET
--	case 32:
--		((u32 *) fb->pseudo_palette)[regno] =
-+		case 32:
-+			((u32 *) fb->pseudo_palette)[regno] =
- 				((transp & 0xff00) << 16) | ((red & 0xff00) << 8) |
- 				((green & 0xff00)) | ((blue & 0xff00) >> 8);
--		break;
-+			break;
- #endif
--	default:
--		return 1;
-+		default:
-+			return 1;
-+		}
- 	}
+ 		netdev_wait_allrefs(dev);
+@@ -3146,11 +3145,11 @@ void netdev_run_todo(void)
+ 		BUG_TRAP(!dev->ip6_ptr);
+ 		BUG_TRAP(!dev->dn_ptr);
+ 
+-		/* It must be the very last action,
+-		 * after this 'dev' may point to freed up memory.
+-		 */
+ 		if (dev->destructor)
+ 			dev->destructor(dev);
 +
- 	return 0;
++		/* Free network device */
++		kobject_put(&dev->dev.kobj);
+ 	}
+ 
+ out:
+@@ -3305,6 +3304,9 @@ void unregister_netdevice(struct net_dev
+ 	/* Notifier chain MUST detach us from master device. */
+ 	BUG_TRAP(!dev->master);
+ 
++	/* Remove entries from sysfs */
++	netdev_unregister_sysfs(dev);
++
+ 	/* Finish processing unregister after unlock */
+ 	net_set_todo(dev);
+ 
+--- linux-2.6.21.4.orig/net/core/net-sysfs.c
++++ linux-2.6.21.4/net/core/net-sysfs.c
+@@ -451,9 +451,15 @@ static struct class net_class = {
+ #endif
+ };
+ 
++/* Delete sysfs entries but hold kobject reference until after all
++ * netdev references are gone.
++ */
+ void netdev_unregister_sysfs(struct net_device * net)
+ {
+-	device_del(&(net->dev));
++	struct device *dev = &(net->dev);
++
++	kobject_get(&dev->kobj);
++	device_del(dev);
  }
  
+ /* Create sysfs entries for network device. */
 
 -- 
