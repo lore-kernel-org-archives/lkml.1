@@ -1,200 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937184AbXFHHDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937368AbXFHHFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937184AbXFHHDv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762331AbXFHHDm
+	id S937368AbXFHHFb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762819AbXFHHFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:03:42 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:36177 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762074AbXFHHDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:03:40 -0400
-Date: Fri, 8 Jun 2007 00:03:12 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.21.4
-Message-ID: <20070608070312.GO3723@sequoia.sous-sol.org>
-References: <20070608070248.GN3723@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070608070248.GN3723@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 8 Jun 2007 03:05:22 -0400
+Received: from ozlabs.org ([203.10.76.45]:50064 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762074AbXFHHFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:05:21 -0400
+Subject: Re: [PATCH 1/7] lguest documentation: infrastructure and Chapter I
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+In-Reply-To: <20070607232349.b4673058.akpm@linux-foundation.org>
+References: <1181272257.24958.12.camel@localhost.localdomain>
+	 <20070607232349.b4673058.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 08 Jun 2007 17:05:19 +1000
+Message-Id: <1181286319.29842.39.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 7980f39..e5c5531 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 21
--EXTRAVERSION = .3
-+EXTRAVERSION = .4
- NAME = Nocturnal Monster Puppy
- 
- # *DOCUMENTATION*
-diff --git a/drivers/char/random.c b/drivers/char/random.c
-index b9dc7aa..fa5b95b 100644
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -760,7 +760,7 @@ static size_t account(struct entropy_store *r, size_t nbytes, int min,
- 
- static void extract_buf(struct entropy_store *r, __u8 *out)
- {
--	int i, x;
-+	int i;
- 	__u32 data[16], buf[5 + SHA_WORKSPACE_WORDS];
- 
- 	sha_init(buf);
-@@ -772,9 +772,11 @@ static void extract_buf(struct entropy_store *r, __u8 *out)
- 	 * attempts to find previous ouputs), unless the hash
- 	 * function can be inverted.
- 	 */
--	for (i = 0, x = 0; i < r->poolinfo->poolwords; i += 16, x+=2) {
--		sha_transform(buf, (__u8 *)r->pool+i, buf + 5);
--		add_entropy_words(r, &buf[x % 5], 1);
-+	for (i = 0; i < r->poolinfo->poolwords; i += 16) {
-+		/* hash blocks of 16 words = 512 bits */
-+		sha_transform(buf, (__u8 *)(r->pool + i), buf + 5);
-+		/* feed back portion of the resulting hash */
-+		add_entropy_words(r, &buf[i % 5], 1);
- 	}
- 
- 	/*
-@@ -782,7 +784,7 @@ static void extract_buf(struct entropy_store *r, __u8 *out)
- 	 * portion of the pool while mixing, and hash one
- 	 * final time.
- 	 */
--	__add_entropy_words(r, &buf[x % 5], 1, data);
-+	__add_entropy_words(r, &buf[i % 5], 1, data);
- 	sha_transform(buf, (__u8 *)data, buf + 5);
- 
- 	/*
-@@ -1022,37 +1024,44 @@ random_poll(struct file *file, poll_table * wait)
- 	return mask;
- }
- 
--static ssize_t
--random_write(struct file * file, const char __user * buffer,
--	     size_t count, loff_t *ppos)
-+static int
-+write_pool(struct entropy_store *r, const char __user *buffer, size_t count)
- {
--	int ret = 0;
- 	size_t bytes;
- 	__u32 buf[16];
- 	const char __user *p = buffer;
--	size_t c = count;
- 
--	while (c > 0) {
--		bytes = min(c, sizeof(buf));
-+	while (count > 0) {
-+		bytes = min(count, sizeof(buf));
-+		if (copy_from_user(&buf, p, bytes))
-+			return -EFAULT;
- 
--		bytes -= copy_from_user(&buf, p, bytes);
--		if (!bytes) {
--			ret = -EFAULT;
--			break;
--		}
--		c -= bytes;
-+		count -= bytes;
- 		p += bytes;
- 
--		add_entropy_words(&input_pool, buf, (bytes + 3) / 4);
--	}
--	if (p == buffer) {
--		return (ssize_t)ret;
--	} else {
--		struct inode *inode = file->f_path.dentry->d_inode;
--	        inode->i_mtime = current_fs_time(inode->i_sb);
--		mark_inode_dirty(inode);
--		return (ssize_t)(p - buffer);
-+		add_entropy_words(r, buf, (bytes + 3) / 4);
- 	}
-+
-+	return 0;
-+}
-+
-+static ssize_t
-+random_write(struct file * file, const char __user * buffer,
-+	     size_t count, loff_t *ppos)
-+{
-+	size_t ret;
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+
-+	ret = write_pool(&blocking_pool, buffer, count);
-+	if (ret)
-+		return ret;
-+	ret = write_pool(&nonblocking_pool, buffer, count);
-+	if (ret)
-+		return ret;
-+
-+	inode->i_mtime = current_fs_time(inode->i_sb);
-+	mark_inode_dirty(inode);
-+	return (ssize_t)count;
- }
- 
- static int
-@@ -1091,8 +1100,8 @@ random_ioctl(struct inode * inode, struct file * file,
- 			return -EINVAL;
- 		if (get_user(size, p++))
- 			return -EFAULT;
--		retval = random_write(file, (const char __user *) p,
--				      size, &file->f_pos);
-+		retval = write_pool(&input_pool, (const char __user *)p,
-+				    size);
- 		if (retval < 0)
- 			return retval;
- 		credit_entropy_store(&input_pool, ent_count);
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index f382b0f..9e45dd1 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1751,12 +1751,7 @@ static ssize_t cpuset_tasks_read(struct file *file, char __user *buf,
- {
- 	struct ctr_struct *ctr = file->private_data;
- 
--	if (*ppos + nbytes > ctr->bufsz)
--		nbytes = ctr->bufsz - *ppos;
--	if (copy_to_user(buf, ctr->buf + *ppos, nbytes))
--		return -EFAULT;
--	*ppos += nbytes;
--	return nbytes;
-+	return simple_read_from_buffer(buf, nbytes, ppos, ctr->buf, ctr->bufsz);
- }
- 
- static int cpuset_tasks_release(struct inode *unused_inode, struct file *file)
-diff --git a/net/ipv4/netfilter/ip_conntrack_proto_sctp.c b/net/ipv4/netfilter/ip_conntrack_proto_sctp.c
-index e694299..b86479a 100644
---- a/net/ipv4/netfilter/ip_conntrack_proto_sctp.c
-+++ b/net/ipv4/netfilter/ip_conntrack_proto_sctp.c
-@@ -460,7 +460,8 @@ static int sctp_new(struct ip_conntrack *conntrack,
- 						SCTP_CONNTRACK_NONE, sch->type);
- 
- 		/* Invalid: delete conntrack */
--		if (newconntrack == SCTP_CONNTRACK_MAX) {
-+		if (newconntrack == SCTP_CONNTRACK_NONE ||
-+		    newconntrack == SCTP_CONNTRACK_MAX) {
- 			DEBUGP("ip_conntrack_sctp: invalid new deleting.\n");
- 			return 0;
- 		}
-diff --git a/net/netfilter/nf_conntrack_proto_sctp.c b/net/netfilter/nf_conntrack_proto_sctp.c
-index 3c80558..b53bc64 100644
---- a/net/netfilter/nf_conntrack_proto_sctp.c
-+++ b/net/netfilter/nf_conntrack_proto_sctp.c
-@@ -469,7 +469,8 @@ static int sctp_new(struct nf_conn *conntrack, const struct sk_buff *skb,
- 					 SCTP_CONNTRACK_NONE, sch->type);
- 
- 		/* Invalid: delete conntrack */
--		if (newconntrack == SCTP_CONNTRACK_MAX) {
-+		if (newconntrack == SCTP_CONNTRACK_NONE ||
-+		    newconntrack == SCTP_CONNTRACK_MAX) {
- 			DEBUGP("nf_conntrack_sctp: invalid new deleting.\n");
- 			return 0;
- 		}
+On Thu, 2007-06-07 at 23:23 -0700, Andrew Morton wrote:
+> On Fri, 08 Jun 2007 13:10:57 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > The netfilter code had very good documentation: the Netfilter Hacking
+> > HOWTO.  Noone ever read it.
+> > 
+> > So this time I'm trying something different, using a bit of
+> > Knuthiness.
+> > 
+> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> > ---
+> >  Documentation/lguest/extract          |   58 +++++++++++++++++++++++++++++++++
+> >  Documentation/lguest/lguest.c         |    9 +++--
+> >  drivers/lguest/Makefile               |   12 ++++++
+> >  drivers/lguest/README                 |   47 ++++++++++++++++++++++++++
+> >  drivers/lguest/core.c                 |    7 ++-
+> >  drivers/lguest/hypercalls.c           |    9 +++--
+> >  drivers/lguest/interrupts_and_traps.c |   13 +++++++
+> >  drivers/lguest/io.c                   |    8 +++-
+> >  drivers/lguest/lguest.c               |   31 ++++++++++++++++-
+> >  drivers/lguest/lguest_bus.c           |    3 +
+> >  drivers/lguest/lguest_user.c          |    7 +++
+> >  drivers/lguest/page_tables.c          |   10 ++++-
+> >  drivers/lguest/segments.c             |   11 ++++++
+> >  drivers/lguest/switcher.S             |   13 +++----
+> >  14 files changed, 219 insertions(+), 19 deletions(-)
+> 
+> This patch series craps all over the existing one:
+> 
+> lguest-export-symbols-for-lguest-as-a-module.patch
+> lguest-the-guest-code.patch
+> lguest-the-host-code.patch
+> lguest-the-asm-offsets.patch
+> lguest-the-makefile-and-kconfig.patch
+> lguest-the-console-driver.patch
+> lguest-the-net-driver.patch
+> lguest-the-block-driver.patch
+> lguest-the-documentation-example-launcher.patch
+> 
+> obviously we could append this new series to the existing one, but that
+> limits our ability to make further changes over the next few weeks.  Or we
+> just give up trying to present the series nicely and it hits mainline with
+> a random stream of uninteresting and irrelevant afterthoughts at the end,
+> like we're some lameo git users or something.
+
+Well, I've been painfully maintaining that documentation patch for
+months (it touches *everything*).  I *had* intended to send it straight
+to Linus one he took lguest, but that may never happen.
+
+Don't take it.  I'll push it to the end of my own series, send it direct
+to Linus if and when.
+
+> (I could split all this up, but I'm getting kinda bored of preventing you
+> from mucking up your own patch series)
+
+Little sympathy.  Perhaps there's a moral about timely merging here.
+
+Rusty.
+
