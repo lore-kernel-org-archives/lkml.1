@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966918AbXFHBZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937008AbXFHBeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966918AbXFHBZo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 21:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934880AbXFHBZh
+	id S937008AbXFHBeK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 21:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934164AbXFHBd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 21:25:37 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:55513 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933212AbXFHBZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 21:25:36 -0400
-Date: Thu, 7 Jun 2007 21:25:34 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Alistair John Strachan <s0348365@sms.ed.ac.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
-Message-ID: <20070608012534.GB23290@havoc.gtf.org>
-References: <20070607162251.5f291325@the-village.bc.nu> <m3wsyfzcpt.fsf@maximus.localdomain> <200706072232.37051.s0348365@sms.ed.ac.uk> <m3sl93zagi.fsf@maximus.localdomain> <4668AC10.9060305@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 7 Jun 2007 21:33:56 -0400
+Received: from outbound-mail-33.bluehost.com ([69.89.18.153]:57262 "HELO
+	outbound-mail-33.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933212AbXFHBd4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 21:33:56 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Date: Thu, 7 Jun 2007 18:33:45 -0700
+User-Agent: KMail/1.9.6
+Cc: Jesse Barnes <jesse.barnes@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <200706061229.24486.jesse.barnes@intel.com> <20070607172050.ead923b4.akpm@linux-foundation.org>
+In-Reply-To: <20070607172050.ead923b4.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4668AC10.9060305@zytor.com>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200706071833.45929.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 06:08:32PM -0700, H. Peter Anvin wrote:
-> My big concern with the 80-column rule is that it discourages commenting.
+On Thursday, June 7, 2007 5:20:50 Andrew Morton wrote:
+> > -unsigned int *usage_table;
+> > +unsigned int usage_table[NUM_VAR_RANGES];
+> >  static DEFINE_MUTEX(mtrr_mutex);
+>
+> didn't it feel all dirty when you had to do that?
 
-My concern with that logic is that encourages random, super-wide code
-lines that varies with each coder.  You are left to the mercy of he with
-the widest text window.
+Hey, this was already there... I didn't want to rewrite the whole thing at 
+once. :)  Patch looks fine though.
 
-The 80-column rule is good as a general guideline, though there are
-obvious exceptions.  Comments IMO are not one of them.  That rapidly
-creates unreadable code.
-
-	Jeff
-
-
-
+Thanks,
+Jesse
