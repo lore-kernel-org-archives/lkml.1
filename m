@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938553AbXFHHgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938627AbXFHHhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938553AbXFHHgs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967617AbXFHHXi
+	id S938627AbXFHHhX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967683AbXFHHXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:23:38 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:58378 "EHLO
+	Fri, 8 Jun 2007 03:23:43 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:58402 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967531AbXFHHXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:23:34 -0400
-Message-Id: <20070608072148.719845000@sous-sol.org>
+	id S967646AbXFHHXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:23:41 -0400
+Message-Id: <20070608072156.190709000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:32 -0700
+Date: Fri, 08 Jun 2007 00:21:40 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,56 +22,53 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>,
-       linux-raid@vger.kernel.org, Jeff Zheng <Jeff.Zheng@endace.com>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, <bzolnier@gmail.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 05/54] md: Avoid overflow in raid0 calculation with large components.
-Content-Disposition: inline; filename=md-avoid-overflow-in-raid0-calculation-with-large-components.patch
+Subject: [patch 13/54] hpt366: dont check enablebits for HPT36x
+Content-Disposition: inline; filename=hpt366-don-t-check-enablebits-for-hpt36x.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: NeilBrown <neilb@suse.de>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-If a raid0 has a component device larger than 4TB, and is accessed on
-a 32bit machines, then as 'chunk' is unsigned lock,
-   chunk << chunksize_bits
-can overflow (this can be as high as the size of the device in KB).
-chunk itself will not overflow (without triggering a BUG).
+HPT36x chip don't seem to have the channel enable bits, so prevent the IDE core
+from checking them...
 
-So change 'chunk' to be 'sector_t, and get rid of the 'BUG' as it becomes
-impossible to hit.
-
-Cc: "Jeff Zheng" <Jeff.Zheng@endace.com>
-Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: <bzolnier@gmail.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+This has been an issue since 2.6.21-rc1...
 
- drivers/md/raid0.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/ide/pci/hpt366.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff .prev/drivers/md/raid0.c ./drivers/md/raid0.c
---- linux-2.6.21.4.orig/drivers/md/raid0.c
-+++ linux-2.6.21.4/drivers/md/raid0.c
-@@ -415,7 +415,7 @@ static int raid0_make_request (request_q
- 	raid0_conf_t *conf = mddev_to_conf(mddev);
- 	struct strip_zone *zone;
- 	mdk_rdev_t *tmp_dev;
--	unsigned long chunk;
-+	sector_t chunk;
- 	sector_t block, rsect;
- 	const int rw = bio_data_dir(bio);
+--- linux-2.6.21.4.orig/drivers/ide/pci/hpt366.c
++++ linux-2.6.21.4/drivers/ide/pci/hpt366.c
+@@ -1,5 +1,5 @@
+ /*
+- * linux/drivers/ide/pci/hpt366.c		Version 1.02	Apr 18, 2007
++ * linux/drivers/ide/pci/hpt366.c		Version 1.03	May 4, 2007
+  *
+  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
+  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
+@@ -1527,7 +1527,12 @@ static int __devinit init_setup_hpt366(s
+ 	if (rev > 2)
+ 		goto init_single;
  
-@@ -470,7 +470,6 @@ static int raid0_make_request (request_q
++	/*
++	 * HPT36x chips are single channel and
++	 * do not seem to have the channel enable bit...
++	 */
+ 	d->channels = 1;
++	d->enablebits[0].reg = 0;
  
- 		sector_div(x, zone->nb_dev);
- 		chunk = x;
--		BUG_ON(x != (sector_t)chunk);
- 
- 		x = block >> chunksize_bits;
- 		tmp_dev = zone->dev[sector_div(x, zone->nb_dev)];
+ 	if ((dev2 = pci_get_slot(dev->bus, dev->devfn + 1)) != NULL) {
+ 	  	u8  pin1 = 0, pin2 = 0;
 
 -- 
