@@ -1,147 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970870AbXFHQon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970856AbXFHQrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970870AbXFHQon (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 12:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969837AbXFHQmO
+	id S970856AbXFHQrY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 12:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966808AbXFHQrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 12:42:14 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:25252 "EHLO
-	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S969746AbXFHQmN (ORCPT
+	Fri, 8 Jun 2007 12:47:15 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:37675 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762861AbXFHQrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 12:42:13 -0400
-Date: Fri, 08 Jun 2007 10:45:12 -0600
-From: dougthompson@xmission.com
-To: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH 6/6] driver edac remove null from statics
-Message-ID: <46698798.UEFTO+K3rjedBhxH%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.1 6/15/06
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 8 Jun 2007 12:47:14 -0400
+In-Reply-To: <20070608163302.GA9101@c2.user-mode-linux.org>
+References: <20070531181923.GA9904@c2.user-mode-linux.org> <20070607232733.GM17082@mami.zabbo.net> <20070608161048.GA8147@c2.user-mode-linux.org> <CBFDCBBC-B5D8-4A91-9322-D63E107F38BF@oracle.com> <20070608163302.GA9101@c2.user-mode-linux.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <46AA734B-D157-4F9C-B238-E43031666C88@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Chris Mason <chris.mason@oracle.com>
 Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH] Syslets - Fix cachemiss_thread return value
+Date: Fri, 8 Jun 2007 09:46:55 -0700
+To: Jeff Dike <jdike@addtoit.com>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Douglas Thompson <dougthompson@xmission.com>
+> The latter - it fails the test that I posted.
 
-Patches to conform to coding style, namely static don't need to be
-initialized to NULL nor '0', as that is the default
+OK, good.  That's easy enough to fix :)  I'll send out a tested version.
 
-Signed-off-by:	Douglas Thompson <dougthompson@xmission.com>
----
- edac_mc_sysfs.c  |    2 +-
- edac_module.c    |    2 +-
- edac_pci.c       |    2 +-
- edac_pci_sysfs.c |    4 ++--
- i3000_edac.c     |    2 +-
- i82860_edac.c    |    2 +-
- i82875p_edac.c   |    2 +-
- r82600_edac.c    |    2 +-
- 8 files changed, 9 insertions(+), 9 deletions(-)
-
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_mc_sysfs.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_mc_sysfs.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_mc_sysfs.c
-@@ -17,7 +17,7 @@
- /* MC EDAC Controls, setable by module parameter, and sysfs */
- static int edac_mc_log_ue = 1;
- static int edac_mc_log_ce = 1;
--static int edac_mc_panic_on_ue = 0;
-+static int edac_mc_panic_on_ue;
- static int edac_mc_poll_msec = 1000;
- 
- /* Getter functions for above */
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_module.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_module.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_module.c
-@@ -32,7 +32,7 @@ struct workqueue_struct *edac_workqueue;
- static struct sysdev_class edac_class = {
- 	set_kset_name("edac"),
- };
--static int edac_class_valid = 0;
-+static int edac_class_valid;
- 
- /*
-  * edac_op_state_toString()
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_pci.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_pci.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_pci.c
-@@ -385,7 +385,7 @@ void edac_pci_generic_check(struct edac_
- 	edac_pci_do_parity_check();
- }
- 
--static int edac_pci_idx = 0;
-+static int edac_pci_idx;
- #define EDAC_PCI_GENCTL_NAME	"EDAC PCI controller"
- 
- struct edac_pci_gen_data {
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_pci_sysfs.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_pci_sysfs.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_pci_sysfs.c
-@@ -17,8 +17,8 @@
- 
- #define EDAC_PCI_SYMLINK	"device"
- 
--static int check_pci_errors = 0;	/* default YES check PCI parity */
--static int edac_pci_panic_on_pe = 0;	/* default no panic on PCI Parity */
-+static int check_pci_errors;	/* default YES check PCI parity */
-+static int edac_pci_panic_on_pe;	/* default no panic on PCI Parity */
- static int edac_pci_log_pe = 1;	/* log PCI parity errors */
- static int edac_pci_log_npe = 1;	/* log PCI non-parity error errors */
- static atomic_t pci_parity_count = ATOMIC_INIT(0);
-Index: linux-2.6.22-rc4-mm2/drivers/edac/i3000_edac.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/i3000_edac.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/i3000_edac.c
-@@ -151,7 +151,7 @@ static const struct i3000_dev_info i3000
- 		.ctl_name = "i3000"},
- };
- 
--static struct pci_dev *mci_pdev = NULL;
-+static struct pci_dev *mci_pdev;
- static int i3000_registered = 1;
- static struct edac_pci_ctl_info *i3000_pci;
- 
-Index: linux-2.6.22-rc4-mm2/drivers/edac/i82860_edac.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/i82860_edac.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/i82860_edac.c
-@@ -57,7 +57,7 @@ static const struct i82860_dev_info i828
- 		.ctl_name = "i82860"},
- };
- 
--static struct pci_dev *mci_pdev = NULL;	/* init dev: in case that AGP code
-+static struct pci_dev *mci_pdev;	/* init dev: in case that AGP code
- 					 * has already registered driver
- 					 */
- static struct edac_pci_ctl_info *i82860_pci;
-Index: linux-2.6.22-rc4-mm2/drivers/edac/i82875p_edac.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/i82875p_edac.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/i82875p_edac.c
-@@ -177,7 +177,7 @@ static const struct i82875p_dev_info i82
- 		.ctl_name = "i82875p"},
- };
- 
--static struct pci_dev *mci_pdev = NULL;	/* init dev: in case that AGP code has
-+static struct pci_dev *mci_pdev;	/* init dev: in case that AGP code has
- 					 * already registered driver
- 					 */
- 
-Index: linux-2.6.22-rc4-mm2/drivers/edac/r82600_edac.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/r82600_edac.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/r82600_edac.c
-@@ -131,7 +131,7 @@ struct r82600_error_info {
- 	u32 eapr;
- };
- 
--static unsigned int disable_hardware_scrub = 0;
-+static unsigned int disable_hardware_scrub;
- 
- static struct edac_pci_ctl_info *r82600_pci;
- 
+- z
