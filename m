@@ -1,101 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938063AbXFHIjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938226AbXFHIs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938063AbXFHIjh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 04:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932842AbXFHIj3
+	id S938226AbXFHIs2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 04:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937049AbXFHIsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 04:39:29 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1455 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763664AbXFHIj2 (ORCPT
+	Fri, 8 Jun 2007 04:48:20 -0400
+Received: from mta-ps-be-03.sunrise.ch ([194.158.229.25]:38336 "EHLO
+	mail-ps.sunrise.ch" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935571AbXFHIsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 04:39:28 -0400
-Message-ID: <466915A6.2030607@shadowen.org>
-Date: Fri, 08 Jun 2007 09:39:02 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Fri, 8 Jun 2007 04:48:19 -0400
+From: Robin Farine <robin.farine@terminus.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH 2/2] LEDS: generic driver
+Date: Fri, 8 Jun 2007 10:48:04 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <ab8cd0edce36b4ea93429c7ab695f5a967b11365.1181149111.git.robin.farine@terminus.org> <200706061902.06738.robin.farine@terminus.org> <1181258872.30600.12.camel@localhost.localdomain>
+In-Reply-To: <1181258872.30600.12.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 9/36] drivers edac new intel 5000X mc driver
-References: <404349.85191.qm@web50103.mail.re2.yahoo.com>	<20070607143840.d259a4c1.akpm@linux-foundation.org> <20070607151012.e4145965.rdunlap@xenotime.net>
-In-Reply-To: <20070607151012.e4145965.rdunlap@xenotime.net>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706081048.05001.robin.farine@terminus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Thu, 7 Jun 2007 14:38:40 -0700 Andrew Morton wrote:
-> 
->> On Sun, 3 Jun 2007 07:40:26 -0700 (PDT)
->> Doug Thompson <norsk5@yahoo.com> wrote:
->>
->>> +static void i5000_process_nonfatal_error_info(struct mem_ctl_info
->>> *mci,
->>> +					      struct i5000_error_info * info,
->> ditto (please check whole patch)
->>
->> (I thought checkpatch.pl would catch this, but it doesn't?)
-> 
-> Here's a small patch against v.3 that will catch this.
-> 
-> ---
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Catch "struct * blah" by allowing spaces preceding the '*'.
-> Bah.  Maybe the error string needs a small change also.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  scripts/checkpatch.pl |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- scripts.orig/checkpatch-v3.pl
-> +++ scripts/checkpatch-v3.pl
-> @@ -393,7 +393,7 @@ sub process {
->  		}
->  
->  # * goes on variable not on type
-> -		if ($line=~/[A-Za-z\d_]+\* [A-Za-z\d_]+/) {
-> +		if ($line=~/[\sA-Za-z\d_]+\* [A-Za-z\d_]+/) {
->  			print "\"foo* bar\" should be \"foo *bar\"\n";
->  			print "$herecurr";
->  			$clean = 0;
-> -
+On Fri June 8 2007 01:27, Richard Purdie wrote:
 
-0.04 already has checks for reporting the foo ** bar style cast format
-where there are two or more '*'s:
+> I'm not sure about this to be honest. I can see a case for
+> perhaps having a couple of standard suspend/resume functions for
+> platform device based LED drivers as those functions are often
+> identical. I'm not sure whether there is going to be much need
+> for more than that.
 
-"foo ** bar" should be "foo **bar"
-#12: FILE: Z4.c:9:
-+       struct i5000_error_info ** foo;
+I am not persuaded either. To give a better idea of the context, my 
+platform has to sets of LEDs, a first attached to a write-only 
+register on the extension bus and the second on an optional 
+daughter board and I2C controlled. The value of the register on the 
+extension bus is shadowed and needs to be manipulated through an 
+API that takes care of the locking.
 
-The declaration forms (just for a single *) are unfortunately ambiguous,
-it is hard to tell them from the foo * foo multiply form, for example if
-we relax this test to include one '*':
+Thus, instead of adding new board specific drivers to drivers/leds, 
+my idea was that given a generic LED driver:
 
-"foo * bar" should be "foo *bar"
-#19: FILE: Z4.c:16:
-+       int a = this * info;
+- the module that implements accesses to the write-only register 
+defines one platform device for each LED attached to the register 
+and implements the LED toggling internally;
 
-[/me pokes at it for a bit.]
+- the I2C driver for the daughter board defines one platform device 
+for each LED on the daughter board and implement the LED toggling 
+internally as well.
 
-Ok so the key here is that we should only be applying these foo* bar
-checks to types.  What we can do is cook up a match for the standard
-type forms, char, short ..., struct foo etc and use that to disambiguate
-the single '*' form:
+> Having looked through a few of the LED drivers, even the
+> suspend/resume functions are often different...
 
-"foo * bar" should be "foo *bar"
-#10: FILE: Z4.c:7:
-+       struct i5000_error_info * foo;
+I looked at this too and it seemed to me that in all but one case 
+the suspend function ends up by calling led_classdev_suspend for 
+each LED the driver controls, and the resume function calls 
+led_classdev_resume for each LED as well. In the generic LED 
+driver, it is equivalent since there is a different platform device 
+for each LED so only one call to led_classdev_xyz is needed.
 
-We will miss those which are not obviously types, basically typedefs but
-as we already are hot against those we should be pretty close to 100%
-coverage.
+> >From a style point of view, why not
+> > s/pdev_to_led/platform_get_drvdata/?
 
--apw
+Yes, of course :-).
+
+> What are your thoughts on multiple LEDs on a single device?
+
+Physically that is what I have on my platform, but the system sees 
+each LED as a separate device. The platform device data and 
+function for a set of LEDS attached to the same physical device 
+take care of the multiplexing.
+
+> Given the LED class is going to get a conversion to struct device
+> soon, I'd prefer to put this on hold until after I've made that
+> conversion at which point I'll reconsider this.
+
+Yes, sure. I am well aware that it applies to very specific 
+situations and that there may be a cleaner solution in which case I 
+would be happy to drop this idea. I am not pushing for this to be 
+included in mainline.
+
+Thanks for looking into this and for the feed-back,
+
+Robin
