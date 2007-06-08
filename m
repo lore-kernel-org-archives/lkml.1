@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938848AbXFHKwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938878AbXFHK6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938848AbXFHKwp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 06:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937874AbXFHKwh
+	id S938878AbXFHK6a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 06:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937590AbXFHK6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 06:52:37 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:58274 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937962AbXFHKwg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 06:52:36 -0400
-Message-ID: <46693488.3070601@linux.vnet.ibm.com>
-Date: Fri, 08 Jun 2007 16:20:48 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Fri, 8 Jun 2007 06:58:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54231 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937387AbXFHK6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 06:58:20 -0400
+Date: Fri, 8 Jun 2007 12:58:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Cc: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, ak@suse.de
+Subject: Re: [PATCH] Fix interchanged parameters to
+	release_{evntsel,perfctr}_nmi
+Message-ID: <20070608105808.GA10190@elte.hu>
+References: <465C2225.2000100@googlemail.com> <20070603150246.5151dda6@laptop.hypervisor.org> <20070608060244.GA2369@atjola.homenet> <20070607234153.09c32b49.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>, vatsa@in.ibm.com,
-       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
-       xemul@sw.ru, dev@sw.ru, rohitseth@google.com, pj@sgi.com,
-       devel@openvz.org, ebiederm@xmission.com, mbligh@google.com,
-       containers@lists.osdl.org, serue@us.ibm.com, menage@google.com,
-       svaidy@linux.vnet.ibm.com, cpw@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [ckrm-tech] Per container statistics (containerstats)
-References: <20070606115813.GA32197@linux.vnet.ibm.com> <20070607155445.edd5fded.akpm@linux-foundation.org> <4668BD18.7090603@linux.vnet.ibm.com>
-In-Reply-To: <4668BD18.7090603@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607234153.09c32b49.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
->>>  	return *(pid_t *)a - *(pid_t *)b;
->>> diff -puN kernel/sched.c~containers-taskstats kernel/sched.c
->>> --- linux-2.6.22-rc2-mm1/kernel/sched.c~containers-taskstats	2007-06-05 17:21:57.000000000 +0530
->>> +++ linux-2.6.22-rc2-mm1-balbir/kernel/sched.c	2007-06-05 17:21:57.000000000 +0530
->>> @@ -4280,11 +4280,13 @@ void __sched io_schedule(void)
->>>  {
->>>  	struct rq *rq = &__raw_get_cpu_var(runqueues);
->>>  
->>> +	delayacct_set_flag(DELAYACCT_PF_BLKIO);
->>>  	delayacct_blkio_start();
->> Would it be suitable and appropriate to embed the delayacct_set_flag() call
->> inside delayacct_blkio_start()?
->>
-> 
-> Yes, I should have done that, will do.
-> 
-> 
 
-My last reply was wrong, the flag needs to be set outside so that we know the
-context that initiated block I/O. We use this flag to track the time used
-by the swap block I/O. 
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> Half of this (the first hunk) has been in Andi's tree for a day or 
+> two.
+> 
+> I shall drop Andi's patch, queue this one up and shall send this off 
+> to Linus if nothing else happens in the next couple of days.
+
+this patch does not fix the NMI watchdog bootup lockup i can reproduce, 
+it still occurs in -rc4 too. Andi, could you please react to my report? 
+See the "2.6.22-rc3 nmi watchdog hang" thread on lkml.
+
+	Ingo
