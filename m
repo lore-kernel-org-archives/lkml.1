@@ -1,43 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968888AbXFHN7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969231AbXFHN77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968888AbXFHN7n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 09:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967867AbXFHN7d
+	id S969231AbXFHN77 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 09:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968688AbXFHN7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 09:59:33 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:57155 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966995AbXFHN7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 09:59:33 -0400
-Date: Fri, 8 Jun 2007 09:59:31 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Korb <ml@akana.de>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
-Message-ID: <20070608135931.GB24346@havoc.gtf.org>
-References: <20601315171560711667@wsc.cz> <200706081418.56217.bzolnier@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706081418.56217.bzolnier@gmail.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 8 Jun 2007 09:59:40 -0400
+Received: from bay0-omc1-s11.bay0.hotmail.com ([65.54.246.83]:12086 "EHLO
+	bay0-omc1-s11.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S968639AbXFHN7j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 09:59:39 -0400
+Message-ID: <BAY103-DAV141D991980E54836534A00B2250@phx.gbl>
+X-Originating-IP: [85.36.106.214]
+X-Originating-Email: [pupilla@hotmail.com]
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: "David Chinner" <dgc@sgi.com>
+Cc: "David Chinner" <dgc@sgi.com>, <linux-kernel@vger.kernel.org>,
+       <xfs@oss.sgi.com>, "Marco Berizzi" <pupilla@hotmail.com>
+References: <BAY103-DAV1066400DF0615AD677EA1B2730@phx.gbl> <20070316012520.GN5743@melbourne.sgi.com> <BAY103-DAV13EC09E9BCB3E8C9D5EEA2B2710@phx.gbl> <20070316195951.GB5743@melbourne.sgi.com> <BAY103-DAV1484A3797D5368C28969CBB2700@phx.gbl> <BAY103-DAV9C465F21C87A900314523B2760@phx.gbl> <20070320064632.GO32602149@melbourne.sgi.com> <BAY103-DAV7076D9B4230E07680B724B2260@phx.gbl> <20070607130505.GE85884050@sgi.com>
+Subject: Re: XFS internal error xfs_da_do_buf(2) at line 2087 of file fs/xfs/xfs_da_btree.c.  Caller 0xc01b00bd
+Date: Fri, 8 Jun 2007 15:59:39 +0200
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1123
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
+X-OriginalArrivalTime: 08 Jun 2007 13:59:38.0538 (UTC) FILETIME=[40E758A0:01C7A9D5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 02:18:55PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Monday 04 June 2007, Jiri Slaby wrote:
-> > ide-generic, add another device exception
-> 
-> ide-generic is a generic ISA IDE driver, this one is drivers/ide/pci/generic
-> (a generic IDE PCI driver) - fixed patch description to avoid confusion.
-> 
-> [ Yes, both drivers need a rename - patches are welcomed. ]
+David Chinner wrote:
 
-Probably best to do a rename from your side, in git.
+> > Jun  6 09:47:09 Pleiadi kernel:  =======================
+> > Jun  6 09:47:09 Pleiadi kernel: 0x0: 28 f1 45 d4 22 53 35 11 09 80
+37 5a
+> > 47 8a 22 ee
+> > Jun  6 09:47:09 Pleiadi kernel: Filesystem "sda8": XFS internal
+error
+> > xfs_da_do_buf(2) at line 2086 of file fs/xfs/xfs_da_btree.c.  Caller
+> > 0xc01b2301
+> > Jun  6 09:47:09 Pleiadi kernel:  [<c01b21f7>]
+xfs_da_do_buf+0x70c/0x7b1
+> > Jun  6 09:47:09 Pleiadi kernel:  [<c01b2301>]
+xfs_da_read_buf+0x30/0x35
+> > Jun  6 09:47:09 Pleiadi kernel:  [<c01b2301>]
+xfs_da_read_buf+0x30/0x35
+>
+> These above stack trace is the sign of a corrupted directory.
+>
+> Chopping out the rest of the top posting (please don't do that)
 
-	Jeff
+apologies
+
+> we get down to 3 months ago:
+>
+> > > On Mon, Mar 19, 2007 at 11:32:27AM +0100, Marco Berizzi wrote:
+> > > > Marco Berizzi wrote:
+> > > > Here is the relevant results:
+> > > >
+> > > > Phase 2 - found root inode chunk
+> > > > Phase 3 - ...
+> > > >             agno = 0
+> > > >             ...
+> > > >             agno = 12
+> > > > LEAFN node level is 1 inode 1610612918 bno = 8388608
+> > >
+> > > Hmmm - single bit error in the bno - that reminds of this:
+> > >
+> > > http://oss.sgi.com/projects/xfs/faq.html#dir2
+> > >
+> > > So I'd definitely make sure that is repaired....
+>
+> Where we saw signs of on disk directory corruption. Have you run
+> xfs_repair successfully on the filesystem since you reported
+> this?
+
+yes.
+
+> If you did clean up the error, does xfs_repair report the same sort
+> of error again?
+
+I have run xfs_repair this morning.
+Here is the report:
+
+Phase 1 - find and verify superblock...
+Phase 2 - using internal log
+        - zero log...
+        - scan filesystem freespace and inode maps...
+        - found root inode chunk
+Phase 3 - for each AG...
+        - scan and clear agi unlinked lists...
+        - process known inodes and perform inode discovery...
+        - agno = 0
+        - agno = 1
+        - agno = 2
+        - agno = 3
+        - agno = 4
+        - agno = 5
+        - agno = 6
+        - agno = 7
+        - agno = 8
+        - agno = 9
+        - agno = 10
+        - agno = 11
+        - agno = 12
+        - agno = 13
+        - agno = 14
+        - agno = 15
+        - process newly discovered inodes...
+Phase 4 - check for duplicate blocks...
+        - setting up duplicate extent list...
+        - clear lost+found (if it exists) ...
+        - check for inodes claiming duplicate blocks...
+        - agno = 0
+        - agno = 1
+        - agno = 2
+        - agno = 3
+        - agno = 4
+        - agno = 5
+        - agno = 6
+        - agno = 7
+        - agno = 8
+        - agno = 9
+        - agno = 10
+        - agno = 11
+        - agno = 12
+        - agno = 13
+        - agno = 14
+        - agno = 15
+Phase 5 - rebuild AG headers and trees...
+        - reset superblock...
+Phase 6 - check inode connectivity...
+        - resetting contents of realtime bitmap and summary inodes
+        - ensuring existence of lost+found directory
+        - traversing filesystem starting at / ...
+        - traversal finished ...
+        - traversing all unattached subtrees ...
+        - traversals finished ...
+        - moving disconnected inodes to lost+found ...
+Phase 7 - verify and correct link counts...
+done
+
+> Have you run a 2.6.16-rcX or 2.6.17.[0-6] kernel since you last
+> reported this problem?
+
+No. I have run only 2.6.19.x and 2.6.21.x
+
+After the xfs_repair I have remounted the file system.
+After few hours linux has crashed with this message:
+BUG: at arch/i386/kernel/smp.c:546 smp_call_function()
+I have also the monitor bitmap.
+
 
 
 
