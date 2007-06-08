@@ -1,153 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031840AbXFHUPC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031966AbXFHUPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031840AbXFHUPC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 16:15:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759837AbXFHUOy
+	id S1031966AbXFHUPy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 16:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbXFHUPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 16:14:54 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56646 "EHLO pasmtpA.tele.dk"
+	Fri, 8 Jun 2007 16:15:48 -0400
+Received: from mga02.intel.com ([134.134.136.20]:11880 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760027AbXFHUOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 16:14:53 -0400
-Date: Fri, 8 Jun 2007 22:15:27 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tom <fivemiletom@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 2.6.21.3] kbuild: fix build for cygwin
-Message-ID: <20070608201527.GC25468@uranus.ravnborg.org>
-References: <4660971E.5020609@gmail.com> <12D4B80525C5B744A216276E209921D9CE8016@MIAMI.xi-lite.lan> <46645DC9.8080003@gmail.com> <20070607204707.GB16634@uranus.ravnborg.org> <4669A0BD.8050104@gmail.com>
+	id S1750828AbXFHUPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 16:15:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,400,1175497200"; 
+   d="scan'208";a="252414262"
+Date: Fri, 8 Jun 2007 13:12:00 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, ak@suse.de, gregkh@suse.de,
+       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
+       davem@davemloft.net
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+Message-ID: <20070608201200.GA641@linux-os.sc.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <20070606190042.510643000@askeshav-devel.jf.intel.com> <20070607162726.2236a296.akpm@linux-foundation.org> <20070608182156.GA24865@linux-os.sc.intel.com> <20070608120107.245eba96.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4669A0BD.8050104@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070608120107.245eba96.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 11:32:29AM -0700, Tom wrote:
-> From: Tom Enderes <enderes@gmail.com>
+On Fri, Jun 08, 2007 at 12:01:07PM -0700, Andrew Morton wrote:
+> On Fri, 8 Jun 2007 11:21:57 -0700
+> "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
 > 
-> The kernel build failed on cygwin hosts, because cygwin has slightly 
-> different typedefs compared to linux:
-> scripts/mod/file2alias.c:518: error: dereferencing pointer to incomplete
-> type
-> Two files, scripts/mod/file2alias.c and scripts/mod/modpost.h, were 
-> modified as follows:
-> Whever __CYGWIN__ is defined, __uint32 is defined as __uint32_t (instead 
-> of uint_32_t) and the missing ElfxxSection definitions are added.
-> These changes have been tested both on cygwin 1.5.24, hostcc=gcc 3.4.4 
-> and on FC5, hostcc=gcc 4.1.1-1. Any tests on cygwin, with and without 
-> this change, were executed with the following set for make: 
-> HOST_LOADLIBES="-lcurses -lintl".
+> > On Thu, Jun 07, 2007 at 04:27:26PM -0700, Andrew Morton wrote:
+> > > On Wed, 06 Jun 2007 11:57:00 -0700
+> > > anil.s.keshavamurthy@intel.com wrote:
+> > > 
+> > > > Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+> > > 
+> > > That was a terse changelog.
+> > > 
+> > > Obvious question: how does this differ from mempools, and would it be
+> > > better to fill in any gaps in mempool functionality instead of
+> > > implementing something similar-looking?
+> > 
+> > Very good question. Mempool pre-allocates the elements
+> > to the required minimum count size during its initilization time.
+> > However when mempool_alloc() is called it tries to obtain the
+> > element from OS and if that fails then it looks for the element in 
+> > its pool. If there are no elements in its pool and if the gpf_t 
+> > flags says it can wait then it waits untill someone puts the element 
+> > back to pool, else if gpf_t flag say it can;t wait then it returns NULL. 
+> > In other words, mempool acts as *emergency* pool, i.e only if the OS fails 
+> > to allocate the required memory, then the pool object is used.
+> > 
+> > 
+> > In the IOMMU case, we need exactly opposite of what mempool provides,
+> > i.e we always want to look for the element in the pool and if the pool
+> > has no element then go to OS as a worst case. This resource pool
+> > library routines do the same. Again, this resource pools 
+> > grows and shrinks automatically to maintain the minimum pool 
+> > elements in the background. I am not sure whether this totally
+> > opposite functionality of mempools and resource pools can be 
+> > merged.
 > 
-> Signed-off-by: Tom Enderes <enderes@gmail.com>
+> Confused.
 > 
+> If resource pools are not designed to provide extra robustness via an
+> emergency pool, then what _are_ they designed for?  (Boy this is a hard way
+> to write a changelog!)
+
+The resource pool indeed provide extra robustness, the initial pool size will
+be equal to min_count + grow_count. If the pool object count goes below
+min_count, then pool grows in the background while serving as emergency
+pool with min_count of objects in it. If we run out of emergency pool objects
+before the pool grow in the background, then we go to OS for allocation.
+
+Similary, if the pool objects grows above the max threshold,
+the objects are freed to OS in the background thread maintaining
+the pool objects close to min_count + grow_count size.
+
+
 > 
-> diff -Naur -r o21.1/scripts/mod/file2alias.c
-> 2.6.21.1/scripts/mod/file2alias.c
-> --- o21.1/scripts/mod/file2alias.c    2007-04-27 14:49:26.000000000 -0700
-> +++ 2.6.21.1/scripts/mod/file2alias.c    2007-05-29 20:35:01.209115300
-> -0700
-> @@ -29,7 +29,11 @@
+> > In fact the very first version of this IOMMU patch used mempools
+> > and the performance was worse because mempool did not help as
+> > IOMMU did a very frequent alloc and free of pool objects and
+> > every call to alloc/free used to go to os. Andi Kleen, 
+> > noticied and told us that mempool usage for IOMMU is wrong and
+> > hence we came up with resource pool concept.
 > 
->  #include <ctype.h>
+> You _seem_ to be saying that the resource pools are there purely for
+> alloc/free performance reasons.  If so, I'd be skeptical: slab is pretty
+> darned fast.
+We need several objects of size say( 4 * sizeof(u64)) and reuse
+them in dma map/unmap api calls for managing io virtual allocation address that
+this driver has dished out. Hence having pool of objects where we put 
+the element in the linked list and and get it from the linked list is pretty
+fast compared to slab.
 > 
-> +#ifdef __CYGWIN__
-> +typedef __uint32_t      __u32;
-> +#else
->  typedef uint32_t    __u32;
-> +#endif
->  typedef uint16_t    __u16;
->  typedef unsigned char    __u8;
-This change is wrong.
-Somehow __uint32_t_defined gets defined and cygwin fails to define
-uint32_t.
-
-So we have hit a bug in cygwin here.
-
-Browsing the code I think that including inttypes.h much sooner will fix it.
-In file2alias.c I moved include of inttypes.h up.
-
- 
-> diff -Naur -r o21.1/scripts/mod/modpost.h 2.6.21.1/scripts/mod/modpost.h
-> --- o21.1/scripts/mod/modpost.h    2007-04-27 14:49:26.000000000 -0700
-> +++ 2.6.21.1/scripts/mod/modpost.h    2007-05-29 20:35:01.599732800
-> -0700
-> @@ -9,6 +9,11 @@
->  #include <unistd.h>
->  #include <elf.h>
+> > > 
+> > > The changelog very much should describe all this, as well as explaining
+> > > what the dynamic behaviour of this new thing is, and what applications are
+> > > envisaged, what problems it solves, etc, etc.
+> > 
+> > I can gladly update the changelog if the resource pool concept is 
+> > approved. I will fix all the below minor comments.
+> > 
+> > I envision that this might be useful for all vendor's (IBM, AMD, Intel, etc) IOMMU driver
+> > and for any kernel component which does lots of dynamic alloc/free an object of same size.
+> > 
 > 
-> +#ifdef __CYGWIN__
-> +typedef uint16_t Elf32_Section;
-> +typedef uint16_t Elf64_Section;
-> +#endif
+> That's what kmem_cache_alloc() is for?!?!
+We had this kmem_cache_alloc() with mempool concept earlier and Andi suggest to 
+come up with something pre-allocated pool.  
+Andi, Can you chime in please.
 
-I did this in an alternative way.
-Replacing use of Elf32_section with Elf32_Half did the trick.
-Same for the 64 bit type.
-
-
-Let me know if this works on Cygwin.
-I have tested with a few architectures on Linux with success.
-
-(Needs to look into the lib part next).
-
-Thanks for keeping attention on this.
-
-	Sam
-
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index f646381..5e017a9 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -10,6 +10,14 @@
-  * of the GNU General Public License, incorporated herein by reference.
-  */
- 
-+#ifdef __sun__
-+#include <inttypes.h>
-+#else
-+#include <stdint.h>
-+#endif
-+
-+#include <ctype.h>
-+
- #include "modpost.h"
- 
- /* We use the ELF typedefs for kernel_ulong_t but bite the bullet and
-@@ -21,13 +29,6 @@ typedef Elf32_Addr	kernel_ulong_t;
- typedef Elf64_Addr	kernel_ulong_t;
- #define BITS_PER_LONG 64
- #endif
--#ifdef __sun__
--#include <inttypes.h>
--#else
--#include <stdint.h>
--#endif
--
--#include <ctype.h>
- 
- typedef uint32_t	__u32;
- typedef uint16_t	__u16;
-diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-index 4156dd3..0ffed17 100644
---- a/scripts/mod/modpost.h
-+++ b/scripts/mod/modpost.h
-@@ -17,7 +17,7 @@
- #define Elf_Shdr    Elf32_Shdr
- #define Elf_Sym     Elf32_Sym
- #define Elf_Addr    Elf32_Addr
--#define Elf_Section Elf32_Section
-+#define Elf_Section Elf32_Half
- #define ELF_ST_BIND ELF32_ST_BIND
- #define ELF_ST_TYPE ELF32_ST_TYPE
- 
-@@ -31,7 +31,7 @@
- #define Elf_Shdr    Elf64_Shdr
- #define Elf_Sym     Elf64_Sym
- #define Elf_Addr    Elf64_Addr
--#define Elf_Section Elf64_Section
-+#define Elf_Section Elf64_Half
- #define ELF_ST_BIND ELF64_ST_BIND
- #define ELF_ST_TYPE ELF64_ST_TYPE
- 
+-Anil
