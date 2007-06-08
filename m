@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971145AbXFHWa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971258AbXFHWay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971145AbXFHWa0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 18:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971135AbXFHW3F
+	id S971258AbXFHWay (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 18:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032326AbXFHWaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 18:29:05 -0400
-Received: from ns1.suse.de ([195.135.220.2]:36669 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S971236AbXFHW3B convert rfc822-to-8bit (ORCPT
+	Fri, 8 Jun 2007 18:30:14 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57585 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1032319AbXFHWaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 18:29:01 -0400
-From: Andi Kleen <ak@suse.de>
-To: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
-Subject: Re: [PATCH 0/2] i386: Fix two more NMI watchdog bugs
-Date: Sat, 9 Jun 2007 00:28:18 +0200
-User-Agent: KMail/1.9.1
-Cc: Ingo Molnar <mingo@elte.hu>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <465C2225.2000100@googlemail.com> <20070608204324.GA25392@elte.hu> <20070608224911.3ff6bd18@laptop.hypervisor.org>
-In-Reply-To: <20070608224911.3ff6bd18@laptop.hypervisor.org>
+	Fri, 8 Jun 2007 18:30:12 -0400
+Date: Fri, 8 Jun 2007 15:30:09 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: anil.s.keshavamurthy@intel.com, linux-kernel@vger.kernel.org, ak@suse.de,
+       gregkh@suse.de, muli@il.ibm.com, asit.k.mallick@intel.com,
+       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
+       shaohua.li@intel.com, davem@davemloft.net
+Subject: Re: [Intel-IOMMU 06/10] Intel IOMMU driver
+In-Reply-To: <20070607165739.dc437e96.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706081527160.3966@schroedinger.engr.sgi.com>
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
+ <20070606190042.823168000@askeshav-devel.jf.intel.com>
+ <20070607165739.dc437e96.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200706090028.19703.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 7 Jun 2007, Andrew Morton wrote:
 
-> None of the patches posted by Björn fix the kernel BUG at
-> arch/i386/kernel/cpu/perfctr-watchdog.c:126! that occurs when doing
-> echo 0 > /proc/sys/kernel/nmi_watchdog
->
-> Call Trace:
->  [<c010c429>] single_msr_unreserve+0xd/0x1a
->  [<c010c668>] disable_lapic_nmi_watchdog+0x27/0x35
->  [<c0110ac6>] proc_nmi_enabled+0xa0/0xbd
->  [<c018550c>] proc_sys_write+0x6f/0x8c
->  [<c018549d>] proc_sys_write+0x0/0x8c
->  [<c0156e5b>] vfs_write+0x8a/0x10c
->  [<c0157317>] sys_write+0x41/0x67
->  [<c0103c30>] syscall_call+0x7/0xb
->
-> Andi, did you have a patch for that?
+> > +void *iommu_rpool_alloc(unsigned int size, gfp_t flag)
+> > +{
+> > +	if (size == PAGE_SIZE_4K)
+> > +		return(void *)get_zeroed_page(flag);
+> > +	else
+> > +		return kzalloc(size, flag);
+> > +}
+> 
+> kmalloc(4k) is pretty efficient and (I think) is guaranteed to return a
+> page-aligned address.
 
-ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/disable-watchdog
+Page allocations should be done through the page allocator. 4k 
+allocations benefit from the per cpu caches of the page allocator which 
+makes the use of the page allocator fastest and best for 4k allocs.
 
--Andi
+kmalloc allocations are not guaranteed to be aligned to 4k boundaries. 
+They usually are but ...
+
+
