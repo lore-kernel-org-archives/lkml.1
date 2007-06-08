@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939022AbXFHPwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939546AbXFHPwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939022AbXFHPwQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 11:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938520AbXFHPvp
+	id S939546AbXFHPwx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 11:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938670AbXFHPwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 11:51:45 -0400
-Received: from mail.suse.de ([195.135.220.2]:50932 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937802AbXFHPvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 11:51:44 -0400
-Date: Fri, 8 Jun 2007 08:51:39 -0700
-From: Greg KH <gregkh@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Jones <pjones@redhat.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-Message-ID: <20070608155139.GB7833@suse.de>
-References: <1181206091.3625.9.camel@lov.localdomain> <4667D2DF.30207@googlemail.com> <1181228660.3625.23.camel@lov.localdomain> <46682385.1060802@redhat.com> <20070607154342.GA16911@suse.de> <20070607085200.f8d6e2d3.akpm@linux-foundation.org> <20070607155953.GA17591@suse.de> <20070607090632.cfcf02e6.akpm@linux-foundation.org> <20070607161525.GA18363@suse.de> <20070608003118.b8334635.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070608003118.b8334635.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Fri, 8 Jun 2007 11:52:44 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40620 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758448AbXFHPwn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 11:52:43 -0400
+Date: Fri, 8 Jun 2007 16:57:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Include <asm/termbits.h> from <linux/tty_driver.h>.
+Message-ID: <20070608165746.30fb5bd9@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0706081144300.31863@localhost.localdomain>
+References: <Pine.LNX.4.64.0706080925020.24228@localhost.localdomain>
+	<20070608163018.636b74d1@the-village.bc.nu>
+	<Pine.LNX.4.64.0706081125390.30491@localhost.localdomain>
+	<20070608164830.54436f6b@the-village.bc.nu>
+	<Pine.LNX.4.64.0706081144300.31863@localhost.localdomain>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 12:31:18AM -0700, Andrew Morton wrote:
-> On Thu, 7 Jun 2007 09:15:25 -0700 Greg KH <gregkh@suse.de> wrote:
-> 
-> > On Thu, Jun 07, 2007 at 09:06:32AM -0700, Andrew Morton wrote:
-> > > On Thu, 7 Jun 2007 08:59:53 -0700 Greg KH <gregkh@suse.de> wrote:
-> > > 
-> > > > On Thu, Jun 07, 2007 at 08:52:00AM -0700, Andrew Morton wrote:
-> > > > > On Thu, 7 Jun 2007 08:43:42 -0700 Greg KH <gregkh@suse.de> wrote:
-> > > > > 
-> > > > > > >  Fixed in mkinitrd-6.0.9-6 , which I'll build now and push to 
-> > > > > > >  updates-testing.  Thanks for getting my attention here.
-> > > > > > 
-> > > > > > Great, Andrew, can you please reenable the block-device patch that is in
-> > > > > > my tree now that the problem has been solved?
-> > > > > 
-> > > > > I think we're screwed, aren't we?  Everyone needs to upgrade mkinitrd to be
-> > > > > able to boot the kernel?  Not viable :(
-> > > > > 
-> > > > > For example, what about my two-year-old yellowdog machine?
-> > > > 
-> > > > Enable CONFIG_SYSFS_DEPRECATED and it should all work just fine.  That's
-> > > > what Michal said worked for him.
-> > > > 
-> > > 
-> > > Actually, it _was_ enabled.
-> > > 
-> > > Ho hum, I'll have a poke at it this evening.
-> > 
-> > Yeah, that sounds odd, it should have worked.
-> 
-> yup, yellowdog 4.1 on a mac g5:
-> 
-> gregkh-driver-block-device.patch applied, CONFIG_SYSFS_DEPRECATED=y:
-> 	http://userweb.kernel.org/~akpm/s5000552.jpg
+> if a header file needs a definition/declaration that exists in another
+> header file, it should include that other header file.  any other
+> approach is wrong.
 
-Ugh.
+And if you try this in the real world for a project as large as the
+kernel you will die in a mass of unresolvable dependancy loops. The
+current behaviour is quite intentional
 
-Kay, any thoughts?  Does switchroot need to have the --movedev option
-removed for some reason?
-
-thanks,
-
-greg k-h
+Alan
