@@ -1,41 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030442AbXFHQw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938283AbXFHQxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030442AbXFHQw6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 12:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933015AbXFHQws
+	id S938283AbXFHQxZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 12:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933269AbXFHQxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 12:52:48 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:48307 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762809AbXFHQws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 12:52:48 -0400
-Date: Fri, 8 Jun 2007 09:51:12 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       torvalds@linux-foundation.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, alan@lxorguk.ukuu.org.uk,
-       Vincent.Fortier1@EC.GC.CA, koan00@gmail.com
-Subject: Re: [stable] [patch 00/32] 2.6.20-stable review
-Message-ID: <20070608165112.GY3723@sequoia.sous-sol.org>
-References: <20070608071511.159309000@sous-sol.org> <20070608072918.GP3723@sequoia.sous-sol.org>
+	Fri, 8 Jun 2007 12:53:10 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:7228 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933015AbXFHQxI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 12:53:08 -0400
+Date: Fri, 8 Jun 2007 18:53:07 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Include <asm/termbits.h> from <linux/tty_driver.h>.
+In-Reply-To: <Pine.LNX.4.64.0706081139310.31532@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0706081852530.10769@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0706080925020.24228@localhost.localdomain>
+ <20070608163018.636b74d1@the-village.bc.nu>
+ <Pine.LNX.4.64.0706081727110.10769@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.64.0706081131150.30811@localhost.localdomain>
+ <20070608164533.1ed24e79@the-village.bc.nu> <Pine.LNX.4.64.0706081139310.31532@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070608072918.GP3723@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chris Wright (chrisw@sous-sol.org) wrote:
-> Roll-up patch available at:
-> 	http://www.kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.20.14-rc1.{gz,bz2}
 
-Roll-up updated to fix broken patch.
+On Jun 8 2007 11:42, Robert P. J. Day wrote:
+>> >
+>> > um ... what does that mean?  consider this snippet from
+>> > <linux/tty_driver.h>:
 
-	http://www.kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.20.14-rc2.{gz,bz2}
+That's right. Each .h file should be "compilable" on their own.
+
+>>
+>> Which compile combination shows the sequence you are reporting ?
+>
+>sorry, i don't understand the question.  i'm just running "make" on a
+>simple module i wrote, using the prototypical in-directory makefile to
+>build out-of-tree.
+>
+>the first four lines of my module source file are:
+>
+>#include <linux/module.h>
+>#include <linux/init.h>
+>#include <asm/termbits.h>               /* Shouldn't be necessary */
+>#include <linux/tty_driver.h>           /* For struct tty_driver */
+>
+>  if i omit the inclusion of the termbits.h header, i get the
+>aforementioned error.  beyond that, i'm unclear on what you're asking.
+>
+>rday
+>-- 
+>========================================================================
+>Robert P. J. Day
+>Linux Consulting, Training and Annoying Kernel Pedantry
+>Waterloo, Ontario, CANADA
+>
+>http://fsdev.net/wiki/index.php?title=Main_Page
+>========================================================================
+>
+
+	Jan
+-- 
