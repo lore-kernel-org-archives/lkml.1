@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937075AbXFHBBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935529AbXFHBBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937075AbXFHBBR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 21:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763194AbXFHBBA
+	id S935529AbXFHBBf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 21:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936763AbXFHBBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 21:01:00 -0400
-Received: from smtp.cce.hp.com ([161.114.21.25]:23718 "EHLO
-	ccerelrim04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbXFHBBA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 21:01:00 -0400
-From: "Bob Picco" <bob.picco@hp.com>
-Date: Thu, 7 Jun 2007 21:00:56 -0400
-To: john stultz <johnstul@us.ibm.com>
-Cc: Bob Picco <bob.picco@hp.com>, Chuck Ebbert <cebbert@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Sripathi Kodi <sripathik@in.ibm.com>, Bernhard Walle <bwalle@suse.de>,
-       acme@redhat.com, apw@shadowen.org, tglx@linutronix.de,
-       akpm@linux-foundation.org, andi@firstfloor.org
-Subject: Re: [BUG] sysrq-m oops
-Message-ID: <20070608010056.GF11999@localhost>
-References: <1181176035.6275.13.camel@localhost.localdomain> <4668276E.4030504@redhat.com> <20070607182122.GE11999@localhost> <1181246081.7621.6.camel@localhost.localdomain>
+	Thu, 7 Jun 2007 21:01:12 -0400
+Received: from mga01.intel.com ([192.55.52.88]:43992 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936340AbXFHBBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 21:01:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,397,1175497200"; 
+   d="scan'208";a="254552454"
+Date: Thu, 7 Jun 2007 17:57:26 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
+Message-ID: <20070608005726.GO17143@linux-os.sc.intel.com>
+References: <20070605181342.GE17143@linux-os.sc.intel.com> <20070605183300.GD12782@tree.beaverton.ibm.com> <20070605184015.GF17143@linux-os.sc.intel.com> <20070605200954.GE12782@tree.beaverton.ibm.com> <20070605211451.GG17143@linux-os.sc.intel.com> <20070605235707.GB16074@tree.beaverton.ibm.com> <20070606013759.GI17143@linux-os.sc.intel.com> <20070606185829.GA26062@tree.beaverton.ibm.com> <20070606193514.GN17143@linux-os.sc.intel.com> <20070606231642.GH13751@tree.beaverton.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1181246081.7621.6.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.11
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.6.7.174233
+In-Reply-To: <20070606231642.GH13751@tree.beaverton.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-john stultz wrote:	[Thu Jun 07 2007, 03:54:41PM EDT]
-[snip]
-john you are welcome.
+On Wed, Jun 06, 2007 at 04:16:42PM -0700, Darrick J. Wong wrote:
+> On Wed, Jun 06, 2007 at 12:35:14PM -0700, Siddha, Suresh B wrote:
+> 
+> > Weird. Then the bug can only happen if for some reason, "mask = map"
+> > didn't happen in fixup_irqs(). Can you send us the disassembly of the
+> > fixup_irqs()?
+> 
+> Attached.
 
-We aren't sampling for holes in memory. Thus we encounter a section hole with
-empty section map pointer for SPARSEMEM and OOPs for show_mem. This issue
-has been seen in 2.6.21, current git and current mm. The patch below
-is for mainline and mm. It was boot tested for SPARSEMEM, current
-VMEMMAP of Andy's in mm ml and DISCONTIGMEM. A slightly different patch
-will be posted to stable for 2.6.21.
+hmm.. Darrick, can't find anything wrong in there.
 
-Previous to commit f0a5a58aa812b31fd9f197c4ba48245942364eae memory_present
-was called for node_start_pfn to node_end_pfn. This would cover the hole(s)
-with reserved pages and valid sections. Most SPARSEMEM supported arches
-do a pfn_valid check in show_mem before computing the page structure address.
+I am very much puzzled and the main thing I am confused about is, that
+how come "/proc/irq/<irq#-hung>/smp_affinity" is still pointing at the old
+offlined cpu, while calls to set_affinity() with cpu_online_map mask
+in fixup_irqs() don't show any failure..
 
-This issue was brought to my attention on IRC by Arnaldo Carvalho de Melo at
-acme@redhat.com. Thanks to Arnaldo for testing.
+As you have the failing system, you need to do more detective work and
+help me out. Can you try this debug patch and send across the dmesg after the
+bug happens and also can you try different compiler to see if something
+changes..
 
-Signed-off-by: Bob Picco <bob.picco@hp.com>
-
- arch/x86_64/mm/init.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6.22-rc4-mm1/arch/x86_64/mm/init.c
-===================================================================
---- linux-2.6.22-rc4-mm1.orig/arch/x86_64/mm/init.c	2007-06-06 12:59:26.000000000 -0400
-+++ linux-2.6.22-rc4-mm1/arch/x86_64/mm/init.c	2007-06-07 11:14:31.000000000 -0400
-@@ -79,6 +79,8 @@ void show_mem(void)
- 			if (unlikely(i % MAX_ORDER_NR_PAGES == 0)) {
- 				touch_nmi_watchdog();
- 			}
-+			if (!pfn_valid(pgdat->node_start_pfn + i))
-+				continue;
- 			page = pfn_to_page(pgdat->node_start_pfn + i);
- 			total++;
- 			if (PageReserved(page))
+diff --git a/arch/x86_64/kernel/irq.c b/arch/x86_64/kernel/irq.c
+index 3eaceac..fc2a576 100644
+--- a/arch/x86_64/kernel/irq.c
++++ b/arch/x86_64/kernel/irq.c
+@@ -152,9 +152,11 @@ void fixup_irqs(cpumask_t map)
+ 			printk("Breaking affinity for irq %i\n", irq);
+ 			mask = map;
+ 		}
+-		if (irq_desc[irq].chip->set_affinity)
++		if (irq_desc[irq].chip->set_affinity) {
++			printk("calling set affinity for %i, with mask %lx\n",
++				irq, cpus_addr(mask)[0]);
+ 			irq_desc[irq].chip->set_affinity(irq, mask);
+-		else if (irq_desc[irq].action && !(warned++))
++		} else if (irq_desc[irq].action && !(warned++))
+ 			printk("Cannot set affinity for irq %i\n", irq);
+ 	}
+ 
