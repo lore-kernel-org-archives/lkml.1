@@ -1,62 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968666AbXFHLTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968727AbXFHLU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968666AbXFHLTH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 07:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967593AbXFHLSx
+	id S968727AbXFHLU2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 07:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967747AbXFHLUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 07:18:53 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:45513 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966579AbXFHLSw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 07:18:52 -0400
-Subject: [PATCH] PowerPC: Enable arbitary speed tty ioctls and split
-	input/output speed
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1181133185.4096.32.camel@pmac.infradead.org>
-References: <20070523172739.1d3a918c@the-village.bc.nu>
-	 <1180012135.8303.89.camel@shinybook.infradead.org>
-	 <20070524144109.7bd0f4d0@the-village.bc.nu>
-	 <1180014338.8303.95.camel@shinybook.infradead.org>
-	 <20070524160559.54c2c639@the-village.bc.nu>
-	 <18010.24300.599531.828815@cargo.ozlabs.ibm.com>
-	 <1181133185.4096.32.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 12:18:46 +0100
-Message-Id: <1181301526.2801.31.camel@pmac.infradead.org>
+	Fri, 8 Jun 2007 07:20:17 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:50115 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S966905AbXFHLUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 07:20:15 -0400
+Subject: Re: [PATCH 1/1] Watchdog driver for AT32AP700X devices
+From: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Wim Van Sebroeck <wim@iguana.be>
+In-Reply-To: <1181287407.28296.17.camel@localhost.localdomain>
+References: <1181138647434-git-send-email-hcegtvedt@atmel.com>
+	 <20070607160910.34d64842.akpm@linux-foundation.org>
+	 <1181287407.28296.17.camel@localhost.localdomain>
+Content-Type: multipart/mixed; boundary="=-HPl7lfPaFD+su+3aOXhX"
+Date: Fri, 08 Jun 2007 13:20:08 +0200
+Message-Id: <1181301608.28296.44.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding the defines/macros activates the existing code in the tty layer
-and allows this platform to use the arbitary speed ioctl setting layer
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+--=-HPl7lfPaFD+su+3aOXhX
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-diff --git a/include/asm-powerpc/termbits.h b/include/asm-powerpc/termbits.h
-index 5e79198..6698188 100644
---- a/include/asm-powerpc/termbits.h
-+++ b/include/asm-powerpc/termbits.h
-@@ -152,6 +152,10 @@ struct ktermios {
- #define B3000000  00034
- #define B3500000  00035
- #define B4000000  00036
-+#define   BOTHER  00037
-+
-+#define CIBAUD	077600000
-+#define IBSHIFT	16		/* Shift from CBAUD to CIBAUD */
- 
- #define CSIZE	00001400
- #define   CS5	00000000
+On Fri, 2007-06-08 at 09:23 +0200, Hans-Christian Egtvedt wrote:
+> On Thu, 2007-06-07 at 16:09 -0700, Andrew Morton wrote:
+> > On Wed,  6 Jun 2007 16:04:07 +0200
+> > Hans-Christian Egtvedt <hcegtvedt@atmel.com> wrote:
+> > 
+> > > This patch adds support for the built in watchdog in AT32AP700X devices.
+> > > 
+> > > Tested on AT32AP7000 and ATSTK1000.
+> > > 
+> > > Hardware documentation can be found in the AT32AP7000 datasheet.
+> > > 
+> > > ...
+> > >
+> > > +static int __init at32_wdt_probe(struct platform_device *pdev)
+> > > +{
+> 
+> <cut start of _probe>
+> 
+> > > +	wdt->regs = ioremap(regs->start, regs->end - regs->start + 1);
+> > 
+> > I see an ioremap(), but there are no iounmap()s anywhere.
+> 
+> Hmm, that would be my fault, please see the attach patch, it should
+> apply clean to -mm after your two -fix{1,2} patches.
+
+I missed iounmap if the probe function fails, the included patch
+corrects this. Applies after the previous patches.
+
+Do you want me to fold all five patches? original + fix1 and fix2 +
+iounmap patches.
+
+Sorry for the minor fixes.
 
 -- 
-dwmw2
+With kind regards,
+
+Hans-Christian Egtvedt, siv.ing. (M.Sc.)
+Applications Engineer - AVR32 System Solutions - Atmel Norway
+
+--=-HPl7lfPaFD+su+3aOXhX
+Content-Disposition: attachment; filename=0001-at32ap700x-wdt-add-iounmap-if-probe-function-fails.txt
+Content-Type: application/mbox; name=0001-at32ap700x-wdt-add-iounmap-if-probe-function-fails.txt
+Content-Transfer-Encoding: 7bit
+
+>From 9618b7b2f49f3d5cb628741e4022097c8836a06a Mon Sep 17 00:00:00 2001
+From: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Date: Fri, 8 Jun 2007 13:17:13 +0200
+Subject: [PATCH 1/1] at32ap700x-wdt: add iounmap if probe function fails
+
+Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+---
+ drivers/char/watchdog/at32ap700x_wdt.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/watchdog/at32ap700x_wdt.c b/drivers/char/watchdog/at32ap700x_wdt.c
+index 56ace8c..9b598d9 100644
+--- a/drivers/char/watchdog/at32ap700x_wdt.c
++++ b/drivers/char/watchdog/at32ap700x_wdt.c
+@@ -223,6 +223,11 @@ static int __init at32_wdt_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	wdt->regs = ioremap(regs->start, regs->end - regs->start + 1);
++	if (!wdt->regs) {
++		ret = -ENOMEM;
++		dev_dbg(&pdev->dev, "could not map I/O memory\n");
++		goto err_free;
++	}
+ 	wdt->users = 0;
+ 	wdt->miscdev.minor = WATCHDOG_MINOR;
+ 	wdt->miscdev.name = "watchdog";
+@@ -238,7 +243,7 @@ static int __init at32_wdt_probe(struct platform_device *pdev)
+ 	ret = misc_register(&wdt->miscdev);
+ 	if (ret) {
+ 		dev_dbg(&pdev->dev, "failed to register wdt miscdev\n");
+-		goto err_register;
++		goto err_iounmap;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, wdt);
+@@ -247,7 +252,9 @@ static int __init at32_wdt_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
+-err_register:
++err_iounmap:
++	iounmap(wdt->regs);
++err_free:
+ 	kfree(wdt);
+ 	wdt = NULL;
+ 	return ret;
+-- 
+1.4.4.2
+
+
+--=-HPl7lfPaFD+su+3aOXhX--
 
