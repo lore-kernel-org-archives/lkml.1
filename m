@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938952AbXFHV3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936335AbXFHVaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938952AbXFHV3U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 17:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbXFHV3N
+	id S936335AbXFHVaM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 17:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933422AbXFHV35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 17:29:13 -0400
-Received: from mga03.intel.com ([143.182.124.21]:42565 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752915AbXFHV3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 17:29:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,401,1175497200"; 
-   d="scan'208";a="237187990"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Date: Fri, 8 Jun 2007 14:28:56 -0700
-User-Agent: KMail/1.9.6
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200706061229.24486.jesse.barnes@intel.com> <20070608141500.0af58fac.akpm@linux-foundation.org>
-In-Reply-To: <20070608141500.0af58fac.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 8 Jun 2007 17:29:57 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58537 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753733AbXFHV34 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 17:29:56 -0400
+Date: Fri, 8 Jun 2007 22:35:05 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Korb <ml@akana.de>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
+Message-ID: <20070608223505.3ff1a662@the-village.bc.nu>
+In-Reply-To: <200706081418.56217.bzolnier@gmail.com>
+References: <20601315171560711667@wsc.cz>
+	<200706081418.56217.bzolnier@gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706081428.56596.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, June 8, 2007 2:15:00 Andrew Morton wrote:
-> > Something similar could be done on i386 if needed, but the boot
-> > ordering would be slightly different, since the MTRR code on i386
-> > depends on the boot_cpu_data structure being setup.
->
-> i386 allmodconfig:
->
-> arch/i386/kernel/cpu/mtrr/main.c: In function
-> 'mtrr_trim_uncached_memory': arch/i386/kernel/cpu/mtrr/main.c:655:
-> error: 'end_pfn' undeclared (first use in this function)
-> arch/i386/kernel/cpu/mtrr/main.c:655: error: (Each undeclared
-> identifier is reported only once
-> arch/i386/kernel/cpu/mtrr/main.c:655: error: for each function it
-> appears in.)
->
-> I'll poke some ifdefs in there.
+On Fri, 8 Jun 2007 14:18:55 +0200
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-Oops, sorry about that, the code is only called on x86_64 but compiled 
-even for i386...
+> On Monday 04 June 2007, Jiri Slaby wrote:
+> > ide-generic, add another device exception
+> 
+> ide-generic is a generic ISA IDE driver, this one is drivers/ide/pci/generic
+> (a generic IDE PCI driver) - fixed patch description to avoid confusion.
 
-Jesse
+Nope ide-generic is a generic I/O based ST506 interface. It covers a bit
+more than just ISA bus.
+
+> 
+> [ Yes, both drivers need a rename - patches are welcomed. ]
+
+Good way to break everyones module settings
+
+Alan
