@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968893AbXFHLcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968939AbXFHLdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968893AbXFHLcs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 07:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968558AbXFHLch
+	id S968939AbXFHLdt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 07:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968434AbXFHLdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 07:32:37 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:1289 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968505AbXFHLcg (ORCPT
+	Fri, 8 Jun 2007 07:33:40 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:37892 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968090AbXFHLdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 07:32:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=R5DD0EQnxhFvT3Kber0ERBze4kQY40VhB/T0GrBDHlD9d9Y80X1S+3hvb22KZq2seCD+CSo7QbkPd5Mt+bhm6OQAM8fwazx864fqb0MeQYaWrkggDG6/L45rsyNalBoKypfpI8/472qnV/G/q2VGZgsUFTxRYKOyMJz/DyFk4HU=
-Message-ID: <46693E33.6080705@gmail.com>
-Date: Fri, 08 Jun 2007 20:32:03 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Fri, 8 Jun 2007 07:33:39 -0400
+Message-ID: <46693620.7080401@linux.vnet.ibm.com>
+Date: Fri, 08 Jun 2007 16:27:36 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>	<9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>	<466196AD.3090502@garzik.org>	<9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com>	<46667466.4010500@gmail.com>	<9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com>	<4667B347.9040900@gmail.com>	<alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>	<20070607224746.GA23290@havoc.gtf.org>	<46690D10.9040808@gmail.com> <20070608122750.7f8ae0e0@the-village.bc.nu>
-In-Reply-To: <20070608122750.7f8ae0e0@the-village.bc.nu>
-X-Enigmail-Version: 0.94.2.0
+To: balbir@linux.vnet.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>, vatsa@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
+       xemul@sw.ru, dev@sw.ru, rohitseth@google.com, pj@sgi.com,
+       devel@openvz.org, ebiederm@xmission.com, mbligh@google.com,
+       containers@lists.osdl.org, serue@us.ibm.com, menage@google.com,
+       svaidy@linux.vnet.ibm.com, cpw@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [ckrm-tech] Per container statistics (containerstats)
+References: <20070606115813.GA32197@linux.vnet.ibm.com> <20070607155445.edd5fded.akpm@linux-foundation.org> <4668BD18.7090603@linux.vnet.ibm.com> <46693488.3070601@linux.vnet.ibm.com>
+In-Reply-To: <46693488.3070601@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Upto 2.6.21, if the same condition triggers, it delays 30secs and just
->> continue, so I don't think it was a worthy protection against ghost
->> devices or TF malfunction.  The only protection it offers is preventing
->> libata from accessing slave's status register too early.  SRST sequence
->> looks like the following.
+Balbir Singh wrote:
+> Balbir Singh wrote:
+>>>>  	return *(pid_t *)a - *(pid_t *)b;
+>>>> diff -puN kernel/sched.c~containers-taskstats kernel/sched.c
+>>>> --- linux-2.6.22-rc2-mm1/kernel/sched.c~containers-taskstats	2007-06-05 17:21:57.000000000 +0530
+>>>> +++ linux-2.6.22-rc2-mm1-balbir/kernel/sched.c	2007-06-05 17:21:57.000000000 +0530
+>>>> @@ -4280,11 +4280,13 @@ void __sched io_schedule(void)
+>>>>  {
+>>>>  	struct rq *rq = &__raw_get_cpu_var(runqueues);
+>>>>  
+>>>> +	delayacct_set_flag(DELAYACCT_PF_BLKIO);
+>>>>  	delayacct_blkio_start();
+>>> Would it be suitable and appropriate to embed the delayacct_set_flag() call
+>>> inside delayacct_blkio_start()?
+>>>
+>> Yes, I should have done that, will do.
+>>
+>>
 > 
-> I've seen no bug where it looked like it saved something, and the only
-> ghost device bugs I've seen it failed to detect anyway (hence the PCMCIA
-> drivers own ghost detection logic)
+> My last reply was wrong, the flag needs to be set outside so that we know the
+> context that initiated block I/O. We use this flag to track the time used
+> by the swap block I/O. 
+> 
 
-If we still have several rc's left, how about just removing it and
-watching the fireworks?  Jeff?
+Please ignore this email.. it escaped my drafts folder... my fault.. apologies.
 
 -- 
-tejun
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
