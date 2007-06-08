@@ -1,96 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969277AbXFHOGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030411AbXFHOMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969277AbXFHOGc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 10:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968718AbXFHOGZ
+	id S1030411AbXFHOMd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 10:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968685AbXFHOMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 10:06:25 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51416 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S968710AbXFHOGY (ORCPT
+	Fri, 8 Jun 2007 10:12:25 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:57978
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968350AbXFHOMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 10:06:24 -0400
-Date: Fri, 8 Jun 2007 10:06:21 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Grant Wilson <gww@swandive.no-ip.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] 2.6.22-rc4-mm1
-In-Reply-To: <20070608042358.GB20483@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0706081001040.3473-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 Jun 2007 10:12:24 -0400
+Subject: Re: [Bug 8473] New: Oops: 0010 [1] SMP
+From: Paul Fulghum <paulkf@microgate.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Arnd Bergmann <arnd@arndb.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <clameter@sgi.com>
+In-Reply-To: <20070607201604.726094fc.akpm@linux-foundation.org>
+References: <200705132102.l4DL2onF003014@fire-2.osdl.org>
+	 <20070513154718.bb338ceb.akpm@linux-foundation.org>
+	 <1179098742.7322.5.camel@rousalka.dyndns.org>
+	 <1179396003.31796.4.camel@rousalka.dyndns.org>
+	 <20070517094557.c96f7e54.randy.dunlap@oracle.com>
+	 <1179421196.5000.5.camel@rousalka.dyndns.org>
+	 <1180206615.3430.8.camel@rousalka.dyndns.org>
+	 <20070608030629.GA18493@atjola.homenet>
+	 <20070607201604.726094fc.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 08 Jun 2007 09:10:57 -0500
+Message-Id: <1181311857.3985.7.camel@amdx2.microgate.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007, Greg KH wrote:
-
-> On Thu, Jun 07, 2007 at 10:53:29AM -0400, Alan Stern wrote:
-> > To tell you the truth, I rather think there's not much point in keeping
-> > usb-try-to-debug-bug-8561.patch around.  Anything seriously wrong that
-> > it could catch ought to have shown up long ago.  And it is now clear
-> > that bug 8561 has nothing to do with this; it is a programming error
-> > common to many of the USB serial drivers.  (Still waiting to hear back 
-> > from Paulo Pereira whether the fix to the USB Option driver works...)
+On Thu, 2007-06-07 at 20:16 -0700, Andrew Morton wrote:
+> On Fri, 8 Jun 2007 05:06:29 +0200 Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
+> > This is do_tty_hangup() exchanging the fops while we're waiting for the
+> > lock. The new fops (hung_up_tty_fops) only have the unlocked variant and
+> > thus we Oops our way.
 > 
-> What error in the usb-serial drivers are you speaking about?
+> ah, yes, that explains it, thanks.  Culprit:
+> 
+> commit e10cc1df1d2014f68a4bdcf73f6dd122c4561f94
+> Author: Paul Fulghum <paulkf@microgate.com>
+> Date:   Thu May 10 22:22:50 2007 -0700
+> 
+>     tty: add compat_ioctl
+>     
+>     Add compat_ioctl method for tty code to allow processing of 32 bit ioctl
+>     calls on 64 bit systems by tty core, tty drivers, and line disciplines.
 
-The one addressed by usb-option-fix-usage-of-urb-status-abuse.patch.  I 
-thought it might be worthwhile to spend some time fixing all of these.
-Here's a quick summary showing the extent of the problem (note that 
-not all the usages are in error):
+OK, the change of hung_up_tty_ioctl() from locked to unlocked
+is not necessary for this patch. On the surface it seemed a clever
+way of not needing two different functions to do the same simple:
 
-$ grep EINPROGRESS drivers/usb/serial/*.c drivers/usb/misc/*.c
-drivers/usb/serial/digi_acceleport.c:*       return 256 when -EINPROGRESS is set, as the line discipline
-drivers/usb/serial/digi_acceleport.c:		while( oob_port->write_urb->status == -EINPROGRESS
-drivers/usb/serial/digi_acceleport.c:		while( (port->write_urb->status == -EINPROGRESS
-drivers/usb/serial/digi_acceleport.c:	while( oob_port->write_urb->status == -EINPROGRESS
-drivers/usb/serial/digi_acceleport.c:	if( port->write_urb->status == -EINPROGRESS
-drivers/usb/serial/digi_acceleport.c:	if( port->open_count && port->write_urb->status != -EINPROGRESS
-drivers/usb/serial/digi_acceleport.c:	if( port->write_urb->status == -EINPROGRESS
-drivers/usb/serial/digi_acceleport.c:	if( port->write_urb->status == -EINPROGRESS
-drivers/usb/serial/empeg.c:			if (write_urb_pool[i]->status != -EINPROGRESS) {
-drivers/usb/serial/empeg.c:		if (write_urb_pool[i]->status != -EINPROGRESS) {
-drivers/usb/serial/empeg.c:		if (write_urb_pool[i]->status == -EINPROGRESS) {
-drivers/usb/serial/keyspan.c:		if (this_urb->status == -EINPROGRESS) {
-drivers/usb/serial/keyspan.c:	} while (urb->status != -EINPROGRESS);
-drivers/usb/serial/keyspan.c:		if (this_urb->status != -EINPROGRESS)
-drivers/usb/serial/keyspan.c:			if (this_urb->status != -EINPROGRESS)
-drivers/usb/serial/keyspan.c:	if (urb && urb->status == -EINPROGRESS)
-drivers/usb/serial/keyspan.c:	/*while (p_priv->outcont_urb->status == -EINPROGRESS) {
-drivers/usb/serial/keyspan.c:	if (this_urb->status == -EINPROGRESS) {
-drivers/usb/serial/keyspan.c:	if (this_urb->status == -EINPROGRESS) {
-drivers/usb/serial/keyspan.c:	if (this_urb->status == -EINPROGRESS) {
-drivers/usb/serial/keyspan.c:	if (this_urb->status == -EINPROGRESS) {
-drivers/usb/serial/keyspan.c:	if (this_urb->status == -EINPROGRESS) {
-drivers/usb/serial/keyspan_pda.c: *	  urb status is -EINPROGRESS, meaning it cannot write at the moment
-drivers/usb/serial/keyspan_pda.c:	   again (the only sudden transition was the one from EINPROGRESS to
-drivers/usb/serial/kl5kusb105.c:			if (priv->write_urb_pool[i]->status != -EINPROGRESS) {
-drivers/usb/serial/kl5kusb105.c:		if (priv->write_urb_pool[i]->status == -EINPROGRESS) {
-drivers/usb/serial/kl5kusb105.c:		if (priv->write_urb_pool[i]->status != -EINPROGRESS) {
-drivers/usb/serial/mos7720.c:	if (port->read_urb->status != -EINPROGRESS) {
-drivers/usb/serial/mos7720.c:		if (mos7720_port->write_urb_pool[i] && mos7720_port->write_urb_pool[i]->status == -EINPROGRESS)
-drivers/usb/serial/mos7720.c:		if (mos7720_port->write_urb_pool[i] && mos7720_port->write_urb_pool[i]->status != -EINPROGRESS)
-drivers/usb/serial/mos7720.c:		if (mos7720_port->write_urb_pool[i] && mos7720_port->write_urb_pool[i]->status != -EINPROGRESS) {
-drivers/usb/serial/mos7720.c:	if (port->read_urb->status != -EINPROGRESS) {
-drivers/usb/serial/mos7720.c:	if(port->read_urb->status != -EINPROGRESS) {
-drivers/usb/serial/mos7840.c:	if (mos7840_port->read_urb->status != -EINPROGRESS) {
-drivers/usb/serial/mos7840.c:	if (mos7840_port->read_urb->status != -EINPROGRESS) {
-drivers/usb/serial/sierra.c:		if (this_urb->status == -EINPROGRESS) {
-drivers/usb/serial/sierra.c:		if (this_urb && this_urb->status != -EINPROGRESS)
-drivers/usb/serial/sierra.c:		if (this_urb && this_urb->status == -EINPROGRESS)
-drivers/usb/misc/adutux.c:				if (dev->interrupt_in_urb->status == -EINPROGRESS) {
-drivers/usb/misc/adutux.c:	if (should_submit && !dev->interrupt_in_urb->status==-EINPROGRESS) {
-drivers/usb/misc/adutux.c:		if (dev->interrupt_out_urb->status == -EINPROGRESS) {
-drivers/usb/misc/auerswald.c:        urb->status    = -EINPROGRESS;    /* usb_submit_urb does this, too */
-drivers/usb/misc/auerswald.c:   the result is 0 if the urb is cancelled, or -EINPROGRESS if
-drivers/usb/misc/auerswald.c:		if (urb->status != -EINPROGRESS) {	/* No callback?!! */
-drivers/usb/misc/auerswald.c:-EINPROGRESS	during submission until end
-drivers/usb/misc/usbtest.c:				case -EINPROGRESS:
-drivers/usb/misc/usbtest.c:	if (!(retval == 0 || retval == -EINPROGRESS)) {
+return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
 
-Alan Stern
+which does not need any locking for its own sake. But clearly
+the hangup behavior requires the locked version.
+
+I'll redo the patch with hung_up_tty_ioctl remaining locked.
+
+That will separate the compat ioctl stuff from this issue.
+
+-- 
+Paul Fulghum
+Microgate Systems, Ltd
 
