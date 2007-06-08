@@ -1,60 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939197AbXFHHpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939164AbXFHHqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939197AbXFHHpi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938373AbXFHHYo
+	id S939164AbXFHHqK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937256AbXFHHYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:24:44 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55257 "EHLO
+	Fri, 8 Jun 2007 03:24:45 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55261 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938319AbXFHHYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:24:42 -0400
-Message-Id: <20070608072155.755822000@sous-sol.org>
+	id S938371AbXFHHYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:24:43 -0400
+Message-Id: <20070608072212.445377000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:39 -0700
+Date: Fri, 08 Jun 2007 00:21:55 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, jirislaby@gmail.com,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 12/54] Char: cyclades, fix deadlock
-Content-Disposition: inline; filename=char-cyclades-fix-deadlock.patch
+Subject: [patch 28/54] timer stats: speedups
+Content-Disposition: inline; filename=timer-stats-speedups.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-An omitted unlock.
+Make timer-stats have almost zero overhead when enabled in the config but
+not used.  (this way distros can enable it more easily)
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Also update the documentation about overhead of timer_stats - it was
+written for the first version which had a global lock and a linear list
+walk based lookup ;-)
+
+Andrew says:
+And this.  Not a bugfix, but trivial and obvious and apparently some
+distros don't want to enable timer_stats because of the performance
+issue, but powertop uses timer_stats.
+
+Ingo replies:
+seconded. I have tested this with and without CONFIG_TIMER_STATS, with
+and without timer_stats collection activated.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+ Documentation/hrtimer/timer_stats.txt |    7 ++++---
+ kernel/time/timer_stats.c             |    7 ++++++-
+ lib/Kconfig.debug                     |    5 ++++-
+ 3 files changed, 14 insertions(+), 5 deletions(-)
 
- drivers/char/cyclades.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-2.6.21.4.orig/drivers/char/cyclades.c
-+++ linux-2.6.21.4/drivers/char/cyclades.c
-@@ -1103,6 +1103,7 @@ static void cyy_intr_chip(struct cyclade
+--- linux-2.6.21.4.orig/Documentation/hrtimer/timer_stats.txt
++++ linux-2.6.21.4/Documentation/hrtimer/timer_stats.txt
+@@ -2,9 +2,10 @@ timer_stats - timer usage statistics
+ ------------------------------------
  
- 				if (data & info->ignore_status_mask) {
- 					info->icount.rx++;
-+					spin_unlock(&cinfo->card_lock);
- 					return;
- 				}
- 				if (tty_buffer_request_room(tty, 1)) {
+ timer_stats is a debugging facility to make the timer (ab)usage in a Linux
+-system visible to kernel and userspace developers. It is not intended for
+-production usage as it adds significant overhead to the (hr)timer code and the
+-(hr)timer data structures.
++system visible to kernel and userspace developers. If enabled in the config
++but not used it has almost zero runtime overhead, and a relatively small
++data structure overhead. Even if collection is enabled runtime all the
++locking is per-CPU and lookup is hashed.
+ 
+ timer_stats should be used by kernel and userspace developers to verify that
+ their code does not make unduly use of timers. This helps to avoid unnecessary
+--- linux-2.6.21.4.orig/kernel/time/timer_stats.c
++++ linux-2.6.21.4/kernel/time/timer_stats.c
+@@ -236,10 +236,15 @@ void timer_stats_update_stats(void *time
+ 	/*
+ 	 * It doesnt matter which lock we take:
+ 	 */
+-	spinlock_t *lock = &per_cpu(lookup_lock, raw_smp_processor_id());
++	spinlock_t *lock;
+ 	struct entry *entry, input;
+ 	unsigned long flags;
+ 
++	if (likely(!active))
++		return;
++
++	lock = &per_cpu(lookup_lock, raw_smp_processor_id());
++
+ 	input.timer = timer;
+ 	input.start_func = startf;
+ 	input.expire_func = timerf;
+--- linux-2.6.21.4.orig/lib/Kconfig.debug
++++ linux-2.6.21.4/lib/Kconfig.debug
+@@ -143,7 +143,10 @@ config TIMER_STATS
+ 	  reprogrammed. The statistics can be read from /proc/timer_stats.
+ 	  The statistics collection is started by writing 1 to /proc/timer_stats,
+ 	  writing 0 stops it. This feature is useful to collect information
+-	  about timer usage patterns in kernel and userspace.
++	  about timer usage patterns in kernel and userspace. This feature
++	  is lightweight if enabled in the kernel config but not activated
++	  (it defaults to deactivated on bootup and will only be activated
++	  if some application like powertop activates it explicitly).
+ 
+ config DEBUG_SLAB
+ 	bool "Debug slab memory allocations"
 
 -- 
