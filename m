@@ -1,208 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032091AbXFHUiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970790AbXFHUnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032091AbXFHUiT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 16:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966581AbXFHUiN
+	id S970790AbXFHUnW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 16:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758326AbXFHUnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 16:38:13 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:50477 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbXFHUiM (ORCPT
+	Fri, 8 Jun 2007 16:43:14 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47561 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753793AbXFHUnN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 16:38:12 -0400
-Date: Fri, 8 Jun 2007 13:36:37 -0700
-From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Rules on how to use sysfs in userspace programs
-Message-ID: <20070608203637.GA9259@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Fri, 8 Jun 2007 16:43:13 -0400
+Message-ID: <6901450.1181335390183.SLOX.WebMail.wwwrun@imap-dhs.suse.de>
+Date: Fri, 8 Jun 2007 22:43:10 +0200 (CEST)
+From: Andreas Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
+       davem@davemloft.net
+In-Reply-To: <20070608120107.245eba96.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (normal)
+X-Mailer: SuSE Linux Openexchange Server 4 - WebMail (Build 2.4160)
+X-Operating-System: Linux 2.4.21-314-smp i386 (JVM 1.3.1_19)
+Organization: SuSE Linux AG
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <20070606190042.510643000@askeshav-devel.jf.intel.com> <20070607162726.2236a296.akpm@linux-foundation.org> <20070608182156.GA24865@linux-os.sc.intel.com> <20070608120107.245eba96.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Over time there have been a number of problems when sysfs has changed in
-"unexpected" ways.  Here's a document that Kay wrote a while ago that
-I'd like to add to the kernel Documentation directory to help userspace
-programmers out.
+Am Fr 08.06.2007 21:01 schrieb Andrew Morton
+<akpm@linux-foundation.org>:
 
-Any comments or critique of this is greatly appreciated.
+> On Fri, 8 Jun 2007 11:21:57 -0700
+> "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
+>
+> > On Thu, Jun 07, 2007 at 04:27:26PM -0700, Andrew Morton wrote:
+> > > On Wed, 06 Jun 2007 11:57:00 -0700
+> > > anil.s.keshavamurthy@intel.com wrote:
+> > >
+> > > > Signed-off-by: Anil S Keshavamurthy
+> > > > <anil.s.keshavamurthy@intel.com>
+> > >
+> > > That was a terse changelog.
+> > >
+> > > Obvious question: how does this differ from mempools, and would it
+> > > be
+> > > better to fill in any gaps in mempool functionality instead of
+> > > implementing something similar-looking?
+> >
+> > Very good question. Mempool pre-allocates the elements
+> > to the required minimum count size during its initilization time.
+> > However when mempool_alloc() is called it tries to obtain the
+> > element from OS and if that fails then it looks for the element in
+> > its pool. If there are no elements in its pool and if the gpf_t
+> > flags says it can wait then it waits untill someone puts the element
+> > back to pool, else if gpf_t flag say it can;t wait then it returns
+> > NULL.
+> > In other words, mempool acts as *emergency* pool, i.e only if the OS
+> > fails
+> > to allocate the required memory, then the pool object is used.
+> >
+> >
+> > In the IOMMU case, we need exactly opposite of what mempool
+> > provides,
+> > i.e we always want to look for the element in the pool and if the
+> > pool
+> > has no element then go to OS as a worst case. This resource pool
+> > library routines do the same. Again, this resource pools
+> > grows and shrinks automatically to maintain the minimum pool
+> > elements in the background. I am not sure whether this totally
+> > opposite functionality of mempools and resource pools can be
+> > merged.
+>
+> Confused.
+>
+> If resource pools are not designed to provide extra robustness via an
+> emergency pool, then what _are_ they designed for? (Boy this is a hard
+> way
+> to write a changelog!)
 
-thanks,
+mempools are designed to manage a limited resource pool by sleeping
+if necessary until someone else frees a resource. It's basically similar
+how to main VM works with a sleeping allocation, just in a "private user
+group"
 
-greg k-h
+In the IOMMU case sleeping is not allowed because pci_map_* typically
+happens inside spinlocks.  But the IOMMU code might need to allocate
+new page tables and other datastructures in there.
 
-------------------------------------
+This means mempools don't work for those (the previous version had non
+sensical
+constructs like GFP_ATOMIC mempool calls)
 
-Rules to access device-information in the Linux kernel sysfs
+ I haven't looked at Anil's code, but I suspect the only really robust
+way to handle this case is to always preallocate everything. But I'm not
+sure
+why that would need new library functions; it should be just some simple
+lists that could be open coded.
 
-The kernel exported sysfs exports internal kernel implementation-details
-and depends on internal kernel-structures and layout. It is agreed upon
-kernel developers, that the Linux kernel does not provide a stable
-internal API.  As sysfs is a direct export of kernel internal
-structures, the sysfs interface can't provide a stable interface too, it
-may always change along with internal kernel changes.
+If it needs to fall back to the OS for any non pre allocation then it
+will
+likely be flakey under high load. Now that might be ok in some cases
+-- apparently block layer is much better at handling this than it used
+to be and networking has to handle it anyways, but it might be still
+a unpleasant surprise for many drivers. One generic problem is that
+there are no upcalls when such resources become avaialable again
+so the upper layers would need to poll to know when to resubmit
+a request.
 
-To minimize the risk of breaking users of sysfs, which are in most cases
-low-level userspace applications, with a new kernel release, the users
-of sysfs must follow some rules to use an abstract-as-possible way to
-access this filesystem.  The current udev and HAL programs already
-implement this and users are encouraged to plug, if possible, into the
-abstractions these both programs provide instead of accessing sysfs
-directly.
+It's a pretty messy problem unfortunately.
 
-But if you really do want to access sysfs, please follow the following
-rules and then your programs should work for all future versions of
-sysfs.
+One relatively easy way out would be to just preallocate
+a static aperture fully and always map into it. Not sure
+how much memory that would need -- when it's too large
+it might take a lot of memory for page tables always and when it's
+too small it might overflow under high load.
 
-- Do not use libsysfs
-  It makes assumptions about sysfs which are not true. Its API does not
-  offer any abstraction, it exposes all the kernel driver-core
-  implementation details in its own API. Therefore it is not better than
-  reading directories and opening the files yourself.
-  Also, it is not actively maintained, in the sense of reflecting the
-  current kernel-development. The goal of providing a stable interface
-  to sysfs has failed, it causes more problems, than it solves. It
-  violates many of the rules in this document.
+> That's what kmem_cache_alloc() is for?!?!
 
-- sysfs is always at /sys
-  Parsing /proc/mounts is a waste of time. Other mount points are a
-  system configuration bug you should not try to solve. For test cases,
-  possibly support SYSFS_PATH to overwrite the applications behavior,
-  but never try to search for sysfs. Never try to mount it, if you are
-  not an early boot script.
+Tradtionally that was not allowed in block layer path. Not sure
+it is fully obsolete with the recent dirty tracking work, probably not.
 
-- devices are only "devices".
-  There is no such thing like class-, bus-, physical devices,
-  interfaces, and such that you can rely on in userspace. Everything is
-  just simply a "device" Class-, bus-, physical, ... types are just
-  kernel implementation details, which should not be expected by
-  applications that handle devices.
+Besides it would need to be GFP_ATOMIC and the default
+atomic pools are not that big.
 
-  The properties of a device are:
-    o devpath (/devices/pci0000:00/0000:00:1d.1/usb2/2-2/2-2:1.0)
-      - identical to the DEVPATH value in the event sent from the kernel
-	at device creation and removal
-      - the unique key to the device at that point in time
-      - the kernels path to the device-directory without the leading
-	/sys, and always starting with with a slash
-      - all elements of a devpath must be real directories.  Symlinks
-	pointing to /sys/devices must always be resolved to their real
-	target, and the target path must be used to access the device.
-	That way the devpath to the device matches the devpath of the
-	kernel used at event time.
-      - using or exposing symlink values as elements in a devpath string
-	is a bug in the application
+-Andi
 
-    o kernel name (sda, tty, 0000:00:1f.2, ...)
-      - a directory name, identical to the last element of the devpath
-      - applications need to handle spaces and characters like '!' in
-	the name
 
-    o subsystem (block, tty, pci, ...)
-      - simple string, never a path or a link
-      - retrieved by reading the "subsystem"-link and using only the
-	last element of the target path
-      - the "bus"-link is identical to the "subsystem"-link, it is
-	planned to remove the "bus"-link
-
-    o driver (tg3, ata_piix, uhci_hcd)
-      - a simple string, which may contain spaces, never a path or a
-	link
-      - it is retrieved by reading the "driver"-link and using only the
-	last element of the target path
-      - devices which don't have "driver"-link, just don't have a
-	driver; copying the driver value in a child device context, is a
-	bug in the application
-
-    o attributes
-      - the files in the device directory or files below a subdirectory
-	of the same device directory
-      - exposing attributes reached by a symlink of another device, like
-	the "device"-link, is a bug in the application
-
-   Everything else is just a kernel driver-core implementation detail,
-   that should not be assumed to be stable across kernel releases.
-
-- Properties of parent devices never belong into a child device.
-  Always look at the parent devices themselves for determining device
-  context properties. If the device 'eth0' or 'sda' does not have a
-  "driver"-link, then it does not have a driver. It's value is empty.
-  Never copy the value of the parent-device into a child-device. Parent
-  device-properties may change dynamically without any notice to the
-  child device.
-
-- Hierarchy in a single device-tree
-  There is only one valid place in sysfs where hierarchy can be examined
-  and this is below: /sys/devices.
-  It is planned, the all device directories will end up in the tree
-  below this directory.
-
-- Classification by subsystem
-  There are currently three places for classification of devices:
-  /sys/block, /sys/class and /sys/bus. It is planned, that these will
-  not contain any device-directories themselves, but only flat lists of
-  symlinks pointing to the unified /sys/devices tree.
-
-  All three places have completely different rules to access the
-  information.  It is planned to merge all three
-  classification-directories into one place at /sys/subsystem/,
-  following the current layout of the bus-directories. All buses and
-  classes, including the converted block-subsystemm, will show up
-  there.
-  The devices of a subsystem will create a symlink in the "devices"
-  directory at /sys/subsystem/<name>/devices/.
-
-  If /sys/subsystem exists, /sys/bus, /sys/class and /sys/block can be
-  ignored. If it doesn't exist, you have always to scan all three
-  places, as the kernel is free to move a subsystem from one place to
-  the other, as long as the devices are still reachable by the same
-  subsystem name
-
-  Assuming /sys/class/<subsystem> and /sys/bus/<subsystem>, or
-  /sys/block and /sys/class/block are not interchangeable, is a bug in
-  the application.
-
-- Block
-  The converted block-subsystem at /sys/class/block, or
-  /sys/subsystem/block will contain the links for disks and partitions
-  at the same level, never in a hierarchy. Assuming /sys/block to be
-  there, is a bug in the application.  Assuming the block-subsytem to
-  contain only disks and not partition-devices in the same flat list is
-  a bug in the application.
-
-- "device"-link and <subsystem>:<kernel name>-links
-  Never depend on the "device"-link. The "device"-link is a workaround
-  for the old layout, where class-devices are not created in
-  /sys/devices/ like the bus-devices. If the link-resolving of a
-  device-directory does not end in /sys/devices/, you can use the
-  "device"-link to find the parent devices in
-  /sys/devices/.  That's the single valid use of the "device"-link, it
-  must never appear in any path as an element. Assuming the existence of
-  the "device"-link for a device in /sys/devices/ is a bug in the
-  application. Exposing /sys/class/net/eth0/device is a bug in the
-  application. The "device"-link must be resolved to the real
-  device-path it points to, if you look for the parent.
-
-  Never depend on the class specific links back to the /sys/class
-  directory.  These links are also a workaround for the design mistake,
-  that class devices are not created in /sys/devices. If a device
-  directory does not contain directories for child devices, these links
-  may be used to find the child devices in /sys/class. That's the single
-  valid use of these links, they must never appear in any path as an
-  element. Assuming the existence of these links for devices which are
-  real child device directories in the /sys/devices tree, is a bug in
-  the application.
-
-  It is planned to remove all these links when when all class-device
-  directories live in /sys/devices.
-
-- Position of devices along device chain can change.
-  Never depend on a specific parent device in the devpath, or the chain
-  of parent devices. The kernel is free to insert devices into the
-  chain.  You must always request the parent device you are looking for
-  by its subsystem value. You need to walk up the chain until you find
-  the device.  Depending on a specific position of a parent device, or
-  exposing relative paths, using "../" to access the chain of parents,
-  is a bug in the application.
