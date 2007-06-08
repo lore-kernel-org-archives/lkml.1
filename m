@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970594AbXFHUBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970656AbXFHUER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970594AbXFHUBQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 16:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbXFHUBD
+	id S970656AbXFHUER (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 16:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbXFHUEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 16:01:03 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:53460 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751057AbXFHUBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 16:01:01 -0400
-Date: Fri, 8 Jun 2007 13:00:58 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       RT <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH RT] convert RCU Preempt tasklet into softirq.
-Message-ID: <20070608200058.GC18399@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1181180051.18444.31.camel@localhost.localdomain> <20070607041411.GB1783@linux.vnet.ibm.com> <1181226138.18444.54.camel@localhost.localdomain> <20070607161754.GA11941@linux.vnet.ibm.com> <1181240819.10408.14.camel@localhost.localdomain> <20070607210247.GA9390@linux.vnet.ibm.com> <1181316428.10408.30.camel@localhost.localdomain> <20070608193655.GA18399@linux.vnet.ibm.com> <1181331828.10408.34.camel@localhost.localdomain>
+	Fri, 8 Jun 2007 16:04:07 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:56220 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbXFHUEG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 16:04:06 -0400
+Date: Fri, 8 Jun 2007 13:04:07 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] Driver core fixes for 2.6.22-rc4
+Message-ID: <20070608200407.GA22825@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1181331828.10408.34.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 03:43:48PM -0400, Steven Rostedt wrote:
-> On Fri, 2007-06-08 at 12:36 -0700, Paul E. McKenney wrote:
-> > On Fri, Jun 08, 2007 at 11:27:08AM -0400, Steven Rostedt wrote:
-> 
-> > > The first time I compiled it, I forgot the ';' and got a warning there.
-> > > But the warning also included "declaring structure softirq_action in
-> > > prototype", so I fixed both the ';' and added the struct. I can try
-> > > compile without it. But I also know that adding #include <interrupt.h>
-> > > in rcupreempt.h caused issues too.
-> > 
-> > If I leave out both the "struct softirq_action" and the
-> > rcu_process_callbacks() declaration,, it compiles for me.
-> > 
-> > So I guess the rcu_process_callbacks() should be declared static...
-> 
-> OK, I can update the patch to reflect that. Remember, I didn't learn
-> anything from doing this patch, so I have no idea why
-> rcu_procell_callbacks was global. I was just keeping to the norm. :-)
+Here are some driver core fixes for 2.6.22-rc4
 
-Hey, -I- learned something from your doing the patch -- namely that
-rcu_process_callbacks() was needlessly non-static.  ;-)
+They contain:
+	- documentation update
+	- email fixes for a deceased maintainer
+	- fixes for PHYSDEV for older class_devices that broke some
+	  userspace tools unnecessarily
+	- printk levels for kobjects.
+	- fix compiler warning that like 10 people have emailed me
+	  patches for.
 
-> Actually, I'll make a separate patch for this change. This is a
-> different issue.
+All of these have been in the -mm tree for a number of weeks.
 
-Sounds good!
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
 
-						Thanx, Paul
+Patches will be sent as a follow-on to this message to lkml for people
+to see.
+
+thanks,
+
+greg k-h
+
+
+ Documentation/driver-model/platform.txt            |   40 +++++++++++++
+ Documentation/firmware_class/README                |    2 +-
+ .../firmware_class/firmware_sample_driver.c        |    2 +-
+ .../firmware_sample_firmware_class.c               |    4 +-
+ drivers/base/class.c                               |   59 +++++++-------------
+ drivers/base/core.c                                |   10 ++-
+ drivers/base/dd.c                                  |   13 ----
+ drivers/base/firmware_class.c                      |    4 +-
+ lib/kobject.c                                      |   10 ++--
+ 9 files changed, 78 insertions(+), 66 deletions(-)
+
+---------------
+
+David Brownell (1):
+      update Documentation/driver-model/platform.txt
+
+Greg Kroah-Hartman (1):
+      kobject: use the proper printk level for kobject error
+
+Kay Sievers (1):
+      Driver core: keep PHYSDEV for old struct class_device
+
+Markus Rechberger (1):
+      firmware: remove orphaned Email
+
+Stephen Hemminger (1):
+      Driver core: kill unused code
+
