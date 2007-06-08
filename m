@@ -1,99 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937832AbXFHHRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938020AbXFHHSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937832AbXFHHRp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937510AbXFHHQ5
+	id S938020AbXFHHSL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937667AbXFHHRC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:16:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33846 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937320AbXFHHQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:16:56 -0400
-Date: Fri, 8 Jun 2007 09:16:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 3/4] pi-futex: Fix exit races and locking problems
-Message-ID: <20070608071611.GB30226@elte.hu>
-References: <20070607235106.387346000@linutronix.de> <20070607235801.558491000@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070607235801.558491000@linutronix.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 8 Jun 2007 03:17:02 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33102 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937605AbXFHHQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:16:59 -0400
+Message-Id: <20070608071534.542715000@sous-sol.org>
+References: <20070608071511.159309000@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 08 Jun 2007 00:15:16 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Dan Williams <dan.j.williams@intel.com>, rmk@arm.linux.org.uk,
+       Martin Michlmayr <tbm@cyrius.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 05/32] iop13xx: fix i/o address translation
+Content-Disposition: inline; filename=iop13xx-fix-i-o-address-translation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+From: Dan Williams <dan.j.williams@intel.com>
 
-> From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-> 
-> 1. New entries can be added to tsk->pi_state_list after task completed
->    exit_pi_state_list(). The result is memory leakage and deadlocks.
-> 
-> 2. handle_mm_fault() is called under spinlock. The result is obvious.
-> 
-> 3. results in self-inflicted deadlock inside glibc.
->    Sometimes futex_lock_pi returns -ESRCH, when it is not expected
->    and glibc enters to for(;;) sleep() to simulate deadlock. This problem
->    is quite obvious and I think the patch is right. Though it looks like
->    each "if" in futex_lock_pi() got some stupid special case "else if". :-)
-> 
-> 4. sometimes futex_lock_pi() returns -EDEADLK,
->    when nobody has the lock. The reason is also obvious (see comment
->    in the patch), but correct fix is far beyond my comprehension.
->    I guess someone already saw this, the chunk:
-> 
->                         if (rt_mutex_trylock(&q.pi_state->pi_mutex))
->                                 ret = 0;
-> 
->    is obviously from the same opera. But it does not work, because the
->    rtmutex is really taken at this point: wake_futex_pi() of previous
->    owner reassigned it to us. My fix works. But it looks very stupid.
->    I would think about removal of shift of ownership in wake_futex_pi()
->    and making all the work in context of process taking lock.
-> 
-> From: Thomas Gleixner <tglx@linutronix.de>
-> 
-> Fix 1) Avoid the tasklist lock variant of the exit race fix by adding
->     an additional state transition to the exit code.
-> 
->     This fixes also the issue, when a task with recursive segfaults
->     is not able to release the futexes.
-> 
-> Fix 2) Cleanup the lookup_pi_state() failure path and solve the -ESRCH
->     problem finally.
-> 
-> Fix 3) Solve the fixup_pi_state_owner() problem which needs to do the fixup
->     in the lock protected section by using the in_atomic userspace access
->     functions.
-> 	
->     This removes also the ugly lock drop / unqueue inside of fixup_pi_state()
-> 
-> Fix 4) Fix a stale lock in the error path of futex_wake_pi()
-> 
-> Added some error checks for verification.
-> 
-> The -EDEADLK problem is solved by the rtmutex fixups.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+PCI devices were being programmed with an incorrect base address value.
+This patch moves I/O space into a 16-bit addressable region and corrects
+the i/o offset.
 
-i've read the patch and it looks all good - but obviously testing will 
-tell us what's up, this stuff is ... complex.
+Much thanks to Martin Michlmayr for tracking this issue and testing
+debug patches.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Michlmayr <tbm@cyrius.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
 
-	Ingo
+ arch/arm/mach-iop13xx/pci.c            |    8 ++++----
+ include/asm-arm/arch-iop13xx/iop13xx.h |   22 +++++++++++++---------
+ 2 files changed, 17 insertions(+), 13 deletions(-)
+
+--- linux-2.6.20.13.orig/arch/arm/mach-iop13xx/pci.c
++++ linux-2.6.20.13/arch/arm/mach-iop13xx/pci.c
+@@ -1023,7 +1023,7 @@ int iop13xx_pci_setup(int nr, struct pci
+ 				  << IOP13XX_ATUX_PCIXSR_FUNC_NUM;
+ 		__raw_writel(pcixsr, IOP13XX_ATUX_PCIXSR);
+ 
+-		res[0].start = IOP13XX_PCIX_LOWER_IO_PA;
++		res[0].start = IOP13XX_PCIX_LOWER_IO_PA + IOP13XX_PCIX_IO_BUS_OFFSET;
+ 		res[0].end   = IOP13XX_PCIX_UPPER_IO_PA;
+ 		res[0].name  = "IQ81340 ATUX PCI I/O Space";
+ 		res[0].flags = IORESOURCE_IO;
+@@ -1033,7 +1033,7 @@ int iop13xx_pci_setup(int nr, struct pci
+ 		res[1].name  = "IQ81340 ATUX PCI Memory Space";
+ 		res[1].flags = IORESOURCE_MEM;
+ 		sys->mem_offset = IOP13XX_PCIX_MEM_OFFSET;
+-		sys->io_offset = IOP13XX_PCIX_IO_OFFSET;
++		sys->io_offset = IOP13XX_PCIX_LOWER_IO_PA;
+ 		break;
+ 	case IOP13XX_INIT_ATU_ATUE:
+ 		/* Note: the function number field in the PCSR is ro */
+@@ -1044,7 +1044,7 @@ int iop13xx_pci_setup(int nr, struct pci
+ 
+ 		__raw_writel(pcsr, IOP13XX_ATUE_PCSR);
+ 
+-		res[0].start = IOP13XX_PCIE_LOWER_IO_PA;
++		res[0].start = IOP13XX_PCIE_LOWER_IO_PA + IOP13XX_PCIE_IO_BUS_OFFSET;
+ 		res[0].end   = IOP13XX_PCIE_UPPER_IO_PA;
+ 		res[0].name  = "IQ81340 ATUE PCI I/O Space";
+ 		res[0].flags = IORESOURCE_IO;
+@@ -1054,7 +1054,7 @@ int iop13xx_pci_setup(int nr, struct pci
+ 		res[1].name  = "IQ81340 ATUE PCI Memory Space";
+ 		res[1].flags = IORESOURCE_MEM;
+ 		sys->mem_offset = IOP13XX_PCIE_MEM_OFFSET;
+-		sys->io_offset = IOP13XX_PCIE_IO_OFFSET;
++		sys->io_offset = IOP13XX_PCIE_LOWER_IO_PA;
+ 		sys->map_irq = iop13xx_pcie_map_irq;
+ 		break;
+ 	default:
+--- linux-2.6.20.13.orig/include/asm-arm/arch-iop13xx/iop13xx.h
++++ linux-2.6.20.13/include/asm-arm/arch-iop13xx/iop13xx.h
+@@ -55,19 +55,24 @@ static inline int iop13xx_cpu_id(void)
+ #define IOP13XX_PCI_OFFSET	 IOP13XX_MAX_RAM_SIZE
+ 
+ /* PCI MAP
+- * 0x0000.0000 - 0x8000.0000           1:1 mapping with Physical RAM
+- * 0x8000.0000 - 0x8800.0000           PCIX/PCIE memory window (128MB)
+-*/
++ * bus range		cpu phys	cpu virt	note
++ * 0x0000.0000 + 2GB	(n/a)		(n/a)		inbound, 1:1 mapping with Physical RAM
++ * 0x8000.0000 + 928M	0x1.8000.0000   (ioremap)	PCIX outbound memory window
++ * 0x8000.0000 + 928M	0x2.8000.0000   (ioremap)	PCIE outbound memory window
++ * 
++ * IO MAP
++ * 0x1000 + 64K	0x0.fffb.1000	0xfec6.1000	PCIX outbound i/o window
++ * 0x1000 + 64K	0x0.fffd.1000	0xfed7.1000	PCIE outbound i/o window
++ */
+ #define IOP13XX_PCIX_IO_WINDOW_SIZE   0x10000UL
+ #define IOP13XX_PCIX_LOWER_IO_PA      0xfffb0000UL
+ #define IOP13XX_PCIX_LOWER_IO_VA      0xfec60000UL
+-#define IOP13XX_PCIX_LOWER_IO_BA      0x0fff0000UL
++#define IOP13XX_PCIX_LOWER_IO_BA      0x0UL /* OIOTVR */
++#define IOP13XX_PCIX_IO_BUS_OFFSET    0x1000UL
+ #define IOP13XX_PCIX_UPPER_IO_PA      (IOP13XX_PCIX_LOWER_IO_PA +\
+ 				       IOP13XX_PCIX_IO_WINDOW_SIZE - 1)
+ #define IOP13XX_PCIX_UPPER_IO_VA      (IOP13XX_PCIX_LOWER_IO_VA +\
+ 				       IOP13XX_PCIX_IO_WINDOW_SIZE - 1)
+-#define IOP13XX_PCIX_IO_OFFSET        (IOP13XX_PCIX_LOWER_IO_VA -\
+-				       IOP13XX_PCIX_LOWER_IO_BA)
+ #define IOP13XX_PCIX_IO_PHYS_TO_VIRT(addr) (u32) ((u32) addr -\
+ 					   (IOP13XX_PCIX_LOWER_IO_PA\
+ 					   - IOP13XX_PCIX_LOWER_IO_VA))
+@@ -93,15 +98,14 @@ static inline int iop13xx_cpu_id(void)
+ #define IOP13XX_PCIE_IO_WINDOW_SIZE   	 0x10000UL
+ #define IOP13XX_PCIE_LOWER_IO_PA      	 0xfffd0000UL
+ #define IOP13XX_PCIE_LOWER_IO_VA      	 0xfed70000UL
+-#define IOP13XX_PCIE_LOWER_IO_BA      	 0x0fff0000UL
++#define IOP13XX_PCIE_LOWER_IO_BA      	 0x0UL  /* OIOTVR */
++#define IOP13XX_PCIE_IO_BUS_OFFSET	 0x1000UL
+ #define IOP13XX_PCIE_UPPER_IO_PA      	 (IOP13XX_PCIE_LOWER_IO_PA +\
+ 					 IOP13XX_PCIE_IO_WINDOW_SIZE - 1)
+ #define IOP13XX_PCIE_UPPER_IO_VA      	 (IOP13XX_PCIE_LOWER_IO_VA +\
+ 					 IOP13XX_PCIE_IO_WINDOW_SIZE - 1)
+ #define IOP13XX_PCIE_UPPER_IO_BA      	 (IOP13XX_PCIE_LOWER_IO_BA +\
+ 					 IOP13XX_PCIE_IO_WINDOW_SIZE - 1)
+-#define IOP13XX_PCIE_IO_OFFSET        	 (IOP13XX_PCIE_LOWER_IO_VA -\
+-					 IOP13XX_PCIE_LOWER_IO_BA)
+ #define IOP13XX_PCIE_IO_PHYS_TO_VIRT(addr) (u32) ((u32) addr -\
+ 					   (IOP13XX_PCIE_LOWER_IO_PA\
+ 					   - IOP13XX_PCIE_LOWER_IO_VA))
+
+-- 
