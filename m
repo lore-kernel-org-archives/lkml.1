@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968341AbXFHJVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938113AbXFHJ2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968341AbXFHJVY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 05:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967186AbXFHJVN
+	id S938113AbXFHJ2v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 05:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932937AbXFHJ2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 05:21:13 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:58076 "EHLO pfx2.jmh.fr"
+	Fri, 8 Jun 2007 05:28:42 -0400
+Received: from mga03.intel.com ([143.182.124.21]:2585 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967182AbXFHJVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 05:21:12 -0400
-Date: Fri, 8 Jun 2007 11:19:09 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: "Daniel Colascione" <danc@merrillpress.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: O_CLOEXEC: An alternate proposal
-Message-Id: <20070608111909.d338f974.dada1@cosmosbay.com>
-In-Reply-To: <45111.76.180.38.217.1181288832.squirrel@vpn.merrillpress.com>
-References: <45111.76.180.38.217.1181288832.squirrel@vpn.merrillpress.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S932071AbXFHJ2l convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 05:28:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,399,1175497200"; 
+   d="scan'208";a="236985230"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] driver core: multithreaded device matching with dependency
+Date: Fri, 8 Jun 2007 17:27:34 +0800
+Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC2041245@pdsmsx415.ccr.corp.intel.com>
+In-Reply-To: <466919FB.8080204@s5r6.in-berlin.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] driver core: multithreaded device matching with dependency
+Thread-Index: Acepqw/YOfRjYUUbSEu/xZFH1ybEZwAA7+pQ
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Cc: <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
+X-OriginalArrivalTime: 08 Jun 2007 09:27:35.0107 (UTC) FILETIME=[3F617130:01C7A9AF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007 03:47:12 -0400 (EDT)
-"Daniel Colascione" <danc@merrillpress.com> wrote:
+>From: Stefan Richter [mailto:stefanr@s5r6.in-berlin.de]
+>
+>How can subsystems control multithreaded vs. singlethreaded probes?
+>
+>For example, the IEEE 1394 subsystem should probe different nodes in
+>parallel, but different units on the same node serially.  Similar
+>requirements exist with other hardware.
 
-> Hey, this is my first post to linux-kernel, so please be kind. :-)
+For subsystems specific dependency problems, a field as follow can be
+added into struct device:
 
-Welcome Daniel
+struct device *depend;
 
-> 
-> Linus Torvalds wrote on May 31:
-> > I'm with Uli on this one. "Stateful" stuff is bad. It's essentially
-> > impossible to handle with libraries - either the library would have to
-> > explciitly always turn the state the way _it_ needs it, or the library
-> > will do the wrogn thing.
-> 
-> I agree that stateful stuff is generally not very elegant,
-> but I think it's a win here -- we wouldn't have to create any
-> new APIs except for the state-setting stuff.
-> 
-> The state just has to be thread-local.
-> 
-> If it's thread-local, a library, say, glibc,
-> can use code like this:
-> 
->   /* Internal library function */
->   old_fd_flags = kernel_default_fd_flags(FD_CLOEXEC | FD_RANDFD);
+The parallel device probing code will not do probing for the device,
+unless the device pointed by "depend" has been probed, that is, they are
+probed serially. As for IEEE 1394 subsystem, when the subsystem adds new
+devices, the different units on the same node are linked together with
+the "depend" field, so that they can be probed serially. So do other
+subsystems.
 
-<race here if a signal handler runs some user code messing with a thread-local fd_flags >
+>Also, how can subsystems enable and disable multithreaded probes?
 
->   event_fd = super_duper_event_polling_mechanism_fd();
->   kernel_default_fd_flags(old_fd_flags);
-> 
-> I think that's a lot cleaner than augmenting every
-> present and future fd-creating syscall to take some kind
-> of flags parameter and adding some kind of funny dup().
-> 
+If subsystem needs strictly serial probing, it can accomplish this
+through "depend" field as mentioned above.
 
-Thats funny, you probably missed Linus syscall_indirect() proposal, 
-which is basically doing the thing but with one syscall (so no races, and faster)
+>> +EXPORT_SYMBOL_GPL(device_match_freeze);
+>> +EXPORT_SYMBOL_GPL(device_match_thaw);
+>
+>Their definitions lack kerneldoc comments.
 
-http://marc.info/?l=linux-kernel&m=118124716616552&w=2
+Sorry, I will add it in the next version.
 
+Best Regards,
+Huang Ying
