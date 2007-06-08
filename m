@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031040AbXFHRhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031088AbXFHRiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031040AbXFHRhf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 13:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbXFHRh1
+	id S1031088AbXFHRiU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 13:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764198AbXFHRiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 13:37:27 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:35592 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756381AbXFHRh0 (ORCPT
+	Fri, 8 Jun 2007 13:38:04 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50165 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759920AbXFHRiB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 13:37:26 -0400
-Message-ID: <466993CF.4050804@de.ibm.com>
-Date: Fri, 08 Jun 2007 19:37:19 +0200
-From: Martin Peschke <mp3@de.ibm.com>
-Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
- =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
- =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
- =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
- =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org, jbaron@redhat.com, rostedt@goodmis.org,
-       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
-Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
-References: <1181165656.7133.23.camel@dix> <1181202258.7348.217.camel@twins> <46698B1D.3000806@de.ibm.com> <1181322460.5728.2.camel@lappy> <46698F7F.4090407@de.ibm.com> <1181323622.5728.6.camel@lappy>
-In-Reply-To: <1181323622.5728.6.camel@lappy>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 8 Jun 2007 13:38:01 -0400
+Date: Fri, 8 Jun 2007 10:37:56 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: vatsa@in.ibm.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
+       xemul@sw.ru, dev@sw.ru, containers@lists.osdl.org,
+       ebiederm@xmission.com, mbligh@google.com, rohitseth@google.com,
+       serue@us.ibm.com, menage@google.com, svaidy@linux.vnet.ibm.com,
+       cpw@sgi.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 00/10] Containers(V10): Generic Process
+ Containers
+Message-Id: <20070608103756.4f79accc.pj@sgi.com>
+In-Reply-To: <20070608143250.GA7728@vino.hallyn.com>
+References: <20070604204131.GB19409@sergelap.austin.ibm.com>
+	<20070604140533.65e25286.pj@sgi.com>
+	<20070606223952.GB5626@sergelap.austin.ibm.com>
+	<20070606154347.a155630b.pj@sgi.com>
+	<20070607000559.GA19529@sergelap.austin.ibm.com>
+	<20070606174609.bfa01446.pj@sgi.com>
+	<20070607180158.GA936@sergelap.austin.ibm.com>
+	<20070607122121.24fe6ff4.pj@sgi.com>
+	<20070607201723.GA17011@sergelap.austin.ibm.com>
+	<20070607150113.f020d8f8.pj@sgi.com>
+	<20070608143250.GA7728@vino.hallyn.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Fri, 2007-06-08 at 19:18 +0200, Martin Peschke wrote:
->> Peter Zijlstra wrote:
->>> On Fri, 2007-06-08 at 19:00 +0200, Martin Peschke wrote:
->>>> Peter Zijlstra wrote:
->>>>> I'm confused as to where the class->stat objects are initialised? Is
->>>>> that done in lock_stat_init()? If so, then you have a bug.
->>>> static struct lock_class lock_classes[MAX_LOCKDEP_KEYS];
->>>>
->>>> I assume this gets us class structures containing all zeros, doesn't it?
->>>> Then class->stat is zeros as well, which is handled by lib/statistics.
->>>> (In this case, data gathering hasn't been turned on yet, and statistic_inc()
->>>> and similar functions don't access other areas of struct statistic.)
->>> Who eventually calls percpu_alloc?
->> There is a small state machine calling percpu_alloc when users do
->>
->>     echo state=on > /debug/statistics/lockdep/definition
->>
->> So data gathering is off by default.
->>
->> It might make sense to allow "state=on" as a default. Then allocation would
->> be done in the context of statistic_attach().
-> 
-> Right, the problem here is that you iterate over all_lock_classes once
-> at init.
-> 
-> Contrary to what the name might suggest, it are not all possible
-> classes, just all active ones. So you'll only attach the classes which
-> have been used up until the init point. All other classes used later
-> will never be initialized.
+> Anyway the patch I sent is simple enough, and if users end up demanding
+> the ability to better deal with exclusive cpusets, the patch will be
+> simple enough to extend by changing cpuset_auto_setup(), so let's
+> stick with that patch since it's your preference (IIUC).
 
-Ah..
+Yeah - probably so.
 
-Do you know where a class is setup for first use?
-I guess it is feasible to move statistic initialisation to that place.
+    When someone gets serious about things like checkpoint, restart, and
+    migrate functionality, based on this container cloning, working with
+    cpusets, they will probably have to revisit this interaction with
+    exclusive cpusets.
 
-Is there a place where a class becomes unused again?
+Perhaps a comment could be put in the code, saying something like the
+above, so whomever does this will realize they are traveling in
+unchartered territory.
 
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
