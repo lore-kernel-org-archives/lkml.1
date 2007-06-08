@@ -1,93 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031604AbXFHVmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939456AbXFHVno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031604AbXFHVmc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 17:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXFHVmZ
+	id S939456AbXFHVno (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 17:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933526AbXFHVne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 17:42:25 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46092 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750926AbXFHVmY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 17:42:24 -0400
-Date: Fri, 8 Jun 2007 14:42:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: Andreas Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool
- handling
-Message-Id: <20070608144207.07341ee7.akpm@linux-foundation.org>
-In-Reply-To: <20070608212054.GB641@linux-os.sc.intel.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
-	<20070606190042.510643000@askeshav-devel.jf.intel.com>
-	<20070607162726.2236a296.akpm@linux-foundation.org>
-	<20070608182156.GA24865@linux-os.sc.intel.com>
-	<20070608120107.245eba96.akpm@linux-foundation.org>
-	<6901450.1181335390183.SLOX.WebMail.wwwrun@imap-dhs.suse.de>
-	<20070608212054.GB641@linux-os.sc.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 8 Jun 2007 17:43:34 -0400
+Received: from pat.uio.no ([129.240.10.15]:58066 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750926AbXFHVnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 17:43:33 -0400
+Subject: Re: networking busted in current -git ???
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: Florin Iucha <florin@iucha.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <200706082307.45722.arekm@maven.pl>
+References: <20070608205640.GI30661@iucha.net>
+	 <200706082307.45722.arekm@maven.pl>
+Content-Type: text/plain
+Date: Fri, 08 Jun 2007 17:43:27 -0400
+Message-Id: <1181339007.6675.12.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.4, required=12.0, autolearn=disabled, AWL=-0.405,HOT_NASTY=0.809)
+X-UiO-Scanned: DD9DFFCBAEC64F3002C25D8E40C284114081173B
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 4 maxlevel 200 minaction 2 bait 0 mail/h: 295 total 2268437 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007 14:20:54 -0700
-"Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
-
-> > This means mempools don't work for those (the previous version had non
-> > sensical
-> > constructs like GFP_ATOMIC mempool calls)
-> > 
-> > __I haven't looked at Anil's code, but I suspect the only really robust
-> > way to handle this case is to always preallocate everything. But I'm not
-> > sure
-> > why that would need new library functions; it should be just some simple
-> > lists that could be open coded.
+On Fri, 2007-06-08 at 23:07 +0200, Arkadiusz Miskiewicz wrote:
+> On Friday 08 of June 2007, you wrote:
+> > Hello,
+> >
+> > I am using the current git tree: 85f6038f2170e3335dda09c3dfb0f83110e87019 .
+> > Git tree from two days ago (with the same config) works fine.
+> >
+> > Attempting to acquire an IP address via DHCP fails with:
+> >
+> > SIOCSIFADDR: No buffer space available
+> > Listening on LPF/eth0/00:19:b9:0c:9a:43
+> > Sending on   LPF/eth0/00:19:b9:0c:9a:43
+> > Sending on   Socket/fallback
+> > DHCPREQUEST on eth0 to 255.255.255.255 port 67
+> > DHCPACK from xxx.xxx.xxx.xxx
+> > SIOCSIFADDR: No buffer space available
+> > SIOCSIFNETMASK: Cannot assign requested address
+> > SIOCSIFBRDADDR: Cannot assign requested address
+> > SIOCADDRT: Network is unreachable
+> > bound to xxx.xxx.xxx.xxx -- renewal in 98610 seconds.
+> >
+> > This is on a Dell 490 with tg3 network driver running Ubuntu 7.04 .
+> > .config and dmesg are appended.
+> >
+> > florin
 > 
-> Since it is practically impossible to predicit how much to preallocate,
-> we have a min_count+grow_count of object allocated and we always use from this
-> pool. If the object count goes below certain low threshold(which acts as 
-> emergency pool from this point), the pool grows by allocating and 
-> adding the newly allocated object into the pool in the
-> worker (keventd) thread. 
+> Here it requires few retries (stop dhcpcd, start again) to get the IP. git 
+> tree from few hours ago. tg3 driver. I also saw SIOCSIFADDR: No buffer space 
+> available once.
 
-Asking keventd to do this might be problematic: there may be code in various
-dark corners of device drivers which also depend upon keventd services for
-IO completion, in which case there might be obscure deadlocks, dunno. 
-otoh, keventd already surely does GFP_KERNEL allocations...
+(added netdev to the Cc list)
 
-But still, the whole thing seems pointless: kswapd is already doing all of
-this, replenishing the page reserves.  So why not use that?
+It is not dhcp. I'm seeing the same bug with bog-standard ifup with a
+static address on an FC-6 machine.
 
-> Again, once the IO pressure is over, the PCI driver
-> does the unmap calls and we put back the objects back to preallocate pools.
-> The smartness is builtin to the pool as the elements are put back to the 
-> pool it detects that the pool count is greater then the threshold and 
-> it automagically queues the work to free the objects and bring back the 
-> pre-allocated object count back to minimum threshold.
-> Thus this preallocated pool grow and shrinks based on the demand, while
-> acting as both pre-allocated pools and as emergency pool.
-> 
-> Currently I have made this as a libray functions, if that is not correct,
-> we can pull this and make it part of the Intel IOMMU driver itself.
-> Please do let me know your suggestions.
+It appears to be something in the latest dump from davem to Linus, but I
+haven't yet had time to identify what.
 
-I'd say just remove the whole thing and use kmem_cache_alloc().
+Cheers
+  Trond
 
-Put much effort into removing the GFP_ATOMIC and using GFP_NOIO instead:
-there's your problem right there.
-
-If for some reason you really can't do that (and a requirement for
-allocation-in-interrupt is the only valid reason, really) and if you indeed
-can demonstrate memory allocation failures with certain workloads then
-let's take a look at that.  As I said, attaching a reserve pool to your
-slab cache might be a suitable approach.  But none of these things are
-magic: if memory allcoation failures or deadlocks or livelocks are
-demonstrable with the reserves absent, then they'll also be possible with
-the reserves present.
-
-Unless you use mempools, and can sleep.
