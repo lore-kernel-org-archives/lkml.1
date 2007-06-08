@@ -1,84 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938748AbXFHRpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031055AbXFHRqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938748AbXFHRpN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 13:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936025AbXFHRo6
+	id S1031055AbXFHRqS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 13:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936025AbXFHRqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 13:44:58 -0400
-Received: from ausmtp06.au.ibm.com ([202.81.18.155]:52041 "EHLO
-	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936936AbXFHRo5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 13:44:57 -0400
-Message-ID: <46699584.2020905@linux.vnet.ibm.com>
-Date: Fri, 08 Jun 2007 23:14:36 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Fri, 8 Jun 2007 13:46:08 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33130 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937249AbXFHRqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 13:46:06 -0400
+Date: Fri, 8 Jun 2007 10:45:45 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Mark Salyzyn <aacraid@adaptec.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] [patch 37/54] SCSI: aacraid: Correct sa platform
+	support. (Was: [Bug 8469] Bad EIP value on pentium3 SMP
+	kernel-2.6.21.1)
+Message-ID: <20070608174545.GZ3723@sequoia.sous-sol.org>
+References: <20070608072127.352723000@sous-sol.org> <20070608072222.066056000@sous-sol.org> <200706081913.07975.s.L-H@gmx.de>
 MIME-Version: 1.0
-To: Pavel Emelianov <xemul@openvz.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Herbert Poetzl <herbert@13thfloor.at>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 0/8] RSS controller based on process containers (v3.1)
-References: <466412C5.1060104@openvz.org> <20070608120343.GA27847@MAIL.13thfloor.at> <46694E00.8020407@openvz.org> <20070608153700.GB27847@MAIL.13thfloor.at>
-In-Reply-To: <20070608153700.GB27847@MAIL.13thfloor.at>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706081913.07975.s.L-H@gmx.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Stefan Lippers-Hollmann (s.L-H@gmx.de) wrote:
+> This patch fails to compile on amd64 and i386 with the attached config 
+> (CONFIG_SCSI_AACRAID=m, 2.6.21.5-rc1):
+>   CC [M]  drivers/scsi/aacraid/linit.o
+>   CC [M]  drivers/scsi/aacraid/aachba.o
+>   CC [M]  drivers/scsi/aacraid/commctrl.o
+>   CC [M]  drivers/scsi/aacraid/comminit.o
+>   CC [M]  drivers/scsi/aacraid/commsup.o
+>   CC [M]  drivers/scsi/aacraid/dpcsup.o
+>   CC [M]  drivers/scsi/aacraid/rx.o
+>   CC [M]  drivers/scsi/aacraid/sa.o
+> drivers/scsi/aacraid/sa.c: In function 'aac_sa_init':
+> drivers/scsi/aacraid/sa.c:375: error: 'struct adapter_ops' has no member 
+> named 'adapter_restart'
 
+Mark, this patch is apparently against a slightly newer kernel which
+includes 8418852d11f0bbaeebeedd4243560d8fdc85410d:
+	[SCSI] aacraid: add restart adapter platform function
 
-Herbert Poetzl wrote:
-> On Fri, Jun 08, 2007 at 04:39:28PM +0400, Pavel Emelianov wrote:
->> Herbert Poetzl wrote:
->>> On Mon, Jun 04, 2007 at 05:25:25PM +0400, Pavel Emelianov wrote:
-[snip]
->>>> When this usage exceeds the limit set some pages are reclaimed
->>>> from the owning container. In case no reclamation possible the OOM
->>>> killer starts thinning out the container.
->>> so the system (physical machine) starts reclaiming
->>> and probably swapping even when there is no need
->>> to do so?
->> Good catch! The system will start reclaiming right when the
->> container hits the limit to expend its IO bandwidth. Not some
->> other's one that hit the global limit due to some bad container
->> was allowed to go above it.
-> 
-> well, from the system PoV, a constantly swapping
-> guest (on an otherwise unused host) is definitely
-> something you do not really want, not to talk
-> about a tightly packed host system, where guests
-> start hogging the I/O with _unnecessary_ swapping
-> 
->>> e.g. a system with a single guest, limited to 10k
->>> pages, with a working set of 15k pages in different
->>> apps would continuously swap (trash?) on an otherwise
->>> unused (100k+ pages) system?
->>>
+See any issue with this against 2.6.21.4 (simply drops adapter_restart
+bits).
 
-Hi Herbert,
+thanks,
+-chris
+--
 
-When the reclaim process started, swappable pages are unmapped and
-moved to swapcache.  The RSS accounting treats the page as dropped,
-but however the page will remain in memory until there is enough
-global pressure to push it out to disk.  When a page is faulted-in,
-the page is just remapped from the swapcache.
+From: Salyzyn, Mark <mark_salyzyn@adaptec.com>
+Subject: SCSI: aacraid: Correct sa platform support. (Was: [Bug 8469] Bad EIP value on pentium3 SMP kernel-2.6.21.1)
 
-In effect container 'trashing' is not as bad in an otherwise unused
-system.  Well, certainly we pay a penalty to move around the pages
-instead of keeping them mapped in RSS as long as free memory was
-available.
+http://bugzilla.kernel.org/show_bug.cgi?id=8469
 
-The pagecache controller is suppose to track the pagecache and
-swapcache pages and push out pages to disk. As Balbir and Pavel have
-mentioned, we will be building the features in stages.
+As discussed in the bugzilla outlined below, we have an sa based
+(Mustang) RAID adapter on the system, a Dell PERC2/QC. Affected
+controllers are HP NetRAID, Adaptec AAC-364, Dell PERC2/QC or Adaptec
+5400S. This problem  coincides with the introduction of the adapter_comm
+and adapter_deliver platform functions (Message [PATCH 1/4] aacraid:
+rework communication support code, January 23 2007, which initially
+migrated to 2.6.21)
 
---Vaidy
+The panic occurs with an uninitialized adapter_deliver platform function
+pointer. The enclosed patch, unmodified as tested by Rainer, solves the
+problem.
 
-[snip]
+Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
+Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+[chrisw: backport to 2.6.21.4]
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
+---
+ drivers/scsi/aacraid/aacraid.h |    1 +
+ drivers/scsi/aacraid/rx.c      |    2 +-
+ drivers/scsi/aacraid/sa.c      |    3 ++-
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+--- linux-2.6.21.4.orig/drivers/scsi/aacraid/aacraid.h
++++ linux-2.6.21.4/drivers/scsi/aacraid/aacraid.h
+@@ -1840,6 +1840,7 @@ struct aac_driver_ident* aac_get_driver_
+ int aac_get_adapter_info(struct aac_dev* dev);
+ int aac_send_shutdown(struct aac_dev *dev);
+ int aac_probe_container(struct aac_dev *dev, int cid);
++int aac_rx_deliver_producer(struct fib * fib);
+ extern int numacb;
+ extern int acbsize;
+ extern char aac_driver_version[];
+--- linux-2.6.21.4.orig/drivers/scsi/aacraid/rx.c
++++ linux-2.6.21.4/drivers/scsi/aacraid/rx.c
+@@ -378,7 +378,7 @@ static int aac_rx_check_health(struct aa
+  *
+  *	Will send a fib, returning 0 if successful.
+  */
+-static int aac_rx_deliver_producer(struct fib * fib)
++int aac_rx_deliver_producer(struct fib * fib)
+ {
+ 	struct aac_dev *dev = fib->dev;
+ 	struct aac_queue *q = &dev->queues->queue[AdapNormCmdQueue];
+--- linux-2.6.21.4.orig/drivers/scsi/aacraid/sa.c
++++ linux-2.6.21.4/drivers/scsi/aacraid/sa.c
+@@ -5,7 +5,7 @@
+  * based on the old aacraid driver that is..
+  * Adaptec aacraid device driver for Linux.
+  *
+- * Copyright (c) 2000 Adaptec, Inc. (aacraid@adaptec.com)
++ * Copyright (c) 2000-2007 Adaptec, Inc. (aacraid@adaptec.com)
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -368,6 +368,7 @@ int aac_sa_init(struct aac_dev *dev)
+ 	dev->a_ops.adapter_sync_cmd = sa_sync_cmd;
+ 	dev->a_ops.adapter_check_health = aac_sa_check_health;
+ 	dev->a_ops.adapter_intr = aac_sa_intr;
++	dev->a_ops.adapter_deliver = aac_rx_deliver_producer;
+ 	dev->a_ops.adapter_ioremap = aac_sa_ioremap;
+ 
+ 	/*
