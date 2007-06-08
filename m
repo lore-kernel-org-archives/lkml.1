@@ -1,130 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031923AbXFHXDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939655AbXFHXOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031923AbXFHXDO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 19:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755563AbXFHXC4
+	id S939655AbXFHXOm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 19:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbXFHXOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 19:02:56 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:44031 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032436AbXFHXCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 19:02:53 -0400
-Subject: Re: [patch] Move led attributes out of device name and into sysfs
-	attributes, was Re: LED devices
-From: Richard Purdie <rpurdie@openedhand.com>
-To: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Richard Hughes <hughsient@gmail.com>, "kay.sievers" <kay.sievers@vrfy.org>,
-       "Bryn M. Reeves" <breeves@redhat.com>, John Lenz <lenz@cs.wisc.edu>
-In-Reply-To: <20070608185710.GB14372@kroah.com>
-References: <1180710270.3782.5.camel@localhost.localdomain>
-	 <1180712592.6390.139.camel@localhost.localdomain>
-	 <1180713579.12843.8.camel@localhost.localdomain>
-	 <1180715004.6390.169.camel@localhost.localdomain>
-	 <20070608185710.GB14372@kroah.com>
-Content-Type: text/plain
-Date: Sat, 09 Jun 2007 00:02:28 +0100
-Message-Id: <1181343748.9506.116.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jun 2007 19:14:34 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40506 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754172AbXFHXOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 19:14:34 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+References: <200706061229.24486.jesse.barnes@intel.com>
+	<m1wsygryw3.fsf@ebiederm.dsl.xmission.com>
+	<200706071030.15317.jesse.barnes@intel.com>
+Date: Fri, 08 Jun 2007 17:13:22 -0600
+In-Reply-To: <200706071030.15317.jesse.barnes@intel.com> (Jesse Barnes's
+	message of "Thu, 7 Jun 2007 10:30:14 -0700")
+Message-ID: <m13b12rqel.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-08 at 11:57 -0700, Greg KH wrote:
-> On Fri, Jun 01, 2007 at 05:23:24PM +0100, Richard Purdie wrote:
-> > I still question whether either colour or function properties are
-> > actually particularly useful to userspace other than for naming purposes
-> > which is why they were part of the device name.
-> > 
-> > Anyhow, I'm trying not to say too much more as it will just go in
-> > circles. I'll await a reply from Greg.
-> 
-> Hm, I thought I made my opinion pretty clear in the beginning.
-> 
-> Why not just do a simple:
-> 	led01
-> 	led02
-> 	led03
-> 	...
-> 
-> and so on?
-
-If we do this, my point is we're exporting something to userspace which
-is totally devoid of information. 
-
-sysfs is for userspace and "led01" means absolutely nothing to it. The
-most you can summarise from it is it happens to have registered first
-and its an LED. Since its in class/leds/ we can summarise the latter
-without help from the prefix. I'd hate to think userspace cares about
-the former.
-
-> And use the 'name' field to put the name of your device (disk,
-> bluetooth, etc.)  This is the way all other busses and devices work, and
-> I don't think that LEDs are anything more "special" than anything else
-> in the kernel, right?
-
-Since the "busid" field means absolutely nothing, why not give it a
-sensible id and save the overhead of a separate name?
-
-If kernel policy is that we should have useless data in sysfs, so be it,
-I just make sure that is on record and then break the defined LED class
-API.
+Jesse Barnes <jesse.barnes@intel.com> writes:
 
 
-<serious mode>
-Ok, so I make the point above with a sledge hammer. There are more
-subtle issues here too. People are asking for a ton of extra attributes
-for the LED class. We can have a name, a colour, an LED "function", a
-location on the device and probably 101 other things.
+>> - Overlapping MTRRs.
+>
+> Overlapping should be ok, since that's usually intentional (e.g. one big 
+> wb range with a portion of uc space due to another mtrr).
 
-As I understand it, sysfs was put there to pass information *the kernel
-knows* to userspace. The kernel doesn't actually care about the location
-of an LED or its colour. All the kernel cares is we have an LED and it
-has a certain brightness.
+I'm not say overlapping was a bug.  I was saying that you don't handle
+overlapping mtrrs in figuring the last cached addresses.  Therefore
+when a UC range overlaps a WB range we might thing the last page
+in the WB range is cached when it is not.
 
-Yes, we can teach the kernel all this extra info but it is simply to
-pass to userspace. Why should my kernel be bloated with all that extra
-information which it doesn't need itself?
+>> - What happens if we have uncached memory lower down?
+>
+> Holes definitely aren't dealt with, but then we haven't seen any yet...
+>
+>>   Except for performance problems I guess that case is relatively
+>> harmless. - Is it possible and worth it to amend the e820 map, so it
+>> shows the problem area as Reserved or otherwise not usable RAM?
+>
+> That would be useful, but only if we moved the check to a little 
+> earlier, prior to the addition of the active ranges from the e820.  
+> Might be a little nicer than adjusting end_pfn, but will ultimately 
+> achieve the same thing...
 
-My conclusion is that there should be something in userspace
-supplementing this information from the kernel. Going back the the
-problem at hand, HAL is already equipped to do this, all it needs is
-some kind of unique ID so it can identify the LED. This would be the
-busid.
+Yes, with perhaps a little more consistency.
 
-So I do stand by what the LED class does as being sane. Yes, the class
-defined a way of writing its busids which isn't like any other but there
-is a good reason for it. We could make it machine readable to provide
-hints to userspace and I never saw any reason why we shouldn't have
-done. It was discussed on LKML and no objections were raised (it was in
-fact requested). The choice of field separator is unfortunate since its
-developed other meanings after it was used in the LED class, such is
-life.
-
-So there are various options:
-
-1. We keep 'useful' busids and the LED class continues as is. We accept
-classes can provide a busid naming policy if it makes sense.
-
-2. We adopt free form busids and export a ton of attributes just useful
-to userspace (bloating the kernel IMO).
-
-3. As 2. but use 'useless' busids that mean nothing.
-
-4. We adopt free form busids but let userspace fill in its own
-information based on the busid (no policy on naming).
-
-5. Other combinations thereof.
-
-
-I'm very aware I'm isolated here and ultimately this is probably Greg's
-decision which I will end up abiding by. If anyone else does have a
-view, speak now ;-). I think there are some important issues here and
-they do need clarification, one way or another.
-
-
-Cheers,
-
-Richard
-
-
+Eric
