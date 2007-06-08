@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969392AbXFHROJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031031AbXFHRO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969392AbXFHROJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 13:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967192AbXFHRNy
+	id S1031031AbXFHRO1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 13:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030777AbXFHROD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 13:13:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46402 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761169AbXFHRNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 13:13:52 -0400
-Message-ID: <46698941.5030200@redhat.com>
-Date: Fri, 08 Jun 2007 12:52:17 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Fri, 8 Jun 2007 13:14:03 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:47997 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030628AbXFHRN7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 13:13:59 -0400
+Message-ID: <46698E50.6030108@de.ibm.com>
+Date: Fri, 08 Jun 2007 19:13:52 +0200
+From: Martin Peschke <mp3@de.ibm.com>
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Drake <dsd@gentoo.org>,
-       Roland Scheidegger <sroland@tungstengraphics.com>,
-       Dmitry Torokhov <dtor@mail.ru>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [patch 16/54] Input: i8042 - fix AUX port detection with some
- chips
-References: <20070608072127.352723000@sous-sol.org> <20070608072158.875539000@sous-sol.org>
-In-Reply-To: <20070608072158.875539000@sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, jbaron@redhat.com, rostedt@goodmis.org,
+       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+References: <1181165656.7133.23.camel@dix> <1181202683.7348.220.camel@twins>
+In-Reply-To: <1181202683.7348.220.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/08/2007 03:21 AM, Chris Wright wrote:
-> -stable review patch.  If anyone has any objections, please let us know.
-> ---------------------
+Peter Zijlstra wrote:
+> On Wed, 2007-06-06 at 23:34 +0200, Martin Peschke wrote:
 > 
-> From: Roland Scheidegger <sroland@tungstengraphics.com>
+>> +struct statistic_info lock_stat_info[_LOCK_STAT_NUMBER] = {
+>> +	[LOCK_STAT_CONT] = {
+>> +		.name	  = "contentions",
+>> +		.x_unit	  = "instruction_pointer",
+>> +		.y_unit	  = "occurrence",
+>> +		.defaults = "type=sparse entries=4",
+>> +		.flags	  = STATISTIC_FLAGS_LABEL,
+>> +	},
+>> +	[LOCK_STAT_WAIT_READ] = {
+>> +		.name	  = "wait_read",
+>> +		.x_unit	  = "nanoseconds",
+>> +		.y_unit	  = "occurrence",
+>> +		.defaults = "type=utilisation",
+>> +	},
+>> +	[LOCK_STAT_WAIT_WRITE] = {
+>> +		.name	  = "wait_write",
+>> +		.x_unit	  = "nanoseconds",
+>> +		.y_unit	  = "occurrence",
+>> +		.defaults = "type=utilisation",
+>> +	},
+>> +	[LOCK_STAT_HOLD_READ] = {
+>> +		.name	  = "hold_read",
+>> +		.x_unit	  = "nanoseconds",
+>> +		.y_unit	  = "occurrence",
+>> +		.defaults = "type=utilisation",
+>> +	},
+>> +	[LOCK_STAT_HOLD_WRITE] = {
+>> +		.name	  = "hold_write",
+>> +		.x_unit	  = "nanoseconds",
+>> +		.y_unit	  = "occurrence",
+>> +		.defaults = "type=utilisation",
+>>  	}
+>>  };
 > 
-> The i8042 driver fails detection of the AUX port with some chips,
-> because they apparently do not change the I8042_CTR_AUXDIS bit
-> immediately. This is known to affect at least HP500/HP510 notebooks,
-> consequently the built-in touchpad will not work. The patch will simply
-> reread the value until it gets the expected value or a retry limit is
-> hit, without touching other workaround code in the same area.
-> 
-> Signed-off-by: Roland Scheidegger <sroland@tungstengraphics.com>
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
-> X-Git-Url: http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git;a=commitdiff_plain;h=d2ada5597d33a9108acb2caf912f85cbc9caab1e
-> 
+> You're parsing strings in-kernel to setup data structures?
 
-Also needed for 2.6.20.
+Might be surprising (or revolting?)... but, yes, I do.
+
+.defaults reflects the developers opinion on the way of data
+accumululation that might make most sense in most cases.
+The current implementation of lib/statistic.c allows users to change
+setting that we see in .defaults. If one needs to track more than
+4 contention points, for example, then they can change this limit by
+passing "entries=4" to the user interface. So there is some parsing
+code anyway. Passing default setting in a similar fashion has just been
+convenient for the developer.
 
