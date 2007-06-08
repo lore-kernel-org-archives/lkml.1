@@ -1,54 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031274AbXFHShD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938646AbXFHSlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031274AbXFHShD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 14:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968937AbXFHSgy
+	id S938646AbXFHSlQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 14:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762861AbXFHSlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 14:36:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33552 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S968169AbXFHSgx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 14:36:53 -0400
-Date: Fri, 8 Jun 2007 11:35:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-cc: Davide Libenzi <davidel@xmailserver.org>,
-       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <20070608120746.GD12687@thunk.org>
-Message-ID: <alpine.LFD.0.98.0706081132150.4205@woody.linux-foundation.org>
-References: <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu>
- <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
- <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
- <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
- <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
- <20070608120746.GD12687@thunk.org>
+	Fri, 8 Jun 2007 14:41:04 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:40679 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761035AbXFHSlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 14:41:01 -0400
+Date: Fri, 8 Jun 2007 11:40:42 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, Stefan Lippers-Hollmann <s.L-H@gmx.de>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       AACRAID <aacraid@adaptec.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org, davej@redhat.com
+Subject: Re: [stable] [patch 37/54] SCSI: aacraid: Correct
+	saplatformsupport. (Was: [Bug 8469] Bad EIP value on
+	pentium3SMPkernel-2.6.21.1)
+Message-ID: <20070608184042.GK3723@sequoia.sous-sol.org>
+References: <20070608182917.GI3723@sequoia.sous-sol.org> <AE4F746F2AECFC4DA4AADD66A1DFEF01AB8574@otce2k301.adaptec.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01AB8574@otce2k301.adaptec.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Salyzyn, Mark (mark_salyzyn@adaptec.com) wrote:
+> Drop the setting of restart, drop the dummy restart handler in sa.c.
+
+Yup, OK.  That's exactly the updated patch I included.  Here it is again:
+
+From: Salyzyn, Mark <mark_salyzyn@adaptec.com>
+Subject: SCSI: aacraid: Correct sa platform support. (Was: [Bug 8469] Bad EIP value on pentium3 SMP kernel-2.6.21.1)
 
 
-On Fri, 8 Jun 2007, Theodore Tso wrote:
->
-> ... and it's not like sys_close() or sys_open() is a majorly critical 
-> path, is it?
+http://bugzilla.kernel.org/show_bug.cgi?id=8469
 
-open/close/stat/lstat are _the_ most important system calls, so yes, it's 
-a majorly critical path. MUCH more so than opening a new TCP connection.
+As discussed in the bugzilla outlined below, we have an sa based
+(Mustang) RAID adapter on the system, a Dell PERC2/QC. Affected
+controllers are HP NetRAID, Adaptec AAC-364, Dell PERC2/QC or Adaptec
+5400S. This problem  coincides with the introduction of the adapter_comm
+and adapter_deliver platform functions (Message [PATCH 1/4] aacraid:
+rework communication support code, January 23 2007, which initially
+migrated to 2.6.21)
 
-You _may_ open a few hundred TCP connections a second (yeah, yeah, don't 
-tell me about unrealistic benchmarks that do more), but that's on a server 
-with good bandwidth etc. open/closes easily happen tens of _thousands_ of 
-times a second. We're talking sub-microsecond system calls.
+The panic occurs with an uninitialized adapter_deliver platform function
+pointer. The enclosed patch, unmodified as tested by Rainer, solves the
+problem.
 
-Whether get_random_int() is noticeable or not, I dunno. But that path is a 
-hell of a lot more performance-sensitive than pretty much anything else.
+Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
+Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+[chrisw: backport to 2.6.21.4]
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
-		Linus
+---
+ drivers/scsi/aacraid/aacraid.h |    1 +
+ drivers/scsi/aacraid/rx.c      |    2 +-
+ drivers/scsi/aacraid/sa.c      |    3 ++-
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+--- linux-2.6.21.4.orig/drivers/scsi/aacraid/aacraid.h
++++ linux-2.6.21.4/drivers/scsi/aacraid/aacraid.h
+@@ -1840,6 +1840,7 @@ struct aac_driver_ident* aac_get_driver_
+ int aac_get_adapter_info(struct aac_dev* dev);
+ int aac_send_shutdown(struct aac_dev *dev);
+ int aac_probe_container(struct aac_dev *dev, int cid);
++int aac_rx_deliver_producer(struct fib * fib);
+ extern int numacb;
+ extern int acbsize;
+ extern char aac_driver_version[];
+--- linux-2.6.21.4.orig/drivers/scsi/aacraid/rx.c
++++ linux-2.6.21.4/drivers/scsi/aacraid/rx.c
+@@ -378,7 +378,7 @@ static int aac_rx_check_health(struct aa
+  *
+  *	Will send a fib, returning 0 if successful.
+  */
+-static int aac_rx_deliver_producer(struct fib * fib)
++int aac_rx_deliver_producer(struct fib * fib)
+ {
+ 	struct aac_dev *dev = fib->dev;
+ 	struct aac_queue *q = &dev->queues->queue[AdapNormCmdQueue];
+--- linux-2.6.21.4.orig/drivers/scsi/aacraid/sa.c
++++ linux-2.6.21.4/drivers/scsi/aacraid/sa.c
+@@ -5,7 +5,7 @@
+  * based on the old aacraid driver that is..
+  * Adaptec aacraid device driver for Linux.
+  *
+- * Copyright (c) 2000 Adaptec, Inc. (aacraid@adaptec.com)
++ * Copyright (c) 2000-2007 Adaptec, Inc. (aacraid@adaptec.com)
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -368,6 +368,7 @@ int aac_sa_init(struct aac_dev *dev)
+ 	dev->a_ops.adapter_sync_cmd = sa_sync_cmd;
+ 	dev->a_ops.adapter_check_health = aac_sa_check_health;
+ 	dev->a_ops.adapter_intr = aac_sa_intr;
++	dev->a_ops.adapter_deliver = aac_rx_deliver_producer;
+ 	dev->a_ops.adapter_ioremap = aac_sa_ioremap;
+ 
+ 	/*
