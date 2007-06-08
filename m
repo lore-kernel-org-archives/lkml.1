@@ -1,97 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032092AbXFHUf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032091AbXFHUiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032092AbXFHUf3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 16:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969310AbXFHUfN
+	id S1032091AbXFHUiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 16:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966581AbXFHUiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 16:35:13 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:34713
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968792AbXFHUfK (ORCPT
+	Fri, 8 Jun 2007 16:38:13 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:50477 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbXFHUiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 16:35:10 -0400
-Subject: [PATCH] tty restore locked ioctl file op
-From: Paul Fulghum <paulkf@microgate.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-       Arnd Bergmann <arnd@arndb.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Nicolas Mailhot <nicolas.mailhot@laposte.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <20070608123350.5cc53c10.akpm@linux-foundation.org>
-References: <200705132102.l4DL2onF003014@fire-2.osdl.org>
-	 <20070513154718.bb338ceb.akpm@linux-foundation.org>
-	 <1179098742.7322.5.camel@rousalka.dyndns.org>
-	 <1179396003.31796.4.camel@rousalka.dyndns.org>
-	 <20070517094557.c96f7e54.randy.dunlap@oracle.com>
-	 <1179421196.5000.5.camel@rousalka.dyndns.org>
-	 <1180206615.3430.8.camel@rousalka.dyndns.org>
-	 <20070608030629.GA18493@atjola.homenet>
-	 <1181315809.4811.5.camel@x2.microgate.com>
-	 <1181330448.5365.7.camel@amdx2.microgate.com>
-	 <20070608123350.5cc53c10.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 15:34:17 -0500
-Message-Id: <1181334857.3408.0.camel@x2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jun 2007 16:38:12 -0400
+Date: Fri, 8 Jun 2007 13:36:37 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Rules on how to use sysfs in userspace programs
+Message-ID: <20070608203637.GA9259@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Restore tty locked ioctl handler which was replaced with
-an unlocked ioctl handler in hung_up_tty_fops by the patch:
+Over time there have been a number of problems when sysfs has changed in
+"unexpected" ways.  Here's a document that Kay wrote a while ago that
+I'd like to add to the kernel Documentation directory to help userspace
+programmers out.
 
-commit e10cc1df1d2014f68a4bdcf73f6dd122c4561f94
-Author: Paul Fulghum <paulkf@microgate.com>
-Date:   Thu May 10 22:22:50 2007 -0700
+Any comments or critique of this is greatly appreciated.
 
-    tty: add compat_ioctl
+thanks,
 
-This was reported in:
-[Bug 8473] New: Oops: 0010 [1] SMP
+greg k-h
 
-The bug is caused by switching to hung_up_tty_fops in do_tty_hangup.
-An ioctl call can be waiting on BLK after testing for existence of
-the locked ioctl handler in the normal tty fops, but before calling
-the locked ioctl handler. If a hangup occurs at that point, the
-locked ioctl fop is NULL and an oops occurs.
+------------------------------------
 
-Signed-off-by: Paul Fulghum <paulkf@microgate.com>
+Rules to access device-information in the Linux kernel sysfs
 
---- a/drivers/char/tty_io.c	2007-06-08 14:26:10.000000000 -0500
-+++ b/drivers/char/tty_io.c	2007-06-08 14:28:58.000000000 -0500
-@@ -1173,8 +1173,14 @@ static unsigned int hung_up_tty_poll(str
- 	return POLLIN | POLLOUT | POLLERR | POLLHUP | POLLRDNORM | POLLWRNORM;
- }
- 
--static long hung_up_tty_ioctl(struct file * file,
--			      unsigned int cmd, unsigned long arg)
-+static int hung_up_tty_ioctl(struct inode * inode, struct file * file,
-+			     unsigned int cmd, unsigned long arg)
-+{
-+	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
-+}
-+
-+static long hung_up_tty_compat_ioctl(struct file * file,
-+				     unsigned int cmd, unsigned long arg)
- {
- 	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
- }
-@@ -1222,8 +1228,8 @@ static const struct file_operations hung
- 	.read		= hung_up_tty_read,
- 	.write		= hung_up_tty_write,
- 	.poll		= hung_up_tty_poll,
--	.unlocked_ioctl = hung_up_tty_ioctl,
--	.compat_ioctl	= hung_up_tty_ioctl,
-+	.ioctl		= hung_up_tty_ioctl,
-+	.compat_ioctl	= hung_up_tty_compat_ioctl,
- 	.release	= tty_release,
- };
- 
+The kernel exported sysfs exports internal kernel implementation-details
+and depends on internal kernel-structures and layout. It is agreed upon
+kernel developers, that the Linux kernel does not provide a stable
+internal API.  As sysfs is a direct export of kernel internal
+structures, the sysfs interface can't provide a stable interface too, it
+may always change along with internal kernel changes.
 
+To minimize the risk of breaking users of sysfs, which are in most cases
+low-level userspace applications, with a new kernel release, the users
+of sysfs must follow some rules to use an abstract-as-possible way to
+access this filesystem.  The current udev and HAL programs already
+implement this and users are encouraged to plug, if possible, into the
+abstractions these both programs provide instead of accessing sysfs
+directly.
 
+But if you really do want to access sysfs, please follow the following
+rules and then your programs should work for all future versions of
+sysfs.
 
+- Do not use libsysfs
+  It makes assumptions about sysfs which are not true. Its API does not
+  offer any abstraction, it exposes all the kernel driver-core
+  implementation details in its own API. Therefore it is not better than
+  reading directories and opening the files yourself.
+  Also, it is not actively maintained, in the sense of reflecting the
+  current kernel-development. The goal of providing a stable interface
+  to sysfs has failed, it causes more problems, than it solves. It
+  violates many of the rules in this document.
+
+- sysfs is always at /sys
+  Parsing /proc/mounts is a waste of time. Other mount points are a
+  system configuration bug you should not try to solve. For test cases,
+  possibly support SYSFS_PATH to overwrite the applications behavior,
+  but never try to search for sysfs. Never try to mount it, if you are
+  not an early boot script.
+
+- devices are only "devices".
+  There is no such thing like class-, bus-, physical devices,
+  interfaces, and such that you can rely on in userspace. Everything is
+  just simply a "device" Class-, bus-, physical, ... types are just
+  kernel implementation details, which should not be expected by
+  applications that handle devices.
+
+  The properties of a device are:
+    o devpath (/devices/pci0000:00/0000:00:1d.1/usb2/2-2/2-2:1.0)
+      - identical to the DEVPATH value in the event sent from the kernel
+	at device creation and removal
+      - the unique key to the device at that point in time
+      - the kernels path to the device-directory without the leading
+	/sys, and always starting with with a slash
+      - all elements of a devpath must be real directories.  Symlinks
+	pointing to /sys/devices must always be resolved to their real
+	target, and the target path must be used to access the device.
+	That way the devpath to the device matches the devpath of the
+	kernel used at event time.
+      - using or exposing symlink values as elements in a devpath string
+	is a bug in the application
+
+    o kernel name (sda, tty, 0000:00:1f.2, ...)
+      - a directory name, identical to the last element of the devpath
+      - applications need to handle spaces and characters like '!' in
+	the name
+
+    o subsystem (block, tty, pci, ...)
+      - simple string, never a path or a link
+      - retrieved by reading the "subsystem"-link and using only the
+	last element of the target path
+      - the "bus"-link is identical to the "subsystem"-link, it is
+	planned to remove the "bus"-link
+
+    o driver (tg3, ata_piix, uhci_hcd)
+      - a simple string, which may contain spaces, never a path or a
+	link
+      - it is retrieved by reading the "driver"-link and using only the
+	last element of the target path
+      - devices which don't have "driver"-link, just don't have a
+	driver; copying the driver value in a child device context, is a
+	bug in the application
+
+    o attributes
+      - the files in the device directory or files below a subdirectory
+	of the same device directory
+      - exposing attributes reached by a symlink of another device, like
+	the "device"-link, is a bug in the application
+
+   Everything else is just a kernel driver-core implementation detail,
+   that should not be assumed to be stable across kernel releases.
+
+- Properties of parent devices never belong into a child device.
+  Always look at the parent devices themselves for determining device
+  context properties. If the device 'eth0' or 'sda' does not have a
+  "driver"-link, then it does not have a driver. It's value is empty.
+  Never copy the value of the parent-device into a child-device. Parent
+  device-properties may change dynamically without any notice to the
+  child device.
+
+- Hierarchy in a single device-tree
+  There is only one valid place in sysfs where hierarchy can be examined
+  and this is below: /sys/devices.
+  It is planned, the all device directories will end up in the tree
+  below this directory.
+
+- Classification by subsystem
+  There are currently three places for classification of devices:
+  /sys/block, /sys/class and /sys/bus. It is planned, that these will
+  not contain any device-directories themselves, but only flat lists of
+  symlinks pointing to the unified /sys/devices tree.
+
+  All three places have completely different rules to access the
+  information.  It is planned to merge all three
+  classification-directories into one place at /sys/subsystem/,
+  following the current layout of the bus-directories. All buses and
+  classes, including the converted block-subsystemm, will show up
+  there.
+  The devices of a subsystem will create a symlink in the "devices"
+  directory at /sys/subsystem/<name>/devices/.
+
+  If /sys/subsystem exists, /sys/bus, /sys/class and /sys/block can be
+  ignored. If it doesn't exist, you have always to scan all three
+  places, as the kernel is free to move a subsystem from one place to
+  the other, as long as the devices are still reachable by the same
+  subsystem name
+
+  Assuming /sys/class/<subsystem> and /sys/bus/<subsystem>, or
+  /sys/block and /sys/class/block are not interchangeable, is a bug in
+  the application.
+
+- Block
+  The converted block-subsystem at /sys/class/block, or
+  /sys/subsystem/block will contain the links for disks and partitions
+  at the same level, never in a hierarchy. Assuming /sys/block to be
+  there, is a bug in the application.  Assuming the block-subsytem to
+  contain only disks and not partition-devices in the same flat list is
+  a bug in the application.
+
+- "device"-link and <subsystem>:<kernel name>-links
+  Never depend on the "device"-link. The "device"-link is a workaround
+  for the old layout, where class-devices are not created in
+  /sys/devices/ like the bus-devices. If the link-resolving of a
+  device-directory does not end in /sys/devices/, you can use the
+  "device"-link to find the parent devices in
+  /sys/devices/.  That's the single valid use of the "device"-link, it
+  must never appear in any path as an element. Assuming the existence of
+  the "device"-link for a device in /sys/devices/ is a bug in the
+  application. Exposing /sys/class/net/eth0/device is a bug in the
+  application. The "device"-link must be resolved to the real
+  device-path it points to, if you look for the parent.
+
+  Never depend on the class specific links back to the /sys/class
+  directory.  These links are also a workaround for the design mistake,
+  that class devices are not created in /sys/devices. If a device
+  directory does not contain directories for child devices, these links
+  may be used to find the child devices in /sys/class. That's the single
+  valid use of these links, they must never appear in any path as an
+  element. Assuming the existence of these links for devices which are
+  real child device directories in the /sys/devices tree, is a bug in
+  the application.
+
+  It is planned to remove all these links when when all class-device
+  directories live in /sys/devices.
+
+- Position of devices along device chain can change.
+  Never depend on a specific parent device in the devpath, or the chain
+  of parent devices. The kernel is free to insert devices into the
+  chain.  You must always request the parent device you are looking for
+  by its subsystem value. You need to walk up the chain until you find
+  the device.  Depending on a specific position of a parent device, or
+  exposing relative paths, using "../" to access the chain of parents,
+  is a bug in the application.
