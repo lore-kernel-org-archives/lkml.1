@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967975AbXFHH2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967964AbXFHH3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967975AbXFHH2u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965698AbXFHHS4
+	id S967964AbXFHH3S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965858AbXFHHS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:18:56 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:57586 "EHLO
+	Fri, 8 Jun 2007 03:18:57 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:57587 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965469AbXFHHSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:18:54 -0400
-Message-Id: <20070608071559.804884000@sous-sol.org>
+	id S965609AbXFHHSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:18:55 -0400
+Message-Id: <20070608071550.638055000@sous-sol.org>
 References: <20070608071511.159309000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:15:43 -0700
+Date: Fri, 08 Jun 2007 00:15:30 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,9 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Miller <davem@davemloft.net>, bunk@stusta.de
-Subject: [patch 32/32] SPARC64: Dont be picky about virtual-dma values on sun4v.
-Content-Disposition: inline; filename=sparc64-don-t-be-picky-about-virtual-dma-values-on-sun4v.patch
+       David Miller <davem@davemloft.net>, bunk@stusta.de,
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 19/32] ICMP: Fix icmp_errors_use_inbound_ifaddr sysctl
+Content-Disposition: inline; filename=icmp-fix-icmp_errors_use_inbound_ifaddr-sysctl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -34,87 +35,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Miller <davem@davemloft.net>
 
-Handle arbitrary base and length values as long as they
-are multiples of IO_PAGE_SIZE.
+Currently when icmp_errors_use_inbound_ifaddr is set and an ICMP error is
+sent after the packet passed through ip_output(), an address from the
+outgoing interface is chosen as ICMP source address since skb->dev doesn't
+point to the incoming interface anymore.
 
-Bug found by Arun Kumar Rao.
+Fix this by doing an interface lookup on rt->dst.iif and using that device.
 
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
-[chrisw: backport to 2.6.20]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- arch/sparc64/kernel/pci_sun4v.c |   36 ++++++++++--------------------------
- 1 file changed, 10 insertions(+), 26 deletions(-)
+ net/ipv4/icmp.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
---- linux-2.6.20.13.orig/arch/sparc64/kernel/pci_sun4v.c
-+++ linux-2.6.20.13/arch/sparc64/kernel/pci_sun4v.c
-@@ -10,6 +10,7 @@
- #include <linux/slab.h>
- #include <linux/interrupt.h>
- #include <linux/percpu.h>
-+#include <linux/log2.h>
+--- linux-2.6.20.13.orig/net/ipv4/icmp.c
++++ linux-2.6.20.13/net/ipv4/icmp.c
+@@ -513,9 +513,15 @@ void icmp_send(struct sk_buff *skb_in, i
  
- #include <asm/pbm.h>
- #include <asm/iommu.h>
-@@ -994,9 +995,8 @@ static void pci_sun4v_iommu_init(struct 
- {
- 	struct pci_iommu *iommu = pbm->iommu;
- 	struct property *prop;
--	unsigned long num_tsb_entries, sz;
-+	unsigned long num_tsb_entries, sz, tsbsize;
- 	u32 vdma[2], dma_mask, dma_offset;
--	int tsbsize;
- 
- 	prop = of_find_property(pbm->prom_node, "virtual-dma", NULL);
- 	if (prop) {
-@@ -1010,31 +1010,15 @@ static void pci_sun4v_iommu_init(struct 
- 		vdma[1] = 0x80000000;
+ 	saddr = iph->daddr;
+ 	if (!(rt->rt_flags & RTCF_LOCAL)) {
+-		if (sysctl_icmp_errors_use_inbound_ifaddr)
+-			saddr = inet_select_addr(skb_in->dev, 0, RT_SCOPE_LINK);
+-		else
++		struct net_device *dev = NULL;
++
++		if (rt->fl.iif && sysctl_icmp_errors_use_inbound_ifaddr)
++			dev = dev_get_by_index(rt->fl.iif);
++
++		if (dev) {
++			saddr = inet_select_addr(dev, 0, RT_SCOPE_LINK);
++			dev_put(dev);
++		} else
+ 			saddr = 0;
  	}
  
--	dma_mask = vdma[0];
--	switch (vdma[1]) {
--		case 0x20000000:
--			dma_mask |= 0x1fffffff;
--			tsbsize = 64;
--			break;
--
--		case 0x40000000:
--			dma_mask |= 0x3fffffff;
--			tsbsize = 128;
--			break;
--
--		case 0x80000000:
--			dma_mask |= 0x7fffffff;
--			tsbsize = 256;
--			break;
--
--		default:
--			prom_printf("PCI-SUN4V: strange virtual-dma size.\n");
--			prom_halt();
-+	if ((vdma[0] | vdma[1]) & ~IO_PAGE_MASK) {
-+		prom_printf("PCI-SUN4V: strange virtual-dma[%08x:%08x].\n",
-+			    vdma[0], vdma[1]);
-+		prom_halt();
- 	};
- 
--	tsbsize *= (8 * 1024);
--
--	num_tsb_entries = tsbsize / sizeof(iopte_t);
-+	dma_mask = (roundup_pow_of_two(vdma[1]) - 1UL);
-+	num_tsb_entries = vdma[1] / IO_PAGE_SIZE;
-+	tsbsize = num_tsb_entries * sizeof(iopte_t);
- 
- 	dma_offset = vdma[0];
- 
-@@ -1045,7 +1029,7 @@ static void pci_sun4v_iommu_init(struct 
- 	iommu->dma_addr_mask = dma_mask;
- 
- 	/* Allocate and initialize the free area map.  */
--	sz = num_tsb_entries / 8;
-+	sz = (num_tsb_entries + 7) / 8;
- 	sz = (sz + 7UL) & ~7UL;
- 	iommu->arena.map = kzalloc(sz, GFP_KERNEL);
- 	if (!iommu->arena.map) {
 
 -- 
