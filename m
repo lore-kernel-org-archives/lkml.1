@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968222AbXFHHcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968370AbXFHHco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968222AbXFHHcS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967567AbXFHHTw
+	id S968370AbXFHHco (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938236AbXFHHV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:19:52 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:57614 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966932AbXFHHTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:19:50 -0400
-Message-Id: <20070608071554.380591000@sous-sol.org>
-References: <20070608071511.159309000@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:15:36 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Miller <davem@davemloft.net>, bunk@stusta.de,
-       Vasily Averin <vvs@sw.ru>
-Subject: [patch 25/32] NET: "wrong timeout value" in sk_wait_data() v2
-Content-Disposition: inline; filename=net-wrong-timeout-value-in-sk_wait_data-v2.patch
+	Fri, 8 Jun 2007 03:21:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58343 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938232AbXFHHV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:21:57 -0400
+Date: Fri, 8 Jun 2007 09:20:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch 1/4] rt-mutex: Fix stale return value
+Message-ID: <20070608072050.GD30226@elte.hu>
+References: <20070607235106.387346000@linutronix.de> <20070607235801.429050000@linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607235801.429050000@linutronix.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
 
-From: Vasily Averin <vvs@sw.ru>
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-sys_setsockopt() do not check properly timeout values for
-SO_RCVTIMEO/SO_SNDTIMEO, for example it's possible to set negative timeout
-values. POSIX do not defines behaviour for sys_setsockopt in case negative
-timeouts, but requires that setsockopt() shall fail with -EDOM if the send and
-receive timeout values are too big to fit into the timeout fields in the socket
-structure.
-In current implementation negative timeout can lead to error messages like
-"schedule_timeout: wrong timeout value".
+> -			if (unlikely(!waiter.task))
+> +			if (unlikely(!waiter.task)) {
+> +				/*
+> +				 * Reset the return value. We might
+> +				 * have returned with -EDEADLK and the
+> +				 * owner released the lock while we
+> +				 * were walking the pi chain.
+> +				 */
+> +				ret = 0;
+>  				continue;
+> -
+> +			}
 
-Proposed patch:
-- checks tv_usec and returns -EDOM if it is wrong
-- do not allows to set negative timeout values (sets 0 instead) and outputs
-ratelimited information message about such attempts.
+ok - i guess the reason here that we never triggered it in -rt is that 
+-EDEADLK is a really rare case that only occurs with pi-futexes (and 
+even then, only with buggy userspace or with intentional testcases). 
+Plus, lockdep caught most/all of the in-kernel deadlocks before this 
+mechanism could catch it.
 
-Signed-off-By: Vasily Averin <vvs@sw.ru>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
----
- net/core/sock.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
---- linux-2.6.20.13.orig/net/core/sock.c
-+++ linux-2.6.20.13/net/core/sock.c
-@@ -204,7 +204,19 @@ static int sock_set_timeout(long *timeo_
- 		return -EINVAL;
- 	if (copy_from_user(&tv, optval, sizeof(tv)))
- 		return -EFAULT;
-+	if (tv.tv_usec < 0 || tv.tv_usec >= USEC_PER_SEC)
-+		return -EDOM;
- 
-+	if (tv.tv_sec < 0) {
-+		static int warned = 0;
-+		*timeo_p = 0;
-+		if (warned < 10 && net_ratelimit())
-+			warned++;
-+			printk(KERN_INFO "sock_set_timeout: `%s' (pid %d) "
-+			       "tries to set negative timeout\n",
-+			        current->comm, current->pid);
-+		return 0;
-+	}
- 	*timeo_p = MAX_SCHEDULE_TIMEOUT;
- 	if (tv.tv_sec == 0 && tv.tv_usec == 0)
- 		return 0;
-
--- 
+	Ingo
