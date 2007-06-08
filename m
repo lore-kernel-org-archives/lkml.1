@@ -1,61 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968688AbXFHMuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939003AbXFHMyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968688AbXFHMuu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 08:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938450AbXFHMu3
+	id S939003AbXFHMyA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 08:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938028AbXFHMxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 08:50:29 -0400
-Received: from THUNK.ORG ([69.25.196.29]:53541 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938296AbXFHMu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 08:50:27 -0400
-Date: Fri, 8 Jun 2007 08:07:46 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070608120746.GD12687@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Davide Libenzi <davidel@xmailserver.org>,
-	Ulrich Drepper <drepper@redhat.com>,
-	Eric Dumazet <dada1@cosmosbay.com>,
-	Kyle Moffett <mrmacman_g4@mac.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>
-References: <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu> <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com> <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com> <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com> <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com> <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
+	Fri, 8 Jun 2007 08:53:53 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:38417 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937981AbXFHMxw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 08:53:52 -0400
+Date: Fri, 8 Jun 2007 13:53:49 +0100
+To: alexn@telia.com, akpm@linux-foundation.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Allow PAGE_OWNER to be set on any architecture
+Message-ID: <20070608125349.GA8444@skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 03:40:14PM -0700, Davide Libenzi wrote:
-> Yes. Files with the CLOFORK and CLOEXEC flag do not count for fork and 
-> exec copies.
-> I was also planning on doing it in __put_unused_fd(), every time 
-> fmap->count goes to zero. But get_random_int() is not as cheap as I 
-> thought. If we use a cheaper (although less secure) function to mix pid & 
-> jiffies, we could do it even in there.
+Currently PAGE_OWNER depends on CONFIG_X86. This appears to be due to
+pfn_to_page() being called in an inappropriate for many memory models
+and the presense of memory holes. This patch ensures that pfn_valid()
+and pfn_valid_within() is called at the appropriate places and the offsets
+correctly updated so that PAGE_OWNER is safe on any architecture.
 
-Um, how cheap do you need it?  get_random_int() is actually pretty
-cheep, since it was designed to be usable by the networking stack for
-sequence numbers for TCP packets; and it's not like sys_close() or
-sys_open() is a majorly critical path, is it?  If the concern is
-increasing the potential hold time, I suppose you could have the
-exactly two callers of __put_unused_fd() (sys_close() and
-put_unused_fd()) call get_random_int() before grabbing the
-current->files->file_lock spinlock,
+In situations where CONFIG_HOLES_IN_ZONES is set (IA64 with VIRTUAL_MEM_MAP),
+there may be cases where pages allocated within a MAX_ORDER_NR_PAGES block
+of pages may not be displayed in /proc/page_owner if the hole is at the
+start of the block. Addressing this would be quite complex, perform slowly
+and is of no clear benefit.
 
-						- Ted
+Once PAGE_OWNER is allowed on all architectures, the statistics for grouping
+pages by mobility that declare how many pageblocks contain mixed page types
+becomes optionally available on all arches.
+
+This patch was tested successfully on x86, x86_64, ppc64 and IA64 machines.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+---
+ fs/proc/proc_misc.c |   31 ++++++++++++++++++++++++-------
+ lib/Kconfig.debug   |    2 +-
+ 2 files changed, 25 insertions(+), 8 deletions(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc4-mm2-clean/fs/proc/proc_misc.c linux-2.6.22-rc4-mm2-005_pageowner_anyarch/fs/proc/proc_misc.c
+--- linux-2.6.22-rc4-mm2-clean/fs/proc/proc_misc.c	2007-06-07 14:11:20.000000000 +0100
++++ linux-2.6.22-rc4-mm2-005_pageowner_anyarch/fs/proc/proc_misc.c	2007-06-08 13:34:36.000000000 +0100
+@@ -756,18 +756,35 @@ read_page_owner(struct file *file, char 
+ 	struct page *page;
+ 	char *kbuf, *modname;
+ 	const char *symname;
+-	int ret = 0, next_idx = 1;
++	int ret = 0;
+ 	char namebuf[128];
+ 	unsigned long offset = 0, symsize;
+ 	int i;
+ 	ssize_t num_written = 0;
+ 	int blocktype = 0, pagetype = 0;
+ 
++	page = NULL;
+ 	pfn = min_low_pfn + *ppos;
+-	page = pfn_to_page(pfn);
++
++	/* Find a valid PFN or the start of a MAX_ORDER_NR_PAGES area */
++	while (!pfn_valid(pfn) && (pfn & (MAX_ORDER_NR_PAGES - 1)) != 0)
++		pfn++;
++
++	/* Find an allocated page */
+ 	for (; pfn < max_pfn; pfn++) {
+-		if (!pfn_valid(pfn))
++		/*
++		 * If the new page is in a new MAX_ORDER_NR_PAGES area,
++		 * validate the area as existing, skip it if not
++		 */
++		if ((pfn & (MAX_ORDER_NR_PAGES - 1)) == 0 && !pfn_valid(pfn)) {
++			pfn += MAX_ORDER_NR_PAGES - 1;
+ 			continue;
++		}
++
++		/* Check for holes within a MAX_ORDER area */
++		if (!pfn_valid_within(pfn))
++			continue;
++
+ 		page = pfn_to_page(pfn);
+ 
+ 		/* Catch situations where free pages have a bad ->order  */
+@@ -776,16 +793,16 @@ read_page_owner(struct file *file, char 
+ 				"PageOwner info inaccurate for PFN %lu\n",
+ 				pfn);
+ 
+-		if (page->order >= 0)
++		/* Stop search if page is allocated and has trace info */
++		if (page->order >= 0 && page->trace[0])
+ 			break;
+-
+-		next_idx++;
+ 	}
+ 
+ 	if (!pfn_valid(pfn))
+ 		return 0;
+ 
+-	*ppos += next_idx;
++	/* Record the next PFN to read in the file offset */
++	*ppos = (pfn - min_low_pfn) + 1;
+ 
+ 	kbuf = kmalloc(count, GFP_KERNEL);
+ 	if (!kbuf)
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc4-mm2-clean/lib/Kconfig.debug linux-2.6.22-rc4-mm2-005_pageowner_anyarch/lib/Kconfig.debug
+--- linux-2.6.22-rc4-mm2-clean/lib/Kconfig.debug	2007-06-07 14:11:21.000000000 +0100
++++ linux-2.6.22-rc4-mm2-005_pageowner_anyarch/lib/Kconfig.debug	2007-06-08 13:34:36.000000000 +0100
+@@ -49,7 +49,7 @@ config UNUSED_SYMBOLS
+ 
+ config PAGE_OWNER
+ 	bool "Track page owner"
+-	depends on DEBUG_KERNEL && X86
++	depends on DEBUG_KERNEL
+ 	help
+ 	  This keeps track of what call chain is the owner of a page, may
+ 	  help to find bare alloc_page(s) leaks. Eats a fair amount of memory.
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
