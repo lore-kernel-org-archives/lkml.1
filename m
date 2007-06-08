@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938283AbXFHQxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030852AbXFHQyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938283AbXFHQxZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 12:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933269AbXFHQxK
+	id S1030852AbXFHQyV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 12:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbXFHQyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 12:53:10 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:7228 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933015AbXFHQxI (ORCPT
+	Fri, 8 Jun 2007 12:54:09 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:36946 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S935811AbXFHQyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 12:53:08 -0400
-Date: Fri, 8 Jun 2007 18:53:07 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Include <asm/termbits.h> from <linux/tty_driver.h>.
-In-Reply-To: <Pine.LNX.4.64.0706081139310.31532@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0706081852530.10769@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0706080925020.24228@localhost.localdomain>
- <20070608163018.636b74d1@the-village.bc.nu>
- <Pine.LNX.4.64.0706081727110.10769@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0706081131150.30811@localhost.localdomain>
- <20070608164533.1ed24e79@the-village.bc.nu> <Pine.LNX.4.64.0706081139310.31532@localhost.localdomain>
+	Fri, 8 Jun 2007 12:54:08 -0400
+Date: Fri, 8 Jun 2007 12:54:07 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Peter Zijlstra <peterz@infradead.org>
+cc: USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [usb-storage] 2.6.22-rc4-mm2 - usb-storage
+In-Reply-To: <1181320228.7348.290.camel@twins>
+Message-ID: <Pine.LNX.4.44L0.0706081252140.3696-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 8 Jun 2007, Peter Zijlstra wrote:
 
-On Jun 8 2007 11:42, Robert P. J. Day wrote:
->> >
->> > um ... what does that mean?  consider this snippet from
->> > <linux/tty_driver.h>:
+> > Okay, this is a separate problem.  To help diagnose it, please turn on 
+> > CONFIG_USB_DEBUG and CONFIG_USB_STORAGE_DEBUG and then post the 
+> > resulting dmesg log.
+> 
+> Here goes:
+> 
+>  http://programming.kicks-ass.net/misc/dmesg
 
-That's right. Each .h file should be "compilable" on their own.
+Okay, it's not a separate problem.  You didn't revert the patch I 
+mentioned earlier.  It's generating those WARNINGs and causing 
+usb-storage to fail.
 
->>
->> Which compile combination shows the sequence you are reporting ?
->
->sorry, i don't understand the question.  i'm just running "make" on a
->simple module i wrote, using the prototypical in-directory makefile to
->build out-of-tree.
->
->the first four lines of my module source file are:
->
->#include <linux/module.h>
->#include <linux/init.h>
->#include <asm/termbits.h>               /* Shouldn't be necessary */
->#include <linux/tty_driver.h>           /* For struct tty_driver */
->
->  if i omit the inclusion of the termbits.h header, i get the
->aforementioned error.  beyond that, i'm unclear on what you're asking.
->
->rday
->-- 
->========================================================================
->Robert P. J. Day
->Linux Consulting, Training and Annoying Kernel Pedantry
->Waterloo, Ontario, CANADA
->
->http://fsdev.net/wiki/index.php?title=Main_Page
->========================================================================
->
+Alan Stern
 
-	Jan
--- 
