@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966395AbXFHGfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934420AbXFHGiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966395AbXFHGfp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 02:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759733AbXFHGfY
+	id S934420AbXFHGiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 02:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbXFHGiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 02:35:24 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:58426 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758264AbXFHGfX (ORCPT
+	Fri, 8 Jun 2007 02:38:11 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:24914 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757444AbXFHGiK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 02:35:23 -0400
+	Fri, 8 Jun 2007 02:38:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=KX4czDQddevID3b4RDWHH059BXpdtVsmyXS4JX9Z9KUDm5RBidM42mJYkoN5Mdw4eUlbzj+JeRqOvwP/bJJal5qVkNkO8Yc2rrYmYbSDMKFv3XsJWFFcbfX1J6IM7U3pUOTbkp7sHygK5GORn7/xnx6pFfXjJ9Hj5mU/ELLVbpE=
-Message-ID: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
-Date: Fri, 8 Jun 2007 02:35:22 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: JIT emulator needs
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=a9MSSDxyXSLn7IKgRtBpJE09fOoolmFzqCcYcCTrVAEjmQrg5y3pIcDBnY/g6uLkqEAha4h6ngwPLjQN9K4WfMNuq7Q8id2aji1GWobbKLzZX1XxnyTJ9h6ylbmwksAS+bWIqQG1JSsiSUo8806lvi/7MKppQhmu6BZQxuSVB9U=
+Message-ID: <4668F944.5000609@gmail.com>
+Date: Fri, 08 Jun 2007 15:37:56 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1 - 'lvm vgscan' busticated again...
+References: <20070606020737.4663d686.akpm@linux-foundation.org> <7929.1181146132@turing-police.cc.vt.edu>            <4667A968.9080407@gmail.com> <23214.1181248131@turing-police.cc.vt.edu>
+In-Reply-To: <23214.1181248131@turing-police.cc.vt.edu>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Right now, Linux isn't all that friendly to JIT emulators.
-Here are the problems and suggestions to improve the situation.
+Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 07 Jun 2007 15:44:56 +0900, Tejun Heo said:
+>> Valdis.Kletnieks@vt.edu wrote:
+>>> On Wed, 06 Jun 2007 02:07:37 PDT, Andrew Morton said:
+>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2
+> .6.22-rc4-mm1/
+>>> This one died a horrid death at boot time - console log indicates it found 
+> the
+>>> hard drive OK, found the 2 partitions on it.  But when the initrd ran a
+>>> 'lvm vgscan', it didn't find the LVM2 space on /dev/sda2, so it panic'ed wh
+> en
+>>> it fell off the end of the initrd because the root= wasn't there.
+>>>
+>>> My first guess for blame:
+>>>
+>>> gregkh-driver-sysfs-allocate-inode-number-using-ida.patch
+>>>
+>>> as that's awfully similar to gregkh-driver-sysfs-fix-i_ino-handling-in-sysfs.patch
+>>> that broke 'lvm vgscan' for me in the same way on 21-rc7-mm[12].
+>>>
+>>> I'll hopefully get a chance to revert that one and test later today - a quick
+>>> 'patch -p1 -R --dry-run' shows a number of conflicts that will need hand-fixing
+>>> at the very least.
+>> Did rc3-mm1 work?  Can you find out the first broken -mm?
+> 
+> 21-rc5-mm2 worked, -rc6-mm* were busticated for other reasons on my laptop,
+> 21-rc7-mm[12] were broken, 21-mm1 through 21-rc3-mm1 worked, -rc4-mm1 broke,
+> and -rc4-mm2 works. I could bisect through -rc4-mm1 if it's deemed useful,
+> Andrew just pushed -mm2 before I had a chance.
 
-There is an SE Linux execmem restriction that enforces W^X.
-Assuming you don't wish to just disable SE Linux, there are
-two ugly ways around the problem. You can mmap a file twice,
-or you can abuse SysV shared memory. The mmap method requires
-that you know of a filesystem mounted rw,exec where you can
-write a very large temporary file. This arbitrary filesystem,
-rather than swap space, will be the backing store. The SysV
-shared memory method requires an undocumented flag and is
-subject to some annoying size limits. Both methods create
-objects that will fail to be deleted if the program dies
-before marking the objects for deletion.
+Thanks.  The offending patch was
 
-Processors often have annoying limits on the immediate values
-in instructions. An x86 or x86_64 JIT can go a bit faster if
-all allocations are kept to the low 2 GB of address space.
-There are also reasons for a 32bit-to-x86_64 JIT to chose
-a nearly arbitrary 2 GB region that lies above 4 GB.
-Other archs have other limits, such as 32 MB or 256 MB.
+  gregkh-driver-block-device
 
-Sometimes it is very helpful to have the read/write mapping
-be a fixed offset from the read/exec mapping. A power of 2
-can be especially desirable.
+Which is pulled from -mm2.  Jiri Slaby reports that turning on
+SYSFS_DEPRECATED fixes the problem.
 
-Emulators often need a cheap way to change page permissions.
-One VMA per page is no good. Besides taking up space and making
-many things generally slower, having one VMA per page causes
-a huge performance loss for snapshot roll-back operations.
-Just tearing down all those VMAs takes a good while.
+Thanks.
 
-Additions to better support JIT emulators:
-
-a. sysctl to set IPC_RMID by default
-b. shmget() flag to set IPC_RMID by default
-c. open() flag to unlink a file before returning the fd
-d. mremap() flag to always keep the old mapping
-e. mremap() flag to get a read/write mapping of a read/exec one
-f. mremap() flag to get a read/exec mapping of a read/write one
-g. mremap() flag to make the 5th arg (new addr) be the upper limit
-h. 6-bit wide mremap() "flag" to set the upper limit above given base
-i. support the prot argument to remap_file_pages
-j. a documented way (madvise?) to punch same-VMA zero-page holes
+-- 
+tejun
