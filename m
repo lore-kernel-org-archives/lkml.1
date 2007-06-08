@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968403AbXFHIB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968487AbXFHIDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968403AbXFHIB5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 04:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938559AbXFHH1J
+	id S968487AbXFHIDB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 04:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967996AbXFHH2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:27:09 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:49425 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938488AbXFHH1H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:27:07 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 8 Jun 2007 03:25:19 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: William Lee Irwin III <wli@holomorphy.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
+	Fri, 8 Jun 2007 03:28:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42736 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967991AbXFHH23 (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:28:29 -0400
+Date: Fri, 8 Jun 2007 08:28:25 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jared Hulbert <jaredeh@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, carsteno@de.ibm.com,
        Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: why does the macro "ZERO_PAGE" take an argument?
-In-Reply-To: <46687598.2040701@zytor.com>
-Message-ID: <Pine.LNX.4.64.0706080324280.15839@localhost.localdomain>
-References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain>
- <4667EC18.4080904@yahoo.com.au> <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain>
- <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com>
- <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain> <4668412D.3030506@zytor.com>
- <20070607192911.GV6909@holomorphy.com> <46687598.2040701@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Message-ID: <20070608072824.GA13442@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jared Hulbert <jaredeh@gmail.com>, carsteno@de.ibm.com,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	richard.griffiths@windriver.com,
+	Richard Griffiths <res07ml0@verizon.net>,
+	Linux-kernel@vger.kernel.org
+References: <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com> <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com> <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com> <20070606113351.GA11701@infradead.org> <4666DD88.5030708@de.ibm.com> <20070606162305.GA20600@infradead.org> <46683B6A.6030306@de.ibm.com> <20070607193844.GB17144@infradead.org> <6934efce0706071334w54eea3d9mfed1670f527ff831@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6934efce0706071334w54eea3d9mfed1670f527ff831@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007, H. Peter Anvin wrote:
+On Thu, Jun 07, 2007 at 01:34:12PM -0700, Jared Hulbert wrote:
+> >And we'll need that even when using cramfs.  There's not way we'd
+> >merge a hack where the user has to specify a physical address on
+> >the mount command line.
+> 
+> Why not?  For the use case in question the user usually manually
+> burned the image to a physical address before hand.  Many of these
+> system don't have MTD turned on for this Flash, they don't need it
+> because they don't write to this Flash once the system is up.
 
-> William Lee Irwin III wrote:
-> > Robert P. J. Day wrote:
-> >>> although it's not clear where in the source tree are the invocations
-> >>> that would actually make a difference to a MIPS system, which is why
-> >>> i've CC'ed ralf on this.  i'm sure he can clear this up. :-)
-> >
-> > On Thu, Jun 07, 2007 at 10:32:29AM -0700, H. Peter Anvin wrote:
-> >> x86 could also benefit from coloured zeropages.  In fact, I thought it
-> >> already had them (K8 wants as many as 8.)
-> >
-> > How would one demonstrate the beneficial effect of such?
->
-> Dean Gaudet at Transmeta did some benchmarking using SPEC.  If I
-> recall his numbers correctly (this is from memory, mind you) on
-> Transmeta Efficeon, which has 2-way virtual cache tagging with
-> hardware recovery, zeropage coloring was a 1.5% performance
-> improvement.
-
-and once again, an initially innocuous question quickly leaves me
-behind.  no, no, i'm getting used to it.  :-P
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Then add a small device layer for it.  Remember that linux is not all
+about hacked up embedded devices that get shipped once and never
+touched again.  If we put something in mainline we want proper layering,
+and putting ioremap (which doesn't even exist on some architectures) into
+a filesystem and having user remember memory addresses and pass them
+to mount doesn't fit there.
