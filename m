@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030233AbXFHIAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968188AbXFHIAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030233AbXFHIAa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 04:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938467AbXFHHZy
+	id S968188AbXFHIAu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 04:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938510AbXFHH0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:25:54 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55400 "EHLO
+	Fri, 8 Jun 2007 03:26:12 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55405 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938470AbXFHHZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:25:53 -0400
-Message-Id: <20070608072238.195533000@sous-sol.org>
+	id S938502AbXFHH0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:26:10 -0400
+Message-Id: <20070608072241.418537000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:22:18 -0700
+Date: Fri, 08 Jun 2007 00:22:21 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,47 +24,63 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        David Miller <davem@davemloft.net>, bunk@stusta.de,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       Marcel Holtmann <marcel@holtmann.org>, Jiri Kosina <jkosina@suse.cz>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 51/54] SPARC64: Fix _PAGE_EXEC_4U check in sun4u I-TLB miss handler.
-Content-Disposition: inline; filename=sparc64-fix-_page_exec_4u-check-in-sun4u-i-tlb-miss-handler.patch
+Subject: [patch 54/54] BLUETOOTH: Fix locking in hci_sock_dev_event().
+Content-Disposition: inline; filename=bluetooth-fix-locking-in-hci_sock_dev_event.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: David Miller <davem@davemloft.net>
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-It was using an immediate _PAGE_EXEC_4U value in an 'and'
-instruction to perform the test.  This doesn't work because
-the immediate field is signed 13-bit, this the mask being
-tested against the PTE was 0x1000 sign-extended to 32-bits
-instead of just plain 0x1000.
+We presently use lock_sock() to acquire a lock on a socket in
+hci_sock_dev_event(), but this goes BUG because lock_sock()
+can sleep and we're already holding a read-write spinlock at
+that point. So, we must use the non-sleeping BH version,
+bh_lock_sock().
 
+However, hci_sock_dev_event() is called from user context and
+hence using simply bh_lock_sock() will deadlock against a
+concurrent softirq that tries to acquire a lock on the same
+socket. Hence, disabling BH's before acquiring the socket lock
+and enable them afterwards, is the proper solution to fix
+socket locking in hci_sock_dev_event().
+
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- arch/sparc64/kernel/itlb_miss.S |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/bluetooth/hci_sock.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- linux-2.6.21.4.orig/arch/sparc64/kernel/itlb_miss.S
-+++ linux-2.6.21.4/arch/sparc64/kernel/itlb_miss.S
-@@ -11,12 +11,12 @@
- /* ITLB ** ICACHE line 2: TSB compare and TLB load	*/
- 	bne,pn	%xcc, tsb_miss_itlb		! Miss
- 	 mov	FAULT_CODE_ITLB, %g3
--	andcc	%g5, _PAGE_EXEC_4U, %g0		! Executable?
-+	sethi	%hi(_PAGE_EXEC_4U), %g4
-+	andcc	%g5, %g4, %g0			! Executable?
- 	be,pn	%xcc, tsb_do_fault
- 	 nop					! Delay slot, fill me
- 	stxa	%g5, [%g0] ASI_ITLB_DATA_IN	! Load TLB
- 	retry					! Trap done
--	nop
+--- linux-2.6.21.4.orig/net/bluetooth/hci_sock.c
++++ linux-2.6.21.4/net/bluetooth/hci_sock.c
+@@ -656,7 +656,8 @@ static int hci_sock_dev_event(struct not
+ 		/* Detach sockets from device */
+ 		read_lock(&hci_sk_list.lock);
+ 		sk_for_each(sk, node, &hci_sk_list.head) {
+-			lock_sock(sk);
++			local_bh_disable();
++			bh_lock_sock_nested(sk);
+ 			if (hci_pi(sk)->hdev == hdev) {
+ 				hci_pi(sk)->hdev = NULL;
+ 				sk->sk_err = EPIPE;
+@@ -665,7 +666,8 @@ static int hci_sock_dev_event(struct not
  
- /* ITLB ** ICACHE line 3: 				*/
- 	nop
+ 				hci_dev_put(hdev);
+ 			}
+-			release_sock(sk);
++			bh_unlock_sock(sk);
++			local_bh_enable();
+ 		}
+ 		read_unlock(&hci_sk_list.lock);
+ 	}
 
 -- 
