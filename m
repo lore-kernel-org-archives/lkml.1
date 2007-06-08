@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967835AbXFHMud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968688AbXFHMuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967835AbXFHMud (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 08:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937939AbXFHMuY
+	id S968688AbXFHMuu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 08:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938450AbXFHMu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 08:50:24 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53838 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S937318AbXFHMuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 08:50:23 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX1968wo3kKd6myGv4USDYarqZqW6V2Lo7Ckzx3U1ge
-	94AptfxN1u5lqB
-Message-ID: <46695095.2020503@gmx.net>
-Date: Fri, 08 Jun 2007 14:50:29 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Fri, 8 Jun 2007 08:50:29 -0400
+Received: from THUNK.ORG ([69.25.196.29]:53541 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938296AbXFHMu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 08:50:27 -0400
+Date: Fri, 8 Jun 2007 08:07:46 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+Message-ID: <20070608120746.GD12687@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Davide Libenzi <davidel@xmailserver.org>,
+	Ulrich Drepper <drepper@redhat.com>,
+	Eric Dumazet <dada1@cosmosbay.com>,
+	Kyle Moffett <mrmacman_g4@mac.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>
+References: <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu> <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com> <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com> <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com> <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com> <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: man-pages-2.54 is released
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+On Thu, Jun 07, 2007 at 03:40:14PM -0700, Davide Libenzi wrote:
+> Yes. Files with the CLOFORK and CLOEXEC flag do not count for fork and 
+> exec copies.
+> I was also planning on doing it in __put_unused_fd(), every time 
+> fmap->count goes to zero. But get_random_int() is not as cheap as I 
+> thought. If we use a cheaper (although less secure) function to mix pid & 
+> jiffies, we could do it even in there.
 
-I just released man-pages-2.54
+Um, how cheap do you need it?  get_random_int() is actually pretty
+cheep, since it was designed to be usable by the networking stack for
+sequence numbers for TCP packets; and it's not like sys_close() or
+sys_open() is a majorly critical path, is it?  If the concern is
+increasing the potential hold time, I suppose you could have the
+exactly two callers of __put_unused_fd() (sys_close() and
+put_unused_fd()) call get_random_int() before grabbing the
+current->files->file_lock spinlock,
 
-This release is now available for download at:
-
-    http://www.kernel.org/pub/linux/docs/manpages
-    or ftp://ftp.kernel.org/pub/linux/docs/manpages
-    or mirrors: ftp://ftp.XX.kernel.org/pub/linux/docs/manpages
-
-and soon at:
-
-    ftp://ftp.win.tue.nl/pub/linux-local/manpages
-
-This release includes a new page, man-pages.7, that describes the
-conventions that should be used when writing pages for man-pages.  A few
-other changes that may be of interest to readers of this list are are noted
-below.
-
-Cheers,
-
-Michael
-
-
-==================== Changes in man-pages-2.54 ====================
-
-New pages
----------
-
-man-pages.7
-    mtk
-        A description of the conventions that should be followed
-        when writing pages for the man-pages package.
-
-Changes to individual pages
----------------------------
-
-fcntl.2
-    mtk
-        Remove misleading text about setting O_ASYNC when calling
-        open(); one must use fcntl() F_SETFL for this task.
-
-fdatasync.2
-    mtk
-        Converted outdated BUGS note about fdatasync() being
-        equivalent to fsync() on Linux 2.2 into a NOTES note
-        about this historical behaviour.
-
-mprotect.2
-    mtk, after an observation by Emmanuel Mogenet
-        A much improved example program.
-    mtk
-        Significant rewrites and additions to description.
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
+						- Ted
