@@ -1,60 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938534AbXFHKSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968510AbXFHKTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938534AbXFHKSU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 06:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937708AbXFHKSI
+	id S968510AbXFHKTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 06:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937783AbXFHKTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 06:18:08 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:51664 "EHLO twin.jikos.cz"
+	Fri, 8 Jun 2007 06:19:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55437 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937539AbXFHKSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 06:18:06 -0400
-Date: Fri, 8 Jun 2007 12:17:48 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Robert de Rooy <robert.de.rooy@gmail.com>
-cc: Joel.Becker@oracle.com, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net
-Subject: Re: ThinkPad T41 - Strange USB 2.0 behaviour
-In-Reply-To: <46692ADC.4050604@gmail.com>
-Message-ID: <Pine.LNX.4.64.0706081217340.23280@twin.jikos.cz>
-References: <46686937.9050306@gmail.com> <20070607205015.GD6528@ca-server1.us.oracle.com>
- <46687BD3.1020603@gmail.com> <Pine.LNX.4.64.0706081110330.23280@twin.jikos.cz>
- <46692ADC.4050604@gmail.com>
+	id S937767AbXFHKTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 06:19:04 -0400
+Date: Fri, 8 Jun 2007 12:18:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Interesting interaction between lguest and CFS
+Message-ID: <20070608101843.GA2381@elte.hu>
+References: <20070604173710.GR11166@waste.org> <20070604175436.GC30274@elte.hu> <20070604184106.GG11115@waste.org> <20070605071904.GB25163@elte.hu> <20070605140342.GR11115@waste.org> <b647ffbd0706050814u1e145b82qdb344d475d9ffe93@mail.gmail.com> <b647ffbd0706050841v2a326fb4n128249131ccbc11a@mail.gmail.com> <20070605195015.GA24348@elte.hu> <20070606202314.GH11115@waste.org> <20070608093429.GA22699@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070608093429.GA22699@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-usb-devel list added
 
-On Fri, 8 Jun 2007, Robert de Rooy wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> Jiri Kosina wrote:
-> > On Thu, 7 Jun 2007, Robert de Rooy wrote:
-> >
-> >   
-> > > Yes I figured it was a hardware problem, but that was not really the point
-> > > I was trying to raise ;). I would like, if possible for Linux to
-> > > automatically fallback to USB 1.1 like Windows does (preferably with a
-> > > suitable warning).
-> > >     
-> >
-> > What do you propose as a trigger for the kernel to fallback?
-> >
-> > You can work it around manually, just don't use ehci-hcd, can't you?
-> >
-> >   
-> Yes I can unload ehci-hcd, but I have one USB 2.0 device that strangely enough
-> DOES work as such, and unloading ehci-hcd will cause that also to run at 1.1
-> speed.
-> 
-> Clearly something is failing when plugging a device with ehci-hcd loaded, the
-> driver seems to keep retrying indefinitely. Instead it would be nice if after
-> a few tries it hands the device over to uhci-hcd. This seems to be the
-> behaviour under Windows, so I was wondering if Linux could be made to do
-> something similar.
-> 
-> 
+> thanks. It shows the anomaly in action:
 
--- 
-Jiri Kosina
+> So all the time references we have show that (no surprise here) 1 
+> second passed between the two samples. But sched_clock() shows a 
+> _large_ jump:
+> 
+>   .clock                 : 125652924079659272
+>   .clock                 : 125653018059166371
+> 
+> also reflected in .clock_max_delta:
+> 
+>   .clock_max_delta       : 92976502936
+> 
+> that's a 93 seconds jump (!) in a single 1-second sample. [...]
+
+we also had a similar jump in exec_clock, which suggests that the 
+sched_clock() "jump" occured while there was a task running. (i.e. not 
+during ACPI-C2/C3) Could you try the patch below? It should catch such 
+large jumps. The 'clock_overflows' counter in /proc/sched_debug will 
+show whether this new protection triggered on your box.
+
+	Ingo
+
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -149,12 +149,12 @@ struct rq {
+ 
+ 	u64 clock, prev_clock_raw;
+ 	s64 clock_max_delta;
+-	u64 fair_clock, prev_fair_clock;
+-	u64 exec_clock, prev_exec_clock;
++	u64 fair_clock, prev_fair_clock;
++	u64 exec_clock, prev_exec_clock;
+ 	s64 wait_runtime;
+ 	unsigned long wait_runtime_overruns, wait_runtime_underruns;
+ 
+-	unsigned int clock_warps;
++	unsigned int clock_warps, clock_overflows;
+ 	unsigned int clock_unstable_events;
+ 
+ 	struct sched_class *load_balance_class;
+@@ -245,9 +245,17 @@ static inline unsigned long long __rq_cl
+ 		clock++;
+ 		rq->clock_warps++;
+ 	} else {
+-		if (unlikely(delta > rq->clock_max_delta))
+-			rq->clock_max_delta = delta;
+-		clock += delta;
++		/*
++		 * Catch too large forward jumps too:
++		 */
++		if (delta > 2*TICK_NSEC) {
++			clock++;
++			rq->clock_overflows++;
++		} else {
++			if (unlikely(delta > rq->clock_max_delta))
++				rq->clock_max_delta = delta;
++			clock += delta;
++		}
+ 	}
+ 
+ 	rq->prev_clock_raw = now;
+Index: linux/kernel/sched_debug.c
+===================================================================
+--- linux.orig/kernel/sched_debug.c
++++ linux/kernel/sched_debug.c
+@@ -117,13 +119,13 @@ static void print_cpu(struct seq_file *m
+ 	P(clock);
+ 	P(prev_clock_raw);
+ 	P(clock_warps);
++	P(clock_overflows);
+ 	P(clock_unstable_events);
+ 	P(clock_max_delta);
+-	rq->clock_max_delta = 0;
+ 	P(fair_clock);
+-	P(prev_fair_clock);
++	P(prev_fair_clock);
+ 	P(exec_clock);
+-	P(prev_exec_clock);
++	P(prev_exec_clock);
+ 	P(wait_runtime);
+ 	P(wait_runtime_overruns);
+ 	P(wait_runtime_underruns);
