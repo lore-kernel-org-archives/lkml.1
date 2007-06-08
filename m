@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968944AbXFHNJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030321AbXFHNJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968944AbXFHNJd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 09:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968059AbXFHNJN
+	id S1030321AbXFHNJw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 09:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968343AbXFHNJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 09:09:13 -0400
+	Fri, 8 Jun 2007 09:09:15 -0400
 Received: from ug-out-1314.google.com ([66.249.92.168]:48213 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968016AbXFHNJL (ORCPT
+	with ESMTP id S968151AbXFHNJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 09:09:11 -0400
+	Fri, 8 Jun 2007 09:09:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=dwnIsURJ0rZCsQemBiU9JAb7cSZQlnhUwWHktT5ytTQzx8g63qxv89Vl1xJR27RChLpDoOsRKT0zXiBXDm09adxt2MinKIZWixYtMWCrns14dASO/1VvzYw5jMknxOtUmD0Y6eu498Y+jncQ39gVS0nDf8MkEMgRqx8usN7HX4U=
+        b=o5vNzn9P2YSkvELMMKCIs0se20UZVpA6GffjEG6+th213F3cFPGxTPk8i4Ivu0oHUIz3Cud5VMYEtlGj2sHdKJogRPWKPB3Snz9JLGpA5EmLBg/KsDkz7IKulTFzftaVAyB4TE/XeCi20q6/+0pSjxwyzspWD4V7Miy1UiBqZfM=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
-Date: Fri, 8 Jun 2007 14:18:55 +0200
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 3/2] serverworks: always tune CSB6
+Date: Fri, 8 Jun 2007 14:19:18 +0200
 User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Korb <ml@akana.de>, linux-ide@vger.kernel.org
-References: <20601315171560711667@wsc.cz>
-In-Reply-To: <20601315171560711667@wsc.cz>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200706032223.49063.bzolnier@gmail.com> <20070604144018.0dbfa63b@the-village.bc.nu>
+In-Reply-To: <20070604144018.0dbfa63b@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706081418.56217.bzolnier@gmail.com>
+Message-Id: <200706081419.18617.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 June 2007, Jiri Slaby wrote:
-> ide-generic, add another device exception
-
-ide-generic is a generic ISA IDE driver, this one is drivers/ide/pci/generic
-(a generic IDE PCI driver) - fixed patch description to avoid confusion.
-
-[ Yes, both drivers need a rename - patches are welcomed. ]
-
-> This device is char device and is grabbed by generic ide driver:
-> 00:0b.0 Class ffff: National Semiconductor Corporation 87410 IDE (rev ff) (prog-if ff)
-> 	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+On Monday 04 June 2007, Alan Cox wrote:
+> > Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 > 
-> Disallow generic driver to grab it by adding next condition. Also
-> consolidate exceptions to one bigger 'switch (dev->vendor)'.
-> 
-> Cc: Ingo Korb <ml@akana.de>
-> Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Looks good to me - and I can confirm no libata problem reports from us
+> always setting modes ourselves.
 
-applied, thanks.
+Thanks for review, added your ACK to the patch.
