@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971385AbXFHWch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971437AbXFHWd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971385AbXFHWch (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 18:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031588AbXFHWcL
+	id S971437AbXFHWd1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 18:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971250AbXFHWdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 18:32:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57722 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1032423AbXFHWcJ (ORCPT
+	Fri, 8 Jun 2007 18:33:15 -0400
+Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:60893
+	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S971065AbXFHWdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 18:32:09 -0400
-Date: Fri, 8 Jun 2007 15:32:08 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ak@suse.de, gregkh@suse.de, muli@il.ibm.com, asit.k.mallick@intel.com,
-       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
-       shaohua.li@intel.com, davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
-In-Reply-To: <20070608182156.GA24865@linux-os.sc.intel.com>
-Message-ID: <Pine.LNX.4.64.0706081531161.3966@schroedinger.engr.sgi.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
- <20070606190042.510643000@askeshav-devel.jf.intel.com>
- <20070607162726.2236a296.akpm@linux-foundation.org>
- <20070608182156.GA24865@linux-os.sc.intel.com>
+	Fri, 8 Jun 2007 18:33:14 -0400
+Message-ID: <4669D6CB.7000007@hawkeye.stone.uk.eu.org>
+Date: Fri, 08 Jun 2007 23:23:07 +0100
+From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+CC: hpa@zytor.com, raven@themaw.net
+Subject: [PATCH 4/7] Update DPRINTK macro to use pr_debug in autofs4
+References: <4669D5B7.7050005@hawkeye.stone.uk.eu.org>
+In-Reply-To: <4669D5B7.7050005@hawkeye.stone.uk.eu.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007, Keshavamurthy, Anil S wrote:
+Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+---
+ #ifdef DEBUG
+-#define DPRINTK(fmt,args...) do { printk(KERN_DEBUG "pid %d: %s: " fmt
+"\n" , current->pid , __FUNCTION__ , ##args); } while(0)
++#define DPRINTK(fmt,args...) do { pr_debug("pid %d: %s: " fmt "\n" ,
+current->pid , __FUNCTION__ , ##args); } while(0)
+ #else
+ #define DPRINTK(fmt,args...) do {} while(0)
+ #endif
 
-> In the IOMMU case, we need exactly opposite of what mempool provides,
-> i.e we always want to look for the element in the pool and if the pool
-> has no element then go to OS as a worst case. This resource pool
-> library routines do the same. Again, this resource pools 
-> grows and shrinks automatically to maintain the minimum pool 
-> elements in the background. I am not sure whether this totally
-> opposite functionality of mempools and resource pools can be 
-> merged.
+-- 
 
-What functionality are you missing in the page allocator? It seems that is 
-does what you want?
