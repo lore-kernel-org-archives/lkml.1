@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939708AbXFHHy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939760AbXFHHyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939708AbXFHHy2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938231AbXFHHZT
+	id S939760AbXFHHyw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938406AbXFHHZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:25:19 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55350 "EHLO
+	Fri, 8 Jun 2007 03:25:21 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55356 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932237AbXFHHZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:25:07 -0400
-Message-Id: <20070608072213.196608000@sous-sol.org>
+	id S938325AbXFHHZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:25:11 -0400
+Message-Id: <20070608072159.888965000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:56 -0700
+Date: Fri, 08 Jun 2007 00:21:44 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,39 +23,54 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 29/54] ALSA: wm8750 typo fix
-Content-Disposition: inline; filename=alsa-wm8750-typo-fix.patch
+Subject: [patch 17/54] ieee1394: eth1394: bring back a parent device
+Content-Disposition: inline; filename=ieee1394-eth1394-bring-back-a-parent-device.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-I quuestion the testing status of that patch!
+This adds a real parent device to eth1394's ethX device like in Linux
+2.6.20 and older.  However, due to unfinished conversion of the ieee1394
+away from class_device, we now refer to the FireWire controller's PCI
+device as the parent, not to the ieee1394 driver's fw-host device.
 
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Jaroslav Kysela <perex@suse.cz>
+Having a real parent device instead of a virtual one allows udev scripts
+to distinguish eth1394 interfaces from networking bridges, bondings and
+the likes.
+
+Fixes a regression since 2.6.21:
+https://bugs.gentoo.org/show_bug.cgi?id=177199
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- sound/soc/codecs/wm8750.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Same as commit ef50a6c59dc66f22eba67704e291d709f21e0456.
 
---- linux-2.6.21.4.orig/sound/soc/codecs/wm8750.c
-+++ linux-2.6.21.4/sound/soc/codecs/wm8750.c
-@@ -808,7 +808,7 @@ static int wm8750_init(struct snd_soc_de
- 	codec->dai = &wm8750_dai;
- 	codec->num_dai = 1;
- 	codec->reg_cache_size = sizeof(wm8750_reg);
--	codec->reg_cache = kmemdup(wm8750_reg, sizeof(wm8750_reg), GFP_KRENEL);
-+	codec->reg_cache = kmemdup(wm8750_reg, sizeof(wm8750_reg), GFP_KERNEL);
- 	if (codec->reg_cache == NULL)
- 		return -ENOMEM;
+ drivers/ieee1394/eth1394.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+--- linux-2.6.21.4.orig/drivers/ieee1394/eth1394.c
++++ linux-2.6.21.4/drivers/ieee1394/eth1394.c
+@@ -584,10 +584,9 @@ static void ether1394_add_host (struct h
+         }
+ 
+ 	SET_MODULE_OWNER(dev);
+-#if 0
+-	/* FIXME - Is this the correct parent device anyway? */
+-	SET_NETDEV_DEV(dev, &host->device);
+-#endif
++
++	/* This used to be &host->device in Linux 2.6.20 and before. */
++	SET_NETDEV_DEV(dev, host->device.parent);
+ 
+ 	priv = netdev_priv(dev);
  
 
 -- 
