@@ -1,126 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031055AbXFHRqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030802AbXFHRqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031055AbXFHRqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 13:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936025AbXFHRqI
+	id S1030802AbXFHRqk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 13:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937286AbXFHRq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 13:46:08 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33130 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937249AbXFHRqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 13:46:06 -0400
-Date: Fri, 8 Jun 2007 10:45:45 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Mark Salyzyn <aacraid@adaptec.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] [patch 37/54] SCSI: aacraid: Correct sa platform
-	support. (Was: [Bug 8469] Bad EIP value on pentium3 SMP
-	kernel-2.6.21.1)
-Message-ID: <20070608174545.GZ3723@sequoia.sous-sol.org>
-References: <20070608072127.352723000@sous-sol.org> <20070608072222.066056000@sous-sol.org> <200706081913.07975.s.L-H@gmx.de>
+	Fri, 8 Jun 2007 13:46:26 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:34483 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936025AbXFHRqZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 13:46:25 -0400
+Message-ID: <466995DB.6080703@austin.ibm.com>
+Date: Fri, 08 Jun 2007 12:46:03 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706081913.07975.s.L-H@gmx.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Dan Williams <dan.j.williams@intel.com>
+CC: apw@shadowen.org, rdunlap@xenotime.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch: add an exclusion for 'for_each' helper macros
+References: <20070608171105.7391.40550.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20070608171105.7391.40550.stgit@dwillia2-linux.ch.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Stefan Lippers-Hollmann (s.L-H@gmx.de) wrote:
-> This patch fails to compile on amd64 and i386 with the attached config 
-> (CONFIG_SCSI_AACRAID=m, 2.6.21.5-rc1):
->   CC [M]  drivers/scsi/aacraid/linit.o
->   CC [M]  drivers/scsi/aacraid/aachba.o
->   CC [M]  drivers/scsi/aacraid/commctrl.o
->   CC [M]  drivers/scsi/aacraid/comminit.o
->   CC [M]  drivers/scsi/aacraid/commsup.o
->   CC [M]  drivers/scsi/aacraid/dpcsup.o
->   CC [M]  drivers/scsi/aacraid/rx.o
->   CC [M]  drivers/scsi/aacraid/sa.o
-> drivers/scsi/aacraid/sa.c: In function 'aac_sa_init':
-> drivers/scsi/aacraid/sa.c:375: error: 'struct adapter_ops' has no member 
-> named 'adapter_restart'
 
-Mark, this patch is apparently against a slightly newer kernel which
-includes 8418852d11f0bbaeebeedd4243560d8fdc85410d:
-	[SCSI] aacraid: add restart adapter platform function
+Dan Williams wrote:
+> checkpatch currently complains about macros like the following:
+> 
+> #define for_each_dma_cap_mask(cap, mask) \
+> 	for ((cap) = first_dma_cap(mask);       \
+> 		(cap) < DMA_TX_TYPE_END;        \
+> 		(cap) = next_dma_cap((cap), (mask)))
+> 
+> 
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 
-See any issue with this against 2.6.21.4 (simply drops adapter_restart
-bits).
+I'd like it if this patch updated Chapter 12 of Documentation/CodingStyle as well. 
+That section is where the rule to check came from and it would be nice for it to 
+mention the exception to the rule as well.
 
-thanks,
--chris
---
 
-From: Salyzyn, Mark <mark_salyzyn@adaptec.com>
-Subject: SCSI: aacraid: Correct sa platform support. (Was: [Bug 8469] Bad EIP value on pentium3 SMP kernel-2.6.21.1)
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8469
-
-As discussed in the bugzilla outlined below, we have an sa based
-(Mustang) RAID adapter on the system, a Dell PERC2/QC. Affected
-controllers are HP NetRAID, Adaptec AAC-364, Dell PERC2/QC or Adaptec
-5400S. This problem  coincides with the introduction of the adapter_comm
-and adapter_deliver platform functions (Message [PATCH 1/4] aacraid:
-rework communication support code, January 23 2007, which initially
-migrated to 2.6.21)
-
-The panic occurs with an uninitialized adapter_deliver platform function
-pointer. The enclosed patch, unmodified as tested by Rainer, solves the
-problem.
-
-Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
-Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-[chrisw: backport to 2.6.21.4]
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-
----
- drivers/scsi/aacraid/aacraid.h |    1 +
- drivers/scsi/aacraid/rx.c      |    2 +-
- drivers/scsi/aacraid/sa.c      |    3 ++-
- 3 files changed, 4 insertions(+), 2 deletions(-)
-
---- linux-2.6.21.4.orig/drivers/scsi/aacraid/aacraid.h
-+++ linux-2.6.21.4/drivers/scsi/aacraid/aacraid.h
-@@ -1840,6 +1840,7 @@ struct aac_driver_ident* aac_get_driver_
- int aac_get_adapter_info(struct aac_dev* dev);
- int aac_send_shutdown(struct aac_dev *dev);
- int aac_probe_container(struct aac_dev *dev, int cid);
-+int aac_rx_deliver_producer(struct fib * fib);
- extern int numacb;
- extern int acbsize;
- extern char aac_driver_version[];
---- linux-2.6.21.4.orig/drivers/scsi/aacraid/rx.c
-+++ linux-2.6.21.4/drivers/scsi/aacraid/rx.c
-@@ -378,7 +378,7 @@ static int aac_rx_check_health(struct aa
-  *
-  *	Will send a fib, returning 0 if successful.
-  */
--static int aac_rx_deliver_producer(struct fib * fib)
-+int aac_rx_deliver_producer(struct fib * fib)
- {
- 	struct aac_dev *dev = fib->dev;
- 	struct aac_queue *q = &dev->queues->queue[AdapNormCmdQueue];
---- linux-2.6.21.4.orig/drivers/scsi/aacraid/sa.c
-+++ linux-2.6.21.4/drivers/scsi/aacraid/sa.c
-@@ -5,7 +5,7 @@
-  * based on the old aacraid driver that is..
-  * Adaptec aacraid device driver for Linux.
-  *
-- * Copyright (c) 2000 Adaptec, Inc. (aacraid@adaptec.com)
-+ * Copyright (c) 2000-2007 Adaptec, Inc. (aacraid@adaptec.com)
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -368,6 +368,7 @@ int aac_sa_init(struct aac_dev *dev)
- 	dev->a_ops.adapter_sync_cmd = sa_sync_cmd;
- 	dev->a_ops.adapter_check_health = aac_sa_check_health;
- 	dev->a_ops.adapter_intr = aac_sa_intr;
-+	dev->a_ops.adapter_deliver = aac_rx_deliver_producer;
- 	dev->a_ops.adapter_ioremap = aac_sa_ioremap;
- 
- 	/*
