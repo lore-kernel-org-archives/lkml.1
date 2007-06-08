@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939259AbXFHPrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939312AbXFHPsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939259AbXFHPrV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 11:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764218AbXFHPrK
+	id S939312AbXFHPsU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 11:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761353AbXFHPsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 11:47:10 -0400
-Received: from www.osadl.org ([213.239.205.134]:42972 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762558AbXFHPrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 11:47:09 -0400
-Subject: Re: 2.6.21-rt2..8 troubles
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Rui Nuno Capela <rncbc@rncbc.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <46660369.2070104@rncbc.org>
-References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>
-	 <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu>
-	 <46574DE4.2080900@rncbc.org> <1180195709.4264.7.camel@chaos>
-	 <4658A4F4.1080204@rncbc.org>  <46660369.2070104@rncbc.org>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 17:47:05 +0200
-Message-Id: <1181317625.4404.332.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jun 2007 11:48:01 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:44329 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759920AbXFHPsA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 11:48:00 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 8 Jun 2007 11:46:23 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Include <asm/termbits.h> from <linux/tty_driver.h>.
+In-Reply-To: <20070608164830.54436f6b@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0706081144300.31863@localhost.localdomain>
+References: <Pine.LNX.4.64.0706080925020.24228@localhost.localdomain>
+ <20070608163018.636b74d1@the-village.bc.nu> <Pine.LNX.4.64.0706081125390.30491@localhost.localdomain>
+ <20070608164830.54436f6b@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-06 at 01:44 +0100, Rui Nuno Capela wrote:
-> Just for the heads-up, I'm still suffering from this same illness, and
-> it seems even worse (big freeze happens earlier) on 2.6.21.3-rt9.
-> 
-> There's no way around. On one box it works flawlessly (desktop,
-> P4@3.3Ghz) while on the patient one (laptop, core2 T7200) it bricks
-> silently.
+On Fri, 8 Jun 2007, Alan Cox wrote:
 
-Sorry for responding late. To have some idea where the breakage comes
-from, can you please try
+> > i don't see how fixing the C file solves this issue.  the header
+> > file <linux/tty_driver.h> clearly refers to "struct ktermios", for
+> > which it won't have a definition unless it includes
+> > <asm/termbits.h>.
+>
+> Anyone using tty stuff will include <linux/tty.h> to get all the
+> stuff needed an that includes asm/termios.h which includes
+> asm/termbits.h
 
-http://www.tglx.de/projects/hrtimers/2.6.22-rc4/patch-2.6.22-rc4-hrt5.patch
+that may well be, but i don't think counting on the choice or order of
+header file inclusions represents a really robust approach to software
+design.
 
-whether it has the same behaviour.
+if a header file needs a definition/declaration that exists in another
+header file, it should include that other header file.  any other
+approach is wrong.
 
-Thanks,
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-	tglx
-
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
