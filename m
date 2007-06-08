@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935529AbXFHBBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937269AbXFHBCC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935529AbXFHBBf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 21:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936763AbXFHBBM
+	id S937269AbXFHBCC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 21:02:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936385AbXFHBBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 21:01:12 -0400
-Received: from mga01.intel.com ([192.55.52.88]:43992 "EHLO mga01.intel.com"
+	Thu, 7 Jun 2007 21:01:41 -0400
+Received: from waste.org ([66.93.16.53]:38588 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936340AbXFHBBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 21:01:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,397,1175497200"; 
-   d="scan'208";a="254552454"
-Date: Thu, 7 Jun 2007 17:57:26 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
-Message-ID: <20070608005726.GO17143@linux-os.sc.intel.com>
-References: <20070605181342.GE17143@linux-os.sc.intel.com> <20070605183300.GD12782@tree.beaverton.ibm.com> <20070605184015.GF17143@linux-os.sc.intel.com> <20070605200954.GE12782@tree.beaverton.ibm.com> <20070605211451.GG17143@linux-os.sc.intel.com> <20070605235707.GB16074@tree.beaverton.ibm.com> <20070606013759.GI17143@linux-os.sc.intel.com> <20070606185829.GA26062@tree.beaverton.ibm.com> <20070606193514.GN17143@linux-os.sc.intel.com> <20070606231642.GH13751@tree.beaverton.ibm.com>
-Mime-Version: 1.0
+	id S936840AbXFHBBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 21:01:40 -0400
+Date: Thu, 7 Jun 2007 19:59:32 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+Message-ID: <20070608005931.GZ11166@waste.org>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7> <20070606235906.72439d16@the-village.bc.nu> <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070606231642.GH13751@tree.beaverton.ibm.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 04:16:42PM -0700, Darrick J. Wong wrote:
-> On Wed, Jun 06, 2007 at 12:35:14PM -0700, Siddha, Suresh B wrote:
-> 
-> > Weird. Then the bug can only happen if for some reason, "mask = map"
-> > didn't happen in fixup_irqs(). Can you send us the disassembly of the
-> > fixup_irqs()?
-> 
-> Attached.
+On Thu, Jun 07, 2007 at 01:10:23PM -0700, Linus Torvalds wrote:
+> What do people think about that kind of approach? It has the advantage 
+> that it does *not* involve multiple kernel entries (just a single entry to 
+> a small wrapper that sets some process state temporarily), and that it 
+> doesn't have any sticky state that might confuse a library (or a signal 
+> handler: even if you end up doing "prctrl(ON) ; syscall(); prctrl(OFF)", a 
+> signal handler that happens in between the prctrl's would see unexpected 
+> behaviour).
 
-hmm.. Darrick, can't find anything wrong in there.
+First, how does this work in-kernel? Does it set a flag in the thread
+struct that magically gets used in the actual syscall? Or do we pass
+flags down to the sys_foo() function in some manner?
 
-I am very much puzzled and the main thing I am confused about is, that
-how come "/proc/irq/<irq#-hung>/smp_affinity" is still pointing at the old
-offlined cpu, while calls to set_affinity() with cpu_online_map mask
-in fixup_irqs() don't show any failure..
+If the former, there is potential for interaction with asynchronous
+code running on behalf of the thread, no? Especially if we ever adopt
+one of the syslet schemes.
 
-As you have the failing system, you need to do more detective work and
-help me out. Can you try this debug patch and send across the dmesg after the
-bug happens and also can you try different compiler to see if something
-changes..
+Second, I think we're likely to run out of flag bits really quickly as
+this is a good dumping spot for patching up our many slightly
+brain-damaged APIs (be they POSIX or Linux-specific).
 
-diff --git a/arch/x86_64/kernel/irq.c b/arch/x86_64/kernel/irq.c
-index 3eaceac..fc2a576 100644
---- a/arch/x86_64/kernel/irq.c
-+++ b/arch/x86_64/kernel/irq.c
-@@ -152,9 +152,11 @@ void fixup_irqs(cpumask_t map)
- 			printk("Breaking affinity for irq %i\n", irq);
- 			mask = map;
- 		}
--		if (irq_desc[irq].chip->set_affinity)
-+		if (irq_desc[irq].chip->set_affinity) {
-+			printk("calling set affinity for %i, with mask %lx\n",
-+				irq, cpus_addr(mask)[0]);
- 			irq_desc[irq].chip->set_affinity(irq, mask);
--		else if (irq_desc[irq].action && !(warned++))
-+		} else if (irq_desc[irq].action && !(warned++))
- 			printk("Cannot set affinity for irq %i\n", irq);
- 	}
- 
+Third, can I do sys_indirect(sys_indirect(foo, args), flags1),
+flags2)?
+
+Fourth, can we do sys_indirect(foo, args, flags | ASYNC) and get most
+of the way to merging this with the syslet proposal?
+
+-- 
+Mathematics is the supreme nostalgia of our time.
