@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938763AbXFHP2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969426AbXFHPbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938763AbXFHP2n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 11:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969567AbXFHP2V
+	id S969426AbXFHPbW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 11:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932383AbXFHPbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 11:28:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54618 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S969561AbXFHP2U (ORCPT
+	Fri, 8 Jun 2007 11:31:07 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47735 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764057AbXFHPbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 11:28:20 -0400
-Date: Fri, 8 Jun 2007 08:28:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, dgc@sgi.com, Mel Gorman <mel@skynet.ie>
-Subject: Re: [patch 00/12] Slab defragmentation V3
-In-Reply-To: <6bffcb0e0706080239w5cfe8594sbf5564dacd48936f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706080826230.32210@schroedinger.engr.sgi.com>
-References: <20070607215529.147027769@sgi.com>
- <6bffcb0e0706080239w5cfe8594sbf5564dacd48936f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 Jun 2007 11:31:05 -0400
+Date: Fri, 8 Jun 2007 16:36:15 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
+Message-ID: <20070608163615.3177dd9a@the-village.bc.nu>
+In-Reply-To: <20070608142822.GB25649@havoc.gtf.org>
+References: <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com>
+	<46667466.4010500@gmail.com>
+	<9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com>
+	<4667B347.9040900@gmail.com>
+	<alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
+	<20070607224746.GA23290@havoc.gtf.org>
+	<46690D10.9040808@gmail.com>
+	<20070608122750.7f8ae0e0@the-village.bc.nu>
+	<46693E33.6080705@gmail.com>
+	<20070608124058.7948dee1@the-village.bc.nu>
+	<20070608142822.GB25649@havoc.gtf.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007, Michal Piotrowski wrote:
+On Fri, 8 Jun 2007 10:28:22 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-> Hi Christoph,
+> On Fri, Jun 08, 2007 at 12:40:58PM +0100, Alan Cox wrote:
+> > Seems best to me - we know the current code breaks a load of systems and
+> > the change should not break anything but fix them all. If we ship without
+> > it being changed then a load of people are stuck with broken ATA.
 > 
-> On 07/06/07, clameter@sgi.com <clameter@sgi.com> wrote:
-> > Will show up shortly at
-> http://ftp.kernel.org/pub/linux/kernel/people/christoph/slab-defrag/
+> So you have verified that Tejun's experimental change "fixes them all"?
 > 
-> I tried to apply this patchset, but without success. I tried
-> 2.6.22-rc4-mm2, 2.6.22-rc4, 2.6.22-rc4-git2, 2.6.22-rc3...
+> Proof?  Bugzilla URLs pointing to users that have ack'd this fix?
 
-Yeah its against 2.6.22-rc4-mm1 and 2.6.22-rc4-mm2 changes kernel/sysctl.c 
-so that the defrag trigger patch fails. Sigh.
+It unbreaks the IT821x, see the proposed patches I sent before for
+discussion. Those are tested and do work. I've got a test case here and
+its the case that the IT821x card doesn't get the magic trickery you rely
+on right.
 
-I added kernel versions below slab-defrag so that you can find the correct 
-version for your kernel.
+Alan
+
+
