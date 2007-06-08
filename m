@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971258AbXFHWay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971325AbXFHWbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971258AbXFHWay (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 18:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032326AbXFHWaO
+	id S971325AbXFHWbY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 18:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032333AbXFHWaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 18:30:14 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57585 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1032319AbXFHWaM (ORCPT
+	Fri, 8 Jun 2007 18:30:16 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:57131 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1032318AbXFHWaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Jun 2007 18:30:12 -0400
-Date: Fri, 8 Jun 2007 15:30:09 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
+Subject: [PATCH] Restore shmid as inode# to fix /proc/pid/maps ABI breakage
+From: Badari Pulavarty <pbadari@us.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: anil.s.keshavamurthy@intel.com, linux-kernel@vger.kernel.org, ak@suse.de,
-       gregkh@suse.de, muli@il.ibm.com, asit.k.mallick@intel.com,
-       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
-       shaohua.li@intel.com, davem@davemloft.net
-Subject: Re: [Intel-IOMMU 06/10] Intel IOMMU driver
-In-Reply-To: <20070607165739.dc437e96.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706081527160.3966@schroedinger.engr.sgi.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
- <20070606190042.823168000@askeshav-devel.jf.intel.com>
- <20070607165739.dc437e96.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Albert Cahalan <acahalan@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       torvalds@linux-foundation.org
+In-Reply-To: <787b0d920706072351s6917ad77oe0bf381a5d5817d0@mail.gmail.com>
+References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
+	 <20070606204432.b670a7b1.akpm@linux-foundation.org>
+	 <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
+	 <20070607162004.GA27802@vino.hallyn.com>
+	 <m1ir9zrtwe.fsf@ebiederm.dsl.xmission.com>
+	 <787b0d920706072141s5a34ecb3n97007ad857ba4dc9@mail.gmail.com>
+	 <m1ejknrnva.fsf@ebiederm.dsl.xmission.com>
+	 <787b0d920706072351s6917ad77oe0bf381a5d5817d0@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 08 Jun 2007 15:31:14 -0700
+Message-Id: <1181341874.14441.3.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007, Andrew Morton wrote:
+Andrew,
 
-> > +void *iommu_rpool_alloc(unsigned int size, gfp_t flag)
-> > +{
-> > +	if (size == PAGE_SIZE_4K)
-> > +		return(void *)get_zeroed_page(flag);
-> > +	else
-> > +		return kzalloc(size, flag);
-> > +}
-> 
-> kmalloc(4k) is pretty efficient and (I think) is guaranteed to return a
-> page-aligned address.
+Can you include this in -mm ?
 
-Page allocations should be done through the page allocator. 4k 
-allocations benefit from the per cpu caches of the page allocator which 
-makes the use of the page allocator fastest and best for 4k allocs.
+Thanks,
+Badari
 
-kmalloc allocations are not guaranteed to be aligned to 4k boundaries. 
-They usually are but ...
+shmid used to be stored as inode# for shared memory segments. Some of
+the proc-ps tools use this from /proc/pid/maps.  Recent cleanups
+to newseg() changed it.  This patch sets inode number back to shared 
+memory id to fix breakage.
+
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+
+Index: linux-2.6.22-rc4/ipc/shm.c
+===================================================================
+--- linux-2.6.22-rc4.orig/ipc/shm.c	2007-06-08 15:17:20.000000000 -0700
++++ linux-2.6.22-rc4/ipc/shm.c	2007-06-08 15:19:38.000000000 -0700
+@@ -397,6 +397,11 @@ static int newseg (struct ipc_namespace 
+ 	shp->shm_nattch = 0;
+ 	shp->id = shm_buildid(ns, id, shp->shm_perm.seq);
+ 	shp->shm_file = file;
++	/*
++	 * shmid gets reported as "inode#" in /proc/pid/maps.
++	 * proc-ps tools use this. Changing this will break them.
++	 */
++	file->f_dentry->d_inode->i_ino = shp->id;
+ 
+ 	ns->shm_tot += numpages;
+ 	shm_unlock(shp);
 
 
