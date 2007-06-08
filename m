@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032014AbXFHUnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032128AbXFHUob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032014AbXFHUnr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 16:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762946AbXFHUnf
+	id S1032128AbXFHUob (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 16:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968104AbXFHUoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 16:43:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41867 "EHLO mx2.mail.elte.hu"
+	Fri, 8 Jun 2007 16:44:23 -0400
+Received: from mga01.intel.com ([192.55.52.88]:2487 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753793AbXFHUne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 16:43:34 -0400
-Date: Fri, 8 Jun 2007 22:43:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, ak@suse.de
-Subject: Re: [PATCH 0/2] i386: Fix two more NMI watchdog bugs
-Message-ID: <20070608204324.GA25392@elte.hu>
-References: <465C2225.2000100@googlemail.com> <20070603150246.5151dda6@laptop.hypervisor.org> <20070608060244.GA2369@atjola.homenet> <20070607234153.09c32b49.akpm@linux-foundation.org> <20070608105808.GA10190@elte.hu> <20070608184422.GA2204@atjola.homenet>
-MIME-Version: 1.0
+	id S967489AbXFHUoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 16:44:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,401,1175497200"; 
+   d="scan'208";a="254884063"
+Date: Fri, 8 Jun 2007 13:40:33 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ak@suse.de, gregkh@suse.de, muli@il.ibm.com, asit.k.mallick@intel.com,
+       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
+       shaohua.li@intel.com, davem@davemloft.net
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+Message-ID: <20070608204033.GS17143@linux-os.sc.intel.com>
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <20070606190042.510643000@askeshav-devel.jf.intel.com> <20070607162726.2236a296.akpm@linux-foundation.org> <20070608182156.GA24865@linux-os.sc.intel.com> <20070608120107.245eba96.akpm@linux-foundation.org> <20070608201200.GA641@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070608184422.GA2204@atjola.homenet>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070608201200.GA641@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 08, 2007 at 01:12:00PM -0700, Keshavamurthy, Anil S wrote:
+> The resource pool indeed provide extra robustness, the initial pool size will
+> be equal to min_count + grow_count. If the pool object count goes below
+> min_count, then pool grows in the background while serving as emergency
+> pool with min_count of objects in it. If we run out of emergency pool objects
+> before the pool grow in the background, then we go to OS for allocation.
+> 
+> Similary, if the pool objects grows above the max threshold,
+> the objects are freed to OS in the background thread maintaining
+> the pool objects close to min_count + grow_count size.
 
-* Bj?rn Steinbrink <B.Steinbrink@gmx.de> wrote:
+slab already has this and it has additional functionalities like reaping
+over time, when there is no activity...
 
-> Anyway, both are bugs and should be fixed. Maybe we're even lucky and 
-> it fixes your hang. *fingers crossed*
+> We need several objects of size say( 4 * sizeof(u64)) and reuse
+> them in dma map/unmap api calls for managing io virtual allocation address that
+> this driver has dished out. Hence having pool of objects where we put 
+> the element in the linked list and and get it from the linked list is pretty
+> fast compared to slab.
 
-just to make it clear: the NMI watchdog was working perfectly fine on 
-that box (in v2.6.21 and in dozens of kernel releases before that, for 
-multiple years) before Andi's cleanup patch. So lets find that bug first 
-or revert the cleanups.
+Not sure how is this fast compared to slab. Atleast slab is lockless in the
+fast case..
 
-	Ingo
+> We had this kmem_cache_alloc() with mempool concept earlier and Andi suggest to 
+> come up with something pre-allocated pool.  
+> Andi, Can you chime in please.
+
+In the initial patches, only for iova we were using slabs + mempool. But
+for others like pgtable_mempool, we were using simple mempools.
+
+Even slabs + mempool is not same as just usng slab.. slab is lockless
+for the fast case.
+
+thanks,
+suresh
