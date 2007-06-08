@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971325AbXFHWbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971304AbXFHWbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971325AbXFHWbY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 18:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032333AbXFHWaQ
+	id S971304AbXFHWbn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 18:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971175AbXFHWai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 18:30:16 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:57131 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032318AbXFHWaM (ORCPT
+	Fri, 8 Jun 2007 18:30:38 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41354 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1032315AbXFHWag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 18:30:12 -0400
-Subject: [PATCH] Restore shmid as inode# to fix /proc/pid/maps ABI breakage
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Albert Cahalan <acahalan@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       torvalds@linux-foundation.org
-In-Reply-To: <787b0d920706072351s6917ad77oe0bf381a5d5817d0@mail.gmail.com>
-References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
-	 <20070606204432.b670a7b1.akpm@linux-foundation.org>
-	 <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
-	 <20070607162004.GA27802@vino.hallyn.com>
-	 <m1ir9zrtwe.fsf@ebiederm.dsl.xmission.com>
-	 <787b0d920706072141s5a34ecb3n97007ad857ba4dc9@mail.gmail.com>
-	 <m1ejknrnva.fsf@ebiederm.dsl.xmission.com>
-	 <787b0d920706072351s6917ad77oe0bf381a5d5817d0@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 15:31:14 -0700
-Message-Id: <1181341874.14441.3.camel@dyn9047017100.beaverton.ibm.com>
+	Fri, 8 Jun 2007 18:30:36 -0400
+Date: Fri, 8 Jun 2007 23:35:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Korb <ml@akana.de>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
+Message-ID: <20070608233512.69988f57@the-village.bc.nu>
+In-Reply-To: <200706090042.50287.bzolnier@gmail.com>
+References: <20601315171560711667@wsc.cz>
+	<200706081418.56217.bzolnier@gmail.com>
+	<20070608223505.3ff1a662@the-village.bc.nu>
+	<200706090042.50287.bzolnier@gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+On Sat, 9 Jun 2007 00:42:50 +0200
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-Can you include this in -mm ?
+> On Friday 08 June 2007, Alan Cox wrote:
+> > On Fri, 8 Jun 2007 14:18:55 +0200
+> > Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> > 
+> > > On Monday 04 June 2007, Jiri Slaby wrote:
+> > > > ide-generic, add another device exception
+> > > 
+> > > ide-generic is a generic ISA IDE driver, this one is drivers/ide/pci/generic
+> > > (a generic IDE PCI driver) - fixed patch description to avoid confusion.
+> > 
+> > Nope ide-generic is a generic I/O based ST506 interface. It covers a bit
+> > more than just ISA bus.
+> 
+> If so then can we finally get rid of hd.c?
 
-Thanks,
-Badari
+Ok ST-506 register set. ST-506 MFM command set is a bit different and
+does need hd.c (SFF only deals with PCI controllers)
 
-shmid used to be stored as inode# for shared memory segments. Some of
-the proc-ps tools use this from /proc/pid/maps.  Recent cleanups
-to newseg() changed it.  This patch sets inode number back to shared 
-memory id to fix breakage.
+> > > [ Yes, both drivers need a rename - patches are welcomed. ]
+> > 
+> > Good way to break everyones module settings
+> 
+> MODULE_ALIAS() should cover this up nicely.
 
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-
-Index: linux-2.6.22-rc4/ipc/shm.c
-===================================================================
---- linux-2.6.22-rc4.orig/ipc/shm.c	2007-06-08 15:17:20.000000000 -0700
-+++ linux-2.6.22-rc4/ipc/shm.c	2007-06-08 15:19:38.000000000 -0700
-@@ -397,6 +397,11 @@ static int newseg (struct ipc_namespace 
- 	shp->shm_nattch = 0;
- 	shp->id = shm_buildid(ns, id, shp->shm_perm.seq);
- 	shp->shm_file = file;
-+	/*
-+	 * shmid gets reported as "inode#" in /proc/pid/maps.
-+	 * proc-ps tools use this. Changing this will break them.
-+	 */
-+	file->f_dentry->d_inode->i_ino = shp->id;
- 
- 	ns->shm_tot += numpages;
- 	shm_unlock(shp);
-
+No problem with that. Just need to be sure it gets done.
 
