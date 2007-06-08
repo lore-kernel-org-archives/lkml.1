@@ -1,129 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939003AbXFHMyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939172AbXFHM4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939003AbXFHMyA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 08:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938028AbXFHMxx
+	id S939172AbXFHM4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 08:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937318AbXFHM4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 08:53:53 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:38417 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937981AbXFHMxw (ORCPT
+	Fri, 8 Jun 2007 08:56:07 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:63628 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937143AbXFHM4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 08:53:52 -0400
-Date: Fri, 8 Jun 2007 13:53:49 +0100
-To: alexn@telia.com, akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Allow PAGE_OWNER to be set on any architecture
-Message-ID: <20070608125349.GA8444@skynet.ie>
+	Fri, 8 Jun 2007 08:56:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=MdYnfcWhd3TUO4k4y08MlZLP7xAbjspBQ2ezlPkcgt0zqJnOdWcZ+UCLsYoVOlsUwdhThhnERWEJQnlUasOQ5IKWdkVY8ib5Oxr/BtUExWN95F1WYS4O8u+hej1qBghwl/OvsCHo9SiKfhzgK/Gam1oPSa22oBuLMD84FNODaVA=
+Message-ID: <466951DE.9070004@gmail.com>
+Date: Fri, 08 Jun 2007 21:55:58 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+To: Florin Iucha <florin@iucha.net>
+CC: Robert Hancock <hancockr@shaw.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: spurious completions during NCQ?
+References: <fa.Nigm+GFAuAW+QzfgqTUfmHJoFfU@ifi.uio.no> <4666C477.1070603@shaw.ca> <20070607120430.GB30661@iucha.net>
+In-Reply-To: <20070607120430.GB30661@iucha.net>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently PAGE_OWNER depends on CONFIG_X86. This appears to be due to
-pfn_to_page() being called in an inappropriate for many memory models
-and the presense of memory holes. This patch ensures that pfn_valid()
-and pfn_valid_within() is called at the appropriate places and the offsets
-correctly updated so that PAGE_OWNER is safe on any architecture.
+Florin Iucha wrote:
+> On Wed, Jun 06, 2007 at 08:28:07AM -0600, Robert Hancock wrote:
+>>> This is on a Thinkpad T60 with 2 GB RAM, running Ubuntu 7.04 (kernel
+>>> 2.6.20-16-generic).  No proprietary drivers (ok, maybe the Intel
+>>> Wi-Fi - but that should not count).
+>>>
+>>> The laptop came with Windows but I blew that away - did I mess some
+>>> thing up regarding HPA and its ilk?
+>> It means the drive reported command tags were completed that were not 
+>> outstanding. What kind of drive is this?
+> 
+> [   29.033142] ata1.00: ata_hpa_resize 1: sectors = 156301488, hpa_sectors = 156
+> 301488
+> [   29.033146] ata1.00: ATA-7: HITACHI HTS541680J9SA00, SB2IC7EP, max UDMA/100
+> [   29.033149] ata1.00: 156301488 sectors, multi 16: LBA48 NCQ (depth 31/32)
+> [   29.034230] ata1.00: ata_hpa_resize 1: sectors = 156301488, hpa_sectors = 156
+> 301488
 
-In situations where CONFIG_HOLES_IN_ZONES is set (IA64 with VIRTUAL_MEM_MAP),
-there may be cases where pages allocated within a MAX_ORDER_NR_PAGES block
-of pages may not be displayed in /proc/page_owner if the hole is at the
-start of the block. Addressing this would be quite complex, perform slowly
-and is of no clear benefit.
+Please report the result of 'hdparm -I /dev/sda'.  We'll probably have
+to blacklist it for NCQ.
 
-Once PAGE_OWNER is allowed on all architectures, the statistics for grouping
-pages by mobility that declare how many pageblocks contain mixed page types
-becomes optionally available on all arches.
-
-This patch was tested successfully on x86, x86_64, ppc64 and IA64 machines.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Acked-by: Andy Whitcroft <apw@shadowen.org>
----
- fs/proc/proc_misc.c |   31 ++++++++++++++++++++++++-------
- lib/Kconfig.debug   |    2 +-
- 2 files changed, 25 insertions(+), 8 deletions(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc4-mm2-clean/fs/proc/proc_misc.c linux-2.6.22-rc4-mm2-005_pageowner_anyarch/fs/proc/proc_misc.c
---- linux-2.6.22-rc4-mm2-clean/fs/proc/proc_misc.c	2007-06-07 14:11:20.000000000 +0100
-+++ linux-2.6.22-rc4-mm2-005_pageowner_anyarch/fs/proc/proc_misc.c	2007-06-08 13:34:36.000000000 +0100
-@@ -756,18 +756,35 @@ read_page_owner(struct file *file, char 
- 	struct page *page;
- 	char *kbuf, *modname;
- 	const char *symname;
--	int ret = 0, next_idx = 1;
-+	int ret = 0;
- 	char namebuf[128];
- 	unsigned long offset = 0, symsize;
- 	int i;
- 	ssize_t num_written = 0;
- 	int blocktype = 0, pagetype = 0;
- 
-+	page = NULL;
- 	pfn = min_low_pfn + *ppos;
--	page = pfn_to_page(pfn);
-+
-+	/* Find a valid PFN or the start of a MAX_ORDER_NR_PAGES area */
-+	while (!pfn_valid(pfn) && (pfn & (MAX_ORDER_NR_PAGES - 1)) != 0)
-+		pfn++;
-+
-+	/* Find an allocated page */
- 	for (; pfn < max_pfn; pfn++) {
--		if (!pfn_valid(pfn))
-+		/*
-+		 * If the new page is in a new MAX_ORDER_NR_PAGES area,
-+		 * validate the area as existing, skip it if not
-+		 */
-+		if ((pfn & (MAX_ORDER_NR_PAGES - 1)) == 0 && !pfn_valid(pfn)) {
-+			pfn += MAX_ORDER_NR_PAGES - 1;
- 			continue;
-+		}
-+
-+		/* Check for holes within a MAX_ORDER area */
-+		if (!pfn_valid_within(pfn))
-+			continue;
-+
- 		page = pfn_to_page(pfn);
- 
- 		/* Catch situations where free pages have a bad ->order  */
-@@ -776,16 +793,16 @@ read_page_owner(struct file *file, char 
- 				"PageOwner info inaccurate for PFN %lu\n",
- 				pfn);
- 
--		if (page->order >= 0)
-+		/* Stop search if page is allocated and has trace info */
-+		if (page->order >= 0 && page->trace[0])
- 			break;
--
--		next_idx++;
- 	}
- 
- 	if (!pfn_valid(pfn))
- 		return 0;
- 
--	*ppos += next_idx;
-+	/* Record the next PFN to read in the file offset */
-+	*ppos = (pfn - min_low_pfn) + 1;
- 
- 	kbuf = kmalloc(count, GFP_KERNEL);
- 	if (!kbuf)
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc4-mm2-clean/lib/Kconfig.debug linux-2.6.22-rc4-mm2-005_pageowner_anyarch/lib/Kconfig.debug
---- linux-2.6.22-rc4-mm2-clean/lib/Kconfig.debug	2007-06-07 14:11:21.000000000 +0100
-+++ linux-2.6.22-rc4-mm2-005_pageowner_anyarch/lib/Kconfig.debug	2007-06-08 13:34:36.000000000 +0100
-@@ -49,7 +49,7 @@ config UNUSED_SYMBOLS
- 
- config PAGE_OWNER
- 	bool "Track page owner"
--	depends on DEBUG_KERNEL && X86
-+	depends on DEBUG_KERNEL
- 	help
- 	  This keeps track of what call chain is the owner of a page, may
- 	  help to find bare alloc_page(s) leaks. Eats a fair amount of memory.
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+tejun
