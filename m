@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967430AbXFHCfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967339AbXFHCkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967430AbXFHCfB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 22:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967213AbXFHCeo
+	id S967339AbXFHCkp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 22:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966155AbXFHCkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 22:34:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40368 "EHLO
+	Thu, 7 Jun 2007 22:40:36 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59392 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967062AbXFHCen (ORCPT
+	by vger.kernel.org with ESMTP id S966059AbXFHCkg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 22:34:43 -0400
-Date: Thu, 7 Jun 2007 19:34:31 -0700
+	Thu, 7 Jun 2007 22:40:36 -0400
+Date: Thu, 7 Jun 2007 19:39:17 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Masoud Asgharifard Sharbiani <masouds@google.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make i386 kernel show the segfaults in kernel dmesg,
- like x86_64.
-Message-Id: <20070607193431.af9ab198.akpm@linux-foundation.org>
-In-Reply-To: <4668B939.1070304@shaw.ca>
-References: <fa.FB3wQKN6ltiEi81XcB14YVcLGgE@ifi.uio.no>
-	<4668B939.1070304@shaw.ca>
+To: balbir@linux.vnet.ibm.com
+Cc: menage@google.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
+       devel@openvz.org
+Subject: Re: Per container statistics (containerstats)
+Message-Id: <20070607193917.c21f9071.akpm@linux-foundation.org>
+In-Reply-To: <4668BD18.7090603@linux.vnet.ibm.com>
+References: <20070606115813.GA32197@linux.vnet.ibm.com>
+	<20070607155445.edd5fded.akpm@linux-foundation.org>
+	<4668BD18.7090603@linux.vnet.ibm.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,50 +32,39 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Jun 2007 20:04:41 -0600 Robert Hancock <hancockr@shaw.ca> wrote:
+On Fri, 08 Jun 2007 07:51:12 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> Masoud Asgharifard Sharbiani wrote:
-> > Hello,
-> > This patch makes the i386 behave the same way that x86_64 does when a
-> > segfault happens. A line gets printed to the kernel log so that tools
-> > that need to check for failures can behave more uniformly between
-> > different kernels. Like x86_64, it can be disabled by setting
-> > debug.exception-trace sysctl variable to 0 (or by doing
-> > echo 0 > /proc/sys/debug/exception-trace)
+> Andrew Morton wrote:
 > > 
-> > Same behaviour can be extended to other architectures, if needed.
-> > cheers,
-> > Masoud.
+> > I'd have hoped to see containerstats.c in here.
 > > 
-> > Signed-off-by: Masoud Sharbiani <masouds@google.com>
-> > 
-> > diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
-> > index 29d7d61..6aa56db 100644
-> > --- a/arch/i386/mm/fault.c
-> > +++ b/arch/i386/mm/fault.c
-> > @@ -283,6 +283,8 @@ static inline int vmalloc_fault(unsigned long address)
-> >  	return 0;
-> >  }
-> >  
-> > +int exception_trace = 1;
-> > +
-> >  /*
-> >   * This routine handles page faults.  It determines the address,
-> >   * and the problem, and then passes it off to one of the appropriate
-> > @@ -464,7 +466,14 @@ bad_area_nosemaphore:
-> >  		 */
-> >  		if (is_prefetch(regs, address, error_code))
-> >  			return;
-> > -
-> > +		if (exception_trace && unhandled_signal(tsk, SIGSEGV)) {
-> > +			printk(
-> > +		       "%s%s[%d]: segfault at %08lx eip %08lx esp %08lx error %lx\n",
-> > +					tsk->pid > 1 ? KERN_INFO : KERN_EMERG,
-> > +					tsk->comm, tsk->pid, address, regs->eip,
-> > +					regs->esp, error_code);
 > 
-> Shouldn't we use printk_ratelimit() here, to prevent some nasty person 
-> from creating some rapidly-segfaulting process that floods the kernel 
-> logs? (Same with the x86_64 version if it doesn't already..)
+> The current statistics code is really small, so it fit into taskstats.c.
+> May be in the future, we could re-factor it and move it out.
 
-Yes.  In fact I thought that was in there, but I must have dreamed it.
+I was referring to your userspace tool which reads this stuff.  The one
+which you described in the changelog.
+
+> >> +	rcu_read_lock();
+> >> +
+> >> +	for_each_root(root) {
+> >> +		if (!root->subsys_bits)
+> >> +			continue;
+> >> +		root_cont = &root->top_container;
+> >> +		get_first_subsys(root_cont, NULL, &subsys_id);
+> >> +		do_each_thread(g, p) {
+> > 
+> > this needs tasklist_lock?
+> > 
+> 
+> rcu_read_lock() should be fine. From Eric's patch at
+> 
+> 2.6.17-mm2 - proc-remove-tasklist_lock-from-proc_pid_readdir.patch
+> 
+> The patch mentions that "We don't need the tasklist_lock to safely
+> iterate through processes anymore."
+> 
+
+oh, OK.  rcu_read_lock() is the new lock_kernel() - always hard to tell
+what it's locking.
+
