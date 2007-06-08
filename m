@@ -1,161 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967235AbXFHCVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967258AbXFHC0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967235AbXFHCVy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 22:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966342AbXFHCVp
+	id S967258AbXFHC0Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 22:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965718AbXFHC0C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 22:21:45 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:39957 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965718AbXFHCVo (ORCPT
+	Thu, 7 Jun 2007 22:26:02 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38304 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964987AbXFHC0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 22:21:44 -0400
-Message-ID: <4668BD18.7090603@linux.vnet.ibm.com>
-Date: Fri, 08 Jun 2007 07:51:12 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Thu, 7 Jun 2007 22:26:00 -0400
+Date: Thu, 7 Jun 2007 19:25:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <20070608005931.GZ11166@waste.org>
+Message-ID: <alpine.LFD.0.98.0706071920340.4205@woody.linux-foundation.org>
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>
+ <20070606235906.72439d16@the-village.bc.nu>
+ <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
+ <20070608005931.GZ11166@waste.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: menage@google.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
-       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-Subject: Re: Per container statistics (containerstats)
-References: <20070606115813.GA32197@linux.vnet.ibm.com> <20070607155445.edd5fded.akpm@linux-foundation.org>
-In-Reply-To: <20070607155445.edd5fded.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+
+
+On Thu, 7 Jun 2007, Matt Mackall wrote:
 > 
-> I'd have hoped to see containerstats.c in here.
-> 
+> First, how does this work in-kernel? Does it set a flag in the thread
+> struct that magically gets used in the actual syscall? Or do we pass
+> flags down to the sys_foo() function in some manner?
 
-The current statistics code is really small, so it fit into taskstats.c.
-May be in the future, we could re-factor it and move it out.
+Set a flag in the thread-struct.
 
->> +#ifndef _LINUX_CONTAINERSTATS_H
->> +#define _LINUX_CONTAINERSTATS_H
->> +
->> +#include <linux/taskstats.h>
-> 
-> I don't understand the relationship between containerstats and taskstats. 
-> afacit it's using the same genetlink channel?
-> 
+In fact, that's how "access()" already works.
 
-I've registered containerstats_ops with the same family as taskstats to
-reuse the taskstats interface.
+And yes, syslets would need to have their own thread-structs and/or 
+save/restore the thing.
 
->> +enum {
->> +	CONTAINERSTATS_CMD_UNSPEC = __TASKSTATS_CMD_MAX,	/* Reserved */
-> 
-> This seems to mean that the containerstats commands all get renumbered if
-> we add new taskstats commands.  That would be bad?
-> 
+> Second, I think we're likely to run out of flag bits really quickly as
+> this is a good dumping spot for patching up our many slightly
+> brain-damaged APIs (be they POSIX or Linux-specific).
 
-As per comment above, since we register containerstats_ops with the taskstats
-family, the commands need to be unique, hence we start where taskstats ended
-(left off)
+Well, I do suspect that we'd need to basically make the flags be 
+per-system call. With "common features" (ie a system call that doesn't 
+return a file descriptor would re-use the bit for "nonlinear-fd" for 
+something else, while a system call that doesn't do path lookup would use 
+all the LOOKUP_xyzzy bits for something else).
 
->> + */
->> +int containerstats_build(struct containerstats *stats, struct dentry *dentry)
->> +{
->> +	int ret = -EINVAL;
->> +	struct task_struct *g, *p;
->> +	struct container *cont, *root_cont;
->> +	struct container *src_cont;
->> +	int subsys_id;
->> +	struct containerfs_root *root;
->> +
->> +	/*
->> +	 * Validate dentry by checking the superblock operations
->> +	 */
->> +	if (dentry->d_sb->s_op != &container_ops)
->> +		 goto err;
->> +
->> +	ret = 0;
->> +	src_cont = (struct container *)dentry->d_fsdata;
-> 
-> Unneeded cast.
-> 
+I agree that if we kept flags _totally_ separate, we'd run out of them 
+really quickly. But I don't think we want to ever be in the situation 
+where _one_ set of system calls would need that many flags. If we get 
+there, we'd really be much better off with a new system call!
 
-Will remove
+> Third, can I do sys_indirect(sys_indirect(foo, args), flags1), flags2)?
 
->> +	rcu_read_lock();
->> +
->> +	for_each_root(root) {
->> +		if (!root->subsys_bits)
->> +			continue;
->> +		root_cont = &root->top_container;
->> +		get_first_subsys(root_cont, NULL, &subsys_id);
->> +		do_each_thread(g, p) {
-> 
-> this needs tasklist_lock?
-> 
+I'd say no.
 
-rcu_read_lock() should be fine. From Eric's patch at
+> Fourth, can we do sys_indirect(foo, args, flags | ASYNC) and get most
+> of the way to merging this with the syslet proposal?
 
-2.6.17-mm2 - proc-remove-tasklist_lock-from-proc_pid_readdir.patch
+I think that may well be a really good idea.
 
-The patch mentions that "We don't need the tasklist_lock to safely
-iterate through processes anymore."
-
->> +			cont = task_container(p, subsys_id);
->> +			if (cont == src_cont) {
->> +				switch (p->state) {
->> +				case TASK_RUNNING:
->> +					stats->nr_running++;
->> +					break;
->> +				case TASK_INTERRUPTIBLE:
->> +					stats->nr_sleeping++;
->> +					break;
->> +				case TASK_UNINTERRUPTIBLE:
->> +					stats->nr_uninterruptible++;
->> +					break;
->> +				case TASK_STOPPED:
->> +					stats->nr_stopped++;
->> +					break;
->> +				default:
->> +					if (delayacct_is_task_waiting_on_io(p))
->> +						stats->nr_io_wait++;
->> +					break;
->> +				}
->> +			}
->> +		} while_each_thread(g, p);
->> +	}
->> +	rcu_read_unlock();
->> +err:
->> +	return ret;
->> +}
->> +
->>  static int cmppid(const void *a, const void *b)
->>  {
->>  	return *(pid_t *)a - *(pid_t *)b;
->> diff -puN kernel/sched.c~containers-taskstats kernel/sched.c
->> --- linux-2.6.22-rc2-mm1/kernel/sched.c~containers-taskstats	2007-06-05 17:21:57.000000000 +0530
->> +++ linux-2.6.22-rc2-mm1-balbir/kernel/sched.c	2007-06-05 17:21:57.000000000 +0530
->> @@ -4280,11 +4280,13 @@ void __sched io_schedule(void)
->>  {
->>  	struct rq *rq = &__raw_get_cpu_var(runqueues);
->>  
->> +	delayacct_set_flag(DELAYACCT_PF_BLKIO);
->>  	delayacct_blkio_start();
-> 
-> Would it be suitable and appropriate to embed the delayacct_set_flag() call
-> inside delayacct_blkio_start()?
-> 
-
-Yes, I should have done that, will do.
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+		Linus
