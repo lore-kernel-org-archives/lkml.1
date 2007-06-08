@@ -1,135 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971015AbXFHUor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031977AbXFHUs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971015AbXFHUor (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 16:44:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031474AbXFHUo1
+	id S1031977AbXFHUs5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 16:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968220AbXFHUsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 16:44:27 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58612 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031323AbXFHUoZ (ORCPT
+	Fri, 8 Jun 2007 16:48:50 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50844 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S967230AbXFHUst (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 16:44:25 -0400
-Date: Fri, 8 Jun 2007 13:44:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: linux-kernel@vger.kernel.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool
- handling
-Message-Id: <20070608134409.210a1824.akpm@linux-foundation.org>
-In-Reply-To: <20070608201200.GA641@linux-os.sc.intel.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
-	<20070606190042.510643000@askeshav-devel.jf.intel.com>
-	<20070607162726.2236a296.akpm@linux-foundation.org>
-	<20070608182156.GA24865@linux-os.sc.intel.com>
-	<20070608120107.245eba96.akpm@linux-foundation.org>
-	<20070608201200.GA641@linux-os.sc.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jun 2007 16:48:49 -0400
+Date: Fri, 8 Jun 2007 13:48:49 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, dgc@sgi.com, Mel Gorman <mel@skynet.ie>
+Subject: Re: [patch 00/12] Slab defragmentation V3
+In-Reply-To: <4669B25A.6010404@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0706081345520.2447@schroedinger.engr.sgi.com>
+References: <20070607215529.147027769@sgi.com>  <466999A2.8020608@googlemail.com>
+  <Pine.LNX.4.64.0706081110580.1464@schroedinger.engr.sgi.com>
+ <6bffcb0e0706081156u4ad0cc9dkf6d55ebcbd79def2@mail.gmail.com>
+ <Pine.LNX.4.64.0706081207400.2082@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706081239340.2447@schroedinger.engr.sgi.com>
+ <4669B25A.6010404@googlemail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007 13:12:00 -0700
-"Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
+On Fri, 8 Jun 2007, Michal Piotrowski wrote:
 
-> On Fri, Jun 08, 2007 at 12:01:07PM -0700, Andrew Morton wrote:
-> > On Fri, 8 Jun 2007 11:21:57 -0700
-> > "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
-> > 
-> > > On Thu, Jun 07, 2007 at 04:27:26PM -0700, Andrew Morton wrote:
-> > > > On Wed, 06 Jun 2007 11:57:00 -0700
-> > > > anil.s.keshavamurthy@intel.com wrote:
-> > > > 
-> > > > > Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-> > > > 
-> > > > That was a terse changelog.
-> > > > 
-> > > > Obvious question: how does this differ from mempools, and would it be
-> > > > better to fill in any gaps in mempool functionality instead of
-> > > > implementing something similar-looking?
-> > > 
-> > > Very good question. Mempool pre-allocates the elements
-> > > to the required minimum count size during its initilization time.
-> > > However when mempool_alloc() is called it tries to obtain the
-> > > element from OS and if that fails then it looks for the element in 
-> > > its pool. If there are no elements in its pool and if the gpf_t 
-> > > flags says it can wait then it waits untill someone puts the element 
-> > > back to pool, else if gpf_t flag say it can;t wait then it returns NULL. 
-> > > In other words, mempool acts as *emergency* pool, i.e only if the OS fails 
-> > > to allocate the required memory, then the pool object is used.
-> > > 
-> > > 
-> > > In the IOMMU case, we need exactly opposite of what mempool provides,
-> > > i.e we always want to look for the element in the pool and if the pool
-> > > has no element then go to OS as a worst case. This resource pool
-> > > library routines do the same. Again, this resource pools 
-> > > grows and shrinks automatically to maintain the minimum pool 
-> > > elements in the background. I am not sure whether this totally
-> > > opposite functionality of mempools and resource pools can be 
-> > > merged.
-> > 
-> > Confused.
-> > 
-> > If resource pools are not designed to provide extra robustness via an
-> > emergency pool, then what _are_ they designed for?  (Boy this is a hard way
-> > to write a changelog!)
-> 
-> The resource pool indeed provide extra robustness, the initial pool size will
-> be equal to min_count + grow_count. If the pool object count goes below
-> min_count, then pool grows in the background while serving as emergency
-> pool with min_count of objects in it. If we run out of emergency pool objects
-> before the pool grow in the background, then we go to OS for allocation.
+> > Could you remove the trylock patch and see how this one fares? We may need
+> > both but this should avoid taking the slub_lock around any possible alloc of
+> > sysfs.
+> It's a bit tricky
 
-This wholly duplicates kswapd functionality.
+Hmmm... Yes that version was aginst 4-mm1 instead after the defrag 
+patchset. The difference is only the "ops" parameter...
 
-> Similary, if the pool objects grows above the max threshold,
-> the objects are freed to OS in the background thread maintaining
-> the pool objects close to min_count + grow_count size.
+Rediff to apply after defrag patchset.
 
-That problem was _introduced_ by resource-pools, so yes, it also needs to
-be solved there.
+SLUB: Move sysfs operations outside of slub_lock
 
-> 
-> > 
-> > > In fact the very first version of this IOMMU patch used mempools
-> > > and the performance was worse because mempool did not help as
-> > > IOMMU did a very frequent alloc and free of pool objects and
-> > > every call to alloc/free used to go to os. Andi Kleen, 
-> > > noticied and told us that mempool usage for IOMMU is wrong and
-> > > hence we came up with resource pool concept.
-> > 
-> > You _seem_ to be saying that the resource pools are there purely for
-> > alloc/free performance reasons.  If so, I'd be skeptical: slab is pretty
-> > darned fast.
-> We need several objects of size say( 4 * sizeof(u64)) and reuse
-> them in dma map/unmap api calls for managing io virtual allocation address that
-> this driver has dished out. Hence having pool of objects where we put 
-> the element in the linked list and and get it from the linked list is pretty
-> fast compared to slab.
+Sysfs can do a gazillion things when called. Make sure that we do
+not call any sysfs functions while holding the slub_lock. Let sysfs
+fend for itself locking wise.
 
-slab is fast (and IO is slow!).  Do you have benchmark results?
+Just protect the essentials: The modifications to the slab lists
+and the ref counters of the slabs.
 
-> > 
-> > > > 
-> > > > The changelog very much should describe all this, as well as explaining
-> > > > what the dynamic behaviour of this new thing is, and what applications are
-> > > > envisaged, what problems it solves, etc, etc.
-> > > 
-> > > I can gladly update the changelog if the resource pool concept is 
-> > > approved. I will fix all the below minor comments.
-> > > 
-> > > I envision that this might be useful for all vendor's (IBM, AMD, Intel, etc) IOMMU driver
-> > > and for any kernel component which does lots of dynamic alloc/free an object of same size.
-> > > 
-> > 
-> > That's what kmem_cache_alloc() is for?!?!
-> We had this kmem_cache_alloc() with mempool concept earlier and Andi suggest to 
-> come up with something pre-allocated pool.  
-> Andi, Can you chime in please.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
+---
+ mm/slub.c |   34 +++++++++++++++++++++-------------
+ 1 file changed, 21 insertions(+), 13 deletions(-)
 
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-06-08 13:47:32.000000000 -0700
++++ slub/mm/slub.c	2007-06-08 13:48:07.000000000 -0700
+@@ -2193,12 +2193,13 @@ void kmem_cache_destroy(struct kmem_cach
+ 	s->refcount--;
+ 	if (!s->refcount) {
+ 		list_del(&s->list);
++		up_write(&slub_lock);
+ 		if (kmem_cache_close(s))
+ 			WARN_ON(1);
+ 		sysfs_slab_remove(s);
+ 		kfree(s);
+-	}
+-	up_write(&slub_lock);
++	} else
++		up_write(&slub_lock);
+ }
+ EXPORT_SYMBOL(kmem_cache_destroy);
+ 
+@@ -2956,26 +2957,33 @@ struct kmem_cache *kmem_cache_create(con
+ 		 */
+ 		s->objsize = max(s->objsize, (int)size);
+ 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
++		up_write(&slub_lock);
++
+ 		if (sysfs_slab_alias(s, name))
+ 			goto err;
+-	} else {
+-		s = kmalloc(kmem_size, GFP_KERNEL);
+-		if (s && kmem_cache_open(s, GFP_KERNEL, name,
++
++		return s;
++	}
++
++	s = kmalloc(kmem_size, GFP_KERNEL);
++	if (s) {
++		if (kmem_cache_open(s, GFP_KERNEL, name,
+ 				size, align, flags, ctor, ops)) {
+-			if (sysfs_slab_add(s)) {
+-				kfree(s);
+-				goto err;
+-			}
+ 			list_add(&s->list, &slab_caches);
++			up_write(&slub_lock);
+ 			raise_kswapd_order(s->order);
+-		} else
+-			kfree(s);
++
++			if (sysfs_slab_add(s))
++				goto err;
++
++			return s;
++
++		}
++		kfree(s);
+ 	}
+ 	up_write(&slub_lock);
+-	return s;
+ 
+ err:
+-	up_write(&slub_lock);
+ 	if (flags & SLAB_PANIC)
+ 		panic("Cannot create slabcache %s\n", name);
+ 	else
