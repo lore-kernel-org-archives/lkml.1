@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938735AbXFHK0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938721AbXFHKdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938735AbXFHK0S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 06:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937676AbXFHK0I
+	id S938721AbXFHKdR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 06:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934345AbXFHKdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 06:26:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49214 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936305AbXFHK0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 06:26:07 -0400
-Date: Fri, 8 Jun 2007 06:25:47 -0400
-From: Jakub Jelinek <jakub@redhat.com>
-To: Daniel Colascione <danc@merrillpress.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: O_CLOEXEC: An alternate proposal
-Message-ID: <20070608102547.GU4033@devserv.devel.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <45111.76.180.38.217.1181288832.squirrel@vpn.merrillpress.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45111.76.180.38.217.1181288832.squirrel@vpn.merrillpress.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 8 Jun 2007 06:33:00 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.160]:43413 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932937AbXFHKc7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 06:32:59 -0400
+Message-ID: <466930D2.9010104@dthaler.de>
+Date: Fri, 08 Jun 2007 12:34:58 +0200
+From: Daniel Thaler <daniel@dthaler.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070513)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, tglx@linutronix.de,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [patch 03/54] NOHZ: Rate limit the local softirq pending warning
+ output
+References: <20070608072127.352723000@sous-sol.org> <20070608072147.763475000@sous-sol.org>
+In-Reply-To: <20070608072147.763475000@sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-RZG-AUTH: huaHjo1TIxLbDubHAaSudCxcykQcnAwlJHTDKN8rKSbbEisd/Zq/2Rn7ynU=
+X-RZG-CLASS-ID: mo00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 03:47:12AM -0400, Daniel Colascione wrote:
-> Hey, this is my first post to linux-kernel, so please be kind. :-)
+Chris Wright wrote:
+> -stable review patch.  If anyone has any objections, please let us know.
+> ---------------------
 > 
-> Linus Torvalds wrote on May 31:
-> > I'm with Uli on this one. "Stateful" stuff is bad. It's essentially
-> > impossible to handle with libraries - either the library would have to
-> > explciitly always turn the state the way _it_ needs it, or the library
-> > will do the wrogn thing.
+> From: Thomas Gleixner <tglx@linutronix.de>
 > 
-> I agree that stateful stuff is generally not very elegant,
-> but I think it's a win here -- we wouldn't have to create any
-> new APIs except for the state-setting stuff.
-> 
-> The state just has to be thread-local.
-> 
-> If it's thread-local, a library, say, glibc,
-> can use code like this:
-> 
->   /* Internal library function */
->   old_fd_flags = kernel_default_fd_flags(FD_CLOEXEC | FD_RANDFD);
->   event_fd = super_duper_event_polling_mechanism_fd();
->   kernel_default_fd_flags(old_fd_flags);
+> The warning in the NOHZ code, which triggers when a CPU goes idle with
+> softirqs pending can fill up the logs quite quickly.  Rate limit the output
+> until we found the root cause of that problem.
 
-It is not a win, what if a signal comes in between the two
-kernel_default_fd_flags syscalls?  open and other functions
-are async signal safe and programs will be certainly upset
-if suddenly the syscalls in the signal handler start to behave
-differently depending on which exact code the async signal
-has interrupted.
+Isn't the root cause found and fixed with "[patch 09/54] Prevent going
+idle with softirq pending"?
 
-	Jakub
+- Daniel
+
