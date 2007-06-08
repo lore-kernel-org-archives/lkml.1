@@ -1,56 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967179AbXFHCMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967235AbXFHCVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967179AbXFHCMR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 22:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966321AbXFHCMF
+	id S967235AbXFHCVy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 22:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966342AbXFHCVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 22:12:05 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:32821 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966316AbXFHCME (ORCPT
+	Thu, 7 Jun 2007 22:21:45 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:39957 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965718AbXFHCVo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 22:12:04 -0400
+	Thu, 7 Jun 2007 22:21:44 -0400
+Message-ID: <4668BD18.7090603@linux.vnet.ibm.com>
+Date: Fri, 08 Jun 2007 07:51:12 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: menage@google.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
+       devel@openvz.org
+Subject: Re: Per container statistics (containerstats)
+References: <20070606115813.GA32197@linux.vnet.ibm.com> <20070607155445.edd5fded.akpm@linux-foundation.org>
+In-Reply-To: <20070607155445.edd5fded.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18024.47852.272454.21519@stoffel.org>
-Date: Thu, 7 Jun 2007 22:11:56 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: John Stoffel <john@stoffel.org>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
-In-Reply-To: <20070608020730.GD23290@havoc.gtf.org>
-References: <20070607162251.5f291325@the-village.bc.nu>
-	<m3wsyfzcpt.fsf@maximus.localdomain>
-	<18024.46233.432086.424311@stoffel.org>
-	<20070608014719.GC23290@havoc.gtf.org>
-	<18024.46902.682920.924521@stoffel.org>
-	<20070608020730.GD23290@havoc.gtf.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> 
+> I'd have hoped to see containerstats.c in here.
+> 
 
-Jeff> On Thu, Jun 07, 2007 at 09:56:06PM -0400, John Stoffel wrote:
->> Thinking about it more, I wonder if Krysztof is bitching more about
->> the tab width of 8 characters?   I know that it ticks me off,
+The current statistics code is really small, so it fit into taskstats.c.
+May be in the future, we could re-factor it and move it out.
 
-Jeff> Even if he is, _that_ is definitely not getting changed.
+>> +#ifndef _LINUX_CONTAINERSTATS_H
+>> +#define _LINUX_CONTAINERSTATS_H
+>> +
+>> +#include <linux/taskstats.h>
+> 
+> I don't understand the relationship between containerstats and taskstats. 
+> afacit it's using the same genetlink channel?
+> 
 
-Oh sure... I know that part is written in stone.  
+I've registered containerstats_ops with the same family as taskstats to
+reuse the taskstats interface.
 
-Jeff> That was the very first item Linus wrote in
-Jeff> Documentation/CodingStyle, and for good reasons.
+>> +enum {
+>> +	CONTAINERSTATS_CMD_UNSPEC = __TASKSTATS_CMD_MAX,	/* Reserved */
+> 
+> This seems to mean that the containerstats commands all get renumbered if
+> we add new taskstats commands.  That would be bad?
+> 
 
-I could argue that 4 spaces would be a better level, but it's a
-personal preference and not worth the battle.  
+As per comment above, since we register containerstats_ops with the taskstats
+family, the commands need to be unique, hence we start where taskstats ended
+(left off)
 
-Jeff> If code starts creeping way right due to indentation levels,
-Jeff> create a new function.
+>> + */
+>> +int containerstats_build(struct containerstats *stats, struct dentry *dentry)
+>> +{
+>> +	int ret = -EINVAL;
+>> +	struct task_struct *g, *p;
+>> +	struct container *cont, *root_cont;
+>> +	struct container *src_cont;
+>> +	int subsys_id;
+>> +	struct containerfs_root *root;
+>> +
+>> +	/*
+>> +	 * Validate dentry by checking the superblock operations
+>> +	 */
+>> +	if (dentry->d_sb->s_op != &container_ops)
+>> +		 goto err;
+>> +
+>> +	ret = 0;
+>> +	src_cont = (struct container *)dentry->d_fsdata;
+> 
+> Unneeded cast.
+> 
 
-Sure... compilers are good, us humans haven't gotten much better, make
-it easier on us and harder on the computer.   
+Will remove
 
-John
+>> +	rcu_read_lock();
+>> +
+>> +	for_each_root(root) {
+>> +		if (!root->subsys_bits)
+>> +			continue;
+>> +		root_cont = &root->top_container;
+>> +		get_first_subsys(root_cont, NULL, &subsys_id);
+>> +		do_each_thread(g, p) {
+> 
+> this needs tasklist_lock?
+> 
+
+rcu_read_lock() should be fine. From Eric's patch at
+
+2.6.17-mm2 - proc-remove-tasklist_lock-from-proc_pid_readdir.patch
+
+The patch mentions that "We don't need the tasklist_lock to safely
+iterate through processes anymore."
+
+>> +			cont = task_container(p, subsys_id);
+>> +			if (cont == src_cont) {
+>> +				switch (p->state) {
+>> +				case TASK_RUNNING:
+>> +					stats->nr_running++;
+>> +					break;
+>> +				case TASK_INTERRUPTIBLE:
+>> +					stats->nr_sleeping++;
+>> +					break;
+>> +				case TASK_UNINTERRUPTIBLE:
+>> +					stats->nr_uninterruptible++;
+>> +					break;
+>> +				case TASK_STOPPED:
+>> +					stats->nr_stopped++;
+>> +					break;
+>> +				default:
+>> +					if (delayacct_is_task_waiting_on_io(p))
+>> +						stats->nr_io_wait++;
+>> +					break;
+>> +				}
+>> +			}
+>> +		} while_each_thread(g, p);
+>> +	}
+>> +	rcu_read_unlock();
+>> +err:
+>> +	return ret;
+>> +}
+>> +
+>>  static int cmppid(const void *a, const void *b)
+>>  {
+>>  	return *(pid_t *)a - *(pid_t *)b;
+>> diff -puN kernel/sched.c~containers-taskstats kernel/sched.c
+>> --- linux-2.6.22-rc2-mm1/kernel/sched.c~containers-taskstats	2007-06-05 17:21:57.000000000 +0530
+>> +++ linux-2.6.22-rc2-mm1-balbir/kernel/sched.c	2007-06-05 17:21:57.000000000 +0530
+>> @@ -4280,11 +4280,13 @@ void __sched io_schedule(void)
+>>  {
+>>  	struct rq *rq = &__raw_get_cpu_var(runqueues);
+>>  
+>> +	delayacct_set_flag(DELAYACCT_PF_BLKIO);
+>>  	delayacct_blkio_start();
+> 
+> Would it be suitable and appropriate to embed the delayacct_set_flag() call
+> inside delayacct_blkio_start()?
+> 
+
+Yes, I should have done that, will do.
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
