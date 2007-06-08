@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939184AbXFHSnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031449AbXFHSod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939184AbXFHSnm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 14:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937330AbXFHSne
+	id S1031449AbXFHSod (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 14:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbXFHSoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 14:43:34 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:5068 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966199AbXFHSnc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 14:43:32 -0400
-Date: Fri, 8 Jun 2007 20:43:30 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jesper Juhl <jesper.juhl@gmail.com>,
-       jcm@jonmasters.org, Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.03
-In-Reply-To: <20070608163911.GA3569@stusta.de>
-Message-ID: <Pine.LNX.4.64.0706082041570.3570@fbirervta.pbzchgretzou.qr>
-References: <20070607232248.332edee8@the-village.bc.nu> <20070607232152.GU5500@stusta.de>
- <20070608004117.57868755@the-village.bc.nu> <20070608000455.GW5500@stusta.de>
- <20070608115219.694c642d@the-village.bc.nu> <20070608123942.GZ5500@stusta.de>
- <9a8748490706080734h6ce5959fq6e7cb802d9a555cc@mail.gmail.com>
- <20070608144230.GA5500@stusta.de> <Pine.LNX.4.64.0706081710380.10769@fbirervta.pbzchgretzou.qr>
- <20070608164236.4ba7acae@the-village.bc.nu> <20070608163911.GA3569@stusta.de>
+	Fri, 8 Jun 2007 14:44:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43646 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937330AbXFHSoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 14:44:21 -0400
+Message-ID: <4669A351.4010403@redhat.com>
+Date: Fri, 08 Jun 2007 11:43:29 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Davide Libenzi <davidel@xmailserver.org>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+References: <466741BD.20106@redhat.com>	<20070607110432.73be7960@the-village.bc.nu>	<B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com>	<20070607151243.22caab9e.dada1@cosmosbay.com>	<Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>	<466864F8.2050903@cosmosbay.com>	<46686810.6030805@redhat.com>	<Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>	<466880A4.3090908@redhat.com>	<Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>	<20070608120746.GD12687@thunk.org>	<20070608140150.6f31672f@the-village.bc.nu>	<Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com> <20070608192652.4a291901@the-village.bc.nu>
+In-Reply-To: <20070608192652.4a291901@the-village.bc.nu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Jun 8 2007 18:39, Adrian Bunk wrote:
->> > >>> Does the console handle it correctly during boot?
->> 
->> Yes
+Alan Cox wrote:
+> Why does he want an unpredictable algorithm
 
-That's most likely because printk() handles neither special chars nor
-special fun (like ANSI color and movement codes). Hence, we should be
-safe should there be spurious utf8 output on the console (which is
-most likely 8-bit before userspace switches it to utf-8).
+To avoid exactly the kind of problem we have now in future: programs
+relying on specific patterns.
 
->I'm simply saying that allowing UTF-8 in MODULE_AUTHOR and printk's as 
->you want to can have unwanted effects.
->
->And I gave modinfo as an example for a tool that is not yet able to 
->handle UTF-8 correctly in all cases.
->
->In my opinion, it's not worth the hassle to allow UTF-8 there.
->Feel free to disagree.
->
->> > So, we had some ISO8859-1 and some UTF-8 in there already. (And as for 
->> > MODULE_AUTHOR, it should stay there - 'fix' modinfo instead.)
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-(Well, and convert all the MODULE_AUTHORs to utf-8)
-
->> 
->> Using UTF-8 not 8859-1 for consistency is sensible, especially as 8859-1
->> is obsolete and effectively useless now (although I guess much of the
->> '8859-1' in the kernel is 1:1 with 8859-15, which isn't so obsolete but
->> is just as useless)
->
->Agreed, if we allow a non-ASCII charset, it should be UTF-8.
-
-
-
-
-	Jan
--- 
+iD4DBQFGaaNR2ijCOnn/RHQRAtGQAJUWlqUTHuxU7TMi+0tiEldqQPi0AJwIVOAx
+lG6JQ9o6YNYVtCFOLyZLsg==
+=0Vp+
+-----END PGP SIGNATURE-----
