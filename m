@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbXFHTCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbXFHTD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753187AbXFHTCX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750725AbXFHTCQ
+	id S1752866AbXFHTD4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbXFHTDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:02:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43939 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbXFHTCP (ORCPT
+	Fri, 8 Jun 2007 15:03:49 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:42227 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbXFHTDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:02:15 -0400
-Date: Fri, 8 Jun 2007 12:02:13 -0700
-From: Greg KH <greg@kroah.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Pete Zaitcev <zaitcev@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: blank filenames in /sys/modules, kernel 2.6.21
-Message-ID: <20070608190213.GA14586@kroah.com>
-References: <46699945.6020106@redhat.com> <Pine.LNX.4.64.0706081402510.7805@localhost.localdomain> <20070608183232.GA12967@kroah.com> <Pine.LNX.4.64.0706081440340.9344@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706081440340.9344@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Fri, 8 Jun 2007 15:03:48 -0400
+Date: Fri, 08 Jun 2007 15:03:42 -0400
+From: Mike Schmidt <mike@intello.com>
+Subject: How does dummy network driver get its mac addresses?
+To: linux-kernel@vger.kernel.org
+Message-id: <4669A80E.1050102@intello.com>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_gnCrszOfMB9pKGR72iF9MA)"
+X-Greylist: Sender succeeded SMTP AUTH authentication,
+ not delayed by milter-greylist-3.0 (deepspace.sepia.com [205.236.40.42]); Fri,
+ 08 Jun 2007 14:58:55 -0400 (EDT)
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 02:44:12PM -0400, Robert P. J. Day wrote:
-> On Fri, 8 Jun 2007, Greg KH wrote:
-> 
-> > On Fri, Jun 08, 2007 at 02:05:22PM -0400, Robert P. J. Day wrote:
-> > > On Fri, 8 Jun 2007, Chuck Ebbert wrote:
-> > >
-> > > > We just found a file with this name in 2.6.21:
-> > > >
-> > > > Directory name: /sys/module/nousb/parameters
-> > > > File name:      ""
-> > > >
-> > > > IOW the file has an empty name. Is this intentional?
-> > > > It sure confuses updatedb...
-> > > >
-> > > > https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242715
-> > >
-> > > that appears to be the result of:
-> > >
-> > > $ grep -r __module_param_call *
-> > > drivers/usb/core/usb.c:__module_param_call("", nousb, param_set_bool, param_get_bool, &nousb, 0444);
-> > > include/linux/moduleparam.h:#define __module_param_call(prefix, name, set, get, arg, perm)              \
-> > > include/linux/moduleparam.h:    __module_param_call(MODULE_PARAM_PREFIX, name, set, get, arg, perm)
-> > >
-> > >   and from drivers/usb/core/usb.c:
-> > >
-> > > /* format to disable USB on kernel command line is: nousb */
-> > > __module_param_call("", nousb, param_set_bool, param_get_bool, &nousb, 0444);
-> > >
-> > >   one has to wonder about the value of a macro that is invoked only
-> > > once throughout the entire tree.
-> >
-> > Pete added that back in December of 2005 (git-blame rocks...).  So what
-> > has changed recently to cause this to do different things in sysfs?
-> >
-> > Robert, what do you suggest we change this usage to look like?
-> 
-> um ... i'm fairly sure i'm totally the wrong person to be asked about
-> this, but what does any of the above have to do with disabling USB on
-> the kernel command line?  wouldn't you typically define a kernel
-> command line option with something like:
-> ...
-> arch/i386/kernel/traps.c:__setup("kstack=", kstack_setup);
-> arch/i386/kernel/traps.c:__setup("code_bytes=", code_bytes_setup);
-> arch/i386/kernel/nmi.c:__setup("nmi_watchdog=", setup_nmi_watchdog);
-> arch/i386/kernel/reboot.c:__setup("reboot=", reboot_setup);
-> arch/i386/kernel/tsc.c:__setup("notsc", tsc_setup);
-> ...
-> 
-> you know -- that sort of thing.  i mean, that's where *i'd* introduce
-> a "nousb" option.
+This is a multi-part message in MIME format.
 
-It's a module parameter as well as a kernel command line option, see
-Pete's response.
+--Boundary_(ID_gnCrszOfMB9pKGR72iF9MA)
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
 
-thanks,
+please cc me directly with any responses - I am not (yet) a member of this mailing list.
 
-greg k-h
+I just created 99 dummy network devices, and they all had different, random-looking addresses. I recently searched though all the IANA/IEEE documentation looking for a mechanism or policy to select local, virtual mac addresses that could not interfere with real ones. But there seems to be no clear concensus. Even the use of the 'local' bit seems to be inconsistent, I saw registered OUIs in the AA:... (from memory) range, for example. 
+
+I noticed that all the mac addresses assigned by the dummy driver have the 'local' bit set. For those who are wondering, that's the second least significant bit  in the first digit of the mac address: so all addresses that start with x2, x3, x6, x7, xA, xB, and xE, xF are 'local'. The last bit is the multicast bit.
+
+In the 2.4 kernels, these devices all received a 00:00:00... mac address, although this is declared incorrect in the RFCs I read. So, I was making my own, somewhat arbitrarily. In 2.6, this seems to be solved. Can anyone tell me what the algorithm/criteria are that allow the 2.6 kernels to set up random mac addresses without conflicting with real devices?
+
+I have searched the mailing list, but it's pretty hard to select for this kind of information. 
+
+Thanks very much. This is a great mailing list. It's been very responsive to me so far. I thank you all. 
+
+Mike
+
+
+
+
+
+--Boundary_(ID_gnCrszOfMB9pKGR72iF9MA)
+Content-type: text/x-vcard; charset=utf-8; name=mike.vcf
+Content-transfer-encoding: 7BIT
+Content-disposition: attachment; filename=mike.vcf
+
+begin:vcard
+fn:Mike Schmidt
+n:Schmidt;Mike
+org:Intello Technologies Inc. 
+adr;quoted-printable;quoted-printable:;;580 1=C3=A8re Rue;Saint-Jean-sur-Richelieu;Qu=C3=A9;J2X 3B4;Canada
+email;internet:mike@intello.com
+title:Vice-President
+tel;work:450-358-2266 x223
+tel;cell:514-835-9497
+x-mozilla-html:FALSE
+url:http://www.intello.com
+version:2.1
+end:vcard
+
+
+--Boundary_(ID_gnCrszOfMB9pKGR72iF9MA)--
