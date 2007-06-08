@@ -1,49 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032233AbXFHWGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970082AbXFHWJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032233AbXFHWGd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 18:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968478AbXFHWGY
+	id S970082AbXFHWJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 18:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757862AbXFHWJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 18:06:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:17768 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968289AbXFHWGX (ORCPT
+	Fri, 8 Jun 2007 18:09:20 -0400
+Received: from JACKFRUIT.SRV.CS.CMU.EDU ([128.2.201.16]:53561 "EHLO
+	jackfruit.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752258AbXFHWJT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 18:06:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=WFpQjjYLakvquHxm4E/dVFbf9j8T6CqeoNk90ZYNtYsFs59yWzBfkSr3kRwvgcYqNrd5Zdqkh4d7OuyyuA1xIeLwbFydU/aBt9YciyZc1c37H70sRN6Sq0xyEdmtpO6Tz4aAyCOK4N/r77mwq6JwsNqMO1uAKkAIlJldGiRejmk=
-Message-ID: <4669D2D8.3020806@gmail.com>
-Date: Sat, 09 Jun 2007 00:06:16 +0200
-From: Robert de Rooy <robert.de.rooy@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Fri, 8 Jun 2007 18:09:19 -0400
+X-Greylist: delayed 1567 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Jun 2007 18:09:19 EDT
+From: Benjamin Gilbert <bgilbert@cs.cmu.edu>
+Subject: [PATCH 1/3] [CRYPTO] Move sha_init() into cryptohash.h
+To: akpm@linux-foundation.org
+Cc: herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Fri, 08 Jun 2007 17:42:48 -0400
+Message-ID: <20070608214248.23949.55429.stgit@dev>
+In-Reply-To: <20070608214242.23949.30350.stgit@dev>
+References: <20070608214242.23949.30350.stgit@dev>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: Mark Lord <mlord@pobox.com>
-CC: Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       bzolnier@gmail.com, linux-pcmcia@lists.infradead.org,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
-Subject: Re: libata and legacy ide pcmcia failure
-References: <464A0321.3080201@gmail.com>	<464C1575.8070005@gmail.com> <464CB7C9.2080807@gmail.com>	<46503192.1040300@gmail.com> <4650B9E3.7070409@gmail.com>	<46518798.2020808@gmail.com> <4651B66E.6030505@gmail.com>	<4651B834.3060702@gmail.com> <4651C4A1.6000101@gmail.com>	<4651C74B.7020108@gmail.com> <46520B36.90409@garzik.org> <20070523150229.00a0c3c4@the-village.bc.nu> <466718B6.4080105@gmail.com> <4667B39D.209@gmail.com> <46685AE5.4010908@gmail.com> <466900F3.7040801@gmail.com> <46694FB2.6040007@pobox.com>
-In-Reply-To: <46694FB2.6040007@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> I still don't see much evidence that interrupts are actually 
-> functioning here.
-> It would be good to see /proc/interrupts before/after libata tries to 
-> talk to it.
->
-> Let's assume for the moment that interrupts are b0rken.
-> The legacy IDE driver can talk to such devices completely without 
-> interrupts,
-> if the IDE polling patch (below) is applied.
->
-> So, Robert:  could you try again with the old IDE driver,
-> except apply this patch to it first?  This will give valuable info.
-I tried the patch, but a get a kernel panic on boot with it. I can try 
-to get a screenshot of it tomorrow.
+Make sha_init() a static inline in cryptohash.h rather than an (unexported)
+function in lib/sha1.c, in preparation for making sha1.c optional.  This
+also allows some cleanups:
+
+- Modular code can now use sha_init() rather than reimplementing it
+
+- The optimized implementation of SHA-1 for ARM no longer needs to
+reimplement sha_init() in assembly
+
+Signed-off-by: Benjamin Gilbert <bgilbert@cs.cmu.edu>
+---
+
+ arch/arm/lib/sha1.S          |   16 ----------------
+ arch/s390/crypto/sha1_s390.c |    6 +-----
+ drivers/crypto/padlock-sha.c |    8 ++------
+ include/linux/cryptohash.h   |   14 +++++++++++++-
+ lib/sha1.c                   |   14 --------------
+ 5 files changed, 16 insertions(+), 42 deletions(-)
+
+diff --git a/arch/arm/lib/sha1.S b/arch/arm/lib/sha1.S
+index ff6ece4..5be800c 100644
+--- a/arch/arm/lib/sha1.S
++++ b/arch/arm/lib/sha1.S
+@@ -188,19 +188,3 @@ ENTRY(sha_transform)
+ .L_sha_K:
+ 	.word	0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6
+ 
+-
+-/*
+- * void sha_init(__u32 *buf)
+- */
+-
+-.L_sha_initial_digest:
+-	.word	0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0
+-
+-ENTRY(sha_init)
+-
+-	str	lr, [sp, #-4]!
+-	adr	r1, .L_sha_initial_digest
+-	ldmia	r1, {r1, r2, r3, ip, lr}
+-	stmia	r0, {r1, r2, r3, ip, lr}
+-	ldr	pc, [sp], #4
+-
+diff --git a/arch/s390/crypto/sha1_s390.c b/arch/s390/crypto/sha1_s390.c
+index af4460e..fed9a2e 100644
+--- a/arch/s390/crypto/sha1_s390.c
++++ b/arch/s390/crypto/sha1_s390.c
+@@ -42,11 +42,7 @@ static void sha1_init(struct crypto_tfm *tfm)
+ {
+ 	struct s390_sha1_ctx *sctx = crypto_tfm_ctx(tfm);
+ 
+-	sctx->state[0] = 0x67452301;
+-	sctx->state[1] = 0xEFCDAB89;
+-	sctx->state[2] = 0x98BADCFE;
+-	sctx->state[3] = 0x10325476;
+-	sctx->state[4] = 0xC3D2E1F0;
++	sha_init(sctx->state);
+ 	sctx->count = 0;
+ }
+ 
+diff --git a/drivers/crypto/padlock-sha.c b/drivers/crypto/padlock-sha.c
+index a781fd2..b47d708 100644
+--- a/drivers/crypto/padlock-sha.c
++++ b/drivers/crypto/padlock-sha.c
+@@ -107,12 +107,8 @@ static void padlock_do_sha1(const char *in, char *out, int count)
+ 	char buf[128+16];
+ 	char *result = NEAREST_ALIGNED(buf);
+ 
+-	((uint32_t *)result)[0] = 0x67452301;
+-	((uint32_t *)result)[1] = 0xEFCDAB89;
+-	((uint32_t *)result)[2] = 0x98BADCFE;
+-	((uint32_t *)result)[3] = 0x10325476;
+-	((uint32_t *)result)[4] = 0xC3D2E1F0;
+- 
++	sha_init((uint32_t *)result);
++
+ 	asm volatile (".byte 0xf3,0x0f,0xa6,0xc8" /* rep xsha1 */
+ 		      : "+S"(in), "+D"(result)
+ 		      : "c"(count), "a"(0));
+diff --git a/include/linux/cryptohash.h b/include/linux/cryptohash.h
+index c118b2a..a172401 100644
+--- a/include/linux/cryptohash.h
++++ b/include/linux/cryptohash.h
+@@ -4,7 +4,19 @@
+ #define SHA_DIGEST_WORDS 5
+ #define SHA_WORKSPACE_WORDS 80
+ 
+-void sha_init(__u32 *buf);
++/**
++ * sha_init - initialize the vectors for a SHA1 digest
++ * @buf: vector to initialize
++ */
++static inline void sha_init(__u32 *buf)
++{
++	buf[0] = 0x67452301;
++	buf[1] = 0xefcdab89;
++	buf[2] = 0x98badcfe;
++	buf[3] = 0x10325476;
++	buf[4] = 0xc3d2e1f0;
++}
++
+ void sha_transform(__u32 *digest, const char *data, __u32 *W);
+ 
+ __u32 half_md4_transform(__u32 buf[4], __u32 const in[8]);
+diff --git a/lib/sha1.c b/lib/sha1.c
+index 4c45fd5..815816f 100644
+--- a/lib/sha1.c
++++ b/lib/sha1.c
+@@ -79,17 +79,3 @@ void sha_transform(__u32 *digest, const char *in, __u32 *W)
+ 	digest[4] += e;
+ }
+ EXPORT_SYMBOL(sha_transform);
+-
+-/**
+- * sha_init - initialize the vectors for a SHA1 digest
+- * @buf: vector to initialize
+- */
+-void sha_init(__u32 *buf)
+-{
+-	buf[0] = 0x67452301;
+-	buf[1] = 0xefcdab89;
+-	buf[2] = 0x98badcfe;
+-	buf[3] = 0x10325476;
+-	buf[4] = 0xc3d2e1f0;
+-}
+-
+
