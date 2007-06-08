@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969300AbXFHPej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030631AbXFHPff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969300AbXFHPej (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 11:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969551AbXFHPdz
+	id S1030631AbXFHPff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 11:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967186AbXFHPfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 11:33:55 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:49980 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S969331AbXFHPdx (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 11:33:53 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Greg KH <gregkh@suse.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Jones <pjones@redhat.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1
-In-Reply-To: Your message of "Thu, 07 Jun 2007 16:09:04 PDT."
-             <20070607230904.GA7344@suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <1181228660.3625.23.camel@lov.localdomain> <46682385.1060802@redhat.com> <20070607154342.GA16911@suse.de> <20070607085200.f8d6e2d3.akpm@linux-foundation.org> <20070607155953.GA17591@suse.de> <20070607090632.cfcf02e6.akpm@linux-foundation.org> <20070607161525.GA18363@suse.de> <20070607184805.GA28551@nostromo.devel.redhat.com> <20070607200102.GA21653@suse.de> <20070607233258.063f6cfa@the-village.bc.nu>
-            <20070607230904.GA7344@suse.de>
+	Fri, 8 Jun 2007 11:35:17 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:57422 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965133AbXFHPfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 11:35:14 -0400
+Date: Fri, 8 Jun 2007 11:35:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
+Message-ID: <20070608153513.GE25649@havoc.gtf.org>
+References: <466196AD.3090502@garzik.org> <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com> <46667466.4010500@gmail.com> <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com> <4667B347.9040900@gmail.com> <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org> <20070607224746.GA23290@havoc.gtf.org> <46690D10.9040808@gmail.com> <20070608143136.GC25649@havoc.gtf.org> <20070608163804.4926e499@the-village.bc.nu>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1181316818_3918P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 08 Jun 2007 11:33:38 -0400
-Message-ID: <6712.1181316818@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070608163804.4926e499@the-village.bc.nu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1181316818_3918P
-Content-Type: text/plain; charset=us-ascii
+On Fri, Jun 08, 2007 at 04:38:04PM +0100, Alan Cox wrote:
+> > See a URL I posted earlier in this thread.  With dumb ATAPI devices we
+> > actually have to wait a bit for BSY to be asserted.  Not only at reset,
+> > but also for every command
+> 
+> 400nS and the current code correctly accounts for it.
 
-On Thu, 07 Jun 2007 16:09:04 PDT, Greg KH said:
-> If CONFIG_SYSFS_DEPRECATED everything should work just fine with all old
-> initrd scripts.  It's only if you enable that option (which is enabled
-> by default) that you need to ensure that your distro has the latest
-> functionality so that everything works properly.
+No, _far_ longer than 400nS.  2ms minimum by the spec, but,
 
-Can somebody document what an initrd has to do differently?  Some of us
-run with initrd's not created by mkinitrd.
+ATADRVR. blackmagic.html and googling around shows plenty of ATAPI
+devices that don't get their shit together for 50-100ms.
+
+The BIOS source I'm reviewing right now waits 50ms, after SRST.
+
+	Jeff
 
 
---==_Exmh_1181316818_3918P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGaXbScC3lWbTT17ARAq/JAJ9dc58XEA5h3oLL+IHoxAeOG6Ky3gCgwZn4
-41mh7UQb196vBVimMqZW6HE=
-=s9Tp
------END PGP SIGNATURE-----
-
---==_Exmh_1181316818_3918P--
