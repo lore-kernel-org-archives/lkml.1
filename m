@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbXFHTD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbXFHTEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752866AbXFHTD4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbXFHTDt
+	id S1756028AbXFHTEc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXFHTEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:03:49 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:42227 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbXFHTDs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:03:48 -0400
-Date: Fri, 08 Jun 2007 15:03:42 -0400
-From: Mike Schmidt <mike@intello.com>
-Subject: How does dummy network driver get its mac addresses?
-To: linux-kernel@vger.kernel.org
-Message-id: <4669A80E.1050102@intello.com>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_gnCrszOfMB9pKGR72iF9MA)"
-X-Greylist: Sender succeeded SMTP AUTH authentication,
- not delayed by milter-greylist-3.0 (deepspace.sepia.com [205.236.40.42]); Fri,
- 08 Jun 2007 14:58:55 -0400 (EDT)
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Fri, 8 Jun 2007 15:04:24 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:1460 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbXFHTEW convert rfc822-to-8bit (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 15:04:22 -0400
+Message-ID: <4669A831.3040105@de.ibm.com>
+Date: Fri, 08 Jun 2007 21:04:17 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?UTF-8?B?SUJNIERldXRzY2hsYW5kIEVudHdpY2tsdW5nIEdtYkgsVm9ycw==?=
+ =?UTF-8?B?aXR6ZW5kZXIgZGVzIEF1ZnNpY2h0c3JhdHM6IEpvaGFubiBXZWloZW4sR2VzY2g=?=
+ =?UTF-8?B?w6RmdHNmw7xocnVuZzogSGVyYmVydCBLaXJjaGVyLFNpdHogZGVyIEdlc2VsbHM=?=
+ =?UTF-8?B?Y2hhZnQ6IELDtmJsaW5nZW4sUmVnaXN0ZXJnZXJpY2h0OiBBbXRzZ2VyaWNodCA=?=
+ =?UTF-8?B?U3R1dHRnYXJ0LCBIUkIgMjQzMjk0?=
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+MIME-Version: 1.0
+To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@lazybastard.org>
+CC: Christoph Hellwig <hch@infradead.org>, Jared Hulbert <jaredeh@gmail.com>,
+       carsteno@de.ibm.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+References: <4669027E.3070406@de.ibm.com> <20070608072609.GA13115@infradead.org> <46690A39.3010402@de.ibm.com> <20070608075717.GA16927@infradead.org> <46690C58.7090304@de.ibm.com> <20070608080401.GA17684@infradead.org> <6934efce0706080905h253d9e3apd4168c5d14d305e5@mail.gmail.com> <20070608160929.GA3366@infradead.org> <6934efce0706080911y601a8377oad7b1251a95acd64@mail.gmail.com> <20070608161526.GA3729@infradead.org> <20070608175152.GG20718@lazybastard.org>
+In-Reply-To: <20070608175152.GG20718@lazybastard.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+Jörn Engel wrote:
+> Nitbit: Sooner or later the point/unpoint should get replaced by
+> something with page granularity.  Something also needs to keep lists of
+> mapped pages and invalidate them whenever the device is written to.
+> That could be done in the filesystem or device driver.  I believe the
+> device driver would be a better solution.
+I think it needs to work like this:
+- temporary references (for read/write syscalls and friends) get 
+retrieved via get_xip_page and returned again via to-be-invented 
+put_page/page_cache_release
+- permanent references (for mapping to userland) get retrieved via 
+get_xip_page and don't get returned until unmap
+- the device driver can access page->count via a helper function 
+provided by mm. This way, it can identify which pages are in use.
+- In order to get references back, the device driver can call a 
+callback provided by the file system. A default implementation will go 
+to filemap_xip.c. This callback would use rmap to find all mappings, 
+and unmap the page via xip_file_unmap()[mm/filemap_xip.c].
 
---Boundary_(ID_gnCrszOfMB9pKGR72iF9MA)
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
+The nice thing about this approach is: we use page->count and rmap, 
+both already exist and are perfectly suited for our purpose.
+The downside: We need mem_map[] struct page entries behind all memory 
+segments. Nowerdays we can easily create those via vmem_map/sparsemem.
 
-please cc me directly with any responses - I am not (yet) a member of this mailing list.
-
-I just created 99 dummy network devices, and they all had different, random-looking addresses. I recently searched though all the IANA/IEEE documentation looking for a mechanism or policy to select local, virtual mac addresses that could not interfere with real ones. But there seems to be no clear concensus. Even the use of the 'local' bit seems to be inconsistent, I saw registered OUIs in the AA:... (from memory) range, for example. 
-
-I noticed that all the mac addresses assigned by the dummy driver have the 'local' bit set. For those who are wondering, that's the second least significant bit  in the first digit of the mac address: so all addresses that start with x2, x3, x6, x7, xA, xB, and xE, xF are 'local'. The last bit is the multicast bit.
-
-In the 2.4 kernels, these devices all received a 00:00:00... mac address, although this is declared incorrect in the RFCs I read. So, I was making my own, somewhat arbitrarily. In 2.6, this seems to be solved. Can anyone tell me what the algorithm/criteria are that allow the 2.6 kernels to set up random mac addresses without conflicting with real devices?
-
-I have searched the mailing list, but it's pretty hard to select for this kind of information. 
-
-Thanks very much. This is a great mailing list. It's been very responsive to me so far. I thank you all. 
-
-Mike
-
-
-
-
-
---Boundary_(ID_gnCrszOfMB9pKGR72iF9MA)
-Content-type: text/x-vcard; charset=utf-8; name=mike.vcf
-Content-transfer-encoding: 7BIT
-Content-disposition: attachment; filename=mike.vcf
-
-begin:vcard
-fn:Mike Schmidt
-n:Schmidt;Mike
-org:Intello Technologies Inc. 
-adr;quoted-printable;quoted-printable:;;580 1=C3=A8re Rue;Saint-Jean-sur-Richelieu;Qu=C3=A9;J2X 3B4;Canada
-email;internet:mike@intello.com
-title:Vice-President
-tel;work:450-358-2266 x223
-tel;cell:514-835-9497
-x-mozilla-html:FALSE
-url:http://www.intello.com
-version:2.1
-end:vcard
+Opinions?
 
 
---Boundary_(ID_gnCrszOfMB9pKGR72iF9MA)--
