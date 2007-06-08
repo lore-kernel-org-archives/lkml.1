@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938226AbXFHIs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938415AbXFHItp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938226AbXFHIs2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 04:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937049AbXFHIsU
+	id S938415AbXFHItp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 04:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937320AbXFHIti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 04:48:20 -0400
-Received: from mta-ps-be-03.sunrise.ch ([194.158.229.25]:38336 "EHLO
-	mail-ps.sunrise.ch" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S935571AbXFHIsT (ORCPT
+	Fri, 8 Jun 2007 04:49:38 -0400
+Received: from vpn.merrillpress.com ([64.61.107.78]:57057 "EHLO
+	vpn.merrillpress.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933799AbXFHIth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 04:48:19 -0400
-From: Robin Farine <robin.farine@terminus.org>
-To: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH 2/2] LEDS: generic driver
-Date: Fri, 8 Jun 2007 10:48:04 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <ab8cd0edce36b4ea93429c7ab695f5a967b11365.1181149111.git.robin.farine@terminus.org> <200706061902.06738.robin.farine@terminus.org> <1181258872.30600.12.camel@localhost.localdomain>
-In-Reply-To: <1181258872.30600.12.camel@localhost.localdomain>
+	Fri, 8 Jun 2007 04:49:37 -0400
+X-Greylist: delayed 3744 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Jun 2007 04:49:37 EDT
+Message-ID: <45111.76.180.38.217.1181288832.squirrel@vpn.merrillpress.com>
+Date: Fri, 8 Jun 2007 03:47:12 -0400 (EDT)
+Subject: O_CLOEXEC: An alternate proposal
+From: "Daniel Colascione" <danc@merrillpress.com>
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8-4.0.1.el4.centos
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706081048.05001.robin.farine@terminus.org>
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri June 8 2007 01:27, Richard Purdie wrote:
+Hey, this is my first post to linux-kernel, so please be kind. :-)
 
-> I'm not sure about this to be honest. I can see a case for
-> perhaps having a couple of standard suspend/resume functions for
-> platform device based LED drivers as those functions are often
-> identical. I'm not sure whether there is going to be much need
-> for more than that.
+Linus Torvalds wrote on May 31:
+> I'm with Uli on this one. "Stateful" stuff is bad. It's essentially
+> impossible to handle with libraries - either the library would have to
+> explciitly always turn the state the way _it_ needs it, or the library
+> will do the wrogn thing.
 
-I am not persuaded either. To give a better idea of the context, my 
-platform has to sets of LEDs, a first attached to a write-only 
-register on the extension bus and the second on an optional 
-daughter board and I2C controlled. The value of the register on the 
-extension bus is shadowed and needs to be manipulated through an 
-API that takes care of the locking.
+I agree that stateful stuff is generally not very elegant,
+but I think it's a win here -- we wouldn't have to create any
+new APIs except for the state-setting stuff.
 
-Thus, instead of adding new board specific drivers to drivers/leds, 
-my idea was that given a generic LED driver:
+The state just has to be thread-local.
 
-- the module that implements accesses to the write-only register 
-defines one platform device for each LED attached to the register 
-and implements the LED toggling internally;
+If it's thread-local, a library, say, glibc,
+can use code like this:
 
-- the I2C driver for the daughter board defines one platform device 
-for each LED on the daughter board and implement the LED toggling 
-internally as well.
+  /* Internal library function */
+  old_fd_flags = kernel_default_fd_flags(FD_CLOEXEC | FD_RANDFD);
+  event_fd = super_duper_event_polling_mechanism_fd();
+  kernel_default_fd_flags(old_fd_flags);
 
-> Having looked through a few of the LED drivers, even the
-> suspend/resume functions are often different...
+I think that's a lot cleaner than augmenting every
+present and future fd-creating syscall to take some kind
+of flags parameter and adding some kind of funny dup().
 
-I looked at this too and it seemed to me that in all but one case 
-the suspend function ends up by calling led_classdev_suspend for 
-each LED the driver controls, and the resume function calls 
-led_classdev_resume for each LED as well. In the generic LED 
-driver, it is equivalent since there is a different platform device 
-for each LED so only one call to led_classdev_xyz is needed.
+Other threads, and the caller of this function in the same thread,
+aren't even aware that the library is changing any state. It's
+race-free, since the default flags wouldn't be inherited across clone()
+or exec(). It's still POSIX compliant too as long as the default
+flags set remains empty.
 
-> >From a style point of view, why not
-> > s/pdev_to_led/platform_get_drvdata/?
+The only disadvantage I can think of is that it requires three
+system calls instead of one, but most of your time is going to be spent
+working with event_fd, not creating it.
 
-Yes, of course :-).
+Also, what about an FD_CLOFORK as well? That seems to match
+more closely what you'd want out of a library-internal FD than
+FD_CLOEXEC.
 
-> What are your thoughts on multiple LEDs on a single device?
-
-Physically that is what I have on my platform, but the system sees 
-each LED as a separate device. The platform device data and 
-function for a set of LEDS attached to the same physical device 
-take care of the multiplexing.
-
-> Given the LED class is going to get a conversion to struct device
-> soon, I'd prefer to put this on hold until after I've made that
-> conversion at which point I'll reconsider this.
-
-Yes, sure. I am well aware that it applies to very specific 
-situations and that there may be a cleaner solution in which case I 
-would be happy to drop this idea. I am not pushing for this to be 
-included in mainline.
-
-Thanks for looking into this and for the feed-back,
-
-Robin
