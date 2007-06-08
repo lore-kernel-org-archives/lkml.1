@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030692AbXFHOa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030727AbXFHObt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030692AbXFHOa2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 10:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969163AbXFHOaS
+	id S1030727AbXFHObt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 10:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969094AbXFHObi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 10:30:18 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:19810 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968873AbXFHOaQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 10:30:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=pAGEocK5oKrbiF+iIZilxX1anBG3n8KrPGryLVK+uJAkJR1D0nJs6kn0L6z0Dm91sO8eCoh21b7vQdZAeVQ106gKM/+ZtXreiLIWQ8h/PxG11qelqsz830olCjaxLSCONaKGIFc1iE7SqgtaNw5w1Eo26mou8Xh+A04tslXc/Ww=
-Subject: Re: Add INPUT support to toshiba_acpi
-From: Richard Hughes <hughsient@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Bastien Nocera <hadess@hadess.net>,
-       John Belmonte <john@neggie.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-In-Reply-To: <d120d5000706080723i74adf0e2p8906469b72b948e@mail.gmail.com>
-References: <1180614979.2693.26.camel@localhost.localdomain>
-	 <1180788652.2355.27.camel@localhost.localdomain>
-	 <20070602142333.GA3452@srcf.ucam.org>
-	 <200706030048.40393.dtor@insightbb.com> <1181235539.2610.72.camel@work>
-	 <d120d5000706080723i74adf0e2p8906469b72b948e@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 15:30:16 +0100
-Message-Id: <1181313016.2499.51.camel@work>
+	Fri, 8 Jun 2007 10:31:38 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:57266 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968537AbXFHObh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 10:31:37 -0400
+Date: Fri, 8 Jun 2007 10:31:36 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Gregor Jasny <gjasny@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
+Message-ID: <20070608143136.GC25649@havoc.gtf.org>
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org> <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com> <466196AD.3090502@garzik.org> <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com> <46667466.4010500@gmail.com> <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com> <4667B347.9040900@gmail.com> <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org> <20070607224746.GA23290@havoc.gtf.org> <46690D10.9040808@gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46690D10.9040808@gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-08 at 10:23 -0400, Dmitry Torokhov wrote:
-> On 6/7/07, Richard Hughes <hughsient@gmail.com> wrote:
-> > On Sun, 2007-06-03 at 00:48 -0400, Dmitry Torokhov wrote:
-> > >
-> > >
-> > > It looks like KEY_COFFE comes from 0x0c/0x19e - AL Terminal
-> > > Lock/Screensaver
-> > > so your interpretation is indeed correct. I guess I better add an
-> > > alias to
-> > > input.h
-> >
-> > What's the status of this patch? Good for merging?
-> 
-> Not my call - John is the official maintainer of the driver. However
-> from input layer POV it looks good.
+On Fri, Jun 08, 2007 at 05:02:24PM +0900, Tejun Heo wrote:
+> I don't think the first one is probable considering BSY is supposed to
+> set when SRST is received.  This is pretty fundamental in the protocol
+> and necessary for the device to work properly as master, so I think this
+> is one of few things we can rely upon.
 
-Good, thanks.
-
-> > Do you want me to
-> > redo the current patch using input-polldev
-> 
-> The patch I send to you earlier already does this. I am attaching a
-> refreshed version that used KEY_COFFEE instead of KEY_BREAK.
-
-Brilliant, these look great.
-
-> > and the new setkeycode stuff?
-> 
-> And I have the patch doing this as well (attached). If you could
-> please give it a try I'd appreciate it.
-
-You beat me to it {hastily removes item from TODO...} :-)
-
-I'll give it a try as soon as possible, thanks.
-
-Richard.
+See a URL I posted earlier in this thread.  With dumb ATAPI devices we
+actually have to wait a bit for BSY to be asserted.  Not only at reset,
+but also for every command.
 
 
+> How about limiting nsect/lbal wait duration?  Say, 100ms or 500ms?  That
+> can somewhat ease our paranoia and should show acceptable behavior for
+> braindead devices too.
+
+That's quite reasonable.
+
+	Jeff
+
+
+
+P.S.  We can probably reduce the msleep(150) sprinkled about the code to
+msleep(100), for the dumb-ATAPI-device wait.
