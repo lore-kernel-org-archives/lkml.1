@@ -1,53 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030727AbXFHObt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030761AbXFHOdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030727AbXFHObt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 10:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969094AbXFHObi
+	id S1030761AbXFHOdM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 10:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969168AbXFHOc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 10:31:38 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:57266 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968537AbXFHObh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 10:31:37 -0400
-Date: Fri, 8 Jun 2007 10:31:36 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
-Message-ID: <20070608143136.GC25649@havoc.gtf.org>
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org> <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com> <466196AD.3090502@garzik.org> <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com> <46667466.4010500@gmail.com> <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com> <4667B347.9040900@gmail.com> <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org> <20070607224746.GA23290@havoc.gtf.org> <46690D10.9040808@gmail.com>
-Mime-Version: 1.0
+	Fri, 8 Jun 2007 10:32:58 -0400
+Received: from smtp107.sbc.mail.re2.yahoo.com ([68.142.229.98]:40262 "HELO
+	smtp107.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S967307AbXFHOc5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 10:32:57 -0400
+X-YMail-OSG: 1FpTrpIVM1kr23q.ASl9purr7M5Yc4K7N1otlTvBrq3Vf30l3c7p_PLpYP9Avim1mk0DC9mHAMWUYhWLZqCPBvh2dvDu4yRzuzfpaEyy2iTvA5fGZRlG2QPvNz87cdUTZLvhckzqiMOzEg--
+Date: Fri, 8 Jun 2007 09:32:50 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, vatsa@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
+       rohitseth@google.com, haveblue@us.ibm.com, xemul@sw.ru, dev@sw.ru,
+       containers@lists.osdl.org, devel@openvz.org, ebiederm@xmission.com,
+       mbligh@google.com, cpw@sgi.com, menage@google.com,
+       svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ckrm-tech] [PATCH 00/10] Containers(V10): Generic Process Containers
+Message-ID: <20070608143250.GA7728@vino.hallyn.com>
+References: <20070604204131.GB19409@sergelap.austin.ibm.com> <20070604140533.65e25286.pj@sgi.com> <20070606223952.GB5626@sergelap.austin.ibm.com> <20070606154347.a155630b.pj@sgi.com> <20070607000559.GA19529@sergelap.austin.ibm.com> <20070606174609.bfa01446.pj@sgi.com> <20070607180158.GA936@sergelap.austin.ibm.com> <20070607122121.24fe6ff4.pj@sgi.com> <20070607201723.GA17011@sergelap.austin.ibm.com> <20070607150113.f020d8f8.pj@sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46690D10.9040808@gmail.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070607150113.f020d8f8.pj@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 05:02:24PM +0900, Tejun Heo wrote:
-> I don't think the first one is probable considering BSY is supposed to
-> set when SRST is received.  This is pretty fundamental in the protocol
-> and necessary for the device to work properly as master, so I think this
-> is one of few things we can rely upon.
+Quoting Paul Jackson (pj@sgi.com):
+> > > The set of people using exclusive cpusets is roughly some subset of
+> > > those running multiple, cpuset isolated, non-cooperating jobs on big
+> > > iron, usually with the aid of a batch scheduler.
+> > 
+> > Unfortunately I would imagine these users to be very intereseted in
+> > providing checkpoint/restart/migrate functionality.
+> 
+> Yup - such customers are very interested in checkpoint, restart, and
+> migrate functionality.
+> 
+> > Surely if the admin wants to give cpus 5-6 exclusively to /cpusets/set0/set4
+> > later, those cpus can just be taken away from set3?
+> 
+> Yeah - that works, so far as I know (which isn't all that far ..')
+> 
+> But both:
+>  1) that (using whatever cpus are still available) and
+>  2) my other idea, of not allowing any cloning of cpusets with
+>     exclusive siblings at all,
+> 
+> looked a little ugly to me.
+> 
+> For example, such customers as above would not appreciate having their
+> checkpoint/restart/migrate fail in any case where there weren't spare
+> non-exclusive cpus, which for users of the exclusive flag, is often the
+> more common case.
+> 
+> My rule of thumb when doing ugly stuff is to constrain it as best
+> I can -- minimize what it allows.  This led me to prefer (2) above
+> over (1) above.
+> 
+> Perhaps there's a better way to think of this ...  When we clone
+> like this for checkpoint/restart/migrate functionality, perhaps
+> we are not really starting up a new, separate, competing job that
+> should have its resources isolated and separated from the original.
 
-See a URL I posted earlier in this thread.  With dumb ATAPI devices we
-actually have to wait a bit for BSY to be asserted.  Not only at reset,
-but also for every command.
+Depends on whether the cpus are allocated to a customer or to a job.
 
+For the most part I would expect any job to be restart either on a
+different machine, or at a different time, but of course it doesn't have
+to be that way.
 
-> How about limiting nsect/lbal wait duration?  Say, 100ms or 500ms?  That
-> can somewhat ease our paranoia and should show acceptable behavior for
-> braindead devices too.
+> Perhaps instead we are firing up a convenient alter-ego of the
+> original job, which will be co-operatively using the same resources
+> by default.  If that's the normal case, then it seems wrong to
+> force the clone onto disjoint CPUs, or fail for lack thereof.
+> 
+> So perhaps we should refine the meaning of 'exclusive', from:
+>  - no overlapping siblings
+> to:
+>  - no overlapping siblings other than clones of ones self.
 
-That's quite reasonable.
+I'm not sure that clones of self will happen often enough to make a
+special case for them :)
 
-	Jeff
+Anyway the patch I sent is simple enough, and if users end up demanding
+the ability to better deal with exclusive cpusets, the patch will be
+simple enough to extend by changing cpuset_auto_setup(), so let's
+stick with that patch since it's your preference (IIUC).
 
+> Then default to cloning right on the same CPU resources as the
+> original, possibly with both original and clone marked exclusive.
 
-
-P.S.  We can probably reduce the msleep(150) sprinkled about the code to
-msleep(100), for the dumb-ATAPI-device wait.
+Thanks,
+-serge
