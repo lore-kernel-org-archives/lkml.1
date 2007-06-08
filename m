@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937902AbXFHHR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937832AbXFHHRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937902AbXFHHR3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936791AbXFHHQz
+	id S937832AbXFHHRp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937510AbXFHHQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:16:55 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33059 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936734AbXFHHQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:16:54 -0400
-Message-Id: <20070608071532.588665000@sous-sol.org>
-References: <20070608071511.159309000@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:15:14 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andi Kleen <ak@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 03/32] x86-64: Always flush all pages in change_page_attr
-Content-Disposition: inline; filename=x86-64-always-flush-all-pages-in-change_page_attr.patch
+	Fri, 8 Jun 2007 03:16:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33846 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937320AbXFHHQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:16:56 -0400
+Date: Fri, 8 Jun 2007 09:16:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch 3/4] pi-futex: Fix exit races and locking problems
+Message-ID: <20070608071611.GB30226@elte.hu>
+References: <20070607235106.387346000@linutronix.de> <20070607235801.558491000@linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070607235801.558491000@linutronix.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
 
-From: Andi Kleen <ak@suse.de>
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-change_page_attr on x86-64 only flushed the TLB for pages that got
-reverted. That's not correct: it has to be flushed in all cases.
+> From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+> 
+> 1. New entries can be added to tsk->pi_state_list after task completed
+>    exit_pi_state_list(). The result is memory leakage and deadlocks.
+> 
+> 2. handle_mm_fault() is called under spinlock. The result is obvious.
+> 
+> 3. results in self-inflicted deadlock inside glibc.
+>    Sometimes futex_lock_pi returns -ESRCH, when it is not expected
+>    and glibc enters to for(;;) sleep() to simulate deadlock. This problem
+>    is quite obvious and I think the patch is right. Though it looks like
+>    each "if" in futex_lock_pi() got some stupid special case "else if". :-)
+> 
+> 4. sometimes futex_lock_pi() returns -EDEADLK,
+>    when nobody has the lock. The reason is also obvious (see comment
+>    in the patch), but correct fix is far beyond my comprehension.
+>    I guess someone already saw this, the chunk:
+> 
+>                         if (rt_mutex_trylock(&q.pi_state->pi_mutex))
+>                                 ret = 0;
+> 
+>    is obviously from the same opera. But it does not work, because the
+>    rtmutex is really taken at this point: wake_futex_pi() of previous
+>    owner reassigned it to us. My fix works. But it looks very stupid.
+>    I would think about removal of shift of ownership in wake_futex_pi()
+>    and making all the work in context of process taking lock.
+> 
+> From: Thomas Gleixner <tglx@linutronix.de>
+> 
+> Fix 1) Avoid the tasklist lock variant of the exit race fix by adding
+>     an additional state transition to the exit code.
+> 
+>     This fixes also the issue, when a task with recursive segfaults
+>     is not able to release the futexes.
+> 
+> Fix 2) Cleanup the lookup_pi_state() failure path and solve the -ESRCH
+>     problem finally.
+> 
+> Fix 3) Solve the fixup_pi_state_owner() problem which needs to do the fixup
+>     in the lock protected section by using the in_atomic userspace access
+>     functions.
+> 	
+>     This removes also the ugly lock drop / unqueue inside of fixup_pi_state()
+> 
+> Fix 4) Fix a stale lock in the error path of futex_wake_pi()
+> 
+> Added some error checks for verification.
+> 
+> The -EDEADLK problem is solved by the rtmutex fixups.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-This bug was added in some earlier changes.
+i've read the patch and it looks all good - but obviously testing will 
+tell us what's up, this stuff is ... complex.
 
-Just flush all pages for now.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-This could be done more efficiently, but for this late in the release
-this seem to be the best fix.
-
-Pointed out by Jan Beulich
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- arch/x86_64/mm/pageattr.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.20.13.orig/arch/x86_64/mm/pageattr.c
-+++ linux-2.6.20.13/arch/x86_64/mm/pageattr.c
-@@ -81,8 +81,8 @@ static void flush_kernel_map(void *arg)
- 		void *adr = page_address(pg);
- 		if (cpu_has_clflush)
- 			cache_flush_page(adr);
--		__flush_tlb_one(adr);
- 	}
-+	__flush_tlb_all();
- }
- 
- static inline void flush_map(struct list_head *l)
-
--- 
+	Ingo
