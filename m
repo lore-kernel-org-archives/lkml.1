@@ -1,60 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031199AbXFHSLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031231AbXFHSNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031199AbXFHSLf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 14:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969757AbXFHSL1
+	id S1031231AbXFHSNQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 14:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969663AbXFHSM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 14:11:27 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3441 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965636AbXFHSL0 (ORCPT
+	Fri, 8 Jun 2007 14:12:58 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54091 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763961AbXFHSM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 14:11:26 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 8 Jun 2007 11:11:24 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Theodore Tso <tytso@mit.edu>, Ulrich Drepper <drepper@redhat.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <20070608140150.6f31672f@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
-References: <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu>
- <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com>
- <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
- <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
- <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
- <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
- <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 Jun 2007 14:12:56 -0400
+Date: Fri, 8 Jun 2007 11:12:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Luming Yu" <luming.yu@gmail.com>
+Cc: "Andy Whitcroft" <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+       "Len Brown" <len.brown@intel.com>, "Yu, Luming" <luming.yu@intel.com>,
+       "Alexey Starikovskiy" <alexey.y.starikovskiy@intel.com>,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm1 -- x86_64 ACPI panic
+Message-Id: <20070608111215.5c492330.akpm@linux-foundation.org>
+In-Reply-To: <3877989d0706080215x22f35292g8cb999f8720cd87c@mail.gmail.com>
+References: <20070606020737.4663d686.akpm@linux-foundation.org>
+	<4666BDF1.6080801@shadowen.org>
+	<20070606105223.c8dece17.akpm@linux-foundation.org>
+	<3877989d0706080215x22f35292g8cb999f8720cd87c@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007, Alan Cox wrote:
+On Fri, 8 Jun 2007 17:15:45 +0800
+"Luming Yu" <luming.yu@gmail.com> wrote:
 
-> > Um, how cheap do you need it?  get_random_int() is actually pretty
-> > cheep, since it was designed to be usable by the networking stack for
-> > sequence numbers for TCP packets; and it's not like sys_close() or
-> > sys_open() is a majorly critical path, is it?  If the concern is
+> The only problem known as to the acpi throttling changes in the mm tree
+> is a typo ,and the patch to fix it is available here.  Please test and
+> get results back to me. BTW,the log shows that the acpi-cpufreq.ko has
+> problem. Would please also try not to load acpi-cpufreq.
 > 
-> At this point wouldn't it be cheaper to allocate file handles using a
-> different algorithm than firing up the RNG - say like in the POSIX
-> fashion ... 
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0706.0/2509.html
 
-The only reason we use a floating base, is because Uli preferred to have 
-non-exactly predictable fd allocations. There no reason of re-doing the 
-same POSIX mistake all over again:
+Sigh.  Is this some sort of contest to see how many things we can
+do wrong in a single patch?
 
-Errare humanum est, perseverare autem diabolicum
+- Include a changelog
+
+- Include Signed-off-by:
+
+- Don't use attachments
+
+- If you _must_ use attachments, use text/plain, not application/octet-stream
+
+- Format code to remain within 80 columns.
+
+- Don't do "if(".  Do "if ("
+
+Oh well.  Good to hear that the oops got fixed, thanks.
 
 
-- Davide
+From: "Luming Yu" <luming.yu@gmail.com>
 
+Cc: Len Brown <lenb@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/acpi/processor_throttling.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff -puN drivers/acpi/processor_throttling.c~acpi-fix-oops-in-acpi_processor_throttling_seq_show drivers/acpi/processor_throttling.c
+--- a/drivers/acpi/processor_throttling.c~acpi-fix-oops-in-acpi_processor_throttling_seq_show
++++ a/drivers/acpi/processor_throttling.c
+@@ -656,18 +656,20 @@ static int acpi_processor_throttling_seq
+ 		   pr->throttling.state_count - 1);
+ 
+ 	seq_puts(seq, "states:\n");
+-	if (acpi_processor_get_throttling == acpi_processor_get_throttling_fadt)
++	if (pr->throttling.acpi_processor_get_throttling ==
++			acpi_processor_get_throttling_fadt) {
+ 		for (i = 0; i < pr->throttling.state_count; i++)
+ 			seq_printf(seq, "   %cT%d:                  %02d%%\n",
+ 				   (i == pr->throttling.state ? '*' : ' '), i,
+ 				   (pr->throttling.states[i].performance ? pr->
+ 				    throttling.states[i].performance / 10 : 0));
+-	else
++	} else {
+ 		for (i = 0; i < pr->throttling.state_count; i++)
+ 			seq_printf(seq, "   %cT%d:                  %02d%%\n",
+ 				   (i == pr->throttling.state ? '*' : ' '), i,
+ 				   (int)pr->throttling.states_tss[i].
+ 				   freqpercentage);
++	}
+ 
+       end:
+ 	return 0;
+_
 
