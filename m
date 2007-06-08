@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030282AbXFHIB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968403AbXFHIB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030282AbXFHIB3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 04:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938485AbXFHH0W
+	id S968403AbXFHIB5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 04:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938559AbXFHH1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:26:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35624 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938402AbXFHH0U (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:26:20 -0400
-Date: Fri, 8 Jun 2007 08:26:09 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: carsteno@de.ibm.com
-Cc: Christoph Hellwig <hch@infradead.org>, Jared Hulbert <jaredeh@gmail.com>,
+	Fri, 8 Jun 2007 03:27:09 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:49425 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938488AbXFHH1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:27:07 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 8 Jun 2007 03:25:19 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: William Lee Irwin III <wli@holomorphy.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
        Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       richard.griffiths@windriver.com,
-       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-Message-ID: <20070608072609.GA13115@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	carsteno@de.ibm.com, Jared Hulbert <jaredeh@gmail.com>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	richard.griffiths@windriver.com,
-	Richard Griffiths <res07ml0@verizon.net>,
-	Linux-kernel@vger.kernel.org
-References: <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com> <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com> <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com> <20070606113351.GA11701@infradead.org> <4666DD88.5030708@de.ibm.com> <20070606162305.GA20600@infradead.org> <46683B6A.6030306@de.ibm.com> <20070607193844.GB17144@infradead.org> <4669027E.3070406@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4669027E.3070406@de.ibm.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: why does the macro "ZERO_PAGE" take an argument?
+In-Reply-To: <46687598.2040701@zytor.com>
+Message-ID: <Pine.LNX.4.64.0706080324280.15839@localhost.localdomain>
+References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain>
+ <4667EC18.4080904@yahoo.com.au> <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain>
+ <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com>
+ <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain> <4668412D.3030506@zytor.com>
+ <20070607192911.GV6909@holomorphy.com> <46687598.2040701@zytor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 09:17:18AM +0200, Carsten Otte wrote:
-> Christoph Hellwig wrote:
-> >On Thu, Jun 07, 2007 at 07:07:54PM +0200, Carsten Otte wrote:
-> >>I've had a few beer long discussion with Joern Engel and David 
-> >>Woodhouse on this one. To cut a long discussion short: the current XIP 
-> >>infrastructure is not sufficient to be used on top of mtd. We'd need 
-> >>some extenstions:
-> >>- on get_xip_page() we'd need to state if we want the reference 
-> >>read-only or read+write
-> >>- we need a put_xip_page() to return references
-> >>- and finally we need a callback for the referece, so that the mtd 
-> >>driver can ask to get its reference back (in order to unmap from 
-> >>userland when erasing a block)
-> >
-> >And we'll need that even when using cramfs.  There's not way we'd
-> >merge a hack where the user has to specify a physical address on
-> >the mount command line.
-> Nay, the proposed solution is read only. From what I understood of the 
-> discussion, it does'nt need that. The entire flash memory can be read 
-> at the same time. Things start to get interresting when you want to 
-> write, then you need to care about erase blocks and such.
+On Thu, 7 Jun 2007, H. Peter Anvin wrote:
 
-We can have a simpler variant as a start if we really want.  But we
-need to pass it through the mtd layer.  There is a reason we have this
-thing called devices drivers, and we don't want to add knowledge of
-ioremap to the filesystems and have users find out physical addresses
-of their flash to pass it as mount option.
+> William Lee Irwin III wrote:
+> > Robert P. J. Day wrote:
+> >>> although it's not clear where in the source tree are the invocations
+> >>> that would actually make a difference to a MIPS system, which is why
+> >>> i've CC'ed ralf on this.  i'm sure he can clear this up. :-)
+> >
+> > On Thu, Jun 07, 2007 at 10:32:29AM -0700, H. Peter Anvin wrote:
+> >> x86 could also benefit from coloured zeropages.  In fact, I thought it
+> >> already had them (K8 wants as many as 8.)
+> >
+> > How would one demonstrate the beneficial effect of such?
+>
+> Dean Gaudet at Transmeta did some benchmarking using SPEC.  If I
+> recall his numbers correctly (this is from memory, mind you) on
+> Transmeta Efficeon, which has 2-way virtual cache tagging with
+> hardware recovery, zeropage coloring was a 1.5% performance
+> improvement.
+
+and once again, an initially innocuous question quickly leaves me
+behind.  no, no, i'm getting used to it.  :-P
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
