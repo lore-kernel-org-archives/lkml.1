@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969162AbXFHNVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969033AbXFHNbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969162AbXFHNVR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 09:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938190AbXFHNVH
+	id S969033AbXFHNbd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 09:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966776AbXFHNbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 09:21:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:18177 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938173AbXFHNVG (ORCPT
+	Fri, 8 Jun 2007 09:31:24 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:35426 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966684AbXFHNbX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 09:21:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Em6I2zQIJbPtzo8Dtv1Sp/1tl6wSK3cMo0PbHSlPMlBx6eu2wjN3VyqXjt9/Seew/ytOzH10MIYQ729uGEvOB9qOhg584cimFTC3Nr+LVULnpUAW2+mAGWEHg3qO7A8cWXsgze59POH3KE57xxqVFEiqbVfjruaJU+Pa9lLmTM0=
-Date: Fri, 8 Jun 2007 22:20:59 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: Florin Iucha <florin@iucha.net>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@kernel.vger.org, jeff@garzik.org
-Subject: [PATCH] libata: disable NCQ for HITACHI HTS541680J9SA00/SB21C7EP
-Message-ID: <20070608132059.GG29122@htj.dyndns.org>
-References: <fa.Nigm+GFAuAW+QzfgqTUfmHJoFfU@ifi.uio.no> <4666C477.1070603@shaw.ca> <20070607120430.GB30661@iucha.net> <466951DE.9070004@gmail.com> <20070608131157.GH30661@iucha.net>
+	Fri, 8 Jun 2007 09:31:23 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 8 Jun 2007 09:29:12 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Include <asm/termbits.h> from <linux/tty_driver.h>.
+Message-ID: <Pine.LNX.4.64.0706080925020.24228@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070608131157.GH30661@iucha.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HITACHI HTS541680J9SA00/SB21C7EP spuriously completes NCQ commands.
-Blacklist it for NCQ.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
+The header file <linux/tty_driver.h> should include <asm/termbits.h>
+to pick up the definition of "struct ktermios"; otherwise, you run the
+risk of seeing:
+
+include/linux/tty_driver.h:142: warning: 'struct ktermios' \
+	declared inside parameter list
+include/linux/tty_driver.h:142: warning: its scope is only \
+	this definition or declaration, which is probably not what you want
+
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
 ---
- drivers/ata/libata-core.c |    2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 636df4e..880cdd3 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -3787,6 +3787,8 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
- 	{ "HTS541060G9SA00",    "MB3OC60D",     ATA_HORKAGE_NONCQ, },
- 	{ "HTS541080G9SA00",    "MB4OC60D",     ATA_HORKAGE_NONCQ, },
- 	{ "HTS541010G9SA00",    "MBZOC60D",     ATA_HORKAGE_NONCQ, },
-+	/* Drives which do spurious command completion */
-+	{ "HTS541680J9SA00",	"SB2IC7EP",	ATA_HORKAGE_NONCQ, },
- 
- 	/* Devices with NCQ limits */
- 
+  i'm *guessing* this is the solution to the above issue.
+
+
+diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
+index 85c95cd..b687174 100644
+--- a/include/linux/tty_driver.h
++++ b/include/linux/tty_driver.h
+@@ -123,6 +123,7 @@
+ #include <linux/fs.h>
+ #include <linux/list.h>
+ #include <linux/cdev.h>
++#include <asm/termbits.h>
+
+ struct tty_struct;
+
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
