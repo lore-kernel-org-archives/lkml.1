@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937882AbXFHFah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937830AbXFHFk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937882AbXFHFah (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 01:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbXFHFaa
+	id S937830AbXFHFk7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 01:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936396AbXFHFku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 01:30:30 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51594 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754778AbXFHFa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 01:30:29 -0400
-Subject: Re: [BUG] ptraced process waiting on syscall may return kernel
-	internal errnos
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <alpine.LFD.0.98.0706072015520.4205@woody.linux-foundation.org>
-References: <20070606105900.DE5E94D0592@magilla.localdomain>
-	 <alpine.LFD.0.98.0706060811470.4205@woody.linux-foundation.org>
-	 <87sl949eyx.wl%takeuchi_satoru@jp.fujitsu.com>
-	 <alpine.LFD.0.98.0706070852390.4205@woody.linux-foundation.org>
-	 <1181255068.14818.77.camel@localhost.localdomain>
-	 <alpine.LFD.0.98.0706072015520.4205@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 15:30:02 +1000
-Message-Id: <1181280602.14818.112.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jun 2007 01:40:50 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:56954 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936297AbXFHFku (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 01:40:50 -0400
+Date: Thu, 7 Jun 2007 22:01:04 -0700
+From: Greg KH <greg@kroah.com>
+To: Dave Jones <davej@redhat.com>, bk@suse.de,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Bus hidden behind transparent bridge.
+Message-ID: <20070608050104.GB18123@kroah.com>
+References: <20070606063311.GD20745@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070606063311.GD20745@redhat.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-07 at 20:18 -0700, Linus Torvalds wrote:
+On Wed, Jun 06, 2007 at 02:33:11AM -0400, Dave Jones wrote:
+> We've had this printk in drivers/pci/probe.c asking people
+> to report it if they see it to linux-kernel for a long time.
 > 
-> > Oh and Roland patch doesn't prevent signalfd() from stealing synchronous
-> > signals such as SIGSEGV etc... which I think would result in random
-> > behaviour.... do you want a patch for that or we just consider it broken
-> > API usage and let it as it is ?
+> google finds hundreds of instances of this being hit.
+> There are a bunch in bugzilla too..
 > 
-> I think Davide ack'ed your patch, but I also think that one clashes with 
-> the one I actually ended up applying. If you were to send me the signalfd 
-> part (tested, preferably), I'd apply it, considering that it seems to be 
-> the right thign to do, and it already got acked by Davide. 
+> http://bugzilla.kernel.org/show_bug.cgi?id=6783
+> http://bugzilla.kernel.org/show_bug.cgi?id=7403
+> http://bugzilla.kernel.org/show_bug.cgi?id=7575
+> http://bugzilla.kernel.org/show_bug.cgi?id=7664
+> http://bugzilla.kernel.org/show_bug.cgi?id=8074
+> http://bugzilla.kernel.org/show_bug.cgi?id=8480
+> 
+> (possibly others, these are just a quick skim based on summary)
+> 
+> I don't recall ever seeing anything happen any time someone has
+> reported this.  Is it worth keeping the printk there?
+> It only seems to cause confusion (users think its an error,
+> especially as we ask them to do something).
+> 
+> Better yet, I don't think I've seen a report of this where
+> the user is actually experiencing a problem.
+> 
+> Who is the intended recipient of these reports?
 
-Well, it's less urgent imho now that the real problems are fixed but
-here it is, totally untested patch :-)
----
+They should all go to bk@suse.de as he is the one who added that line.
+In fact, if he doesn't fix it up soon, I'm really tempted to just add
+his email address there instead, as I'm really tired of getting these
+emails and he said it would be fixed up by now...
 
-Don't let signalfd dequeue private signals off other threads
+thanks,
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-Index: linux-work/kernel/signal.c
-===================================================================
---- linux-work.orig/kernel/signal.c	2007-06-08 15:28:00.000000000 +1000
-+++ linux-work/kernel/signal.c	2007-06-08 15:28:44.000000000 +1000
-@@ -363,7 +363,13 @@ static int __dequeue_signal(struct sigpe
-  */
- int dequeue_signal(struct task_struct *tsk, sigset_t *mask, siginfo_t *info)
- {
--	int signr = __dequeue_signal(&tsk->pending, mask, info);
-+	int signr = 0;
-+
-+	/* We only dequeue private signals from ourselves, we don't let
-+	 * signalfd steal them
-+	 */
-+	if (tsk == current)
-+		signr = __dequeue_signal(&tsk->pending, mask, info);
- 	if (!signr) {
- 		signr = __dequeue_signal(&tsk->signal->shared_pending,
- 					 mask, info);
-
-
+greg k-h
