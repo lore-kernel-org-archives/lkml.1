@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937647AbXFHEve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937426AbXFHEzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937647AbXFHEve (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 00:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbXFHEvM
+	id S937426AbXFHEzI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 00:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbXFHEy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 00:51:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40668 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755224AbXFHEvK (ORCPT
+	Fri, 8 Jun 2007 00:54:57 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:51235 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754696AbXFHEy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 00:51:10 -0400
-Date: Thu, 7 Jun 2007 21:48:09 -0700
-From: Greg KH <greg@kroah.com>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-kernel@vger.kernel.org,
-       "linux-acpi@vger" <linux-acpi@vger.kernel.org>, lenb@kernel.org
-Subject: Re: [PATCH]: add parameter "struct bin_attribute *" in
-	.read/.write methods for sysfs binary attributes
-Message-ID: <20070608044809.GB28395@kroah.com>
-References: <1181208695.5317.2.camel@localhost.localdomain>
+	Fri, 8 Jun 2007 00:54:56 -0400
+Message-ID: <4668E106.9040509@cosmosbay.com>
+Date: Fri, 08 Jun 2007 06:54:30 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181208695.5317.2.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 1/8] fdmap v2 - fdmap core
+References: <send-serie.davidel@xmailserver.org.4625.1181169031.1>
+In-Reply-To: <send-serie.davidel@xmailserver.org.4625.1181169031.1>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Fri, 08 Jun 2007 06:54:36 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 05:31:35PM +0800, Zhang Rui wrote:
-> From: Zhang Rui <rui.zhang@intel.com>
-> 
-> Well, first of all, I don't want to change so many files either.
-> 
-> What I do:
-> Adding a new parameter "struct bin_attribute *" in the
-> .read/.write methods for the sysfs binary attributes.
-> 
-> In fact, only the four lines change in fs/sysfs/bin.c and
-> include/linux/sysfs.h do the real work.
-> But I have to update all the files that use binary attributes
-> to make them compatible with the new .read and .write methods.
-> I'm not sure if I missed any. :(
-> 
-> Why I do this:
-> For a sysfs attribute, we can get a pointer pointing to the
-> struct attribute in the .show/.store method,
-> while we can't do this for the binary attributes.
-> I don't know why this is different, but this does make it not
-> so handy to use the binary attributes as the regular ones.
-> So I think this patch is reasonable. :)
-> 
-> Who benefits from it:
-> The patch that exposes ACPI tables in sysfs
-> requires such an improvement.
-> All the table binary attributes share the same .read method.
-> Parameter "struct bin_attribute *" is used to get
-> the table signature and instance number which are used to
-> distinguish different ACPI table binary attributes.
-> 
-> Without this parameter, we need to offer different .read methods
-> for different ACPI table binary attributes.
-> This is impossible as there are various ACPI tables on different
-> platforms, and we don't know what they are until they are loaded.
+Davide Libenzi a écrit :
+> +struct fd_map {
+> +	struct fd_map *next;
+> +	struct rcu_head rcu;
+> +	unsigned int base;
+> +	unsigned int size;
+> +	struct list_head slist;
+> +	struct list_head *slots;
+> +	unsigned int fdnext;
+> +	unsigned long *map;
+> +	void (*freecb)(void *, struct fd_map *);
+> +	void *freecb_priv;
+> +};
 
-I have no objection to this patch but it failes the checkpatch.pl script
-pretty badly with too long of lines.  Care to fix it up and resend it?
 
-thanks,
+On x86_64 that would mean folowing offsets
 
-greg k-h
+struct fd_map {
+	struct fd_map *next;  /* 0 */
+	struct rcu_head rcu; /* 8 */
+	unsigned int base;   /* 0x18 */
+	unsigned int size;   /* 0x1c */
+	struct list_head slist; /* 0x20 */
+	struct list_head *slots; /* 0x30 */
+	unsigned int fdnext; /* 0x38 */
+	unsigned long *map; /* 0x40 */
+	void (*freecb)(void *, struct fd_map *); /* 0x48 */
+	void *freecb_priv; /* 0x50 */
+}; /* size 0x58 */
+
+As L1_CACHE_BYTES is 64, two cache lines are necessary to get base,size,map
+And a change of fdnext dirties one cache line that should be kept read only to 
+avoid false sharing.
+
+I suggest to reorder to move rcu and next at the end (since they are seldom 
+used). Also move fdnext on a separate cache line on SMP
+
+struct fd_map {
+	/*
+	 * read mostly part
+	 */
+	unsigned int base;   /* 0x00 */
+	unsigned int size;   /* 0x04 */
+	struct list_head slist; /* 0x08 */
+	struct list_head *slots; /* 0x18 */
+	unsigned long *map; /* 0x28 */
+	void (*freecb)(void *, struct fd_map *); /* 0x30 */
+	void *freecb_priv; /* 0x38 */
+
+	/*
+	 * written part on a separate cache line in SMP
+	 */
+	unsigned int fdnext ____cacheline_aligned_in_smp; /* 0x40 */
+
+	struct fd_map *next;  /* 0x48 */
+	struct rcu_head rcu; /* 0x50 */
+};
+
+Thank you
