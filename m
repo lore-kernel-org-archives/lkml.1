@@ -1,58 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970224AbXFHQPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970271AbXFHQRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970224AbXFHQPl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 12:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966477AbXFHQPc
+	id S970271AbXFHQRY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 12:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969438AbXFHQRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 12:15:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55225 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966199AbXFHQPb (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 12:15:31 -0400
-Date: Fri, 8 Jun 2007 17:15:26 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Jared Hulbert <jaredeh@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, carsteno@de.ibm.com,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       richard.griffiths@windriver.com,
-       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-Message-ID: <20070608161526.GA3729@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jared Hulbert <jaredeh@gmail.com>, carsteno@de.ibm.com,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	richard.griffiths@windriver.com,
-	Richard Griffiths <res07ml0@verizon.net>,
-	Linux-kernel@vger.kernel.org
-References: <20070607193844.GB17144@infradead.org> <4669027E.3070406@de.ibm.com> <20070608072609.GA13115@infradead.org> <46690A39.3010402@de.ibm.com> <20070608075717.GA16927@infradead.org> <46690C58.7090304@de.ibm.com> <20070608080401.GA17684@infradead.org> <6934efce0706080905h253d9e3apd4168c5d14d305e5@mail.gmail.com> <20070608160929.GA3366@infradead.org> <6934efce0706080911y601a8377oad7b1251a95acd64@mail.gmail.com>
-Mime-Version: 1.0
+	Fri, 8 Jun 2007 12:17:12 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:24611 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756539AbXFHQRL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 12:17:11 -0400
+X-Greylist: delayed 1646 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Jun 2007 12:17:11 EDT
+Date: Fri, 08 Jun 2007 09:52:45 -0600
+From: dougthompson@xmission.com
+To: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: [PATCH 2/6]
+Message-ID: <46697b4d.pS5U14EbmDptHEuZ%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.1 6/15/06
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6934efce0706080911y601a8377oad7b1251a95acd64@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 09:11:47AM -0700, Jared Hulbert wrote:
-> >On Fri, Jun 08, 2007 at 09:05:32AM -0700, Jared Hulbert wrote:
-> >> Okay so we need some driver that opens/closes this ROM.  This has been
-> >> done from the dcss block device but that doesn't make sense for most
-> >> embedded systems.  The MTD allows for this with point(),unpoint().
-> >> That should work just fine.  It does introduce the MTD as a dependancy
-> >> which is unnecessary in many systems, but it will work now.
-> >
-> >The Linux solution to this problem would be to introduce an option for
-> >mtd write support.  That way the majority of the code doesn't heave to
-> >be compiled for the read-only case but you still get a uniform interface.
-> 
-> You mean make an MTD-light interface possible?
+From:	Jason Uhlenkott <juhlenko@akamai.com>
 
-I wouldn't call it that.  The interface should stay the same except that
-write operations are not supported. In mtd_info you'd just have
-point/unpoint and read/read_oob but no write operations and all the backing
-code wouldn't be compiled in aswell.
+If ERRSTS indicates that there's no error then we don't need to bother
+reading the other registers.
+
+In addition to making the common case faster, this actually fixes a
+small race where we don't see an error but we clear the error bits
+anyway, potentially wiping away info on an error that happened in the
+interim (or where a CE arrives between the first and second read of
+ERRSTS, causing us to falsely claim "UE overwrote CE").
+
+Signed-off-by:	Jason Uhlenkott <juhlenko@akamai.com>
+Signed-off-by:	Douglas Thompson <dougthompson@xmission.com>
+Cc:	alan@lxorguk.ukuu.org.uk
+---
+ i82875p_edac.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+--- linux.orig/drivers/edac/i82875p_edac.c	2007-05-21 00:46:31.568356390 -0400
++++ linux/drivers/edac/i82875p_edac.c	2007-05-21 00:46:36.637650484 -0400
+@@ -198,27 +198,28 @@
+ 	 * overwritten by UE.
+ 	 */
+ 	pci_read_config_word(pdev, I82875P_ERRSTS, &info->errsts);
++
++	if (!(info->errsts & 0x0081))
++		return;
++
+ 	pci_read_config_dword(pdev, I82875P_EAP, &info->eap);
+ 	pci_read_config_byte(pdev, I82875P_DES, &info->des);
+ 	pci_read_config_byte(pdev, I82875P_DERRSYN, &info->derrsyn);
+ 	pci_read_config_word(pdev, I82875P_ERRSTS, &info->errsts2);
+ 
+-	pci_write_bits16(pdev, I82875P_ERRSTS, 0x0081, 0x0081);
+-
+ 	/*
+ 	 * If the error is the same then we can for both reads then
+ 	 * the first set of reads is valid.  If there is a change then
+ 	 * there is a CE no info and the second set of reads is valid
+ 	 * and should be UE info.
+ 	 */
+-	if (!(info->errsts2 & 0x0081))
+-		return;
+-
+ 	if ((info->errsts ^ info->errsts2) & 0x0081) {
+ 		pci_read_config_dword(pdev, I82875P_EAP, &info->eap);
+ 		pci_read_config_byte(pdev, I82875P_DES, &info->des);
+ 		pci_read_config_byte(pdev, I82875P_DERRSYN, &info->derrsyn);
+ 	}
++
++	pci_write_bits16(pdev, I82875P_ERRSTS, 0x0081, 0x0081);
+ }
+ 
+ static int i82875p_process_error_info(struct mem_ctl_info *mci,
+@@ -229,7 +230,7 @@
+ 
+ 	multi_chan = mci->csrows[0].nr_channels - 1;
+ 
+-	if (!(info->errsts2 & 0x0081))
++	if (!(info->errsts & 0x0081))
+ 		return 0;
+ 
+ 	if (!handle_errors)
+
