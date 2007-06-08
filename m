@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970421AbXFHRvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970330AbXFHR5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970421AbXFHRvo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 13:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969312AbXFHRvd
+	id S970330AbXFHR5I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 13:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935013AbXFHR44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 13:51:33 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:21833 "EHLO
-	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S969586AbXFHRvc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 13:51:32 -0400
-Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Martin Peschke <mp3@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, jbaron@redhat.com, rostedt@goodmis.org,
-       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
-In-Reply-To: <466993CF.4050804@de.ibm.com>
-References: <1181165656.7133.23.camel@dix> <1181202258.7348.217.camel@twins>
-	 <46698B1D.3000806@de.ibm.com> <1181322460.5728.2.camel@lappy>
-	 <46698F7F.4090407@de.ibm.com> <1181323622.5728.6.camel@lappy>
-	 <466993CF.4050804@de.ibm.com>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 19:50:30 +0200
-Message-Id: <1181325030.5728.14.camel@lappy>
+	Fri, 8 Jun 2007 13:56:56 -0400
+Received: from lazybastard.de ([212.112.238.170]:46651 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932708AbXFHR4z (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 13:56:55 -0400
+Date: Fri, 8 Jun 2007 19:51:53 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Christoph Hellwig <hch@infradead.org>, Jared Hulbert <jaredeh@gmail.com>,
+       carsteno@de.ibm.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Message-ID: <20070608175152.GG20718@lazybastard.org>
+References: <4669027E.3070406@de.ibm.com> <20070608072609.GA13115@infradead.org> <46690A39.3010402@de.ibm.com> <20070608075717.GA16927@infradead.org> <46690C58.7090304@de.ibm.com> <20070608080401.GA17684@infradead.org> <6934efce0706080905h253d9e3apd4168c5d14d305e5@mail.gmail.com> <20070608160929.GA3366@infradead.org> <6934efce0706080911y601a8377oad7b1251a95acd64@mail.gmail.com> <20070608161526.GA3729@infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070608161526.GA3729@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-08 at 19:37 +0200, Martin Peschke wrote:
-> Peter Zijlstra wrote:
-> > On Fri, 2007-06-08 at 19:18 +0200, Martin Peschke wrote:
-> >> Peter Zijlstra wrote:
-> >>> On Fri, 2007-06-08 at 19:00 +0200, Martin Peschke wrote:
-> >>>> Peter Zijlstra wrote:
-> >>>>> I'm confused as to where the class->stat objects are initialised? Is
-> >>>>> that done in lock_stat_init()? If so, then you have a bug.
-> >>>> static struct lock_class lock_classes[MAX_LOCKDEP_KEYS];
-> >>>>
-> >>>> I assume this gets us class structures containing all zeros, doesn't it?
-> >>>> Then class->stat is zeros as well, which is handled by lib/statistics.
-> >>>> (In this case, data gathering hasn't been turned on yet, and statistic_inc()
-> >>>> and similar functions don't access other areas of struct statistic.)
-> >>> Who eventually calls percpu_alloc?
-> >> There is a small state machine calling percpu_alloc when users do
-> >>
-> >>     echo state=on > /debug/statistics/lockdep/definition
-> >>
-> >> So data gathering is off by default.
-> >>
-> >> It might make sense to allow "state=on" as a default. Then allocation would
-> >> be done in the context of statistic_attach().
-> > 
-> > Right, the problem here is that you iterate over all_lock_classes once
-> > at init.
-> > 
-> > Contrary to what the name might suggest, it are not all possible
-> > classes, just all active ones. So you'll only attach the classes which
-> > have been used up until the init point. All other classes used later
-> > will never be initialized.
+On Fri, 8 June 2007 17:15:26 +0100, Christoph Hellwig wrote:
 > 
-> Ah..
-> 
-> Do you know where a class is setup for first use?
+> I wouldn't call it that.  The interface should stay the same except that
+> write operations are not supported. In mtd_info you'd just have
+> point/unpoint and read/read_oob but no write operations and all the backing
+> code wouldn't be compiled in aswell.
 
-Somewhere down the line of lock_acquire()->register_lock_class().
-It is then stuck onto the all_lock_classes list in mark_lock(). However
-this would be a very bad place to run init code, since percpu_alloc()
-can schedule and we're in the middle of a locking primitive :-)
+Nitbit: Sooner or later the point/unpoint should get replaced by
+something with page granularity.  Something also needs to keep lists of
+mapped pages and invalidate them whenever the device is written to.
+That could be done in the filesystem or device driver.  I believe the
+device driver would be a better solution.
 
-> I guess it is feasible to move statistic initialisation to that place.
-> 
-> Is there a place where a class becomes unused again?
+Jörn
 
-Yes, it is possible to clear the task list, however that part of lockdep
-is a tag fragile - look for the call-chain leading to zap_class().
-
+-- 
+Write programs that do one thing and do it well. Write programs to work
+together. Write programs to handle text streams, because that is a
+universal interface.
+-- Doug MacIlroy
