@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937368AbXFHHFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966864AbXFHHJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937368AbXFHHFb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762819AbXFHHFW
+	id S966864AbXFHHJg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764164AbXFHHJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:05:22 -0400
-Received: from ozlabs.org ([203.10.76.45]:50064 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762074AbXFHHFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:05:21 -0400
-Subject: Re: [PATCH 1/7] lguest documentation: infrastructure and Chapter I
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-In-Reply-To: <20070607232349.b4673058.akpm@linux-foundation.org>
-References: <1181272257.24958.12.camel@localhost.localdomain>
-	 <20070607232349.b4673058.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 17:05:19 +1000
-Message-Id: <1181286319.29842.39.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jun 2007 03:09:29 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:56694 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763664AbXFHHJ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:09:28 -0400
+Message-ID: <4669009E.3000702@cosmosbay.com>
+Date: Fri, 08 Jun 2007 09:09:18 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Albert Cahalan <acahalan@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Davide Libenzi <davidel@xmailserver.org>
+Subject: Re: JIT emulator needs
+References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
+In-Reply-To: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Fri, 08 Jun 2007 09:09:26 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-07 at 23:23 -0700, Andrew Morton wrote:
-> On Fri, 08 Jun 2007 13:10:57 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+Albert Cahalan a écrit :
+> Right now, Linux isn't all that friendly to JIT emulators.
+> Here are the problems and suggestions to improve the situation.
 > 
-> > The netfilter code had very good documentation: the Netfilter Hacking
-> > HOWTO.  Noone ever read it.
-> > 
-> > So this time I'm trying something different, using a bit of
-> > Knuthiness.
-> > 
-> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> > ---
-> >  Documentation/lguest/extract          |   58 +++++++++++++++++++++++++++++++++
-> >  Documentation/lguest/lguest.c         |    9 +++--
-> >  drivers/lguest/Makefile               |   12 ++++++
-> >  drivers/lguest/README                 |   47 ++++++++++++++++++++++++++
-> >  drivers/lguest/core.c                 |    7 ++-
-> >  drivers/lguest/hypercalls.c           |    9 +++--
-> >  drivers/lguest/interrupts_and_traps.c |   13 +++++++
-> >  drivers/lguest/io.c                   |    8 +++-
-> >  drivers/lguest/lguest.c               |   31 ++++++++++++++++-
-> >  drivers/lguest/lguest_bus.c           |    3 +
-> >  drivers/lguest/lguest_user.c          |    7 +++
-> >  drivers/lguest/page_tables.c          |   10 ++++-
-> >  drivers/lguest/segments.c             |   11 ++++++
-> >  drivers/lguest/switcher.S             |   13 +++----
-> >  14 files changed, 219 insertions(+), 19 deletions(-)
+> There is an SE Linux execmem restriction that enforces W^X.
+> Assuming you don't wish to just disable SE Linux, there are
+> two ugly ways around the problem. You can mmap a file twice,
+> or you can abuse SysV shared memory. The mmap method requires
+> that you know of a filesystem mounted rw,exec where you can
+> write a very large temporary file. This arbitrary filesystem,
+> rather than swap space, will be the backing store. The SysV
+> shared memory method requires an undocumented flag and is
+> subject to some annoying size limits. Both methods create
+> objects that will fail to be deleted if the program dies
+> before marking the objects for deletion.
 > 
-> This patch series craps all over the existing one:
+> Processors often have annoying limits on the immediate values
+> in instructions. An x86 or x86_64 JIT can go a bit faster if
+> all allocations are kept to the low 2 GB of address space.
+> There are also reasons for a 32bit-to-x86_64 JIT to chose
+> a nearly arbitrary 2 GB region that lies above 4 GB.
+> Other archs have other limits, such as 32 MB or 256 MB.
 > 
-> lguest-export-symbols-for-lguest-as-a-module.patch
-> lguest-the-guest-code.patch
-> lguest-the-host-code.patch
-> lguest-the-asm-offsets.patch
-> lguest-the-makefile-and-kconfig.patch
-> lguest-the-console-driver.patch
-> lguest-the-net-driver.patch
-> lguest-the-block-driver.patch
-> lguest-the-documentation-example-launcher.patch
+> Sometimes it is very helpful to have the read/write mapping
+> be a fixed offset from the read/exec mapping. A power of 2
+> can be especially desirable.
 > 
-> obviously we could append this new series to the existing one, but that
-> limits our ability to make further changes over the next few weeks.  Or we
-> just give up trying to present the series nicely and it hits mainline with
-> a random stream of uninteresting and irrelevant afterthoughts at the end,
-> like we're some lameo git users or something.
+> Emulators often need a cheap way to change page permissions.
+> One VMA per page is no good. Besides taking up space and making
+> many things generally slower, having one VMA per page causes
+> a huge performance loss for snapshot roll-back operations.
+> Just tearing down all those VMAs takes a good while.
+> 
+> Additions to better support JIT emulators:
+> 
+> a. sysctl to set IPC_RMID by default
 
-Well, I've been painfully maintaining that documentation patch for
-months (it touches *everything*).  I *had* intended to send it straight
-to Linus one he took lguest, but that may never happen.
+Not very good, this will break some apps.
 
-Don't take it.  I'll push it to the end of my own series, send it direct
-to Linus if and when.
+> b. shmget() flag to set IPC_RMID by default
 
-> (I could split all this up, but I'm getting kinda bored of preventing you
-> from mucking up your own patch series)
+This is better :)
 
-Little sympathy.  Perhaps there's a moral about timely merging here.
+> c. open() flag to unlink a file before returning the fd
 
-Rusty.
+
+Well, I assume you would like fd = open("/path/somefile", O_RDWR | O_CREAT | 
+O_UNLINK, 0644)
+
+(ie allocate a file handle but no name ?)
+
+Quite difficult to implement this atomically with current vfs, maybe a new 
+syscall would be better. (Linus will kill me for that :) )
+
+(We dont need to insert "somefile" in one directory, then unlink it, we only 
+need to allocate an unnamed inode to get some backing store)
+
+This is a generalization of anonymous inodes ( fs/anon_inodes.c  )
+
 
