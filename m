@@ -1,137 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968144AbXFHKM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967698AbXFHKMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968144AbXFHKM0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 06:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937680AbXFHKML
+	id S967698AbXFHKMq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 06:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967530AbXFHKMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 06:12:11 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43247 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937612AbXFHKMJ (ORCPT
+	Fri, 8 Jun 2007 06:12:12 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:35929 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937670AbXFHKMK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 06:12:09 -0400
-Message-ID: <46692B7E.40000@bull.net>
-Date: Fri, 08 Jun 2007 12:12:14 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Fri, 8 Jun 2007 06:12:10 -0400
+Message-ID: <46692AB6.1090604@gmail.com>
+Date: Fri, 08 Jun 2007 12:08:54 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com, ak@suse.de
-Subject: Re: [RFC][PATCH 1/6] Storing ipcs into radix trees
-References: <20070607165302.917616000@bull.net> <20070607165555.155173000@bull.net> <200706072137.34563.ioe-lkml@rameria.de>
-In-Reply-To: <200706072137.34563.ioe-lkml@rameria.de>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 08/06/2007 12:11:13,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 08/06/2007 12:15:46,
-	Serialize complete at 08/06/2007 12:15:46
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.03
+References: <0a25fd03117c678f17006c5fcefaaed0@pinky> <20070604114110.0b88fe7a.akpm@linux-foundation.org> <4664632C.3050502@shadowen.org> <46646317.2080206@gmail.com> <466921F0.9020609@shadowen.org>
+In-Reply-To: <466921F0.9020609@shadowen.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Oeser wrote:
-> Hi Nadia,
-> 
-> good to see someone is pounding this old beast again :-)
-> 
-> On Thursday 07 June 2007, Nadia.Derbey@bull.net wrote:
-> 
->>Index: linux-2.6.21/ipc/util.h
->>===================================================================
->>--- linux-2.6.21.orig/ipc/util.h	2007-06-07 11:00:30.000000000 +0200
->>+++ linux-2.6.21/ipc/util.h	2007-06-07 11:07:22.000000000 +0200
->>@@ -13,6 +13,8 @@
->> #define USHRT_MAX 0xffff
->> #define SEQ_MULTIPLIER	(IPCMNI)
->> 
->>+#define IPCS_MAX_SCAN_ENTRIES 256
-> 
-> 
-> That ...
-> 
-> 
->>Index: linux-2.6.21/ipc/util.c
->>===================================================================
->>--- linux-2.6.21.orig/ipc/util.c	2007-06-07 11:00:30.000000000 +0200
->>+++ linux-2.6.21/ipc/util.c	2007-06-07 11:29:43.000000000 +0200
->>@@ -252,72 +241,94 @@ void __init ipc_init_proc_interface(cons
->>  *	@key: The key to find
->>  *	
->>  *	Requires ipc_ids.mutex locked.
->>- *	Returns the identifier if found or -1 if not.
->>+ *	Returns the LOCKED pointer to the ipc structure if found or NULL
->>+ *	if not.
->>+ *      If key is found ipc contains its ipc structure
->>  */
->>  
->>-int ipc_findkey(struct ipc_ids* ids, key_t key)
->>+struct kern_ipc_perm *ipc_findkey(struct ipc_ids *ids, key_t key)
->> {
->>-	int id;
->>-	struct kern_ipc_perm* p;
->>-	int max_id = ids->max_id;
->>+	struct kern_ipc_perm *ipc;
->>+	struct kern_ipc_perm *ipcs[IPCS_MAX_SCAN_ENTRIES];
-> 
-> 
-> ... together with this means 4*256 -> 1k of precious stack space used.
-> Please consider either lowering IPCS_MAX_SCAN_ENTRIES or kmalloc() that.
-> 
-> Same problem with your third patch called 
-> "Changing the loops on a single ipcid into radix_tree_gang_lookup() calls"
-> 
-> If you cannot sleep, try to lower that constant (e.g. 16-32). 
-> The current users use much smaller numbers.
-> 
-> If you can sleep and performance goes down after lowering that constant,
-> try to kmalloc these arrays (since kmalloc() of that small amount 
-> should succeed easily).
-> 
-> 
-> 
-> Regards
-> 
-> Ingo Oeser
-> 
+On 06/08/2007 11:31 AM, Andy Whitcroft wrote:
 
-Ingo,
+> Ok, the latest version 0.04 is released and I have also put up the
+> complete script at:
+> 
+>   http://www.shadowen.org/~apw/public/checkpatch/checkpatch.pl-0.04
+> 
+> Previous versions are also there.
 
-You're completely right, but trying to lower the extraction size, I'm 
-afraid this will have an impact on performances.
+Thank you. False positive:
 
-Here are the results of a small test I did: I have run ctxbench on both 
-the 256 and and 16 entries versions
+	do not use assignment in condition
+	#809: FILE: drivers/cdrom/mitsumi.c:766:
+	+       while ((req = elv_next_request(q))) {
 
-1) 256 entries:
+Doing an assignment in a while (or for) condition like that makes perfect 
+sense. The check should probably be limited to if conditions -- you can 
+always split those.
 
-[root@akt ctxbench-1.9]# echo 1000 > /proc/sys/kernel/msgmni
-[root@akt ctxbench-1.9]# ./ctx -m -t300
+Next:
 
+	struct mutex definition without comment
+	#173: FILE: drivers/cdrom/mitsumi.c:130:
+	+	struct mutex mutex;
 
-Context switching benchmark v1.17
-   Using message queue for IPC control
-    Max iterations:        0 (zero = no limit)
-Max runtime (sec):      300 (zero = no limit)
-42523679 itterations in 300.005423 seconds = 141743/sec
+Going overboard. It's the only locking primitive in the driver; the only 
+comment that could be added is something like "used for mutual exclusion" 
+which firmly falls into the "i++; /* increase i */" category. A bit further 
+on up in the driver, a:
 
-2) 16 entries:
+	/*
+	 * LOCKING: mutex_lock(&mcd->mutex)
+	 */
 
-[root@akt ctxbench-1.9]# echo 1000 > /proc/sys/kernel/msgmni
-[root@akt ctxbench-1.9]# ./ctx -m -t300
+is present just before the functions that need to be called with it held 
+(all, basically). I'd suggest simply dropping this check as its intention is 
+not something that can be usefully automated I feel. The tree would end up 
+with tons of useless comments that are there just to shut up the script.
 
+And next a ton of:
 
-Context switching benchmark v1.17
-   Using message queue for IPC control
-    Max iterations:        0 (zero = no limit)
-Max runtime (sec):      300 (zero = no limit)
-41774255 itterations in 300.005334 seconds = 139245/sec
+	labels should not be indented
+	#249: FILE: drivers/cdrom/mitsumi.c:206:
+	+  out:
 
-Will try with a dynamic allocation.
+This driver is putting two spaces in front of labels, as explained here:
 
-Regards,
-Nadia
+	http://lkml.org/lkml/2007/6/5/61
 
+I do agree that putting them level aligned is a _significantly_ different 
+style, so perhaps it wants to warn if a label is not within the first indent 
+level (column 0-7) but if even that's contentious then this check should 
+perhaps go completely as well. One or two spaces, four for all I care, can 
+be considered a personal preference I feel.
+
+Rene.
 
