@@ -1,75 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966536AbXFHHDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937184AbXFHHDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966536AbXFHHDV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762331AbXFHHDM
+	id S937184AbXFHHDv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762331AbXFHHDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:03:12 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:36171 "EHLO
+	Fri, 8 Jun 2007 03:03:42 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:36177 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762074AbXFHHDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:03:11 -0400
-Date: Fri, 8 Jun 2007 00:02:48 -0700
+	id S1762074AbXFHHDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:03:40 -0400
+Date: Fri, 8 Jun 2007 00:03:12 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.21.4
-Message-ID: <20070608070248.GN3723@sequoia.sous-sol.org>
+Subject: Re: Linux 2.6.21.4
+Message-ID: <20070608070312.GO3723@sequoia.sous-sol.org>
+References: <20070608070248.GN3723@sequoia.sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070608070248.GN3723@sequoia.sous-sol.org>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.21.4 kernel.
-This release has three security fixes in it:
+diff --git a/Makefile b/Makefile
+index 7980f39..e5c5531 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 21
+-EXTRAVERSION = .3
++EXTRAVERSION = .4
+ NAME = Nocturnal Monster Puppy
  
-374f167d: random: fix error in entropy extraction (CVE-2007-2453 1 of 2)
-7bd369b1: random: fix seeding with zero entropy (CVE-2007-2453 2 of 2)
-c23e7e4c: cpuset: prevent information leak in cpuset_tasks_read (CVE-2007-2875)
-8c640bd0: NETFILTER: {ip, nf}_conntrack_sctp: fix remotely triggerable NULL ptr dereference (CVE-2007-2876)
-
-The /dev/[u]random fix is especially important for machines with no
-entropy source (e.g. keyboard, mice, or disk drives) and no realtime clock
-since successive boots could generate same output from RNG.  The cpuset
-bug is a possible information leak when reading from /dev/cpuset/tasks
-(assuming cpusets support is compiled in and the cpuset fs mounted
-on /dev/cpuset).  The SCTP bug is remotely triggerable when using SCTP
-conntrack.
-
-
-I'll also be replying to this message with a copy of the patch between
-2.6.21.3 and 2.6.21.4
-
-The updated 2.6.21.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.21.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.21.y.git;a=summary
-
-thanks,
--chris
-
----------
-
- Makefile                                     |    2 
- drivers/char/random.c                        |   67 +++++++++++++++------------
- kernel/cpuset.c                              |    7 --
- net/ipv4/netfilter/ip_conntrack_proto_sctp.c |    3 -
- net/netfilter/nf_conntrack_proto_sctp.c      |    3 -
- 5 files changed, 44 insertions(+), 38 deletions(-)
-
-Summary of changes from v2.6.21.3 to v2.6.21.4
-==============================================
-
-Chris Wright (2):
-      cpuset: prevent information leak in cpuset_tasks_read (CVE-2007-2875)
-      Linux 2.6.21.4
-
-Matt Mackall (2):
-      random: fix error in entropy extraction (CVE-2007-2453 1 of 2)
-      random: fix seeding with zero entropy (CVE-2007-2453 2 of 2)
-
-Patrick McHardy (1):
-      NETFILTER: {ip, nf}_conntrack_sctp: fix remotely triggerable NULL ptr dereference (CVE-2007-2876)
-
+ # *DOCUMENTATION*
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index b9dc7aa..fa5b95b 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -760,7 +760,7 @@ static size_t account(struct entropy_store *r, size_t nbytes, int min,
+ 
+ static void extract_buf(struct entropy_store *r, __u8 *out)
+ {
+-	int i, x;
++	int i;
+ 	__u32 data[16], buf[5 + SHA_WORKSPACE_WORDS];
+ 
+ 	sha_init(buf);
+@@ -772,9 +772,11 @@ static void extract_buf(struct entropy_store *r, __u8 *out)
+ 	 * attempts to find previous ouputs), unless the hash
+ 	 * function can be inverted.
+ 	 */
+-	for (i = 0, x = 0; i < r->poolinfo->poolwords; i += 16, x+=2) {
+-		sha_transform(buf, (__u8 *)r->pool+i, buf + 5);
+-		add_entropy_words(r, &buf[x % 5], 1);
++	for (i = 0; i < r->poolinfo->poolwords; i += 16) {
++		/* hash blocks of 16 words = 512 bits */
++		sha_transform(buf, (__u8 *)(r->pool + i), buf + 5);
++		/* feed back portion of the resulting hash */
++		add_entropy_words(r, &buf[i % 5], 1);
+ 	}
+ 
+ 	/*
+@@ -782,7 +784,7 @@ static void extract_buf(struct entropy_store *r, __u8 *out)
+ 	 * portion of the pool while mixing, and hash one
+ 	 * final time.
+ 	 */
+-	__add_entropy_words(r, &buf[x % 5], 1, data);
++	__add_entropy_words(r, &buf[i % 5], 1, data);
+ 	sha_transform(buf, (__u8 *)data, buf + 5);
+ 
+ 	/*
+@@ -1022,37 +1024,44 @@ random_poll(struct file *file, poll_table * wait)
+ 	return mask;
+ }
+ 
+-static ssize_t
+-random_write(struct file * file, const char __user * buffer,
+-	     size_t count, loff_t *ppos)
++static int
++write_pool(struct entropy_store *r, const char __user *buffer, size_t count)
+ {
+-	int ret = 0;
+ 	size_t bytes;
+ 	__u32 buf[16];
+ 	const char __user *p = buffer;
+-	size_t c = count;
+ 
+-	while (c > 0) {
+-		bytes = min(c, sizeof(buf));
++	while (count > 0) {
++		bytes = min(count, sizeof(buf));
++		if (copy_from_user(&buf, p, bytes))
++			return -EFAULT;
+ 
+-		bytes -= copy_from_user(&buf, p, bytes);
+-		if (!bytes) {
+-			ret = -EFAULT;
+-			break;
+-		}
+-		c -= bytes;
++		count -= bytes;
+ 		p += bytes;
+ 
+-		add_entropy_words(&input_pool, buf, (bytes + 3) / 4);
+-	}
+-	if (p == buffer) {
+-		return (ssize_t)ret;
+-	} else {
+-		struct inode *inode = file->f_path.dentry->d_inode;
+-	        inode->i_mtime = current_fs_time(inode->i_sb);
+-		mark_inode_dirty(inode);
+-		return (ssize_t)(p - buffer);
++		add_entropy_words(r, buf, (bytes + 3) / 4);
+ 	}
++
++	return 0;
++}
++
++static ssize_t
++random_write(struct file * file, const char __user * buffer,
++	     size_t count, loff_t *ppos)
++{
++	size_t ret;
++	struct inode *inode = file->f_path.dentry->d_inode;
++
++	ret = write_pool(&blocking_pool, buffer, count);
++	if (ret)
++		return ret;
++	ret = write_pool(&nonblocking_pool, buffer, count);
++	if (ret)
++		return ret;
++
++	inode->i_mtime = current_fs_time(inode->i_sb);
++	mark_inode_dirty(inode);
++	return (ssize_t)count;
+ }
+ 
+ static int
+@@ -1091,8 +1100,8 @@ random_ioctl(struct inode * inode, struct file * file,
+ 			return -EINVAL;
+ 		if (get_user(size, p++))
+ 			return -EFAULT;
+-		retval = random_write(file, (const char __user *) p,
+-				      size, &file->f_pos);
++		retval = write_pool(&input_pool, (const char __user *)p,
++				    size);
+ 		if (retval < 0)
+ 			return retval;
+ 		credit_entropy_store(&input_pool, ent_count);
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index f382b0f..9e45dd1 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1751,12 +1751,7 @@ static ssize_t cpuset_tasks_read(struct file *file, char __user *buf,
+ {
+ 	struct ctr_struct *ctr = file->private_data;
+ 
+-	if (*ppos + nbytes > ctr->bufsz)
+-		nbytes = ctr->bufsz - *ppos;
+-	if (copy_to_user(buf, ctr->buf + *ppos, nbytes))
+-		return -EFAULT;
+-	*ppos += nbytes;
+-	return nbytes;
++	return simple_read_from_buffer(buf, nbytes, ppos, ctr->buf, ctr->bufsz);
+ }
+ 
+ static int cpuset_tasks_release(struct inode *unused_inode, struct file *file)
+diff --git a/net/ipv4/netfilter/ip_conntrack_proto_sctp.c b/net/ipv4/netfilter/ip_conntrack_proto_sctp.c
+index e694299..b86479a 100644
+--- a/net/ipv4/netfilter/ip_conntrack_proto_sctp.c
++++ b/net/ipv4/netfilter/ip_conntrack_proto_sctp.c
+@@ -460,7 +460,8 @@ static int sctp_new(struct ip_conntrack *conntrack,
+ 						SCTP_CONNTRACK_NONE, sch->type);
+ 
+ 		/* Invalid: delete conntrack */
+-		if (newconntrack == SCTP_CONNTRACK_MAX) {
++		if (newconntrack == SCTP_CONNTRACK_NONE ||
++		    newconntrack == SCTP_CONNTRACK_MAX) {
+ 			DEBUGP("ip_conntrack_sctp: invalid new deleting.\n");
+ 			return 0;
+ 		}
+diff --git a/net/netfilter/nf_conntrack_proto_sctp.c b/net/netfilter/nf_conntrack_proto_sctp.c
+index 3c80558..b53bc64 100644
+--- a/net/netfilter/nf_conntrack_proto_sctp.c
++++ b/net/netfilter/nf_conntrack_proto_sctp.c
+@@ -469,7 +469,8 @@ static int sctp_new(struct nf_conn *conntrack, const struct sk_buff *skb,
+ 					 SCTP_CONNTRACK_NONE, sch->type);
+ 
+ 		/* Invalid: delete conntrack */
+-		if (newconntrack == SCTP_CONNTRACK_MAX) {
++		if (newconntrack == SCTP_CONNTRACK_NONE ||
++		    newconntrack == SCTP_CONNTRACK_MAX) {
+ 			DEBUGP("nf_conntrack_sctp: invalid new deleting.\n");
+ 			return 0;
+ 		}
