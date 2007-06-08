@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939379AbXFHHtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939336AbXFHHub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939379AbXFHHtt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938408AbXFHHY6
+	id S939336AbXFHHub (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967001AbXFHHZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:24:58 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55305 "EHLO
+	Fri, 8 Jun 2007 03:25:00 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55311 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938395AbXFHHYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:24:53 -0400
-Message-Id: <20070608072206.936034000@sous-sol.org>
+	id S938401AbXFHHYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:24:55 -0400
+Message-Id: <20070608072209.461194000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:50 -0700
+Date: Fri, 08 Jun 2007 00:21:52 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,54 +23,92 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jay Cliburn <jacliburn@bellsouth.net>, acliburn@bellsouth.net,
-       csnook@redhat.com, ebiederm@xmission.com,
+       Zou Nan hai <nanhai.zou@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, Andi Kleen <ak@suse.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 23/54] PCI: quirk disable MSI on via vt3351
-Content-Disposition: inline; filename=pci-quirk-disable-msi-on-via-vt3351.patch
+Subject: [patch 25/54] x86_64: allocate sparsemem memmap above 4G
+Content-Disposition: inline; filename=x86_64-allocate-sparsemem-memmap-above-4g.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jay Cliburn <jacliburn@bellsouth.net>
+From: Zou Nan hai <nanhai.zou@intel.com>
 
-The Via VT3351 APIC does not play well with MSI and unleashes a flood
-of APIC errors when MSI is used to deliver interrupts.  The problem
-was recently exposed when the atl1 network device driver, which enables
-MSI by default, stimulated APIC errors on an Asus M2V mainboard, which
-employs the Via VT3351.
-See http://bugzilla.kernel.org/show_bug.cgi?id=8472 for additional
-details on this bug.
+On systems with huge amount of physical memory, VFS cache and memory memmap
+may eat all available system memory under 4G, then the system may fail to
+allocate swiotlb bounce buffer.
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+There was a fix for this issue in arch/x86_64/mm/numa.c, but that fix dose
+not cover sparsemem model.
+
+This patch add fix to sparsemem model by first try to allocate memmap above
+4G.
+
+Signed-off-by: Zou Nan hai <nanhai.zou@intel.com>
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+[chrisw: trivial backport]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/pci/quirks.c    |    1 +
- include/linux/pci_ids.h |    1 +
- 2 files changed, 2 insertions(+)
+ arch/x86_64/mm/init.c   |    6 ++++++
+ include/linux/bootmem.h |    1 +
+ mm/sparse.c             |   11 +++++++++++
+ 3 files changed, 18 insertions(+)
 
---- linux-2.6.21.4.orig/drivers/pci/quirks.c
-+++ linux-2.6.21.4/drivers/pci/quirks.c
-@@ -1751,6 +1751,7 @@ static void __init quirk_disable_all_msi
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200, quirk_disable_all_msi);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, quirk_disable_all_msi);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3351, quirk_disable_all_msi);
+--- linux-2.6.21.4.orig/arch/x86_64/mm/init.c
++++ linux-2.6.21.4/arch/x86_64/mm/init.c
+@@ -776,3 +776,9 @@ int in_gate_area_no_task(unsigned long a
+ {
+ 	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
+ }
++
++void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
++{
++	return __alloc_bootmem_core(pgdat->bdata, size,
++			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
++}
+--- linux-2.6.21.4.orig/include/linux/bootmem.h
++++ linux-2.6.21.4/include/linux/bootmem.h
+@@ -59,6 +59,7 @@ extern void *__alloc_bootmem_core(struct
+ 				  unsigned long align,
+ 				  unsigned long goal,
+ 				  unsigned long limit);
++extern void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size);
  
- /* Disable MSI on chipsets that are known to not support it */
- static void __devinit quirk_disable_msi(struct pci_dev *dev)
---- linux-2.6.21.4.orig/include/linux/pci_ids.h
-+++ linux-2.6.21.4/include/linux/pci_ids.h
-@@ -1287,6 +1287,7 @@
- #define PCI_DEVICE_ID_VIA_P4M800CE	0x0314
- #define PCI_DEVICE_ID_VIA_P4M890	0x0327
- #define PCI_DEVICE_ID_VIA_VT3336	0x0336
-+#define PCI_DEVICE_ID_VIA_VT3351	0x0351
- #define PCI_DEVICE_ID_VIA_8371_0	0x0391
- #define PCI_DEVICE_ID_VIA_8501_0	0x0501
- #define PCI_DEVICE_ID_VIA_82C561	0x0561
+ #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+ extern void reserve_bootmem(unsigned long addr, unsigned long size);
+--- linux-2.6.21.4.orig/mm/sparse.c
++++ linux-2.6.21.4/mm/sparse.c
+@@ -209,6 +209,12 @@ static int sparse_init_one_section(struc
+ 	return 1;
+ }
+ 
++__attribute__((weak))
++void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
++{
++	return NULL;
++}
++
+ static struct page *sparse_early_mem_map_alloc(unsigned long pnum)
+ {
+ 	struct page *map;
+@@ -219,6 +225,11 @@ static struct page *sparse_early_mem_map
+ 	if (map)
+ 		return map;
+ 
++  	map = alloc_bootmem_high_node(NODE_DATA(nid),
++                       sizeof(struct page) * PAGES_PER_SECTION);
++	if (map)
++		return map;
++
+ 	map = alloc_bootmem_node(NODE_DATA(nid),
+ 			sizeof(struct page) * PAGES_PER_SECTION);
+ 	if (map)
 
 -- 
