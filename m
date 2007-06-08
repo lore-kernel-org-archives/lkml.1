@@ -1,68 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938837AbXFHMmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939092AbXFHMmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938837AbXFHMmW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 08:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937232AbXFHMmP
+	id S939092AbXFHMmt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 08:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937855AbXFHMmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 08:42:15 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:32884 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937143AbXFHMmO (ORCPT
+	Fri, 8 Jun 2007 08:42:37 -0400
+Received: from truxi.wincor-nixdorf.com ([217.115.67.78]:45264 "EHLO
+	truxi.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937232AbXFHMmf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 08:42:14 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 8 Jun 2007 08:40:22 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Kyle McMartin <kyle@canonical.com>
-cc: Christoph Pleger <Christoph.Pleger@cs.uni-dortmund.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Size of kernel modules
-In-Reply-To: <20070608034421.GM26717@fattire.cabal.ca>
-Message-ID: <Pine.LNX.4.64.0706080838210.17480@localhost.localdomain>
-References: <20070606170534.67b5dea9.Christoph.Pleger@cs.uni-dortmund.de>
- <20070608034421.GM26717@fattire.cabal.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Fri, 8 Jun 2007 08:42:35 -0400
+X-Greylist: delayed 2723 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Jun 2007 08:42:32 EDT
+Subject: [PATCH] serial: add support for ITE 887x chips
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+To: rmk+serial@arm.linux.org.uk, linux-serial@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Wincor Nixdorf International GmbH
+Date: Fri, 08 Jun 2007 13:55:30 +0200
+Message-Id: <1181303730.3457.25.camel@wsa115.wincor-nixdorf.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Jun 2007 11:56:53.0779 (UTC) FILETIME=[1B2A4E30:01C7A9C4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007, Kyle McMartin wrote:
+Add support for the it887x-chips (PCI) manufactured by ITE.
 
-> On Wed, Jun 06, 2007 at 05:05:34PM +0200, Christoph Pleger wrote:
-> > So, my question is the follwing: Is it an expected feature that the file
-> > sizes of modules grow so much only because of a different cpu type and a
-> > different localversion, or is there probably a bug in my build tools?
->
-> The kernel is compiled with debug info so that we can strip it later to
-> build two packages, one with debugging information intact, and one
-> without it.
->
-> If you disable CONFIG_DEBUG_KERNEL, things should go back to normal
-> sizes for you.
+Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
+---
 
-grow so much compared to *which other modules*?  the ones that came
-with your distro?  if that's the case, try installing your new modules
-with
+ drivers/serial/8250_pci.c |  159 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 159 insertions(+)
 
-  # make INSTALL_MOD_STRIP=1 modules_install
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index 6d7d616..0ac4666 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -580,6 +580,138 @@ static int pci_netmos_init(struct pci_dev *dev)
+ 	return num_serial;
+ }
+ 
++/*
++ * ITE support by Niels de Vos <niels.devos@wincor-nixdorf.com>
++ *
++ * These chips are available with optionally one parallel port and up to
++ * two serial ports. Unfortunately they all have the same product id.
++ *
++ * Basic configuration is done over a region of 32 I/O ports. The base
++ * ioport is called INTA or INTC, depending on docs/other drivers.
++ *
++ * The region of the 32 I/O ports is configured in POSIO0R...
++ */
++
++/* registers */
++#define ITE_887x_MISCR		0x9c
++#define ITE_887x_INTCBAR	0x78
++#define ITE_887x_UARTBAR	0x7c
++#define ITE_887x_PS0BAR		0x10
++#define ITE_887x_POSIO0		0x60
++
++/* I/O space size */
++#define ITE_887x_IOSIZE		32
++/* I/O space size (bits 26-24; 8 bytes = 011b) */
++#define ITE_887x_POSIO_IOSIZE_8		(3 << 24)
++/* I/O space size (bits 26-24; 32 bytes = 101b) */
++#define ITE_887x_POSIO_IOSIZE_32	(5 << 24)
++/* Decoding speed (1 = slow, 2 = medium, 3 = fast) */
++#define ITE_887x_POSIO_SPEED		(3 << 29)	
++/* enable IO_Space bit */
++#define ITE_887x_POSIO_ENABLE		(1 << 31)	
++
++static int __devinit pci_ite887x_init(struct pci_dev *dev)
++{
++	/* inta_addr are the configuration addresses of the ITE */
++	static const short inta_addr[] = { 0x2a0, 0x2c0, 0x220, 0x240, 0x1e0,
++							0x200, 0x280, 0 };
++	int ret, i, type;
++	struct resource *iobase = NULL;
++	u32 miscr, uartbar, ioport;
++
++	/* search for the base-ioport */
++	i = 0;
++	while (inta_addr[i] && iobase == NULL) {
++		iobase = request_region(inta_addr[i], ITE_887x_IOSIZE,
++								"ite887x");
++		if (iobase != NULL) {
++			/* write POSIO0R - speed | size | ioport */
++			pci_write_config_dword(dev, ITE_887x_POSIO0,
++				ITE_887x_POSIO_ENABLE | ITE_887x_POSIO_SPEED |
++				ITE_887x_POSIO_IOSIZE_32 | inta_addr[i]);
++			/* write INTCBAR - ioport */
++			pci_write_config_dword(dev, ITE_887x_INTCBAR, inta_addr[i]);
++			ret = inb(inta_addr[i]);
++			if (ret != 0xff) {
++				/* ioport connected */
++				break;
++			}
++			release_region(iobase->start, ITE_887x_IOSIZE);
++			iobase = NULL;
++		}
++		i++;
++	}
++
++	if (!inta_addr[i]) {
++		printk(KERN_ERR "ite887x: could not find iobase\n");
++		return -ENODEV;
++	}
++
++	/* start of undocumented type checking (see parport_pc.c) */
++	type = inb(iobase->start + 0x18) & 0x0f;
++
++	switch (type) {
++	case 0x2:	/* ITE8871 (1P) */
++	case 0xa:	/* ITE8875 (1P) */
++		ret = 0;
++		break;
++	case 0xe:	/* ITE8872 (2S1P) */
++		ret = 2;
++		break;
++	case 0x6:	/* ITE8873 (1S) */
++		ret = 1;
++		break;
++	case 0x8:	/* ITE8874 (2S) */
++		ret = 2;
++		break;
++	default:
++		moan_device("Unknown ITE887x", dev);
++		ret = -ENODEV;
++	}
++
++	/* configure all serial ports */
++	for (i = 0; i < ret; i++) {
++		/* read the I/O port from the device */
++		pci_read_config_dword(dev, ITE_887x_PS0BAR + (0x4 * (i + 1)),
++								&ioport);
++		ioport &= 0x0000FF00;	/* the actual base address */
++		pci_write_config_dword(dev, ITE_887x_POSIO0 + (0x4 * (i + 1)),
++			ITE_887x_POSIO_ENABLE | ITE_887x_POSIO_SPEED |
++			ITE_887x_POSIO_IOSIZE_8 | ioport);
++
++		/* write the ioport to the UARTBAR */
++		pci_read_config_dword(dev, ITE_887x_UARTBAR, &uartbar);
++		uartbar &= ~(0xffff << (16 * i));	/* clear half the reg */
++		uartbar |= (ioport << (16 * i));	/* set the ioport */
++		pci_write_config_dword(dev, ITE_887x_UARTBAR, uartbar);
++
++		/* get current config */
++		pci_read_config_dword(dev, ITE_887x_MISCR, &miscr);
++		/* disable interrupts (UARTx_Routing[3:0]) */
++		miscr &= ~(0xf << (12 - 4 * i));
++		/* activate the UART (UARTx_En) */
++		miscr |= 1 << (23 - i);
++		/* write new config with activated UART */
++		pci_write_config_dword(dev, ITE_887x_MISCR, miscr);
++	}
++
++	if (ret <= 0) {
++		/* the device has no UARTs if we get here */
++		release_region(iobase->start, ITE_887x_IOSIZE);
++	}
++
++	return ret;
++}
++
++static void __devexit pci_ite887x_exit(struct pci_dev *dev)
++{
++	u32 ioport;
++	/* the ioport is bit 0-15 in POSIO0R */
++	pci_read_config_dword(dev, ITE_887x_POSIO0, &ioport);
++	ioport &= 0xffff;
++	release_region(ioport, ITE_887x_IOSIZE);
++}
++
+ static int
+ pci_default_setup(struct serial_private *priv, struct pciserial_board *board,
+ 		  struct uart_port *port, int idx)
+@@ -653,6 +785,18 @@ static struct pci_serial_quirk pci_serial_quirks[] = {
+ 		.setup		= pci_default_setup,
+ 	},
+ 	/*
++	 * ITE
++	 */
++	{
++		.vendor		= PCI_VENDOR_ID_ITE,
++		.device		= PCI_DEVICE_ID_ITE_8872,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ite887x_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ite887x_exit),
++	},
++	/*
+ 	 * Panacom
+ 	 */
+ 	{
+@@ -933,6 +1077,7 @@ enum pci_board_num_t {
+ 
+ 	pbn_b1_2_1250000,
+ 
++	pbn_b1_bt_1_115200,
+ 	pbn_b1_bt_2_921600,
+ 
+ 	pbn_b1_1_1382400,
+@@ -1212,6 +1357,13 @@ static struct pciserial_board pci_boards[] __devinitdata = {
+ 		.uart_offset	= 8,
+ 	},
+ 
++	[pbn_b1_bt_1_115200] = {
++		.flags		= FL_BASE1|FL_BASE_BARS,
++		.num_ports	= 1,
++		.base_baud	= 115200,
++		.uart_offset	= 8,
++	},
++
+ 	[pbn_b1_bt_2_921600] = {
+ 		.flags		= FL_BASE1|FL_BASE_BARS,
+ 		.num_ports	= 2,
+@@ -2384,6 +2536,13 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 	{	PCI_VENDOR_ID_TOPIC, PCI_DEVICE_ID_TOPIC_TP560,
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+ 		pbn_b0_1_115200 },
++	/*
++	 * ITE
++	 */
++	{	PCI_VENDOR_ID_ITE, PCI_DEVICE_ID_ITE_8872,
++		PCI_ANY_ID, PCI_ANY_ID,
++		0, 0,
++		pbn_b1_bt_1_115200 },
+ 
+ 	/*
+ 	 * IntaShield IS-200
 
-that makes a *huge* difference in the size of the installed modules,
-as i learned when i first ran across this on my fedora core system.
 
-rday
---
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
