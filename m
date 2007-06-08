@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968042AbXFHIF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968697AbXFHIGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968042AbXFHIF6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 04:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968394AbXFHHdH
+	id S968697AbXFHIGk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 04:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938800AbXFHHjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:33:07 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:60705 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968393AbXFHHdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:33:04 -0400
-Date: Fri, 8 Jun 2007 00:31:37 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/54] 2.6.21-stable review
-Message-ID: <20070608073137.GQ3723@sequoia.sous-sol.org>
-References: <20070608072127.352723000@sous-sol.org>
+	Fri, 8 Jun 2007 03:39:15 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:15338 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938799AbXFHHjN (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:39:13 -0400
+Message-ID: <4669079B.3030408@de.ibm.com>
+Date: Fri, 08 Jun 2007 09:39:07 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070608072127.352723000@sous-sol.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Christoph Hellwig <hch@infradead.org>, Jared Hulbert <jaredeh@gmail.com>,
+       carsteno@de.ibm.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+References: <465BB5BA.3050900@yahoo.com.au> <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com> <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com> <6934efce0706060413y6e74512s19d5f468106d4b85@mail.gmail.com> <20070606113351.GA11701@infradead.org> <6934efce0706060907n209fe6bcnb470101196aa9c55@mail.gmail.com> <20070606161621.GA20247@infradead.org> <6934efce0706061126n551cccaeg68a0def87457911@mail.gmail.com> <20070607193707.GA17144@infradead.org> <20070607194054.GC17144@infradead.org>
+In-Reply-To: <20070607194054.GC17144@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chris Wright (chrisw@sous-sol.org) wrote:
-> This is the start of the stable review cycle for the 2.6.21.5 release.
-> There are 54 patches in this series, all will be posted as a response
+Christoph Hellwig wrote:
+> And for thus just wanting to take a quick glance, this is the
+> diff vs an out of tree cramfs where uncompress.c and cramfs_fs_sb.h
+> are merged into inode.c:
+Mkay, I am convinced. Either cramfs should be based on a block device 
+that does have direct_access() for xip, or the code needs to be 
+forked. Looks like a sane approach to me.
 
-Roll-up patch available at:
-	http://www.kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.21.5-rc1.{gz,bz2}
-
-thanks,                                                                                                             
--chris     
+so long,
+Carsten
