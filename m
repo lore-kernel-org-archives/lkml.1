@@ -1,585 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968038AbXFHJU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968341AbXFHJVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968038AbXFHJU5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 05:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966265AbXFHJUt
+	id S968341AbXFHJVY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 05:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967186AbXFHJVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 05:20:49 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1494 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760597AbXFHJUs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 05:20:48 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
-       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] update checkpatch.pl to version 0.04
-Message-ID: <1219bf1ec9ab0dcecc345f9fc3b0f912@pinky>
-Date: Fri, 08 Jun 2007 10:41:11 +0100
+	Fri, 8 Jun 2007 05:21:13 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:58076 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967182AbXFHJVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 05:21:12 -0400
+Date: Fri, 8 Jun 2007 11:19:09 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: "Daniel Colascione" <danc@merrillpress.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: O_CLOEXEC: An alternate proposal
+Message-Id: <20070608111909.d338f974.dada1@cosmosbay.com>
+In-Reply-To: <45111.76.180.38.217.1181288832.squirrel@vpn.merrillpress.com>
+References: <45111.76.180.38.217.1181288832.squirrel@vpn.merrillpress.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 8 Jun 2007 03:47:12 -0400 (EDT)
+"Daniel Colascione" <danc@merrillpress.com> wrote:
 
-This version brings a some new tests, and a host of changes to fix
-false positives, of particular note:
+> Hey, this is my first post to linux-kernel, so please be kind. :-)
 
-  - check for and report #if 0
-  - extend checking of line lengths and spacing for .pl, .sh etc
-  - extends the pointer type checks to multiple levels
-  - updates printk handling to track newlines
-  - adds a wrapped patch detector
-  - drops the leading component of the filenames
-  - extends switch indent handling to switch statmentes rooted in
-    the context
-  - adds foo * bar single pointer checks
+Welcome Daniel
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
+> 
+> Linus Torvalds wrote on May 31:
+> > I'm with Uli on this one. "Stateful" stuff is bad. It's essentially
+> > impossible to handle with libraries - either the library would have to
+> > explciitly always turn the state the way _it_ needs it, or the library
+> > will do the wrogn thing.
+> 
+> I agree that stateful stuff is generally not very elegant,
+> but I think it's a win here -- we wouldn't have to create any
+> new APIs except for the state-setting stuff.
+> 
+> The state just has to be thread-local.
+> 
+> If it's thread-local, a library, say, glibc,
+> can use code like this:
+> 
+>   /* Internal library function */
+>   old_fd_flags = kernel_default_fd_flags(FD_CLOEXEC | FD_RANDFD);
 
-This version of checkpatch.pl can be found at the following URL:
+<race here if a signal handler runs some user code messing with a thread-local fd_flags >
 
-      http://www.shadowen.org/~apw/public/checkpatch/checkpatch.pl-0.04
+>   event_fd = super_duper_event_polling_mechanism_fd();
+>   kernel_default_fd_flags(old_fd_flags);
+> 
+> I think that's a lot cleaner than augmenting every
+> present and future fd-creating syscall to take some kind
+> of flags parameter and adding some kind of funny dup().
+> 
 
-Full Changelog:
+Thats funny, you probably missed Linus syscall_indirect() proposal, 
+which is basically doing the thing but with one syscall (so no races, and faster)
 
-Andy Whitcroft (16):
-      allow checking line lengths and spacing on other source files
-      clean up that whitespace
-      sanitise the input line standardising the content of quotes
-      clean up pointer type * and space checks
-      fix up the sanitiser so it maintains the line length
-      apply the printk facility checks only to the first printk in a set
-      switch/case indent checks may anchor in the context
-      add a wrapped patch detector
-      put the #ifdef in C file checks on ice
-      asm volatile is acceptable
-      check for and report #if 0
-      drop the leading component of the filename as patches are -p1
-      use the original line when reporting operator errors
-      correct spelling of Joel's name
-      Version: 0.04
-      add support for struct foo * bar checks
+http://marc.info/?l=linux-kernel&m=118124716616552&w=2
 
-Geert Uytterhoeven (1):
-      Fix checkpatch.pl name in usage template
-
-Randy Dunlap (1):
-      checkpatch: produce fewer lines of output
----
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 3933952..aea90d3 100644
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1,14 +1,15 @@
- #!/usr/bin/perl -w
- # (c) 2001, Dave Jones. <davej@codemonkey.org.uk> (the file handling bit)
--# (c) 2005, Joel Scohpp <jschopp@austin.ibm.com> (the ugly bit)
-+# (c) 2005, Joel Schopp <jschopp@austin.ibm.com> (the ugly bit)
- # (c) 2007, Andy Whitcroft <apw@uk.ibm.com> (new conditions, test suite, etc)
- # Licensed under the terms of the GNU GPL License version 2
- 
- use strict;
- 
- my $P = $0;
-+$P =~ s@.*/@@g;
- 
--my $V = '0.03';
-+my $V = '0.04';
- 
- use Getopt::Long qw(:config no_auto_abbrev);
- 
-@@ -26,7 +27,7 @@ GetOptions(
- my $exit = 0;
- 
- if ($#ARGV < 0) {
--	print "usage: patchstylecheckemail.pl [options] patchfile\n";
-+	print "usage: $P [options] patchfile\n";
- 	print "version: $V\n";
- 	print "options: -q           => quiet\n";
- 	print "         --no-tree    => run without a kernel tree\n";
-@@ -59,15 +60,15 @@ if ($tree && -f $removal) {
- 	}
- }
- 
--my @lines = ();
-+my @rawlines = ();
- while (<>) {
- 	chomp;
--	push(@lines, $_);
-+	push(@rawlines, $_);
- 	if (eof(ARGV)) {
--		if (!process($ARGV, @lines)) {
-+		if (!process($ARGV, @rawlines)) {
- 			$exit = 1;
- 		}
--		@lines = ();
-+		@rawlines = ();
- 	}
- }
- 
-@@ -118,24 +119,57 @@ sub line_stats {
- 	return (length($line), length($white));
- }
- 
-+sub sanitise_line {
-+	my ($line) = @_;
-+
-+	my $res = '';
-+	my $l = '';
-+
-+	my $quote = '';
-+
-+	foreach my $c (split(//, $line)) {
-+		if ($l ne "\\" && ($c eq "'" || $c eq '"')) {
-+			if ($quote eq '') {
-+				$quote = $c;
-+				$res .= $c;
-+				$l = $c;
-+				next;
-+			} elsif ($quote eq $c) {
-+				$quote = '';
-+			}
-+		}
-+		if ($quote && $c ne "\t") {
-+			$res .= "X";
-+		} else {
-+			$res .= $c;
-+		}
-+
-+		$l = $c;
-+	}
-+
-+	return $res;
-+}
-+
- sub ctx_block_get {
- 	my ($linenr, $remain, $outer) = @_;
- 	my $line;
- 	my $start = $linenr - 1;
--	my $end = $linenr - 1 + $remain;
- 	my $blk = '';
- 	my @o;
- 	my @c;
- 	my @res = ();
- 
--	for ($line = $start; $line < $end; $line++) {
--		$blk .= $lines[$line];
-+	for ($line = $start; $remain > 0; $line++) {
-+		next if ($rawlines[$line] =~ /^-/);
-+		$remain--;
-+
-+		$blk .= $rawlines[$line];
- 
- 		@o = ($blk =~ /\{/g);
- 		@c = ($blk =~ /\}/g);
- 
- 		if (!$outer || (scalar(@o) - scalar(@c)) == 1) {
--			push(@res, $lines[$line]);
-+			push(@res, $rawlines[$line]);
- 		}
- 
- 		last if (scalar(@o) == scalar(@c));
-@@ -158,7 +192,7 @@ sub ctx_locate_comment {
- 	my ($first_line, $end_line) = @_;
- 
- 	# Catch a comment on the end of the line itself.
--	my ($current_comment) = ($lines[$end_line - 1] =~ m@.*(/\*.*\*/)\s*$@);
-+	my ($current_comment) = ($rawlines[$end_line - 1] =~ m@.*(/\*.*\*/)\s*$@);
- 	return $current_comment if (defined $current_comment);
- 
- 	# Look through the context and try and figure out if there is a
-@@ -166,8 +200,8 @@ sub ctx_locate_comment {
- 	my $in_comment = 0;
- 	$current_comment = '';
- 	for (my $linenr = $first_line; $linenr < $end_line; $linenr++) {
--		my $line = $lines[$linenr - 1];
--		##warn "           $line\n";
-+		my $line = $rawlines[$linenr - 1];
-+		#warn "           $line\n";
- 		if ($linenr == $first_line and $line =~ m@^.\s*\*@) {
- 			$in_comment = 1;
- 		}
-@@ -190,7 +224,7 @@ sub ctx_has_comment {
- 	my ($first_line, $end_line) = @_;
- 	my $cmt = ctx_locate_comment($first_line, $end_line);
- 
--	##print "LINE: $lines[$end_line - 1 ]\n";
-+	##print "LINE: $rawlines[$end_line - 1 ]\n";
- 	##print "CMMT: $cmt\n";
- 
- 	return ($cmt ne '');
-@@ -205,10 +239,6 @@ sub cat_vet {
- 	return $vet;
- }
- 
--sub has_non_quoted {
--	return ($_[0] =~ m{$_[1]} and $_[0] !~ m{\".*$_[1].*\"});
--}
--
- sub process {
- 	my $filename = shift;
- 	my @lines = @_;
-@@ -240,6 +270,7 @@ sub process {
- #extract the filename as it passes
- 		if ($line=~/^\+\+\+\s+(\S+)/) {
- 			$realfile=$1;
-+			$realfile =~ s@^[^/]*/@@;
- 			$in_comment = 0;
- 			next;
- 		}
-@@ -262,7 +293,6 @@ sub process {
- # blank context lines so we need to count that too.
- 		if ($line =~ /^( |\+|$)/) {
- 			$realline++;
--			$realcnt-- if ($realcnt != 0);
- 
- 			# track any sort of multi-line comment.  Obviously if
- 			# the added text or context do not include the whole
-@@ -288,11 +318,13 @@ sub process {
- 			($prevline, $stashline) = ($stashline, $line);
- 			($previndent, $stashindent) = ($stashindent, $indent);
- 		}
-+		$realcnt-- if ($realcnt != 0);
- 
- #make up the handle for any error we report on this line
- 		$here = "#$linenr: ";
- 		$here .= "FILE: $realfile:$realline:" if ($realcnt != 0);
- 
-+		my $hereline = "$here\n$line\n";
- 		my $herecurr = "$here\n$line\n\n";
- 		my $hereprev = "$here\n$prevline\n$line\n\n";
- 
-@@ -315,21 +347,28 @@ sub process {
- 			}
- 		}
- 
--#ignore lines not being added
--		if ($line=~/^[^\+]/) {next;}
-+# Check for wrappage within a valid hunk of the file
-+		if ($realcnt != 0 && $line !~ m{^(?:\+|-| |$)}) {
-+			print "patch seems to be corrupt (line wrapped?) [$realcnt]\n";
-+			print "$herecurr";
-+			$clean = 0;
-+		}
-+
-+#ignore lines being removed
-+		if ($line=~/^-/) {next;}
- 
--# check we are in a valid source file *.[hcsS] if not then ignore this hunk
--		next if ($realfile !~ /\.[hcsS]$/);
-+# check we are in a valid source file if not then ignore this hunk
-+		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
- 
- #trailing whitespace
--		if ($line=~/\S\s+$/) {
-+		if ($line=~/\+.*\S\s+$/) {
- 			my $herevet = "$here\n" . cat_vet($line) . "\n\n";
- 			print "trailing whitespace\n";
- 			print "$herevet";
- 			$clean = 0;
- 		}
- #80 column limit
--		if (!($prevline=~/\/\*\*/) && $length > 80) {
-+		if ($line =~ /^\+/ && !($prevline=~/\/\*\*/) && $length > 80) {
- 			print "line over 80 characters\n";
- 			print "$herecurr";
- 			$clean = 0;
-@@ -353,19 +392,59 @@ sub process {
- 		#
- 		next if ($in_comment);
- 
-+		# Remove comments from the line before processing.
-+		$line =~ s@/\*.*\*/@@g;
-+		$line =~ s@/\*.*@@;
-+		$line =~ s@.*\*/@@;
-+
-+		#
-+		# Checks which may be anchored in the context.
-+		#
-+
-+		# Check for switch () and associated case and default
-+		# statements should be at the same indent.
-+		if ($line=~/\bswitch\s*\(.*\)/) {
-+			my $err = '';
-+			my $sep = '';
-+			my @ctx = ctx_block_outer($linenr, $realcnt);
-+			shift(@ctx);
-+			for my $ctx (@ctx) {
-+				my ($clen, $cindent) = line_stats($ctx);
-+				if ($ctx =~ /^\+\s*(case\s+|default:)/ &&
-+							$indent != $cindent) {
-+					$err .= "$sep$ctx\n";
-+					$sep = '';
-+				} else {
-+					$sep = "[...]\n";
-+				}
-+			}
-+			if ($err ne '') {
-+				print "switch and case should be at the same indent\n";
-+				print "$here\n$line\n$err\n";
-+				$clean = 0;
-+			}
-+		}
-+
-+#ignore lines not being added
-+		if ($line=~/^[^\+]/) {next;}
-+
-+		#
-+		# Checks which are anchored on the added line.
-+		#
-+
- # no C99 // comments
--		if (has_non_quoted($line, '//')) {
-+		if ($line =~ m{//}) {
- 			print "do not use C99 // comments\n";
- 			print "$herecurr";
- 			$clean = 0;
- 		}
--
--		# Remove comments from the line before processing.
--		$line =~ s@/\*.*\*/@@g;
--		$line =~ s@/\*.*@@;
--		$line =~ s@.*\*/@@;
-+		# Remove C99 comments.
- 		$line =~ s@//.*@@;
- 
-+		# Standardise the strings and chars within the input
-+		# to simplify matching.
-+		$line = sanitise_line($line);
-+
- #EXPORT_SYMBOL should immediately follow its function closing }.
- 		if (($line =~ /EXPORT_SYMBOL.*\(.*\)/) ||
- 		    ($line =~ /EXPORT_UNUSED_SYMBOL.*\(.*\)/)) {
-@@ -393,8 +472,28 @@ sub process {
- 		}
- 
- # * goes on variable not on type
--		if ($line=~/[A-Za-z\d_]+\* [A-Za-z\d_]+/) {
--			print "\"foo* bar\" should be \"foo *bar\"\n";
-+		my $type = '(?:char|short|int|long|unsigned|float|double|' .
-+			   'struct\s+[A-Za-z\d_]+|' .
-+			   'union\s+[A-Za-z\d_]+)';
-+
-+		if ($line =~ m{[A-Za-z\d_]+(\*+) [A-Za-z\d_]+}) {
-+			print "\"foo$1 bar\" should be \"foo $1bar\"\n";
-+			print "$herecurr";
-+			$clean = 0;
-+		}
-+		if ($line =~ m{$type (\*) [A-Za-z\d_]+} ||
-+		    $line =~ m{[A-Za-z\d_]+ (\*\*+) [A-Za-z\d_]+}) {
-+			print "\"foo $1 bar\" should be \"foo $1bar\"\n";
-+			print "$herecurr";
-+			$clean = 0;
-+		}
-+		if ($line =~ m{\([A-Za-z\d_\s]+[A-Za-z\d_](\*+)\)}) {
-+			print "\"(foo$1)\" should be \"(foo $1)\"\n";
-+			print "$herecurr";
-+			$clean = 0;
-+		}
-+		if ($line =~ m{\([A-Za-z\d_\s]+[A-Za-z\d_]\s+(\*+)\s+\)}) {
-+			print "\"(foo $1 )\" should be \"(foo $1)\"\n";
- 			print "$herecurr";
- 			$clean = 0;
- 		}
-@@ -406,11 +505,29 @@ sub process {
- # 			$clean = 0;
- # 		}
- 
--# printk should use KERN_* levels
-+# printk should use KERN_* levels.  Note that follow on printk's on the
-+# same line do not need a level, so we use the current block context
-+# to try and find and validate the current printk.  In summary the current
-+# printk includes all preceeding printk's which have no newline on the end.
-+# we assume the first bad printk is the one to report.
- 		if ($line =~ /\bprintk\((?!KERN_)/) {
--			print "printk() should include KERN_ facility level\n";
--			print "$herecurr";
--			$clean = 0;
-+			my $ok = 0;
-+			for (my $ln = $linenr - 1; $ln >= $first_line; $ln--) {
-+				#print "CHECK<$lines[$ln - 1]\n";
-+				# we have a preceeding printk if it ends
-+				# with "\n" ignore it, else it is to blame
-+				if ($lines[$ln - 1] =~ m{\bprintk\(}) {
-+					if ($rawlines[$ln - 1] !~ m{\\n"}) {
-+						$ok = 1;
-+					}
-+					last;
-+				}
-+			}
-+			if ($ok == 0) {
-+				print "printk() should include KERN_ facility level\n";
-+				print "$herecurr";
-+				$clean = 0;
-+			}
- 		}
- 
- #function brace can't be on same line, except for #defines of do while, or if closed on same line
-@@ -425,11 +542,11 @@ sub process {
- 		# will therefore also expand that way.
- 		my $opline = $line;
- 		$opline = expand_tabs($opline);
--		$opline =~ s/^.//;
-+		$opline =~ s/^./ /;
- 		if (!($line=~/\#\s*include/)) {
- 			# Check operator spacing.
- 			my @elements = split(/(<<=|>>=|<=|>=|==|!=|\+=|-=|\*=|\/=|%=|\^=|\|=|&=|->|<<|>>|<|>|=|!|~|&&|\|\||,|\^|\+\+|--|;|&|\||\+|-|\*|\/\/|\/)/, $opline);
--			my $off = 1;
-+			my $off = 0;
- 			for (my $n = 0; $n < $#elements; $n += 2) {
- 				$off += length($elements[$n]);
- 
-@@ -452,16 +569,21 @@ sub process {
- 					$c = 'E';
- 				}
- 
-+				# Pick up the preceeding and succeeding characters.
-+				my $ca = substr($opline, $off - 1, 1);
-+				my $cc = '';
-+				if (length($opline) > ($off + length($elements[$n]))) {
-+					$cc = substr($opline, $off + 1 + length($elements[$n]), 1);
-+				}
-+
- 				my $ctx = "${a}x${c}";
- 
- 				my $at = "(ctx:$ctx)";
- 
- 				my $ptr = (" " x $off) . "^";
--				my $hereptr = "$here\n$line\n$ptr\n\n";
-+				my $hereptr = "$hereline$ptr\n\n";
- 
- 				##print "<$s1:$op:$s2> <$elements[$n]:$elements[$n + 1]:$elements[$n + 2]>\n";
--				# Skip things apparently in quotes.
--				next if ($line=~/\".*\Q$op\E.*\"/ or $line=~/\'\Q$op\E\'/);
- 
- 				# We need ; as an operator.  // is a comment.
- 				if ($op eq ';' or $op eq '//') {
-@@ -515,20 +637,26 @@ sub process {
- 				#
- 				# - is the same
- 				#
--				# * is the same only adding:
--				# type:
--				# 	(foo *)
--				#	(foo **)
--				#
- 				} elsif ($op eq '&' or $op eq '-') {
--					if ($ctx !~ /VxV|[EWB]x[WE]|[EWB]x[VO]/) {
-+					if ($ctx !~ /VxV|[EW]x[WE]|[EWB]x[VO]/) {
- 						print "need space before that '$op' $at\n";
- 						print "$hereptr";
- 						$clean = 0;
- 					}
- 
-+				# * is the same as & only adding:
-+				# type:
-+				# 	(foo *)
-+				#	(foo **)
-+				#
- 				} elsif ($op eq '*') {
--					if ($ctx !~ /VxV|[EWB]x[WE]|[EWB]x[VO]|[EWO]x[OBV]/) {
-+					if ($ca eq '*') {
-+						if ($cc =~ /\s/) {
-+							print "no space after that '$op' $at\n";
-+							print "$hereptr";
-+							$clean = 0;
-+						}
-+					} elsif ($ctx !~ /VxV|[EW]x[WE]|[EWB]x[VO]|OxV|WxB/) {
- 						print "need space before that '$op' $at\n";
- 						print "$hereptr";
- 						$clean = 0;
-@@ -578,6 +706,7 @@ sub process {
- 
- # Check for illegal assignment in if conditional.
- 		if ($line=~/\b(if|while)\s*\(.*[^<>!=]=[^=].*\)/) {
-+			#next if ($line=~/\".*\Q$op\E.*\"/ or $line=~/\'\Q$op\E\'/);
- 			print "do not use assignment in condition\n";
- 			print "$herecurr";
- 			$clean = 0;
-@@ -592,30 +721,6 @@ sub process {
- 			$clean = 0;
- 		}
- 
--		# Check for switch () and associated case and default
--		# statements should be at the same indent.
--		if ($line=~/\bswitch\s*\(.*\)/) {
--			my $err = '';
--			my $sep = '';
--			my @ctx = ctx_block_outer($linenr, $realcnt);
--			shift(@ctx);
--			for my $ctx (@ctx) {
--				my ($clen, $cindent) = line_stats($ctx);
--				if ($ctx =~ /\s*(case\s+|default:)/ &&
--							$indent != $cindent) {
--					$err .= "$sep$ctx\n";
--					$sep = '';
--				} else {
--					$sep = "[...]\n";
--				}
--			}
--			if ($err ne '') {
--				print "switch and case should be at the same indent\n";
--				print "$here\n$line\n$err\n";
--				$clean = 0;
--			}
--		}
--
- #studly caps, commented out until figure out how to distinguish between use of existing and adding new
- #		if (($line=~/[\w_][a-z\d]+[A-Z]/) and !($line=~/print/)) {
- #		    print "No studly caps, use _\n";
-@@ -645,12 +750,12 @@ sub process {
- 			my @opened = $prevline=~/\(/g;
- 			my @closed = $prevline=~/\)/g;
- 			my $nr_line = $linenr;
--			my $remaining = $realcnt;
-+			my $remaining = $realcnt - 1;
- 			my $next_line = $line;
- 			my $extra_lines = 0;
- 			my $display_segment = $prevline;
- 
--			while ($remaining > 1 && scalar @opened > scalar @closed) {
-+			while ($remaining > 0 && scalar @opened > scalar @closed) {
- 				$prevline .= $next_line;
- 				$display_segment .= "\n" . $next_line;
- 				$next_line = $lines[$nr_line];
-@@ -689,7 +794,7 @@ sub process {
- 
- # don't use deprecated functions
- 		for my $func (@dep_functions) {
--			if (has_non_quoted($line, '\b' . $func . '\b')) {
-+			if ($line =~ /\b$func\b/) {
- 				print "Don't use $func(): see Documentation/feature-removal-schedule.txt\n";
- 				print "$herecurr";
- 				$clean = 0;
-@@ -697,19 +802,26 @@ sub process {
- 		}
- 
- # no volatiles please
-- 		if (has_non_quoted($line, '\bvolatile\b')) {
-+		if ($line =~ /\bvolatile\b/ && $line !~ /\basm\s+volatile\b/) {
- 			print "Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt\n";
- 			print "$herecurr";
- 			$clean = 0;
- 		}
- 
--# warn about #ifdefs in C files
--		if ($line =~ /^.#\s*if(|n)def/ && ($realfile =~ /\.c$/)) {
--			print "#ifdef in C files should be avoided\n";
-+# warn about #if 0
-+		if ($line =~ /^.#\s*if\s+0\b/) {
-+			print "#if 0 -- if this code redundant remove it\n";
- 			print "$herecurr";
- 			$clean = 0;
- 		}
- 
-+# warn about #ifdefs in C files
-+#		if ($line =~ /^.#\s*if(|n)def/ && ($realfile =~ /\.c$/)) {
-+#			print "#ifdef in C files should be avoided\n";
-+#			print "$herecurr";
-+#			$clean = 0;
-+#		}
-+
- # check for spinlock_t definitions without a comment.
- 		if ($line =~ /^.\s*(struct\s+mutex|spinlock_t)\s+\S+;/) {
- 			my $which = $1;
