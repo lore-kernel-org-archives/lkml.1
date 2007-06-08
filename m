@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938490AbXFHHzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939862AbXFHH4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938490AbXFHHzm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938166AbXFHHZY
+	id S939862AbXFHH4k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967094AbXFHHZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:25:24 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55359 "EHLO
+	Fri, 8 Jun 2007 03:25:31 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55372 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938416AbXFHHZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:25:18 -0400
-Message-Id: <20070608072201.219042000@sous-sol.org>
+	id S938042AbXFHHZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:25:28 -0400
+Message-Id: <20070608072150.486289000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:46 -0700
+Date: Fri, 08 Jun 2007 00:21:35 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,265 +23,45 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Drake <dsd@gentoo.org>, John W Linville <linville@tuxdriver.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 19/54] zd1211rw: Add AL2230S RF support
-Content-Disposition: inline; filename=zd1211rw-add-al2230s-rf-support.patch
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Gautham R Shenoy <ego@in.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 08/54] make freezeable workqueues singlethread
+Content-Disposition: inline; filename=make-freezeable-workqueues-singlethread.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Daniel Drake <dsd@gentoo.org>
+From: Oleg Nesterov <oleg@tv-sign.ru>
 
-ZD1211 appears to be back in production: a number of new devices have
-been appearing! Some of them are using new radios.
+It is a known fact that freezeable multithreaded workqueues doesn't like
+CPU_DEAD. We keep them only for the incoming CPU-hotplug rework.
 
-This patch adds support for the next generation AL2230 RF chip which has
-been spotted in a few new devices.
+Sadly, we can't just kill create_freezeable_workqueue() right now, make
+them singlethread.
 
-[As this patch was too late for 2.6.21, the kernel was modified to reject
-AL2230S devices because for me and others, the devices silently failed (and
-this looked like a driver bug). After doing so, a few people reported that
-AL2230S devices were working correctly for them even before AL2230S support was
-present. I'd like to propose that we fix both situations by backporting
-the AL2230S support into 2.6.21-stable]
-
-Signed-off-by: Daniel Drake <dsd@gentoo.org>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Gautham R Shenoy <ego@in.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/wireless/zd1211rw/zd_chip.c      |    5 -
- drivers/net/wireless/zd1211rw/zd_rf.c        |    2 
- drivers/net/wireless/zd1211rw/zd_rf.h        |    2 
- drivers/net/wireless/zd1211rw/zd_rf_al2230.c |   89 ++++++++++++++++++++++-----
- 4 files changed, 78 insertions(+), 20 deletions(-)
+ include/linux/workqueue.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.21.4.orig/drivers/net/wireless/zd1211rw/zd_chip.c
-+++ linux-2.6.21.4/drivers/net/wireless/zd1211rw/zd_chip.c
-@@ -67,11 +67,12 @@ static int scnprint_id(struct zd_chip *c
- 	i += scnprint_mac_oui(chip->e2p_mac, buffer+i, size-i);
- 	i += scnprintf(buffer+i, size-i, " ");
- 	i += zd_rf_scnprint_id(&chip->rf, buffer+i, size-i);
--	i += scnprintf(buffer+i, size-i, " pa%1x %c%c%c%c", chip->pa_type,
-+	i += scnprintf(buffer+i, size-i, " pa%1x %c%c%c%c%c", chip->pa_type,
- 		chip->patch_cck_gain ? 'g' : '-',
- 		chip->patch_cr157 ? '7' : '-',
- 		chip->patch_6m_band_edge ? '6' : '-',
--		chip->new_phy_layout ? 'N' : '-');
-+		chip->new_phy_layout ? 'N' : '-',
-+		chip->al2230s_bit ? 'S' : '-');
- 	return i;
- }
+--- linux-2.6.21.4.orig/include/linux/workqueue.h
++++ linux-2.6.21.4/include/linux/workqueue.h
+@@ -162,7 +162,7 @@ extern struct workqueue_struct *__create
+ 						    int singlethread,
+ 						    int freezeable);
+ #define create_workqueue(name) __create_workqueue((name), 0, 0)
+-#define create_freezeable_workqueue(name) __create_workqueue((name), 0, 1)
++#define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
+ #define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0)
  
---- linux-2.6.21.4.orig/drivers/net/wireless/zd1211rw/zd_rf.c
-+++ linux-2.6.21.4/drivers/net/wireless/zd1211rw/zd_rf.c
-@@ -34,7 +34,7 @@ static const char *rfs[] = {
- 	[AL2210_RF]	= "AL2210_RF",
- 	[MAXIM_NEW_RF]	= "MAXIM_NEW_RF",
- 	[UW2453_RF]	= "UW2453_RF",
--	[AL2230S_RF]	= "AL2230S_RF",
-+	[UNKNOWN_A_RF]	= "UNKNOWN_A_RF",
- 	[RALINK_RF]	= "RALINK_RF",
- 	[INTERSIL_RF]	= "INTERSIL_RF",
- 	[RF2959_RF]	= "RF2959_RF",
---- linux-2.6.21.4.orig/drivers/net/wireless/zd1211rw/zd_rf.h
-+++ linux-2.6.21.4/drivers/net/wireless/zd1211rw/zd_rf.h
-@@ -26,7 +26,7 @@
- #define AL2210_RF			0x7
- #define MAXIM_NEW_RF			0x8
- #define UW2453_RF			0x9
--#define AL2230S_RF			0xa
-+#define UNKNOWN_A_RF			0xa
- #define RALINK_RF			0xb
- #define INTERSIL_RF			0xc
- #define RF2959_RF			0xd
---- linux-2.6.21.4.orig/drivers/net/wireless/zd1211rw/zd_rf_al2230.c
-+++ linux-2.6.21.4/drivers/net/wireless/zd1211rw/zd_rf_al2230.c
-@@ -59,6 +59,18 @@ static const struct zd_ioreq16 zd1211b_i
- 	{ CR240, 0x57 }, { CR9,   0xe0 },
- };
- 
-+static const struct zd_ioreq16 ioreqs_init_al2230s[] = {
-+	{ CR47,   0x1e }, /* MARK_002 */
-+	{ CR106,  0x22 },
-+	{ CR107,  0x2a }, /* MARK_002 */
-+	{ CR109,  0x13 }, /* MARK_002 */
-+	{ CR118,  0xf8 }, /* MARK_002 */
-+	{ CR119,  0x12 }, { CR122,  0xe0 },
-+	{ CR128,  0x10 }, /* MARK_001 from 0xe->0x10 */
-+	{ CR129,  0x0e }, /* MARK_001 from 0xd->0x0e */
-+	{ CR130,  0x10 }, /* MARK_001 from 0xb->0x0d */
-+};
-+
- static int zd1211b_al2230_finalize_rf(struct zd_chip *chip)
- {
- 	int r;
-@@ -90,7 +102,7 @@ static int zd1211_al2230_init_hw(struct 
- 	int r;
- 	struct zd_chip *chip = zd_rf_to_chip(rf);
- 
--	static const struct zd_ioreq16 ioreqs[] = {
-+	static const struct zd_ioreq16 ioreqs_init[] = {
- 		{ CR15,   0x20 }, { CR23,   0x40 }, { CR24,  0x20 },
- 		{ CR26,   0x11 }, { CR28,   0x3e }, { CR29,  0x00 },
- 		{ CR44,   0x33 }, { CR106,  0x2a }, { CR107, 0x1a },
-@@ -117,10 +129,9 @@ static int zd1211_al2230_init_hw(struct 
- 		{ CR119,  0x10 }, { CR120,  0x4f }, { CR121, 0x77 },
- 		{ CR122,  0xe0 }, { CR137,  0x88 }, { CR252, 0xff },
- 		{ CR253,  0xff },
-+	};
- 
--		/* These following happen separately in the vendor driver */
--		{ },
--
-+	static const struct zd_ioreq16 ioreqs_pll[] = {
- 		/* shdnb(PLL_ON)=0 */
- 		{ CR251,  0x2f },
- 		/* shdnb(PLL_ON)=1 */
-@@ -128,7 +139,7 @@ static int zd1211_al2230_init_hw(struct 
- 		{ CR138,  0x28 }, { CR203,  0x06 },
- 	};
- 
--	static const u32 rv[] = {
-+	static const u32 rv1[] = {
- 		/* Channel 1 */
- 		0x03f790,
- 		0x033331,
-@@ -137,6 +148,9 @@ static int zd1211_al2230_init_hw(struct 
- 		0x0b3331,
- 		0x03b812,
- 		0x00fff3,
-+	};
-+
-+	static const u32 rv2[] = {
- 		0x000da4,
- 		0x0f4dc5, /* fix freq shift, 0x04edc5 */
- 		0x0805b6,
-@@ -148,8 +162,9 @@ static int zd1211_al2230_init_hw(struct 
- 		0x0bdffc,
- 		0x00000d,
- 		0x00500f,
-+	};
- 
--		/* These writes happen separately in the vendor driver */
-+	static const u32 rv3[] = {
- 		0x00d00f,
- 		0x004c0f,
- 		0x00540f,
-@@ -157,11 +172,38 @@ static int zd1211_al2230_init_hw(struct 
- 		0x00500f,
- 	};
- 
--	r = zd_iowrite16a_locked(chip, ioreqs, ARRAY_SIZE(ioreqs));
-+	r = zd_iowrite16a_locked(chip, ioreqs_init, ARRAY_SIZE(ioreqs_init));
- 	if (r)
- 		return r;
- 
--	r = zd_rfwritev_locked(chip, rv, ARRAY_SIZE(rv), RF_RV_BITS);
-+	if (chip->al2230s_bit) {
-+		r = zd_iowrite16a_locked(chip, ioreqs_init_al2230s,
-+			ARRAY_SIZE(ioreqs_init_al2230s));
-+		if (r)
-+			return r;
-+	}
-+
-+	r = zd_rfwritev_locked(chip, rv1, ARRAY_SIZE(rv1), RF_RV_BITS);
-+	if (r)
-+		return r;
-+
-+	/* improve band edge for AL2230S */
-+	if (chip->al2230s_bit)
-+		r = zd_rfwrite_locked(chip, 0x000824, RF_RV_BITS);
-+	else
-+		r = zd_rfwrite_locked(chip, 0x0005a4, RF_RV_BITS);
-+	if (r)
-+		return r;
-+
-+	r = zd_rfwritev_locked(chip, rv2, ARRAY_SIZE(rv2), RF_RV_BITS);
-+	if (r)
-+		return r;
-+
-+	r = zd_iowrite16a_locked(chip, ioreqs_pll, ARRAY_SIZE(ioreqs_pll));
-+	if (r)
-+		return r;
-+
-+	r = zd_rfwritev_locked(chip, rv3, ARRAY_SIZE(rv3), RF_RV_BITS);
- 	if (r)
- 		return r;
- 
-@@ -227,7 +269,9 @@ static int zd1211b_al2230_init_hw(struct
- 		0x481dc0,
- 		0xcfff00,
- 		0x25a000,
-+	};
- 
-+	static const u32 rv2[] = {
- 		/* To improve AL2230 yield, improve phase noise, 4713 */
- 		0x25a000,
- 		0xa3b2f0,
-@@ -250,7 +294,7 @@ static int zd1211b_al2230_init_hw(struct
- 		{ CR251, 0x7f }, /* shdnb(PLL_ON)=1 */
- 	};
- 
--	static const u32 rv2[] = {
-+	static const u32 rv3[] = {
- 		/* To improve AL2230 yield, 4713 */
- 		0xf01b00,
- 		0xf01e00,
-@@ -269,18 +313,37 @@ static int zd1211b_al2230_init_hw(struct
- 	r = zd_iowrite16a_locked(chip, ioreqs1, ARRAY_SIZE(ioreqs1));
- 	if (r)
- 		return r;
-+
-+	if (chip->al2230s_bit) {
-+		r = zd_iowrite16a_locked(chip, ioreqs_init_al2230s,
-+			ARRAY_SIZE(ioreqs_init_al2230s));
-+		if (r)
-+			return r;
-+	}
-+
- 	r = zd_rfwritev_cr_locked(chip, zd1211b_al2230_table[0], 3);
- 	if (r)
- 		return r;
- 	r = zd_rfwritev_cr_locked(chip, rv1, ARRAY_SIZE(rv1));
- 	if (r)
- 		return r;
--	r = zd_iowrite16a_locked(chip, ioreqs2, ARRAY_SIZE(ioreqs2));
-+
-+	if (chip->al2230s_bit)
-+		r = zd_rfwrite_locked(chip, 0x241000, RF_RV_BITS);
-+	else
-+		r = zd_rfwrite_locked(chip, 0x25a000, RF_RV_BITS);
- 	if (r)
- 		return r;
-+
- 	r = zd_rfwritev_cr_locked(chip, rv2, ARRAY_SIZE(rv2));
- 	if (r)
- 		return r;
-+	r = zd_iowrite16a_locked(chip, ioreqs2, ARRAY_SIZE(ioreqs2));
-+	if (r)
-+		return r;
-+	r = zd_rfwritev_cr_locked(chip, rv3, ARRAY_SIZE(rv3));
-+	if (r)
-+		return r;
- 	r = zd_iowrite16a_locked(chip, ioreqs3, ARRAY_SIZE(ioreqs3));
- 	if (r)
- 		return r;
-@@ -358,12 +421,6 @@ int zd_rf_init_al2230(struct zd_rf *rf)
- {
- 	struct zd_chip *chip = zd_rf_to_chip(rf);
- 
--	if (chip->al2230s_bit) {
--		dev_err(zd_chip_dev(chip), "AL2230S devices are not yet "
--			"supported by this driver.\n");
--		return -ENODEV;
--	}
--
- 	rf->switch_radio_off = al2230_switch_radio_off;
- 	if (chip->is_zd1211b) {
- 		rf->init_hw = zd1211b_al2230_init_hw;
+ extern void destroy_workqueue(struct workqueue_struct *wq);
 
 -- 
