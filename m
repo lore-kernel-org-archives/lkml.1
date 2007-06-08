@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967298AbXFHAbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966960AbXFHAuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967298AbXFHAbj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 20:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967192AbXFHAal
+	id S966960AbXFHAuR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 20:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966210AbXFHAuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 20:30:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50880 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967170AbXFHAai (ORCPT
+	Thu, 7 Jun 2007 20:50:04 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:53988 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966108AbXFHAuC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 20:30:38 -0400
-Date: Fri, 8 Jun 2007 09:31:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, clameter@sgi.com,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Matt Mackall <mpm@selenic.com>, David Rientjes <rientjes@google.com>
-Subject: Re: 2.6.22-rc4-mm1
-Message-Id: <20070608093113.4691644b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070607083458.a3fc7737.akpm@linux-foundation.org>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-	<20070607214706.3efc5870.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070607083458.a3fc7737.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jun 2007 20:50:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=gy49xK7lWGpXN8a2ZBkdIK2rXPwlhIeTaWu1PmKmNjFKPh1osAJDBHrl1op2YkdWBqIDHLAclJxwdVSL0zhkjNIvoa3zG46DMnwmkQifv2zryE6Eg2xNk6b5lrDl3+pNmUNPjpF7ITmMAVMtHNtseajbEDdpOlOLlgC+Q9Mkbqg=
+Message-ID: <6934efce0706071750w66bad0d5u22b5c6eb15401a31@mail.gmail.com>
+Date: Thu, 7 Jun 2007 17:50:01 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: get_xip_page() uncertainity
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jun 2007 08:34:58 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> I assume the above is your code - it's not in the tree?
-> 
-Ah, that code was disappeared in -mm2. 
+I am trying to create valid "struct page* (*get_xip_page)(struct
+address_space *, sector_t, int)" to use the filemap_xip.c.
 
-But it informed me that I should consider memory unplug v.s. sys_mremap case... 
+I've been trying to do it as follows:
 
-Thanks, anyway.
+virtual = ioremap(physical,size);
 
--Kame
+struct page* my_get_xip_page(struct address_space *mapping, sector_t
+sector, int create)
+{
+  unsigned long offset;
+  /*extract offset from mapping and sector*/
+  return virt_to_page(virtual + offset);
+}
 
+I believe this to be fundamentally flawed.  While this works for
+xip_file_read(), it does not work for xip_file_mmap().  I'm not sure I
+understand the correct way to do this.  But I assume the problem, and
+have some evidence to support it, is that virt_to_page() is not
+returning a vaild page struct.
+
+How can I get a valid page struct?  The memory is not RAM but Flash.
+It is addressable like RAM and I want userspace to use it like
+readonly RAM.
