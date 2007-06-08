@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031271AbXFHS3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970661AbXFHS3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031271AbXFHS3U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 14:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764732AbXFHS3N
+	id S970661AbXFHS3t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 14:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764732AbXFHS3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 14:29:13 -0400
-Received: from mga01.intel.com ([192.55.52.88]:3785 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762870AbXFHS3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 14:29:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,400,1175497200"; 
-   d="scan'208";a="254837285"
-Date: Fri, 8 Jun 2007 11:25:27 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: anil.s.keshavamurthy@intel.com, linux-kernel@vger.kernel.org, ak@suse.de,
-       gregkh@suse.de, muli@il.ibm.com, asit.k.mallick@intel.com,
-       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
-       shaohua.li@intel.com, davem@davemloft.net
-Subject: Re: [Intel-IOMMU 05/10] IOVA allocation and management routines
-Message-ID: <20070608182526.GB24865@linux-os.sc.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <20070606190042.741931000@askeshav-devel.jf.intel.com> <20070607163417.84f96405.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Fri, 8 Jun 2007 14:29:35 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:37538 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S969542AbXFHS3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 14:29:34 -0400
+Date: Fri, 8 Jun 2007 11:29:17 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, Stefan Lippers-Hollmann <s.L-H@gmx.de>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       AACRAID <aacraid@adaptec.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] [patch 37/54] SCSI: aacraid: Correct sa
+	platformsupport. (Was: [Bug 8469] Bad EIP value on pentium3
+	SMPkernel-2.6.21.1)
+Message-ID: <20070608182917.GI3723@sequoia.sous-sol.org>
+References: <20070608174545.GZ3723@sequoia.sous-sol.org> <AE4F746F2AECFC4DA4AADD66A1DFEF01AB8567@otce2k301.adaptec.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070607163417.84f96405.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01AB8567@otce2k301.adaptec.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 04:34:17PM -0700, Andrew Morton wrote:
-> On Wed, 06 Jun 2007 11:57:03 -0700
-> anil.s.keshavamurthy@intel.com wrote:
-> 
-> > +
-> > +#define PAGE_SHIFT_4K		(12)
-> > +#define PAGE_SIZE_4K		(1UL << PAGE_SHIFT_4K)
-> > +#define PAGE_MASK_4K		(((u64)-1) << PAGE_SHIFT_4K)
-> > +#define PAGE_ALIGN_4K(addr)	(((addr) + PAGE_SIZE_4K - 1) & PAGE_MASK_4K)
-> 
-> hm.  We can't use the architecture's PAGE_SHIFT and friends here?
-I will see how I can get rid of this.
+* Salyzyn, Mark (mark_salyzyn@adaptec.com) wrote:
+> Yes, split the patch into the two pieces for 2.6.21.1/2.6.21.4
 
--Anil
+Sorry, didn't parse.  Are you suggesting to use the patch I included
+(which simply drops the ->adapter_restart init), or the original patch
+plus Mark Havercamp's patch to add ->adapter_restart?
+
+thanks,
+-chris
