@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938952AbXFHTVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939390AbXFHTVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938952AbXFHTVY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbXFHTVR
+	id S939390AbXFHTVy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbXFHTVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:21:17 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:42217
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750795AbXFHTVQ (ORCPT
+	Fri, 8 Jun 2007 15:21:43 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1499 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbXFHTVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:21:16 -0400
-Subject: Re: [Bug 8473] New: Oops: 0010 [1] SMP
-From: Paul Fulghum <paulkf@microgate.com>
-To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Nicolas Mailhot <nicolas.mailhot@laposte.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <1181315809.4811.5.camel@x2.microgate.com>
-References: <200705132102.l4DL2onF003014@fire-2.osdl.org>
-	 <20070513154718.bb338ceb.akpm@linux-foundation.org>
-	 <1179098742.7322.5.camel@rousalka.dyndns.org>
-	 <1179396003.31796.4.camel@rousalka.dyndns.org>
-	 <20070517094557.c96f7e54.randy.dunlap@oracle.com>
-	 <1179421196.5000.5.camel@rousalka.dyndns.org>
-	 <1180206615.3430.8.camel@rousalka.dyndns.org>
-	 <20070608030629.GA18493@atjola.homenet>
-	 <1181315809.4811.5.camel@x2.microgate.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 08 Jun 2007 14:20:48 -0500
-Message-Id: <1181330448.5365.7.camel@amdx2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
-Content-Transfer-Encoding: 8bit
+	Fri, 8 Jun 2007 15:21:42 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 8 Jun 2007 12:21:36 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Ulrich Drepper <drepper@redhat.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com>
+References: <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
+ <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
+ <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
+ <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
+ <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
+ <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com>
+ <20070608184650.GA4095@ftp.linux.org.uk> <4669A674.4080309@redhat.com>
+ <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-08 at 10:16 -0500, Paul Fulghum wrote:
-> On Fri, 2007-06-08 at 05:06 +0200, Björn Steinbrink wrote:
-> > This is do_tty_hangup() exchanging the fops while we're waiting for the
-> > lock. The new fops (hung_up_tty_fops) only have the unlocked variant and
-> > thus we Oops our way.
-...
-> Here is a patch that restores the locked ioctl for hung_up_tty_ioctl.
-> Can you try it and see if it removes your oops?
+On Fri, 8 Jun 2007, Linus Torvalds wrote:
 
-Unfortunately I can't get the timing right to trigger this,
-but it is very clear the locked ioctl fop must not be
-allowed to disappear like my original patch allows.
+> On Fri, 8 Jun 2007, Ulrich Drepper wrote:
+> > 
+> > We are talking about file descriptors here.  If you're using file
+> > descriptors as anything other than tokens you'll find out soon enough
+> > that your code is broken.  The new type of file descriptors cannot be
+> > used as indeces and the randomization makes sure that no program by some
+> > fluke happens to work.
+> 
+> No, Uli.
+> 
+> You need things to be *repeatable* for debugging. No ifs, buts, or maybes 
+> about it.
 
-Andrew:
+It all depends on how you use the file descriptor. If you see a file 
+descriptor as an opaque handle (like it should be, really), that is simply 
+passed to the OS to use services exposed by the handle, you will be fine 
+independently from the values handed out by the OS. It was for the exactly 
+this guarantee that created the problems, with ppl relying on it for 
+indexing table, closing all files < NR_FILE and so on.
 
-Would you prefer I resend the entire compat ioctl patch or
-submit an incremental patch like in my message I'm quoting above?
 
--- 
-Paul Fulghum
-Microgate Systems, Ltd
+
+- Davide
+
 
