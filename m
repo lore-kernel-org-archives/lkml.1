@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031954AbXFHTpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032006AbXFHTpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031954AbXFHTpD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031801AbXFHToa
+	id S1032006AbXFHTpe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031862AbXFHTok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:44:30 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:39135 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031793AbXFHTo2 (ORCPT
+	Fri, 8 Jun 2007 15:44:40 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41745 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031845AbXFHToi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:44:28 -0400
-Subject: Re: [PATCH RT] convert RCU Preempt tasklet into softirq.
-From: Steven Rostedt <rostedt@goodmis.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       RT <linux-rt-users@vger.kernel.org>
-In-Reply-To: <20070608193655.GA18399@linux.vnet.ibm.com>
-References: <1181180051.18444.31.camel@localhost.localdomain>
-	 <20070607041411.GB1783@linux.vnet.ibm.com>
-	 <1181226138.18444.54.camel@localhost.localdomain>
-	 <20070607161754.GA11941@linux.vnet.ibm.com>
-	 <1181240819.10408.14.camel@localhost.localdomain>
-	 <20070607210247.GA9390@linux.vnet.ibm.com>
-	 <1181316428.10408.30.camel@localhost.localdomain>
-	 <20070608193655.GA18399@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Fri, 08 Jun 2007 15:43:48 -0400
-Message-Id: <1181331828.10408.34.camel@localhost.localdomain>
+	Fri, 8 Jun 2007 15:44:38 -0400
+Date: Fri, 8 Jun 2007 20:48:36 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Ulrich Drepper <drepper@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+Message-ID: <20070608204836.5adaefa7@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0706081229030.5795@alien.or.mcafeemobile.com>
+References: <466741BD.20106@redhat.com>
+	<20070607110432.73be7960@the-village.bc.nu>
+	<B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com>
+	<20070607151243.22caab9e.dada1@cosmosbay.com>
+	<Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
+	<466864F8.2050903@cosmosbay.com>
+	<46686810.6030805@redhat.com>
+	<Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
+	<466880A4.3090908@redhat.com>
+	<Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
+	<20070608120746.GD12687@thunk.org>
+	<20070608140150.6f31672f@the-village.bc.nu>
+	<Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
+	<20070608192652.4a291901@the-village.bc.nu>
+	<4669A351.4010403@redhat.com>
+	<20070608203007.3c50eb66@the-village.bc.nu>
+	<Pine.LNX.4.64.0706081229030.5795@alien.or.mcafeemobile.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-08 at 12:36 -0700, Paul E. McKenney wrote:
-> On Fri, Jun 08, 2007 at 11:27:08AM -0400, Steven Rostedt wrote:
-
-> > The first time I compiled it, I forgot the ';' and got a warning there.
-> > But the warning also included "declaring structure softirq_action in
-> > prototype", so I fixed both the ';' and added the struct. I can try
-> > compile without it. But I also know that adding #include <interrupt.h>
-> > in rcupreempt.h caused issues too.
+> So, what do you plan to do? Those handle won't be zero-based. Your 
+> "working" system I immagine will do:
 > 
-> If I leave out both the "struct softirq_action" and the
-> rcu_process_callbacks() declaration,, it compiles for me.
+> 	bleeh[handle - BASE].duh = ...;
 > 
-> So I guess the rcu_process_callbacks() should be declared static...
+> How nice for a working system. If you *store* the handle returned by the 
+> OS, and you *use* the handle to call for OS services, you will be fine 
+> independently from the value handed out by the OS.
 
-OK, I can update the patch to reflect that. Remember, I didn't learn
-anything from doing this patch, so I have no idea why
-rcu_procell_callbacks was global. I was just keeping to the norm. :-)
+Well there are two ways I'd do this
 
-Actually, I'll make a separate patch for this change. This is a
-different issue.
+#1: Throw the whole thing away and accept its not a good idea anyway
 
--- Steve
-
-
+#2: If I was really going this way and I wanted to use it for serious
+tricks for high performance I/O then I'd provide the handle from
+userspace so that the strategy for allocation is controlled by the caller
+who is the only one who can make the smart decisions
