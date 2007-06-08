@@ -1,74 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031643AbXFHVU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969857AbXFHVYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031643AbXFHVU1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 17:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbXFHVUT
+	id S969857AbXFHVYs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 17:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbXFHVYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 17:20:19 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47964 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752046AbXFHVUS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 17:20:18 -0400
-Date: Fri, 8 Jun 2007 22:24:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Ulrich Drepper <drepper@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070608222437.540bd8a6@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0706081246360.5795@alien.or.mcafeemobile.com>
-References: <466741BD.20106@redhat.com>
-	<20070607110432.73be7960@the-village.bc.nu>
-	<B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com>
-	<20070607151243.22caab9e.dada1@cosmosbay.com>
-	<Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
-	<466864F8.2050903@cosmosbay.com>
-	<46686810.6030805@redhat.com>
-	<Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
-	<466880A4.3090908@redhat.com>
-	<Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
-	<20070608120746.GD12687@thunk.org>
-	<20070608140150.6f31672f@the-village.bc.nu>
-	<Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
-	<20070608192652.4a291901@the-village.bc.nu>
-	<4669A351.4010403@redhat.com>
-	<20070608203007.3c50eb66@the-village.bc.nu>
-	<Pine.LNX.4.64.0706081229030.5795@alien.or.mcafeemobile.com>
-	<20070608204836.5adaefa7@the-village.bc.nu>
-	<Pine.LNX.4.64.0706081246360.5795@alien.or.mcafeemobile.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 8 Jun 2007 17:24:41 -0400
+Received: from mga09.intel.com ([134.134.136.24]:10568 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750926AbXFHVYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 17:24:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,401,1175497200"; 
+   d="scan'208";a="94923863"
+Date: Fri, 8 Jun 2007 14:20:54 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Andreas Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
+       davem@davemloft.net
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+Message-ID: <20070608212054.GB641@linux-os.sc.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <20070606190042.510643000@askeshav-devel.jf.intel.com> <20070607162726.2236a296.akpm@linux-foundation.org> <20070608182156.GA24865@linux-os.sc.intel.com> <20070608120107.245eba96.akpm@linux-foundation.org> <6901450.1181335390183.SLOX.WebMail.wwwrun@imap-dhs.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6901450.1181335390183.SLOX.WebMail.wwwrun@imap-dhs.suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > #1: Throw the whole thing away and accept its not a good idea anyway
+On Fri, Jun 08, 2007 at 10:43:10PM +0200, Andreas Kleen wrote:
+> Am Fr 08.06.2007 21:01 schrieb Andrew Morton
+> <akpm@linux-foundation.org>:
 > 
-> Unfortunately (exactly because of the same guarantees you're asking for 
-> those handles), in order for userspace libraries to reliably internally 
-> use fds to interact with the kernel, you need another kind of allocation 
-> strategy.
-
-Unproven and dubious at best as a claim.
-
-> > #2: If I was really going this way and I wanted to use it for serious
-> > tricks for high performance I/O then I'd provide the handle from
-> > userspace so that the strategy for allocation is controlled by the caller
-> > who is the only one who can make the smart decisions
+> > On Fri, 8 Jun 2007 11:21:57 -0700
+> > "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
+> >
+> > > On Thu, Jun 07, 2007 at 04:27:26PM -0700, Andrew Morton wrote:
+> > > > On Wed, 06 Jun 2007 11:57:00 -0700
+> > > > anil.s.keshavamurthy@intel.com wrote:
+> > > >
+> > > > > Signed-off-by: Anil S Keshavamurthy
+> > > > > <anil.s.keshavamurthy@intel.com>
+> > > >
+> > > > That was a terse changelog.
+> > > >
+> > > > Obvious question: how does this differ from mempools, and would it
+> > > > be
+> > > > better to fill in any gaps in mempool functionality instead of
+> > > > implementing something similar-looking?
+> > >
+> > > Very good question. Mempool pre-allocates the elements
+> > > to the required minimum count size during its initilization time.
+> > > However when mempool_alloc() is called it tries to obtain the
+> > > element from OS and if that fails then it looks for the element in
+> > > its pool. If there are no elements in its pool and if the gpf_t
+> > > flags says it can wait then it waits untill someone puts the element
+> > > back to pool, else if gpf_t flag say it can;t wait then it returns
+> > > NULL.
+> > > In other words, mempool acts as *emergency* pool, i.e only if the OS
+> > > fails
+> > > to allocate the required memory, then the pool object is used.
+> > >
+> > >
+> > > In the IOMMU case, we need exactly opposite of what mempool
+> > > provides,
+> > > i.e we always want to look for the element in the pool and if the
+> > > pool
+> > > has no element then go to OS as a worst case. This resource pool
+> > > library routines do the same. Again, this resource pools
+> > > grows and shrinks automatically to maintain the minimum pool
+> > > elements in the background. I am not sure whether this totally
+> > > opposite functionality of mempools and resource pools can be
+> > > merged.
+> >
+> > Confused.
+> >
+> > If resource pools are not designed to provide extra robustness via an
+> > emergency pool, then what _are_ they designed for? (Boy this is a hard
+> > way
+> > to write a changelog!)
 > 
-> It does not work. What if the main application, library A and library B 
-> wants to implement their own allocation strategy?
+> mempools are designed to manage a limited resource pool by sleeping
+> if necessary until someone else frees a resource. It's basically similar
+> how to main VM works with a sleeping allocation, just in a "private user
+> group"
+> 
+> In the IOMMU case sleeping is not allowed because pci_map_* typically
+> happens inside spinlocks.  But the IOMMU code might need to allocate
+> new page tables and other datastructures in there.
+> 
+> This means mempools don't work for those (the previous version had non
+> sensical
+> constructs like GFP_ATOMIC mempool calls)
+> 
+>  I haven't looked at Anil's code, but I suspect the only really robust
+> way to handle this case is to always preallocate everything. But I'm not
+> sure
+> why that would need new library functions; it should be just some simple
+> lists that could be open coded.
 
-Its called "discipline". I would suggest that libc contains a default
-allocator. You might also want to assign library and application ranges
-for clarity.
+Since it is practically impossible to predicit how much to preallocate,
+we have a min_count+grow_count of object allocated and we always use from this
+pool. If the object count goes below certain low threshold(which acts as 
+emergency pool from this point), the pool grows by allocating and 
+adding the newly allocated object into the pool in the
+worker (keventd) thread. 
+Again, once the IO pressure is over, the PCI driver
+does the unmap calls and we put back the objects back to preallocate pools.
+The smartness is builtin to the pool as the elements are put back to the 
+pool it detects that the pool count is greater then the threshold and 
+it automagically queues the work to free the objects and bring back the 
+pre-allocated object count back to minimum threshold.
+Thus this preallocated pool grow and shrinks based on the demand, while
+acting as both pre-allocated pools and as emergency pool.
 
-Alan
+Currently I have made this as a libray functions, if that is not correct,
+we can pull this and make it part of the Intel IOMMU driver itself.
+Please do let me know your suggestions.
+
+> 
+> If it needs to fall back to the OS for any non pre allocation then it
+> will
+> likely be flakey under high load. Now that might be ok in some cases
+> -- apparently block layer is much better at handling this than it used
+> to be and networking has to handle it anyways, but it might be still
+> a unpleasant surprise for many drivers. One generic problem is that
+> there are no upcalls when such resources become avaialable again
+> so the upper layers would need to poll to know when to resubmit
+> a request.
+> 
+> It's a pretty messy problem unfortunately.
+I agree, worst case if the element is not available in the 
+pool we need to fall back to the OS and if OS fails then it
+is tough luck.
+
+> 
+> One relatively easy way out would be to just preallocate
+> a static aperture fully and always map into it. Not sure
+> how much memory that would need -- when it's too large
+> it might take a lot of memory for page tables always and when it's
+> too small it might overflow under high load.
+Yup, and since we need to use the same driver from 
+desktop to servers, preallocation count for servers 
+many not be suitable for desktops.
+
+> 
+> > That's what kmem_cache_alloc() is for?!?!
+> 
+> Tradtionally that was not allowed in block layer path. Not sure
+> it is fully obsolete with the recent dirty tracking work, probably not.
+> 
+> Besides it would need to be GFP_ATOMIC and the default
+> atomic pools are not that big.
+> 
+> -Andi
