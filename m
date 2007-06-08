@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751388AbXFHTFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbXFHTHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751388AbXFHTFH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbXFHTEy
+	id S1753845AbXFHTHA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXFHTGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:04:54 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:38158 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751438AbXFHTEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:04:53 -0400
-Date: Fri, 8 Jun 2007 21:05:54 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net, "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] scripts: clean-whitespace.sh
-Message-ID: <20070608190554.GA25468@uranus.ravnborg.org>
-References: <20070606174556.GS7266@flower.upol.cz> <20070606175026.GA6303@uranus.ravnborg.org> <20070606191426.GT7266@flower.upol.cz> <Pine.LNX.4.64.0706071634470.8762@fbirervta.pbzchgretzou.qr> <20070607230657.GV7266@flower.upol.cz> <4668929C.7040209@zytor.com> <E1HwY9K-0008Jz-CG@flower> <20070607234459.e4dffd65.akpm@linux-foundation.org> <20070608142849.GA23642@uranus.ravnborg.org> <20070608150215.GY7266@flower.upol.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070608150215.GY7266@flower.upol.cz>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 8 Jun 2007 15:06:53 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:39686 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691AbXFHTGw (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 15:06:52 -0400
+Message-ID: <4669A8C7.6060302@de.ibm.com>
+Date: Fri, 08 Jun 2007 21:06:47 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?UTF-8?B?SUJNIERldXRzY2hsYW5kIEVudHdpY2tsdW5nIEdtYkgsVm9ycw==?=
+ =?UTF-8?B?aXR6ZW5kZXIgZGVzIEF1ZnNpY2h0c3JhdHM6IEpvaGFubiBXZWloZW4sR2VzY2g=?=
+ =?UTF-8?B?w6RmdHNmw7xocnVuZzogSGVyYmVydCBLaXJjaGVyLFNpdHogZGVyIEdlc2VsbHM=?=
+ =?UTF-8?B?Y2hhZnQ6IELDtmJsaW5nZW4sUmVnaXN0ZXJnZXJpY2h0OiBBbXRzZ2VyaWNodCA=?=
+ =?UTF-8?B?U3R1dHRnYXJ0LCBIUkIgMjQzMjk0?=
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+MIME-Version: 1.0
+To: carsteno@de.ibm.com
+CC: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@lazybastard.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jared Hulbert <jaredeh@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+References: <4669027E.3070406@de.ibm.com> <20070608072609.GA13115@infradead.org> <46690A39.3010402@de.ibm.com> <20070608075717.GA16927@infradead.org> <46690C58.7090304@de.ibm.com> <20070608080401.GA17684@infradead.org> <6934efce0706080905h253d9e3apd4168c5d14d305e5@mail.gmail.com> <20070608160929.GA3366@infradead.org> <6934efce0706080911y601a8377oad7b1251a95acd64@mail.gmail.com> <20070608161526.GA3729@infradead.org> <20070608175152.GG20718@lazybastard.org> <4669A831.3040105@de.ibm.com>
+In-Reply-To: <4669A831.3040105@de.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 05:02:15PM +0200, Oleg Verych wrote:
-> On Fri, Jun 08, 2007 at 04:28:49PM +0200, Sam Ravnborg wrote:
-> > On Thu, Jun 07, 2007 at 11:44:59PM -0700, Andrew Morton wrote:
-> > > 
-> > > Then again, it's a better strategy than trying to read the code ;)
-> > > 
-> > > Please, tell us what it does, so that we can decide whether we want it in
-> > > Linux.
-> > 
-> > It does the same as cleanfile.pl.
-> > I have seen no reason to replace cleanfile.pl with this version.
-> 
-> It does better whitespace cleanup, than
-> 
-> scripts/{cleanfile *and* cleanpatch}
-
-Made a short test here.
-Added the following to a file:
-
-static sam = "                    ";
-
-clean-whitespace replaced spaces within "" with tabs.
-cleanfile did not.
-
-Seems that clean-whitespace has the wrong assumption that any sequence
-of <tab-stop>8 spaces<tab-stop> must be replaced with a tab.
-It should obviously default to beginning of file.
-
-
-Running latest cleanfile (it is -mm) on your testfile
-gave following output:
-cleanfile: ipv6.h
-ipv6.h:105: line exceeds 79 characters (89)
-ipv6.h:111: line exceeds 79 characters (89)
-ipv6.h:350: line exceeds 79 characters (85)
-ipv6.h:356: line exceeds 79 characters (85)
-ipv6.h:362: line exceeds 79 characters (85)
-ipv6.h:386: line exceeds 79 characters (82)
-ipv6.h:413: line exceeds 79 characters (85)
-
-And spaces were replaced with tabs only where
-it is safe.
-
-	Sam
+Carsten Otte wrote:
+> - temporary references (for read/write syscalls and friends) get 
+> retrieved via get_xip_page and returned again via to-be-invented 
+> put_page/page_cache_release
+Doh! Meant to state: returned again via stock 
+put_page/page_cache_release rather then inventing something new.
