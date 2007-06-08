@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939593AbXFHThL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939709AbXFHTh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939593AbXFHThL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:37:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbXFHTg7
+	id S939709AbXFHTh4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937752AbXFHThr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:36:59 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:33348 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752483AbXFHTg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:36:58 -0400
-Date: Fri, 8 Jun 2007 12:36:55 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       RT <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH RT] convert RCU Preempt tasklet into softirq.
-Message-ID: <20070608193655.GA18399@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1181180051.18444.31.camel@localhost.localdomain> <20070607041411.GB1783@linux.vnet.ibm.com> <1181226138.18444.54.camel@localhost.localdomain> <20070607161754.GA11941@linux.vnet.ibm.com> <1181240819.10408.14.camel@localhost.localdomain> <20070607210247.GA9390@linux.vnet.ibm.com> <1181316428.10408.30.camel@localhost.localdomain>
+	Fri, 8 Jun 2007 15:37:47 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3627 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbXFHThq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 15:37:46 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 8 Jun 2007 12:37:44 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Ulrich Drepper <drepper@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <20070608203007.3c50eb66@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0706081229030.5795@alien.or.mcafeemobile.com>
+References: <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu>
+ <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com>
+ <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
+ <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
+ <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
+ <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
+ <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
+ <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
+ <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com>
+ <20070608203007.3c50eb66@the-village.bc.nu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181316428.10408.30.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 11:27:08AM -0400, Steven Rostedt wrote:
-> On Thu, 2007-06-07 at 14:02 -0700, Paul E. McKenney wrote:
+On Fri, 8 Jun 2007, Alan Cox wrote:
+
+> On Fri, 08 Jun 2007 11:43:29 -0700
+> Ulrich Drepper <drepper@redhat.com> wrote:
 > 
-> > Some nits below.
+> > -----BEGIN PGP SIGNED MESSAGE-----
+> > Hash: SHA1
 > > 
-> > 						Thanx, Paul
+> > Alan Cox wrote:
+> > > Why does he want an unpredictable algorithm
 > > 
-> > > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > > 
-> > > Index: linux-2.6.21-rt9/include/linux/rcupreempt.h
-> > > ===================================================================
-> > > --- linux-2.6.21-rt9.orig/include/linux/rcupreempt.h
-> > > +++ linux-2.6.21-rt9/include/linux/rcupreempt.h
-> > > @@ -63,7 +63,9 @@ extern void rcu_check_callbacks(int cpu,
-> > >  extern void rcu_restart_cpu(int cpu);
-> > >  extern long rcu_batches_completed(void);
-> > > 
-> > > -extern void rcu_process_callbacks(unsigned long unused);
-> > > +struct softirq_action;
-> > > +
-> > > +extern void rcu_process_callbacks(struct softirq_action *unused);
-> > 
-> > I don't understand why the above is needed -- interrupt.h is included,
-> > and the use of rcu_process_callbacks() follows the definition.
-> > 
-> > >  #endif /* __KERNEL__ */
-> > >  #endif /* __LINUX_RCUPREEMPT_H */
+> > To avoid exactly the kind of problem we have now in future: programs
+> > relying on specific patterns.
 > 
-> The first time I compiled it, I forgot the ';' and got a warning there.
-> But the warning also included "declaring structure softirq_action in
-> prototype", so I fixed both the ';' and added the struct. I can try
-> compile without it. But I also know that adding #include <interrupt.h>
-> in rcupreempt.h caused issues too.
+> Which you seem to think is a bad thing, yet is actually a very good thing
+> because it means that crashes are repeatable and problems are debuggable
+> from end user reports.
+> 
+> Trying to randomize filehandles for the general case is not a productive
+> activity. If you want to debug cases write yourself a glibc wrapper that
+> does annoying things but don't inflict it on people who actually want to
+> build working, testable, debuggable systems (ie most of us)
 
-If I leave out both the "struct softirq_action" and the
-rcu_process_callbacks() declaration,, it compiles for me.
+So, what do you plan to do? Those handle won't be zero-based. Your 
+"working" system I immagine will do:
 
-So I guess the rcu_process_callbacks() should be declared static...
+	bleeh[handle - BASE].duh = ...;
 
-						Thanx, Paul
+How nice for a working system. If you *store* the handle returned by the 
+OS, and you *use* the handle to call for OS services, you will be fine 
+independently from the value handed out by the OS.
+
+
+
+- Davide
+
+
