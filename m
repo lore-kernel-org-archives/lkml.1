@@ -1,125 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938924AbXFHRe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031040AbXFHRhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938924AbXFHRe7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 13:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030694AbXFHReP
+	id S1031040AbXFHRhf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 13:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbXFHRh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 13:34:15 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:33937 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760218AbXFHReO (ORCPT
+	Fri, 8 Jun 2007 13:37:27 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:35592 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756381AbXFHRh0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 13:34:14 -0400
-Date: Fri, 08 Jun 2007 13:34:16 -0400
-From: Mike Schmidt <mike@intello.com>
-Subject: 2.6 kernel: Cannot make multiple dummy network interfaces
-To: linux-kernel@vger.kernel.org
-Message-id: <46699318.3060209@intello.com>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_Y8vwUUQLK9Mm3LYstNLwEw)"
-X-Greylist: Sender succeeded SMTP AUTH authentication,
- not delayed by milter-greylist-3.0 (deepspace.sepia.com [205.236.40.42]); Fri,
- 08 Jun 2007 13:29:31 -0400 (EDT)
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Fri, 8 Jun 2007 13:37:26 -0400
+Message-ID: <466993CF.4050804@de.ibm.com>
+Date: Fri, 08 Jun 2007 19:37:19 +0200
+From: Martin Peschke <mp3@de.ibm.com>
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, jbaron@redhat.com, rostedt@goodmis.org,
+       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+References: <1181165656.7133.23.camel@dix> <1181202258.7348.217.camel@twins> <46698B1D.3000806@de.ibm.com> <1181322460.5728.2.camel@lappy> <46698F7F.4090407@de.ibm.com> <1181323622.5728.6.camel@lappy>
+In-Reply-To: <1181323622.5728.6.camel@lappy>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+Peter Zijlstra wrote:
+> On Fri, 2007-06-08 at 19:18 +0200, Martin Peschke wrote:
+>> Peter Zijlstra wrote:
+>>> On Fri, 2007-06-08 at 19:00 +0200, Martin Peschke wrote:
+>>>> Peter Zijlstra wrote:
+>>>>> I'm confused as to where the class->stat objects are initialised? Is
+>>>>> that done in lock_stat_init()? If so, then you have a bug.
+>>>> static struct lock_class lock_classes[MAX_LOCKDEP_KEYS];
+>>>>
+>>>> I assume this gets us class structures containing all zeros, doesn't it?
+>>>> Then class->stat is zeros as well, which is handled by lib/statistics.
+>>>> (In this case, data gathering hasn't been turned on yet, and statistic_inc()
+>>>> and similar functions don't access other areas of struct statistic.)
+>>> Who eventually calls percpu_alloc?
+>> There is a small state machine calling percpu_alloc when users do
+>>
+>>     echo state=on > /debug/statistics/lockdep/definition
+>>
+>> So data gathering is off by default.
+>>
+>> It might make sense to allow "state=on" as a default. Then allocation would
+>> be done in the context of statistic_attach().
+> 
+> Right, the problem here is that you iterate over all_lock_classes once
+> at init.
+> 
+> Contrary to what the name might suggest, it are not all possible
+> classes, just all active ones. So you'll only attach the classes which
+> have been used up until the init point. All other classes used later
+> will never be initialized.
 
---Boundary_(ID_Y8vwUUQLK9Mm3LYstNLwEw)
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
+Ah..
 
+Do you know where a class is setup for first use?
+I guess it is feasible to move statistic initialisation to that place.
 
-
-(please cc me directly with any responses - I am not (yet) a member of 
-this mailing list.
-
-*2.6 kernel: Cannot make multiple dummy network interfaces*
-------------------------------------------------------------------------
-I'm trying to set up a number of dummy interfaces but FC6 (Centos4, even 
-RHEL4) won't make more than 1. a modprobe -c lists two default dummy 
-interfaces, dumm0 and dummy1, just as it did even back to rh8. On my 
-rh8/rh9 systems, there is no problem, I can generate as many dummy n as 
-I want by adding alias and options lines in modules.conf. On 
-FC6/Centos/RHEL (I assume as of kernel 2.6, but I don't have any early 
-FC systems running) I can only create 1 dummy. I am trying to build a 
-network simulator for testing purposes - a bridge with 100+ network 
-interfaces. They have to be dummy (not just an alias) because they need 
-separate MAC addresses.  I have tried the same thing on Knoppix, running 
-2.6.17, with the same results. Centos4 and RHEL4 use kernel 2.6.9
-
-On FC6: (kernel 2.6.20)
- >modprobe -c | grep dummy:
-alias dummy0 dummy
-alias dummy1 dummy
-install dummy0 /sbin/modprobe -o dummy0 --ignore-install dummy
-install dummy1 /sbin/modprobe -o dummy1 --ignore-install dummy
-
- >ip link
-1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue
-link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast 
-qlen 1000
-link/ether 00:18:8b:e6:c3:82 brd ff:ff:ff:ff:ff:ff
-3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast 
-qlen 1000
-link/ether 00:0e:2e:b1:20:e6 brd ff:ff:ff:ff:ff:ff
-
- >modprobe dummy0
- >modprobe dummy1
-
- >ip link
-1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue
-link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast 
-qlen 1000
-link/ether 00:18:8b:e6:c3:82 brd ff:ff:ff:ff:ff:ff
-3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast 
-qlen 1000
-link/ether 00:0e:2e:b1:20:e6 brd ff:ff:ff:ff:ff:ff
-4: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop
-link/ether aa:96:c7:d9:40:eb brd ff:ff:ff:ff:ff:ff
-
-This same thing give me two dummy interfaces in rh8. I have no 
-difficulty making 100 or more dummy interfaces in rh8. (running 2.4.31). 
-Note that I have not made any changes to the modprobe configuration 
-here. Normally I would have at least 100 aliases - dummy0-dummy99.
-
-On all 2.6 kernels I have checked, the kernel config has CONFIG_DUMMY=m. 
-However, the modprobe configuration for 2.4 kernels is different (uses 
-option instead of install statements in modules.conf).
-Is there something going on that prevents me from loading multiple 
-copies of the dummy driver? Is there anything I can do about this?
-
-Thanks very much. There is very little information about this kind of 
-thing available. I'm afraid I'm stuck between a rock and a hard place - 
-I need 2.6 for some new device drivers not available in 2.4, and I need 
-2.54 for my dummy net devices....
-
-Again, I thank anyone who can help me.
-
-Mike
+Is there a place where a class becomes unused again?
 
 
---Boundary_(ID_Y8vwUUQLK9Mm3LYstNLwEw)
-Content-type: text/x-vcard; charset=utf-8; name=mike.vcf
-Content-transfer-encoding: 7BIT
-Content-disposition: attachment; filename=mike.vcf
-
-begin:vcard
-fn:Mike Schmidt
-n:Schmidt;Mike
-org:Intello Technologies Inc. 
-adr;quoted-printable;quoted-printable:;;580 1=C3=A8re Rue;Saint-Jean-sur-Richelieu;Qu=C3=A9;J2X 3B4;Canada
-email;internet:mike@intello.com
-title:Vice-President
-tel;work:450-358-2266 x223
-tel;cell:514-835-9497
-x-mozilla-html:FALSE
-url:http://www.intello.com
-version:2.1
-end:vcard
-
-
---Boundary_(ID_Y8vwUUQLK9Mm3LYstNLwEw)--
