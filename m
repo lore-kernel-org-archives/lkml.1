@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031088AbXFHRiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938748AbXFHRpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031088AbXFHRiU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 13:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764198AbXFHRiE
+	id S938748AbXFHRpN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 13:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936025AbXFHRo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 13:38:04 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50165 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759920AbXFHRiB (ORCPT
+	Fri, 8 Jun 2007 13:44:58 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:52041 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936936AbXFHRo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 13:38:01 -0400
-Date: Fri, 8 Jun 2007 10:37:56 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: vatsa@in.ibm.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
-       xemul@sw.ru, dev@sw.ru, containers@lists.osdl.org,
-       ebiederm@xmission.com, mbligh@google.com, rohitseth@google.com,
-       serue@us.ibm.com, menage@google.com, svaidy@linux.vnet.ibm.com,
-       cpw@sgi.com, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 00/10] Containers(V10): Generic Process
- Containers
-Message-Id: <20070608103756.4f79accc.pj@sgi.com>
-In-Reply-To: <20070608143250.GA7728@vino.hallyn.com>
-References: <20070604204131.GB19409@sergelap.austin.ibm.com>
-	<20070604140533.65e25286.pj@sgi.com>
-	<20070606223952.GB5626@sergelap.austin.ibm.com>
-	<20070606154347.a155630b.pj@sgi.com>
-	<20070607000559.GA19529@sergelap.austin.ibm.com>
-	<20070606174609.bfa01446.pj@sgi.com>
-	<20070607180158.GA936@sergelap.austin.ibm.com>
-	<20070607122121.24fe6ff4.pj@sgi.com>
-	<20070607201723.GA17011@sergelap.austin.ibm.com>
-	<20070607150113.f020d8f8.pj@sgi.com>
-	<20070608143250.GA7728@vino.hallyn.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 8 Jun 2007 13:44:57 -0400
+Message-ID: <46699584.2020905@linux.vnet.ibm.com>
+Date: Fri, 08 Jun 2007 23:14:36 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Pavel Emelianov <xemul@openvz.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Herbert Poetzl <herbert@13thfloor.at>
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH 0/8] RSS controller based on process containers (v3.1)
+References: <466412C5.1060104@openvz.org> <20070608120343.GA27847@MAIL.13thfloor.at> <46694E00.8020407@openvz.org> <20070608153700.GB27847@MAIL.13thfloor.at>
+In-Reply-To: <20070608153700.GB27847@MAIL.13thfloor.at>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Anyway the patch I sent is simple enough, and if users end up demanding
-> the ability to better deal with exclusive cpusets, the patch will be
-> simple enough to extend by changing cpuset_auto_setup(), so let's
-> stick with that patch since it's your preference (IIUC).
 
-Yeah - probably so.
 
-    When someone gets serious about things like checkpoint, restart, and
-    migrate functionality, based on this container cloning, working with
-    cpusets, they will probably have to revisit this interaction with
-    exclusive cpusets.
+Herbert Poetzl wrote:
+> On Fri, Jun 08, 2007 at 04:39:28PM +0400, Pavel Emelianov wrote:
+>> Herbert Poetzl wrote:
+>>> On Mon, Jun 04, 2007 at 05:25:25PM +0400, Pavel Emelianov wrote:
+[snip]
+>>>> When this usage exceeds the limit set some pages are reclaimed
+>>>> from the owning container. In case no reclamation possible the OOM
+>>>> killer starts thinning out the container.
+>>> so the system (physical machine) starts reclaiming
+>>> and probably swapping even when there is no need
+>>> to do so?
+>> Good catch! The system will start reclaiming right when the
+>> container hits the limit to expend its IO bandwidth. Not some
+>> other's one that hit the global limit due to some bad container
+>> was allowed to go above it.
+> 
+> well, from the system PoV, a constantly swapping
+> guest (on an otherwise unused host) is definitely
+> something you do not really want, not to talk
+> about a tightly packed host system, where guests
+> start hogging the I/O with _unnecessary_ swapping
+> 
+>>> e.g. a system with a single guest, limited to 10k
+>>> pages, with a working set of 15k pages in different
+>>> apps would continuously swap (trash?) on an otherwise
+>>> unused (100k+ pages) system?
+>>>
 
-Perhaps a comment could be put in the code, saying something like the
-above, so whomever does this will realize they are traveling in
-unchartered territory.
+Hi Herbert,
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+When the reclaim process started, swappable pages are unmapped and
+moved to swapcache.  The RSS accounting treats the page as dropped,
+but however the page will remain in memory until there is enough
+global pressure to push it out to disk.  When a page is faulted-in,
+the page is just remapped from the swapcache.
+
+In effect container 'trashing' is not as bad in an otherwise unused
+system.  Well, certainly we pay a penalty to move around the pages
+instead of keeping them mapped in RSS as long as free memory was
+available.
+
+The pagecache controller is suppose to track the pagecache and
+swapcache pages and push out pages to disk. As Balbir and Pavel have
+mentioned, we will be building the features in stages.
+
+--Vaidy
+
+[snip]
+
