@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935637AbXFHOs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936685AbXFHOvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935637AbXFHOs4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 10:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759110AbXFHOss
+	id S936685AbXFHOvA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 10:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbXFHOuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 10:48:48 -0400
-Received: from hoboe2bl1.telenet-ops.be ([195.130.137.73]:47964 "EHLO
-	hoboe2bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757590AbXFHOss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 10:48:48 -0400
-Date: Fri, 8 Jun 2007 16:48:45 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Greg KH <greg@kroah.com>, i2c@lm-sensors.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [i2c] i2c module aliases
-In-Reply-To: <20070608153516.28fd9eb5@hyperion.delvare>
-Message-ID: <Pine.LNX.4.64.0706081647310.9505@anakin>
-References: <Pine.LNX.4.64.0706062325270.30244@anakin>
- <20070607175342.3006e872@hyperion.delvare> <20070607160214.GB17800@kroah.com>
- <20070608153516.28fd9eb5@hyperion.delvare>
+	Fri, 8 Jun 2007 10:50:52 -0400
+Received: from raven.upol.cz ([158.194.120.4]:40472 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755399AbXFHOuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 10:50:51 -0400
+Date: Fri, 8 Jun 2007 17:02:15 +0200
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net, "H. Peter Anvin" <hpa@zytor.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] scripts: clean-whitespace.sh
+Message-ID: <20070608150215.GY7266@flower.upol.cz>
+References: <20070605151101.GQ7266@flower.upol.cz> <20070606174556.GS7266@flower.upol.cz> <20070606175026.GA6303@uranus.ravnborg.org> <20070606191426.GT7266@flower.upol.cz> <Pine.LNX.4.64.0706071634470.8762@fbirervta.pbzchgretzou.qr> <20070607230657.GV7266@flower.upol.cz> <4668929C.7040209@zytor.com> <E1HwY9K-0008Jz-CG@flower> <20070607234459.e4dffd65.akpm@linux-foundation.org> <20070608142849.GA23642@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070608142849.GA23642@uranus.ravnborg.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007, Jean Delvare wrote:
-> On Thu, 7 Jun 2007 09:02:14 -0700, Greg KH wrote:
-> > On Thu, Jun 07, 2007 at 05:53:42PM +0200, Jean Delvare wrote:
-> > > Looks correct. However I am curious what this "i2c->id" is supposed to
-> > > represent, given that I2C devices do not have any form of ID as PCI or
-> > > USB devices have. No driver uses "MODULE_DEVICE_TABLE(i2c, ...)"
-> > > probably just because it doesn't make sense. So, rather than fixing
-> > > this, shouldn't we simply wipe out struct i2c_device_id? Greg, David?
+On Fri, Jun 08, 2007 at 04:28:49PM +0200, Sam Ravnborg wrote:
+> On Thu, Jun 07, 2007 at 11:44:59PM -0700, Andrew Morton wrote:
 > > 
-> > If no one is using it, then yes, it should be removed.
+> > Then again, it's a better strategy than trying to read the code ;)
 > > 
-> > Sorry, I added it a while ago thinking it was going to be used (I had
-> > test patches using it in my tree, but they never worked out in the end.)
+> > Please, tell us what it does, so that we can decide whether we want it in
+> > Linux.
 > 
-> OK. Geert, care to submit a new patch removing struct i2c_device_id
-> altogether?
+> It does the same as cleanfile.pl.
+> I have seen no reason to replace cleanfile.pl with this version.
 
-Sorry, probably not...
+It does better whitespace cleanup, than
 
-I just thought I found a grave bug while looking into adding zorro
-support to scripts/mod/file2alias.c, so that's why I reported it.
+scripts/{cleanfile *and* cleanpatch}
 
-Gr{oetje,eeting}s,
+togather with more user, operating system kernel-friendly approach.
+Please, test it on proposed testcase - ipv6.h, and you will see, what i'm
+talking about. Patch description + script name is all one must to know to
+start use it *safely*.
 
-						Geert
+> Linecount is down but so is maintainability / extendability.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Really? If you think so...
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+For those, who have (X)emacs on board, i recommend "develock.el" as
+good damage-showing tool.
+
+Sorry, Andrew, for garbage in you patch subject filters :)
+____
