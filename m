@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030602AbXFHPdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969451AbXFHPeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030602AbXFHPdh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 11:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969168AbXFHPdB
+	id S969451AbXFHPeH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 11:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969312AbXFHPds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 11:33:01 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:57407 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967611AbXFHPc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 11:32:58 -0400
-Date: Fri, 8 Jun 2007 11:32:56 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Tejun Heo <htejun@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
-Message-ID: <20070608153256.GD25649@havoc.gtf.org>
-References: <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com> <4667B347.9040900@gmail.com> <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org> <20070607224746.GA23290@havoc.gtf.org> <46690D10.9040808@gmail.com> <20070608122750.7f8ae0e0@the-village.bc.nu> <46693E33.6080705@gmail.com> <20070608124058.7948dee1@the-village.bc.nu> <20070608142822.GB25649@havoc.gtf.org> <20070608163615.3177dd9a@the-village.bc.nu>
+	Fri, 8 Jun 2007 11:33:48 -0400
+Received: from host-66-43-248-10 ([67.55.143.10]:36481 "EHLO albrecht.rdi1.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S969168AbXFHPdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 11:33:47 -0400
+Subject: Re: What's up with 2.6.20?
+From: Paul Albrecht <albrecht@rdi1.com>
+To: lkml <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dtor@insightbb.com>,
+       Andrew Walrond <andrew@walrond.org>
+In-Reply-To: <200706081606.49074.andrew@walrond.org>
+References: <1181311065.3606.0.camel@albrecht.rdi1.com>
+	 <200706081606.49074.andrew@walrond.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 08 Jun 2007 10:38:06 -0400
+Message-Id: <1181313487.3710.5.camel@albrecht.rdi1.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070608163615.3177dd9a@the-village.bc.nu>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.2.2 (2.2.2-5) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 04:36:15PM +0100, Alan Cox wrote:
-> On Fri, 8 Jun 2007 10:28:22 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
+On Fri, 2007-06-08 at 16:06 +0100, Andrew Walrond wrote:
+> On Friday 08 June 2007 14:57:45 Paul Albrecht wrote:
+> >
+> > Seems like an obvious regression so I was wondering if I could get some
+> > help resolving the problem here?
+> >
 > 
-> > On Fri, Jun 08, 2007 at 12:40:58PM +0100, Alan Cox wrote:
-> > > Seems best to me - we know the current code breaks a load of systems and
-> > > the change should not break anything but fix them all. If we ship without
-> > > it being changed then a load of people are stuck with broken ATA.
-> > 
-> > So you have verified that Tejun's experimental change "fixes them all"?
-> > 
-> > Proof?  Bugzilla URLs pointing to users that have ack'd this fix?
+> I see a reply from Dimitry Torokhov which you haven't acknowledged. Did you 
+> miss it?
 > 
-> It unbreaks the IT821x, see the proposed patches I sent before for
-> discussion. Those are tested and do work. I've got a test case here and
-> its the case that the IT821x card doesn't get the magic trickery you rely
-> on right.
 
-Ah, I guess I misunderstood.  I thought you were referring to Fedora
-7 bug reports, since there are not a load of people with IT821x.
+Yes, I missed Dimitry's response. I'll try a later kernel as he
+suggested and follow up with him shortly. Thanks for the pointer to his
+message.
 
-	Jeff
-
-
-
+Paul Albrecht
