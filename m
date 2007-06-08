@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939222AbXFHHql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938888AbXFHHrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939222AbXFHHql (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938371AbXFHHYq
+	id S938888AbXFHHrP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937120AbXFHHYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:24:46 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55267 "EHLO
+	Fri, 8 Jun 2007 03:24:47 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55271 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937120AbXFHHYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:24:44 -0400
-Message-Id: <20070608072200.572760000@sous-sol.org>
+	id S938376AbXFHHYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:24:45 -0400
+Message-Id: <20070608072208.773460000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:45 -0700
+Date: Fri, 08 Jun 2007 00:21:51 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,53 +23,47 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Oliver Endriss <o.endriss@gmx.de>, e9hack <e9hack@googlemail.com>,
-       Thomas Kaiser <linux-dvb@kaiser-linux.li>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Jason Gaston <jason.d.gaston@intel.com>, Greg KH <greg@kroah.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 18/54] V4L/DVB (5593): Budget-ci: Fix tuning for TDM 1316 (160..200 MHz)
-Content-Disposition: inline; filename=v4l-dvb-budget-ci-fix-tuning-for-tdm-1316.patch
+Subject: [patch 24/54] pci_ids: update patch for Intel ICH9M
+Content-Disposition: inline; filename=pci_ids-update-patch-for-intel-ich9m.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Oliver Endriss <o.endriss@gmx.de>
+From: Jason Gaston <jason.d.gaston@intel.com>
 
-Revert changeset
-  http://linuxtv.org/hg/v4l-dvb?cmd=changeset;node=e7c424bbf9aa;style=gitweb
+This patch updates the Intel ICH9M LPC Controller DID's, due to a
+specification change.
 
-Petri Helin found that this changeset broke tuning:
-
-'Well, after going through the changes that might have had effect on
-tuning, I found out the one which had caused this problem. I do not know
-the actual reason behind the change, but the changelog says that it
-was meant to "Fix TD1316 tuner for DVBC". But at least in my case it
-seams to have broken the tuner instead.'
-
-Signed-off-by: Oliver Endriss <o.endriss@gmx.de>
-Thanks-to: Petri Helin <phelin@googlemail.com>
-Acked-by: e9hack <e9hack@googlemail.com>
-Acked-by: Thomas Kaiser <linux-dvb@kaiser-linux.li>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
-Acked-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: Jason Gaston <jason.d.gaston@intel.com>
+Cc: <stable@kernel.org>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/media/dvb/ttpci/budget-ci.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/pci_ids.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- linux-2.6.21.4.orig/drivers/media/dvb/ttpci/budget-ci.c
-+++ linux-2.6.21.4/drivers/media/dvb/ttpci/budget-ci.c
-@@ -926,7 +926,7 @@ static int dvbc_philips_tdm1316l_tuner_s
- 		band = 1;
- 	} else if (tuner_frequency < 200000000) {
- 		cp = 6;
--		band = 2;
-+		band = 1;
- 	} else if (tuner_frequency < 290000000) {
- 		cp = 3;
- 		band = 2;
+--- linux-2.6.21.4.orig/include/linux/pci_ids.h
++++ linux-2.6.21.4/include/linux/pci_ids.h
+@@ -2260,11 +2260,11 @@
+ #define PCI_DEVICE_ID_INTEL_ICH8_5	0x283e
+ #define PCI_DEVICE_ID_INTEL_ICH8_6	0x2850
+ #define PCI_DEVICE_ID_INTEL_ICH9_0	0x2910
+-#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2911
++#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2917
+ #define PCI_DEVICE_ID_INTEL_ICH9_2	0x2912
+ #define PCI_DEVICE_ID_INTEL_ICH9_3	0x2913
+ #define PCI_DEVICE_ID_INTEL_ICH9_4	0x2914
+-#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2915
++#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2919
+ #define PCI_DEVICE_ID_INTEL_ICH9_6	0x2930
+ #define PCI_DEVICE_ID_INTEL_82855PM_HB	0x3340
+ #define PCI_DEVICE_ID_INTEL_82830_HB	0x3575
 
 -- 
