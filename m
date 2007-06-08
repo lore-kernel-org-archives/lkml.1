@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933756AbXFHOqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935637AbXFHOs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933756AbXFHOqf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 10:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbXFHOq2
+	id S935637AbXFHOs4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 10:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759110AbXFHOss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 10:46:28 -0400
-Received: from holomorphy.com ([66.93.40.71]:47899 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753076AbXFHOq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 10:46:28 -0400
-Date: Fri, 8 Jun 2007 07:47:37 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kernel@vger.kernel.org, ak@suse.de, akpm@linux-foundation.org,
-       lkml@rtr.ca
-Subject: Re: divorce CONFIG_X86_PAE from CONFIG_HIGHMEM64G
-Message-ID: <20070608144737.GZ6909@holomorphy.com>
-References: <200706080807.l5887qJH017346@harpo.it.uu.se>
+	Fri, 8 Jun 2007 10:48:48 -0400
+Received: from hoboe2bl1.telenet-ops.be ([195.130.137.73]:47964 "EHLO
+	hoboe2bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757590AbXFHOss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 10:48:48 -0400
+Date: Fri, 8 Jun 2007 16:48:45 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Greg KH <greg@kroah.com>, i2c@lm-sensors.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [i2c] i2c module aliases
+In-Reply-To: <20070608153516.28fd9eb5@hyperion.delvare>
+Message-ID: <Pine.LNX.4.64.0706081647310.9505@anakin>
+References: <Pine.LNX.4.64.0706062325270.30244@anakin>
+ <20070607175342.3006e872@hyperion.delvare> <20070607160214.GB17800@kroah.com>
+ <20070608153516.28fd9eb5@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706080807.l5887qJH017346@harpo.it.uu.se>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 10:07:52AM +0200, Mikael Pettersson wrote:
-> Is this really needed? I can see why VMSPLIT_{2,3}G_OPT would
-> depend on !HIGHMEM, but why would they depend on !X86_PAE?
+On Fri, 8 Jun 2007, Jean Delvare wrote:
+> On Thu, 7 Jun 2007 09:02:14 -0700, Greg KH wrote:
+> > On Thu, Jun 07, 2007 at 05:53:42PM +0200, Jean Delvare wrote:
+> > > Looks correct. However I am curious what this "i2c->id" is supposed to
+> > > represent, given that I2C devices do not have any form of ID as PCI or
+> > > USB devices have. No driver uses "MODULE_DEVICE_TABLE(i2c, ...)"
+> > > probably just because it doesn't make sense. So, rather than fixing
+> > > this, shouldn't we simply wipe out struct i2c_device_id? Greg, David?
+> > 
+> > If no one is using it, then yes, it should be removed.
+> > 
+> > Sorry, I added it a while ago thinking it was going to be used (I had
+> > test patches using it in my tree, but they never worked out in the end.)
+> 
+> OK. Geert, care to submit a new patch removing struct i2c_device_id
+> altogether?
 
-The only reason they depend on !HIGHMEM is because handling for
-1GB-unaligned splits is unimplemented for PAE, which formerly only
-occurred in conjunction with HIGHMEM64G. That said, they were oriented
-toward avoiding highmem on laptops, hence the broader !HIGHMEM
-constraint. The entire point of the patch is to add an option to use
-PAE without highmem for the purposes of NX and secondarily expanded
-swapspace, at which point CONFIG_VMSPLIT_[23]G_OPT need some other way
-besides !HIGHMEM to exclude PAE, such as specifying !X86_PAE directly.
+Sorry, probably not...
 
+I just thought I found a grave bug while looking into adding zorro
+support to scripts/mod/file2alias.c, so that's why I reported it.
 
--- wli
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
