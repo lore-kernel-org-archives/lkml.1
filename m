@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939760AbXFHHyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939772AbXFHH4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939760AbXFHHyw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938406AbXFHHZV
+	id S939772AbXFHH4P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938418AbXFHHZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:25:21 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55356 "EHLO
+	Fri, 8 Jun 2007 03:25:26 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55363 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938325AbXFHHZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:25:11 -0400
-Message-Id: <20070608072159.888965000@sous-sol.org>
+	id S938393AbXFHHZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:25:21 -0400
+Message-Id: <20070608072211.586067000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:44 -0700
+Date: Fri, 08 Jun 2007 00:21:54 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,54 +23,111 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Bjorn Steinbrink <B.Steinbrink@gmx.de>, Ian Kumlien <pomac@vapor.com>,
+       Ingo Molnar <mingo@elte.hu>, Eric Dumazet <dada1@cosmosbay.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 17/54] ieee1394: eth1394: bring back a parent device
-Content-Disposition: inline; filename=ieee1394-eth1394-bring-back-a-parent-device.patch
+Subject: [patch 27/54] timer statistics: fix race
+Content-Disposition: inline; filename=timer-statistics-fix-race.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Bjorn Steinbrink <B.Steinbrink@gmx.de>
 
-This adds a real parent device to eth1394's ethX device like in Linux
-2.6.20 and older.  However, due to unfinished conversion of the ieee1394
-away from class_device, we now refer to the FireWire controller's PCI
-device as the parent, not to the ieee1394 driver's fw-host device.
+Fix two races in the timer stats lookup code.  One by ensuring that the
+initialization of a new entry is finished upon insertion of that entry.
+The other by cleaning up the hash table when the entries array is cleared,
+so that we don't have any "pre-inserted" entries.
 
-Having a real parent device instead of a virtual one allows udev scripts
-to distinguish eth1394 interfaces from networking bridges, bondings and
-the likes.
+Thanks to Eric Dumazet for reminding me of the memory barriers.
 
-Fixes a regression since 2.6.21:
-https://bugs.gentoo.org/show_bug.cgi?id=177199
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Bjorn Steinbrink <B.Steinbrink@gmx.de>
+Signed-off-by: Ian Kumlien <pomac@vapor.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
-Same as commit ef50a6c59dc66f22eba67704e291d709f21e0456.
+ kernel/time/timer_stats.c |   37 +++++++++++++++++++++----------------
+ 1 file changed, 21 insertions(+), 16 deletions(-)
 
- drivers/ieee1394/eth1394.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
---- linux-2.6.21.4.orig/drivers/ieee1394/eth1394.c
-+++ linux-2.6.21.4/drivers/ieee1394/eth1394.c
-@@ -584,10 +584,9 @@ static void ether1394_add_host (struct h
-         }
+--- linux-2.6.21.4.orig/kernel/time/timer_stats.c
++++ linux-2.6.21.4/kernel/time/timer_stats.c
+@@ -117,21 +117,6 @@ static struct entry entries[MAX_ENTRIES]
  
- 	SET_MODULE_OWNER(dev);
--#if 0
--	/* FIXME - Is this the correct parent device anyway? */
--	SET_NETDEV_DEV(dev, &host->device);
--#endif
+ static atomic_t overflow_count;
+ 
+-static void reset_entries(void)
+-{
+-	nr_entries = 0;
+-	memset(entries, 0, sizeof(entries));
+-	atomic_set(&overflow_count, 0);
+-}
+-
+-static struct entry *alloc_entry(void)
+-{
+-	if (nr_entries >= MAX_ENTRIES)
+-		return NULL;
+-
+-	return entries + nr_entries++;
+-}
+-
+ /*
+  * The entries are in a hash-table, for fast lookup:
+  */
+@@ -149,6 +134,22 @@ static struct entry *alloc_entry(void)
+ 
+ static struct entry *tstat_hash_table[TSTAT_HASH_SIZE] __read_mostly;
+ 
++static void reset_entries(void)
++{
++	nr_entries = 0;
++	memset(entries, 0, sizeof(entries));
++	memset(tstat_hash_table, 0, sizeof(tstat_hash_table));
++	atomic_set(&overflow_count, 0);
++}
 +
-+	/* This used to be &host->device in Linux 2.6.20 and before. */
-+	SET_NETDEV_DEV(dev, host->device.parent);
- 
- 	priv = netdev_priv(dev);
- 
++static struct entry *alloc_entry(void)
++{
++	if (nr_entries >= MAX_ENTRIES)
++		return NULL;
++
++	return entries + nr_entries++;
++}
++
+ static int match_entries(struct entry *entry1, struct entry *entry2)
+ {
+ 	return entry1->timer       == entry2->timer	  &&
+@@ -202,12 +203,15 @@ static struct entry *tstat_lookup(struct
+ 	if (curr) {
+ 		*curr = *entry;
+ 		curr->count = 0;
++		curr->next = NULL;
+ 		memcpy(curr->comm, comm, TASK_COMM_LEN);
++
++		smp_mb(); /* Ensure that curr is initialized before insert */
++
+ 		if (prev)
+ 			prev->next = curr;
+ 		else
+ 			*head = curr;
+-		curr->next = NULL;
+ 	}
+  out_unlock:
+ 	spin_unlock(&table_lock);
+@@ -364,6 +368,7 @@ static ssize_t tstats_write(struct file 
+ 		if (!active) {
+ 			reset_entries();
+ 			time_start = ktime_get();
++			smp_mb();
+ 			active = 1;
+ 		}
+ 		break;
 
 -- 
