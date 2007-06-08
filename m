@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938020AbXFHHSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938082AbXFHHSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938020AbXFHHSL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937667AbXFHHRC
+	id S938082AbXFHHSc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937716AbXFHHRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:17:02 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33102 "EHLO
+	Fri, 8 Jun 2007 03:17:05 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33108 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937605AbXFHHQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:16:59 -0400
-Message-Id: <20070608071534.542715000@sous-sol.org>
+	id S937142AbXFHHRC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:17:02 -0400
+Message-Id: <20070608071538.889815000@sous-sol.org>
 References: <20070608071511.159309000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:15:16 -0700
+Date: Fri, 08 Jun 2007 00:15:20 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,126 +23,48 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dan Williams <dan.j.williams@intel.com>, rmk@arm.linux.org.uk,
-       Martin Michlmayr <tbm@cyrius.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 05/32] iop13xx: fix i/o address translation
-Content-Disposition: inline; filename=iop13xx-fix-i-o-address-translation.patch
+Subject: [patch 09/32] JFS: Fix race waking up jfsIO kernel thread
+Content-Disposition: inline; filename=jfs-fix-race-waking-up-jfsio-kernel-thread.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Dan Williams <dan.j.williams@intel.com>
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-PCI devices were being programmed with an incorrect base address value.
-This patch moves I/O space into a 16-bit addressable region and corrects
-the i/o offset.
+It's possible for a journal I/O request to be added to the log_redrive
+queue and the jfsIO thread to be awakened after the thread releases
+log_redrive_lock but before it sets its state to TASK_INTERRUPTIBLE.
 
-Much thanks to Martin Michlmayr for tracking this issue and testing
-debug patches.
+The jfsIO thread should set the state before giving up the spinlock, so
+the waking thread will really wake it.
 
-Cc: Martin Michlmayr <tbm@cyrius.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+ fs/jfs/jfs_logmgr.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
- arch/arm/mach-iop13xx/pci.c            |    8 ++++----
- include/asm-arm/arch-iop13xx/iop13xx.h |   22 +++++++++++++---------
- 2 files changed, 17 insertions(+), 13 deletions(-)
-
---- linux-2.6.20.13.orig/arch/arm/mach-iop13xx/pci.c
-+++ linux-2.6.20.13/arch/arm/mach-iop13xx/pci.c
-@@ -1023,7 +1023,7 @@ int iop13xx_pci_setup(int nr, struct pci
- 				  << IOP13XX_ATUX_PCIXSR_FUNC_NUM;
- 		__raw_writel(pcixsr, IOP13XX_ATUX_PCIXSR);
+--- linux-2.6.20.13.orig/fs/jfs/jfs_logmgr.c
++++ linux-2.6.20.13/fs/jfs/jfs_logmgr.c
+@@ -2354,12 +2354,13 @@ int jfsIOWait(void *arg)
+ 			lbmStartIO(bp);
+ 			spin_lock_irq(&log_redrive_lock);
+ 		}
+-		spin_unlock_irq(&log_redrive_lock);
  
--		res[0].start = IOP13XX_PCIX_LOWER_IO_PA;
-+		res[0].start = IOP13XX_PCIX_LOWER_IO_PA + IOP13XX_PCIX_IO_BUS_OFFSET;
- 		res[0].end   = IOP13XX_PCIX_UPPER_IO_PA;
- 		res[0].name  = "IQ81340 ATUX PCI I/O Space";
- 		res[0].flags = IORESOURCE_IO;
-@@ -1033,7 +1033,7 @@ int iop13xx_pci_setup(int nr, struct pci
- 		res[1].name  = "IQ81340 ATUX PCI Memory Space";
- 		res[1].flags = IORESOURCE_MEM;
- 		sys->mem_offset = IOP13XX_PCIX_MEM_OFFSET;
--		sys->io_offset = IOP13XX_PCIX_IO_OFFSET;
-+		sys->io_offset = IOP13XX_PCIX_LOWER_IO_PA;
- 		break;
- 	case IOP13XX_INIT_ATU_ATUE:
- 		/* Note: the function number field in the PCSR is ro */
-@@ -1044,7 +1044,7 @@ int iop13xx_pci_setup(int nr, struct pci
- 
- 		__raw_writel(pcsr, IOP13XX_ATUE_PCSR);
- 
--		res[0].start = IOP13XX_PCIE_LOWER_IO_PA;
-+		res[0].start = IOP13XX_PCIE_LOWER_IO_PA + IOP13XX_PCIE_IO_BUS_OFFSET;
- 		res[0].end   = IOP13XX_PCIE_UPPER_IO_PA;
- 		res[0].name  = "IQ81340 ATUE PCI I/O Space";
- 		res[0].flags = IORESOURCE_IO;
-@@ -1054,7 +1054,7 @@ int iop13xx_pci_setup(int nr, struct pci
- 		res[1].name  = "IQ81340 ATUE PCI Memory Space";
- 		res[1].flags = IORESOURCE_MEM;
- 		sys->mem_offset = IOP13XX_PCIE_MEM_OFFSET;
--		sys->io_offset = IOP13XX_PCIE_IO_OFFSET;
-+		sys->io_offset = IOP13XX_PCIE_LOWER_IO_PA;
- 		sys->map_irq = iop13xx_pcie_map_irq;
- 		break;
- 	default:
---- linux-2.6.20.13.orig/include/asm-arm/arch-iop13xx/iop13xx.h
-+++ linux-2.6.20.13/include/asm-arm/arch-iop13xx/iop13xx.h
-@@ -55,19 +55,24 @@ static inline int iop13xx_cpu_id(void)
- #define IOP13XX_PCI_OFFSET	 IOP13XX_MAX_RAM_SIZE
- 
- /* PCI MAP
-- * 0x0000.0000 - 0x8000.0000           1:1 mapping with Physical RAM
-- * 0x8000.0000 - 0x8800.0000           PCIX/PCIE memory window (128MB)
--*/
-+ * bus range		cpu phys	cpu virt	note
-+ * 0x0000.0000 + 2GB	(n/a)		(n/a)		inbound, 1:1 mapping with Physical RAM
-+ * 0x8000.0000 + 928M	0x1.8000.0000   (ioremap)	PCIX outbound memory window
-+ * 0x8000.0000 + 928M	0x2.8000.0000   (ioremap)	PCIE outbound memory window
-+ * 
-+ * IO MAP
-+ * 0x1000 + 64K	0x0.fffb.1000	0xfec6.1000	PCIX outbound i/o window
-+ * 0x1000 + 64K	0x0.fffd.1000	0xfed7.1000	PCIE outbound i/o window
-+ */
- #define IOP13XX_PCIX_IO_WINDOW_SIZE   0x10000UL
- #define IOP13XX_PCIX_LOWER_IO_PA      0xfffb0000UL
- #define IOP13XX_PCIX_LOWER_IO_VA      0xfec60000UL
--#define IOP13XX_PCIX_LOWER_IO_BA      0x0fff0000UL
-+#define IOP13XX_PCIX_LOWER_IO_BA      0x0UL /* OIOTVR */
-+#define IOP13XX_PCIX_IO_BUS_OFFSET    0x1000UL
- #define IOP13XX_PCIX_UPPER_IO_PA      (IOP13XX_PCIX_LOWER_IO_PA +\
- 				       IOP13XX_PCIX_IO_WINDOW_SIZE - 1)
- #define IOP13XX_PCIX_UPPER_IO_VA      (IOP13XX_PCIX_LOWER_IO_VA +\
- 				       IOP13XX_PCIX_IO_WINDOW_SIZE - 1)
--#define IOP13XX_PCIX_IO_OFFSET        (IOP13XX_PCIX_LOWER_IO_VA -\
--				       IOP13XX_PCIX_LOWER_IO_BA)
- #define IOP13XX_PCIX_IO_PHYS_TO_VIRT(addr) (u32) ((u32) addr -\
- 					   (IOP13XX_PCIX_LOWER_IO_PA\
- 					   - IOP13XX_PCIX_LOWER_IO_VA))
-@@ -93,15 +98,14 @@ static inline int iop13xx_cpu_id(void)
- #define IOP13XX_PCIE_IO_WINDOW_SIZE   	 0x10000UL
- #define IOP13XX_PCIE_LOWER_IO_PA      	 0xfffd0000UL
- #define IOP13XX_PCIE_LOWER_IO_VA      	 0xfed70000UL
--#define IOP13XX_PCIE_LOWER_IO_BA      	 0x0fff0000UL
-+#define IOP13XX_PCIE_LOWER_IO_BA      	 0x0UL  /* OIOTVR */
-+#define IOP13XX_PCIE_IO_BUS_OFFSET	 0x1000UL
- #define IOP13XX_PCIE_UPPER_IO_PA      	 (IOP13XX_PCIE_LOWER_IO_PA +\
- 					 IOP13XX_PCIE_IO_WINDOW_SIZE - 1)
- #define IOP13XX_PCIE_UPPER_IO_VA      	 (IOP13XX_PCIE_LOWER_IO_VA +\
- 					 IOP13XX_PCIE_IO_WINDOW_SIZE - 1)
- #define IOP13XX_PCIE_UPPER_IO_BA      	 (IOP13XX_PCIE_LOWER_IO_BA +\
- 					 IOP13XX_PCIE_IO_WINDOW_SIZE - 1)
--#define IOP13XX_PCIE_IO_OFFSET        	 (IOP13XX_PCIE_LOWER_IO_VA -\
--					 IOP13XX_PCIE_LOWER_IO_BA)
- #define IOP13XX_PCIE_IO_PHYS_TO_VIRT(addr) (u32) ((u32) addr -\
- 					   (IOP13XX_PCIE_LOWER_IO_PA\
- 					   - IOP13XX_PCIE_LOWER_IO_VA))
+ 		if (freezing(current)) {
++			spin_unlock_irq(&log_redrive_lock);
+ 			refrigerator();
+ 		} else {
+ 			set_current_state(TASK_INTERRUPTIBLE);
++			spin_unlock_irq(&log_redrive_lock);
+ 			schedule();
+ 			current->state = TASK_RUNNING;
+ 		}
 
 -- 
