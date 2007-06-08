@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934420AbXFHGiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965865AbXFHGmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934420AbXFHGiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 02:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbXFHGiL
+	id S965865AbXFHGmc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 02:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757255AbXFHGmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 02:38:11 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:24914 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757444AbXFHGiK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 02:38:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=a9MSSDxyXSLn7IKgRtBpJE09fOoolmFzqCcYcCTrVAEjmQrg5y3pIcDBnY/g6uLkqEAha4h6ngwPLjQN9K4WfMNuq7Q8id2aji1GWobbKLzZX1XxnyTJ9h6ylbmwksAS+bWIqQG1JSsiSUo8806lvi/7MKppQhmu6BZQxuSVB9U=
-Message-ID: <4668F944.5000609@gmail.com>
-Date: Fri, 08 Jun 2007 15:37:56 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm1 - 'lvm vgscan' busticated again...
-References: <20070606020737.4663d686.akpm@linux-foundation.org> <7929.1181146132@turing-police.cc.vt.edu>            <4667A968.9080407@gmail.com> <23214.1181248131@turing-police.cc.vt.edu>
-In-Reply-To: <23214.1181248131@turing-police.cc.vt.edu>
-X-Enigmail-Version: 0.94.2.0
+	Fri, 8 Jun 2007 02:42:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59099 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757168AbXFHGmY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 02:42:24 -0400
+Date: Thu, 7 Jun 2007 23:41:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-1?B?Qmr2cm4=?= Steinbrink <B.Steinbrink@gmx.de>
+Cc: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ak@suse.de
+Subject: Re: [PATCH] Fix interchanged parameters to
+ release_{evntsel,perfctr}_nmi
+Message-Id: <20070607234153.09c32b49.akpm@linux-foundation.org>
+In-Reply-To: <20070608060244.GA2369@atjola.homenet>
+References: <465C2225.2000100@googlemail.com>
+	<20070603150246.5151dda6@laptop.hypervisor.org>
+	<20070608060244.GA2369@atjola.homenet>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 07 Jun 2007 15:44:56 +0900, Tejun Heo said:
->> Valdis.Kletnieks@vt.edu wrote:
->>> On Wed, 06 Jun 2007 02:07:37 PDT, Andrew Morton said:
->>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2
-> .6.22-rc4-mm1/
->>> This one died a horrid death at boot time - console log indicates it found 
-> the
->>> hard drive OK, found the 2 partitions on it.  But when the initrd ran a
->>> 'lvm vgscan', it didn't find the LVM2 space on /dev/sda2, so it panic'ed wh
-> en
->>> it fell off the end of the initrd because the root= wasn't there.
->>>
->>> My first guess for blame:
->>>
->>> gregkh-driver-sysfs-allocate-inode-number-using-ida.patch
->>>
->>> as that's awfully similar to gregkh-driver-sysfs-fix-i_ino-handling-in-sysfs.patch
->>> that broke 'lvm vgscan' for me in the same way on 21-rc7-mm[12].
->>>
->>> I'll hopefully get a chance to revert that one and test later today - a quick
->>> 'patch -p1 -R --dry-run' shows a number of conflicts that will need hand-fixing
->>> at the very least.
->> Did rc3-mm1 work?  Can you find out the first broken -mm?
+On Fri, 8 Jun 2007 08:02:44 +0200 Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
+
+> Fix interchanged parameters to release_{evntsel,perfctr}_nmi.
 > 
-> 21-rc5-mm2 worked, -rc6-mm* were busticated for other reasons on my laptop,
-> 21-rc7-mm[12] were broken, 21-mm1 through 21-rc3-mm1 worked, -rc4-mm1 broke,
-> and -rc4-mm2 works. I could bisect through -rc4-mm1 if it's deemed useful,
-> Andrew just pushed -mm2 before I had a chance.
+> Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
+> ---
+> diff --git a/arch/i386/kernel/cpu/perfctr-watchdog.c b/arch/i386/kernel/cpu/perfctr-watchdog.c
+> index 2b04c8f..e490ac2 100644
+> --- a/arch/i386/kernel/cpu/perfctr-watchdog.c
+> +++ b/arch/i386/kernel/cpu/perfctr-watchdog.c
+> @@ -276,8 +276,8 @@ static int single_msr_reserve(void)
+>  
+>  static void single_msr_unreserve(void)
+>  {
+> -	release_evntsel_nmi(wd_ops->perfctr);
+> -	release_perfctr_nmi(wd_ops->evntsel);
+> +	release_evntsel_nmi(wd_ops->evntsel);
+> +	release_perfctr_nmi(wd_ops->perfctr);
+>  }
+>  
+>  static void single_msr_rearm(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz)
+> @@ -475,10 +475,10 @@ static void p4_unreserve(void)
+>  {
+>  #ifdef CONFIG_SMP
+>  	if (smp_num_siblings > 1)
+> -		release_evntsel_nmi(MSR_P4_IQ_PERFCTR1);
+> +		release_perfctr_nmi(MSR_P4_IQ_PERFCTR1);
+>  #endif
+> -	release_evntsel_nmi(MSR_P4_IQ_PERFCTR0);
+> -	release_perfctr_nmi(MSR_P4_CRU_ESCR0);
+> +	release_evntsel_nmi(MSR_P4_CRU_ESCR0);
+> +	release_perfctr_nmi(MSR_P4_IQ_PERFCTR0);
+>  }
+>  
+>  static void p4_rearm(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz)
 
-Thanks.  The offending patch was
+Half of this (the first hunk) has been in Andi's tree for a day or two.
 
-  gregkh-driver-block-device
-
-Which is pulled from -mm2.  Jiri Slaby reports that turning on
-SYSFS_DEPRECATED fixes the problem.
-
-Thanks.
-
--- 
-tejun
+I shall drop Andi's patch,  queue this one up and shall send this off to Linus if
+nothing else happens in the next couple of days.
