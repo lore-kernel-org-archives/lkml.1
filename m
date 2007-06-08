@@ -1,70 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939091AbXFHHoH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939129AbXFHHod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939091AbXFHHoH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938335AbXFHHYg
+	id S939129AbXFHHod (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938347AbXFHHYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:24:36 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55204 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938331AbXFHHYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:24:30 -0400
-Message-Id: <20070608072231.147133000@sous-sol.org>
-References: <20070608072127.352723000@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:22:11 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Miller <davem@davemloft.net>, bunk@stusta.de,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
-       Yuji Sekiya <sekiya@wide.ad.jp>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 44/54] IPV6 ROUTE: No longer handle ::/0 specially.
-Content-Disposition: inline; filename=ipv6-route-no-longer-handle-0-specially.patch
+	Fri, 8 Jun 2007 03:24:37 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:55619 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S967794AbXFHHYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:24:34 -0400
+Subject: Re: [PATCH 1/1] Watchdog driver for AT32AP700X devices
+From: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Wim Van Sebroeck <wim@iguana.be>
+In-Reply-To: <20070607160910.34d64842.akpm@linux-foundation.org>
+References: <1181138647434-git-send-email-hcegtvedt@atmel.com>
+	 <20070607160910.34d64842.akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary="=-YR78brQj3/dMirmreQ2a"
+Date: Fri, 08 Jun 2007 09:23:27 +0200
+Message-Id: <1181287407.28296.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
 
-From: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+--=-YR78brQj3/dMirmreQ2a
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-We do not need to handle ::/0 routes specially any longer.
-This should fix BUG #8349.
+On Thu, 2007-06-07 at 16:09 -0700, Andrew Morton wrote:
+> On Wed,  6 Jun 2007 16:04:07 +0200
+> Hans-Christian Egtvedt <hcegtvedt@atmel.com> wrote:
+> 
+> > This patch adds support for the built in watchdog in AT32AP700X devices.
+> > 
+> > Tested on AT32AP7000 and ATSTK1000.
+> > 
+> > Hardware documentation can be found in the AT32AP7000 datasheet.
+> > 
+> > ...
+> >
+> > +static int __init at32_wdt_probe(struct platform_device *pdev)
+> > +{
 
-Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-Acked-by: Yuji Sekiya <sekiya@wide.ad.jp>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+<cut start of _probe>
 
----
- net/ipv6/ip6_fib.c |    8 --------
- 1 file changed, 8 deletions(-)
+> > +	wdt->regs = ioremap(regs->start, regs->end - regs->start + 1);
+> 
+> I see an ioremap(), but there are no iounmap()s anywhere.
 
---- linux-2.6.21.4.orig/net/ipv6/ip6_fib.c
-+++ linux-2.6.21.4/net/ipv6/ip6_fib.c
-@@ -619,14 +619,6 @@ static int fib6_add_rt2node(struct fib6_
- 
- 	ins = &fn->leaf;
- 
--	if (fn->fn_flags&RTN_TL_ROOT &&
--	    fn->leaf == &ip6_null_entry &&
--	    !(rt->rt6i_flags & (RTF_DEFAULT | RTF_ADDRCONF)) ){
--		fn->leaf = rt;
--		rt->u.dst.rt6_next = NULL;
--		goto out;
--	}
--
- 	for (iter = fn->leaf; iter; iter=iter->u.dst.rt6_next) {
- 		/*
- 		 *	Search for duplicates
+Hmm, that would be my fault, please see the attach patch, it should
+apply clean to -mm after your two -fix{1,2} patches.
 
 -- 
+With kind regards,
+
+Hans-Christian Egtvedt, siv.ing. (M.Sc.)
+Applications Engineer - AVR32 System Solutions - Atmel Norway
+
+--=-YR78brQj3/dMirmreQ2a
+Content-Disposition: attachment; filename=0001-at32ap700x-wdt-add-missing-iounmap-in-_remove.txt
+Content-Type: application/mbox; name=0001-at32ap700x-wdt-add-missing-iounmap-in-_remove.txt
+Content-Transfer-Encoding: 7bit
+
+>From 628847bb359162d2ea3a32a212f098406371119c Mon Sep 17 00:00:00 2001
+From: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Date: Fri, 8 Jun 2007 08:04:43 +0200
+Subject: [PATCH 1/1] at32ap700x-wdt: add missing iounmap in _remove
+
+Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+---
+ drivers/char/watchdog/at32ap700x_wdt.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/char/watchdog/at32ap700x_wdt.c b/drivers/char/watchdog/at32ap700x_wdt.c
+index 89fd9dc..56ace8c 100644
+--- a/drivers/char/watchdog/at32ap700x_wdt.c
++++ b/drivers/char/watchdog/at32ap700x_wdt.c
+@@ -257,6 +257,7 @@ static int __exit at32_wdt_remove(struct platform_device *pdev)
+ {
+ 	if (wdt && platform_get_drvdata(pdev) == wdt) {
+ 		misc_deregister(&wdt->miscdev);
++		iounmap(wdt->regs);
+ 		kfree(wdt);
+ 		wdt = NULL;
+ 		platform_set_drvdata(pdev, NULL);
+-- 
+1.4.4.2
+
+
+--=-YR78brQj3/dMirmreQ2a--
+
