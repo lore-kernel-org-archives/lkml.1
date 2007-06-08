@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938721AbXFHHhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938764AbXFHHiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938721AbXFHHhr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967743AbXFHHXs
+	id S938764AbXFHHiQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965255AbXFHHXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:23:48 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:58419 "EHLO
+	Fri, 8 Jun 2007 03:23:49 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:58423 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967720AbXFHHXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:23:44 -0400
-Message-Id: <20070608072149.560764000@sous-sol.org>
+	id S967721AbXFHHXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:23:45 -0400
+Message-Id: <20070608072154.738002000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:21:33 -0700
+Date: Fri, 08 Jun 2007 00:21:37 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,91 +22,74 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>,
-       linux-raid@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 06/54] md: Dont write more than is required of the last page of a bitmap
-Content-Disposition: inline; filename=md-don-t-write-more-than-is-required-of-the-last-page-of-a-bitmap.patch
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 10/54] ALSA: hda-intel - Probe additional slots only if necessary
+Content-Disposition: inline; filename=alsa-hda-intel-probe-additional-slots-only-if-necessary.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: NeilBrown <neilb@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
 
-It is possible that real data or metadata follows the bitmap
-without full page alignment.
-So limit the last write to be only the required number of bytes,
-rounded up to the hard sector size of the device.
+Probing the codec slots on ATI controller causes problems on some
+devices like Acer laptops.  On these devices, reading from codec
+slot 3 results in the communication failure with the codec chip.
+Meanwhile, some laptops (e.g. Gateway) have the codec connection
+only on slot 3, and probing this slot is mandatory for them.
+The patch improves the probing robustness.  The additional slots
+are now checked only when no codecs are found in the primary three
+slots.
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jaroslav Kysela <perex@suse.cz>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+ sound/pci/hda/hda_intel.c |   16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
- drivers/md/bitmap.c         |   17 ++++++++++++-----
- include/linux/raid/bitmap.h |    1 +
- 2 files changed, 13 insertions(+), 5 deletions(-)
-
-diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
---- linux-2.6.21.4.orig/drivers/md/bitmap.c
-+++ linux-2.6.21.4/drivers/md/bitmap.c
-@@ -255,19 +255,25 @@ static struct page *read_sb_page(mddev_t
+--- linux-2.6.21.4.orig/sound/pci/hda/hda_intel.c
++++ linux-2.6.21.4/sound/pci/hda/hda_intel.c
+@@ -198,6 +198,7 @@ enum { SDI0, SDI1, SDI2, SDI3, SDO0, SDO
+ #define RIRB_INT_MASK		0x05
  
- }
+ /* STATESTS int mask: SD2,SD1,SD0 */
++#define AZX_MAX_CODECS		3
+ #define STATESTS_INT_MASK	0x07
  
--static int write_sb_page(mddev_t *mddev, long offset, struct page *page, int wait)
-+static int write_sb_page(struct bitmap *bitmap, struct page *page, int wait)
- {
- 	mdk_rdev_t *rdev;
- 	struct list_head *tmp;
-+	mddev_t *mddev = bitmap->mddev;
+ /* SD_CTL bits */
+@@ -991,7 +992,7 @@ static int __devinit azx_codec_create(st
+ 		return err;
  
- 	ITERATE_RDEV(mddev, rdev, tmp)
- 		if (test_bit(In_sync, &rdev->flags)
--		    && !test_bit(Faulty, &rdev->flags))
-+		    && !test_bit(Faulty, &rdev->flags)) {
-+			int size = PAGE_SIZE;
-+			if (page->index == bitmap->file_pages-1)
-+				size = roundup(bitmap->last_page_size,
-+					       bdev_hardsect_size(rdev->bdev));
- 			md_super_write(mddev, rdev,
--				       (rdev->sb_offset<<1) + offset
-+				       (rdev->sb_offset<<1) + bitmap->offset
- 				       + page->index * (PAGE_SIZE/512),
--				       PAGE_SIZE,
-+				       size,
- 				       page);
-+		}
- 
- 	if (wait)
- 		md_super_wait(mddev);
-@@ -282,7 +288,7 @@ static int write_page(struct bitmap *bit
- 	struct buffer_head *bh;
- 
- 	if (bitmap->file == NULL)
--		return write_sb_page(bitmap->mddev, bitmap->offset, page, wait);
-+		return write_sb_page(bitmap, page, wait);
- 
- 	bh = page_buffers(page);
- 
-@@ -923,6 +929,7 @@ static int bitmap_init_from_disk(struct 
- 			}
- 
- 			bitmap->filemap[bitmap->file_pages++] = page;
-+			bitmap->last_page_size = count;
+ 	codecs = 0;
+-	for (c = 0; c < azx_max_codecs[chip->driver_type]; c++) {
++	for (c = 0; c < AZX_MAX_CODECS; c++) {
+ 		if ((chip->codec_mask & (1 << c)) & probe_mask) {
+ 			err = snd_hda_codec_new(chip->bus, c, NULL);
+ 			if (err < 0)
+@@ -999,7 +1000,18 @@ static int __devinit azx_codec_create(st
+ 			codecs++;
  		}
- 		paddr = kmap_atomic(page, KM_USER0);
- 		if (bitmap->flags & BITMAP_HOSTENDIAN)
---- linux-2.6.21.4.orig/include/linux/raid/bitmap.h
-+++ linux-2.6.21.4/include/linux/raid/bitmap.h
-@@ -232,6 +232,7 @@ struct bitmap {
- 	struct page **filemap; /* list of cache pages for the file */
- 	unsigned long *filemap_attr; /* attributes associated w/ filemap pages */
- 	unsigned long file_pages; /* number of pages in the file */
-+	int last_page_size; /* bytes in the last page */
- 
- 	unsigned long flags;
- 
+ 	}
+-	if (! codecs) {
++	if (!codecs) {
++		/* probe additional slots if no codec is found */
++		for (; c < azx_max_codecs[chip->driver_type]; c++) {
++			if ((chip->codec_mask & (1 << c)) & probe_mask) {
++				err = snd_hda_codec_new(chip->bus, c, NULL);
++				if (err < 0)
++					continue;
++				codecs++;
++			}
++		}
++	}
++	if (!codecs) {
+ 		snd_printk(KERN_ERR SFX "no codecs initialized\n");
+ 		return -ENXIO;
+ 	}
 
 -- 
