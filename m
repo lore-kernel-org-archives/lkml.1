@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938376AbXFHH1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967815AbXFHH1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938376AbXFHH1N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938015AbXFHHSU
+	id S967815AbXFHH1i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938067AbXFHHS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:18:20 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33300 "EHLO
+	Fri, 8 Jun 2007 03:18:28 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33310 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938038AbXFHHSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:18:18 -0400
-Message-Id: <20070608071557.322969000@sous-sol.org>
+	id S938019AbXFHHS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:18:27 -0400
+Message-Id: <20070608071556.109090000@sous-sol.org>
 References: <20070608071511.159309000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:15:40 -0700
+Date: Fri, 08 Jun 2007 00:15:39 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,90 +24,63 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        David Miller <davem@davemloft.net>, bunk@stusta.de,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: [patch 29/32] NET: Fix race condition about network device name allocation.
-Content-Disposition: inline; filename=net-fix-race-condition-about-network-device-name-allocation.patch
+       Mark Glines <mark@glines.org>
+Subject: [patch 28/32] TCP: Use default 32768-61000 outgoing port range in all cases.
+Content-Disposition: inline; filename=tcp-use-default-32768-61000-outgoing-port-range-in-all-cases.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: Mark Glines <mark@glines.org>
 
-Kenji Kaneshige found this race between device removal and
-registration.  On unregister it is possible for the old device to
-exist, because sysfs file is still open.  A new device with 'eth%d'
-will select the same name, but sysfs kobject register will fial.
+This diff changes the default port range used for outgoing connections,
+from "use 32768-61000 in most cases, but use N-4999 on small boxes
+(where N is a multiple of 1024, depending on just *how* small the box
+is)" to just "use 32768-61000 in all cases".
 
-The following changes the shutdown order slightly. It hold a removes
-the sysfs entries earlier (on unregister_netdevice), but holds a
-kobject reference.  Then when todo runs the actual last put free
-happens.
+I don't believe there are any drawbacks to this change, and it keeps
+outgoing connection ports farther away from the mess of
+IANA-registered ports.
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Mark Glines <mark@glines.org>
 Signed-off-by: David S. Miller <davem@davemloft.net>
-[chrisw: backport to 2.6.20]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-
 ---
- net/core/dev.c       |   10 ++++++----
- net/core/net-sysfs.c |    8 +++++++-
- 2 files changed, 13 insertions(+), 5 deletions(-)
+ net/ipv4/inet_connection_sock.c |    4 +---
+ net/ipv4/tcp.c                  |    3 ---
+ 2 files changed, 1 insertion(+), 6 deletions(-)
 
---- linux-2.6.20.13.orig/net/core/dev.c
-+++ linux-2.6.20.13/net/core/dev.c
-@@ -3138,7 +3138,6 @@ void netdev_run_todo(void)
- 			continue;
- 		}
+--- linux-2.6.20.13.orig/net/ipv4/inet_connection_sock.c
++++ linux-2.6.20.13/net/ipv4/inet_connection_sock.c
+@@ -31,10 +31,8 @@ EXPORT_SYMBOL(inet_csk_timer_bug_msg);
  
--		netdev_unregister_sysfs(dev);
- 		dev->reg_state = NETREG_UNREGISTERED;
+ /*
+  * This array holds the first and last local port number.
+- * For high-usage systems, use sysctl to change this to
+- * 32768-61000
+  */
+-int sysctl_local_port_range[2] = { 1024, 4999 };
++int sysctl_local_port_range[2] = { 32768, 61000 };
  
- 		netdev_wait_allrefs(dev);
-@@ -3149,11 +3148,11 @@ void netdev_run_todo(void)
- 		BUG_TRAP(!dev->ip6_ptr);
- 		BUG_TRAP(!dev->dn_ptr);
- 
--		/* It must be the very last action,
--		 * after this 'dev' may point to freed up memory.
--		 */
- 		if (dev->destructor)
- 			dev->destructor(dev);
-+
-+		/* Free network device */
-+		kobject_put(&dev->dev.kobj);
- 	}
- 
- out:
-@@ -3310,6 +3309,9 @@ int unregister_netdevice(struct net_devi
- 	/* Notifier chain MUST detach us from master device. */
- 	BUG_TRAP(!dev->master);
- 
-+	/* Remove entries from sysfs */
-+	netdev_unregister_sysfs(dev);
-+
- 	/* Finish processing unregister after unlock */
- 	net_set_todo(dev);
- 
---- linux-2.6.20.13.orig/net/core/net-sysfs.c
-+++ linux-2.6.20.13/net/core/net-sysfs.c
-@@ -440,9 +440,15 @@ static struct class net_class = {
- #endif
- };
- 
-+/* Delete sysfs entries but hold kobject reference until after all
-+ * netdev references are gone.
-+ */
- void netdev_unregister_sysfs(struct net_device * net)
- {
--	class_device_del(&(net->class_dev));
-+	struct device *dev = &(net->dev);
-+
-+	kobject_get(&dev->kobj);
-+	device_del(dev);
- }
- 
- /* Create sysfs entries for network device. */
+ int inet_csk_bind_conflict(const struct sock *sk,
+ 			   const struct inet_bind_bucket *tb)
+--- linux-2.6.20.13.orig/net/ipv4/tcp.c
++++ linux-2.6.20.13/net/ipv4/tcp.c
+@@ -2445,13 +2445,10 @@ void __init tcp_init(void)
+ 			order++)
+ 		;
+ 	if (order >= 4) {
+-		sysctl_local_port_range[0] = 32768;
+-		sysctl_local_port_range[1] = 61000;
+ 		tcp_death_row.sysctl_max_tw_buckets = 180000;
+ 		sysctl_tcp_max_orphans = 4096 << (order - 4);
+ 		sysctl_max_syn_backlog = 1024;
+ 	} else if (order < 3) {
+-		sysctl_local_port_range[0] = 1024 * (3 - order);
+ 		tcp_death_row.sysctl_max_tw_buckets >>= (3 - order);
+ 		sysctl_tcp_max_orphans >>= (3 - order);
+ 		sysctl_max_syn_backlog = 128;
 
 -- 
