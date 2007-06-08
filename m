@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968319AbXFHHlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968472AbXFHHlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968319AbXFHHlW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967760AbXFHHYX
+	id S968472AbXFHHlt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938308AbXFHHY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:24:23 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55181 "EHLO
+	Fri, 8 Jun 2007 03:24:26 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55180 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938270AbXFHHYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S938207AbXFHHYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Jun 2007 03:24:22 -0400
-Message-Id: <20070608072233.592004000@sous-sol.org>
+Message-Id: <20070608072234.361737000@sous-sol.org>
 References: <20070608072127.352723000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 Jun 2007 00:22:13 -0700
+Date: Fri, 08 Jun 2007 00:22:14 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,91 +24,47 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        David Miller <davem@davemloft.net>, bunk@stusta.de,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 46/54] NET: Fix race condition about network device name allocation.
-Content-Disposition: inline; filename=net-fix-race-condition-about-network-device-name-allocation.patch
+Subject: [patch 47/54] IPV4: Correct rp_filter help text.
+Content-Disposition: inline; filename=ipv4-correct-rp_filter-help-text.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: Dave Jones <davej@redhat.com>
 
-Kenji Kaneshige found this race between device removal and
-registration.  On unregister it is possible for the old device to
-exist, because sysfs file is still open.  A new device with 'eth%d'
-will select the same name, but sysfs kobject register will fial.
+As mentioned in http://bugzilla.kernel.org/show_bug.cgi?id=5015
+The helptext implies that this is on by default.
+This may be true on some distros (Fedora/RHEL have it enabled
+in /etc/sysctl.conf), but the kernel defaults to it off.
 
-The following changes the shutdown order slightly. It hold a removes
-the sysfs entries earlier (on unregister_netdevice), but holds a
-kobject reference.  Then when todo runs the actual last put free
-happens.
-
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Dave Jones <davej@redhat.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/core/dev.c       |   10 ++++++----
- net/core/net-sysfs.c |    8 +++++++-
- 2 files changed, 13 insertions(+), 5 deletions(-)
+ net/ipv4/Kconfig |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- linux-2.6.21.4.orig/net/core/dev.c
-+++ linux-2.6.21.4/net/core/dev.c
-@@ -3135,7 +3135,6 @@ void netdev_run_todo(void)
- 			continue;
- 		}
+--- linux-2.6.21.4.orig/net/ipv4/Kconfig
++++ linux-2.6.21.4/net/ipv4/Kconfig
+@@ -43,11 +43,11 @@ config IP_ADVANCED_ROUTER
+ 	  asymmetric routing (packets from you to a host take a different path
+ 	  than packets from that host to you) or if you operate a non-routing
+ 	  host which has several IP addresses on different interfaces. To turn
+-	  rp_filter off use:
++	  rp_filter on use:
  
--		netdev_unregister_sysfs(dev);
- 		dev->reg_state = NETREG_UNREGISTERED;
+-	  echo 0 > /proc/sys/net/ipv4/conf/<device>/rp_filter
++	  echo 1 > /proc/sys/net/ipv4/conf/<device>/rp_filter
+ 	  or
+-	  echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
++	  echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
  
- 		netdev_wait_allrefs(dev);
-@@ -3146,11 +3145,11 @@ void netdev_run_todo(void)
- 		BUG_TRAP(!dev->ip6_ptr);
- 		BUG_TRAP(!dev->dn_ptr);
+ 	  If unsure, say N here.
  
--		/* It must be the very last action,
--		 * after this 'dev' may point to freed up memory.
--		 */
- 		if (dev->destructor)
- 			dev->destructor(dev);
-+
-+		/* Free network device */
-+		kobject_put(&dev->dev.kobj);
- 	}
- 
- out:
-@@ -3305,6 +3304,9 @@ void unregister_netdevice(struct net_dev
- 	/* Notifier chain MUST detach us from master device. */
- 	BUG_TRAP(!dev->master);
- 
-+	/* Remove entries from sysfs */
-+	netdev_unregister_sysfs(dev);
-+
- 	/* Finish processing unregister after unlock */
- 	net_set_todo(dev);
- 
---- linux-2.6.21.4.orig/net/core/net-sysfs.c
-+++ linux-2.6.21.4/net/core/net-sysfs.c
-@@ -451,9 +451,15 @@ static struct class net_class = {
- #endif
- };
- 
-+/* Delete sysfs entries but hold kobject reference until after all
-+ * netdev references are gone.
-+ */
- void netdev_unregister_sysfs(struct net_device * net)
- {
--	device_del(&(net->dev));
-+	struct device *dev = &(net->dev);
-+
-+	kobject_get(&dev->kobj);
-+	device_del(dev);
- }
- 
- /* Create sysfs entries for network device. */
 
 -- 
