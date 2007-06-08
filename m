@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937386AbXFHBf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966709AbXFHBpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937386AbXFHBf7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 21:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935554AbXFHBfq
+	id S966709AbXFHBpb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 21:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964853AbXFHBpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 21:35:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37814
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S935002AbXFHBfn (ORCPT
+	Thu, 7 Jun 2007 21:45:19 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:65351 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964968AbXFHBpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 21:35:43 -0400
-Date: Thu, 07 Jun 2007 18:35:59 -0700 (PDT)
-Message-Id: <20070607.183559.67892976.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: akpm@linux-foundation.org, jfannin@gmail.com, linux-kernel@vger.kernel.org,
-       linux-net@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm2: Assigning IP address fails
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070607225452.GA17211@gondor.apana.org.au>
-References: <20070607214609.GB8204@nineveh.local>
-	<20070607150653.b83bfc0f.akpm@linux-foundation.org>
-	<20070607225452.GA17211@gondor.apana.org.au>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 7 Jun 2007 21:45:18 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18024.46233.432086.424311@stoffel.org>
+Date: Thu, 7 Jun 2007 21:44:57 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
+In-Reply-To: <m3wsyfzcpt.fsf@maximus.localdomain>
+References: <20070607162251.5f291325@the-village.bc.nu>
+	<m3wsyfzcpt.fsf@maximus.localdomain>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Fri, 8 Jun 2007 08:54:52 +1000
 
-> On Thu, Jun 07, 2007 at 03:06:53PM -0700, Andrew Morton wrote:
-> >
-> > >     I'm not able to bring an ethernet interface down and back up again
-> > > with this if avahi-autoipd is installed on my Ubuntu boxes.  I've seen
-> > > it on three different computers with different NIC hardware.
-> 
-> Sorry, it was my patch.  This patch should fix it.
-> 
-> [IPV4]: Do not remove idev when addresses are cleared
-> 
-> Now that we create idev before addresses are added, it no longer makes
-> sense to remove them when addresses are all deleted.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Krzysztof> Perhaps we should drop that 80-column style and use some
+Krzysztof> 120+?  X or no X, almost all people now have more lines and
+Krzysztof> columns on their displays than MDA 20 years ago.
 
-Applied, thanks Herbert.
+I don't.  I use a pair of 80x48 xterms or emacs windows side by side
+on my monitor with a nice big clear easy to read font.  Itty bitty
+fonts are a total pain...
+
+John
+
