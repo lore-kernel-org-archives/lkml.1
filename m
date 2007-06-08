@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXFHEC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbXFHERL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755492AbXFHEC3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 00:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbXFHECU
+	id S1756398AbXFHERL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 00:17:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbXFHEQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 00:02:20 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:51470 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827AbXFHECT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 00:02:19 -0400
-Message-ID: <4668D4A9.1000905@zytor.com>
-Date: Thu, 07 Jun 2007 21:01:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 8 Jun 2007 00:16:56 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:55145 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754052AbXFHEQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 00:16:55 -0400
+Date: Thu, 7 Jun 2007 21:16:51 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       RT <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH RT] convert RCU Preempt tasklet into softirq.
+Message-ID: <20070608041651.GA19912@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1181180051.18444.31.camel@localhost.localdomain> <20070607041411.GB1783@linux.vnet.ibm.com> <1181226138.18444.54.camel@localhost.localdomain> <20070607161754.GA11941@linux.vnet.ibm.com> <1181240819.10408.14.camel@localhost.localdomain> <1181242307.10408.17.camel@localhost.localdomain> <1181247369.10408.20.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: vgoyal@in.ibm.com
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       v12n <virtualization@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC 6/7] i386: make the bzImage payload an ELF file
-References: <20070606225837.654272428@goop.org> <20070606230922.476662240@goop.org> <4667462A.2010404@zytor.com> <466749C8.2010700@goop.org> <46674C96.7090104@zytor.com> <46674F68.6030100@goop.org> <4667547B.8080502@zytor.com> <20070608034958.GA10728@in.ibm.com>
-In-Reply-To: <20070608034958.GA10728@in.ibm.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181247369.10408.20.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
+On Thu, Jun 07, 2007 at 04:16:09PM -0400, Steven Rostedt wrote:
+> On Thu, 2007-06-07 at 14:51 -0400, Steven Rostedt wrote:
 > 
-> One would not know highest used address until ELF headers have been 
-> parsed. May be it is two step movement. First decompress ELF.gz and 
-> ELF parser can be at the end of decompressed data. Then it can parse
-> the ELF headers and move itself out of the ELF header destination memory
-> and then load the elf segments at appropriate place.
+> > There might still be an issue here. With the patch I'm getting a really
+> > slow response time on networking. But that be because of other patches I
+> > have applied.
 > 
-> One will have to be little careful while moving ELF parser or while
-> decompressing the file to a temporary buffer so that we don't stomp over
-> any other data loaded by boot-loader (like kexec does) or we don't go beyond
-> the memory bounds which might have been created in the case of using kdump.
-> 
+> I removed this patch and I can still get the network slowdown/hang. So
+> this patch is unrelated to this issue. RCU on the otherhand has not been
+> cleared of suspicion.
 
-The easiest is probably to decode the ELF headers (which can be done in
-O(1) space), relocate, reset the decompressor and restart.
+Might the slowdown be due to different kernel threads running at different
+priorities?  I could easily believe that changing the priority of the
+kernel thread processing RCU callbacks could have a noticeable effect
+on performance in some cases.
 
-Relocation is currently done in the decompressor, but it could also be
-done at the kernel entrypoint, as long as the kernel entrypoint code is
-all PIC.
+In other news, passed a set of kernbenches at this end, so starting
+an rcutorture.
 
-	-hpa
+							Thanx, Paul
