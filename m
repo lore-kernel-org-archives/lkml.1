@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970976AbXFHUZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031809AbXFHU1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970976AbXFHUZv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 16:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbXFHUZo
+	id S1031809AbXFHU1u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 16:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969573AbXFHU1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 16:25:44 -0400
-Received: from mx2.suse.de ([195.135.220.15]:38207 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750795AbXFHUZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 16:25:43 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jean Delvare <khali@linux-fr.org>
-Subject: [PATCH 4/5] kobject: use the proper printk level for kobject error
-Date: Fri,  8 Jun 2007 13:04:42 -0700
-Message-Id: <1181333098614-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.2.1
-In-Reply-To: <118133309258-git-send-email-gregkh@suse.de>
-References: <20070608200407.GA22825@kroah.com>
- <11813330832783-git-send-email-gregkh@suse.de>
- <11813330873231-git-send-email-gregkh@suse.de>
- <118133309258-git-send-email-gregkh@suse.de>
+	Fri, 8 Jun 2007 16:27:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:48897 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S969435AbXFHU1l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 16:27:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=QHbw5GquHDmAk/ds9jQVvDJgO32lFi3eZt7ZAroA8N9kG0W8d/1FAZXktdHo2xmKXLJLwn7yRk/FE7B2//yinLe8ipAgERPxvZTdFx2TcSIMJmsrVo0mUING2zrkD9f4jl/0adp7dUgQPpcawoIXsOC62giDfMzNnDKrSjXU1Dw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
+Date: Fri, 8 Jun 2007 22:41:24 +0200
+User-Agent: KMail/1.9.6
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Korb <ml@akana.de>, linux-ide@vger.kernel.org
+References: <20601315171560711667@wsc.cz> <200706081418.56217.bzolnier@gmail.com> <20070608135931.GB24346@havoc.gtf.org>
+In-Reply-To: <20070608135931.GB24346@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200706082241.24233.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks to Jean Delvare <khali@linux-fr.org> for pointing it out to me.
 
-Cc: Jean Delvare <khali@linux-fr.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- lib/kobject.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+Hi,
 
-diff --git a/lib/kobject.c b/lib/kobject.c
-index fc5f3f6..ac15206 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -202,14 +202,14 @@ int kobject_shadow_add(struct kobject * kobj, struct dentry *shadow_parent)
- 
- 		/* be noisy on error issues */
- 		if (error == -EEXIST)
--			printk("kobject_add failed for %s with -EEXIST, "
--			       "don't try to register things with the "
--			       "same name in the same directory.\n",
-+			printk(KERN_ERR "kobject_add failed for %s with "
-+			       "-EEXIST, don't try to register things with "
-+			       "the same name in the same directory.\n",
- 			       kobject_name(kobj));
- 		else
--			printk("kobject_add failed for %s (%d)\n",
-+			printk(KERN_ERR "kobject_add failed for %s (%d)\n",
- 			       kobject_name(kobj), error);
--		 dump_stack();
-+		dump_stack();
- 	}
- 
- 	return error;
--- 
-1.5.2.1
+On Friday 08 June 2007, Jeff Garzik wrote:
+> On Fri, Jun 08, 2007 at 02:18:55PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Monday 04 June 2007, Jiri Slaby wrote:
+> > > ide-generic, add another device exception
+> > 
+> > ide-generic is a generic ISA IDE driver, this one is drivers/ide/pci/generic
+> > (a generic IDE PCI driver) - fixed patch description to avoid confusion.
+> > 
+> > [ Yes, both drivers need a rename - patches are welcomed. ]
+> 
+> Probably best to do a rename from your side, in git.
 
+AFAIR git-quiltimport of quilt patches should handle this just fine?
+
+My previous description of the issue was a bit too cryptic: besides
+changing ide/ide-generic.c and ide/pci/generic.c filenames, ide/Kconfig
+(names of config options) and ide/Makefile should be updated accordingly.
+Also enhancing Kconfig entries for both drivers to be more verbose would
+be more than appropriate.
+
+Since I'm quite time constrained and I'm working on other IDE issues I
+would prefer that somebody else handle this task and just send me patches.
+
+8)
+
+Thanks,
+Bart
