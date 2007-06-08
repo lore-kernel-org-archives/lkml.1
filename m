@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970310AbXFHQUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970359AbXFHQU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970310AbXFHQUf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 12:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969972AbXFHQRS
+	id S970359AbXFHQU7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 12:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970323AbXFHQRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 12:17:18 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:25279 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S969942AbXFHQRQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 12:17:16 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=YRD3iKDfX+X6iKPhDYTz75PFttYbWBVPTiljqy9I/cgksB4hV+tPYJBI+n9HhMbNo
-	rvzLugLap4eoDSkKcCtMQ==
-Message-ID: <6599ad830706080916j477e08c0l8b142d9a0d832c76@mail.gmail.com>
-Date: Fri, 8 Jun 2007 09:16:45 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Subject: Re: [ckrm-tech] [PATCH 00/10] Containers(V10): Generic Process Containers
-Cc: "Paul Jackson" <pj@sgi.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
-       rohitseth@google.com, haveblue@us.ibm.com, xemul@sw.ru, dev@sw.ru,
-       containers@lists.osdl.org, devel@openvz.org, ebiederm@xmission.com,
-       mbligh@google.com, cpw@sgi.com, svaidy@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070608160840.GA11133@vino.hallyn.com>
+	Fri, 8 Jun 2007 12:17:38 -0400
+Received: from fall-lakeland.atl.sa.earthlink.net ([207.69.195.103]:51882 "EHLO
+	fall-lakeland.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S970319AbXFHQRh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 12:17:37 -0400
+From: Rich Chase <rac47.02@engalumni.colostate.edu>
+Reply-To: rac47.02@engalumni.colostate.edu
+Organization: Independent Thinkers R Us
+To: linux-kernel@vger.kernel.org
+Subject: missing elfconfig.h
+Date: Fri, 8 Jun 2007 09:08:36 -0400
+User-Agent: KMail/1.9.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20070606223952.GB5626@sergelap.austin.ibm.com>
-	 <20070607000559.GA19529@sergelap.austin.ibm.com>
-	 <20070606174609.bfa01446.pj@sgi.com>
-	 <20070607180158.GA936@sergelap.austin.ibm.com>
-	 <20070607122121.24fe6ff4.pj@sgi.com>
-	 <20070607201723.GA17011@sergelap.austin.ibm.com>
-	 <20070607150113.f020d8f8.pj@sgi.com>
-	 <20070608143250.GA7728@vino.hallyn.com>
-	 <6599ad830706080855n22612814u4805d34a295b165f@mail.gmail.com>
-	 <20070608160840.GA11133@vino.hallyn.com>
+Message-Id: <200706080908.37044.rac47.02@engalumni.colostate.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/8/07, Serge E. Hallyn <serge@hallyn.com> wrote:
->
-> The problem is container_clone() doesn't call ->create explicitly, it
-> does vfs_mkdir.  So we have no real way of passing in clone_task.
->
+An Apparent bug:
+version 2.6.21.3
+missing the file ./scripts/mod/elfconfig.h
 
-Good point.
+I noticed this when trying to compile a 3rd party 
+module. Maybe this is intended. Not sure.
 
-Looking at vfs_mkdir(), it's pretty simple, and really the only bits
-that apply to container_clone() are the call to ->mkdir() and possibly
-the call to fsnotify_mkdir(). (I think that's maybe how you did it
-originally?)
+I discovered this when I attempted to compile modpost.c 
+in the same directory. The following is the output:
 
-Maybe it would make sense to just call container_create() at that
-point directly, which would allow us more parameters.
+#> make modpost
+cc     modpost.c   -o modpost
+In file included from modpost.c:15:
+modpost.h:12:23: error: elfconfig.h: No such file or 
+directory
+modpost.c: In function ‘handle_modversions’:
+modpost.c:436: error: ‘MODULE_SYMBOL_PREFIX’ undeclared 
+(first use in this function)
+modpost.c:436: error: (Each undeclared identifier is 
+reported only once
+modpost.c:436: error: for each function it appears in.)
+modpost.c:436: error: expected ‘)’ before string 
+constant
+modpost.c:436: error: too few arguments to 
+function ‘memcmp’
+modpost.c:438: error: expected ‘)’ before string 
+constant
+modpost.c:451: error: expected ‘)’ before string 
+constant
+modpost.c:482: error: expected ‘)’ before string 
+constant
+modpost.c:482: error: too few arguments to 
+function ‘memcmp’
+modpost.c:483: error: expected ‘)’ before string 
+constant
+modpost.c:486: error: expected ‘)’ before string 
+constant
+modpost.c:488: error: expected ‘)’ before string 
+constant
+make: *** [modpost] Error 1
 
-Paul
+
+Regards,
+Rich Chase
