@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938878AbXFHK6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939019AbXFHLBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938878AbXFHK6a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 06:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937590AbXFHK6V
+	id S939019AbXFHLBW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 07:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937992AbXFHLBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 06:58:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54231 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937387AbXFHK6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 06:58:20 -0400
-Date: Fri, 8 Jun 2007 12:58:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Cc: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, ak@suse.de
-Subject: Re: [PATCH] Fix interchanged parameters to
-	release_{evntsel,perfctr}_nmi
-Message-ID: <20070608105808.GA10190@elte.hu>
-References: <465C2225.2000100@googlemail.com> <20070603150246.5151dda6@laptop.hypervisor.org> <20070608060244.GA2369@atjola.homenet> <20070607234153.09c32b49.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070607234153.09c32b49.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 8 Jun 2007 07:01:16 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:42673 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937981AbXFHLBP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 07:01:15 -0400
+Subject: Re: [SERIAL] Don't optimise away baud rate changes when BOTHER is
+	used
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
+In-Reply-To: <20070607235441.17dbd5cc@the-village.bc.nu>
+References: <20070523172739.1d3a918c@the-village.bc.nu>
+	 <1180012135.8303.89.camel@shinybook.infradead.org>
+	 <20070524144109.7bd0f4d0@the-village.bc.nu>
+	 <1180014338.8303.95.camel@shinybook.infradead.org>
+	 <20070524160559.54c2c639@the-village.bc.nu>
+	 <1181133010.4096.26.camel@pmac.infradead.org>
+	 <20070606160310.27d6d3b8@the-village.bc.nu>
+	 <1181150998.2785.13.camel@pmac.infradead.org>
+	 <20070607163808.19984208@the-village.bc.nu>
+	 <1181231421.2785.68.camel@pmac.infradead.org>
+	 <20070607225528.0d5e7b29@the-village.bc.nu>
+	 <1181254517.20322.6.camel@shinybook.infradead.org>
+	 <20070607235441.17dbd5cc@the-village.bc.nu>
+Content-Type: text/plain
+Date: Fri, 08 Jun 2007 12:01:07 +0100
+Message-Id: <1181300467.2801.20.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2007-06-07 at 23:54 +0100, Alan Cox wrote:
+> If it doesn't only involve editing the header files for this case (and
+> maybe needing a define to indicate old==new) then the tty layer wants
+> fixing to sort that out. Its on my todo list. 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+It works fine. The only problem is that if I set a _standard_ baud rate
+with BOTHER and then read it back with something that doesn't grok
+BOTHER, I get it back just as I set it.
 
-> Half of this (the first hunk) has been in Andi's tree for a day or 
-> two.
-> 
-> I shall drop Andi's patch, queue this one up and shall send this off 
-> to Linus if nothing else happens in the next couple of days.
+[root@pegasos ~]# ./testit1 
+Get: c_flag 0x1f0b1f(31,31), ispeed 38400, ospeed 38400
+[root@pegasos ~]# stty
+speed 0 baud; line = 0;
 
-this patch does not fix the NMI watchdog bootup lockup i can reproduce, 
-it still occurs in -rc4 too. Andi, could you please react to my report? 
-See the "2.6.22-rc3 nmi watchdog hang" thread on lkml.
+It might be better if it was returning B38400, rather than BOTHER.
+Should we be using tty_termios_encode_baud_rate() for TCGETS()?
 
-	Ingo
+-- 
+dwmw2
+
