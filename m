@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967748AbXFHIVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937728AbXFHIf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967748AbXFHIVR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 04:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936377AbXFHIU6
+	id S937728AbXFHIf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 04:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763664AbXFHIfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 04:20:58 -0400
-Received: from lucidpixels.com ([75.144.35.66]:50437 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936302AbXFHIU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 04:20:56 -0400
-Date: Fri, 8 Jun 2007 04:20:55 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jesse Barnes <jesse.barnes@intel.com>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-In-Reply-To: <200706071530.51552.jesse.barnes@intel.com>
-Message-ID: <Pine.LNX.4.64.0706080419260.29016@p34.internal.lan>
-References: <200706071530.51552.jesse.barnes@intel.com>
+	Fri, 8 Jun 2007 04:35:11 -0400
+Received: from styx.suse.cz ([82.119.242.94]:57454 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763353AbXFHIfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 04:35:10 -0400
+Date: Fri, 8 Jun 2007 10:35:53 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] [TRIVIAL] X86_64: fix wrong comment regarding set_fixmap()
+Message-ID: <Pine.LNX.4.64.0706081034570.10204@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jiri Kosina <jkosina@suse.cz>
 
+X86_64: fix wrong comment regarding set_fixmap()
+    
+The function name is set_fixmap(), not fixmap_set() as stated in the comment.
+    
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-On Thu, 7 Jun 2007, Jesse Barnes wrote:
-
-> On some machines, buggy BIOSes don't properly setup WB MTRRs to
-> cover all available RAM, meaning the last few megs (or even gigs)
-> of memory will be marked uncached.  Since Linux tends to allocate
-> from high memory addresses first, this causes the machine to be
-> unusably slow as soon as the kernel starts really using memory
-> (i.e. right around init time).
->
-> This patch works around the problem by scanning the MTRRs at
-> boot and figuring out whether the current end_pfn value (setup
-> by early e820 code) goes beyond the highest WB MTRR range, and
-> if so, trimming it to match.  A fairly obnoxious KERN_WARNING
-> is printed too, letting the user know that not all of their
-> memory is available due to a likely BIOS bug.
->
-> Something similar could be done on i386 if needed, but the boot
-> ordering would be slightly different, since the MTRR code on i386
-> depends on the boot_cpu_data structure being setup.
->
-> This patch incorporates the feedback from Eric and Andi:
->  - use MAX_VAR_RANGES instead of NUM_VAR_RANGES
->  - move array declaration to header file as an extern
->  - add command line disable option "disable_mtrr_trim"
->  - don't run the trim code if the MTRR default type is cacheable
->  - don't run the trim code on non-Intel machines
->
-> Justin, feel free to test again if you have time and add your
-> "Tested-by" signoff.
->
-> Andi, as for large pages, do you think this is ok as is, or should
-> I trim a larger granularity?  If so, what granularity?
->
-> Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
->
-> Thanks,
-> Jesse
->
-
-Looks good, it sustained many backups, bzip2, and even some encoding
-processes, no issues.  Let me know if you need me to test any future
-iterations of the patch, so far each has been fine, no problems to
-report using the 965WH motherboard with 8GB of memory.
-
-Signed-off-by:  Justin Piszcz <jpiszcz@lucidpixels.com>
-
+diff --git a/include/asm-x86_64/fixmap.h b/include/asm-x86_64/fixmap.h
+index e90e167..dfd7660 100644
+--- a/include/asm-x86_64/fixmap.h
++++ b/include/asm-x86_64/fixmap.h
+@@ -24,7 +24,7 @@
+  *
+  * these 'compile-time allocated' memory buffers are
+  * fixed-size 4k pages. (or larger if used with an increment
+- * highger than 1) use fixmap_set(idx,phys) to associate
++ * highger than 1) use set_fixmap(idx,phys) to associate
+  * physical memory with fixmap indices.
+  *
+  * TLB entries of such buffers will not be flushed across
