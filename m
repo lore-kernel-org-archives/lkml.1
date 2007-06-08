@@ -1,43 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967125AbXFHCHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967268AbXFHCH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967125AbXFHCHm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 22:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764091AbXFHCHe
+	id S967268AbXFHCH6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 22:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967132AbXFHCHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 22:07:34 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:55608 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760152AbXFHCHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 22:07:34 -0400
-Date: Thu, 7 Jun 2007 22:07:30 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: John Stoffel <john@stoffel.org>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
-Message-ID: <20070608020730.GD23290@havoc.gtf.org>
-References: <20070607162251.5f291325@the-village.bc.nu> <m3wsyfzcpt.fsf@maximus.localdomain> <18024.46233.432086.424311@stoffel.org> <20070608014719.GC23290@havoc.gtf.org> <18024.46902.682920.924521@stoffel.org>
+	Thu, 7 Jun 2007 22:07:42 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:64603 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967027AbXFHCHl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 22:07:41 -0400
+Subject: Re: [PATCH] enable interrupts in user path of page fault.
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>
+In-Reply-To: <20070607185851.faf36f95.akpm@linux-foundation.org>
+References: <1181187244.18444.45.camel@localhost.localdomain>
+	 <20070607185851.faf36f95.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 07 Jun 2007 22:06:46 -0400
+Message-Id: <1181268406.10408.26.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18024.46902.682920.924521@stoffel.org>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 09:56:06PM -0400, John Stoffel wrote:
-> Thinking about it more, I wonder if Krysztof is bitching more about
-> the tab width of 8 characters?   I know that it ticks me off,
+On Thu, 2007-06-07 at 18:58 -0700, Andrew Morton wrote:
+> On Wed, 06 Jun 2007 23:34:04 -0400
 
-Even if he is, _that_ is definitely not getting changed.
+> Interrupts got disabled here because do_page_fault() is an
+> interrupt-disabling trap, yes?
 
-That was the very first item Linus wrote in Documentation/CodingStyle,
-and for good reasons.
+Correct.
 
-If code starts creeping way right due to indentation levels, create a
-new function.
+> 
+> The patch looks reasonable to me: a slight reduction in interrupt-off
+> latency when really weird things are happening.
+> 
+> The patch also breaks things, I think: if userspace is running with
+> interrupts disabled and tries to access kernel memory it will presently
+> whizz through the kernel without ever enabling interrupts.  With this
+> change, the kernel will now enable interrupts, which is presumably not what
+> the application wanted.
 
-	Jeff
+I didn't realize that userspace was allowed to run with interrupts
+disabled. If this becomes a problem, we can add the same check that's
+above where do_page_fault does enable interrupts, but is skipped because
+the faulting address was above PAGE_OFFSET.
 
+
+ie. (i386)
+        if (regs->eflags & (X86_EFLAGS_IF|VM_MASK))
+                local_irq_enable();
+
+
+> 
+> However it's surely already the case that most pagefaults will go and
+> enable interrupts on this process anyway, so no big loss there.  I'd expect
+> the kernel to spit piles of might_sleep() warnings when all this happens, so
+> maybe it just doesn't happen for some reason.
+
+Actually it does on the RT kernel. Hence why I found it ;-)
+
+-- Steve
 
 
