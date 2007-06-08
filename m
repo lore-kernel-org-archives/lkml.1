@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937759AbXFHHLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937596AbXFHHQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937759AbXFHHLi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762819AbXFHHLa
+	id S937596AbXFHHQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932237AbXFHHQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:11:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39610 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932815AbXFHHL3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:11:29 -0400
-Date: Fri, 8 Jun 2007 09:10:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 4/4] FUTEX: Tidy up the code
-Message-ID: <20070608071045.GA30226@elte.hu>
-References: <20070607235106.387346000@linutronix.de> <20070607235801.624243000@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070607235801.624243000@linutronix.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 8 Jun 2007 03:16:50 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33036 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762819AbXFHHQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:16:49 -0400
+Message-Id: <20070608071511.159309000@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 08 Jun 2007 00:15:11 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/32] 2.6.20-stable review
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is the start of the stable review cycle for the 2.6.20.14 release.
+There are 32 patches in this series, all will be posted as a response
+to this one.  If anyone has any issues with these being applied, please
+let us know.  If anyone is a maintainer of the proper subsystem, and
+wants to add a Signed-off-by: line to the patch, please respond with it.
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+These patches are sent out with a number of different people on the
+Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+to add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-> The recent PRIVATE and REQUEUE_PI changes to the futex code made it hard to read.
-> Tidy it up.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Responses should be made by Sun Jun 10 07:15 UTC.
+Anything received after that time might be too late.
 
-looks good to me:
+thanks,
 
-  Acked-by: Ingo Molnar <mingo@elte.hu>
-
-> -		if (!pi) {
-> -			if (uval & FUTEX_WAITERS)
-> +		if (!pi && (uval & FUTEX_WAITERS))
->  				futex_wake(uaddr, &curr->mm->mmap_sem, 1);
-> -		}
-
-one too much tab left in the futex_wake line i guess?
-
-	Ingo
+the -stable release team
+-- 
