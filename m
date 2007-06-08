@@ -1,38 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969025AbXFHLgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968676AbXFHLiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969025AbXFHLgz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 07:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968677AbXFHLgq
+	id S968676AbXFHLiN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 07:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967593AbXFHLh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 07:36:46 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37262 "EHLO
+	Fri, 8 Jun 2007 07:37:57 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37267 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S968629AbXFHLgo (ORCPT
+	with ESMTP id S967188AbXFHLh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 07:36:44 -0400
-Date: Fri, 8 Jun 2007 12:40:58 +0100
+	Fri, 8 Jun 2007 07:37:56 -0400
+Date: Fri, 8 Jun 2007 12:42:06 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
-Message-ID: <20070608124058.7948dee1@the-village.bc.nu>
-In-Reply-To: <46693E33.6080705@gmail.com>
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
-	<9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>
-	<466196AD.3090502@garzik.org>
-	<9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com>
-	<46667466.4010500@gmail.com>
-	<9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com>
-	<4667B347.9040900@gmail.com>
-	<alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
-	<20070607224746.GA23290@havoc.gtf.org>
-	<46690D10.9040808@gmail.com>
-	<20070608122750.7f8ae0e0@the-village.bc.nu>
-	<46693E33.6080705@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
+Subject: Re: [SERIAL] Don't optimise away baud rate changes when BOTHER is
+ used (v2)
+Message-ID: <20070608124206.49628160@the-village.bc.nu>
+In-Reply-To: <1181301289.2801.26.camel@pmac.infradead.org>
+References: <20070523172739.1d3a918c@the-village.bc.nu>
+	<1180012135.8303.89.camel@shinybook.infradead.org>
+	<20070524144109.7bd0f4d0@the-village.bc.nu>
+	<1180014338.8303.95.camel@shinybook.infradead.org>
+	<20070524160559.54c2c639@the-village.bc.nu>
+	<1181133010.4096.26.camel@pmac.infradead.org>
+	<1181301289.2801.26.camel@pmac.infradead.org>
 X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -43,9 +35,23 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If we still have several rc's left, how about just removing it and
-> watching the fireworks?  Jeff?
+On Fri, 08 Jun 2007 12:14:49 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-Seems best to me - we know the current code breaks a load of systems and
-the change should not break anything but fix them all. If we ship without
-it being changed then a load of people are stuck with broken ATA.
+> The uart_set_termios() function will bail out early without bothering to
+> touch the hardware, if it decides that nothing "relevant" has changed.
+> Unfortunately, its idea of "relevant" doesn't include c_[io]speed. So if
+> the baud rate bits are BOTHER and you just change the speed, the change
+> gets optimised away.
+> 
+> This patch makes it ignore the old Bfoo bits in c_cflag and just check
+> whether c_ispeed and c_ospeed have changed. Those integers are always
+> set appropriately for us by set_termios().
+> 
+> This version of the patch lacks the debugging printk which I
+> accidentally left in the previous one.
+> 
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+
+Acked-by: Alan Cox <alan@redhat.com>
+
