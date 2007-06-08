@@ -1,95 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939129AbXFHHod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938974AbXFHHpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939129AbXFHHod (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 03:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938347AbXFHHYh
+	id S938974AbXFHHpE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 03:45:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938368AbXFHHYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 03:24:37 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:55619 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S967794AbXFHHYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 03:24:34 -0400
-Subject: Re: [PATCH 1/1] Watchdog driver for AT32AP700X devices
-From: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Wim Van Sebroeck <wim@iguana.be>
-In-Reply-To: <20070607160910.34d64842.akpm@linux-foundation.org>
-References: <1181138647434-git-send-email-hcegtvedt@atmel.com>
-	 <20070607160910.34d64842.akpm@linux-foundation.org>
-Content-Type: multipart/mixed; boundary="=-YR78brQj3/dMirmreQ2a"
-Date: Fri, 08 Jun 2007 09:23:27 +0200
-Message-Id: <1181287407.28296.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 8 Jun 2007 03:24:41 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55248 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938361AbXFHHYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 03:24:40 -0400
+Message-Id: <20070608072240.234544000@sous-sol.org>
+References: <20070608072127.352723000@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 08 Jun 2007 00:22:20 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       David Miller <davem@davemloft.net>, bunk@stusta.de,
+       Mark Glines <mark@glines.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 53/54] TCP: Use default 32768-61000 outgoing port range in all cases.
+Content-Disposition: inline; filename=tcp-use-default-32768-61000-outgoing-port-range-in-all-cases.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
---=-YR78brQj3/dMirmreQ2a
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+From: Mark Glines <mark@glines.org>
 
-On Thu, 2007-06-07 at 16:09 -0700, Andrew Morton wrote:
-> On Wed,  6 Jun 2007 16:04:07 +0200
-> Hans-Christian Egtvedt <hcegtvedt@atmel.com> wrote:
-> 
-> > This patch adds support for the built in watchdog in AT32AP700X devices.
-> > 
-> > Tested on AT32AP7000 and ATSTK1000.
-> > 
-> > Hardware documentation can be found in the AT32AP7000 datasheet.
-> > 
-> > ...
-> >
-> > +static int __init at32_wdt_probe(struct platform_device *pdev)
-> > +{
+This diff changes the default port range used for outgoing connections,
+from "use 32768-61000 in most cases, but use N-4999 on small boxes
+(where N is a multiple of 1024, depending on just *how* small the box
+is)" to just "use 32768-61000 in all cases".
 
-<cut start of _probe>
+I don't believe there are any drawbacks to this change, and it keeps
+outgoing connection ports farther away from the mess of
+IANA-registered ports.
 
-> > +	wdt->regs = ioremap(regs->start, regs->end - regs->start + 1);
-> 
-> I see an ioremap(), but there are no iounmap()s anywhere.
-
-Hmm, that would be my fault, please see the attach patch, it should
-apply clean to -mm after your two -fix{1,2} patches.
-
--- 
-With kind regards,
-
-Hans-Christian Egtvedt, siv.ing. (M.Sc.)
-Applications Engineer - AVR32 System Solutions - Atmel Norway
-
---=-YR78brQj3/dMirmreQ2a
-Content-Disposition: attachment; filename=0001-at32ap700x-wdt-add-missing-iounmap-in-_remove.txt
-Content-Type: application/mbox; name=0001-at32ap700x-wdt-add-missing-iounmap-in-_remove.txt
-Content-Transfer-Encoding: 7bit
-
->From 628847bb359162d2ea3a32a212f098406371119c Mon Sep 17 00:00:00 2001
-From: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-Date: Fri, 8 Jun 2007 08:04:43 +0200
-Subject: [PATCH 1/1] at32ap700x-wdt: add missing iounmap in _remove
-
-Signed-off-by: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Signed-off-by: Mark Glines <mark@glines.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/watchdog/at32ap700x_wdt.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ net/ipv4/inet_connection_sock.c |    4 +---
+ net/ipv4/tcp.c                  |    3 ---
+ 2 files changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/char/watchdog/at32ap700x_wdt.c b/drivers/char/watchdog/at32ap700x_wdt.c
-index 89fd9dc..56ace8c 100644
---- a/drivers/char/watchdog/at32ap700x_wdt.c
-+++ b/drivers/char/watchdog/at32ap700x_wdt.c
-@@ -257,6 +257,7 @@ static int __exit at32_wdt_remove(struct platform_device *pdev)
- {
- 	if (wdt && platform_get_drvdata(pdev) == wdt) {
- 		misc_deregister(&wdt->miscdev);
-+		iounmap(wdt->regs);
- 		kfree(wdt);
- 		wdt = NULL;
- 		platform_set_drvdata(pdev, NULL);
+--- linux-2.6.21.4.orig/net/ipv4/inet_connection_sock.c
++++ linux-2.6.21.4/net/ipv4/inet_connection_sock.c
+@@ -31,10 +31,8 @@ EXPORT_SYMBOL(inet_csk_timer_bug_msg);
+ 
+ /*
+  * This array holds the first and last local port number.
+- * For high-usage systems, use sysctl to change this to
+- * 32768-61000
+  */
+-int sysctl_local_port_range[2] = { 1024, 4999 };
++int sysctl_local_port_range[2] = { 32768, 61000 };
+ 
+ int inet_csk_bind_conflict(const struct sock *sk,
+ 			   const struct inet_bind_bucket *tb)
+--- linux-2.6.21.4.orig/net/ipv4/tcp.c
++++ linux-2.6.21.4/net/ipv4/tcp.c
+@@ -2445,13 +2445,10 @@ void __init tcp_init(void)
+ 			order++)
+ 		;
+ 	if (order >= 4) {
+-		sysctl_local_port_range[0] = 32768;
+-		sysctl_local_port_range[1] = 61000;
+ 		tcp_death_row.sysctl_max_tw_buckets = 180000;
+ 		sysctl_tcp_max_orphans = 4096 << (order - 4);
+ 		sysctl_max_syn_backlog = 1024;
+ 	} else if (order < 3) {
+-		sysctl_local_port_range[0] = 1024 * (3 - order);
+ 		tcp_death_row.sysctl_max_tw_buckets >>= (3 - order);
+ 		sysctl_tcp_max_orphans >>= (3 - order);
+ 		sysctl_max_syn_backlog = 128;
+
 -- 
-1.4.4.2
-
-
---=-YR78brQj3/dMirmreQ2a--
-
