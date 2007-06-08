@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967683AbXFHDrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967810AbXFHDue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967683AbXFHDrP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 23:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967126AbXFHDrA
+	id S967810AbXFHDue (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 23:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967342AbXFHDu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 23:47:00 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52238 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966465AbXFHDq7 (ORCPT
+	Thu, 7 Jun 2007 23:50:26 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51141 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966962AbXFHDuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 23:46:59 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Albert Cahalan <acahalan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pbadari@us.ibm.com, torvalds@linux-foundation.org
-Subject: Re: [RFC][PATCH] /proc/pid/maps doesn't match "ipcs -m" shmid
-References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
-	<20070606204432.b670a7b1.akpm@linux-foundation.org>
-	<787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
-	<20070607162004.GA27802@vino.hallyn.com>
-Date: Thu, 07 Jun 2007 21:45:37 -0600
-In-Reply-To: <20070607162004.GA27802@vino.hallyn.com> (Serge E. Hallyn's
-	message of "Thu, 7 Jun 2007 11:20:04 -0500")
-Message-ID: <m1ir9zrtwe.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 7 Jun 2007 23:50:25 -0400
+Date: Fri, 8 Jun 2007 09:19:58 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC 6/7] i386: make the bzImage payload an ELF file
+Message-ID: <20070608034958.GA10728@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070606225837.654272428@goop.org> <20070606230922.476662240@goop.org> <4667462A.2010404@zytor.com> <466749C8.2010700@goop.org> <46674C96.7090104@zytor.com> <46674F68.6030100@goop.org> <4667547B.8080502@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4667547B.8080502@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serge@hallyn.com> writes:
+On Wed, Jun 06, 2007 at 05:42:35PM -0700, H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+> > 
+> > Certainly, but much harder to implement.  The ELF parser needs to be
+> > prepared to move itself around to get out of the way of the ELF file. 
+> > It's a fairly large change from how it works now.
+> > 
+> 
+> It doesn't if we simply declare that a certain chunk of memory is
+> available to it, for the case where it runs in the native configuration.
+> Since it doesn't have to support *any* ELF file, just the kernel one,
+> that's an option.
+> 
+> On the other hand, I guess with the decompressor/ELF parser being PIC,
+> one would simply look for the highest used address, and relocate itself
+> above that point.  It's not really all that different from what the
+> decompressor does today, except that it knows the address a priori.
+> 
 
-> Ok, so IIUC the problem was that inode->i_ino was being set to the id,
-> and the id can be the same for different things in two namespaces.
+One would not know highest used address until ELF headers have been 
+parsed. May be it is two step movement. First decompress ELF.gz and 
+ELF parser can be at the end of decompressed data. Then it can parse
+the ELF headers and move itself out of the ELF header destination memory
+and then load the elf segments at appropriate place.
 
-There is nothing preventing inode number collisions in this code even
-without multiple namespaces, and even when it was functioning
-correctly.  However as it does not seem possible to find these files
-through normal filesystem operations that does not seem to be a problem.
+One will have to be little careful while moving ELF parser or while
+decompressing the file to a temporary buffer so that we don't stomp over
+any other data loaded by boot-loader (like kexec does) or we don't go beyond
+the memory bounds which might have been created in the case of using kdump.
 
-> So aside from not using the id as inode->i_ino, an alternative is to use
-> a separate superblock, spearate mqeueue fs, for each ipc ns.
->
-> I haven't looked at that enough to see whether it's feasible, i.e. I 
-> don't know what else mqueue fs is used for.  Eric, does that sound
-> reasonable to you?
-
-At this point given that we actually have a small user space dependency
-and the fact that after I have reviewed the code it looks harmless to
-change the inode number of those inodes, in both cases they are just
-anonymous inodes generated with new_inode, and anything that we wrap
-is likely to be equally so.
-
-So it looks to me like we need to do three things:
-- Fix the inode number
-- Fix the name on the hugetlbfs dentry to hold the key
-- Add a big fat comment that user space programs depend on this
-  behavior of both the dentry name and the inode number.
-
-So Badari it looks like your original patch plus a little bit is
-what we need.
-
-Eric
+Thanks
+Vivek
