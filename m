@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031252AbXFHTok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031954AbXFHTpD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031252AbXFHTok (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967008AbXFHToN
+	id S1031954AbXFHTpD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:45:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031801AbXFHToa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:44:13 -0400
-Received: from mail.suse.de ([195.135.220.2]:56228 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751686AbXFHToM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:44:12 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: [patch] i386/x86_64: smp_call_function locking inconsistency
-Date: Fri, 8 Jun 2007 21:42:21 +0200
-User-Agent: KMail/1.9.6
-Cc: "Jan Glauber" <jan.glauber@de.ibm.com>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "David Miller" <davem@davemloft.net>, akpm@osdl.org, mingo@elte.hu,
-       schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
-       "Alan Cox" <alan@redhat.com>
-References: <20070208203210.GB9798@osiris.ibm.com> <1171025838.5349.14.camel@localhost.localdomain> <a781481a0706070707j301ba886h10f4607fd6a6e8de@mail.gmail.com>
-In-Reply-To: <a781481a0706070707j301ba886h10f4607fd6a6e8de@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 8 Jun 2007 15:44:30 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:39135 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031793AbXFHTo2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 15:44:28 -0400
+Subject: Re: [PATCH RT] convert RCU Preempt tasklet into softirq.
+From: Steven Rostedt <rostedt@goodmis.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       RT <linux-rt-users@vger.kernel.org>
+In-Reply-To: <20070608193655.GA18399@linux.vnet.ibm.com>
+References: <1181180051.18444.31.camel@localhost.localdomain>
+	 <20070607041411.GB1783@linux.vnet.ibm.com>
+	 <1181226138.18444.54.camel@localhost.localdomain>
+	 <20070607161754.GA11941@linux.vnet.ibm.com>
+	 <1181240819.10408.14.camel@localhost.localdomain>
+	 <20070607210247.GA9390@linux.vnet.ibm.com>
+	 <1181316428.10408.30.camel@localhost.localdomain>
+	 <20070608193655.GA18399@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Fri, 08 Jun 2007 15:43:48 -0400
+Message-Id: <1181331828.10408.34.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706082142.21449.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 June 2007 16:07:04 Satyam Sharma wrote:
-> Hi,
+On Fri, 2007-06-08 at 12:36 -0700, Paul E. McKenney wrote:
+> On Fri, Jun 08, 2007 at 11:27:08AM -0400, Steven Rostedt wrote:
+
+> > The first time I compiled it, I forgot the ';' and got a warning there.
+> > But the warning also included "declaring structure softirq_action in
+> > prototype", so I fixed both the ';' and added the struct. I can try
+> > compile without it. But I also know that adding #include <interrupt.h>
+> > in rcupreempt.h caused issues too.
 > 
-> I'm about six months late here(!), but I noticed this bug in
-> arch/x86_64/kernel/smp.c while preparing another related
-> patch today and then found this thread during Googling ...
+> If I leave out both the "struct softirq_action" and the
+> rcu_process_callbacks() declaration,, it compiles for me.
 > 
-> On 2/9/07, Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> > On i386/x86_64 smp_call_function_single() takes call_lock with
-> > spin_lock_bh(). To me this would imply that it is legal to call
-> > smp_call_function_single() from softirq context.
-> > It's not since smp_call_function() takes call_lock with just
-> > spin_lock(). We can easily deadlock:
-> >
-> > -> [process context]
-> > -> smp_call_function()
-> > -> spin_lock(&call_lock)
-> > -> IRQ -> do_softirq -> tasklet
-> > -> [softirq context]
-> > -> smp_call_function_single()
-> > -> spin_lock_bh(&call_lock)
-> > -> dead
-> 
-> You're absolutely right, and this bug still exists in the latest -git.
+> So I guess the rcu_process_callbacks() should be declared static...
 
-bug is definitely too strong a word. It might be unnecessary to disable bhs, 
-but I don't see any bug in here as long as you can't show a case where
-the smp_call_function() is called from BHs.
+OK, I can update the patch to reflect that. Remember, I didn't learn
+anything from doing this patch, so I have no idea why
+rcu_procell_callbacks was global. I was just keeping to the norm. :-)
 
-There was a patch floating around to use it from sysrq to display state
-of all CPUs (and sysrq is softirq), but I don't think that ever
-made it mainline.
+Actually, I'll make a separate patch for this change. This is a
+different issue.
 
-And smp_call_function() can be called from panic which can violate
-quite some assumptions, but some deadlock possibility there is ok.
+-- Steve
 
-I also don't like making it soft/hard irq save because that would
-make it much more intrusive to the machine for no good reason
-(e.g. slab can call it quite often in some cases)
 
-The _bh should be probably just removed and possibly a WARN_ON added.
-
--Andi
