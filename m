@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970766AbXFHW7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032371AbXFHXCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970766AbXFHW7k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 18:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbXFHW7e
+	id S1032371AbXFHXCv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 19:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755563AbXFHXCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 18:59:34 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44199 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751112AbXFHW7d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 18:59:33 -0400
-Date: Fri, 8 Jun 2007 15:59:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
-In-Reply-To: <200706090056.49279.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
- <6901450.1181335390183.SLOX.WebMail.wwwrun@imap-dhs.suse.de>
- <Pine.LNX.4.64.0706081534520.3966@schroedinger.engr.sgi.com>
- <200706090056.49279.ak@suse.de>
+	Fri, 8 Jun 2007 19:02:43 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:38593 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbXFHXCm (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 19:02:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XrTOMCpB6fY6M13Uf2QrfRI54BSz5LAqq02rtADGijtPujVY0q8izJ8NqZ/LhG/SpVz/d9sFmh6IcjVZBlhqJHX7F6MLjzP41Uvp8F/2kgc1Hvfzwq4AXR839N9TaWZE9/Xf7a8Xyc1+IOqdPcQ39RQtILp7xV0yPJDOvzeONWA=
+Message-ID: <6934efce0706081602x40985824g247a6f244b038dd3@mail.gmail.com>
+Date: Fri, 8 Jun 2007 16:02:41 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: carsteno@de.ibm.com
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Cc: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@lazybastard.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       "Richard Griffiths" <res07ml0@verizon.net>,
+       Linux-kernel@vger.kernel.org
+In-Reply-To: <4669A831.3040105@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4669027E.3070406@de.ibm.com>
+	 <20070608075717.GA16927@infradead.org> <46690C58.7090304@de.ibm.com>
+	 <20070608080401.GA17684@infradead.org>
+	 <6934efce0706080905h253d9e3apd4168c5d14d305e5@mail.gmail.com>
+	 <20070608160929.GA3366@infradead.org>
+	 <6934efce0706080911y601a8377oad7b1251a95acd64@mail.gmail.com>
+	 <20070608161526.GA3729@infradead.org>
+	 <20070608175152.GG20718@lazybastard.org> <4669A831.3040105@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007, Andi Kleen wrote:
+> The downside: We need mem_map[] struct page entries behind all memory
+> segments. Nowerdays we can easily create those via vmem_map/sparsemem.
+>
+> Opinions?
 
-> > Why was it not allowed? Because interrupts are disabled?
-> 
-> Allocating memory during page out under low memory could 
-> lead to deadlocks. That is because Linux used to make no attempt
-> to limit dirty pages for anonymous mappings and then you could
-> end up with most of your memory dirty and not enough 
-> memory cleanable for page out and then when page out 
-> needs more memory you could be dead.
-> 
-> [yes that implies that mmap over NFS was always broken]
-
-Right. We got that fixed in 2.6.19.
-
-> Now there is a anon dirty limit since a few releases, but I'm not
-> fully convinced it solves the problem completely.
-
-A gut feeling or is there more?
-
+Frankly this is going to be mostly relevant on ARM architectures at
+least at first.  Maybe I'm missing something but I don't see that
+sparemem is supported on ARM...
