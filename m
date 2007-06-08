@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967936AbXFHDwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXFHEC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967936AbXFHDwj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 23:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967372AbXFHDwc
+	id S1755492AbXFHEC3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 00:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbXFHECU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 23:52:32 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:4194 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965525AbXFHDwb (ORCPT
+	Fri, 8 Jun 2007 00:02:20 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:51470 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753827AbXFHECT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 23:52:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=B5/XNO6ymT5U6I8LXCX2O7/T/RW01UwuXO8sdxo9w0lKhS8BQBDnN9yvoL3GN5Sbn
-	W6CMLrDf3FhABLpXnYEZw==
-Message-ID: <4517d1380706072050r218941b2m7eeb79700ed9edb0@mail.gmail.com>
-Date: Thu, 7 Jun 2007 20:50:53 -0700
-From: "Masoud Sharbiani" <masouds@google.com>
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: [PATCH] Make i386 kernel show the segfaults in kernel dmesg, like x86_64.
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4668B939.1070304@shaw.ca>
+	Fri, 8 Jun 2007 00:02:19 -0400
+Message-ID: <4668D4A9.1000905@zytor.com>
+Date: Thu, 07 Jun 2007 21:01:45 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: vgoyal@in.ibm.com
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC 6/7] i386: make the bzImage payload an ELF file
+References: <20070606225837.654272428@goop.org> <20070606230922.476662240@goop.org> <4667462A.2010404@zytor.com> <466749C8.2010700@goop.org> <46674C96.7090104@zytor.com> <46674F68.6030100@goop.org> <4667547B.8080502@zytor.com> <20070608034958.GA10728@in.ibm.com>
+In-Reply-To: <20070608034958.GA10728@in.ibm.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.FB3wQKN6ltiEi81XcB14YVcLGgE@ifi.uio.no>
-	 <4668B939.1070304@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/7/07, Robert Hancock <hancockr@shaw.ca> wrote:
-> Masoud Asgharifard Sharbiani wrote:
-> > Hello,
-> > This patch makes the i386 behave the same way that x86_64 does when a
-> > segfault happens. A line gets printed to the kernel log so that tools
-> > that need to check for failures can behave more uniformly between
-> > different kernels. Like x86_64, it can be disabled by setting
-> > debug.exception-trace sysctl variable to 0 (or by doing
-> > echo 0 > /proc/sys/debug/exception-trace)
-> >
-> > Same behaviour can be extended to other architectures, if needed.
-> > cheers,
-> > Masoud.
-> >
-> > Signed-off-by: Masoud Sharbiani <masouds@google.com>
-> >
-> > diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
-> > index 29d7d61..6aa56db 100644
-> > --- a/arch/i386/mm/fault.c
-> > +++ b/arch/i386/mm/fault.c
-> > @@ -283,6 +283,8 @@ static inline int vmalloc_fault(unsigned long address)
-> >       return 0;
-> >  }
-> >
-> > +int exception_trace = 1;
-> > +
-> >  /*
-> >   * This routine handles page faults.  It determines the address,
-> >   * and the problem, and then passes it off to one of the appropriate
-> > @@ -464,7 +466,14 @@ bad_area_nosemaphore:
-> >                */
-> >               if (is_prefetch(regs, address, error_code))
-> >                       return;
-> > -
-> > +             if (exception_trace && unhandled_signal(tsk, SIGSEGV)) {
-> > +                     printk(
-> > +                    "%s%s[%d]: segfault at %08lx eip %08lx esp %08lx error %lx\n",
-> > +                                     tsk->pid > 1 ? KERN_INFO : KERN_EMERG,
-> > +                                     tsk->comm, tsk->pid, address, regs->eip,
-> > +                                     regs->esp, error_code);
->
-> Shouldn't we use printk_ratelimit() here, to prevent some nasty person
-> from creating some rapidly-segfaulting process that floods the kernel
-> logs? (Same with the x86_64 version if it doesn't already..)
+Vivek Goyal wrote:
+> 
+> One would not know highest used address until ELF headers have been 
+> parsed. May be it is two step movement. First decompress ELF.gz and 
+> ELF parser can be at the end of decompressed data. Then it can parse
+> the ELF headers and move itself out of the ELF header destination memory
+> and then load the elf segments at appropriate place.
+> 
+> One will have to be little careful while moving ELF parser or while
+> decompressing the file to a temporary buffer so that we don't stomp over
+> any other data loaded by boot-loader (like kexec does) or we don't go beyond
+> the memory bounds which might have been created in the case of using kdump.
+> 
 
-Good call.
+The easiest is probably to decode the ELF headers (which can be done in
+O(1) space), relocate, reset the decompressor and restart.
 
-Masoud
+Relocation is currently done in the decompressor, but it could also be
+done at the kernel entrypoint, as long as the kernel entrypoint code is
+all PIC.
 
-> --
-> Robert Hancock      Saskatoon, SK, Canada
-> To email, remove "nospam" from hancockr@nospamshaw.ca
-> Home Page: http://www.roberthancock.com/
->
->
+	-hpa
