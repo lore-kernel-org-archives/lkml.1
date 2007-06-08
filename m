@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031408AbXFHTI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031150AbXFHTJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031408AbXFHTI7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 15:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031051AbXFHTIt
+	id S1031150AbXFHTJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 15:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031474AbXFHTJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 15:08:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33101 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753597AbXFHTIr (ORCPT
+	Fri, 8 Jun 2007 15:09:01 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:37489 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031420AbXFHTI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 15:08:47 -0400
-Date: Fri, 8 Jun 2007 12:07:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-cc: Al Viro <viro@ftp.linux.org.uk>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Davide Libenzi <davidel@xmailserver.org>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <4669A674.4080309@redhat.com>
-Message-ID: <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org>
-References: <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
- <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
- <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
- <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
- <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
- <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com>
- <20070608184650.GA4095@ftp.linux.org.uk> <4669A674.4080309@redhat.com>
+	Fri, 8 Jun 2007 15:08:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WkzW336u5d++b3FBn3XITn4+PlpO1IgKdxj+ePMrD1YFuLsL5R9TFoXeRo2B3jWqE0VoD6Y0Jg3VOylKA1WgfkMWOR4S1jiu7g07GPqiI9SMPf5e7A1t/FkVY/p8tt+uoD+vqW2rSXVStHiCsDj+oLs3HRv9Luon6616gDwdv0U=
+Message-ID: <d120d5000706081208q217ca432w6cc6d860a84700e8@mail.gmail.com>
+Date: Fri, 8 Jun 2007 15:08:59 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Paul Albrecht" <albrecht@rdi1.com>
+Subject: Re: [BUG] via c3/2.6.20 -- ps/2 keyboard doesn't work with console
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1181325648.2437.5.camel@albrecht.rdi1.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1181236651.15435.1.camel@albrecht.rdi1.com>
+	 <200706072323.05576.dtor@insightbb.com>
+	 <1181325648.2437.5.camel@albrecht.rdi1.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 6/8/07, Paul Albrecht <albrecht@rdi1.com> wrote:
+> PNP: PS/2 Controller [PNP0303:PS2K] at 0x60,0x64 irq 1
+> PNP: PS/2 controller doesn't have AUX irq; using default 12
+> serio: i8042 KBD port at 0x60,0x64 irq 1
+> serio: i8042 AUX port at 0x60,0x64 irq 12
+> mice: PS/2 mouse device common for all mice
+> input: AT Translated Set 2 keyboard as /class/input/input3
 
+Can I please see the debug data ("i8042.debug log_buf_len=131072" on
+the kernel command line)?
 
-On Fri, 8 Jun 2007, Ulrich Drepper wrote:
-> 
-> We are talking about file descriptors here.  If you're using file
-> descriptors as anything other than tokens you'll find out soon enough
-> that your code is broken.  The new type of file descriptors cannot be
-> used as indeces and the randomization makes sure that no program by some
-> fluke happens to work.
-
-No, Uli.
-
-You need things to be *repeatable* for debugging. No ifs, buts, or maybes 
-about it.
-
-I think truly random is a bad idea, or at the very least needs some way to 
-disable it.
-
-		Linus
+-- 
+Dmitry
