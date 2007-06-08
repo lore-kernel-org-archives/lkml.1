@@ -1,171 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967465AbXFHCql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967335AbXFHC5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967465AbXFHCql (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 22:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966614AbXFHCqc
+	id S967335AbXFHC5R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 22:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966746AbXFHC5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 22:46:32 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:59073 "EHLO
-	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966607AbXFHCqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 22:46:31 -0400
-Subject: Re: [PATCH]: complete cleanup of check_region
-From: Surya <surya.prabhakar@wipro.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>, emoenke@gwdg.de
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       kernel-janitors@lists.osdl.org
-In-Reply-To: <9a8748490706070902i218e01bdq1c418c770e99ca4@mail.gmail.com>
-References: <1181209169.2422.12.camel@bluegenie>
-	 <9a8748490706070308m7c2212fq30fe712e26e2463b@mail.gmail.com>
-	 <1181215018.3275.2.camel@bluegenie>
-	 <9a8748490706070902i218e01bdq1c418c770e99ca4@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Linux COE, Wipro Technologies, Bangalore, India.
-Date: Fri, 08 Jun 2007 08:16:12 +0530
-Message-Id: <1181270772.3275.15.camel@bluegenie>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-X-OriginalArrivalTime: 08 Jun 2007 02:46:35.0995 (UTC) FILETIME=[3B084AB0:01C7A977]
+	Thu, 7 Jun 2007 22:57:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55557 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966688AbXFHC5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 22:57:03 -0400
+Message-ID: <4668C538.9090006@redhat.com>
+Date: Thu, 07 Jun 2007 19:55:52 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+References: <send-serie.davidel@xmailserver.org.4625.1181169040.7>	<20070606235906.72439d16@the-village.bc.nu>	<Pine.LNX.4.64.0706061558550.10383@alien.or.mcafeemobile.com>	<20070607001932.35c9591c@the-village.bc.nu>	<466741BD.20106@redhat.com>	<20070607110432.73be7960@the-village.bc.nu>	<4668155B.4020705@redhat.com>	<20070607195659.c695c87d.dada1@cosmosbay.com>	<46684DED.6000907@redhat.com>	<Pine.LNX.4.64.0706071132130.6445@alien.or.mcafeemobile.com> <20070607130319.8fd96e03.akpm@linux-foundation.org>
+In-Reply-To: <20070607130319.8fd96e03.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<snip>
-> >
-> > @@ -5640,6 +5645,7 @@ int __init sbpcd_init(void)
-> >         int i=0, j=0;
-> >         int addr[2]={1, CDROM_PORT};
-> >         int port_index;
-> > +       int request_region_flag;
-> >
-> One could argue that it would be possible to just use the 'j' variable
-> for this since it's not used for anything else until the *_region()
-> stuff is all done, that would save adding a new variable...
-completely eliminated the variable, haven't felt the need for it.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-<snip>
-> >                 msg(DBG_INI,"check_drives done.\n");
-> > +               if(request_region_flag==0)
-> > +                       release_region(addr[1],4);
-> 
-> I know the driver in its current version just tests if the region is
-> available and doesn't hang on to it, but I'm wondering if that's not a
-> bug.  Shouldn't we actually hold on to this region as long as the
-> driver is loaded and only release the region in the sbpcd_exit()
-> function, just loke we do with the "CDo_command" region?  
-But if any of the conditions fail after the request_region code, it is
-returning an error and exiting out of init. Dont we need to cleanup
-request_region's allocation before we exit. Infact I had a feeling that
-CDo_command region cleanup was not perfect. Did a cleanup of both the
-regions wherever we have a return out of the function.
+Andrew Morton wrote:
+> Absolutely.  Let's get them into their final form now, rather than letting
+> some intermediate interface escape out into a major kernel release.
 
-Please have a look at the below patch.
+Even if Linus' redirection is adopted, these interfaces should still be
+fixed up.  No need to rely on hacks if we can still fix up the interfaces.
 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-diff --git a/drivers/cdrom/sbpcd.c b/drivers/cdrom/sbpcd.c
-index a1283b1..0a85b1b 100644
---- a/drivers/cdrom/sbpcd.c
-+++ b/drivers/cdrom/sbpcd.c
-@@ -358,6 +358,10 @@
-  * Add bio/kdev_t changes for 2.5.x required to make it work again. 
-  * Still room for improvement in the request handling here if anyone
-  * actually cares.  Bring your own chainsaw.    Paul G.  02/2002
-+ *
-+ *
-+ * Cleaned up the reference for deprecated check_region to 
-+ * request_region.            - Surya Prabhakar N      08/07/2007
-  */
- 
- 
-@@ -555,6 +559,8 @@ static struct cdrom_read_audio read_audio;
- static unsigned char msgnum;
- static char msgbuf[80];
- 
-+static int addr[2];
-+
- static int max_drives = MAX_DRIVES;
- module_param(max_drives, int, 0);
- #ifndef MODULE
-@@ -5638,7 +5644,7 @@ int __init sbpcd_init(void)
- #endif
- {
- 	int i=0, j=0;
--	int addr[2]={1, CDROM_PORT};
-+	addr[2]={1, CDROM_PORT};
- 	int port_index;
- 
- 	sti();
-@@ -5670,9 +5676,9 @@ int __init sbpcd_init(void)
- 	{
- 		addr[1]=sbpcd[port_index];
- 		if (addr[1]==0) break;
--		if (check_region(addr[1],4))
-+		if (!request_region(addr[1],4, "sbpcd driver"))
- 		{
--			msg(DBG_INF,"check_region: %03X is not free.\n",addr[1]);
-+			msg(DBG_INF,"request_region: %03X is not free.\n",addr[1]);
- 			continue;
- 		}
- 		if (sbpcd[port_index+1]==2) type=str_sp;
-@@ -5699,6 +5705,7 @@ int __init sbpcd_init(void)
- 	if (ndrives==0)
- 	{
- 		msg(DBG_INF, "No drive found.\n");
-+		release_region(addr[1],4);
- #ifdef MODULE
- 		return -EIO;
- #else
-@@ -5775,6 +5782,7 @@ int __init sbpcd_init(void)
- 	if (!request_region(CDo_command,4,major_name))
- 	{
- 		printk(KERN_WARNING "sbpcd: Unable to request region 0x%x\n", CDo_command);
-+		release_region(addr[1],4);
- 		return -EIO;
- 	}
- 
-@@ -5788,6 +5796,8 @@ int __init sbpcd_init(void)
- #endif /* SOUND_BASE */
- 
- 	if (register_blkdev(MAJOR_NR, major_name)) {
-+		release_region(CDo_command,4);
-+		release_region(addr[1],4);
- #ifdef MODULE
- 		return -EIO;
- #else
-@@ -5801,6 +5811,7 @@ int __init sbpcd_init(void)
- 	sbpcd_queue = blk_init_queue(do_sbpcd_request, &sbpcd_lock);
- 	if (!sbpcd_queue) {
- 		release_region(CDo_command,4);
-+		release_region(addr[1],4);
- 		unregister_blkdev(MAJOR_NR, major_name);
- 		return -ENOMEM;
- 	}
-@@ -5834,6 +5845,7 @@ int __init sbpcd_init(void)
- 				printk("Can't unregister %s\n", major_name);
- 			}
- 			release_region(CDo_command,4);
-+			release_region(addr[1],4);
- 			blk_cleanup_queue(sbpcd_queue);
- 			return -EIO;
- 		}
-@@ -5850,6 +5862,7 @@ int __init sbpcd_init(void)
- 		if (sbpcd_infop == NULL)
- 		{
-                         release_region(CDo_command,4);
-+			release_region(addr[1],4);
- 			blk_cleanup_queue(sbpcd_queue);
-                         return -ENOMEM;
- 		}
-@@ -5894,6 +5907,7 @@ static void sbpcd_exit(void)
- 		return;
- 	}
- 	release_region(CDo_command,4);
-+	release_region(addr[1],4);
- 	blk_cleanup_queue(sbpcd_queue);
- 	for (j=0;j<NR_SBPCD;j++)
- 	{
-
-Kindly update if this is Ok. I will proceed with the original patch.
-
--surya.
+iD8DBQFGaMU42ijCOnn/RHQRAm0MAJ9pprTVUD/2YvDsL6CPL21WvZSkEACeN3r8
+TT8a5FyF2rCct+8gBKyWF/s=
+=fs4f
+-----END PGP SIGNATURE-----
