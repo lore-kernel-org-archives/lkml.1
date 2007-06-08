@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936335AbXFHVaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031725AbXFHVag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936335AbXFHVaM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 17:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933422AbXFHV35
+	id S1031725AbXFHVag (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 17:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933422AbXFHVaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 17:29:57 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58537 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753733AbXFHV34 (ORCPT
+	Fri, 8 Jun 2007 17:30:23 -0400
+Received: from main.carme.maven.pl ([193.239.45.138]:29757 "EHLO
+	main.carme.maven.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937750AbXFHVaV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 17:29:56 -0400
-Date: Fri, 8 Jun 2007 22:35:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Korb <ml@akana.de>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
-Message-ID: <20070608223505.3ff1a662@the-village.bc.nu>
-In-Reply-To: <200706081418.56217.bzolnier@gmail.com>
-References: <20601315171560711667@wsc.cz>
-	<200706081418.56217.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jun 2007 17:30:21 -0400
+X-Greylist: delayed 1344 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Jun 2007 17:30:21 EDT
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+Organization: SelfOrganizing
+To: Florin Iucha <florin@iucha.net>
+Subject: Re: networking busted in current -git ???
+Date: Fri, 8 Jun 2007 23:07:45 +0200
+User-Agent: PLD Linux KMail/1.9.7
+References: <20070608205640.GI30661@iucha.net>
+In-Reply-To: <20070608205640.GI30661@iucha.net>
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200706082307.45722.arekm@maven.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007 14:18:55 +0200
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+On Friday 08 of June 2007, you wrote:
+> Hello,
+>
+> I am using the current git tree: 85f6038f2170e3335dda09c3dfb0f83110e87019 .
+> Git tree from two days ago (with the same config) works fine.
+>
+> Attempting to acquire an IP address via DHCP fails with:
+>
+> SIOCSIFADDR: No buffer space available
+> Listening on LPF/eth0/00:19:b9:0c:9a:43
+> Sending on   LPF/eth0/00:19:b9:0c:9a:43
+> Sending on   Socket/fallback
+> DHCPREQUEST on eth0 to 255.255.255.255 port 67
+> DHCPACK from xxx.xxx.xxx.xxx
+> SIOCSIFADDR: No buffer space available
+> SIOCSIFNETMASK: Cannot assign requested address
+> SIOCSIFBRDADDR: Cannot assign requested address
+> SIOCADDRT: Network is unreachable
+> bound to xxx.xxx.xxx.xxx -- renewal in 98610 seconds.
+>
+> This is on a Dell 490 with tg3 network driver running Ubuntu 7.04 .
+> .config and dmesg are appended.
+>
+> florin
 
-> On Monday 04 June 2007, Jiri Slaby wrote:
-> > ide-generic, add another device exception
-> 
-> ide-generic is a generic ISA IDE driver, this one is drivers/ide/pci/generic
-> (a generic IDE PCI driver) - fixed patch description to avoid confusion.
+Here it requires few retries (stop dhcpcd, start again) to get the IP. git 
+tree from few hours ago. tg3 driver. I also saw SIOCSIFADDR: No buffer space 
+available once.
 
-Nope ide-generic is a generic I/O based ST506 interface. It covers a bit
-more than just ISA bus.
-
-> 
-> [ Yes, both drivers need a rename - patches are welcomed. ]
-
-Good way to break everyones module settings
-
-Alan
+-- 
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
