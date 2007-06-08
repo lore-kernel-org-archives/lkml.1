@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970639AbXFHSIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031199AbXFHSLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970639AbXFHSIy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 14:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968440AbXFHSIn
+	id S1031199AbXFHSLf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 14:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969757AbXFHSL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 14:08:43 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:58765 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968664AbXFHSIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 14:08:42 -0400
-Date: Fri, 8 Jun 2007 13:08:37 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, Paul Jackson <pj@sgi.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, vatsa@in.ibm.com,
-       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
-       rohitseth@google.com, haveblue@us.ibm.com, xemul@sw.ru, dev@sw.ru,
-       containers@lists.osdl.org, devel@openvz.org, ebiederm@xmission.com,
-       mbligh@google.com, cpw@sgi.com, svaidy@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [ckrm-tech] [PATCH 00/10] Containers(V10): Generic Process Containers
-Message-ID: <20070608180837.GA5683@sergelap.austin.ibm.com>
-References: <20070607000559.GA19529@sergelap.austin.ibm.com> <20070606174609.bfa01446.pj@sgi.com> <20070607180158.GA936@sergelap.austin.ibm.com> <20070607122121.24fe6ff4.pj@sgi.com> <20070607201723.GA17011@sergelap.austin.ibm.com> <20070607150113.f020d8f8.pj@sgi.com> <20070608143250.GA7728@vino.hallyn.com> <6599ad830706080855n22612814u4805d34a295b165f@mail.gmail.com> <20070608160840.GA11133@vino.hallyn.com> <6599ad830706080916j477e08c0l8b142d9a0d832c76@mail.gmail.com>
+	Fri, 8 Jun 2007 14:11:27 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3441 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965636AbXFHSL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 14:11:26 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 8 Jun 2007 11:11:24 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Theodore Tso <tytso@mit.edu>, Ulrich Drepper <drepper@redhat.com>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <20070608140150.6f31672f@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
+References: <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu>
+ <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com>
+ <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
+ <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
+ <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
+ <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
+ <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830706080916j477e08c0l8b142d9a0d832c76@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Menage (menage@google.com):
-> On 6/8/07, Serge E. Hallyn <serge@hallyn.com> wrote:
-> >
-> >The problem is container_clone() doesn't call ->create explicitly, it
-> >does vfs_mkdir.  So we have no real way of passing in clone_task.
-> >
+On Fri, 8 Jun 2007, Alan Cox wrote:
+
+> > Um, how cheap do you need it?  get_random_int() is actually pretty
+> > cheep, since it was designed to be usable by the networking stack for
+> > sequence numbers for TCP packets; and it's not like sys_close() or
+> > sys_open() is a majorly critical path, is it?  If the concern is
 > 
-> Good point.
-> 
-> Looking at vfs_mkdir(), it's pretty simple, and really the only bits
-> that apply to container_clone() are the call to ->mkdir() and possibly
-> the call to fsnotify_mkdir(). (I think that's maybe how you did it
-> originally?)
+> At this point wouldn't it be cheaper to allocate file handles using a
+> different algorithm than firing up the RNG - say like in the POSIX
+> fashion ... 
 
-Yes it was.
+The only reason we use a floating base, is because Uli preferred to have 
+non-exactly predictable fd allocations. There no reason of re-doing the 
+same POSIX mistake all over again:
 
-> Maybe it would make sense to just call container_create() at that
-> point directly, which would allow us more parameters.
+Errare humanum est, perseverare autem diabolicum
 
-I do fear that that could become a maintenance nightmare.  For instance
-right now there's the call to fsnotify_mkdir().  Other such hooks might
-be placed at vfs_mkdir, which we'd then likely want to have placed in
-our container_mkdir() and container_clone() fns.  And of course
-may_create() is static inline in fs/namei.c.  It's trivial, but still if
-it changes we'd want to change the version in kernel/container.c as
-well.
 
-What would be the main advantage of doing it this way?  Do you consider
-the extra subys->auto_setup() hook to be avoidable bloat?
+- Davide
 
-thanks,
--serge
+
