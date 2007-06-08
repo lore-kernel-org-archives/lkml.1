@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031883AbXFHSvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031772AbXFHSxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031883AbXFHSvY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 14:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031682AbXFHSum
+	id S1031772AbXFHSxB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 14:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937664AbXFHSwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 14:50:42 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:55470 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937727AbXFHSuk (ORCPT
+	Fri, 8 Jun 2007 14:52:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34237 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937350AbXFHSww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 14:50:40 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 8 Jun 2007 14:48:49 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Pete Zaitcev <zaitcev@redhat.com>
-cc: Greg KH <greg@kroah.com>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: blank filenames in /sys/modules, kernel 2.6.21
-In-Reply-To: <20070608114835.7a5af390.zaitcev@redhat.com>
-Message-ID: <Pine.LNX.4.64.0706081448080.9908@localhost.localdomain>
-References: <46699945.6020106@redhat.com> <Pine.LNX.4.64.0706081402510.7805@localhost.localdomain>
- <20070608183232.GA12967@kroah.com> <20070608114835.7a5af390.zaitcev@redhat.com>
+	Fri, 8 Jun 2007 14:52:52 -0400
+Date: Fri, 8 Jun 2007 11:47:39 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Grant Wilson <gww@swandive.no-ip.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] 2.6.22-rc4-mm1
+Message-ID: <20070608184739.GB14268@kroah.com>
+References: <20070608042358.GB20483@kroah.com> <Pine.LNX.4.44L0.0706081001040.3473-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0706081001040.3473-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007, Pete Zaitcev wrote:
+On Fri, Jun 08, 2007 at 10:06:21AM -0400, Alan Stern wrote:
+> On Thu, 7 Jun 2007, Greg KH wrote:
+> 
+> > On Thu, Jun 07, 2007 at 10:53:29AM -0400, Alan Stern wrote:
+> > > To tell you the truth, I rather think there's not much point in keeping
+> > > usb-try-to-debug-bug-8561.patch around.  Anything seriously wrong that
+> > > it could catch ought to have shown up long ago.  And it is now clear
+> > > that bug 8561 has nothing to do with this; it is a programming error
+> > > common to many of the USB serial drivers.  (Still waiting to hear back 
+> > > from Paulo Pereira whether the fix to the USB Option driver works...)
+> > 
+> > What error in the usb-serial drivers are you speaking about?
+> 
+> The one addressed by usb-option-fix-usage-of-urb-status-abuse.patch.  I 
+> thought it might be worthwhile to spend some time fixing all of these.
+> Here's a quick summary showing the extent of the problem (note that 
+> not all the usages are in error):
 
-> On Fri, 8 Jun 2007 11:32:32 -0700, Greg KH <greg@kroah.com> wrote:
->
-> > >   and from drivers/usb/core/usb.c:
-> > >
-> > > /* format to disable USB on kernel command line is: nousb */
-> > > __module_param_call("", nousb, param_set_bool, param_get_bool, &nousb, 0444);
->
-> > Pete added that back in December of 2005 (git-blame rocks...).  So what
-> > has changed recently to cause this to do different things in sysfs?
-> >
-> > Robert, what do you suggest we change this usage to look like?
->
-> Aww. I thought it was a nice patch, but my foresight was inadequate.
->
-> The problem I tried to fix was related to strncmp used in the code which
-> supported __setup(). Our installer, Anaconda, recognizes both "nousb" and
-> "nousbstorage" - in theory. In practice, passing "nousbstorage" switched
-> USB completely off because of improper strncmp(). If we back out my patch,
-> this problem is going to reoccur.
->
-> We might want to ask Jeremy Katz if "nousbstorage" is even used anymore,
-> then revert all this if not. Or, we can add a name somehow and live
-> with it visible in sysfs...
+Ah, yeah, I cleaned up a lot of them a while ago, but they keep creaping
+back.
 
-there appears to be no reference to "nousbstorage" anywhere in the
-tree.  go for it.
+I _really_ think we need to just get rid of that field and pass the
+status in the urb callback.  That would fix this problem once and for
+all.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+But, from what I remember, the uhci host controller didn't make it easy
+for me to acomplish this.  Or it might have been another host
+controller, can't remember anymore...
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+So, anyone looking to make up some patches that touch every USB driver
+in the tree?  I'd be glad to take them :)
+
+thanks,
+
+greg k-h
