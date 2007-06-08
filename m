@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969617AbXFHQFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969805AbXFHQH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969617AbXFHQFm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 12:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965798AbXFHQFe
+	id S969805AbXFHQH0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 12:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbXFHQHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 12:05:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:59271 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763697AbXFHQFd (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 12:05:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=khyAB4iU9HhhbKUQZkaENIBMyXOIb+LOeaKHWjQcfSRok15VTDaOsZLHqqZnc/42vC5EL5FoNEgMQ+24rzODd6kqwiiOBpwmFspifHVY6yxYPgRFQF51NCeV3ztR+/9UE3/UqXuUNtLxcprznleyeu2skmcf3JYEFJizWympaSw=
-Message-ID: <6934efce0706080905h253d9e3apd4168c5d14d305e5@mail.gmail.com>
-Date: Fri, 8 Jun 2007 09:05:32 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>, carsteno@de.ibm.com,
-       "Jared Hulbert" <jaredeh@gmail.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       richard.griffiths@windriver.com,
-       "Richard Griffiths" <res07ml0@verizon.net>,
-       Linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-In-Reply-To: <20070608080401.GA17684@infradead.org>
+	Fri, 8 Jun 2007 12:07:13 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1825 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757332AbXFHQHL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 12:07:11 -0400
+Message-ID: <46697EB4.5060003@shadowen.org>
+Date: Fri, 08 Jun 2007 17:07:16 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bob Picco <bob.picco@hp.com>
+CC: john stultz <johnstul@us.ibm.com>, Chuck Ebbert <cebbert@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Sripathi Kodi <sripathik@in.ibm.com>, Bernhard Walle <bwalle@suse.de>,
+       acme@redhat.com, tglx@linutronix.de, akpm@linux-foundation.org,
+       andi@firstfloor.org
+Subject: Re: [BUG] sysrq-m oops
+References: <1181176035.6275.13.camel@localhost.localdomain> <4668276E.4030504@redhat.com> <20070607182122.GE11999@localhost> <1181246081.7621.6.camel@localhost.localdomain> <20070608010056.GF11999@localhost>
+In-Reply-To: <20070608010056.GF11999@localhost>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070606113351.GA11701@infradead.org>
-	 <20070606162305.GA20600@infradead.org> <46683B6A.6030306@de.ibm.com>
-	 <20070607193844.GB17144@infradead.org> <4669027E.3070406@de.ibm.com>
-	 <20070608072609.GA13115@infradead.org> <46690A39.3010402@de.ibm.com>
-	 <20070608075717.GA16927@infradead.org> <46690C58.7090304@de.ibm.com>
-	 <20070608080401.GA17684@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/8/07, Christoph Hellwig <hch@infradead.org> wrote:
-> On Fri, Jun 08, 2007 at 09:59:20AM +0200, Carsten Otte wrote:
-> > Christoph Hellwig wrote:
-> > >Jared's patch currently does ioremap on mount (and no iounmap at all).
-> > >That mapping needs to move from the filesystem to the device driver.
-> > The device driver needs to do ioremap on open(), and iounmap() on
-> > release. That's effectively what our block driver does.
->
-> Yes, exactly.
+Bob Picco wrote:
+> john stultz wrote:	[Thu Jun 07 2007, 03:54:41PM EDT]
+> [snip]
+> john you are welcome.
+> 
+> We aren't sampling for holes in memory. Thus we encounter a section hole with
+> empty section map pointer for SPARSEMEM and OOPs for show_mem. This issue
+> has been seen in 2.6.21, current git and current mm. The patch below
+> is for mainline and mm. It was boot tested for SPARSEMEM, current
+> VMEMMAP of Andy's in mm ml and DISCONTIGMEM. A slightly different patch
+> will be posted to stable for 2.6.21.
+> 
+> Previous to commit f0a5a58aa812b31fd9f197c4ba48245942364eae memory_present
+> was called for node_start_pfn to node_end_pfn. This would cover the hole(s)
+> with reserved pages and valid sections. Most SPARSEMEM supported arches
+> do a pfn_valid check in show_mem before computing the page structure address.
+> 
+> This issue was brought to my attention on IRC by Arnaldo Carvalho de Melo at
+> acme@redhat.com. Thanks to Arnaldo for testing.
+> 
+> Signed-off-by: Bob Picco <bob.picco@hp.com>
+> 
+>  arch/x86_64/mm/init.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux-2.6.22-rc4-mm1/arch/x86_64/mm/init.c
+> ===================================================================
+> --- linux-2.6.22-rc4-mm1.orig/arch/x86_64/mm/init.c	2007-06-06 12:59:26.000000000 -0400
+> +++ linux-2.6.22-rc4-mm1/arch/x86_64/mm/init.c	2007-06-07 11:14:31.000000000 -0400
+> @@ -79,6 +79,8 @@ void show_mem(void)
+>  			if (unlikely(i % MAX_ORDER_NR_PAGES == 0)) {
+>  				touch_nmi_watchdog();
+>  			}
+> +			if (!pfn_valid(pgdat->node_start_pfn + i))
+> +				continue;
+>  			page = pfn_to_page(pgdat->node_start_pfn + i);
+>  			total++;
+>  			if (PageReserved(page))
 
-Okay so we need some driver that opens/closes this ROM.  This has been
-done from the dcss block device but that doesn't make sense for most
-embedded systems.  The MTD allows for this with point(),unpoint().
-That should work just fine.  It does introduce the MTD as a dependancy
-which is unnecessary in many systems, but it will work now.
+Yes this is required with SPARSEMEM.  Good spot.
+
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+
+-apw
