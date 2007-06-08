@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937269AbXFHBCC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936950AbXFHBJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937269AbXFHBCC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jun 2007 21:02:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936385AbXFHBBl
+	id S936950AbXFHBJn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jun 2007 21:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762999AbXFHBJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jun 2007 21:01:41 -0400
-Received: from waste.org ([66.93.16.53]:38588 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936840AbXFHBBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jun 2007 21:01:40 -0400
-Date: Thu, 7 Jun 2007 19:59:32 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070608005931.GZ11166@waste.org>
-References: <send-serie.davidel@xmailserver.org.4625.1181169040.7> <20070606235906.72439d16@the-village.bc.nu> <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
+	Thu, 7 Jun 2007 21:09:34 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:51840 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbXFHBJe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jun 2007 21:09:34 -0400
+Message-ID: <4668AC10.9060305@zytor.com>
+Date: Thu, 07 Jun 2007 18:08:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706071240150.4205@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Alistair John Strachan <s0348365@sms.ed.ac.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Re: [PATCH] intel-rng: Undo mess made by an 80 column extremist
+References: <20070607162251.5f291325@the-village.bc.nu>	<m3wsyfzcpt.fsf@maximus.localdomain>	<200706072232.37051.s0348365@sms.ed.ac.uk> <m3sl93zagi.fsf@maximus.localdomain>
+In-Reply-To: <m3sl93zagi.fsf@maximus.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 01:10:23PM -0700, Linus Torvalds wrote:
-> What do people think about that kind of approach? It has the advantage 
-> that it does *not* involve multiple kernel entries (just a single entry to 
-> a small wrapper that sets some process state temporarily), and that it 
-> doesn't have any sticky state that might confuse a library (or a signal 
-> handler: even if you end up doing "prctrl(ON) ; syscall(); prctrl(OFF)", a 
-> signal handler that happens in between the prctrl's would see unexpected 
-> behaviour).
+Krzysztof Halasa wrote:
+> Alistair John Strachan <s0348365@sms.ed.ac.uk> writes:
+> 
+>> I personally buy the argument that 80 cols helps remind people that they've 
+>> used too many indentation depths and should redesign their code.
+>> I think it's 
+>> a good thing to stick to where possible, even if just from a design 
+>> perspective.
+> 
+> How many is too many? A function with 2 "if" means 3 tabs = 24 characters
+> for just indentation. Add a printk(KERN_DEBUG "\n"); and you can print
+> ca. 30 characters without having to break the string. This is crazy.
+> 
 
-First, how does this work in-kernel? Does it set a flag in the thread
-struct that magically gets used in the actual syscall? Or do we pass
-flags down to the sys_foo() function in some manner?
+My big concern with the 80-column rule is that it discourages commenting.
 
-If the former, there is potential for interaction with asynchronous
-code running on behalf of the thread, no? Especially if we ever adopt
-one of the syslet schemes.
-
-Second, I think we're likely to run out of flag bits really quickly as
-this is a good dumping spot for patching up our many slightly
-brain-damaged APIs (be they POSIX or Linux-specific).
-
-Third, can I do sys_indirect(sys_indirect(foo, args), flags1),
-flags2)?
-
-Fourth, can we do sys_indirect(foo, args, flags | ASYNC) and get most
-of the way to merging this with the syslet proposal?
-
--- 
-Mathematics is the supreme nostalgia of our time.
+	-hpa
