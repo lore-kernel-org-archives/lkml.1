@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970405AbXFHQTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970443AbXFHQT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970405AbXFHQTh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 12:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969383AbXFHQRP
+	id S970443AbXFHQT7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 12:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969933AbXFHQRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 12:17:15 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:24623 "EHLO
+	Fri, 8 Jun 2007 12:17:16 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:24624 "EHLO
 	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S969500AbXFHQRM (ORCPT
+	by vger.kernel.org with ESMTP id S969522AbXFHQRM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Jun 2007 12:17:12 -0400
-Date: Fri, 08 Jun 2007 09:52:47 -0600
+Date: Fri, 08 Jun 2007 09:52:49 -0600
 From: dougthompson@xmission.com
 To: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH 4/6]
-Message-ID: <46697b4f.9LHHFdS+5Is2R+M0%dougthompson@xmission.com>
+Subject: [PATCH 6/6]
+Message-ID: <46697b51.cOyXsBgSAGMv1m+t%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,28 +24,124 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From:	Douglas Thompson <dougthompson@xmission.com>
 
-pci_ids.h needs two of the AMD NB device-ids namely,
-Addressmap and the Memory Controller devices
-
-This patch adds those to the pci_id.h include file
+Patches to conform to coding style, namely static don't need to be
+initialized to NULL nor '0', as that is the default
 
 Signed-off-by:	Douglas Thompson <dougthompson@xmission.com>
-Cc:	alan@lxorguk.ukuu.org.uk
 ---
- pci_ids.h |    2 ++
- 1 file changed, 2 insertions(+)
+ edac_mc_sysfs.c  |    2 +-
+ edac_module.c    |    2 +-
+ edac_pci.c       |    2 +-
+ edac_pci_sysfs.c |    4 ++--
+ i3000_edac.c     |    2 +-
+ i82860_edac.c    |    2 +-
+ i82875p_edac.c   |    2 +-
+ r82600_edac.c    |    2 +-
+ 8 files changed, 9 insertions(+), 9 deletions(-)
 
-
-Index: linux-2.6.22-rc4-mm1/include/linux/pci_ids.h
+Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_mc_sysfs.c
 ===================================================================
---- linux-2.6.22-rc4-mm1.orig/include/linux/pci_ids.h
-+++ linux-2.6.22-rc4-mm1/include/linux/pci_ids.h
-@@ -489,6 +489,8 @@
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_mc_sysfs.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/edac_mc_sysfs.c
+@@ -17,7 +17,7 @@
+ /* MC EDAC Controls, setable by module parameter, and sysfs */
+ static int edac_mc_log_ue = 1;
+ static int edac_mc_log_ce = 1;
+-static int edac_mc_panic_on_ue = 0;
++static int edac_mc_panic_on_ue;
+ static int edac_mc_poll_msec = 1000;
  
- #define PCI_VENDOR_ID_AMD		0x1022
- #define PCI_DEVICE_ID_AMD_K8_NB		0x1100
-+#define PCI_DEVICE_ID_AMD_K8_NB_ADDRMAP	0x1101
-+#define PCI_DEVICE_ID_AMD_K8_NB_MEMCTL	0x1102
- #define PCI_DEVICE_ID_AMD_K8_NB_MISC	0x1103
- #define PCI_DEVICE_ID_AMD_LANCE		0x2000
- #define PCI_DEVICE_ID_AMD_LANCE_HOME	0x2001
+ /* Getter functions for above */
+Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_module.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_module.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/edac_module.c
+@@ -32,7 +32,7 @@ struct workqueue_struct *edac_workqueue;
+ static struct sysdev_class edac_class = {
+ 	set_kset_name("edac"),
+ };
+-static int edac_class_valid = 0;
++static int edac_class_valid;
+ 
+ /*
+  * edac_op_state_toString()
+Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_pci.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_pci.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/edac_pci.c
+@@ -385,7 +385,7 @@ void edac_pci_generic_check(struct edac_
+ 	edac_pci_do_parity_check();
+ }
+ 
+-static int edac_pci_idx = 0;
++static int edac_pci_idx;
+ #define EDAC_PCI_GENCTL_NAME	"EDAC PCI controller"
+ 
+ struct edac_pci_gen_data {
+Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_pci_sysfs.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_pci_sysfs.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/edac_pci_sysfs.c
+@@ -17,8 +17,8 @@
+ 
+ #define EDAC_PCI_SYMLINK	"device"
+ 
+-static int check_pci_errors = 0;	/* default YES check PCI parity */
+-static int edac_pci_panic_on_pe = 0;	/* default no panic on PCI Parity */
++static int check_pci_errors;	/* default YES check PCI parity */
++static int edac_pci_panic_on_pe;	/* default no panic on PCI Parity */
+ static int edac_pci_log_pe = 1;	/* log PCI parity errors */
+ static int edac_pci_log_npe = 1;	/* log PCI non-parity error errors */
+ static atomic_t pci_parity_count = ATOMIC_INIT(0);
+Index: linux-2.6.22-rc4-mm2/drivers/edac/i3000_edac.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/i3000_edac.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/i3000_edac.c
+@@ -151,7 +151,7 @@ static const struct i3000_dev_info i3000
+ 		.ctl_name = "i3000"},
+ };
+ 
+-static struct pci_dev *mci_pdev = NULL;
++static struct pci_dev *mci_pdev;
+ static int i3000_registered = 1;
+ static struct edac_pci_ctl_info *i3000_pci;
+ 
+Index: linux-2.6.22-rc4-mm2/drivers/edac/i82860_edac.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/i82860_edac.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/i82860_edac.c
+@@ -57,7 +57,7 @@ static const struct i82860_dev_info i828
+ 		.ctl_name = "i82860"},
+ };
+ 
+-static struct pci_dev *mci_pdev = NULL;	/* init dev: in case that AGP code
++static struct pci_dev *mci_pdev;	/* init dev: in case that AGP code
+ 					 * has already registered driver
+ 					 */
+ static struct edac_pci_ctl_info *i82860_pci;
+Index: linux-2.6.22-rc4-mm2/drivers/edac/i82875p_edac.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/i82875p_edac.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/i82875p_edac.c
+@@ -177,7 +177,7 @@ static const struct i82875p_dev_info i82
+ 		.ctl_name = "i82875p"},
+ };
+ 
+-static struct pci_dev *mci_pdev = NULL;	/* init dev: in case that AGP code has
++static struct pci_dev *mci_pdev;	/* init dev: in case that AGP code has
+ 					 * already registered driver
+ 					 */
+ 
+Index: linux-2.6.22-rc4-mm2/drivers/edac/r82600_edac.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/r82600_edac.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/r82600_edac.c
+@@ -131,7 +131,7 @@ struct r82600_error_info {
+ 	u32 eapr;
+ };
+ 
+-static unsigned int disable_hardware_scrub = 0;
++static unsigned int disable_hardware_scrub;
+ 
+ static struct edac_pci_ctl_info *r82600_pci;
+ 
