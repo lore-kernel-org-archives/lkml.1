@@ -1,125 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968510AbXFHKTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938607AbXFHKVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968510AbXFHKTT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 06:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937783AbXFHKTF
+	id S938607AbXFHKVb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 06:21:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937766AbXFHKVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 06:19:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55437 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937767AbXFHKTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 06:19:04 -0400
-Date: Fri, 8 Jun 2007 12:18:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Interesting interaction between lguest and CFS
-Message-ID: <20070608101843.GA2381@elte.hu>
-References: <20070604173710.GR11166@waste.org> <20070604175436.GC30274@elte.hu> <20070604184106.GG11115@waste.org> <20070605071904.GB25163@elte.hu> <20070605140342.GR11115@waste.org> <b647ffbd0706050814u1e145b82qdb344d475d9ffe93@mail.gmail.com> <b647ffbd0706050841v2a326fb4n128249131ccbc11a@mail.gmail.com> <20070605195015.GA24348@elte.hu> <20070606202314.GH11115@waste.org> <20070608093429.GA22699@elte.hu>
+	Fri, 8 Jun 2007 06:21:23 -0400
+Received: from mail.phnxsoft.com ([195.227.45.4]:3166 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937708AbXFHKVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 06:21:22 -0400
+Message-ID: <46692DA0.8090204@imap.cc>
+Date: Fri, 08 Jun 2007 12:21:20 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070608093429.GA22699@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+Subject: Re: serio interface
+References: <46667A3B.8070708@gmx.de> <20070606091503.GI2649@lug-owl.de> <46667FB9.70206@gmx.de> <20070606095159.GK2649@lug-owl.de> <46682E93.1020602@imap.cc>
+In-Reply-To: <46682E93.1020602@imap.cc>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig86AB4B71630D7D1215760D48"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig86AB4B71630D7D1215760D48
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+/me wrote:
+> Have a look at drivers/isdn/gigaset/ser-gigaset.c if you like,
+> a driver for an ISDN adapter attached via RS232.
+>=20
+> This is currently implemented as a line discipline, but I consider
+> that a hack. [...]
+> The serio approach used by input/mouse/sermouse.c might provide a
+> more sensible way of driving that kind of device.
 
-> thanks. It shows the anomaly in action:
+Apparently it won't. As I have learned in the meantime, the serio
+mechanism in turn just uses a line discipline to actually attach
+itself to the serial port. So the line discipline interface
+remains "the" way to write a layered driver on top of RS232.
 
-> So all the time references we have show that (no surprise here) 1 
-> second passed between the two samples. But sched_clock() shows a 
-> _large_ jump:
-> 
->   .clock                 : 125652924079659272
->   .clock                 : 125653018059166371
-> 
-> also reflected in .clock_max_delta:
-> 
->   .clock_max_delta       : 92976502936
-> 
-> that's a 93 seconds jump (!) in a single 1-second sample. [...]
+Thanks,
 
-we also had a similar jump in exec_clock, which suggests that the 
-sched_clock() "jump" occured while there was a task running. (i.e. not 
-during ACPI-C2/C3) Could you try the patch below? It should catch such 
-large jumps. The 'clock_overflows' counter in /proc/sched_debug will 
-show whether this new protection triggered on your box.
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
-	Ingo
 
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -149,12 +149,12 @@ struct rq {
- 
- 	u64 clock, prev_clock_raw;
- 	s64 clock_max_delta;
--	u64 fair_clock, prev_fair_clock;
--	u64 exec_clock, prev_exec_clock;
-+	u64 fair_clock, prev_fair_clock;
-+	u64 exec_clock, prev_exec_clock;
- 	s64 wait_runtime;
- 	unsigned long wait_runtime_overruns, wait_runtime_underruns;
- 
--	unsigned int clock_warps;
-+	unsigned int clock_warps, clock_overflows;
- 	unsigned int clock_unstable_events;
- 
- 	struct sched_class *load_balance_class;
-@@ -245,9 +245,17 @@ static inline unsigned long long __rq_cl
- 		clock++;
- 		rq->clock_warps++;
- 	} else {
--		if (unlikely(delta > rq->clock_max_delta))
--			rq->clock_max_delta = delta;
--		clock += delta;
-+		/*
-+		 * Catch too large forward jumps too:
-+		 */
-+		if (delta > 2*TICK_NSEC) {
-+			clock++;
-+			rq->clock_overflows++;
-+		} else {
-+			if (unlikely(delta > rq->clock_max_delta))
-+				rq->clock_max_delta = delta;
-+			clock += delta;
-+		}
- 	}
- 
- 	rq->prev_clock_raw = now;
-Index: linux/kernel/sched_debug.c
-===================================================================
---- linux.orig/kernel/sched_debug.c
-+++ linux/kernel/sched_debug.c
-@@ -117,13 +119,13 @@ static void print_cpu(struct seq_file *m
- 	P(clock);
- 	P(prev_clock_raw);
- 	P(clock_warps);
-+	P(clock_overflows);
- 	P(clock_unstable_events);
- 	P(clock_max_delta);
--	rq->clock_max_delta = 0;
- 	P(fair_clock);
--	P(prev_fair_clock);
-+	P(prev_fair_clock);
- 	P(exec_clock);
--	P(prev_exec_clock);
-+	P(prev_exec_clock);
- 	P(wait_runtime);
- 	P(wait_runtime_overruns);
- 	P(wait_runtime_underruns);
+--------------enig86AB4B71630D7D1215760D48
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGaS2gMdB4Whm86/kRArrEAJ4ky3+pqs/i0vk5wtFHdvg3TaP5IgCggpUP
+HAlvUAWcpQmZa1tL2pEU63c=
+=tb2L
+-----END PGP SIGNATURE-----
+
+--------------enig86AB4B71630D7D1215760D48--
