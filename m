@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938415AbXFHItp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967517AbXFHIxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938415AbXFHItp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 04:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937320AbXFHIti
+	id S967517AbXFHIxH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 04:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932730AbXFHIwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 04:49:38 -0400
-Received: from vpn.merrillpress.com ([64.61.107.78]:57057 "EHLO
-	vpn.merrillpress.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933799AbXFHIth (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 04:49:37 -0400
-X-Greylist: delayed 3744 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Jun 2007 04:49:37 EDT
-Message-ID: <45111.76.180.38.217.1181288832.squirrel@vpn.merrillpress.com>
-Date: Fri, 8 Jun 2007 03:47:12 -0400 (EDT)
-Subject: O_CLOEXEC: An alternate proposal
-From: "Daniel Colascione" <danc@merrillpress.com>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8-4.0.1.el4.centos
+	Fri, 8 Jun 2007 04:52:54 -0400
+Received: from styx.suse.cz ([82.119.242.94]:58236 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S935906AbXFHIwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 04:52:53 -0400
+Date: Fri, 8 Jun 2007 10:53:37 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [TRIVIAL] X86_64: fix wrong comment regarding set_fixmap()
+In-Reply-To: <20070608104803.3dfe7955.dada1@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0706081052310.10204@jikos.suse.cz>
+References: <Pine.LNX.4.64.0706081034570.10204@jikos.suse.cz>
+ <20070608104803.3dfe7955.dada1@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey, this is my first post to linux-kernel, so please be kind. :-)
+On Fri, 8 Jun 2007, Eric Dumazet wrote:
 
-Linus Torvalds wrote on May 31:
-> I'm with Uli on this one. "Stateful" stuff is bad. It's essentially
-> impossible to handle with libraries - either the library would have to
-> explciitly always turn the state the way _it_ needs it, or the library
-> will do the wrogn thing.
+> Why not taking the opportunity of spelling fix  ( highger -> higher ) ?
 
-I agree that stateful stuff is generally not very elegant,
-but I think it's a win here -- we wouldn't have to create any
-new APIs except for the state-setting stuff.
+I missed that one, thanks. Andi, could you please take the one below 
+instead? Thanks.
 
-The state just has to be thread-local.
+From: Jiri Kosina <jkosina@suse.cz>
 
-If it's thread-local, a library, say, glibc,
-can use code like this:
+X86_64: fix wrong comment regarding set_fixmap()
+    
+The function name is set_fixmap(), not fixmap_set() as stated in the comment.
+    
+Also fix a typo, punctuation and lower/uppercase a bit.
+    
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-  /* Internal library function */
-  old_fd_flags = kernel_default_fd_flags(FD_CLOEXEC | FD_RANDFD);
-  event_fd = super_duper_event_polling_mechanism_fd();
-  kernel_default_fd_flags(old_fd_flags);
-
-I think that's a lot cleaner than augmenting every
-present and future fd-creating syscall to take some kind
-of flags parameter and adding some kind of funny dup().
-
-Other threads, and the caller of this function in the same thread,
-aren't even aware that the library is changing any state. It's
-race-free, since the default flags wouldn't be inherited across clone()
-or exec(). It's still POSIX compliant too as long as the default
-flags set remains empty.
-
-The only disadvantage I can think of is that it requires three
-system calls instead of one, but most of your time is going to be spent
-working with event_fd, not creating it.
-
-Also, what about an FD_CLOFORK as well? That seems to match
-more closely what you'd want out of a library-internal FD than
-FD_CLOEXEC.
-
+diff --git a/include/asm-x86_64/fixmap.h b/include/asm-x86_64/fixmap.h
+index e90e167..c3574e5 100644
+--- a/include/asm-x86_64/fixmap.h
++++ b/include/asm-x86_64/fixmap.h
+@@ -22,9 +22,9 @@
+  * compile time, but to set the physical address only
+  * in the boot process.
+  *
+- * these 'compile-time allocated' memory buffers are
+- * fixed-size 4k pages. (or larger if used with an increment
+- * highger than 1) use fixmap_set(idx,phys) to associate
++ * These 'compile-time allocated' memory buffers are
++ * fixed-size 4k pages (or larger if used with an increment
++ * higher than 1). Use set_fixmap(idx,phys) to associate
+  * physical memory with fixmap indices.
+  *
+  * TLB entries of such buffers will not be flushed across
