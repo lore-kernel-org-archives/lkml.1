@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXFIHFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXFIHKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbXFIHFd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 03:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbXFIHFS
+	id S1755579AbXFIHKQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 03:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbXFIHKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 03:05:18 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:51963
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbXFIHFQ (ORCPT
+	Sat, 9 Jun 2007 03:10:05 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:43996 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752457AbXFIHKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 03:05:16 -0400
-Date: Sat, 9 Jun 2007 00:04:15 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Sean <seanlkml@sympatico.ca>
-cc: Tetsuo Handa <from-lsm@I-love.SAKURA.ne.jp>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,pathname
- matching
-In-Reply-To: <20070609014454.2f1f2f91.seanlkml@sympatico.ca>
-Message-ID: <Pine.LNX.4.64.0706082356220.6675@asgard.lang.hm>
-References: <200706042303.28785.agruen@suse.de>
- <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de>
- <20070609001703.GA17644@kroah.com> <Pine.LNX.4.64.0706081757070.18969@asgard.lang.hm>
- <200706091101.JAB31303.PTNNSGtM@I-love.SAKURA.ne.jp>
- <20070608232531.d68de09f.seanlkml@sympatico.ca> <Pine.LNX.4.64.0706082138360.6675@asgard.lang.hm>
- <20070609011022.ac332fc7.seanlkml@sympatico.ca> <Pine.LNX.4.64.0706082224370.6675@asgard.lang.hm>
- <20070609014454.2f1f2f91.seanlkml@sympatico.ca>
+	Sat, 9 Jun 2007 03:10:03 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Ozq6WZEaEJv/rrk2xj0byxNGfKgGxN7g+gXfq/D2Ke4grWe3QpclYKKneDXvm9djW
+	MTgl2JoD2TJhzABaC/2yg==
+Message-ID: <6599ad830706090009q25e13ff6ybad7d7f7db21cd48@mail.gmail.com>
+Date: Sat, 9 Jun 2007 00:09:55 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [0/1] [patch -mm] Add containerstats (v3)
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Pavel Emelianov" <xemul@openvz.org>
+In-Reply-To: <20070608124816.fa1e70d8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070608181346.15764.2467.sendpatchset@balbir-laptop>
+	 <20070608124816.fa1e70d8.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007, Sean wrote:
-
->> so are you suggesting that SELinux would call out to userspace for every
->> file open to get the label for that file?
->>
+On 6/8/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 08 Jun 2007 23:43:46 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 >
-> No, i'm not.  You must already have a kernel function in the current
-> implementation of AA that decides the proper policy for each path.  Why
-> not use it  to feed labels into SELinux.
+> > This patch implements per container statistics infrastructure and re-uses
+> > code from the taskstats interface.
+>
+> boggle.
+>
+> Symbol: CONTAINERS [=y]
+>   Selected by: CONTAINER_DEBUG || CPUSETS && SMP || CONTAINER_CPUACCT
+>
+> Paul, that's just bizarre.  How come it was done this way?
 
-if it was this easy just have SELinux set the label == path
+Containers on their own without any subsystems aren't hugely useful.
+So the plan was that any container subsystem would "select CONTAINERS"
+to cause the container framework to be built. I'm happy to change it
+to invert the dependencies if you'd prefer.
 
-you first need to figure out what the path is. right now this can't be 
-done, the AA paches provide this capability.
-
-second, the AA policies aren't based just on the path, they are based on 
-the program accessing the path, then the path. you can have two different 
-policies for two different programs accessing the same path, but for most 
-programs (although, not nessasarily most activity) there will be no 
-policy, and therefor no need to check the path.
-
-but even if you did these things, why would it be an advantage to use a 
-mechanism to create a dummy label and pass it off to different code rather 
-then just decideing at that point? once the AA code knows what the policy 
-for this path is for this program (which it would need to know to set the 
-label) how is it a win to pass this off to another chunk of code? you 
-would also need to make sure that the SELinux code didn't try to cache the 
-label for future use either, becouse in the future the access may be from 
-another program and so the policy that's needed is different.
-
-David Lang
+Paul
