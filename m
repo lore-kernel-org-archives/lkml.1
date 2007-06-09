@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032607AbXFIAH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970356AbXFIAHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032607AbXFIAH1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 20:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968173AbXFIAE6
+	id S970356AbXFIAHw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 20:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030458AbXFIAFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 20:04:58 -0400
-Received: from mx1.suse.de ([195.135.220.2]:33942 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968606AbXFIAE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 20:04:56 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-usb-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 9/9] OHCI: Fix machine check in ohci_hub_status_data
-Date: Fri,  8 Jun 2007 17:03:54 -0700
-Message-Id: <1181347501667-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.2.1
-In-Reply-To: <11813474933434-git-send-email-gregkh@suse.de>
-References: <20070609000312.GA17574@kroah.com>
- <11813474343815-git-send-email-gregkh@suse.de>
- <1181347441440-git-send-email-gregkh@suse.de>
- <11813474492376-git-send-email-gregkh@suse.de>
- <118134746039-git-send-email-gregkh@suse.de>
- <11813474672336-git-send-email-gregkh@suse.de>
- <11813474771075-git-send-email-gregkh@suse.de>
- <11813474852263-git-send-email-gregkh@suse.de>
- <11813474933434-git-send-email-gregkh@suse.de>
+	Fri, 8 Jun 2007 20:05:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36801 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S969754AbXFIAFN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 20:05:13 -0400
+Date: Fri, 8 Jun 2007 17:03:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Ulrich Drepper <drepper@redhat.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com>
+Message-ID: <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org>
+References: <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
+ <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
+ <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
+ <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
+ <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
+ <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com>
+ <20070608184650.GA4095@ftp.linux.org.uk> <4669A674.4080309@redhat.com>
+ <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu>
 
-This patch (as901) fixes an oversight in ohci-hcd.  The
-hub_status_data routine must not try to access the controller's
-memory-mapped registers if the controller is in a low-power state;
-such attempts will cause a crash on some architectures (such as PPC).
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/usb/host/ohci-hub.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+On Fri, 8 Jun 2007, Davide Libenzi wrote:
+>
+> On Fri, 8 Jun 2007, Linus Torvalds wrote:
+> > 
+> > You need things to be *repeatable* for debugging. No ifs, buts, or maybes 
+> > about it.
+> 
+> It all depends on how you use the file descriptor.
 
-diff --git a/drivers/usb/host/ohci-hub.c b/drivers/usb/host/ohci-hub.c
-index 216c9c9..bb9cc59 100644
---- a/drivers/usb/host/ohci-hub.c
-+++ b/drivers/usb/host/ohci-hub.c
-@@ -417,6 +417,8 @@ ohci_hub_status_data (struct usb_hcd *hcd, char *buf)
- 	unsigned long	flags;
- 
- 	spin_lock_irqsave (&ohci->lock, flags);
-+	if (!test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags))
-+		goto done;
- 
- 	/* undocumented erratum seen on at least rev D */
- 	if ((ohci->flags & OHCI_QUIRK_AMD756)
--- 
-1.5.2.1
+Read what I wrote. "for debugging".
 
+If your code is bug-free, and does what you intend it to do, everything is 
+fine. But you wouldn't be doing debugging then, would you?
+
+For debugging, it does _not_ depend on "how you use the file descriptor". 
+The whole _point_ is that something does something wrong. Maybe you 
+_intended_ to use the file descriptor some way, and the bug was that you 
+didn't.
+
+		Linus
