@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938982AbXFIBR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939562AbXFIBUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938982AbXFIBR1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 21:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbXFIBRR
+	id S939562AbXFIBUv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 21:20:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbXFIBUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 21:17:17 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3381 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750795AbXFIBRQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 21:17:16 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: trond.myklebust@fys.uio.no (Trond Myklebust)
-Subject: Re: networking busted in current -git ???
-Cc: arekm@maven.pl, florin@iucha.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Organization: Core
-In-Reply-To: <1181339007.6675.12.camel@heimdal.trondhjem.org>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1HwpYs-0008HD-00@gondolin.me.apana.org.au>
-Date: Sat, 09 Jun 2007 11:16:14 +1000
+	Fri, 8 Jun 2007 21:20:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46747 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753196AbXFIBUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 21:20:42 -0400
+Message-ID: <466A0020.50406@redhat.com>
+Date: Fri, 08 Jun 2007 18:19:28 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+References: <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu> <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com> <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com> <20070608184650.GA4095@ftp.linux.org.uk> <4669A674.4080309@redhat.com> <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org> <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org> <20070609003622.GB4095@ftp.linux.org.uk>
+In-Reply-To: <20070609003622.GB4095@ftp.linux.org.uk>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Al Viro wrote:
+> Exactly.  Put it another way, randomizer is a stress-tester.
+
+... and a security mechanism.  And as such it is only useful if it is
+used.  Probably it should be policy-controlled whether you can turn it off.
+
+
+> Note that
+> #define NR_FILES <some constant>
 > 
-> It appears to be something in the latest dump from davem to Linus, but I
-> haven't yet had time to identify what.
+> for (i = 0; i < NR_FILES; i++)
+> 	close(i);
 
-You want this patch which should hit the tree soon.
+You're confusing the problems.  This is not the argument for having a
+separate file descriptor set.  It is the argument to have hidden file
+descriptors.  Randomization has nothing whatsoever to do with this example.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-[IPV4]: Do not remove idev when addresses are cleared
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-Now that we create idev before addresses are added, it no longer makes
-sense to remove them when addresses are all deleted.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/net/ipv4/devinet.c b/net/ipv4/devinet.c
-index 354e800..0cf813f 100644
---- a/net/ipv4/devinet.c
-+++ b/net/ipv4/devinet.c
-@@ -327,12 +327,8 @@ static void __inet_del_ifa(struct in_device *in_dev, struct in_ifaddr **ifap,
- 		}
- 
- 	}
--	if (destroy) {
-+	if (destroy)
- 		inet_free_ifa(ifa1);
--
--		if (!in_dev->ifa_list)
--			inetdev_destroy(in_dev);
--	}
- }
- 
- static void inet_del_ifa(struct in_device *in_dev, struct in_ifaddr **ifap,
+iD8DBQFGagAg2ijCOnn/RHQRAhV+AJ9qT2epTxDWWS++74f+vrV3NucVHACdGkxm
+MULoyE+0NY7dSHcB2epKe7w=
+=o3+1
+-----END PGP SIGNATURE-----
