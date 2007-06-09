@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758474AbXFISkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758579AbXFIS4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758474AbXFISkY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 14:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbXFISkQ
+	id S1758579AbXFIS4t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 14:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757809AbXFIS4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 14:40:16 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:8428 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753527AbXFISkO (ORCPT
+	Sat, 9 Jun 2007 14:56:41 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:31992 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757795AbXFIS4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 14:40:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:user-agent:from;
-	b=wdEsgy/BROPiNQ+RuRK5Lp8HnIr7m+yTJtPwVXJdm1GIf2fxLmThqpq5ESQ7wEMOo
-	QMJnuzM8ccv12mG54ScSA==
-Date: Sat, 9 Jun 2007 11:38:31 -0700
-To: bunk@stusta.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Ratelimit printks due to unhandled signals in x86_64
-Message-ID: <20070609183831.GA24688@google.com>
+	Sat, 9 Jun 2007 14:56:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eOelgHuh8Li7FWXPnwO5ugZ2H63PKKDkvAq83lp9tFaNkTUB+c6PoqX8IP6pFwyNATBYthedl1ph6w1la3EPXK6Q3WFhQ6Rxj1pLww6QD13hsyk36mRfvfdRYv1n0/aDStvgAI4f2xpLMqhSIq5iGP01JEwiS/v4o7O6R2jai4g=
+Message-ID: <a781481a0706091156n773b5449n5d4a96134c3f9b66@mail.gmail.com>
+Date: Sun, 10 Jun 2007 00:26:39 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: Size of kernel modules
+Cc: "Jon Masters" <jonathan@jonmasters.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Kyle McMartin" <kyle@canonical.com>,
+       "Christoph Pleger" <Christoph.Pleger@cs.uni-dortmund.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0706091558460.14652@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: masouds@google.com (Masoud Asgharifard Sharbiani)
+References: <20070606170534.67b5dea9.Christoph.Pleger@cs.uni-dortmund.de>
+	 <20070608034421.GM26717@fattire.cabal.ca>
+	 <Pine.LNX.4.64.0706080838210.17480@localhost.localdomain>
+	 <Pine.LNX.4.64.0706090954310.4353@fbirervta.pbzchgretzou.qr>
+	 <1181390911.3306.22.camel@jcmlaptop>
+	 <Pine.LNX.4.64.0706091558460.14652@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, 
-The following patch enables ratelimiting of unhandled signals in x86_64.
-Without this, a malicious user could inflict local DoS and fill up the
-logs with a code like this:
+On 6/9/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>
+> On Jun 9 2007 08:08, Jon Masters wrote:
+> >
+> >So I missed half of this conversation - you're saying that on a
+> >CONFIG_DEBUG_KERNEL, you have such large .ko module files that depmod
+> >segfaults? Can I get a core dump or any further information? :-)
+>
+> Just make sure your /lib/modules/<kernel> is like 300 megabytes or even
+> more. Then depmod will clog up quite a lot memory already. (Taking a 256 mb ram
+> machine for example, no swap or just very little.)
 
-main()
-{
-	while(1)
-		if (!fork())
-			*(int *)0 = 0;
-}
+Yup, this would happen reproducibly on a machine with <= 256MB
+RAM and swap disabled, when building a large enough modular kernel.
+The depmod at end of modules_install would invariably invoke the OOM
+killer, and get itself shot (taking down the shell with it, often) ...
 
-The patch is against 2.6.16.y tree. I've sent a similar one to Andrew
-for inclusion in the -mm tree.
-cheers,
-Masoud
-
-Signed-off-by: Masoud Sharbiani <masouds@google.com>
-
-diff --git a/arch/x86_64/kernel/signal.c b/arch/x86_64/kernel/signal.c
-index 5876df1..4b3cd29 100644
---- a/arch/x86_64/kernel/signal.c
-+++ b/arch/x86_64/kernel/signal.c
-@@ -505,7 +505,7 @@ void do_notify_resume(struct pt_regs *regs, sigset_t *oldset, __u32 thread_info_
- void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
- { 
- 	struct task_struct *me = current; 
--	if (exception_trace)
-+	if (exception_trace && printk_ratelimit())
- 		printk("%s[%d] bad frame in %s frame:%p rip:%lx rsp:%lx orax:%lx\n",
- 	       me->comm,me->pid,where,frame,regs->rip,regs->rsp,regs->orig_rax); 
- 
-diff --git a/arch/x86_64/kernel/traps.c b/arch/x86_64/kernel/traps.c
-index a5209fd..4f22aaa 100644
---- a/arch/x86_64/kernel/traps.c
-+++ b/arch/x86_64/kernel/traps.c
-@@ -480,7 +480,8 @@ static void __kprobes do_trap(int trapnr, int signr, char *str,
- 	tsk->thread.trap_no = trapnr;
- 
- 	if (user_mode(regs)) {
--		if (exception_trace && unhandled_signal(tsk, signr))
-+		if (exception_trace && unhandled_signal(tsk, signr) && 
-+		    printk_ratelimit())
- 			printk(KERN_INFO
- 			       "%s[%d] trap %s rip:%lx rsp:%lx error:%lx\n",
- 			       tsk->comm, tsk->pid, str,
-diff --git a/arch/x86_64/mm/fault.c b/arch/x86_64/mm/fault.c
-index 2e7c3c8..92f6448 100644
---- a/arch/x86_64/mm/fault.c
-+++ b/arch/x86_64/mm/fault.c
-@@ -475,7 +475,8 @@ bad_area_nosemaphore:
- 		    (address >> 32))
- 			return;
- 
--		if (exception_trace && unhandled_signal(tsk, SIGSEGV)) {
-+		if (exception_trace && unhandled_signal(tsk, SIGSEGV) &&
-+		    printk_ratelimit()) {
- 			printk(
- 		       "%s%s[%d]: segfault at %016lx rip %016lx rsp %016lx error %lx\n",
- 					tsk->pid > 1 ? KERN_INFO : KERN_EMERG,
+Satyam
