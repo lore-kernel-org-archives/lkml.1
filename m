@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971175AbXFIAN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032533AbXFIAR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971175AbXFIAN4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 20:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967854AbXFIANp
+	id S1032533AbXFIAR0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 20:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030974AbXFIARQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 20:13:45 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2020 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753951AbXFIANp (ORCPT
+	Fri, 8 Jun 2007 20:17:16 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:58428 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S969960AbXFIARO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 20:13:45 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 8 Jun 2007 17:13:43 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Ulrich Drepper <drepper@redhat.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706081710260.5795@alien.or.mcafeemobile.com>
-References: <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
- <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
- <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
- <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
- <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
- <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com>
- <20070608184650.GA4095@ftp.linux.org.uk> <4669A674.4080309@redhat.com>
- <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com>
- <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Fri, 8 Jun 2007 20:17:14 -0400
+Date: Fri, 8 Jun 2007 17:17:03 -0700
+From: Greg KH <greg@kroah.com>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, Pavel Machek <pavel@ucw.cz>,
+       jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+	pathname matching
+Message-ID: <20070609001703.GA17644@kroah.com>
+References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de> <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706090003.57722.agruen@suse.de>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007, Linus Torvalds wrote:
+On Sat, Jun 09, 2007 at 12:03:57AM +0200, Andreas Gruenbacher wrote:
+> AppArmor is meant to be relatively easy to understand, manage, and customize, 
+> and introducing a labels layer wouldn't help these goals.
 
-> On Fri, 8 Jun 2007, Davide Libenzi wrote:
-> >
-> > On Fri, 8 Jun 2007, Linus Torvalds wrote:
-> > > 
-> > > You need things to be *repeatable* for debugging. No ifs, buts, or maybes 
-> > > about it.
-> > 
-> > It all depends on how you use the file descriptor.
-> 
-> Read what I wrote. "for debugging".
-> 
-> If your code is bug-free, and does what you intend it to do, everything is 
-> fine. But you wouldn't be doing debugging then, would you?
-> 
-> For debugging, it does _not_ depend on "how you use the file descriptor". 
-> The whole _point_ is that something does something wrong. Maybe you 
-> _intended_ to use the file descriptor some way, and the bug was that you 
-> didn't.
+Woah, that describes the userspace side of AA just fine, it means
+nothing when it comes to the in-kernel implementation.  There is no
+reason that you can't implement the same functionality using some
+totally different in-kernel solution if possible.
 
-Ok, so what's your idea? Have another POSIX-like allocator somewhere up 
-there in the fd space, with a fixed and include-defined base?
-Or just drop all this altogether?
+> SELinux is applicable in areas where AppArmor is not (e.g., MLS), but
+> this comes at a cost. For me the question is not SELinux or AppArmor,
+> but if AppArmor's security model is a good solution in common
+> scenarios. In my opinion, AppArmor is a better answer than SELinux in
+> a number of scenarios. This gives it value, nonwithstanding the fact
+> that SELinux can be taken further.
 
+I am still not completely certian that we can not properly implement AA
+functionality using a SELinux backend solution.  Yes, the current tools
+that try to implement this are still lacking, and maybe the kernel needs
+to change, but that is possible.
 
+I still want to see a definition of the AA "model" that we can then use
+to try to implement using whatever solution works best.  As that seems
+to be missing the current argument of if AA can or can not be
+implemented using SELinux or something totally different should be
+stopped.
 
-- Davide
+So, AA developers, do you have such a document anywhere?  I know there
+are some old research papers, do they properly describe the current
+model you are trying to implement here?
 
+thanks,
 
+greg k-h
