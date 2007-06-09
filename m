@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbXFISCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758454AbXFISC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758189AbXFISCI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 14:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbXFISBv
+	id S1758454AbXFISC4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 14:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbXFISCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 14:01:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:23071 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753527AbXFISBu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 14:01:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=DXVLQ5ExpZ1XcAwKk/xwcPfLwj53BAc+5KuPLBfxzLgxm4JOksMDQ/IVOjqSENL/9D/nPOseIfRPYRng0FNIOwsscQzJpOfChZzuJU5MsT20s4SfapELLKB628afy/Y24CosUrzDA/w90eteaBcF2t9VnuAsPUjTjLPZ5uglrrA=
-Date: Sat, 9 Jun 2007 22:03:18 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, Ian Kent <raven@themaw.net>
-Subject: Re: [PATCH 6/7] Add pr_debug_pid to kernel.h
-Message-ID: <20070609180318.GB5760@martell.zuzino.mipt.ru>
-References: <4669D5B7.7050005@hawkeye.stone.uk.eu.org> <466A5E28.2000707@hawkeye.stone.uk.eu.org> <466A625C.4030700@hawkeye.stone.uk.eu.org>
+	Sat, 9 Jun 2007 14:02:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42113 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756995AbXFISCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 14:02:48 -0400
+Message-ID: <466AEAE8.2040800@redhat.com>
+Date: Sat, 09 Jun 2007 11:01:12 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <466A625C.4030700@hawkeye.stone.uk.eu.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Pierre Peiffer <pierre.peiffer@bull.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, "Dave Jones"@redhat.com,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: FUTEX_CMP_REQUEUE_PI is not quite there
+References: <46455A67.8040203@redhat.com> <1181062707.4404.119.camel@chaos>
+In-Reply-To: <1181062707.4404.119.camel@chaos>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 09, 2007 at 09:18:36AM +0100, Jack Stone wrote:
-> This patch adds a new function to kernel.h. This function prints out the
-> pid of the current process and the name of the function where it was
-> called from followed by the debug message and a newline.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-NO! We don't add macros for every debug format people use into core
-headers. I think you should stop after pr_err().
+Thomas Gleixner wrote:
+> Can you put the binaries somewhere for download please ? 
 
-> --- linux.orig/include/linux/kernel.h
-> +++ linux/include/linux/kernel.h
-> @@ -228,6 +228,8 @@ extern void print_hex_dump(const char *l
->  /* If you are writing a driver, please use dev_dbg instead */
->  #define pr_debug(fmt,arg...) \
->  	printk(KERN_DEBUG fmt,##arg)
-> +#define pr_debug_pid(fmt,arg...) \
-> +	printk(KERN_DEBUG "pid %d: %s: " fmt "\n" , current->pid ,
-> __FUNCTION__, ##args)
->  #define pr_err(fmt,arg...) \
->  	printk(KERN_ERR fmt,##arg)
->  #else
-> @@ -236,6 +238,11 @@ static inline int __attribute__ ((format
->  	return 0;
->  }
-> 
-> +static inline int __attribute__ ((format (printf, 1, 2)))
-> pr_debug_pid(const char * fmt, ...)
-> +{
-> +	return 0;
-> +}
+I was waiting until I could test the current patches.  DaveJ built a
+kernel based on -rc4-git3 which I tested.  The results are the same.
 
+I've put a statically linked x86-64 binary at
+
+  http://people.redhat.com/drepper/tst-robustpi7.bz2
+
+Running it produces a backtrace with the 2.6.21-1.3218.fc8 kernel and
+the machine dies.
+
+The test case creates a robust, PI mutex.  Five threads then run into a
+condvar for this mutex.  The main threads wakes them all with a
+broadcast which causes the new requeue_pi code to be used.  The woken
+threads then (in pthread_cond_wait) lock the mutex and then kill
+themselves while holding the mutex.  This is supposed to have the result
+that all but the first thread get EDEADOWNER errors.
+
+Note: the condvar futex is not a PI futex.  It cannot be, the semantics
+is different.  This is no locking futex.  The kernel will have to deal
+with this.  The requeue operation is meaningless if this is not done
+since it's only use is for this situation.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFGauro2ijCOnn/RHQRAluEAKC2rG4DSGjwNkYILzQsMtp7jgcN0QCgh4od
+bN8HUrwjg1keVo8DjKTQL6o=
+=twSF
+-----END PGP SIGNATURE-----
