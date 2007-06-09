@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbXFIUXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbXFIUcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbXFIUXt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 16:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759505AbXFIUXl
+	id S1760610AbXFIUcN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 16:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbXFIUb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 16:23:41 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34672 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759347AbXFIUXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 16:23:40 -0400
-Message-ID: <466B0C3F.3040300@garzik.org>
-Date: Sat, 09 Jun 2007 16:23:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Sat, 9 Jun 2007 16:31:59 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3259 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750838AbXFIUb6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 16:31:58 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 9 Jun 2007 13:31:56 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706091326050.14445@alien.or.mcafeemobile.com>
+References: <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com>
+ <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com>
+ <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com>
+ <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com>
+ <20070609172429.GF4095@ftp.linux.org.uk> <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com>
+ <20070609200645.GG4095@ftp.linux.org.uk> <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Benjamin Gilbert <bgilbert@cs.cmu.edu>, akpm@linux-foundation.org,
-       herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
-References: <20070608214242.23949.30350.stgit@dev> <20070608214253.23949.40465.stgit@dev> <20070609201159.GC11166@waste.org>
-In-Reply-To: <20070609201159.GC11166@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Fri, Jun 08, 2007 at 05:42:53PM -0400, Benjamin Gilbert wrote:
->> Add x86-optimized implementation of the SHA-1 hash function, taken from
->> Nettle under the LGPL.  This code will be enabled on kernels compiled for
->> 486es or better; kernels which support 386es will use the generic
->> implementation (since we need BSWAP).
->>
->> We disable building lib/sha1.o when an optimized implementation is
->> available, as the library link order for x86 (and x86_64) would otherwise
->> ignore the optimized version.  The existing optimized implementation for ARM
->> does not do this; the library link order for that architecture appears to
->> favor the arch/arm/ version automatically.  I've left this situation alone
->> since I'm not familiar with the ARM code, but a !ARM condition could be
->> added to CONFIG_SHA1_GENERIC if it makes sense.
->>
->> The code has been tested with tcrypt and the NIST test vectors.
-> 
-> Have you benchmarked this against lib/sha1.c? Please post the results.
-> Until then, I'm frankly skeptical that your unrolled version is faster
-> because when I introduced lib/sha1.c the rolled version therein won by
-> a significant margin and had 1/10th the cache footprint.
+On Sat, 9 Jun 2007, Linus Torvalds wrote:
 
-Yes. And it also depends on the CPU as well.  Testing on a server-class 
-x86 CPU (often with bigger L2, and perhaps even L1, cache) will produce 
-different result than from popular but less-capable "value" CPUs.
+> So I think both the FD_CLOEXEC _and_ the "private fd space" are real 
+> issues. I don't agree with the "random fd" approach. I'd much rather have 
+> a non-random setup for the nonlinear ones (it just shouldn't be linear).
 
-	Jeff
+That is fine for me. So what about the randomness?
+
+A) Don't do it at all
+
+B) Let userspace select it in some way globally
+
+C) Let userspace select it per-fd (this won't be an O(1) anymore though)
+
+
+
+
+- Davide
 
 
