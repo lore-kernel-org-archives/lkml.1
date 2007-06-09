@@ -1,89 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969916AbXFICL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969945AbXFIC1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969916AbXFICL0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 22:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbXFICLT
+	id S969945AbXFIC1Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 22:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967932AbXFIC1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 22:11:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57139 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752581AbXFICLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 22:11:18 -0400
-Message-ID: <466A0BFB.3070908@redhat.com>
-Date: Fri, 08 Jun 2007 19:10:03 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 8 Jun 2007 22:27:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35908 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1764357AbXFIC1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 22:27:13 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX19DayEkKrtDoyZPuBtkQbTC++qcfh5scQi57Fb5c5
+	Fo9R0A49PhFyKf
+Date: Sat, 9 Jun 2007 04:27:10 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, ak@suse.de, dzickus@redhat.com
+Subject: [PATCH] i386: Fix the K7 NMI watchdog checkbit
+Message-ID: <20070609022710.GA2399@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andi Kleen <andi@firstfloor.org>,
+	"Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	LKML <linux-kernel@vger.kernel.org>, ak@suse.de, dzickus@redhat.com
+References: <465C2225.2000100@googlemail.com> <20070603150246.5151dda6@laptop.hypervisor.org> <20070608060244.GA2369@atjola.homenet> <20070607234153.09c32b49.akpm@linux-foundation.org> <20070608105808.GA10190@elte.hu> <20070608184422.GA2204@atjola.homenet> <20070608204324.GA25392@elte.hu>
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-References: <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com> <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com> <20070608184650.GA4095@ftp.linux.org.uk> <4669A674.4080309@redhat.com> <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org> <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org> <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com> <20070609014140.GC4095@ftp.linux.org.uk>
-In-Reply-To: <20070609014140.GC4095@ftp.linux.org.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070608204324.GA25392@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Al Viro wrote:
-> Any real-world examples of exploitable holes based on that?
-
-Return to libc exploit, calling dup2, where some privileged data is
-redirected from the normal file descriptor to one of the attackers
-choosing.  The latter could be an outgoing socket connection which would
-result in leaking the data to the outside.
-
-         normal code                         intruder
-
-                                          so = socket()
-
-    fd = open ("local-file")
-
-                                          dup2(so, fd);
-
-    write (fd, privileged data)
-
-
-It's just a little function call.  If the arguments of dup2() are known
-this is not a big issue to construct.
-
-
-
->> You're confusing the problems.
+On 2007.06.08 22:43:25 +0200, Ingo Molnar wrote:
 > 
-> No, I'm not.  The entire argument for having a separate set of descriptors
-> is based on programs behaving in similar fashion, working correctly now but
-> limiting what libraries can do with opening files for internal needs.
+> * Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
+> 
+> > Anyway, both are bugs and should be fixed. Maybe we're even lucky and 
+> > it fixes your hang. *fingers crossed*
+> 
+> just to make it clear: the NMI watchdog was working perfectly fine on 
+> that box (in v2.6.21 and in dozens of kernel releases before that, for 
+> multiple years) before Andi's cleanup patch. So lets find that bug first 
+> or revert the cleanups.
 
-It's completely different.
+Might have been pure luck. ;-) The culprit seems to be commit
+b7471c6da94d30d3deadc55986cc38d1ff57f9ca (from Sep 2006), which
+introduced the check bit to figure out if a NMI was generated by the
+watchdog timer. While the performance counter register on K7 is 64 bits
+wide, the upper 16 bits are reserved and thus using bit 63 as the check
+bit is wrong. A quick check using /dev/cpu/0/msr shows that
+here, the upper 16 bits are zero all the time, chances are that this is
+not deterministic and you got a 1 in bit 63 due to some random change.
 
-The reason why runtime libraries cannot keep descriptors open unless it
-is explicitly part of the API (e.g., opendir) is that POSIX and Unix
-forever guarantee that descriptors are allocated sequentially.  Linus
-already showed a code sequence:
+Björn
 
-	close(0);
-	.. something else ..
-	if (open("myfile", O_RDONLY) < 0)
-		exit(1);
 
-This occurs in the real world and it is guaranteed to work.
 
-- --
-âž§ Ulrich Drepper âž§ Red Hat, Inc. âž§ 444 Castro St âž§ Mountain View, CA â–
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+The performance counters on K7 are only 48 bits wide, so using bit 63 to
+check if the counter overflowed is wrong. Let's use bit 47 instead.
 
-iD8DBQFGagv72ijCOnn/RHQRAqxTAJwLhjuFT22SegEVXrbevpsnOkDxLQCgwgza
-7ZOScxEm2lgMJNjG9UDAdfo=
-=fenl
------END PGP SIGNATURE-----
+Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
+Cc: Don Zickus <dzickus@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+---
+diff --git a/arch/i386/kernel/cpu/perfctr-watchdog.c b/arch/i386/kernel/cpu/perfctr-watchdog.c
+index 2b04c8f..82c6967 100644
+--- a/arch/i386/kernel/cpu/perfctr-watchdog.c
++++ b/arch/i386/kernel/cpu/perfctr-watchdog.c
+@@ -294,7 +294,7 @@ static struct wd_ops k7_wd_ops = {
+ 	.stop = single_msr_stop_watchdog,
+ 	.perfctr = MSR_K7_PERFCTR0,
+ 	.evntsel = MSR_K7_EVNTSEL0,
+-	.checkbit = 1ULL<<63,
++	.checkbit = 1ULL<<47,
+ };
+ 
+ /* Intel Model 6 (PPro+,P2,P3,P-M,Core1) */
