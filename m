@@ -1,57 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXFIHKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbXFIHMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755579AbXFIHKQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 03:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbXFIHKF
+	id S1756106AbXFIHMj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 03:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXFIHMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 03:10:05 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:43996 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752457AbXFIHKD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 03:10:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Ozq6WZEaEJv/rrk2xj0byxNGfKgGxN7g+gXfq/D2Ke4grWe3QpclYKKneDXvm9djW
-	MTgl2JoD2TJhzABaC/2yg==
-Message-ID: <6599ad830706090009q25e13ff6ybad7d7f7db21cd48@mail.gmail.com>
-Date: Sat, 9 Jun 2007 00:09:55 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [0/1] [patch -mm] Add containerstats (v3)
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Pavel Emelianov" <xemul@openvz.org>
-In-Reply-To: <20070608124816.fa1e70d8.akpm@linux-foundation.org>
+	Sat, 9 Jun 2007 03:12:33 -0400
+Received: from lug-owl.de ([195.71.106.12]:46356 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751619AbXFIHMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 03:12:32 -0400
+Date: Sat, 9 Jun 2007 09:12:31 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070609071231.GL2649@lug-owl.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <466A3EC6.6030706@netone.net.tr> <18026.16739.228277.938421@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="TsHlYwxJd0kekxFz"
 Content-Disposition: inline
-References: <20070608181346.15764.2467.sendpatchset@balbir-laptop>
-	 <20070608124816.fa1e70d8.akpm@linux-foundation.org>
+In-Reply-To: <18026.16739.228277.938421@notabene.brown>
+X-Operating-System: Linux mail 2.6.18-4-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/8/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 08 Jun 2007 23:43:46 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
-> > This patch implements per container statistics infrastructure and re-uses
-> > code from the taskstats interface.
->
-> boggle.
->
-> Symbol: CONTAINERS [=y]
->   Selected by: CONTAINER_DEBUG || CPUSETS && SMP || CONTAINER_CPUACCT
->
-> Paul, that's just bizarre.  How come it was done this way?
 
-Containers on their own without any subsystems aren't hugely useful.
-So the plan was that any container subsystem would "select CONTAINERS"
-to cause the container framework to be built. I'm happy to change it
-to invert the dependencies if you'd prefer.
+--TsHlYwxJd0kekxFz
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Paul
+On Sat, 2007-06-09 15:57:55 +1000, Neil Brown <neilb@suse.de> wrote:
+> On Saturday June 9, tarkan@netone.net.tr wrote:
+> > As we know the forthcoming GPL V3 will be not compatible with the GPL V=
+2=20
+> > and Linux Kernel is GPL V2 only.
+> > So, another point is, which is previously mentioned by Linus and others=
+,=20
+> > that if it is decided to upgrade the Linux Kernel's License to GPL V3,=
+=20
+> > it is needed the permission of all the maintainers permission who=20
+> > contributed to the Linux Kernel and there are a lot of lost or dead=20
+> > maintainers. Which makes it impossible to get all the maintainers'=20
+> > permission.
+>=20
+> You don't need the permission of maintainers.  You need the permission
+> of copyright owners.  The two groups overlap, but are not the same.
+> Dead people cannot own anything, even copyright.  Their estate
+> probably can.  I don't think it is theoretically impossible to get
+> everyone's permission, though it may be quite close to practically
+> impossible.=20
+
+And the next question is: How much copyright does a copyright owner
+own?  For example, think of drivers written by one person, but a small
+number of lines changed here and there by others to adopt the code to
+new APIs.  Ask them all, I think?
+
+MfG, JBG
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:             God put me on earth to accomplish a certain numbe=
+r of
+the second  :            things. Right now I am so far behind I will never =
+die.
+
+--TsHlYwxJd0kekxFz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGalLfHb1edYOZ4bsRAhH9AJ93Wlev6atqcUI0jxOw8CCCKUJqjQCePEUs
+drylG2BPUqjhZ8xzmnhvl/4=
+=IT9l
+-----END PGP SIGNATURE-----
+
+--TsHlYwxJd0kekxFz--
