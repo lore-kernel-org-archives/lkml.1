@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763321AbXFIIZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbXFII3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763321AbXFIIZl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 04:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759248AbXFIIZg
+	id S1761637AbXFII3V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 04:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbXFII3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 04:25:36 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56536 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757424AbXFIIZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 04:25:34 -0400
-X-Authenticated: #19452082
-X-Provags-ID: V01U2FsdGVkX1+1c7xqC+m1Y0/HGqa0CXdNr1M08EZDfxfDCwkiif
-	7ZSMabSDabsWW/
-Date: Sat, 9 Jun 2007 10:25:25 +0200
-From: Thomas Kuther <gimpel@sonnenkinder.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>
-Subject: 2.6.21.3-rt9: SMP errors with VIA Rhine on Uniproc
-Message-ID: <20070609102525.4fec991c@SiRiUS.home>
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_POinLlwIavHuA1WIM_sAVkq;
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Y-GMX-Trusted: 0
+	Sat, 9 Jun 2007 04:29:09 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59500 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752417AbXFII3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 04:29:07 -0400
+Message-ID: <466A64CA.5050908@garzik.org>
+Date: Sat, 09 Jun 2007 04:28:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Korb <ml@akana.de>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 1/1] ide: ide-generic, add another device exception
+References: <20601315171560711667@wsc.cz> <200706081418.56217.bzolnier@gmail.com> <20070608135931.GB24346@havoc.gtf.org> <200706082241.24233.bzolnier@gmail.com>
+In-Reply-To: <200706082241.24233.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_POinLlwIavHuA1WIM_sAVkq
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Bartlomiej Zolnierkiewicz wrote:
+> Hi,
+> 
+> On Friday 08 June 2007, Jeff Garzik wrote:
+>> On Fri, Jun 08, 2007 at 02:18:55PM +0200, Bartlomiej Zolnierkiewicz wrote:
+>>> On Monday 04 June 2007, Jiri Slaby wrote:
+>>>> ide-generic, add another device exception
+>>> ide-generic is a generic ISA IDE driver, this one is drivers/ide/pci/generic
+>>> (a generic IDE PCI driver) - fixed patch description to avoid confusion.
+>>>
+>>> [ Yes, both drivers need a rename - patches are welcomed. ]
+>> Probably best to do a rename from your side, in git.
+> 
+> AFAIR git-quiltimport of quilt patches should handle this just fine?
 
-Hi,
+'git mv old_name new_name'
 
-I'm having some trouble with the 2.6.21 -rt series on my single
-processor machine:
 
-APIC error on CPU0: 01(01)
- [<a010ce5b>] smp_error_interrupt+0x5b/0x70
- [<a01034f8>] error_interrupt+0x28/0x30
- [<a024ca38>] iowrite16+0x28/0x30
- [<a02c7ecf>] rhine_interrupt+0x6f/0xb20
- [<a039d553>] __sched_text_start+0x303/0x800
- [<a013f37c>] handle_IRQ_event+0x5c/0xe0
- [<a013f8c9>] thread_simple_irq+0x59/0x90
- [<a013febb>] do_irqd+0x25b/0x2e0
- [<a013fc60>] do_irqd+0x0/0x2e0
- [<a012e538>] kthread+0xa8/0xe0
- [<a012e490>] kthread+0x0/0xe0
- [<a010361b>] kernel_thread_helper+0x7/0x1c
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-This looks like it has to do with my onbaord VIA Rhine VT6102 ethernet
-controller. After two or three of these errors, the network performance
-decreases massively.
-
-On vanilla 2.6.22-rc series I also get a lot of APIC errors, but they
-show no trace at all.
-
-The kernel is compiled without SMP support.
-
-Any idea for a fix?
-
-Thanks,
-Thomas
-
---Sig_POinLlwIavHuA1WIM_sAVkq
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQFGamP6MQFfAqZTGfwRAn7aAJ4yZksbR5QGMhhQyn/9OZKcL6vISwCfY6We
-B/fvs9a1OApt+C4KBGSTg/g=
-=+YKV
------END PGP SIGNATURE-----
-
---Sig_POinLlwIavHuA1WIM_sAVkq--
