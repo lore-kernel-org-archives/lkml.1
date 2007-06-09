@@ -1,119 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762145AbXFIWA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761940AbXFIWNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762145AbXFIWA5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 18:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760711AbXFIWAs
+	id S1761940AbXFIWNK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 18:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760632AbXFIWM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 18:00:48 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43308 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759620AbXFIWAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 18:00:47 -0400
-Date: Sat, 9 Jun 2007 23:57:12 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
-Cc: ipw2100-admin@linux.intel.com
-Subject: Re: ipw3945 driver in recent -mm kernels
-Message-ID: <20070609215712.GA13678@elf.ucw.cz>
-References: <20070609192703.GA6410@elf.ucw.cz>
+	Sat, 9 Jun 2007 18:12:57 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1166 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756277AbXFIWM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 18:12:56 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 9 Jun 2007 15:12:54 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <20070609214120.GD11166@waste.org>
+Message-ID: <Pine.LNX.4.64.0706091508480.14445@alien.or.mcafeemobile.com>
+References: <466A0BFB.3070908@redhat.com> <20070609151521.GD4095@ftp.linux.org.uk>
+ <466AD4BA.80407@redhat.com> <20070609165454.GE4095@ftp.linux.org.uk>
+ <466ADEAB.7080202@redhat.com> <20070609172429.GF4095@ftp.linux.org.uk>
+ <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com> <20070609200645.GG4095@ftp.linux.org.uk>
+ <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706091326050.14445@alien.or.mcafeemobile.com>
+ <20070609214120.GD11166@waste.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070609192703.GA6410@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, 9 Jun 2007, Matt Mackall wrote:
 
-> I tried to use `subj`, but hit few problems:
+> On Sat, Jun 09, 2007 at 01:31:56PM -0700, Davide Libenzi wrote:
+> > On Sat, 9 Jun 2007, Linus Torvalds wrote:
+> > 
+> > > So I think both the FD_CLOEXEC _and_ the "private fd space" are real 
+> > > issues. I don't agree with the "random fd" approach. I'd much rather have 
+> > > a non-random setup for the nonlinear ones (it just shouldn't be linear).
+> > 
+> > That is fine for me. So what about the randomness?
+> > 
+> > A) Don't do it at all
+> > 
+> > B) Let userspace select it in some way globally
+> > 
+> > C) Let userspace select it per-fd (this won't be an O(1) anymore though)
 > 
-> There's no maintainers entry. Should
-> 
->  James P. Ketrenos <ipw2100-admin@linux.intel.com> 
-> 
-> be listed as a maintainer?
-> 
-> Kconfig mentions...
-> 
->           See <file:Documentation/networking/README.iwlwifi> for
->           information on the capabilities currently enabled in this
->           driver and for tips for debugging issues and problems.
-> 
-> ...but that file does not exist.
+> It should be handled the same way that VMA layout randomness is
+> handled. There are multiple knobs including ELF markers and /proc
+> bits.
 
-More problems: 
+You mean a global bit controlled by /proc, eventually overridden by an ELF 
+flag? An maybe a prctl() to give sw configurability?
 
-I managed to load the firmware and insert the module.... but I had
-radio kill switch on. It complained that kill switch is on, but
-turning it off did not help. Module unload/reload was neccessary to
-get it to work.
 
-I still do not see the wlan led. It seems to scan okay, but I can't
-seem to connect, and I get this in logs:
 
-Jun  9 23:53:21 amd kernel: wlan0: deauthenticated
-Jun  9 23:53:21 amd kernel: wlan0: RX deauthentication from
-00:11:2f:0e:95:a0 (reason=4)
-Jun  9 23:53:21 amd last message repeated 2 times
-Jun  9 23:53:22 amd kernel: wlan0: authenticate with AP
-00:11:2f:0e:95:a0
-Jun  9 23:53:22 amd kernel: wlan0: RX authentication from
-00:11:2f:0e:95:a0 (alg=0 transaction=2 status=0)
-Jun  9 23:53:22 amd kernel: wlan0: authenticated
-Jun  9 23:53:22 amd kernel: wlan0: associate with AP 00:11:2f:0e:95:a0
-Jun  9 23:53:22 amd kernel: wlan0: authentication frame received from
-00:11:2f:0e:95:a0, but not in authenticate state - ignored
-Jun  9 23:53:22 amd last message repeated 2 times
-Jun  9 23:53:22 amd kernel: wlan0: RX ReassocResp from
-00:11:2f:0e:95:a0 (capab=0x401 status=0 aid=2)
-Jun  9 23:53:22 amd kernel: wlan0: associated
-Jun  9 23:53:24 amd kernel: wlan0: No ProbeResp from current AP
-00:11:2f:0e:95:a0 - assume out of range
-Jun  9 23:53:43 amd kernel: e1000: eth0: e1000_watchdog: NIC Link is
-Up 100 Mbps Full Duplex, Flow Control: RX/TX
-Jun  9 23:53:43 amd kernel: e1000: eth0: e1000_watchdog: 10/100 speed:
-disabling TSO
-Jun  9 23:53:56 amd kernel: wlan0: No STA entry for own AP
-00:11:2f:0e:95:a0
-Jun  9 23:54:12 amd kernel: iwl3945: Microcode SW error detected.
-Restarting 0x82000000.
-Jun  9 23:54:12 amd kernel: iwl3945: Error Reply type 0x0000003A cmd
-REPLY_RXON_ASSOC (0x11) seq 0x0447 ser 0x00000000
-Jun  9 23:54:12 amd kernel: iwl3945: Error setting RXON_ASSOC
-configuration (-5).
-Jun  9 23:54:13 amd kernel: iwl3945: Error sending REPLY_RXON: time
-out after 500ms.
-Jun  9 23:54:13 amd kernel: iwl3945: Error setting new configuration
-(-110).
-Jun  9 23:54:15 amd kernel: iwl3945: Error sending REPLY_ADD_STA: time
-out after 500ms.
-Jun  9 23:54:15 amd kernel: iwl3945: ipw going down
-Jun  9 23:54:15 amd kernel: iwl3945: Can't stop Rx DMA.
-Jun  9 23:54:15 amd kernel: iwl3945: Grabbing access while already
-held at line 825.
-Jun  9 23:54:15 amd kernel: iwl3945: Microcode SW error detected.
-Restarting 0x82000000.
-Jun  9 23:54:15 amd kernel: iwl3945: Error Reply type 0x000004EB cmd
-REPLY_TX_PWR_TABLE_CMD (0x97) seq 0x0402 ser 0x00000000
-Jun  9 23:54:15 amd kernel: iwl3945: ipw going down
-Jun  9 23:54:16 amd kernel: iwl3945: Can't stop Rx DMA.
-Jun  9 23:54:16 amd kernel: iwl3945: Grabbing access while already
-held at line 825.
-Jun  9 23:54:16 amd kernel: iwl3945: Microcode SW error detected.
-Restarting 0x82000000.
-Jun  9 23:54:16 amd kernel: iwl3945: Error Reply type 0x000004EB cmd
-REPLY_TX_PWR_TABLE_CMD (0x97) seq 0x0402 ser 0x00000000
-Jun  9 23:54:16 amd kernel: iwl3945: ipw going down
-Jun  9 23:54:17 amd kernel: iwl3945: Can't stop Rx DMA.
-Jun  9 23:54:17 amd kernel: iwl3945: Grabbing access while already
-held at line 825.
+- Davide
 
-What are the next steps?
 
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
