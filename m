@@ -1,83 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760052AbXFIUHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760758AbXFIUJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760052AbXFIUHI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 16:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758991AbXFIUG5
+	id S1760758AbXFIUJQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 16:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759329AbXFIUJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 16:06:57 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35051 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758888AbXFIUG4 (ORCPT
+	Sat, 9 Jun 2007 16:09:00 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:59531 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759006AbXFIUI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 16:06:56 -0400
-Date: Sat, 9 Jun 2007 21:06:45 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Ulrich Drepper <drepper@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070609200645.GG4095@ftp.linux.org.uk>
-References: <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com> <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com> <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com> <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com> <20070609172429.GF4095@ftp.linux.org.uk> <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 9 Jun 2007 16:08:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=b3J7IX156m1EstkVtUSWyLX2ILpbyfSYLVuUyFO/yMuCHhagunOUzxtwOlsBlSzVZ8PJG8Nh7baMiEGzanhh9kLHQS/W7VM31+eOEU6sTp+IUxejEvEJKUPe17/fc+EbKj+N/R8/ZbUBoZEV3mDEBthkXWq96zl+41aYF5MH8gE=
+Message-ID: <9a8748490706091308s47327bdet90e3f4b1a0df6330@mail.gmail.com>
+Date: Sat, 9 Jun 2007 22:08:58 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: Rules on how to use sysfs in userspace programs
+Cc: linux-kernel@vger.kernel.org, "Kay Sievers" <kay.sievers@vrfy.org>
+In-Reply-To: <20070608203637.GA9259@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com>
-User-Agent: Mutt/1.4.1i
+References: <20070608203637.GA9259@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 09, 2007 at 03:27:43PM -0400, Kyle Moffett wrote:
-> On Jun 09, 2007, at 13:24:29, Al Viro wrote:
-> >On Sat, Jun 09, 2007 at 10:08:59AM -0700, Ulrich Drepper wrote:
-> >>- - there are two interface to use: open + fcntl.  This is racy.   
-> >>And don't tell me this doesn't matter.
-> >Racy with respect to what?  Return-to-libc exploits from another  
-> >thread?
-> 
-> How about racy with respect to normal open
-
-How the hell can it be racy wrt normal open()?  F_DUPFD is not dup2(),
-it's non-overriding.
-
-> or fork+exec from another  
-> thread?  Specifically there are cases where libc or other libraries  
-> want to create a backend thread dealing with file descriptors in  
-> response to the program's straightforward calls into that library  
-> (Examples include using syslets or event-based polling threads).
-> 
-> 
-> SCENARIO 1:
-> 
-> Program Thread:   Library Thread:
->                   fd = socket(AF_*, SOCK_*, 0);
-> fork();
->                   int x = FD_CLOEXEC;
->                   fcntl(fd, F_SETFD, &x);
-> 
-> New Process:
-> setgroups(...);
-> seteuid(...);
-> exec(....);
+On 08/06/07, Greg KH <greg@kroah.com> wrote:
+> Over time there have been a number of problems when sysfs has changed in
+> "unexpected" ways.  Here's a document that Kay wrote a while ago that
+> I'd like to add to the kernel Documentation directory to help userspace
+> programmers out.
 >
-> Whoops!!! Suddenly the user process executed by the (theoretically)  
-> single-threaded program got a handle to a netlink socket affecting  
-> some system resource!!!
- 
-Give me a break.  fork(3) is nowhere near plain fork(2); read the nptl
-code for details.  Getting a low-overhead exclusion into that scheme is not
-a rocket science.  And lose the bangs, please...
+> Any comments or critique of this is greatly appreciated.
+>
 
-> SCENARIO 2:
-> 
-> Program Thread:     Async libc getpwent()-cache syslet
-> close(0);
->                     fd = open("/etc/shadow");
-> open("/dev/null");
-> code_which_insecurely_reads_from_stdin();
+Don't forget to update Documentation/00-INDEX when you add the document :-)
 
->From what, again?  Use of stdio after that is deep in nasal demon land...
+More comments below.
+
+> thanks,
+>
+> greg k-h
+>
+> ------------------------------------
+>
+> Rules to access device-information in the Linux kernel sysfs
+>
+"Rules on how to access..." perhaps?
+
+> The kernel exported sysfs exports internal kernel implementation-details
+> and depends on internal kernel-structures and layout. It is agreed upon
+> kernel developers, that the Linux kernel does not provide a stable
+
+You write "It is agreed upon kernel developers..." I would write "It
+is agreed upon by the kernel developers..."
+
+> internal API.  As sysfs is a direct export of kernel internal
+> structures, the sysfs interface can't provide a stable interface too, it
+
+Shouldn't that be "can't provide a stable interface either" ?
+
+> may always change along with internal kernel changes.
+>
+> To minimize the risk of breaking users of sysfs, which are in most cases
+> low-level userspace applications, with a new kernel release, the users
+> of sysfs must follow some rules to use an abstract-as-possible way to
+
+You write "to use an abstract-as-possible way to" I would have written
+"to use an as abstract-as-possible way to"
+
+> access this filesystem.  The current udev and HAL programs already
+> implement this and users are encouraged to plug, if possible, into the
+> abstractions these both programs provide instead of accessing sysfs
+
+shouldn't that be "both these" not "these both" ?
+
+> directly.
+>
+> But if you really do want to access sysfs, please follow the following
+> rules and then your programs should work for all future versions of
+> sysfs.
+>
+[snip]
+>
+> - Properties of parent devices never belong into a child device.
+>   Always look at the parent devices themselves for determining device
+>   context properties. If the device 'eth0' or 'sda' does not have a
+>   "driver"-link, then it does not have a driver. It's value is empty.
+
+"it's" is short for "it is", not the same as "its" which I believe is
+what you want here.
+
+>   Never copy the value of the parent-device into a child-device. Parent
+>   device-properties may change dynamically without any notice to the
+>   child device.
+>
+> - Hierarchy in a single device-tree
+>   There is only one valid place in sysfs where hierarchy can be examined
+>   and this is below: /sys/devices.
+>   It is planned, the all device directories will end up in the tree
+
+Don't you mean "that all device..." ?
+
+>   below this directory.
+>
+> - Classification by subsystem
+>   There are currently three places for classification of devices:
+>   /sys/block, /sys/class and /sys/bus. It is planned, that these will
+>   not contain any device-directories themselves, but only flat lists of
+>   symlinks pointing to the unified /sys/devices tree.
+>
+>   All three places have completely different rules to access the
+
+I believe that should be "rules on how to access the".
+
+>   information.  It is planned to merge all three
+>   classification-directories into one place at /sys/subsystem/,
+>   following the current layout of the bus-directories. All buses and
+>   classes, including the converted block-subsystemm, will show up
+>   there.
+>   The devices of a subsystem will create a symlink in the "devices"
+>   directory at /sys/subsystem/<name>/devices/.
+>
+[snip]
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
