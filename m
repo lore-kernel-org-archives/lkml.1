@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbXFIMce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbXFIM64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbXFIMce (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 08:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXFIMcZ
+	id S1757409AbXFIM64 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 08:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXFIM6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 08:32:25 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:37098 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752613AbXFIMcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 08:32:24 -0400
-Message-ID: <466A9DDD.2040107@ums.usu.ru>
-Date: Sat, 09 Jun 2007 18:32:29 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: IceDove 1.5.0.10 (X11/20070329)
+	Sat, 9 Jun 2007 08:58:47 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38361 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751831AbXFIM6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 08:58:46 -0400
+Date: Sat, 9 Jun 2007 14:58:40 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
+Message-ID: <20070609125839.GH27793@elf.ucw.cz>
+References: <20070514110607.549397248@suse.de> <200706041342.42178.agruen@suse.de> <20070604131242.GE1971@elf.ucw.cz> <200706041630.49316.agruen@suse.de>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, daniel.ritz@gmx.ch,
-       linux@brodo.de
-Subject: Re: Rules on how to use sysfs in userspace programs
-References: <20070608203637.GA9259@kroah.com>
-In-Reply-To: <20070608203637.GA9259@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706041630.49316.agruen@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> - Do not use libsysfs
->   It makes assumptions about sysfs which are not true. Its API does not
->   offer any abstraction, it exposes all the kernel driver-core
->   implementation details in its own API. Therefore it is not better than
->   reading directories and opening the files yourself.
->   Also, it is not actively maintained, in the sense of reflecting the
->   current kernel-development. The goal of providing a stable interface
->   to sysfs has failed, it causes more problems, than it solves. It
->   violates many of the rules in this document.
+Hi!
 
-The problem is that even on ftp.kernel.org there are packages like 
-pcmciautils that still link to libsysfs and contain things like #define 
-PATH_TO_SOCKET "/sys/class/pcmcia_socket/". Are they expected to be fixed?
+> > How will kernel work with very long paths? I'd suspect some problems,
+> > if path is 1MB long and I attempt to print it in /proc
+> > somewhere.
+> 
+> Pathnames are only used for informational purposes in the kernel, except in 
+> AppArmor of course. /proc only uses pathnames in a few places, 
+> but /proc/mounts will silently fail and produce garbage entries. That's not 
+> ideal of course; we should fix that somehow.
 
+> Note that this has nothing to do with the AppArmor discussion ...
+
+This has everything to do with AA discussion. You took unreliable,
+for-user-info kernel subsystem, and made security subsystem depend on
+it. Oops.
+
+> > Perhaps vfs should be modified not to allow such crazy paths? But placing
+> > limit in aa is ugly. 
+> 
+> Dream on. Redefining fundamental vfs semantics is not an option; we should 
+> rather make sure that we fail gracefully. Considering the
+
+And instead of fixing "too long pathnames are problem in kernel" in
+any clean way, you "simply" included
+configurable-but-impossible-to-configure-right limit into
+apparmor. And now you want that merged. Dream on.
+									Pavel
 -- 
-Alexander E. Patrakov
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
