@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762906AbXFIITZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763077AbXFIIVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762906AbXFIITZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 04:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXFIITO
+	id S1763077AbXFIIVQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 04:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756459AbXFIIVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 04:19:14 -0400
-Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:57922
-	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752130AbXFIITM (ORCPT
+	Sat, 9 Jun 2007 04:21:05 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:48439 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752417AbXFIIVD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 04:19:12 -0400
-Message-ID: <466A625C.4030700@hawkeye.stone.uk.eu.org>
-Date: Sat, 09 Jun 2007 09:18:36 +0100
-From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sat, 9 Jun 2007 04:21:03 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Vz01Ktz04iJkxD8swgIhDQcAVAEDJAqO+FVTIkhj2jhvZpTRKj8buif3X14hBmz04
+	0BHgdpj37jgYHyLUZJbbg==
+Message-ID: <6599ad830706090120i6ba8686ep1abffd6cc4cd81e3@mail.gmail.com>
+Date: Sat, 9 Jun 2007 01:20:55 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [0/1] [patch -mm] Add containerstats (v3)
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Pavel Emelianov" <xemul@openvz.org>
+In-Reply-To: <20070609011740.fc938ed6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: hpa@zytor.com, Ian Kent <raven@themaw.net>
-Subject: [PATCH 6/7] Add pr_debug_pid to kernel.h
-References: <4669D5B7.7050005@hawkeye.stone.uk.eu.org> <466A5E28.2000707@hawkeye.stone.uk.eu.org>
-In-Reply-To: <466A5E28.2000707@hawkeye.stone.uk.eu.org>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070608181346.15764.2467.sendpatchset@balbir-laptop>
+	 <20070608124816.fa1e70d8.akpm@linux-foundation.org>
+	 <6599ad830706090009q25e13ff6ybad7d7f7db21cd48@mail.gmail.com>
+	 <20070609010202.4c2b51fb.akpm@linux-foundation.org>
+	 <6599ad830706090107u63b7e8c2p8e5c65778cde7473@mail.gmail.com>
+	 <20070609011740.fc938ed6.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a new function to kernel.h. This function prints out the
-pid of the current process and the name of the function where it was
-called from followed by the debug message and a newline.
+On 6/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> Would it not be simplest to have CONTAINERS as the top-level
+> user-configurable item and to then have everything else depend on it?
+>
 
-This function mimics the output of autofs4.
+Yes, OK - it can go that way around too. I guess my thought was that
+people would be more interested in enabling/disabling the subsystems
+themselves (cpusets, RSS, etc) than the underlying framework. But if
+select has problems then it's no trouble to invert it.
 
-Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
----
-Index: linux/include/linux/kernel.h
-===================================================================
---- linux.orig/include/linux/kernel.h
-+++ linux/include/linux/kernel.h
-@@ -228,6 +228,8 @@ extern void print_hex_dump(const char *l
- /* If you are writing a driver, please use dev_dbg instead */
- #define pr_debug(fmt,arg...) \
- 	printk(KERN_DEBUG fmt,##arg)
-+#define pr_debug_pid(fmt,arg...) \
-+	printk(KERN_DEBUG "pid %d: %s: " fmt "\n" , current->pid ,
-__FUNCTION__, ##args)
- #define pr_err(fmt,arg...) \
- 	printk(KERN_ERR fmt,##arg)
- #else
-@@ -236,6 +238,11 @@ static inline int __attribute__ ((format
- 	return 0;
- }
-
-+static inline int __attribute__ ((format (printf, 1, 2)))
-pr_debug_pid(const char * fmt, ...)
-+{
-+	return 0;
-+}
-+
- static inline int __attribute__ ((format (printf, 1, 2))) pr_err(const
-char * fmt, ...)
- {
- 	return 0;
-
-
+Paul
