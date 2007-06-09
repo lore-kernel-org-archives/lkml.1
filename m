@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbXFIPGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbXFIPPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbXFIPGn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 11:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXFIPGd
+	id S1754644AbXFIPPl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 11:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXFIPPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 11:06:33 -0400
-Received: from pat.uio.no ([129.240.10.15]:57162 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752884AbXFIPGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 11:06:32 -0400
-Subject: Re: networking busted in current -git ???
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: David Miller <davem@davemloft.net>
-Cc: arekm@maven.pl, florin@iucha.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20070608.190608.117446027.davem@davemloft.net>
-References: <20070608205640.GI30661@iucha.net>
-	 <200706082307.45722.arekm@maven.pl>
-	 <1181339007.6675.12.camel@heimdal.trondhjem.org>
-	 <20070608.190608.117446027.davem@davemloft.net>
-Content-Type: text/plain
-Date: Sat, 09 Jun 2007 11:06:10 -0400
-Message-Id: <1181401570.6240.0.camel@heimdal.trondhjem.org>
+	Sat, 9 Jun 2007 11:15:34 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60855 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751883AbXFIPPd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 11:15:33 -0400
+Date: Sat, 9 Jun 2007 16:15:21 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+Message-ID: <20070609151521.GD4095@ftp.linux.org.uk>
+References: <4669A351.4010403@redhat.com> <20070608184650.GA4095@ftp.linux.org.uk> <4669A674.4080309@redhat.com> <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org> <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org> <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com> <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.104)
-X-UiO-Scanned: 634E1F5ED65B758C349D383D9E1BAED336E17122
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 29 total 2274754 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466A0BFB.3070908@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-08 at 19:06 -0700, David Miller wrote:
-> From: Trond Myklebust <trond.myklebust@fys.uio.no>
-> Date: Fri, 08 Jun 2007 17:43:27 -0400
+On Fri, Jun 08, 2007 at 07:10:03PM -0700, Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> > It is not dhcp. I'm seeing the same bug with bog-standard ifup with a
-> > static address on an FC-6 machine.
-> > 
-> > It appears to be something in the latest dump from davem to Linus, but I
-> > haven't yet had time to identify what.
+> Al Viro wrote:
+> > Any real-world examples of exploitable holes based on that?
 > 
-> Linus's current tree should have this fixed.
+> Return to libc exploit, calling dup2, where some privileged data is
+> redirected from the normal file descriptor to one of the attackers
+> choosing.  The latter could be an outgoing socket connection which would
+> result in leaking the data to the outside.
 > 
-> Let us know if this is not the case.
+>          normal code                         intruder
+> 
+>                                           so = socket()
+> 
+>     fd = open ("local-file")
+> 
+>                                           dup2(so, fd);
+> 
+>     write (fd, privileged data)
+> 
+> 
+> It's just a little function call.  If the arguments of dup2() are known
+> this is not a big issue to construct.
 
-It appears to be working for me again.
-
-Trond
-
+So which code is supposed to do that open/write in your example?  Library?
+Unmodified application?  Application specifically modified to make *that*
+open() randomized?
