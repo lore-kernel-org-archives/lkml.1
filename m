@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbXFIIIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760461AbXFIIIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbXFIIIF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 04:08:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbXFIIHQ
+	id S1760461AbXFIIIb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 04:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759386AbXFIIIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 04:07:16 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:51712
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756234AbXFIIHM (ORCPT
+	Sat, 9 Jun 2007 04:08:06 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:47631 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760629AbXFIIIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 04:07:12 -0400
-Date: Sat, 9 Jun 2007 01:06:09 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Sean <seanlkml@sympatico.ca>
-cc: Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Pavel Machek <pavel@ucw.cz>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-In-Reply-To: <20070609033601.640e83a1.seanlkml@sympatico.ca>
-Message-ID: <Pine.LNX.4.64.0706090104210.6675@asgard.lang.hm>
-References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de>
- <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de>
- <20070609001703.GA17644@kroah.com> <Pine.LNX.4.64.0706082207260.6675@asgard.lang.hm>
- <20070609014644.9ed4fa29.seanlkml@sympatico.ca> <Pine.LNX.4.64.0706090004290.6675@asgard.lang.hm>
- <20070609033601.640e83a1.seanlkml@sympatico.ca>
+	Sat, 9 Jun 2007 04:08:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=FdJJcY0ZPtw8jB2Z1GcJlGOsYmoc5uLeMdry0kNm4AWh8hTmUFKJ7BddimOUwbOq0
+	zfBrsJR8yS/cW59sDjwow==
+Message-ID: <6599ad830706090107u63b7e8c2p8e5c65778cde7473@mail.gmail.com>
+Date: Sat, 9 Jun 2007 01:07:53 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [0/1] [patch -mm] Add containerstats (v3)
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Pavel Emelianov" <xemul@openvz.org>
+In-Reply-To: <20070609010202.4c2b51fb.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070608181346.15764.2467.sendpatchset@balbir-laptop>
+	 <20070608124816.fa1e70d8.akpm@linux-foundation.org>
+	 <6599ad830706090009q25e13ff6ybad7d7f7db21cd48@mail.gmail.com>
+	 <20070609010202.4c2b51fb.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007, Sean wrote:
->> remember that the security hooks in the kernel are not SELinux API's, they
->> are the Loadable Security Model API. What the AA people are asking for is
->> for the LSM API to be modified enough to let their code run (after that
->> (and working in parallel) they will work on getting the rest of their code
->> approved for the kernel, but the LSM hooks are the most critical)
+On 6/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
 >
-> Remember that the SELinux API's essentially belong to everyone under the GPL.
-> So its not an excuse for falling into NIH syndrome and putting a bunch of
-> new stuff into the kernel that could instead be added as a small
-> extension to what already exists.
+> - CONTAINER_DEBUG should depend on CONTAINERS
 
-but the SELinux API's are not the core security API's in Linux, the LSM 
-API's are. and AA is useing the LSM API's (extending them where they and 
-SELinux don't do what's needed)
+CONTAINER_DEBUG is actually a container subsystem whose sole purpose
+is to provide debugging information about any hierarchy that it's
+mounted as a part of. So in some senses it's in the same boat as
+something like cpusets or the RSS controller. CONFIG_CONTAINER_DEBUG
+doesn't affect any of the container framework code.
 
-David Lang
+>
+> - the CPUSETS && SMP is weird and should be deleted, unless I'm missing
+>   something
+
+Cpusets depends on SMP in the vanilla tree, so that's not anything new
+that I added.
+
+>
+> - CONTAINERS should depend on CPUSETS
+
+You mean the other way around?
+
+>
+> - That leaves CONTAINER_CPUACCT.
+
+Really, CONTAINER_CPUACCT should have the same relationship to
+CONTAINERS as CPUSETS does.
+
+Paul
