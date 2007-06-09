@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbXFIRIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757708AbXFIRLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbXFIRIS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 13:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbXFIRIJ
+	id S1757708AbXFIRLA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 13:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbXFIRKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 13:08:09 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2826 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753957AbXFIRIG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 13:08:06 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 9 Jun 2007 10:08:04 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
+	Sat, 9 Jun 2007 13:10:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53390 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754840AbXFIRKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 13:10:52 -0400
+Message-ID: <466ADEAB.7080202@redhat.com>
+Date: Sat, 09 Jun 2007 10:08:59 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
 To: Al Viro <viro@ftp.linux.org.uk>
-cc: Ulrich Drepper <drepper@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
        Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <Pine.LNX.4.64.0706091000530.14037@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0706091006320.14037@alien.or.mcafeemobile.com>
-References: <4669A674.4080309@redhat.com> <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com>
- <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org>
- <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com>
- <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com>
- <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com>
- <20070609165454.GE4095@ftp.linux.org.uk> <Pine.LNX.4.64.0706091000530.14037@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <4669A674.4080309@redhat.com> <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org> <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org> <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com> <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com> <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com> <20070609165454.GE4095@ftp.linux.org.uk>
+In-Reply-To: <20070609165454.GE4095@ftp.linux.org.uk>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007, Davide Libenzi wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> On Sat, 9 Jun 2007, Al Viro wrote:
-> 
-> > That's simply not true.  On the current kernel nothing stops you from e.g.
-> > picking a random number and using F_DUPFD.  Voila - there's your randomized
-> > descriptor.  Portable to earlier kernels.
-> > 
-> > Moreover, nonsense^H^H^Hq_fd() can be implemented in userland just fine
-> > if we allow F_DUPFD to arbitrary number - just pass it a random one *or*
-> > base chosen like davedel is doing (constant + 20bit random chosen at start
-> > time).
-> 
-> That does not work. Or better, it works but it forces *huge* fdtables to 
-> be created. To do that, you need "start" to be over NR_FILE, and this 
-> creates an fdtable bigger than NR_FILE ((pointer-size + a-few-bits) * 
-> NR_FILE) propagated down to every app you fork.
+Al Viro wrote:
+> That's simply not true.  On the current kernel nothing stops you from e.g.
+> picking a random number and using F_DUPFD.
 
-Keep in mind also, that quite a few places in the code, walk through the 
-whole fdtable memory. So it is not only a problem of wasted RAM.
+Of course there are things stopping one from doing this (aside from the
+kernel not allowing this in the moment at all since the highest fd
+number is limited severely):
 
+- - this scheme would only be use if it would be possible to have
+completely random descriptor values.  But what has been said here
+already is that this is too costly.  Hence the approach to randomize
+only the base value.
 
-- Davide
+- - there are two interface to use: open + fcntl.  This is racy.  And
+don't tell me this doesn't matter.
 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
+iD8DBQFGat6r2ijCOnn/RHQRAiatAKCs7RLZmpgAU5NyT58c8ueJum4fgwCgjqP0
+jPVCCWEdIHVQS05oIjdsZYs=
+=7UX+
+-----END PGP SIGNATURE-----
