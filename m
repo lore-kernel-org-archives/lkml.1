@@ -1,384 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbXFIP5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbXFIQKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbXFIP5f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 11:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbXFIP50
+	id S1755349AbXFIQKd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 12:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbXFIQKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 11:57:26 -0400
-Received: from mga03.intel.com ([143.182.124.21]:21988 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754144AbXFIP5Z convert rfc822-to-8bit (ORCPT
+	Sat, 9 Jun 2007 12:10:23 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:38989 "EHLO
+	aca800fc.ipt.aol.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751495AbXFIQKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 11:57:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,403,1175497200"; 
-   d="scan'208";a="237368837"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Sat, 9 Jun 2007 12:10:22 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linuxppc-devel@ozlabs.org
+Cc: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-devel@ozlabs.org
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: [PATCH] PHY fixed driver: rework release path and update phy_id
+	notation
+Date: Sat, 09 Jun 2007 20:09:55 +0400
+Message-ID: <20070609160955.2550.41024.stgit@ACA800FC.ipt.aol.com>
+User-Agent: StGIT/0.12
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] driver core: multithreaded device matching with dependency
-Date: Sat, 9 Jun 2007 23:57:19 +0800
-Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC2041319@pdsmsx415.ccr.corp.intel.com>
-In-Reply-To: <466963D4.6010008@s5r6.in-berlin.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] driver core: multithreaded device matching with dependency
-Thread-Index: Acep1xQ2oFzvRhsBRZCNroc3umrH6QA1zN7g
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Cc: <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
-X-OriginalArrivalTime: 09 Jun 2007 15:57:20.0397 (UTC) FILETIME=[DC8343D0:01C7AAAE]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Stefan,
 
-I have worked out a new patch with single-threaded unit supported in
-multithreaded device probing. A new flag as follow is added to struct
-device,
+device_bind_driver() error code returning has been fixed. 
+release() function has been written, so that to free resources
+in correct way; the release path is now clean.
 
-unsigned singlethreaded_probe:1;
-
-Which indicate that the device node and all its children node must be
-probed single-threaded. During searching next device to probe, if a
-device has singlethreaded_probe flag set, the devices under it will not
-be searched. Instead, the device and all devices under it will be probed
-serially.
-
-Can this mechanism solve the demand of IEEE1394 subsystem effectively?
-
-The patch is only for concept verification. It can work on my thinkpad
-T42. More optimization can be done if necessary. Because I have only
-"Outlook" as mail client, the format of patch may have some problem. If
-the patch has any problem and you need the patch, I can resend it in
-attach file.
-
-Best Regards,
-Huang Ying 
-
-Index: linux-2.6.22-rc4/init/main.c
-===================================================================
---- linux-2.6.22-rc4.orig/init/main.c	2007-06-08 18:26:11.000000000
-+0800
-+++ linux-2.6.22-rc4/init/main.c	2007-06-08 18:27:01.000000000
-+0800
-@@ -652,6 +652,7 @@
- 	initcall_t *call;
- 	int count = preempt_count();
+Before the rework, it used to cause
+ Device 'fixed@100:1' does not have a release() function, it is broken
+ and must be fixed.
+ BUG: at drivers/base/core.c:104 device_release()
  
-+	device_match_freeze();
- 	for (call = __initcall_start; call < __initcall_end; call++) {
- 		ktime_t t0, t1, delta;
- 		char *msg = NULL;
-@@ -703,6 +704,8 @@
- 		}
+ Call Trace:  
+  [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
+  [<ffffffff802ec3ab>] kobject_release+0x0/0x9
+  [<ffffffff802ecf3f>] kref_put+0x74/0x81
+  [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
+  [<ffffffff80564d31>] fixed_init+0x1f/0x35
+  [<ffffffff802071a4>] init+0x147/0x2fb
+  [<ffffffff80223b6e>] schedule_tail+0x36/0x92
+  [<ffffffff8020a678>] child_rip+0xa/0x12
+  [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
+  [<ffffffff8020705d>] init+0x0/0x2fb
+  [<ffffffff8020a66e>] child_rip+0x0/0x12  
+
+
+Also changed the notation of the fixed phy definition on
+mdio bus to the form of <speed>+<duplex> to make it able to be used by
+gianfar and ucc_geth that define phy_id strictly as "%d:%d"
+
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>                                                                                  
+---
+
+ drivers/net/phy/Kconfig |    4 ++
+ drivers/net/phy/fixed.c |   93 +++++++++++++++++++++++++++--------------------
+ 2 files changed, 57 insertions(+), 40 deletions(-)
+
+diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+index 09b6f25..a938c48 100644
+--- a/drivers/net/phy/Kconfig
++++ b/drivers/net/phy/Kconfig
+@@ -71,4 +71,8 @@ config FIXED_MII_100_FDX
+ 	bool "Emulation for 100M Fdx fixed PHY behavior"
+ 	depends on FIXED_PHY
+ 
++config FIXED_MII_1000_FDX
++	bool "Emulation for 1000M Fdx fixed PHY behavior"
++	depends on FIXED_PHY
++
+ endif # PHYLIB
+diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
+index 68c99b4..34b9111 100644
+--- a/drivers/net/phy/fixed.c
++++ b/drivers/net/phy/fixed.c
+@@ -187,12 +187,29 @@ static struct phy_driver fixed_mdio_driver = {
+ 	.driver 	= { .owner = THIS_MODULE,},
+ };
+ 
++static void fixed_mdio_release (struct device * dev)
++{
++	struct phy_device *phydev = container_of(dev, struct phy_device, dev);
++	struct mii_bus *bus = phydev->bus;
++	struct fixed_info *fixed = bus->priv;
++
++	kfree(phydev);
++	kfree(bus->dev);
++	kfree(bus);
++	kfree(fixed->regs);
++	kfree(fixed);
++}
++
+ /*-----------------------------------------------------------------------------
+  *  This func is used to create all the necessary stuff, bind
+  * the fixed phy driver and register all it on the mdio_bus_type.
+- * speed is either 10 or 100, duplex is boolean.
++ * speed is either 10 or 100 or 1000, duplex is boolean.
+  * number is used to create multiple fixed PHYs, so that several devices can
+  * utilize them simultaneously.
++ *
++ * The device on mdio bus will look like <bus_id>:<phy_id>,
++ * bus_id = number 
++ * phy_id = speed+duplex.
+  *-----------------------------------------------------------------------------*/
+ static int fixed_mdio_register_device(int number, int speed, int duplex)
+ {
+@@ -221,6 +238,12 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
  	}
  
-+	device_match_thaw(0);
-+
- 	/* Make sure there is no pending stuff from the initcall
-sequence */
- 	flush_scheduled_work();
- }
-Index: linux-2.6.22-rc4/drivers/base/dd.c
-===================================================================
---- linux-2.6.22-rc4.orig/drivers/base/dd.c	2007-06-08
-18:26:11.000000000 +0800
-+++ linux-2.6.22-rc4/drivers/base/dd.c	2007-06-09 22:30:26.000000000
-+0800
-@@ -25,6 +25,7 @@
- 
- #define to_drv(node) container_of(node, struct device_driver,
-kobj.entry)
- 
-+static atomic_t device_match_freezed = ATOMIC_INIT(0);
- 
- static void driver_bound(struct device *dev)
- {
-@@ -220,6 +221,25 @@
- 	return ret;
- }
- 
-+/* This function must be called with dev->sem held. */
-+static inline int real_device_attach(struct device * dev)
-+{
-+	int ret = 0;
-+
-+	if (dev->driver) {
-+		ret = device_bind_driver(dev);
-+		if (ret == 0)
-+			ret = 1;
-+		else {
-+			dev->driver = NULL;
-+			ret = 0;
-+		}
-+	} else {
-+		ret = bus_for_each_drv(dev->bus, NULL, dev,
-__device_attach);
+ 	fixed->regs = kzalloc(MII_REGS_NUM*sizeof(int), GFP_KERNEL);
++	if (NULL == fixed->regs) {
++		kfree(dev);
++		kfree(new_bus);
++		kfree(fixed);
++		return -ENOMEM;
 +	}
-+	return ret;
-+}
-+
- /**
-  *	device_attach - try to attach device to a driver.
-  *	@dev:	device.
-@@ -238,18 +258,10 @@
- {
- 	int ret = 0;
+ 	fixed->regs_num = MII_REGS_NUM;
+ 	fixed->phy_status.speed = speed;
+ 	fixed->phy_status.duplex = duplex;
+@@ -249,57 +272,43 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
+ 	fixed->phydev = phydev;
  
-+	if (atomic_read(&device_match_freezed))
-+		return 0;
- 	down(&dev->sem);
--	if (dev->driver) {
--		ret = device_bind_driver(dev);
--		if (ret == 0)
--			ret = 1;
--		else {
--			dev->driver = NULL;
--			ret = 0;
--		}
--	} else {
--		ret = bus_for_each_drv(dev->bus, NULL, dev,
-__device_attach);
+ 	if(NULL == phydev) {
+-		err = -ENOMEM;
+-		goto device_create_fail;
++		kfree(dev);
++		kfree(new_bus);
++		kfree(fixed->regs);
++		kfree(fixed);
++		return -ENOMEM;
+ 	}
+ 
+ 	phydev->irq = PHY_IGNORE_INTERRUPT;
+ 	phydev->dev.bus = &mdio_bus_type;
+ 
+-	if(number)
+-		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
+-				"fixed_%d@%d:%d", number, speed, duplex);
+-	else
+-		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
+-				"fixed@%d:%d", speed, duplex);
++	snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
++				"%d:%d", number, speed + duplex);
++
+ 	phydev->bus = new_bus;
+ 
++	phydev->dev.driver = &fixed_mdio_driver.driver;
++ 	phydev->dev.release = fixed_mdio_release;
++ 
++ 	err = phydev->dev.driver->probe(&phydev->dev);
++ 	if(err < 0) {
++ 		printk(KERN_ERR "Phy %s: problems with fixed driver\n",
++				phydev->dev.bus_id);
++ 		kfree(phydev);
++ 		kfree(dev);
++ 		kfree(new_bus);
++ 		kfree(fixed->regs);
++ 		kfree(fixed);
++ 		return err;
++ 	}
++ 
+ 	err = device_register(&phydev->dev);
+ 	if(err) {
+ 		printk(KERN_ERR "Phy %s failed to register\n",
+ 				phydev->dev.bus_id);
+-		goto bus_register_fail;
 -	}
-+	ret = real_device_attach(dev);
- 	up(&dev->sem);
- 	return ret;
+-
+-	/*
+-	   the mdio bus has phy_id match... In order not to do it
+-	   artificially, we are binding the driver here by hand;
+-	   it will be the same for all the fixed phys anyway.
+-	 */
+-	phydev->dev.driver = &fixed_mdio_driver.driver;
+-
+-	err = phydev->dev.driver->probe(&phydev->dev);
+-	if(err < 0) {
+-		printk(KERN_ERR "Phy %s: problems with fixed driver\n",phydev->dev.bus_id);
+-		goto probe_fail;
+ 	}
+ 
+-	err = device_bind_driver(&phydev->dev);
+-	if (err)
+-		goto probe_fail;
+-
+ 	return 0;
+-
+-probe_fail:
+-	device_unregister(&phydev->dev);
+-bus_register_fail:
+-	kfree(phydev);
+-device_create_fail:
+-	kfree(dev);
+-	kfree(new_bus);
+-	kfree(fixed);
+-
+-	return err;
  }
-@@ -291,6 +303,8 @@
-  */
- int driver_attach(struct device_driver * drv)
- {
-+	if (atomic_read(&device_match_freezed))
-+		return 0;
- 	return bus_for_each_dev(drv->bus, NULL, drv, __driver_attach);
- }
  
-@@ -380,3 +394,186 @@
- EXPORT_SYMBOL_GPL(device_attach);
- EXPORT_SYMBOL_GPL(driver_attach);
  
-+#define to_dev(obj) container_of(obj, struct device, kobj)
-+
-+static void init_devices_check(void)
-+{
-+	struct kobject *kobj;
-+	struct device *dev;
-+
-+	spin_lock(&devices_subsys.list_lock);
-+	list_for_each_entry(kobj, &(devices_subsys.list), entry) {
-+		dev = to_dev(kobj);
-+		dev = get_device(dev);
-+		/* class device and root device need not be checked */
-+		if (dev->class || !dev->parent) {
-+			dev->is_checked = 1;
-+			dev->is_matched = 1;
-+		} else
-+			dev->is_checked = 0;
-+		dev->is_checking = 0;
-+		put_device(dev);
-+	}
-+	spin_unlock(&devices_subsys.list_lock);
-+}
-+
-+#define FIND_DEVICE_FOUND  1
-+#define FIND_DEVICE_WAIT   2
-+
-+struct find_device_data
-+{
-+	struct device **pdev;
-+	int result;
-+};
-+
-+static int find_next_device_to_check_in_tree(struct device *dev,
-+					     void *data)
-+{
-+	struct find_device_data *pfind = data;
-+
-+	get_device(dev);
-+	if (dev->is_checking)
-+		pfind->result = FIND_DEVICE_WAIT;
-+	else if (dev->is_matched || dev->is_checked) {
-+		if (!dev->singlethreaded_probe &&
-+		    !list_empty(&dev->klist_children.k_list))
-+			device_for_each_child(dev, data,
-+
-find_next_device_to_check_in_tree);
-+	} else {
-+		struct device *depend;
-+
-+		depend = get_device(dev->depend);
-+		if (!depend || depend->is_matched || depend->is_checked)
-{
-+			*pfind->pdev = dev;
-+			pfind->result = FIND_DEVICE_FOUND;
-+		} else
-+			pfind->result = FIND_DEVICE_WAIT;
-+		put_device(depend);
-+	}
-+	if (pfind->result != FIND_DEVICE_FOUND) {
-+		put_device(dev);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static int find_next_device_to_check(struct device **pdev)
-+{
-+	struct kobject *kobj;
-+	struct device *dev;
-+	struct find_device_data find;
-+
-+	find.pdev = pdev;
-+	find.result = 0;
-+	spin_lock(&devices_subsys.list_lock);
-+	list_for_each_entry(kobj, &(devices_subsys.list), entry) {
-+		dev = to_dev(kobj);
-+		dev = get_device(dev);
-+		if (!dev->parent)
-+			find_next_device_to_check_in_tree(dev, &find);
-+		put_device(dev);
-+		if (find.result == FIND_DEVICE_FOUND)
-+			break;
-+	}
-+	spin_unlock(&devices_subsys.list_lock);
-+	return find.result;
-+}
-+
-+static int check_device(struct device *dev, void *data)
-+{
-+	int ret;
-+
-+	down(&dev->sem);
-+	if (dev->is_checking || dev->is_checked) {
-+		up(&dev->sem);
-+		return 0;
-+	}
-+	dev->is_checking = 1;
-+	//pr_debug("dev: %s - begin\n", dev->bus_id);
-+	printk("dev: %s - begin\n", dev->bus_id);
-+	ret = real_device_attach(dev);
-+	//pr_debug("dev: %s - end\n", dev->bus_id);
-+	printk("dev: %s - end\n", dev->bus_id);
-+	dev->is_checking = 0;
-+	dev->is_checked = 1;
-+	dev->is_matched = (ret == 1);
-+	up(&dev->sem);
-+	if (data)
-+		device_for_each_child(dev, data, check_device);
-+	return 0;
-+}
-+
-+static int devices_check_thread(void *data)
-+{
-+	struct device *dev = NULL;
-+	int result;
-+	struct completion *thread_complete = data;
-+
-+	while ((result = find_next_device_to_check(&dev))) {
-+		if (result == FIND_DEVICE_FOUND) {
-+			check_device(dev, (void
-*)!!dev->singlethreaded_probe);
-+			put_device(dev);
-+		} else
-+			yield();
-+	}
-+	complete_and_exit(thread_complete, 0);
-+	return 0;
-+}
-+
-+/**
-+ *	device_match_freeze - disable device/driver matching.
-+ *
-+ *	All subsequent device or driver registering will not trigger
-+ *	device/driver matching until device_match_thaw is called.
-+ */
-+void device_match_freeze(void)
-+{
-+	atomic_set(&device_match_freezed, 1);
-+}
-+
-+static int dev_match_thread_default = 1;
-+
-+/**
-+ *	device_match_thaw - renable device/driver matching and check all
-+ *	pending device/driver matching.
-+ *	@thread: number of threads to do device/driver matching.
-+ *
-+ *	All devices are checked for driver matching, multithreaded
-matching
-+ *	is used to accelerate matching process. The device/driver
-matching
-+ *	is reenabled afterwards.
-+ */
-+void device_match_thaw(int thread)
-+{
-+	struct completion *threads_complete;
-+	int i;
-+	static DECLARE_MUTEX(sem_thaw);
-+
-+	down(&sem_thaw);
-+	if (thread <= 0)
-+		thread = dev_match_thread_default > 0 ? \
-+			dev_match_thread_default : 1;
-+	threads_complete = kmalloc(sizeof(struct completion) * thread,
-+				   GFP_KERNEL);
-+	init_devices_check();
-+	for (i = 0; i < thread; i++) {
-+		init_completion(&threads_complete[i]);
-+		kernel_thread(devices_check_thread,
-+			      &threads_complete[i],
-+			      CLONE_KERNEL);
-+	}
-+	for (i = 0; i < thread; i++)
-+		wait_for_completion(&threads_complete[i]);
-+	atomic_set(&device_match_freezed, 0);
-+	up(&sem_thaw);
-+}
-+
-+static int __init dev_match_thread(char *str)
-+{
-+	get_option(&str, &dev_match_thread_default);
-+	return 1;
-+}
-+
-+__setup("dev_match_thread=", dev_match_thread);
-+
-+EXPORT_SYMBOL_GPL(device_match_freeze);
-+EXPORT_SYMBOL_GPL(device_match_thaw);
-Index: linux-2.6.22-rc4/include/linux/device.h
-===================================================================
---- linux-2.6.22-rc4.orig/include/linux/device.h	2007-06-08
-18:26:11.000000000 +0800
-+++ linux-2.6.22-rc4/include/linux/device.h	2007-06-09
-19:41:03.000000000 +0800
-@@ -413,12 +413,17 @@
- 	struct klist_node	knode_driver;
- 	struct klist_node	knode_bus;
- 	struct device		*parent;
-+	struct device		*depend;
+@@ -322,11 +331,11 @@ static int __init fixed_init(void)
+ 	   driver to them.
  
- 	struct kobject kobj;
- 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
- 	struct device_type	*type;
- 	unsigned		is_registered:1;
- 	unsigned		uevent_suppress:1;
-+	unsigned		is_matched:1;
-+	unsigned		is_checking:1;
-+	unsigned		is_checked:1;
-+	unsigned		singlethreaded_probe:1;
- 	struct device_attribute uevent_attr;
- 	struct device_attribute *devt_attr;
+ 	   Then the external software can lookup the phy bus by searching
+-	   fixed@speed:duplex, e.g. fixed@100:1, to be connected to the
++	   0:speed+duplex, e.g. 0:101, to be connected to the
+ 	   virtual 100M Fdx phy.
  
-@@ -525,6 +530,8 @@
- extern int  __must_check device_attach(struct device * dev);
- extern int __must_check driver_attach(struct device_driver *drv);
- extern int __must_check device_reprobe(struct device *dev);
-+extern void device_match_freeze(void);
-+extern void device_match_thaw(int thread);
+ 	   In case several virtual PHYs required, the bus_id will be in form
+-	   fixed_<num>@<speed>:<duplex>, which make it able even to define
++	   <num>:<duplex>+<speed>, which make it able even to define
+ 	   driver-specific link control callback, if for instance PHY is completely
+ 	   SW-driven.
  
- /*
-  * Easy functions for dynamically creating devices on the fly
+@@ -338,6 +347,10 @@ static int __init fixed_init(void)
+ #endif
+ #endif
+ 
++#ifdef CONFIG_FIXED_MII_1000_FDX
++	fixed_mdio_register_device(0, 1000, 1);
++#endif
++
+ #ifdef CONFIG_FIXED_MII_100_FDX
+ 	fixed_mdio_register_device(0, 100, 1);
+ #endif
+
