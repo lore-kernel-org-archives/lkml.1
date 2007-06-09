@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbXFIHv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbXFIHx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757036AbXFIHv5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 03:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXFIHvt
+	id S1757320AbXFIHx3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 03:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXFIHxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 03:51:49 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:10789 "EHLO
+	Sat, 9 Jun 2007 03:53:23 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:19831 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbXFIHvt (ORCPT
+	with ESMTP id S1752130AbXFIHxX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 03:51:49 -0400
-Date: Sat, 9 Jun 2007 09:51:48 +0200 (CEST)
+	Sat, 9 Jun 2007 03:53:23 -0400
+Date: Sat, 9 Jun 2007 09:53:22 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
 To: Sam Ravnborg <sam@ravnborg.org>
-cc: Matthieu CASTET <matthieu.castet@parrot.com>, Tom <fivemiletom@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: RE : Building kernel 2.6.21.3 for arm on cygwin
-In-Reply-To: <20070608221032.GA26637@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0706090950040.4353@fbirervta.pbzchgretzou.qr>
-References: <4660971E.5020609@gmail.com> <12D4B80525C5B744A216276E209921D9CE8016@MIAMI.xi-lite.lan>
- <46645DC9.8080003@gmail.com> <20070607204707.GB16634@uranus.ravnborg.org>
- <46697C5E.9060607@parrot.com> <20070608221032.GA26637@uranus.ravnborg.org>
+cc: Rich Chase <rac47.02@engalumni.colostate.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: missing elfconfig.h
+In-Reply-To: <20070608201947.GD25468@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0706090952250.4353@fbirervta.pbzchgretzou.qr>
+References: <200706080908.37044.rac47.02@engalumni.colostate.edu>
+ <20070608201947.GD25468@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jun 9 2007 00:10, Sam Ravnborg wrote:
->Hi Matthieu.
+On Jun 8 2007 22:19, Sam Ravnborg wrote:
+>On Fri, Jun 08, 2007 at 09:08:36AM -0400, Rich Chase wrote:
+>> An Apparent bug:
+>> version 2.6.21.3
+>> missing the file ./scripts/mod/elfconfig.h
 >
->Can you please try to tell what your patch actually does.
+>To build an external module you need to point to a directory
+>where a fully build kernel is placed.
 >
->As for the part added in the MAkefile you pass -lintl for Cygwin -
->but I fail to see _why_ -lintl is needed.
+>You could do a full build and then a "make clean",
+>this would still let you build external modules.
 
-It is because I think .DLLs do not have something like ELF's DT_NEEDED,
-hence needing to specify all libs you ever need explicitly. Quite ugly.
+Is not "make prepare" enough?
 
+>In your case the kernel was not build.
+>And to build modpost you need to execute "make modules" from
+>the kernel top-level directory.
+
+"make scripts" ?
+
+>Anything that is available public?
+>Could take a quick look at the Makefile +
+>build instructions.
+
+Most likely it is one of the worse Makefile...
 
 
 	Jan
