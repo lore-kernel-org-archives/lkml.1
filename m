@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbXFIH7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbXFIIBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbXFIH7U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 03:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbXFIH7O
+	id S1758483AbXFIIBI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 04:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbXFIIA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 03:59:14 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:33732 "EHLO
+	Sat, 9 Jun 2007 04:00:59 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:33814 "EHLO
 	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755163AbXFIH7N (ORCPT
+	with ESMTP id S1752972AbXFIIA7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 03:59:13 -0400
+	Sat, 9 Jun 2007 04:00:59 -0400
 X-Originating-Ip: 72.143.66.27
-Date: Sat, 9 Jun 2007 03:57:30 -0400 (EDT)
+Date: Sat, 9 Jun 2007 03:59:16 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
 X-X-Sender: rpjday@localhost.localdomain
 To: Jan Engelhardt <jengelh@computergmbh.de>
@@ -20,7 +20,7 @@ cc: Sam Ravnborg <sam@ravnborg.org>,
        linux-kernel@vger.kernel.org
 Subject: Re: missing elfconfig.h
 In-Reply-To: <Pine.LNX.4.64.0706090952250.4353@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0706090355150.11073@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0706090358350.11073@localhost.localdomain>
 References: <200706080908.37044.rac47.02@engalumni.colostate.edu>
  <20070608201947.GD25468@uranus.ravnborg.org>
  <Pine.LNX.4.64.0706090952250.4353@fbirervta.pbzchgretzou.qr>
@@ -52,9 +52,19 @@ On Sat, 9 Jun 2007, Jan Engelhardt wrote:
 > >this would still let you build external modules.
 >
 > Is not "make prepare" enough?
+>
+> >In your case the kernel was not build.
+> >And to build modpost you need to execute "make modules" from
+> >the kernel top-level directory.
+>
+> "make scripts" ?
 
-technically, you want to run "make modules_prepare" on the tree, after
-doing a configuration.
+by the way, technically, you're right since, from the top-level
+Makefile:
+
+# Target to prepare building external modules
+PHONY += modules_prepare
+modules_prepare: prepare scripts
 
 rday
 -- 
