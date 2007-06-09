@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939562AbXFIBUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032109AbXFIBVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939562AbXFIBUv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 21:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbXFIBUn
+	id S1032109AbXFIBVR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 21:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030408AbXFIBUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 21:20:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46747 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753196AbXFIBUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 21:20:42 -0400
-Message-ID: <466A0020.50406@redhat.com>
-Date: Fri, 08 Jun 2007 18:19:28 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-References: <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu> <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com> <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com> <20070608184650.GA4095@ftp.linux.org.uk> <4669A674.4080309@redhat.com> <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org> <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org> <20070609003622.GB4095@ftp.linux.org.uk>
-In-Reply-To: <20070609003622.GB4095@ftp.linux.org.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Fri, 8 Jun 2007 21:20:50 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3392 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S939356AbXFIBUs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jun 2007 21:20:48 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: chrisw@sous-sol.org (Chris Wright)
+Subject: Re: [patch 23/32] IPV4: Correct rp_filter help text.
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org
+Organization: Core
+In-Reply-To: <20070608071553.469107000@sous-sol.org>
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1HwpdD-0008Il-00@gondolin.me.apana.org.au>
+Date: Sat, 09 Jun 2007 11:20:43 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Al Viro wrote:
-> Exactly.  Put it another way, randomizer is a stress-tester.
-
-... and a security mechanism.  And as such it is only useful if it is
-used.  Probably it should be policy-controlled whether you can turn it off.
-
-
-> Note that
-> #define NR_FILES <some constant>
+Chris Wright <chrisw@sous-sol.org> wrote:
 > 
-> for (i = 0; i < NR_FILES; i++)
-> 	close(i);
+> --- linux-2.6.20.13.orig/net/ipv4/Kconfig
+> +++ linux-2.6.20.13/net/ipv4/Kconfig
+> @@ -43,11 +43,11 @@ config IP_ADVANCED_ROUTER
+>          asymmetric routing (packets from you to a host take a different path
+>          than packets from that host to you) or if you operate a non-routing
+>          host which has several IP addresses on different interfaces. To turn
+> -         rp_filter off use:
+> +         rp_filter on use:
+> 
+> -         echo 0 > /proc/sys/net/ipv4/conf/<device>/rp_filter
+> +         echo 1 > /proc/sys/net/ipv4/conf/<device>/rp_filter
+>          or
+> -         echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
+> +         echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 
-You're confusing the problems.  This is not the argument for having a
-separate file descriptor set.  It is the argument to have hidden file
-descriptors.  Randomization has nothing whatsoever to do with this example.
+BTW, this documentation is actually wrong.  You can't enable rp_filter
+on all interfaces with
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+	echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 
-iD8DBQFGagAg2ijCOnn/RHQRAhV+AJ9qT2epTxDWWS++74f+vrV3NucVHACdGkxm
-MULoyE+0NY7dSHcB2epKe7w=
-=o3+1
------END PGP SIGNATURE-----
+You must do that in conjunction with
+
+	echo 1 > /proc/sys/net/ipv4/conf/<device>/rp_filter
+
+for it to work for <device>.
+
+This is really counter-intuitive but it's apparently how it's always
+worked.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
