@@ -1,55 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbXFIOvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXFIOxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbXFIOvd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 10:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbXFIOvX
+	id S1754048AbXFIOxo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 10:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXFIOxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 10:51:23 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39277 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751150AbXFIOvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 10:51:21 -0400
-Date: Sat, 9 Jun 2007 16:11:59 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Crispin Cowan <crispin@novell.com>
-Cc: Karl MacMillan <kmacmill@redhat.com>, James Morris <jmorris@namei.org>,
-       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: AppArmor FAQ
-Message-ID: <20070609141159.GA20094@elf.ucw.cz>
-References: <20070416213350.GB4030@suse.de> <Line.LNX.4.64.0704161846110.13905@d.namei> <1176846917.5946.79.camel@localhost.localdomain> <4625505C.6010802@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4625505C.6010802@novell.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Sat, 9 Jun 2007 10:53:38 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:56500 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751409AbXFIOxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 10:53:38 -0400
+Date: Sat, 9 Jun 2007 16:53:32 +0200 (MEST)
+Message-Id: <200706091453.l59ErWtB026333@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: ghpille@hotmail.com, linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: system clock slow on Athlon AMD64 since 2.6.21
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 08 Jun 2007 10:14:03 +0200, Gerard H. Pille wrote:
+> [1.] One line summary of the problem:
+> Since I switched from 2.6.20 to 2.6.21 on my Athlon AMD64 laptop, the system 
+> time is slow - about 1' on 15'.
 
-> >> Some may infer otherwise from your document.
-> >>     
-> > Not only that, the implication that secrecy is only useful to
-> > intelligence agencies is pretty funny.
-> That was not the claim. Rather, that intelligence agencies have a very
-> strong need for privacy, and will go to greater lengths to get it,
-> including using MLS systems. I contend that while most organizations
-> want privacy, they don't want it so badly that they will put up with
-> MLS, and so are looking for a more tolerable form of security.
-> 
-> This is relevant here because information flow is the main advantage of
-> labels over pathnames for access control. AppArmor does not attempt to
-> manage information flow, allowing it to use pathnames to achieve ease of
-> use. If you want information flow control, then by all means use a
+According to your system description it seems that you have a
+Targa Visionary laptop with a VIA chipset and a Mobile Athlon64.
+If so, then you probably have the same problem I reported some time
+ago: see <http://marc.info/?l=linux-kernel&m=117681226421346&w=2>
+and the followup messages. The conclusion was that the chipset's
+ACPI PM timer slows down when the CPU is in C2.
 
-As SEEdit shows, you can still have ease-of-use with system capable of
-MLS.... so don't try to paint is as "pathnames are neccessary so it is
-easy to use".
+The workaround is to boot with processor.max_cstate=1.
 
-Just extend SELinux to handle new files.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+/Mikael
