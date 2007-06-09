@@ -1,42 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032668AbXFIA4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032552AbXFIBHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032668AbXFIA4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 20:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968428AbXFIA4J
+	id S1032552AbXFIBHj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 21:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967307AbXFIBHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 20:56:09 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:52093 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968228AbXFIA4I (ORCPT
+	Fri, 8 Jun 2007 21:07:30 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:57994
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbXFIBH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 20:56:08 -0400
-Message-ID: <4669F922.9020107@zytor.com>
-Date: Fri, 08 Jun 2007 17:49:38 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 8 Jun 2007 21:07:28 -0400
+Date: Fri, 8 Jun 2007 18:06:22 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Greg KH <greg@kroah.com>
+cc: Andreas Gruenbacher <agruen@suse.de>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Pavel Machek <pavel@ucw.cz>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+In-Reply-To: <20070609001703.GA17644@kroah.com>
+Message-ID: <Pine.LNX.4.64.0706081757070.18969@asgard.lang.hm>
+References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de>
+ <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de>
+ <20070609001703.GA17644@kroah.com>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: William Lee Irwin III <wli@holomorphy.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: why does the macro "ZERO_PAGE" take an argument?
-References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain> <4667EC18.4080904@yahoo.com.au> <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain> <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com> <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain> <4668412D.3030506@zytor.com> <20070607192911.GV6909@holomorphy.com> <46687598.2040701@zytor.com> <Pine.LNX.4.64.0706080324280.15839@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0706080324280.15839@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> 
-> and once again, an initially innocuous question quickly leaves me
-> behind.  no, no, i'm getting used to it.  :-P
-> 
+On Fri, 8 Jun 2007, Greg KH wrote:
 
-This is what happens when you stir the muck on the bottom.  This is
-probably a good thing.
+> On Sat, Jun 09, 2007 at 12:03:57AM +0200, Andreas Gruenbacher wrote:
+>> AppArmor is meant to be relatively easy to understand, manage, and customize,
+>> and introducing a labels layer wouldn't help these goals.
+>
+> Woah, that describes the userspace side of AA just fine, it means
+> nothing when it comes to the in-kernel implementation.  There is no
+> reason that you can't implement the same functionality using some
+> totally different in-kernel solution if possible.
+>
+>> SELinux is applicable in areas where AppArmor is not (e.g., MLS), but
+>> this comes at a cost. For me the question is not SELinux or AppArmor,
+>> but if AppArmor's security model is a good solution in common
+>> scenarios. In my opinion, AppArmor is a better answer than SELinux in
+>> a number of scenarios. This gives it value, nonwithstanding the fact
+>> that SELinux can be taken further.
+>
+> I am still not completely certian that we can not properly implement AA
+> functionality using a SELinux backend solution.  Yes, the current tools
+> that try to implement this are still lacking, and maybe the kernel needs
+> to change, but that is possible.
+>
+> I still want to see a definition of the AA "model" that we can then use
+> to try to implement using whatever solution works best.  As that seems
+> to be missing the current argument of if AA can or can not be
+> implemented using SELinux or something totally different should be
+> stopped.
+>
+> So, AA developers, do you have such a document anywhere?  I know there
+> are some old research papers, do they properly describe the current
+> model you are trying to implement here?
 
-	-hpa
+Greg,
+   to implement the AA approach useing SELinux you need to have a way that 
+files that are renamed or created get tagged with the right label 
+automaticaly with no possible race condition.
+
+If this can be done then it _may_ be possible to do the job that AA is 
+aimed at with SELinux, but the work nessasary to figure out what lables 
+are needed on what file would still make it a non-trivial task.
+
+as I understand it SELinux puts one label on each file, so if you have 
+three files accessed by two programs such that
+program A accesses files X Y
+program B accesses files Y Z
+
+then files X Y and Z all need seperate labels with the policy stateing 
+that program A need to access labels X, Y and program B needs to access 
+files Y Z
+
+extended out this can come close to giving each file it's own label. AA 
+essentially does this and calls the label the path and computes it at 
+runtime instead of storing it somewhere.
+
+David Lang
