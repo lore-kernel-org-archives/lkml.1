@@ -1,68 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbXFIUtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbXFIUyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbXFIUtY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 16:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbXFIUtS
+	id S1760958AbXFIUyW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 16:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757631AbXFIUyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 16:49:18 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36549 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754541AbXFIUtR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 16:49:17 -0400
-Date: Sat, 9 Jun 2007 21:49:07 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070609204907.GH4095@ftp.linux.org.uk>
-References: <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com> <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com> <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com> <20070609172429.GF4095@ftp.linux.org.uk> <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com> <20070609200645.GG4095@ftp.linux.org.uk> <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 9 Jun 2007 16:54:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33343 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757498AbXFIUyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 16:54:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Jinxed VAIO wreckage - current state of affairs
+Date: Sat, 9 Jun 2007 22:59:49 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>
+References: <1181418873.4404.402.camel@chaos>
+In-Reply-To: <1181418873.4404.402.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200706092259.50694.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 09, 2007 at 01:21:24PM -0700, Linus Torvalds wrote:
-> Which is why you'd like to do the *initial* operation with a flag that 
-> says "please set the FD_CLOEXEC flag on the file descriptor", so that you 
-> *atomically* install the file file descriptor and set the FD_CLOEXEC bit.
+On Saturday, 9 June 2007 21:54, Thomas Gleixner wrote:
+> Andrew's jinxed VAIO breaks with the high resolution timer updates in a
+> very strange way. Andrew identified the following patch as the culprit:
 > 
-> It's trivial to do for open(), but there are about a million ways to get a 
-> file descriptor, and open() is just about the *only* one of those that 
-> actually takes a "flags" field that can be used to tell the kernel.
-
-Eww...  Idea of pipe(2) taking flags as argument...
-
-BTW, you also need that for recvmsg() (SCM_RIGHTS) and fsckloads of
-syscalls we've got duplicating open() for no good reason (and no, "BSD
-folks did it for sockets, so we'll do it for tons of new subsystems" doesn't
-really qualify ;-/).
-
-I don't know if your indirect is a good idea in that respect, actually.
-AFAICS, you are suggesting per-syscall meanings of the flags, so it really
-smells like YAMultiplexor, free for abuse.
- 
-> (And dammit, that _is_ a *real*issue*. No races necessary, no NR_OPEN 
-> iterations, no even *halfway* suspect code. It's perfectly fine to do
+> http://www.tglx.de/projects/hrtimers/2.6.22-rc4/broken-out/clockevents-fix-resume-logic.patch
 > 
-> 	close(0);
-> 	close(1);
-> 	close(2);
-> 	.. generate filenames, whatever ..
-> 	if (open(..) < 0 || open(..) < 0 || open(..) < 0)
-> 		die("Couldn't redirect stdin/stdout/stderr");
+> This makes no sense at all. The patch just moves the timer restart to a
+> different (later) place in the code and does exactly the same thing as
+> the current code does.
 > 
-> and there's absolutely nothing wrong with this kind of setup, even if you 
-> could obviously have done it other ways too (ie by using "dup2()" instead 
-> of "close + open"),
+> On resume the VAIO is stuck in the following place:
+> 
+> <Andrews debug session>
+> 
+> We finish swsusp_save() and a few other functions then we go
+> 
+>         hibernate
+>         ->platform_finish
+>           ->acpi_hibernation_finish
+>             ->acpi_leave_sleep_state
+>               ->acpi_evaluate_object
+> 
+> and there it dies, in this call:
+> 
+> status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
+> 
+> I wonder how your patch caused that?
+> 
+> <debugs further>
+> 
+> OK, it gets to the last statement in acpi_evaluate_object():
+> 
+>         return_ACPI_STATUS(status);
+> 
+> but doesn't hit the printk on return to the caller,
+> acpi_leave_sleep_state().
+> 
+> </Andrews debug session>
+> 
+> Some data points:
+> 
+> This happens only, when the local apic timer is used. With PIT the
+> resume works fine.
+> 
+> I back ported the full high res stuff to 2.6.20. On 2.6.20 the VAIO
+> survives that patch.
+> 
+> Can the suspend/resume and ACPI wizards please give some hint how to
+> track this 100% reproducible wreckage down.
 
-Yeah, well - I wouldn't call that perfectly fine, but it's probably too
-widespread to kill.  Just as use of 0 for NULL ;-)
+Hmm, how's 2.6.22-rc4-mm2 doing on the Vaio?
+
+There are a couple of patches in there that might help in theory, this series
+in particular:
+
+swsusp-remove-incorrect-code-from-userc.patch
+swsusp-remove-code-duplication-between-diskc-and-userc.patch
+swsusp-introduce-restore-platform-operations.patch
+swsusp-fix-hibernation-code-ordering.patch
+swsusp-remove-code-duplication-between-diskc-and-userc-fix.patch
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
