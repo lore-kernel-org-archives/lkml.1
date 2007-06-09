@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbXFIQzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbXFIRA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbXFIQzQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 12:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbXFIQzE
+	id S1756788AbXFIRA5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 13:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXFIRAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 12:55:04 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59159 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbXFIQzD (ORCPT
+	Sat, 9 Jun 2007 13:00:50 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4093 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754202AbXFIRAt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 12:55:03 -0400
-Date: Sat, 9 Jun 2007 17:54:54 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+	Sat, 9 Jun 2007 13:00:49 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 9 Jun 2007 10:00:44 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Paul Mackerras <paulus@samba.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070609165454.GE4095@ftp.linux.org.uk>
-References: <4669A674.4080309@redhat.com> <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org> <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org> <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com> <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com> <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <466AD4BA.80407@redhat.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <18026.15766.574693.200636@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0706090942210.14037@alien.or.mcafeemobile.com>
+References: <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu>
+ <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com>
+ <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
+ <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
+ <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
+ <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
+ <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
+ <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
+ <18026.15766.574693.200636@cargo.ozlabs.ibm.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 09, 2007 at 09:26:34AM -0700, Ulrich Drepper wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On Sat, 9 Jun 2007, Paul Mackerras wrote:
+
+> Davide Libenzi writes:
 > 
-> Al Viro wrote:
-> > So which code is supposed to do that open/write in your example?  Library?
-> > Unmodified application?  Application specifically modified to make *that*
-> > open() randomized?
+> > The only reason we use a floating base, is because Uli preferred to have 
+> > non-exactly predictable fd allocations. There no reason of re-doing the 
+> > same POSIX mistake all over again:
 > 
-> Why should that matter?  All of the above.
+> Why must everything that makes things a bit simpler and more
+> predictable for application programmers be called a "mistake"?
 
-I asked for real-world example.  Can I have one, please?
+Because if you give guarantees on something, ppl start using such 
+guarantee in the wrong way. Kyle's email summarizes it.
+This should really be treated as an opaque handle, with no assumption on 
+its value. And if you start handing over values that are not predictable, 
+the userspace is *forced* to not use any assumption on its values. I never 
+made any assumption on values returned by APIs returning "handles", and I 
+never had any problem (or even care) about how those values were 
+distributed in the N bit space.
 
-> In whatever way you look at it, there currently is a problem which
-> cannot be solved except with truly horrible, horrible hack (open N
-> descriptors and randomly select one to use; yep, horrible, I said so).
 
-That's simply not true.  On the current kernel nothing stops you from e.g.
-picking a random number and using F_DUPFD.  Voila - there's your randomized
-descriptor.  Portable to earlier kernels.
+- Davide
 
-Moreover, nonsense^H^H^Hq_fd() can be implemented in userland just fine
-if we allow F_DUPFD to arbitrary number - just pass it a random one *or*
-base chosen like davedel is doing (constant + 20bit random chosen at start
-time).
+
