@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760461AbXFIIIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761244AbXFIIJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760461AbXFIIIb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 04:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759386AbXFIIIG
+	id S1761244AbXFIIJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 04:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbXFIIJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 04:08:06 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:47631 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760629AbXFIIIB (ORCPT
+	Sat, 9 Jun 2007 04:09:14 -0400
+Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:37082
+	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754177AbXFIIJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 04:08:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=FdJJcY0ZPtw8jB2Z1GcJlGOsYmoc5uLeMdry0kNm4AWh8hTmUFKJ7BddimOUwbOq0
-	zfBrsJR8yS/cW59sDjwow==
-Message-ID: <6599ad830706090107u63b7e8c2p8e5c65778cde7473@mail.gmail.com>
-Date: Sat, 9 Jun 2007 01:07:53 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [0/1] [patch -mm] Add containerstats (v3)
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Pavel Emelianov" <xemul@openvz.org>
-In-Reply-To: <20070609010202.4c2b51fb.akpm@linux-foundation.org>
+	Sat, 9 Jun 2007 04:09:13 -0400
+Message-ID: <466A600E.9020109@hawkeye.stone.uk.eu.org>
+Date: Sat, 09 Jun 2007 09:08:46 +0100
+From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org
+CC: hpa@zytor.com, Ian Kent <raven@themaw.net>
+Subject: [PATCH 2/7] Replace DPRINTK with pr_debug in alternative.c
+References: <4669D5B7.7050005@hawkeye.stone.uk.eu.org> <466A5E28.2000707@hawkeye.stone.uk.eu.org>
+In-Reply-To: <466A5E28.2000707@hawkeye.stone.uk.eu.org>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070608181346.15764.2467.sendpatchset@balbir-laptop>
-	 <20070608124816.fa1e70d8.akpm@linux-foundation.org>
-	 <6599ad830706090009q25e13ff6ybad7d7f7db21cd48@mail.gmail.com>
-	 <20070609010202.4c2b51fb.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> - CONTAINER_DEBUG should depend on CONTAINERS
+This patch converts all DPRINTKs in alternative.c to pr_debug
 
-CONTAINER_DEBUG is actually a container subsystem whose sole purpose
-is to provide debugging information about any hierarchy that it's
-mounted as a part of. So in some senses it's in the same boat as
-something like cpusets or the RSS controller. CONFIG_CONTAINER_DEBUG
-doesn't affect any of the container framework code.
+Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+---
 
->
-> - the CPUSETS && SMP is weird and should be deleted, unless I'm missing
->   something
+--- linux/arch/i386/kernel/alternative.c	2007-06-07 17:25:46.000000000 +0100
++++ linux/arch/i386/kernel/alternative.c	2007-06-07 20:45:52.000000000 +0100
+@@ -1,3 +1,4 @@
++#include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/spinlock.h>
+@@ -41,9 +42,6 @@
+ __setup("noreplace-paravirt", setup_noreplace_paravirt);
+ #endif
 
-Cpusets depends on SMP in the vanilla tree, so that's not anything new
-that I added.
+-#define DPRINTK(fmt, args...) if (debug_alternative) \
+-	printk(KERN_DEBUG fmt, args)
+-
+ #ifdef GENERIC_NOP1
+ /* Use inline assembly to define this because the nops are defined
+    as inline assembly strings in the include files and we cannot
+@@ -165,7 +163,7 @@
+ 	u8 *instr;
+ 	int diff;
 
->
-> - CONTAINERS should depend on CPUSETS
+-	DPRINTK("%s: alt table %p -> %p\n", __FUNCTION__, start, end);
++	pr_debug("%s: alt table %p -> %p\n", __FUNCTION__, start, end);
+ 	for (a = start; a < end; a++) {
+ 		BUG_ON(a->replacementlen > a->instrlen);
+ 		if (!boot_cpu_has(a->cpuid))
+@@ -175,7 +173,7 @@
+ 		/* vsyscall code is not mapped yet. resolve it manually. */
+ 		if (instr >= (u8 *)VSYSCALL_START && instr < (u8*)VSYSCALL_END) {
+ 			instr = __va(instr - (u8*)VSYSCALL_START +
+(u8*)__pa_symbol(&__vsyscall_0));
+-			DPRINTK("%s: vsyscall fixup: %p => %p\n",
++			pr_debug("%s: vsyscall fixup: %p => %p\n",
+ 				__FUNCTION__, a->instr, instr);
+ 		}
+ #endif
+@@ -261,7 +259,7 @@
+ 	smp->locks_end	= locks_end;
+ 	smp->text	= text;
+ 	smp->text_end	= text_end;
+-	DPRINTK("%s: locks %p -> %p, text %p -> %p, name %s\n",
++	pr_debug("%s: locks %p -> %p, text %p -> %p, name %s\n",
+ 		__FUNCTION__, smp->locks, smp->locks_end,
+ 		smp->text, smp->text_end, smp->name);
 
-You mean the other way around?
-
->
-> - That leaves CONTAINER_CPUACCT.
-
-Really, CONTAINER_CPUACCT should have the same relationship to
-CONTAINERS as CPUSETS does.
-
-Paul
+@@ -287,7 +285,7 @@
+ 			continue;
+ 		list_del(&item->next);
+ 		spin_unlock_irqrestore(&smp_alt, flags);
+-		DPRINTK("%s: %s\n", __FUNCTION__, item->name);
++		pr_debug("%s: %s\n", __FUNCTION__, item->name);
+ 		kfree(item);
+ 		return;
+ 	}
