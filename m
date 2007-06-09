@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbXFIJnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbXFIKJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbXFIJnR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 05:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbXFIJnH
+	id S1754015AbXFIKJz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 06:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbXFIKJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 05:43:07 -0400
-Received: from mail.asoft.ru ([83.222.19.8]:57459 "EHLO mail.asoft.ru"
+	Sat, 9 Jun 2007 06:09:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33195 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbXFIJnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 05:43:05 -0400
-X-Greylist: delayed 1479 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Jun 2007 05:43:05 EDT
-Date: Sat, 9 Jun 2007 13:18:04 +0400
-From: Dmitry Artamonow <mad_soft@inbox.ru>
-To: David Miller <davem@davemloft.net>
-Cc: mikpe@it.uu.se, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [BUG sparc64] 2.6.22-rc broke X on Ultra5
-Message-ID: <20070609091804.GA3793@sunflower.office.asoft.ru>
-References: <200705301933.l4UJXIE0023913@alkaid.it.uu.se> <20070530.130140.97293476.davem@davemloft.net> <20070606.162210.35662366.davem@davemloft.net>
+	id S1751560AbXFIKJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 06:09:46 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+Date: Sat, 9 Jun 2007 11:47:23 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
+       davem@davemloft.net
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <200706090056.49279.ak@suse.de> <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070606.162210.35662366.davem@davemloft.net>
-X-HackerKey: v2sw4CUhw5/6ln5pr2ck4ma6u7Lw2Xm4l7Fi2e3t4MBb6HTen4g4RACa2Xs4r5p3 hackerkey.com
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.0.2 (mail.asoft.ru [0.0.0.0]); Sat, 09 Jun 2007 13:18:19 +0400 (MSD)
+Message-Id: <200706091147.24705.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good day!
 
-Sorry for intruding, but I'm seeing the same problem on my U10 with 
-2.6.22-rc3 and Xorg-7.1+gentoo patches.
+> > Now there is a anon dirty limit since a few releases, but I'm not
+> > fully convinced it solves the problem completely.
+> 
+> A gut feeling or is there more?
 
-On Wed, Jun 06, 2007 at 04:22:10PM -0700, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Wed, 30 May 2007 13:01:40 -0700 (PDT)
-> 
-> > From: Mikael Pettersson <mikpe@it.uu.se>
-> > Date: Wed, 30 May 2007 21:33:18 +0200 (MEST)
-> > 
-> > > You were spot on. 2.6.21 + patches up to but not including
-> > > the first one above works. Adding that one gave me a kernel
-> > > that wouldn't boot (hung after "uncompressing kernel").
-> > > Adding the second one above gave me a kernel that booted, but
-> > > where X failed to mmap() the frame buffer as I described.
-> > 
-> > Thanks for all of your testing.
-> > 
-> > I'll try to figure this out on one of my Ultra5's here.
-> 
-> So I did some more digging, got my ultra5 running and I can't
-> get it to work with both 2.6.20 and 2.6.22-rc4 :-)  This is
-> with xorg-7.2, and they both fail with:
-> 
-> xf86MapPciMem: Could not mmap ...
-> 
-> which I assume is the error you're seeing.
-> 
-> Investigation reveals that X.org is erroneously trying to
-> do PCI mmap ioctl()'s on /sys/bus/pci/devices/*/config
-> files which is very very wrong.  Again this happens for me
-> with both 2.6.20 and 2.6.22
+Lots of other subsystem can allocate a lot of memory
+and they usually don't cooperate and have similar dirty limit concepts.
+So you could run out of usable memory anyways and then have a similar
+issue.
 
-Xorg-7.2 (to be more precise, xorg-server-1.2.0) never worked for me, you 
-can see my bug on gentoo bugzilla for more info:
-http://bugs.gentoo.org/show_bug.cgi?id=167052
-But Xorg-7.1 worked fine on kernels up and including 2.6.21
+For example a flood of network packets could always steal your
+GFP_ATOMIC pools very quickly in the background (gigabit or 10gig 
+can transfer a lot of data very quickly) 
 
-> 
-> Can you just quickly strace "Xorg" startup in the working
-> and non-working case?  Just a simple:
-> 
-> 	strace -o x.log Xorg
-> 
-> would for both cases be fine.
-> 
-> You can email it to me privately, and I'll post here my
-> analysis with the relevant portions quoted so we don't
-> flood the list with strace dumps :-)
-> 
-> Thanks a lot!
+Also iirc try_to_free_pages() is not completely fair and might fail
+under extreme load for some requesters.
 
-I sent David privately my .configs , Xorg.0.logs and strace logs for 2.6.21 
-and 2.6.22-rc3. Hope it helps.
+Not requiring memory allocation for any IO would be certainly safer.
 
---
-Best regards,
-Dmitry 'MAD' Artamonow
+Anyways, it's a theoretic question because you can't sleep in 
+there anyways unless something drastic changes in the driver interfaces.
+
+-Andi
