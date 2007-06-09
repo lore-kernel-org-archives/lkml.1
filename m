@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbXFIISR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762906AbXFIITZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760098AbXFIISR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 04:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbXFIISH
+	id S1762906AbXFIITZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 04:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXFIITO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 04:18:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55304 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756703AbXFIISE (ORCPT
+	Sat, 9 Jun 2007 04:19:14 -0400
+Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:57922
+	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752130AbXFIITM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 04:18:04 -0400
-Date: Sat, 9 Jun 2007 01:17:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Paul Menage" <menage@google.com>
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Pavel Emelianov" <xemul@openvz.org>
-Subject: Re: [0/1] [patch -mm] Add containerstats (v3)
-Message-Id: <20070609011740.fc938ed6.akpm@linux-foundation.org>
-In-Reply-To: <6599ad830706090107u63b7e8c2p8e5c65778cde7473@mail.gmail.com>
-References: <20070608181346.15764.2467.sendpatchset@balbir-laptop>
-	<20070608124816.fa1e70d8.akpm@linux-foundation.org>
-	<6599ad830706090009q25e13ff6ybad7d7f7db21cd48@mail.gmail.com>
-	<20070609010202.4c2b51fb.akpm@linux-foundation.org>
-	<6599ad830706090107u63b7e8c2p8e5c65778cde7473@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 9 Jun 2007 04:19:12 -0400
+Message-ID: <466A625C.4030700@hawkeye.stone.uk.eu.org>
+Date: Sat, 09 Jun 2007 09:18:36 +0100
+From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: hpa@zytor.com, Ian Kent <raven@themaw.net>
+Subject: [PATCH 6/7] Add pr_debug_pid to kernel.h
+References: <4669D5B7.7050005@hawkeye.stone.uk.eu.org> <466A5E28.2000707@hawkeye.stone.uk.eu.org>
+In-Reply-To: <466A5E28.2000707@hawkeye.stone.uk.eu.org>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007 01:07:53 -0700 "Paul Menage" <menage@google.com> wrote:
+This patch adds a new function to kernel.h. This function prints out the
+pid of the current process and the name of the function where it was
+called from followed by the debug message and a newline.
 
-> On 6/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > - CONTAINER_DEBUG should depend on CONTAINERS
-> 
-> CONTAINER_DEBUG is actually a container subsystem whose sole purpose
-> is to provide debugging information about any hierarchy that it's
-> mounted as a part of. So in some senses it's in the same boat as
-> something like cpusets or the RSS controller. CONFIG_CONTAINER_DEBUG
-> doesn't affect any of the container framework code.
+This function mimics the output of autofs4.
 
-Oh, that's right.
+Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+---
+Index: linux/include/linux/kernel.h
+===================================================================
+--- linux.orig/include/linux/kernel.h
++++ linux/include/linux/kernel.h
+@@ -228,6 +228,8 @@ extern void print_hex_dump(const char *l
+ /* If you are writing a driver, please use dev_dbg instead */
+ #define pr_debug(fmt,arg...) \
+ 	printk(KERN_DEBUG fmt,##arg)
++#define pr_debug_pid(fmt,arg...) \
++	printk(KERN_DEBUG "pid %d: %s: " fmt "\n" , current->pid ,
+__FUNCTION__, ##args)
+ #define pr_err(fmt,arg...) \
+ 	printk(KERN_ERR fmt,##arg)
+ #else
+@@ -236,6 +238,11 @@ static inline int __attribute__ ((format
+ 	return 0;
+ }
 
-But it still should depend on CONTAINERS
++static inline int __attribute__ ((format (printf, 1, 2)))
+pr_debug_pid(const char * fmt, ...)
++{
++	return 0;
++}
++
+ static inline int __attribute__ ((format (printf, 1, 2))) pr_err(const
+char * fmt, ...)
+ {
+ 	return 0;
 
-> >
-> > - the CPUSETS && SMP is weird and should be deleted, unless I'm missing
-> >   something
-> 
-> Cpusets depends on SMP in the vanilla tree, so that's not anything new
-> that I added.
 
-Oh, OK, so CPUSETS is nor a client of CONTAINERS: so it depneds on CONTAINERS
-
-> >
-> > - CONTAINERS should depend on CPUSETS
-> 
-> You mean the other way around?
-
-yup
-
-> >
-> > - That leaves CONTAINER_CPUACCT.
-> 
-> Really, CONTAINER_CPUACCT should have the same relationship to
-> CONTAINERS as CPUSETS does.
-> 
-
-Would it not be simplest to have CONTAINERS as the top-level
-user-configurable item and to then have everything else depend on it?
-
-select is a nasty thing - we repeatedly have problems when using it.
