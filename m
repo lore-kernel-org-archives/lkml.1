@@ -1,72 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbXFINQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbXFINRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758284AbXFINQS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 09:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbXFINQG
+	id S1758792AbXFINRV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 09:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbXFINRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 09:16:06 -0400
-Received: from lug-owl.de ([195.71.106.12]:34421 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbXFINQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 09:16:05 -0400
-Date: Sat, 9 Jun 2007 15:16:04 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Christian Leber <christian@leber.de>, Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: beeping patch for debugging acpi sleep
-Message-ID: <20070609131604.GM2649@lug-owl.de>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
-	Christian Leber <christian@leber.de>, Andrew Morton <akpm@osdl.org>,
-	kernel list <linux-kernel@vger.kernel.org>
-References: <20070518213701.GA810@core> <20070520200142.GB5235@ucw.cz> <20070602182014.GB29546@core> <20070609130817.GI27793@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MdsOjv/FQ+tsWHFo"
-Content-Disposition: inline
-In-Reply-To: <20070609130817.GI27793@elf.ucw.cz>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 9 Jun 2007 09:17:15 -0400
+Received: from relay00.pair.com ([209.68.5.9]:1547 "HELO relay00.pair.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754621AbXFINRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 09:17:14 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Jun 2007 09:17:14 EDT
+X-pair-Authenticated: 81.78.79.90
+To: linux-kernel@vger.kernel.org
+Cc: Ralph Corderoy <ralph@inputplus.co.uk>
+subject: How to get an IDE Hard Reset, not a Soft Reset?
+Date: Sat, 09 Jun 2007 14:10:31 +0100
+From: Ralph Corderoy <ralph@inputplus.co.uk>
+Message-Id: <20070609131031.CBB5014A521@blake.inputplus.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---MdsOjv/FQ+tsWHFo
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Sat, 2007-06-09 15:08:17 +0200, Pavel Machek <pavel@ucw.cz> wrote:
->=20
-> Starting beeper as soon as ACPI sleep returns is very useful in
-> debugging "apparently dead" machines. If it beeps at all, it makes
-> sense to start playing with CMOS tracer.
+As I understand it, an IDE hard drive can be reset in three ways.  A
+power-on reset, a hard reset caused by pin 1 (RESET-) on the IDE
+connector, and a soft reset (bit SRST in the device control register).
+RESET- is held low on a power on, but can also be used later to do a
+hard reset.
 
-I'd even go so far and implement it unconditionally.
+I can see there's an ioctl to do a soft reset, calling ide_do_reset(),
+but how, from user space, can I do a hard reset?  If it isn't possible
+from user space, is it possible in the kernel?  Pointers welcome.
 
-MfG, JBG
+Hard resets refreshes parts other soft resets cannot reach.  E.g. the
+Expire flag (bit 4) of word 128 in the identify device info.
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-Signature of:                     Eine Freie Meinung in einem Freien Kopf
-the second  :                   f=C3=BCr einen Freien Staat voll Freier B=
-=C3=BCrger.
+(Please keep me CC'd.)
 
---MdsOjv/FQ+tsWHFo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Cheers,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGaqgUHb1edYOZ4bsRAr5VAJ9XaMpbRtrIk4yTbv9drt7Q7MuIzACcDhM+
-fGYkR+VZ7YlNNoF/vZczJps=
-=hdDd
------END PGP SIGNATURE-----
+Ralph.
 
---MdsOjv/FQ+tsWHFo--
