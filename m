@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032601AbXFIArl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032668AbXFIA4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032601AbXFIArl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 20:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968361AbXFIArd
+	id S1032668AbXFIA4S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 20:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968428AbXFIA4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 20:47:33 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:42048 "EHLO
+	Fri, 8 Jun 2007 20:56:09 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:52093 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968138AbXFIArc (ORCPT
+	with ESMTP id S968228AbXFIA4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 20:47:32 -0400
-Message-ID: <4669F8A1.1050205@zytor.com>
-Date: Fri, 08 Jun 2007 17:47:29 -0700
+	Fri, 8 Jun 2007 20:56:08 -0400
+Message-ID: <4669F922.9020107@zytor.com>
+Date: Fri, 08 Jun 2007 17:49:38 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Andrew Lyon <andrew.lyon@gmail.com>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Re: 4Gb ram not showing up
-References: <Pine.LNX.4.58.0706061356310.2657@be1.lrz>	 <20070606143723.GF10008@csclub.uwaterloo.ca>	 <46673135.30105@zytor.com>	 <f4527be0706061541ifd49a8fg60442532d72f1d06@mail.gmail.com>	 <46682FED.2080506@zytor.com> <f4527be0706071037l5278fe61v1a733ab874aec136@mail.gmail.com>
-In-Reply-To: <f4527be0706071037l5278fe61v1a733ab874aec136@mail.gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: William Lee Irwin III <wli@holomorphy.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: why does the macro "ZERO_PAGE" take an argument?
+References: <Pine.LNX.4.64.0706070715290.14293@localhost.localdomain> <4667EC18.4080904@yahoo.com.au> <Pine.LNX.4.64.0706070731250.14994@localhost.localdomain> <a781481a0706070439p6dda152l37e475ae0fa698ef@mail.gmail.com> <Pine.LNX.4.64.0706070750540.16051@localhost.localdomain> <4668412D.3030506@zytor.com> <20070607192911.GV6909@holomorphy.com> <46687598.2040701@zytor.com> <Pine.LNX.4.64.0706080324280.15839@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0706080324280.15839@localhost.localdomain>
 X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Lyon wrote:
+Robert P. J. Day wrote:
 > 
-> I have run memtest86+ for days at a time on both systems with no errors
-> at all.
-> 
-> broken hardware i guess, i am not surprised about the abit board, ive
-> had nothing but trouble with abit motherboards and do not use them any
-> more, but the supermicro is a xeon server board and i was using
-> kingston ram, i wouldnt expect that to have issues.
-> 
-> latest bios on both.
+> and once again, an initially innocuous question quickly leaves me
+> behind.  no, no, i'm getting used to it.  :-P
 > 
 
-And have you verified that it's specced for the memory load you're
-putting on it?  Not all platforms can use every slot with certain kinds
-of DIMMs, depending on chip and rank count.
+This is what happens when you stir the muck on the bottom.  This is
+probably a good thing.
 
 	-hpa
