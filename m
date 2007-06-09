@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbXFIF7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbXFIGuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454AbXFIF7h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 01:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbXFIF72
+	id S1754001AbXFIGuS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 02:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbXFIGuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 01:59:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:9710 "EHLO
+	Sat, 9 Jun 2007 02:50:07 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:63368 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751738AbXFIF71 (ORCPT
+	with ESMTP id S1751206AbXFIGuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 01:59:27 -0400
+	Sat, 9 Jun 2007 02:50:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=nA/mFB2LjUfi30hQ19FGGYIk6ZvrXA+LNIxnG71pStS70ixnvXfaZvGpf6ttoobqla+vpbK3dPxvE0Pbp1SXTkVmqA2WOnmKLpTviK95LHkNV83iWrY0oyEeZxF9NSrX4BZeefBEgQNodaextr4qYExK510qb6UnlaD7fLhIVCQ=
-Message-ID: <466A417C.5090901@gmail.com>
-Date: Sat, 09 Jun 2007 14:58:20 +0900
+        b=d1giXjd0d+FM+eDQb9AefrNXFCm1DKDFdLr5EZ9CIHJ2uYe30EKh8QvOprv1MLexbUrdRdQB9xTsvwvTBX9rP8Trc1Qb4O8WzuvbvhN8F9A6eZk8DTUN3TTrbvF8hG11njPJ+vUzfdpi1TjQ2bUWMEfUghFkw1lTnUKW2N1uU6g=
+Message-ID: <466A4D8A.1050809@gmail.com>
+Date: Sat, 09 Jun 2007 15:49:46 +0900
 From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_it821x: sync with IDE it821x driver
-References: <200706090223.20933.bzolnier@gmail.com>
-In-Reply-To: <200706090223.20933.bzolnier@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
+To: Greg KH <greg@kroah.com>
+CC: Maneesh Soni <maneesh@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Clemens Schwaighofer <cs@tequila.co.jp>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: [PATCH 2/2] sysfs: fix race condition around sd->s_dentry,	take#2
+References: <20070516082935.fe112ab5.akpm@linux-foundation.org> <464B2605.9040200@gmail.com> <20070516091346.3c76cb46.akpm@linux-foundation.org> <464B4DE4.9060100@gmail.com> <20070517120423.GE17712@kroah.com> <20070517173912.GA14370@in.ibm.com> <464C95AB.3020209@gmail.com> <464C9801.8000606@gmail.com> <464C9BEA.7060309@gmail.com> <20070521050101.GC9214@in.ibm.com> <20070522223841.GB2874@kroah.com> <4653F98A.8080308@gmail.com> <46696917.50004@gmail.com>
+In-Reply-To: <46696917.50004@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Bartlomiej Zolnierkiewicz wrote:
-> * (partially) fix DMA in RAID mode
+Tejun Heo wrote:
+> Tejun Heo wrote:
+>> Greg KH wrote:
+>>> On Mon, May 21, 2007 at 10:31:01AM +0530, Maneesh Soni wrote:
+>>>> On Thu, May 17, 2007 at 08:16:10PM +0200, Tejun Heo wrote:
+>>>>> Allowing attribute and symlink dentries to be reclaimed means
+>>>>> sd->s_dentry can change dynamically.  However, updates to the field
+>>>>> are unsynchronized leading to race conditions.  This patch adds
+>>>>> sysfs_lock and use it to synchronize updates to sd->s_dentry.
+>>>>>
+>>>>> Due to the locking around ->d_iput, the check in sysfs_drop_dentry()
+>>>>> is complex.  sysfs_lock only protect sd->s_dentry pointer itself.  The
+>>>>> validity of the dentry is protected by dcache_lock, so whether dentry
+>>>>> is alive or not can only be tested while holding both locks.
+>>>>>
+>>>>> This is minimal backport of sysfs_drop_dentry() rewrite in devel
+>>>>> branch.
+>>>>>
+>>>>> DONT APPLY JUST YET
+>>>> Looks ok to me.. I have tested it it but unfortunately I couldn't
+>>>> recreate the race without the patch also. It would be helpful if
+>>>> people actually seeing the race, provide the test results.
+>>>>
+>>>> Greg, please merge this one once we have some test results.
+>>> Can someone just resend it after those test results are in, with the
+>>> proper signed-off-by, so I know it's safe to apply?
+>> I'll resend with S-O-B after someone verifies it fixes the problem.
 > 
->   Code intended to check DMA status was checking DMA command register.
->   Moreover firmware seems to "forget" to set DMA capable bit for the
->   slave device (at least in RAID mode but without ITE RAID volumes) so
->   check device ID for DMA capable bit when deciding whether to use DMA
->   and remove DMA status check completely.
-> 
->   Thanks to Pavol ©imo for the bugreport and testing the initial fix.
+> Have been trying to reproduce the problem on the latest -rc but haven't
+> succeeded yet.  It seems I lost my magic recipe for these races.  Did
+> anyone succeed?
 
-Ah... This is the mysterious mwdma configuration in smart mode, right?
-Thanks for fixing this.
-
->   This change unfortunately still doesn't fix DMA in RAID mode (which
->   works fine with IDE it821x) but Alan is working on the missing pieces
->   (pata_it821x vs libata EH issues).
-
-This is the lbal/nsect SRST problem, right?
-
-> @@ -258,8 +259,14 @@ static void it821x_passthru_set_piomode(
->  	static const u8 pio_want[]    = { ATA_66, ATA_66, ATA_66, ATA_66, ATA_ANY };
->  
->  	struct it821x_dev *itdev = ap->private_data;
-> +	struct ata_device *pair = ata_dev_pair(adev);
->  	int unit = adev->devno;
-> -	int mode_wanted = adev->pio_mode - XFER_PIO_0;
-> +	int mode_wanted = adev->pio_mode;
-> +
-> +	if (pair && adev->pio_mode > pair->pio_mode)
-> +		mode_wanted = pair->pio_mode;
-> +
-> +	mode_wanted -= XFER_PIO_0;
-
-I think this is better done by mode_filter callback which is guaranteed
-to be called before any actual mode configuration is performed and in
-device order (master then slave).
+Alright, overnight test finally hit the race condition.  It takes me
+much longer now but the race condition is definitely still there.  I'll
+verify each proposed patch and send it for 2.6.22 inclusion and if
+they're accepted to -stable.
 
 Thanks.
 
