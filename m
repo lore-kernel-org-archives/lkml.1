@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760595AbXFIUi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761185AbXFIUlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760595AbXFIUi5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 16:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757782AbXFIUiu
+	id S1761185AbXFIUlR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 16:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbXFIUlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 16:38:50 -0400
-Received: from pythagoras.zen.co.uk ([212.23.3.140]:45118 "EHLO
-	pythagoras.zen.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757628AbXFIUit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 16:38:49 -0400
-Message-ID: <466B0FD7.8050702@gmail.com>
-Date: Sat, 09 Jun 2007 21:38:47 +0100
-From: Matt Keenan <tank.en.mate@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Sat, 9 Jun 2007 16:41:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55408 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838AbXFIUlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 16:41:00 -0400
+Date: Sat, 9 Jun 2007 22:40:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: linux-rt-users@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: v2.6.21.4-rt10
+Message-ID: <20070609204054.GA24503@elte.hu>
 MIME-Version: 1.0
-To: Andrew Lyon <andrew.lyon@gmail.com>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Re: 4Gb ram not showing up
-References: <Pine.LNX.4.58.0706061356310.2657@be1.lrz>	 <20070606143723.GF10008@csclub.uwaterloo.ca>	 <46673135.30105@zytor.com>	 <f4527be0706061541ifd49a8fg60442532d72f1d06@mail.gmail.com>	 <46682FED.2080506@zytor.com> <f4527be0706071037l5278fe61v1a733ab874aec136@mail.gmail.com>
-In-Reply-To: <f4527be0706071037l5278fe61v1a733ab874aec136@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Originating-Pythagoras-IP: [82.69.27.224]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Lyon wrote:
-> On 6/7/07, H. Peter Anvin <hpa@zytor.com> wrote:
->> Andrew Lyon wrote:
->> >
->> > Could this also cause a system to be unstable? my abit athlon64 at
->> > work will not run x64 with more than 1gb ram, and i have a colo server
->> > with supermicro & 2 x dual core xeons that will not run with more than
->> > 2gb.
->> >
->> > Both systems have long uptimes but if i add ram they crash within
->> > minutes of booting.
->> >
->>
->> That's much more likely to be caused by bad memory bus layout so that it
->> doesn't handle the higher loading.
->>
->> Run memtest86+ on the expanded memory for some time.
->>
->>         -hpa
->>
->
-> I have run memtest86+ for days at a time on both systems with no
-> errors at all.
->
-> broken hardware i guess, i am not surprised about the abit board, ive
-> had nothing but trouble with abit motherboards and do not use them any
-> more, but the supermicro is a xeon server board and i was using
-> kingston ram, i wouldnt expect that to have issues.
-I have had problems with kingston ram and heavily populated boards
-(being ASUS boards didn't help either).  I have found through trial and
-error that gigabyte and/or msi boards with crucial memory seems to work
-the best, and for servers i always buy low latency ecc ram, even if it
-is a slower frequency.  I also had problems with machines that passed
-memtest but failed in real life.. you may also want to check your power
-supply and make sure you buy boards with multiple (6 or more) voltage
-regulators.
+i'm pleased to announce the v2.6.21.4-rt10 kernel, which can be 
+downloaded from the usual place:
 
-Matt
+     http://redhat.com/~mingo/realtime-preempt/
+  
+more info about the -rt patchset can be found in the RT wiki:
+  
+     http://rt.wiki.kernel.org
+
+This is a fixes-only release assembled by Thomas Gleixner again. On 
+popular request this -rt tree is against the stable dot kernel - i.e. 
+apply it to a v2.6.21.4 tree, not a v2.6.21 tree.
+
+-rt10 includes the futex fixes and the latest hrtimer updates from 
+Thomas Gleixner, latency tracer fixes from Carsten Emde, tasklet fix 
+from John Stultz, rcu tasklet -> softirq conversion and the 
+enable-irqs-in-pagefaults fix from Steven Rostedt, and other, smaller 
+fixes.
+
+to build a 2.6.21.4-rt10 tree, the following patches should be applied:
+ 
+   http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.4.tar.bz2
+   http://redhat.com/~mingo/realtime-preempt/patch-2.6.21.4-rt10
+ 
+	Ingo
