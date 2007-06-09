@@ -1,95 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbXFISM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbXFISST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbXFISM3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 14:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbXFISMV
+	id S1757997AbXFISST (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 14:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbXFISSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 14:12:21 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38173 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752458AbXFISMU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 14:12:20 -0400
-Date: Sat, 9 Jun 2007 11:12:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Tejun Heo <htejun@gmail.com>, Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Re: Linux v2.6.22-rc3
-In-Reply-To: <20070607224746.GA23290@havoc.gtf.org>
-Message-ID: <alpine.LFD.0.98.0706091054360.20321@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
- <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>
- <466196AD.3090502@garzik.org> <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com>
- <46667466.4010500@gmail.com> <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com>
- <4667B347.9040900@gmail.com> <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org>
- <20070607224746.GA23290@havoc.gtf.org>
+	Sat, 9 Jun 2007 14:18:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37866 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751681AbXFISSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 14:18:08 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX19wljdg1RJwmp7rOwBQL0eV4vx4DmsMadKg/WClkz
+	2zco8J6ul+BQkQ
+Date: Sat, 9 Jun 2007 20:18:05 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Paul Fulghum <paulkf@microgate.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] tty restore locked ioctl file op
+Message-ID: <20070609181805.GA2771@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Paul Fulghum <paulkf@microgate.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Arnd Bergmann <arnd@arndb.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Nicolas Mailhot <nicolas.mailhot@laposte.net>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	"bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@bugzilla.kernel.org>,
+	linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+	Christoph Lameter <clameter@sgi.com>
+References: <1179098742.7322.5.camel@rousalka.dyndns.org> <1179396003.31796.4.camel@rousalka.dyndns.org> <20070517094557.c96f7e54.randy.dunlap@oracle.com> <1179421196.5000.5.camel@rousalka.dyndns.org> <1180206615.3430.8.camel@rousalka.dyndns.org> <20070608030629.GA18493@atjola.homenet> <1181315809.4811.5.camel@x2.microgate.com> <1181330448.5365.7.camel@amdx2.microgate.com> <20070608123350.5cc53c10.akpm@linux-foundation.org> <1181334857.3408.0.camel@x2.microgate.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1181334857.3408.0.camel@x2.microgate.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2007.06.08 15:34:17 -0500, Paul Fulghum wrote:
+> Restore tty locked ioctl handler which was replaced with
+> an unlocked ioctl handler in hung_up_tty_fops by the patch:
+> 
+> commit e10cc1df1d2014f68a4bdcf73f6dd122c4561f94
+> Author: Paul Fulghum <paulkf@microgate.com>
+> Date:   Thu May 10 22:22:50 2007 -0700
+> 
+>     tty: add compat_ioctl
+> 
+> This was reported in:
+> [Bug 8473] New: Oops: 0010 [1] SMP
+> 
+> The bug is caused by switching to hung_up_tty_fops in do_tty_hangup.
+> An ioctl call can be waiting on BLK after testing for existence of
+> the locked ioctl handler in the normal tty fops, but before calling
+> the locked ioctl handler. If a hangup occurs at that point, the
+> locked ioctl fop is NULL and an oops occurs.
 
+Sorry for the delay, your mails didn't make it into my inbox, and I
+usually just mark threads on which I'm Cc'ed as read in my lkml mailbox,
+thus I didn't notice it earlier. Any traces of the lost mails on your
+side?
 
-On Thu, 7 Jun 2007, Jeff Garzik wrote:
->
-> Ack'ing the sata_promise change was easy, but with this one it would
-> be nice to wait a bit before changing the core probe code that [now]
-> every ATA setup goes through, based on a single bug report.
+The patch works as expected, no Oops in sight. Regarding the
+reproducability, it might be that it was easier to trigger on rc1. When
+I retried today with rc4, I only got 2 Oopses in a minute, while the
+first test had spitten out about 20 Oopses in 10 seconds (not sure if I
+really had rc1 running back then, though).
 
-So what's the resolution? Right now this is apparently the reasong for 
-two of our current regressions, and we need to solve it.
+Thanks,
+Björn
 
-"Just wait" is not an option. The options are:
- - fix things
- - revert everything that caused the regressions
-
-and quite frankly, I don't think the second alternative is palatable to 
-anybody, including you.
-
-> The values assist in detecting ghost devices (same device appearing
-> on both master and slave) and TF register malfunctions, and I would
-> appreciate not breaking _that_ so late in 2.6.22-rc for a single
-> report.  Thankfully we have -some- ghost device prevention code
-> elsewhere, but this is part of it.
-
-Apparently this isn't even true. As far as I can tell, the old code used 
-to wait for lbal to be 1, but if it never became one, it would just 
-silently time out and not *do* anything about it. Later commands would 
-"just work", and the device would go its merry ways.
-
-IOW, the new code is *crap*. The old code was arguably not wonderful 
-either, but because of its nature, the old code not working didn't 
-actually matter all that much.
-
-So the biggest change (and the one that broke peoples machines) is that 
-the code that you claim matters, *never* apparently did matter, and now 
-that we've made it matter (by returning an error, and aborting the SRST 
-sequence as a failure), people are complaining.
-
-I really think we should apply Tejun's patch. Add a delay there, by all 
-means if you are nervous: but no, it shouldn't be 150ms. This is the 
-_post_ reset handling, we've already done the 150ms wait for the reset!
-
-In fact, if you look at ata_bus_post_reset(), you'll notice that for 
-port0, we just do the "ata_wait_ready()" call. Tejun's patch just made us 
-do the same (logical) thing for port1 too!  If you think it breaks due to 
-ome timeout issue, then the port0 thing was already broken.
-
-(And maybe we could make the 
-
-	ap->ops->dev_select(ap, 1);
-	rc = ata_wait_ready(ap, deadline);
-
-instead be a
-
-	ata_dev_select(ap, 1, 1, 1);
-
-and you'd wait even more? But that's actually a bigger change than Tejun's 
-thing, and it uses "ata_wait_idle()" rather than "ata_wait_ready()", and 
-doesn't return any status.. I dunno. But right now, we have several known 
-broken things, that apparently weren't broken before!)
-
-		Linus
+> Signed-off-by: Paul Fulghum <paulkf@microgate.com>
+> 
+> --- a/drivers/char/tty_io.c	2007-06-08 14:26:10.000000000 -0500
+> +++ b/drivers/char/tty_io.c	2007-06-08 14:28:58.000000000 -0500
+> @@ -1173,8 +1173,14 @@ static unsigned int hung_up_tty_poll(str
+>  	return POLLIN | POLLOUT | POLLERR | POLLHUP | POLLRDNORM | POLLWRNORM;
+>  }
+>  
+> -static long hung_up_tty_ioctl(struct file * file,
+> -			      unsigned int cmd, unsigned long arg)
+> +static int hung_up_tty_ioctl(struct inode * inode, struct file * file,
+> +			     unsigned int cmd, unsigned long arg)
+> +{
+> +	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
+> +}
+> +
+> +static long hung_up_tty_compat_ioctl(struct file * file,
+> +				     unsigned int cmd, unsigned long arg)
+>  {
+>  	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
+>  }
+> @@ -1222,8 +1228,8 @@ static const struct file_operations hung
+>  	.read		= hung_up_tty_read,
+>  	.write		= hung_up_tty_write,
+>  	.poll		= hung_up_tty_poll,
+> -	.unlocked_ioctl = hung_up_tty_ioctl,
+> -	.compat_ioctl	= hung_up_tty_ioctl,
+> +	.ioctl		= hung_up_tty_ioctl,
+> +	.compat_ioctl	= hung_up_tty_compat_ioctl,
+>  	.release	= tty_release,
+>  };
+>  
+> 
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
