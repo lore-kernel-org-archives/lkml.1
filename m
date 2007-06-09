@@ -1,37 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbXFIRYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXFIR1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbXFIRYq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 13:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbXFIRYh
+	id S1757511AbXFIR1Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 13:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbXFIR1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 13:24:37 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:42022 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755461AbXFIRYh (ORCPT
+	Sat, 9 Jun 2007 13:27:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:10655 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754972AbXFIR1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 13:24:37 -0400
-Date: Sat, 9 Jun 2007 18:24:29 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070609172429.GF4095@ftp.linux.org.uk>
-References: <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org> <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com> <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com> <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com> <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 9 Jun 2007 13:27:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=a45K2yha9LqAE74rzXVP/oyAsrjIwQmd+qSyrNDCW0F8dYfPuitldCjBOymz2aIiul7H3YQaKHQp56u91uVNsjLz9ujnh+8LcUzdW7GyY5XmsNnVkEdwhE+hTTd9dbSAV3hORtCnSlaMsdQNvf9ya9RPIodEoa3ZhSWONjeR7+M=
+Message-ID: <3ae72650706091027k649e5194l9af84cfadbbadad9@mail.gmail.com>
+Date: Sat, 9 Jun 2007 19:27:15 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+Subject: Re: Rules on how to use sysfs in userspace programs
+Cc: "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>, daniel.ritz@gmx.ch,
+       linux@brodo.de
+In-Reply-To: <466A9DDD.2040107@ums.usu.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <466ADEAB.7080202@redhat.com>
-User-Agent: Mutt/1.4.1i
+References: <20070608203637.GA9259@kroah.com> <466A9DDD.2040107@ums.usu.ru>
+X-Google-Sender-Auth: 5c9b0e2a0e8254d7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 09, 2007 at 10:08:59AM -0700, Ulrich Drepper wrote:
-> - - there are two interface to use: open + fcntl.  This is racy.  And
-> don't tell me this doesn't matter.
+On 6/9/07, Alexander E. Patrakov <patrakov@ums.usu.ru> wrote:
+> Greg KH wrote:
+> > - Do not use libsysfs
+> >   It makes assumptions about sysfs which are not true. Its API does not
+> >   offer any abstraction, it exposes all the kernel driver-core
+> >   implementation details in its own API. Therefore it is not better than
+> >   reading directories and opening the files yourself.
+> >   Also, it is not actively maintained, in the sense of reflecting the
+> >   current kernel-development. The goal of providing a stable interface
+> >   to sysfs has failed, it causes more problems, than it solves. It
+> >   violates many of the rules in this document.
+>
+> The problem is that even on ftp.kernel.org there are packages like
+> pcmciautils that still link to libsysfs and contain things like #define
+> PATH_TO_SOCKET "/sys/class/pcmcia_socket/". Are they expected to be fixed?
 
-Racy with respect to what?  Return-to-libc exploits from another thread?
+It will continue to work, because we keep the symlinks it expects, but
+libsysfs is so broken in its interface, that nothing should use it,
+especially nothing should start using it today.
+
+Thanks,
+Kay
