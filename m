@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbXFIXfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760739AbXFIXgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759918AbXFIXfR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 19:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbXFIXfG
+	id S1760739AbXFIXgR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 19:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758027AbXFIXgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 19:35:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46134 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756667AbXFIXfE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 19:35:04 -0400
-Date: Sat, 9 Jun 2007 16:33:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: Kyle Moffett <mrmacman_g4@mac.com>, Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <20070609204907.GH4095@ftp.linux.org.uk>
-Message-ID: <alpine.LFD.0.98.0706091623090.20321@woody.linux-foundation.org>
-References: <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com>
- <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com>
- <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com>
- <20070609172429.GF4095@ftp.linux.org.uk> <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com>
- <20070609200645.GG4095@ftp.linux.org.uk> <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
- <20070609204907.GH4095@ftp.linux.org.uk>
+	Sat, 9 Jun 2007 19:36:09 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50450 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758144AbXFIXgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 19:36:08 -0400
+Date: Sun, 10 Jun 2007 01:35:41 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Christian Leber <christian@leber.de>, Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: beeping patch for debugging acpi sleep
+Message-ID: <20070609233541.GC21229@elf.ucw.cz>
+References: <20070518213701.GA810@core> <20070520200142.GB5235@ucw.cz> <20070602182014.GB29546@core> <20070609130817.GI27793@elf.ucw.cz> <20070609131604.GM2649@lug-owl.de> <20070609225421.GA20521@elf.ucw.cz> <1181431675.14045.140.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181431675.14045.140.camel@nigel.suspend2.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 9 Jun 2007, Al Viro wrote:
+On Sun 2007-06-10 09:27:55, Nigel Cunningham wrote:
+> Hi.
 > 
-> Eww...  Idea of pipe(2) taking flags as argument...
+> On Sun, 2007-06-10 at 00:54 +0200, Pavel Machek wrote:
+> > On Sat 2007-06-09 15:16:04, Jan-Benedict Glaw wrote:
+> > > On Sat, 2007-06-09 15:08:17 +0200, Pavel Machek <pavel@ucw.cz> wrote:
+> > > > 
+> > > > Starting beeper as soon as ACPI sleep returns is very useful in
+> > > > debugging "apparently dead" machines. If it beeps at all, it makes
+> > > > sense to start playing with CMOS tracer.
+> > > 
+> > > I'd even go so far and implement it unconditionally.
+> > 
+> > Well, try it; it is too annoying to be unconditional.
+> 
+> Could you modify the pitch or the length then, to make it less annoying?
+> It sounds like a really good idea to me.
 
-Right. That was one of the patches, and it was one that I said was too 
-damn ugly to live.
+Modifying length is non-trivial, AFAICT, but feel free to submit a
+patch...
 
-So I instead suggested the alternate approach of adding a single new 
-system call that runs another system call indirectly, with a set of flags 
-and/or other behaviour modifications.
+Actually, *any* tone will be annoying in quiet room, and kernel should
+not really be making sounds on its own, so scratch that idea.
 
-And I actually think that's a great idea, because we have *multiple* uses 
-of this kind of "run system call with special flags" issues:
-
- - the whole "async" thing, and as Matt reminded me, this is the perfect 
-   interface for also saying "run this system call asynchronously"
-
- - things like FD_CLOEXEC, but also things like O_NOFOLLOW and O_NDELAY 
-   (which currently only "open()" supports, even though it makes sense for 
-   a lot of other ops too)
-
- - extended flags like LOOKUP_NOSYMLINK and LOOKUP_NOMOUNT for any system 
-   call that does path lookup (to make it return errors if you *ever* 
-   traverse a symlink or a mount-point respectively: security conscious 
-   programs tend to want this - think about apache that exports per-user 
-   "public_html" stuff, but does *not* want to export /etc, and thus 
-   doesn't like following symlinks).
-
-> I don't know if your indirect is a good idea in that respect, actually.
-> AFAICS, you are suggesting per-syscall meanings of the flags, so it really
-> smells like YAMultiplexor, free for abuse.
-
-Well, the actual _setup_ would be global (ie we would have no per-system 
-call actions: we'd just copy the "flags" into the thread 
-"system_call_flags" thing).
-
-But yes, different system calls could decide to *interpret* the flags 
-differently. Quite frankly, I'd rather have that kind of overloaded flag 
-bitmap, than try to create something "extensible". 
-
-That said, I don't think there really will be all that many flags, and we 
-could even just decide that the bits have to be totally unique (and simply 
-limited to 32 flags). The whole point of the flags, after all, would be 
-things that *do* make sense for a whole group of system calls: if that's 
-not true, and it's some single-system-call thing, then you might as well 
-just always add the new system call itself!
-
-So it makes sense for generic flags (like ASYNC and path lookup rules: not 
-every system call takes a path, of course, but it's conceptually still 
-pretty damn generic). but it wouldn't really make sense to do for a very 
-specific system call - it would be faster and easier to just create the 
-new system call in the first place.
-
-		Linus
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
