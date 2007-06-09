@@ -1,99 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032458AbXFIBf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970682AbXFIBmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032458AbXFIBf3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 21:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032788AbXFIBex
+	id S970682AbXFIBmY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 21:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969432AbXFIBmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 21:34:53 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39035 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1032782AbXFIBew (ORCPT
+	Fri, 8 Jun 2007 21:42:16 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60186 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S969249AbXFIBmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 21:34:52 -0400
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Herbert Poetzl <herbert@13thfloor.at>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Paul Menage <menage@google.com>, Kirill Korotaev <dev@openvz.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Paul Jackson <pj@sgi.com>,
-       Dave Hansen <haveblue@us.ibm.com>
-Date: Fri, 08 Jun 2007 18:34:50 -0700
-Message-Id: <20070609013450.17278.29072.sendpatchset@jackhammer.engr.sgi.com>
-In-Reply-To: <20070609013437.17278.52649.sendpatchset@jackhammer.engr.sgi.com>
-References: <20070609013437.17278.52649.sendpatchset@jackhammer.engr.sgi.com>
-Subject: [PATCH 3/3] cpuset: zero malloc - fix for new containers
+	Fri, 8 Jun 2007 21:42:15 -0400
+Date: Sat, 9 Jun 2007 02:41:40 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+Message-ID: <20070609014140.GC4095@ftp.linux.org.uk>
+References: <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com> <20070608192652.4a291901@the-village.bc.nu> <4669A351.4010403@redhat.com> <20070608184650.GA4095@ftp.linux.org.uk> <4669A674.4080309@redhat.com> <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org> <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org> <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466A0020.50406@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Jackson <pj@sgi.com>
+On Fri, Jun 08, 2007 at 06:19:28PM -0700, Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Al Viro wrote:
+> > Exactly.  Put it another way, randomizer is a stress-tester.
+> 
+> ... and a security mechanism.  And as such it is only useful if it is
+> used.  Probably it should be policy-controlled whether you can turn it off.
+ 
+Any real-world examples of exploitable holes based on that?  Real blue-sky
+world, not grsec-advocacy "undiscovered null ptr derefs on every corner and
+all of the variety fixable by our magic goo" one, please.
 
-Third of three -- This applies after the container patches,
-fixing a problem that earlier patches also fixed in the older
-cpuset code.
+> > Note that
+> > #define NR_FILES <some constant>
+> > 
+> > for (i = 0; i < NR_FILES; i++)
+> > 	close(i);
+> 
+> You're confusing the problems.
 
-The container code to present a list of tasks using a container
-to user space could write to an array that it had kmalloc'd,
-after a kmalloc request of zero size.
+No, I'm not.  The entire argument for having a separate set of descriptors
+is based on programs behaving in similar fashion, working correctly now but
+limiting what libraries can do with opening files for internal needs.
 
-The problem was that the code didn't check for writes past the
-allocated end of the array until -after- the first write.
-
-This is a race condition that is likely rare -- it would only show
-up if a container went from being empty to having a task in it,
-during the brief time between the allocation and the first write.
-
-Prior to roughly 2.6.22 kernels, this was also a benign problem,
-because a zero kmalloc returned a few usable bytes anyway,
-and no harm was done with the bogus write.
-
-With the 2.6.22 kernel changes to make issue a warning if
-code tries to write to the location returned from a zero size
-allocation, this problem is no longer benign.  This container code
-would occassionally trigger that warning.
-
-The fix is trivial -- check before storing into the array,
-not after, whether the array is big enough to hold the store.
-
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Balbir Singh <balbir@in.ibm.com>
-Cc: Dave Hansen <haveblue@us.ibm.com>
-Cc: Herbert Poetzl <herbert@13thfloor.at>
-Cc: Kirill Korotaev <dev@openvz.org>
-Cc: Paul Menage <menage@google.com>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-
-Signed-off-by: Paul Jackson <pj@sgi.com>
-
----
-
-Andrew - this is the third of three similar patches.  This one
-redoes the fix for the container code.
-
-Please apply somewhere after:
-  containersv10-share-css_group-arrays-between-tasks-with-same-container-memberships.patch
-
- kernel/container.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- 2.6.22-rc4-mm2.orig/kernel/container.c	2007-06-08 15:36:14.997835546 -0700
-+++ 2.6.22-rc4-mm2/kernel/container.c	2007-06-08 15:37:09.606655972 -0700
-@@ -1451,9 +1451,9 @@ static int pid_array_load(pid_t *pidarra
- 	struct task_struct *tsk;
- 	container_iter_start(cont, &it);
- 	while ((tsk = container_iter_next(cont, &it))) {
--		pidarray[n++] = pid_nr(task_pid(tsk));
- 		if (unlikely(n == npids))
- 			break;
-+		pidarray[n++] = pid_nr(task_pid(tsk));
- 	}
- 	container_iter_end(cont, &it);
- 	return n;
-
--- 
-                          I won't rest till it's the best ...
-                          Programmer, Linux Scalability
-                          Paul Jackson <pj@sgi.com> 1.650.933.1373
+So here's the question: how widespread it really is, considering that "working
+correctly" is not a trivial constraint.  Again, I'd love to see real data;
+if I need handwaving, I know where to find it.
