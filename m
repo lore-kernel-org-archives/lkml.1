@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbXFISG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbXFISIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758921AbXFISG3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 14:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbXFISGF
+	id S1757321AbXFISIg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 14:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbXFISI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 14:06:05 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:43710 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753809AbXFISGD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 14:06:03 -0400
-Date: Sat, 9 Jun 2007 11:06:01 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: William Lee Irwin III <wli@holomorphy.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21 numa policy and huge pages not working
-In-Reply-To: <20070516061259.GZ19966@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0706091105200.17468@twinlark.arctic.org>
-References: <Pine.LNX.4.64.0705152222550.14691@twinlark.arctic.org>
- <20070516061259.GZ19966@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 9 Jun 2007 14:08:29 -0400
+Received: from www.osadl.org ([213.239.205.134]:36251 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753453AbXFISI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 14:08:28 -0400
+Subject: Re: [1/3] 2.6.22-rc4: known regressions v2
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       Andi Kleen <ak@suse.de>, Rodrigo Luiz <troops.of.doom@gmail.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Maximilian Engelhardt <maxi@daemonizer.de>,
+       Gary Zambrano <zambrano@broadcom.com>, Michael Buesch <mb@bu3sch.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+In-Reply-To: <466AE606.7020704@googlemail.com>
+References: <466AE606.7020704@googlemail.com>
+Content-Type: text/plain
+Date: Sat, 09 Jun 2007 20:08:22 +0200
+Message-Id: <1181412502.4404.359.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007, William Lee Irwin III wrote:
+On Sat, 2007-06-09 at 19:40 +0200, Michal Piotrowski wrote:
+> Subject    : nanosleep(0) behaviour
+> References : http://lkml.org/lkml/2007/5/27/108
+>              http://lkml.org/lkml/2007/6/4/239
+> Submitter  : Maximilian Engelhardt <maxi@daemonizer.de>
+> Handled-By : Gary Zambrano <zambrano@broadcom.com>
+>              Michael Buesch <mb@bu3sch.de>
+>              Thomas Gleixner <tglx@linutronix.de>
+> Status     : problem is being debugged
 
-> On Tue, May 15, 2007 at 10:41:06PM -0700, dean gaudet wrote:
-> > prior to 2.6.21 i could "numactl --interleave=all" and use SHM_HUGETLB and 
-> > the interleave policy would be respected.  as of 2.6.21 it doesn't seem to 
-> > respect the policy on SHM_HUGETLB request.
-> > see test program below.
-> > output from pre-2.6.21:
-> > 2ab196200000 interleave=0-3 file=/2\040(deleted) huge dirty=32 N0=8 N1=8 N2=8 N3=8
-> > 2ab19a200000 default file=/SYSV00000000\040(deleted) dirty=16384 active=0 N0=4096 N1=4096 N2=4096 N3=4096
-> > output from 2.6.21:
-> > 2b49b1c00000 default file=/10\040(deleted) huge dirty=32 N3=32
-> > 2b49b5c00000 default file=/SYSV00000000\040(deleted) dirty=16384 active=0 N0=4096 N1=4096 N2=4096 N3=4096
-> > was this an intentional behaviour change?  it seems to be only affecting 
-> > SHM_HUGETLB allocations.  (i haven't tested hugetlbfs yet.)
-> > run with "numactl --interleave=all ./shmtest"
-> 
-> This was not intentional. I'll search for where it broke.
+Please remove this. The behavior is correct and it just affects buggy
+applications like iperf, which used usleep(0) as a yield. iperf is fixed
+by now.
 
-any luck?  i just tested with 2.6.22-rc4 and it's still broken... hmm 
-maybe i should learn how to git bisect.
+	tglx
 
--dean
+
