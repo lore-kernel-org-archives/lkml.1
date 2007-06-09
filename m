@@ -1,116 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbXFIFLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbXFIFR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036AbXFIFLW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 01:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXFIFLO
+	id S1754602AbXFIFR7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 01:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbXFIFRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 01:11:14 -0400
-Received: from bay0-omc2-s31.bay0.hotmail.com ([65.54.246.167]:30739 "EHLO
-	bay0-omc2-s31.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751491AbXFIFLM (ORCPT
+	Sat, 9 Jun 2007 01:17:51 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:51291 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491AbXFIFRu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 01:11:12 -0400
-X-Originating-IP: [70.53.13.125]
-X-Originating-Email: [seanlkml@sympatico.ca]
-Date: Sat, 9 Jun 2007 01:10:22 -0400
-From: Sean <seanlkml@sympatico.ca>
-To: david@lang.hm
-Cc: Tetsuo Handa <from-lsm@I-love.SAKURA.ne.jp>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and
- manipulation,pathname matching
-Message-Id: <20070609011022.ac332fc7.seanlkml@sympatico.ca>
-In-Reply-To: <Pine.LNX.4.64.0706082138360.6675@asgard.lang.hm>
-References: <200706042303.28785.agruen@suse.de>
-	<1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil>
-	<200706090003.57722.agruen@suse.de>
-	<20070609001703.GA17644@kroah.com>
-	<Pine.LNX.4.64.0706081757070.18969@asgard.lang.hm>
-	<200706091101.JAB31303.PTNNSGtM@I-love.SAKURA.ne.jp>
-	<20070608232531.d68de09f.seanlkml@sympatico.ca>
-	<Pine.LNX.4.64.0706082138360.6675@asgard.lang.hm>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 9 Jun 2007 01:17:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=I6MrvJYSxJLcgvc0Mli80pkxPvRVkDx4FO0gznZq4193fG8bDmMwAqWHnp7QECdghNuYUFOvEbekEld6fiB8n0ObDziA3aTF0ONy2K5jVTEa9ut5oGRYKgXQPIEP7THhSeUmoMCDXGuOVHVQt2jMFcyYATdHUERVYjvaUgUReYg=
+Message-ID: <787b0d920706082217m246400edv754ab1e37ca0ec3b@mail.gmail.com>
+Date: Sat, 9 Jun 2007 01:17:49 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: JIT emulator needs
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070608121059.4efcd338@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Jun 2007 05:11:12.0182 (UTC) FILETIME=[98DB1D60:01C7AA54]
+Content-Disposition: inline
+References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
+	 <20070608121059.4efcd338@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jun 2007 21:56:06 -0700 (PDT)
-david@lang.hm wrote:
-
-> 
-> with AA hardlinks are effectivly different labels on the same file
-
-So what?  SELinux can be be altered to accept whatever label you generate.
-Pass it whatever label you want.
-
-> one of the big problems with SELinux is what label to put on new files 
-> (including temp files), the AA approach avoids this (frequent) problem 
-> entirely. In exchange AA picks up the (infrequent) problems of bind-mounts 
-> and hard-link creation. People have tried to equate these prolems to show 
-> that AA has just as many problems as SELinux, but you can run systems for 
-> decades without creating hard-links or bind-mounts
-
-You are thinking about the way SELinux operates today, not how it might
-operate to accommodate AA inclusion in the kernel.   Instead of SELinux
-always obtaining labels from file attributes, it could ask AA for them
-and you could generate them however you like.
-
-> also you seriously misunderstand the AA approach
+On 6/8/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > There is an SE Linux execmem restriction that enforces W^X.
 >
-> AA does NOT try to create a security policy for every file on the system.
-> 
-> Instead AA policies are based on specific programs, and each policy states 
-> what files that program is allowed to access.
- 
-please read a bit more carefully, I was responding to someone else who
-made that claim.
+> This depends on whatever SELinux rulesets you are running. Its just a
+> good rule to have present that most programs shouldn't be self patching,
+> and then label those that do differently.
 
-> if you are useing AA to secure all exposed services on a box you don't 
-> have to try to write a policy to describe what gcc is allowed to access 
-> (unless through policy you give one of your exposed services permission to 
-> run gcc, and even then I'm not sure if gcc would inherit restrictions 
-> from it's parent or just use it's own)
-> 
-> the resulting policy is much easier to understand (and therefor check) 
-> becouse it is orders of magnatude smaller then any comprehensive SELinux 
-> policy.
+A marking in the executable would have made more sense.
+It is really broken having an unprivileged user being able to
+create whole new executables but unable to lift this restriction
+on those executables.
 
-> 
-> the AA policy is also much easier to understand becouse you can look at it 
-> in pieces, understand that piece, and then forget it and move on to the 
-> next piece.
+In any case, the restriction is common and troublesome.
 
-Nobody is asking you to change the AA policy file.  It lives in user space.
-But i fail to see the problem in translating it into SELinux terms for
-the user transparently.
+> > Sometimes it is very helpful to have the read/write mapping
+> > be a fixed offset from the read/exec mapping. A power of 2
+> > can be especially desirable.
+>
+> mmap MAP_FIXED can do this but you need to know a lot about the memory
+> layout of the system so it gets a bit platform specific.
 
-> for example, if you write a policy for apache that limits it's access to 
-> it's log files, install directories, and document root. then you write a 
-> policy for your log analysis tool to access it's libraries, report 
-> directories (under the apache document root) and the apache log files 
-> (read only), these two policies are independant, you don't have to think 
-> about one while creating the other (which you would have to do if you had 
-> to put one label on apache binaries, another on normal web documents, a 
-> third on the reports, a fourth on the log files, and a fifth on the 
-> binaries for the log analysis tool. and this is ignoring any overlap in 
-> libraries!)
+Yes. There are unportable programs, and UNPORTABLE ones.
+Memory layout can vary between vendor kernels, between normal
+and 32-on-64 situations, between two different C libraries...
 
-Again, try to think outside the box a bit.  This isn't about using SELinux
-as it exists today.  But imagine an SELinux that would ask you to 
-supply a security label for each file _instead_ of looking up that label
-itself.  Wouldn't that let you implement everything you wanted while still
-using much of the SELinux infrastructure that is already in the kernel?
+> > Emulators often need a cheap way to change page permissions.
+>
+> mprotect(, range) rather than a page at a time. The kernel will do
+> merging.
 
-> AA also lets a sysadmin dip their toe in the water and just write a policy 
-> for Apache, not for anything else, then write a policy for firefox, then 
-> write a policy for their mail client, then for bittorrent, etc. there is 
-> no need or push to try and secure everything all at once, and no need to 
-> re-label files (and change any policies that used the old labels) when 
-> you discover a new interaction.
+Nope. This can happen rapidly and repeatedly to pages
+that are essentially random. The median length of a range
+will be a page or two. Merging won't do very much at all.
 
-And so it could remain;  this is about implementation, not model.
+> > a. sysctl to set IPC_RMID by default
+> > b. shmget() flag to set IPC_RMID by default
+>
+> Use POSIX shared memory
 
-Sean
+That appears to have the exact same problem.
+
+> > c. open() flag to unlink a file before returning the fd
+>
+> Is it really that costly to create a blank file, why do you need to do it
+> a lot in a JIT ?
+
+This part isn't about cost. It's about not leaving around
+debris when the JIT crashes.
+
+> > e. mremap() flag to get a read/write mapping of a read/exec one
+> > f. mremap() flag to get a read/exec mapping of a read/write one
+> > g. mremap() flag to make the 5th arg (new addr) be the upper limit
+>
+> This is all mprotect and munmap.
+
+That won't get me a second mapping. Supposing that I had
+a second mapping, SE Linux would deny the mprotect.
+I'm looking for a mapping that is born executable or a mapping
+that is born writable, as needed, so that no transition is needed.
+
+> > h. 6-bit wide mremap() "flag" to set the upper limit above given base
+> > i. support the prot argument to remap_file_pages
+> > j. a documented way (madvise?) to punch same-VMA zero-page holes
+>
+> mmap (although you get more VMAs from that) so memset() is probably
+> genuinely cheaper if the permissions are not changing.
+
+Well cost is the problem here. I sure can find some way to
+get the operation done, but it isn't cheap. For some usages,
+the current setup is costly enough that one must consider
+abandoning the hardware MMU in favor of a software one
+emitted as part of the JIT. :-(
