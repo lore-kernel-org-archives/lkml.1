@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760821AbXFIVa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761325AbXFIVfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760821AbXFIVa3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 17:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbXFIVaR
+	id S1761325AbXFIVfX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 17:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbXFIVfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 17:30:17 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:45236
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753070AbXFIVaP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 17:30:15 -0400
-Date: Sat, 9 Jun 2007 14:28:19 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Crispin Cowan <crispin@novell.com>, James Morris <jmorris@namei.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: AppArmor FAQ
-In-Reply-To: <20070609210151.GB6663@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0706091426240.6313@asgard.lang.hm>
-References: <20070417181016.GA10903@one.firstfloor.org>
- <657751.18080.qm@web36614.mail.mud.yahoo.com> <20070417211653.GB11944@one.firstfloor.org>
- <20070417225815.000b0fdb@the-village.bc.nu> <Line.LNX.4.64.0704180935100.25495@d.namei>
- <4626746A.9010701@novell.com> <20070609210151.GB6663@elf.ucw.cz>
+	Sat, 9 Jun 2007 17:35:12 -0400
+Received: from waste.org ([66.93.16.53]:35417 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751151AbXFIVfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 17:35:09 -0400
+Date: Sat, 9 Jun 2007 16:34:32 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Benjamin Gilbert <bgilbert@cs.cmu.edu>, akpm@linux-foundation.org,
+       herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
+Message-ID: <20070609213432.GR11115@waste.org>
+References: <20070608214242.23949.30350.stgit@dev> <20070608214253.23949.40465.stgit@dev> <20070609201159.GC11166@waste.org> <466B0C3F.3040300@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466B0C3F.3040300@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007, Pavel Machek wrote:
+On Sat, Jun 09, 2007 at 04:23:27PM -0400, Jeff Garzik wrote:
+> Matt Mackall wrote:
+> >On Fri, Jun 08, 2007 at 05:42:53PM -0400, Benjamin Gilbert wrote:
+> >>Add x86-optimized implementation of the SHA-1 hash function, taken from
+> >>Nettle under the LGPL.  This code will be enabled on kernels compiled for
+> >>486es or better; kernels which support 386es will use the generic
+> >>implementation (since we need BSWAP).
+> >>
+> >>We disable building lib/sha1.o when an optimized implementation is
+> >>available, as the library link order for x86 (and x86_64) would otherwise
+> >>ignore the optimized version.  The existing optimized implementation for 
+> >>ARM
+> >>does not do this; the library link order for that architecture appears to
+> >>favor the arch/arm/ version automatically.  I've left this situation alone
+> >>since I'm not familiar with the ARM code, but a !ARM condition could be
+> >>added to CONFIG_SHA1_GENERIC if it makes sense.
+> >>
+> >>The code has been tested with tcrypt and the NIST test vectors.
+> >
+> >Have you benchmarked this against lib/sha1.c? Please post the results.
+> >Until then, I'm frankly skeptical that your unrolled version is faster
+> >because when I introduced lib/sha1.c the rolled version therein won by
+> >a significant margin and had 1/10th the cache footprint.
+> 
+> Yes. And it also depends on the CPU as well.  Testing on a server-class 
+> x86 CPU (often with bigger L2, and perhaps even L1, cache) will produce 
+> different result than from popular but less-capable "value" CPUs.
 
-> Hi!
->
->>>> I'm not sure if AppArmor can be made good security for the general case,
->>>> but it is a model that works in the limited http environment
->>>> (eg .htaccess) and is something people can play with and hack on and may
->>>> be possible to configure to be very secure.
->>>>
->>> Perhaps -- until your httpd is compromised via a buffer overflow or
->>> simply misbehaves due to a software or configuration flaw, then the
->>> assumptions being made about its use of pathnames and their security
->>> properties are out the window.
->>>
->> How is it that you think a buffer overflow in httpd could allow an
->> attacker to break out of an AppArmor profile? This is exactly what
->> AppArmor was designed to do, and without specifics, this is just
->> FUD.
->
-> No, it is not, I already broke AppArmor once, and it took me less then
-> one hour.
->
-> Give me machine with root shell, and make app armor permit everything
-> but reading /etc/secret.file. AppArmor is not designed for this, but
-> if you want to claim your solution works, this looks like a nice test.
->
-> Actually, give password to everyone, and see who breaks it first.
+In particular, any optimization made for "486+" CPUs is highly suspect
+on any machine which runs the core at >1x the memory bus speeds.
 
-you admit that AA isn't designed for this and then you set this as the 
-test, doesn't that seem unreasonable to you?
-
-SELinux may be designed to protect against a local root user, AA is not.
-
-different tools, different tasks.
-
-David Lang
+-- 
+Mathematics is the supreme nostalgia of our time.
