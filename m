@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbXFIEMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbXFIEcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbXFIEMf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 00:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbXFIEM1
+	id S1754206AbXFIEcT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 00:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXFIEcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 00:12:27 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:32834 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbXFIEM0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 00:12:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PKsZXYG8fOQbfKSXB2cJn1W1yOW0KOQRAv+gN5/Jfpn2ruolVei1eOtQ4+nDdgZ9bh9a4pll0cjT0VhKoMrY1wXeekkP69oJBFiKfk0kvMiQ1MODA8jufxuWdA7GomQ6KKpd6dh1u3jyocZhVJu9K5FSDKF4YMlm2+4cjGHuTBw=
-Message-ID: <787b0d920706082112v25fb118ew3556eb868c118c1c@mail.gmail.com>
-Date: Sat, 9 Jun 2007 00:12:25 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: JIT emulator needs
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Davide Libenzi" <davidel@xmailserver.org>
-In-Reply-To: <4669009E.3000702@cosmosbay.com>
+	Sat, 9 Jun 2007 00:32:09 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47763 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750919AbXFIEcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 00:32:07 -0400
+Message-ID: <466A2D4F.3040300@us.ibm.com>
+Date: Fri, 08 Jun 2007 21:32:15 -0700
+From: Badari Pulavarty <pbadari@us.ibm.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:0.9.4.1) Gecko/20020508 Netscape6/6.2.3
+X-Accept-Language: en-us
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
-	 <4669009E.3000702@cosmosbay.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>,
+       Albert Cahalan <acahalan@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] shm: Fix the filename of hugetlb sysv shared memory
+References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com> <20070606204432.b670a7b1.akpm@linux-foundation.org> <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com> <20070607162004.GA27802@vino.hallyn.com> <m1ir9zrtwe.fsf@ebiederm.dsl.xmission.com> <46697EDA.9000209@us.ibm.com> <m1vedyqaft.fsf_-_@ebiederm.dsl.xmission.com> <20070608165505.aa15fcdb.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/8/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> Albert Cahalan a écrit :
 
-> > Additions to better support JIT emulators:
-> >
-> > a. sysctl to set IPC_RMID by default
+
+Andrew Morton wrote:
+
+>On Fri, 08 Jun 2007 17:43:34 -0600
+>ebiederm@xmission.com (Eric W. Biederman) wrote:
 >
-> Not very good, this will break some apps.
-
-As a sysctl, the admin gets to choose between
-compatibility and sanity.
-
-I can see such a sysctl also being really helpful for a
-shared computer used for an Operating Systems or
-System Programming course.
-
-> > b. shmget() flag to set IPC_RMID by default
+>>Some user space tools need to identify SYSV shared memory when
+>>examining /proc/<pid>/maps.  To do so they look for a block device
+>>with major zero, a dentry named SYSV<sysv key>, and having the minor of
+>>the internal sysv shared memory kernel mount.
+>>
+>>To help these tools and to make it easier for people just browsing
+>>/proc/<pid>/maps this patch modifies hugetlb sysv shared memory to
+>>use the SYSV<key> dentry naming convention.
+>>
+>>User space tools will still have to be aware that hugetlb sysv
+>>shared memory lives on a different internal kernel mount and so
+>>has a different block device minor number from the rest of sysv
+>>shared memory.
+>>
 >
-> This is better :)
-
-Both are good. This one requires that all apps using
-SysV shared memory be modified to use the flag.
-The other requires that a very few apps be modified
-to tolerate a behavior change.
-
-> > c. open() flag to unlink a file before returning the fd
+>I assume this fix is preferred over Badari's?  If so, why?
 >
->
-> Well, I assume you would like fd = open("/path/somefile", O_RDWR | O_CREAT |
-> O_UNLINK, 0644)
->
-> (ie allocate a file handle but no name ?)
+No. You still need my patch to fix the current breakage.
 
-Yes.
+This patch makes hugetlbfs also use same naming convention as regular 
+shmem for its
+name. This is not absolutely needed, its a nice to have. Currently, user 
+space tools
+can't depend on the filename alone, since its not unique (based on kry).
 
-> Quite difficult to implement this atomically with current vfs, maybe a new
-> syscall would be better. (Linus will kill me for that :) )
+Thanks,
+Badari
+
 >
-> (We dont need to insert "somefile" in one directory, then unlink it, we only
-> need to allocate an unnamed inode to get some backing store)
 
-I suspect that SMB/CIFS has a native call for this. There is
-some sort of tmpfile flag defined over in that world.
+
