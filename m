@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbXFIRGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbXFIRIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757375AbXFIRGT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 13:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbXFIRGM
+	id S1757539AbXFIRIS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 13:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbXFIRIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 13:06:12 -0400
-Received: from smtpout.mac.com ([17.250.248.174]:49276 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753957AbXFIRGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 13:06:11 -0400
-In-Reply-To: <Pine.LNX.4.64.0706090930380.6313@asgard.lang.hm>
-References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de> <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <Pine.LNX.4.64.0706082207260.6675@asgard.lang.hm> <23C85F2D-9715-4C9B-BD4D-B7186A71F33D@mac.com> <Pine.LNX.4.64.0706090930380.6313@asgard.lang.hm>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DA41D175-3EA3-4ED9-B532-2AA577690980@mac.com>
-Cc: Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Pavel Machek <pavel@ucw.cz>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Date: Sat, 9 Jun 2007 13:06:06 -0400
-To: david@lang.hm
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Sat, 9 Jun 2007 13:08:09 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2826 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753957AbXFIRIG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 13:08:06 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 9 Jun 2007 10:08:04 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Al Viro <viro@ftp.linux.org.uk>
+cc: Ulrich Drepper <drepper@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Eric Dumazet <dada1@cosmosbay.com>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <Pine.LNX.4.64.0706091000530.14037@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0706091006320.14037@alien.or.mcafeemobile.com>
+References: <4669A674.4080309@redhat.com> <alpine.LFD.0.98.0706081206430.4205@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706081211050.5795@alien.or.mcafeemobile.com>
+ <alpine.LFD.0.98.0706081701250.4205@woody.linux-foundation.org>
+ <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com>
+ <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com>
+ <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com>
+ <20070609165454.GE4095@ftp.linux.org.uk> <Pine.LNX.4.64.0706091000530.14037@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 09, 2007, at 12:46:40, david@lang.hm wrote:
-> On Sat, 9 Jun 2007, Kyle Moffett wrote:
->> Typical "targetted" policies leave all user logins as  
->> unrestricted, adding security for daemons but not getting in the  
->> way of users who would otherwise turn SELinux off.  On the other  
->> hand, a targeted policy has a "trusted" type for user logins which  
->> is explicitly allowed access to everything.
->
-> Ok, it sounds as if I did misunderstand SELinux. I thought that by  
-> labeling the individual files you couldn't do the 'only restrict  
-> apache' type of thing.
->
->> That said, if you actually want your system to *work* with any  
->> default-deny policy then you have to describe EVERYTHING anyways.   
->> How exactly do you expect AppArmor to "work" if you don't allow  
->> users to run "/bin/passwd", for example.
->
-> for AA you don't try to define permissions for every executable,  
-> and ones that you don't define policy are unrestricted.
->
-> so as I understand this with SELinux you will have lots of labels  
-> around your system (more as you lock down the system more) you need  
-> to define policy so that your unrestricted users must have access  
-> to every label, and every time you create a new label you need to  
-> go back to all your policies to see if the new label needs to be  
-> allowed from that policy
+On Sat, 9 Jun 2007, Davide Libenzi wrote:
 
-Actually, it's easier than that.  There are type attributes which may  
-be assigned to an arbitrary set of types, and each "type" field in an  
-access rule may use either a type or an attribute.  So you don't  
-actually need to modify existing rules when adding new types, you  
-just add the appropriate existing attributes to your new type.  For  
-example, you could set up a "logfile" attribute which allows  
-logrotate to archive old versions and allows audit-admin users to  
-modify/delete them, then whenever you need to add a new logfile you  
-just declare the "my_foo_log_t" type to have the "logfile" attribute.
+> On Sat, 9 Jun 2007, Al Viro wrote:
+> 
+> > That's simply not true.  On the current kernel nothing stops you from e.g.
+> > picking a random number and using F_DUPFD.  Voila - there's your randomized
+> > descriptor.  Portable to earlier kernels.
+> > 
+> > Moreover, nonsense^H^H^Hq_fd() can be implemented in userland just fine
+> > if we allow F_DUPFD to arbitrary number - just pass it a random one *or*
+> > base chosen like davedel is doing (constant + 20bit random chosen at start
+> > time).
+> 
+> That does not work. Or better, it works but it forces *huge* fdtables to 
+> be created. To do that, you need "start" to be over NR_FILE, and this 
+> creates an fdtable bigger than NR_FILE ((pointer-size + a-few-bits) * 
+> NR_FILE) propagated down to every app you fork.
 
-On the other hand, I seem to recall that typical "targeted" policies  
-don't grant most of the additional access via access rules, they  
-instead add a special case to the fundamental "constraints" in the  
-policy (IE: If the subject type has the "trusted" attribute then skip  
-some of the other type-based checks).
+Keep in mind also, that quite a few places in the code, walk through the 
+whole fdtable memory. So it is not only a problem of wasted RAM.
 
-Cheers,
-Kyle Moffett
+
+- Davide
+
 
