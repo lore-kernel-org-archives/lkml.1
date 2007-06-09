@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbXFITgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760017AbXFITjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759938AbXFITgz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 15:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758248AbXFITgt
+	id S1760017AbXFITjU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 15:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758427AbXFITjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 15:36:49 -0400
-Received: from pop-knobcone.atl.sa.earthlink.net ([207.69.195.64]:53087 "EHLO
-	pop-knobcone.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752886AbXFITgs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 15:36:48 -0400
-Content-Disposition: inline
-From: Rich Chase <rac47.02@engalumni.colostate.edu>
-Organization: Independent Thinkers R Us
-To: linux-kernel@vger.kernel.org
-Subject: Re: missing elfconfig.h
-Date: Sat, 9 Jun 2007 12:34:59 -0400
-User-Agent: KMail/1.9.4
+	Sat, 9 Jun 2007 15:39:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40441 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758248AbXFITjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 15:39:13 -0400
+Date: Sat, 9 Jun 2007 21:38:53 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: David Wagner <daw-usenet@taverner.cs.berkeley.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: AppArmor FAQ
+Message-ID: <20070609193853.GA6663@elf.ucw.cz>
+References: <20070416213350.GB4030@suse.de> <1176852059.5946.128.camel@localhost.localdomain> <f03mli$8g8$1@taverner.cs.berkeley.edu> <Line.LNX.4.64.0704172143150.21359@d.namei> <f03ujo$cta$1@taverner.cs.berkeley.edu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706091234.59231.rac47.02@engalumni.colostate.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f03ujo$cta$1@taverner.cs.berkeley.edu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan,
+Hi!
 
-> >In your case the kernel was not build.
-> >And to build modpost you need to execute "make
-> > modules" from the kernel top-level directory.
->
-> "make scripts" ?
+> >> Maybe you'd like to confine the PHP interpreter to limit what it can do.
+> >> That might be a good application for something like AppArmor.  You don't
+> >> need comprehensive information flow control for that kind of use, and
+> >> it would likely just get in the way.
+> >
+> >SELinux can do this, it's policy-flexible.  You can even simulate a 
+> >pathame-based policy language with a consequential loss of control:
+> 
+> I have no doubt that SELinux can do that, but that has about as much
+> relevance to my point as the price of tea in China does.  I can use a
+> screwdriver to drive in a nail into my wall, too, if I really wanted to,
+> but that doesn't mean toolmakers should stop manufacturing hammers.
 
-Wouldn't this do the same as going into the ".scripts/"
-directory and doing make?
+Well, we are talking about kernel here, and if screwdrivers work well
+enough to drive nails into walls, we'll not allow hammers in.
 
-My problem is that the script 'modpost' requires the
-include file, elfconfig.h, because it is included in
-modpost.c.
+> My point is that there are some tasks where it's plausible that AppArmor
+> might well be a better (easier-to-use) tool for the job.  I'm
 
-> Most likely it is one of the worse Makefile...
+If SELinux can do the task, AA people are welcome to port their
+userland apps to SELinux to make it user friendly. We do _not_ provide
+user friendly services in kernel.
 
-Entirely possible. Maybe the module shouldn't need the
-modpost script anymore? That would explain why my
-kernel built and runs fine without successful compile
-of the script. But then why is the source for the
-script still in the kernel tree?
-
-Thanks,
-Rich
-
--------------------------------------------------------
+Someone wanted shell inside kernel because it is convenient to
+him. Too bad, not going to be merged.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
