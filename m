@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761244AbXFIIJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761606AbXFIIKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761244AbXFIIJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 04:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbXFIIJO
+	id S1761606AbXFIIKD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 04:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbXFIIJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 04:09:14 -0400
-Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:37082
-	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754177AbXFIIJN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 04:09:13 -0400
-Message-ID: <466A600E.9020109@hawkeye.stone.uk.eu.org>
-Date: Sat, 09 Jun 2007 09:08:46 +0100
-From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sat, 9 Jun 2007 04:09:46 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:8882 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757063AbXFIIJo (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 04:09:44 -0400
+Message-ID: <466A6042.7030500@de.ibm.com>
+Date: Sat, 09 Jun 2007 10:09:38 +0200
+From: Carsten Otte <cotte@de.ibm.com>
+Reply-To: carsteno@de.ibm.com
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: hpa@zytor.com, Ian Kent <raven@themaw.net>
-Subject: [PATCH 2/7] Replace DPRINTK with pr_debug in alternative.c
-References: <4669D5B7.7050005@hawkeye.stone.uk.eu.org> <466A5E28.2000707@hawkeye.stone.uk.eu.org>
-In-Reply-To: <466A5E28.2000707@hawkeye.stone.uk.eu.org>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+To: Justin Treon <justin_treon_lkml@yahoo.com>
+CC: carsteno@de.ibm.com, "\"JXrn\" Engel" <joern@lazybastard.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jared Hulbert <jaredeh@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+References: <337240.79058.qm@web59309.mail.re1.yahoo.com>
+In-Reply-To: <337240.79058.qm@web59309.mail.re1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts all DPRINTKs in alternative.c to pr_debug
+Justin Treon wrote:
+> --- Carsten Otte <cotte@de.ibm.com> wrote:
+>> The nice thing about this approach is: we use page->count and rmap, 
+>> both already exist and are perfectly suited for our purpose.
+>> The downside: We need mem_map[] struct page entries behind all memory 
+>> segments. Nowerdays we can easily create those via vmem_map/sparsemem.
+> Can you give an example of the proper way to use sparsemem in this case?  
+We use vmem_map on 390:
+- __segment_load[arch/s390/mm/extmem.c] calls add_shared_memory() to 
+create struct page entries behind a segment
+- segment_unload (same file) calls remove_shared_memory() to remove 
+parts of the mem_map array again
+- arch/s390/mm/vmem.c implements both callbacks
 
-Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
----
+As far as I know, this can also be archived with sparsemem. 
+Unfortunately I don't have an example for sparsemem at hand, I would 
+try to use sparse_add_one_section()[mm/sparse.c].
 
---- linux/arch/i386/kernel/alternative.c	2007-06-07 17:25:46.000000000 +0100
-+++ linux/arch/i386/kernel/alternative.c	2007-06-07 20:45:52.000000000 +0100
-@@ -1,3 +1,4 @@
-+#include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/sched.h>
- #include <linux/spinlock.h>
-@@ -41,9 +42,6 @@
- __setup("noreplace-paravirt", setup_noreplace_paravirt);
- #endif
 
--#define DPRINTK(fmt, args...) if (debug_alternative) \
--	printk(KERN_DEBUG fmt, args)
--
- #ifdef GENERIC_NOP1
- /* Use inline assembly to define this because the nops are defined
-    as inline assembly strings in the include files and we cannot
-@@ -165,7 +163,7 @@
- 	u8 *instr;
- 	int diff;
-
--	DPRINTK("%s: alt table %p -> %p\n", __FUNCTION__, start, end);
-+	pr_debug("%s: alt table %p -> %p\n", __FUNCTION__, start, end);
- 	for (a = start; a < end; a++) {
- 		BUG_ON(a->replacementlen > a->instrlen);
- 		if (!boot_cpu_has(a->cpuid))
-@@ -175,7 +173,7 @@
- 		/* vsyscall code is not mapped yet. resolve it manually. */
- 		if (instr >= (u8 *)VSYSCALL_START && instr < (u8*)VSYSCALL_END) {
- 			instr = __va(instr - (u8*)VSYSCALL_START +
-(u8*)__pa_symbol(&__vsyscall_0));
--			DPRINTK("%s: vsyscall fixup: %p => %p\n",
-+			pr_debug("%s: vsyscall fixup: %p => %p\n",
- 				__FUNCTION__, a->instr, instr);
- 		}
- #endif
-@@ -261,7 +259,7 @@
- 	smp->locks_end	= locks_end;
- 	smp->text	= text;
- 	smp->text_end	= text_end;
--	DPRINTK("%s: locks %p -> %p, text %p -> %p, name %s\n",
-+	pr_debug("%s: locks %p -> %p, text %p -> %p, name %s\n",
- 		__FUNCTION__, smp->locks, smp->locks_end,
- 		smp->text, smp->text_end, smp->name);
-
-@@ -287,7 +285,7 @@
- 			continue;
- 		list_del(&item->next);
- 		spin_unlock_irqrestore(&smp_alt, flags);
--		DPRINTK("%s: %s\n", __FUNCTION__, item->name);
-+		pr_debug("%s: %s\n", __FUNCTION__, item->name);
- 		kfree(item);
- 		return;
- 	}
+sorry,
+Carsten
