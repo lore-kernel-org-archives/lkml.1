@@ -1,33 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032761AbXFIBes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032832AbXFIBfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032761AbXFIBes (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jun 2007 21:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968436AbXFIBel
+	id S1032832AbXFIBfA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jun 2007 21:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032758AbXFIBes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jun 2007 21:34:41 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39013 "EHLO
+	Fri, 8 Jun 2007 21:34:48 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51782 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S968428AbXFIBek (ORCPT
+	with ESMTP id S1032749AbXFIBer (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jun 2007 21:34:40 -0400
+	Fri, 8 Jun 2007 21:34:47 -0400
 From: Paul Jackson <pj@sgi.com>
 To: Andrew Morton <akpm@osdl.org>
-Cc: Herbert Poetzl <herbert@13thfloor.at>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Kirill Korotaev <dev@openvz.org>,
-       Paul Jackson <pj@sgi.com>, Dave Hansen <haveblue@us.ibm.com>
-Date: Fri, 08 Jun 2007 18:34:37 -0700
-Message-Id: <20070609013437.17278.52649.sendpatchset@jackhammer.engr.sgi.com>
-Subject: [PATCH 1/3] cpuset: zero malloc - fix for old cpusets
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       Kirill Korotaev <dev@openvz.org>, Herbert Poetzl <herbert@13thfloor.at>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Paul Jackson <pj@sgi.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Date: Fri, 08 Jun 2007 18:34:43 -0700
+Message-Id: <20070609013443.17278.12422.sendpatchset@jackhammer.engr.sgi.com>
+In-Reply-To: <20070609013437.17278.52649.sendpatchset@jackhammer.engr.sgi.com>
+References: <20070609013437.17278.52649.sendpatchset@jackhammer.engr.sgi.com>
+Subject: [PATCH 2/3] cpuset: zero malloc - revert the old cpuset fix
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul Jackson <pj@sgi.com>
 
-First of three -- this one goes before the container patches,
-and should be sent to Linus for 2.6.22.
+Second of three -- This one undoes the first one.  Apply before
+the container patch that changes cpusets to use containers,
+in order to avoid a patch conflict.
 
 The cpuset code to present a list of tasks using a cpuset to
 user space could write to an array that it had kmalloc'd,
@@ -67,28 +70,28 @@ Signed-off-by: Paul Jackson <pj@sgi.com>
 
 ---
 
-Andrew - this fix collides with the container changes, and now
-that you have sent Christoph's patch to Linus to warn on writes
-to zero-sized allocations, this fix should go to Linus too.
+Andrew,
 
-So it comes in three parts: fix the old, undo that, fix the new.
+This is the second of three in the set - it reverses the
+first one, to avoid colliding with the container patches.
 
-This patch should be applied first, before the container patches,
-and sent to Linus for 2.6.22.
+Apply somewhere before, or entirely merge into:
+    containersv10-share-css_group-arrays-between-tasks-with-same-container-memberships.patch
+
 
  kernel/cpuset.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- 2.6.22-rc4-mm2.orig/kernel/cpuset.c	2007-06-08 14:44:58.899036450 -0700
-+++ 2.6.22-rc4-mm2/kernel/cpuset.c	2007-06-08 14:47:00.996907442 -0700
+--- 2.6.22-rc4-mm2.orig/kernel/cpuset.c	2007-06-08 14:57:59.091074320 -0700
++++ 2.6.22-rc4-mm2/kernel/cpuset.c	2007-06-08 15:34:24.336172342 -0700
 @@ -1620,9 +1620,9 @@ static int pid_array_load(pid_t *pidarra
  
  	do_each_thread(g, p) {
  		if (p->cpuset == cs) {
--			pidarray[n++] = p->pid;
++			pidarray[n++] = p->pid;
  			if (unlikely(n == npids))
  				goto array_full;
-+			pidarray[n++] = p->pid;
+-			pidarray[n++] = p->pid;
  		}
  	} while_each_thread(g, p);
  
