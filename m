@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbXFINmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760063AbXFINop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759603AbXFINmR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 09:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbXFINmG
+	id S1760063AbXFINop (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 09:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757091AbXFINof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 09:42:06 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:56837
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbXFINmF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 09:42:05 -0400
-Date: Sat, 9 Jun 2007 06:41:01 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Sean <seanlkml@sympatico.ca>
-cc: Tetsuo Handa <from-lsm@I-love.SAKURA.ne.jp>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading andmanipulation,pathname
- matching
-In-Reply-To: <20070609073556.b58ca755.seanlkml@sympatico.ca>
-Message-ID: <Pine.LNX.4.64.0706090640050.6313@asgard.lang.hm>
-References: <20070609011022.ac332fc7.seanlkml@sympatico.ca>
- <Pine.LNX.4.64.0706082224370.6675@asgard.lang.hm> <20070609014454.2f1f2f91.seanlkml@sympatico.ca>
- <Pine.LNX.4.64.0706082356220.6675@asgard.lang.hm> <20070609032822.bc420a84.seanlkml@sympatico.ca>
- <200706092026.CJH55869.NGPNtMTS@I-love.SAKURA.ne.jp>
- <20070609073556.b58ca755.seanlkml@sympatico.ca>
+	Sat, 9 Jun 2007 09:44:35 -0400
+Received: from mail.suse.de ([195.135.220.2]:47150 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756097AbXFINoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 09:44:34 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
+Date: Sat, 9 Jun 2007 15:44:31 +0200
+User-Agent: KMail/1.9.5
+Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070514110607.549397248@suse.de> <200706041630.49316.agruen@suse.de> <20070609125839.GH27793@elf.ucw.cz>
+In-Reply-To: <20070609125839.GH27793@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706091544.31971.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007, Sean wrote:
+On Saturday 09 June 2007 14:58, Pavel Machek wrote:
+> > > How will kernel work with very long paths? I'd suspect some problems,
+> > > if path is 1MB long and I attempt to print it in /proc
+> > > somewhere.
+> > 
+> > Pathnames are only used for informational purposes in the kernel, except 
+> > in AppArmor of course. /proc only uses pathnames in a few places, 
+> > but /proc/mounts will silently fail and produce garbage entries. That's 
+> > not ideal of course; we should fix that somehow.
+> 
+> > Note that this has nothing to do with the AppArmor discussion ...
+> 
+> This has everything to do with AA discussion.
 
-> On Sat, 9 Jun 2007 20:26:57 +0900
-> Tetsuo Handa <from-lsm@I-love.SAKURA.ne.jp> wrote:
->
->> Sean wrote:
->>> All of a sudden you've implemented the main features of AA with very
->>> few changes to the kernel.  It should be more maintainable, and much
->>> easier to get accepted into the kernel.
->> Do you agree with passing "struct vfsmount" to VFS helper functions and LSM hooks
->> and introducing d_namespace_path() so that the AA extension can calculate the requested pathname
->> and map the requested pathname to SELinux's labels?
->>
->
-> Frankly i'm not in a position to judge, but if that's the best way to provide
-> the desired functionality, then it sounds good.  But please make sure you
-> bounce this all off someone who actually knows what they're talking about. ;o)
-> Really I was just casually following along this ongoing conversation and had
-> a more conceptual/design question about how things were implemented.  A few
-> people explained how AA labelling at "runtime" wasn't conceptually very
-> different than what SELinux did.  All that begged the question as to why
-> that functionality couldn't just be tacked on to SELinux?
+How pathnames are used in /proc has *nothing* to do with AppAmor.
 
-Sean,
-   since you aren't in a position to judge what's acceptable and I'm not in 
-a position to change code our exchange is pointless.
+> You took unreliable, for-user-info kernel subsystem, and made security
+> subsystem depend on it. Oops.
 
-I apologize to the list for the excessive messasges.
+Wrong. I said that the kernel uses pathnames for informational purposes only, 
+not that they are unreliable. Don't turn words around in my mouth. The dcache 
+has a *very* precise idea of pathnames, because this is what it is there for.
 
-David Lang
+The pathnames that d_path computes exactly reflect what the dcache knows. 
+(This requires the d_path fixes that are included in the AppArmor series and 
+have also been posted independently, and the reasons why these fixes are 
+needed are well explained in the mails.) The resulting pathnames are anything 
+but unreliable.
+
+> > > Perhaps vfs should be modified not to allow such crazy paths? But 
+> > > placing limit in aa is ugly. 
+> > 
+> > Dream on. Redefining fundamental vfs semantics is not an option; we should 
+> > rather make sure that we fail gracefully. Considering the
+> 
+> And instead of fixing "too long pathnames are problem in kernel" in any
+> clean way, you "simply" included
+> configurable-but-impossible-to-configure-right limit into
+> apparmor. And now you want that merged. Dream on.
+
+The choice here is between the following two things: either allow pathnames to 
+grow to arbitrary lengths, or cap them at some point. The former has the 
+benefit of working with all possible pathnames, and the drawback that users 
+can consume arbitrary amounts of kernel memory by constructing arbitrarily 
+long paths.
+
+The latter has the benefit of limiting the amount of kernel memory consumed to 
+some upper bound, and the drawback that access to exceptionally long paths 
+(beyond the arbitrary limit) is denied. So in a sense, the limit in AppArmor 
+does what you are asking for: it modifies things so that the kernel does not 
+allow "such crazy paths". It does not introduce this as a vfs limit though, 
+because the vfs has all right not to care.
+
+Andreas
