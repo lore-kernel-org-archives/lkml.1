@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbXFIUyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbXFIUzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760958AbXFIUyW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 16:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757631AbXFIUyO
+	id S1761320AbXFIUzp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 16:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbXFIUzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 16:54:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33343 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757498AbXFIUyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 16:54:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Jinxed VAIO wreckage - current state of affairs
-Date: Sat, 9 Jun 2007 22:59:49 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>
-References: <1181418873.4404.402.camel@chaos>
-In-Reply-To: <1181418873.4404.402.camel@chaos>
+	Sat, 9 Jun 2007 16:55:39 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:34463
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751834AbXFIUzi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 16:55:38 -0400
+Message-ID: <466B2111.8020301@microgate.com>
+Date: Sat, 09 Jun 2007 15:52:17 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706092259.50694.rjw@sisk.pl>
+To: =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
+       Paul Fulghum <paulkf@microgate.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] tty restore locked ioctl file op
+References: <1179098742.7322.5.camel@rousalka.dyndns.org> <1179396003.31796.4.camel@rousalka.dyndns.org> <20070517094557.c96f7e54.randy.dunlap@oracle.com> <1179421196.5000.5.camel@rousalka.dyndns.org> <1180206615.3430.8.camel@rousalka.dyndns.org> <20070608030629.GA18493@atjola.homenet> <1181315809.4811.5.camel@x2.microgate.com> <1181330448.5365.7.camel@amdx2.microgate.com> <20070608123350.5cc53c10.akpm@linux-foundation.org> <1181334857.3408.0.camel@x2.microgate.com> <20070609181805.GA2771@atjola.homenet>
+In-Reply-To: <20070609181805.GA2771@atjola.homenet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 9 June 2007 21:54, Thomas Gleixner wrote:
-> Andrew's jinxed VAIO breaks with the high resolution timer updates in a
-> very strange way. Andrew identified the following patch as the culprit:
-> 
-> http://www.tglx.de/projects/hrtimers/2.6.22-rc4/broken-out/clockevents-fix-resume-logic.patch
-> 
-> This makes no sense at all. The patch just moves the timer restart to a
-> different (later) place in the code and does exactly the same thing as
-> the current code does.
-> 
-> On resume the VAIO is stuck in the following place:
-> 
-> <Andrews debug session>
-> 
-> We finish swsusp_save() and a few other functions then we go
-> 
->         hibernate
->         ->platform_finish
->           ->acpi_hibernation_finish
->             ->acpi_leave_sleep_state
->               ->acpi_evaluate_object
-> 
-> and there it dies, in this call:
-> 
-> status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
-> 
-> I wonder how your patch caused that?
-> 
-> <debugs further>
-> 
-> OK, it gets to the last statement in acpi_evaluate_object():
-> 
->         return_ACPI_STATUS(status);
-> 
-> but doesn't hit the printk on return to the caller,
-> acpi_leave_sleep_state().
-> 
-> </Andrews debug session>
-> 
-> Some data points:
-> 
-> This happens only, when the local apic timer is used. With PIT the
-> resume works fine.
-> 
-> I back ported the full high res stuff to 2.6.20. On 2.6.20 the VAIO
-> survives that patch.
-> 
-> Can the suspend/resume and ACPI wizards please give some hint how to
-> track this 100% reproducible wreckage down.
+Björn Steinbrink wrote:
+> Sorry for the delay, your mails didn't make it into my inbox, and I
+> usually just mark threads on which I'm Cc'ed as read in my lkml mailbox,
+> thus I didn't notice it earlier. Any traces of the lost mails on your
+> side?
 
-Hmm, how's 2.6.22-rc4-mm2 doing on the Vaio?
+No clues on this end.
 
-There are a couple of patches in there that might help in theory, this series
-in particular:
+> The patch works as expected, no Oops in sight. Regarding the
+> reproducability, it might be that it was easier to trigger on rc1. When
+> I retried today with rc4, I only got 2 Oopses in a minute, while the
+> first test had spitten out about 20 Oopses in 10 seconds (not sure if I
+> really had rc1 running back then, though).
 
-swsusp-remove-incorrect-code-from-userc.patch
-swsusp-remove-code-duplication-between-diskc-and-userc.patch
-swsusp-introduce-restore-platform-operations.patch
-swsusp-fix-hibernation-code-ordering.patch
-swsusp-remove-code-duplication-between-diskc-and-userc-fix.patch
+I'm sure it's very timing dependent.
+I'm confident with this fix.
 
-Greetings,
-Rafael
+Thanks for your help.
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+--
+Paul
