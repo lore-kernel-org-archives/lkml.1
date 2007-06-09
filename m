@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbXFINIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbXFINQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758093AbXFINIc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 09:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbXFINIZ
+	id S1758284AbXFINQS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 09:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbXFINQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 09:08:25 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44853 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753916AbXFINIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 09:08:24 -0400
-Date: Sat, 9 Jun 2007 15:08:17 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Christian Leber <christian@leber.de>, Andrew Morton <akpm@osdl.org>,
+	Sat, 9 Jun 2007 09:16:06 -0400
+Received: from lug-owl.de ([195.71.106.12]:34421 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751621AbXFINQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 09:16:05 -0400
+Date: Sat, 9 Jun 2007 15:16:04 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Christian Leber <christian@leber.de>, Andrew Morton <akpm@osdl.org>,
        kernel list <linux-kernel@vger.kernel.org>
-Subject: beeping patch for debugging acpi sleep
-Message-ID: <20070609130817.GI27793@elf.ucw.cz>
-References: <20070518213701.GA810@core> <20070520200142.GB5235@ucw.cz> <20070602182014.GB29546@core>
+Subject: Re: beeping patch for debugging acpi sleep
+Message-ID: <20070609131604.GM2649@lug-owl.de>
+Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
+	Christian Leber <christian@leber.de>, Andrew Morton <akpm@osdl.org>,
+	kernel list <linux-kernel@vger.kernel.org>
+References: <20070518213701.GA810@core> <20070520200142.GB5235@ucw.cz> <20070602182014.GB29546@core> <20070609130817.GI27793@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MdsOjv/FQ+tsWHFo"
 Content-Disposition: inline
-In-Reply-To: <20070602182014.GB29546@core>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070609130817.GI27793@elf.ucw.cz>
+X-Operating-System: Linux mail 2.6.18-4-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Starting beeper as soon as ACPI sleep returns is very useful in
-debugging "apparently dead" machines. If it beeps at all, it makes
-sense to start playing with CMOS tracer.
+--MdsOjv/FQ+tsWHFo
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+On Sat, 2007-06-09 15:08:17 +0200, Pavel Machek <pavel@ucw.cz> wrote:
+>=20
+> Starting beeper as soon as ACPI sleep returns is very useful in
+> debugging "apparently dead" machines. If it beeps at all, it makes
+> sense to start playing with CMOS tracer.
 
-diff --git a/arch/i386/kernel/acpi/wakeup.S b/arch/i386/kernel/acpi/wakeup.S
-index b781b38..cbf136e 100644
---- a/arch/i386/kernel/acpi/wakeup.S
-+++ b/arch/i386/kernel/acpi/wakeup.S
-@@ -11,7 +11,22 @@ # Do we need to deal with A20? It is oka
- #
- # If physical address of wakeup_code is 0x12345, BIOS should call us with
- # cs = 0x1234, eip = 0x05
--# 
-+#
-+
-+#define BEEP \
-+	inb	$97, %al; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$3, %al; 	\
-+	outb	%al, $97; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$-74, %al; 	\
-+	outb	%al, $67; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$-119, %al; 	\
-+	outb	%al, $66; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$15, %al; 	\
-+	outb	%al, $66;
- 
- ALIGN
- 	.align	4096
-@@ -20,6 +35,9 @@ wakeup_code:
- 	wakeup_code_start = .
- 	.code16
- 
-+# Uncomment this to make your computer start producing ugly noise as soon
-+# as BIOS returns to this real-mode entry point.
-+#	BEEP
-  	movw	$0xb800, %ax
- 	movw	%ax,%fs
- 	movw	$0x0e00 + 'L', %fs:(0x10)
+I'd even go so far and implement it unconditionally.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+MfG, JBG
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:                     Eine Freie Meinung in einem Freien Kopf
+the second  :                   f=C3=BCr einen Freien Staat voll Freier B=
+=C3=BCrger.
+
+--MdsOjv/FQ+tsWHFo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGaqgUHb1edYOZ4bsRAr5VAJ9XaMpbRtrIk4yTbv9drt7Q7MuIzACcDhM+
+fGYkR+VZ7YlNNoF/vZczJps=
+=hdDd
+-----END PGP SIGNATURE-----
+
+--MdsOjv/FQ+tsWHFo--
