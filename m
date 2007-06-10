@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbXFJQrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbXFJQst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757658AbXFJQrp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 12:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760926AbXFJQr1
+	id S1761449AbXFJQst (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 12:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbXFJQsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 12:47:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:51861 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757472AbXFJQrY convert rfc822-to-8bit (ORCPT
+	Sun, 10 Jun 2007 12:48:41 -0400
+Received: from JACKFRUIT.SRV.CS.CMU.EDU ([128.2.201.16]:56878 "EHLO
+	jackfruit.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756458AbXFJQsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 12:47:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=RpVwI8nOa5y+ax+QaGQPccvg5D6tDYTj3zm60TQjowZU+ZWHWMrqGQEjQUdQsFFPkytEX4zxWjGSSvKuzizUlyCnfiJwwRKnSN6ZHU7QL7PuC7Nmumfc6Ozn53l2w3uYbPRyLOwmPWNeYHEVUKMyClI4iO5EJqNW4EBPMkxetfA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] pata_it821x: (partially) fix DMA in RAID mode
-Date: Sun, 10 Jun 2007 18:43:20 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Tejun Heo <htejun@gmail.com>
+	Sun, 10 Jun 2007 12:48:40 -0400
+Message-ID: <466C2B17.8000708@cs.cmu.edu>
+Date: Sun, 10 Jun 2007 12:47:19 -0400
+From: Benjamin Gilbert <bgilbert@cs.cmu.edu>
+User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200706101843.20947.bzolnier@gmail.com>
+To: Matt Mackall <mpm@selenic.com>
+CC: Jeff Garzik <jeff@garzik.org>, akpm@linux-foundation.org,
+       herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
+References: <20070608214242.23949.30350.stgit@dev> <20070608214253.23949.40465.stgit@dev> <20070609201159.GC11166@waste.org> <466B0C3F.3040300@garzik.org> <466B46D5.1020004@cs.cmu.edu> <20070610135956.GS11115@waste.org>
+In-Reply-To: <20070610135956.GS11115@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matt Mackall wrote:
+> On Sat, Jun 09, 2007 at 08:33:25PM -0400, Benjamin Gilbert wrote:
+>> It's not just the loop unrolling; it's the register allocation and 
+>> spilling.  For comparison, I built SHATransform() from the 
+>> drivers/char/random.c in 2.6.11, using gcc 3.3.5 with -O2 and 
+>> SHA_CODE_SIZE == 3 (i.e., fully unrolled); I'm guessing this is pretty 
+>> close to what you tested back then.  The resulting code is 49% MOV 
+>> instructions, and 80% of *those* involve memory.  gcc4 is somewhat 
+>> better, but it still spills a whole lot, both for the 2.6.11 unrolled 
+>> code and for the current lib/sha1.c.
+> 
+> Wait, your benchmark is comparing against the unrolled code?
 
-Code intended to check DMA status was checking DMA command register.
+No, it's comparing the current lib/sha1.c to the optimized code in the 
+patch.  I was just pointing out that the unrolled code you were likely 
+testing against, back then, may not have been very good.  (Though I 
+assumed that you were talking about the unrolled code in random.c, not 
+the code in CryptoAPI, so that might change the numbers some.  It 
+appears from the post you linked below that the unrolled CryptoAPI code 
+still beat the rolled version?)
 
-Moreover firmware seems to "forget" to set DMA capable bit for the
-slave device (at least in RAID mode but without ITE RAID volumes) so
-check device ID for DMA capable bit when deciding whether to use DMA
-and remove DMA status check completely.
+> How big is the -code- footprint?
 
-Thanks to Pavol ©imo for the bugreport and testing the initial fix.
+About 3700 bytes for the 32-bit version of sha_transform().
 
-This change unfortunately still doesn't fix DMA in RAID mode (which
-works fine with IDE it821x) but Alan is working on the missing pieces
-(pata_it821x vs libata EH issues).
+> Whoa. We've regressed something horrible here:
+> 
+> http://groups.google.com/group/linux.kernel/msg/fba056363c99d4f9?dmode=source&hl=en
+> 
+> In 2003, I was getting 17MB/s out of my Athlon. Now I'm getting 2.7MB/s.
+> Were your tests with or without the latest /dev/urandom fixes? This
+> one in particular:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.21.y.git;a=commitdiff;h=374f167dfb97c1785515a0c41e32a66b414859a8
 
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Tejun Heo <htejun@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
+I'm not in front of that machine right now; I can check tomorrow.  For 
+what it's worth, I've seen equivalent performance (a few MB/s) on a 
+range of fairly-recent kernels.
 
- drivers/ata/pata_it821x.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
-
-Index: b/drivers/ata/pata_it821x.c
-===================================================================
---- a/drivers/ata/pata_it821x.c
-+++ b/drivers/ata/pata_it821x.c
-@@ -2,6 +2,7 @@
-  * pata_it821x.c 	- IT821x PATA for new ATA layer
-  *			  (C) 2005 Red Hat Inc
-  *			  Alan Cox <alan@redhat.com>
-+ *			  (C) 2007 Bartlomiej Zolnierkiewicz
-  *
-  * based upon
-  *
-@@ -79,7 +80,7 @@
- 
- 
- #define DRV_NAME "pata_it821x"
--#define DRV_VERSION "0.3.6"
-+#define DRV_VERSION "0.3.7"
- 
- struct it821x_dev
- {
-@@ -460,14 +461,8 @@ static unsigned int it821x_passthru_qc_i
- 
- static int it821x_smart_set_mode(struct ata_port *ap, struct ata_device **unused)
- {
--	int dma_enabled = 0;
- 	int i;
- 
--	/* Bits 5 and 6 indicate if DMA is active on master/slave */
--	/* It is possible that BMDMA isn't allocated */
--	if (ap->ioaddr.bmdma_addr)
--		dma_enabled = ioread8(ap->ioaddr.bmdma_addr + ATA_DMA_CMD);
--
- 	for (i = 0; i < ATA_MAX_DEVICES; i++) {
- 		struct ata_device *dev = &ap->device[i];
- 		if (ata_dev_enabled(dev)) {
-@@ -476,7 +471,7 @@ static int it821x_smart_set_mode(struct 
- 			dev->dma_mode = XFER_MW_DMA_0;
- 			/* We do need the right mode information for DMA or PIO
- 			   and this comes from the current configuration flags */
--			if (dma_enabled & (1 << (5 + i))) {
-+			if (ata_id_has_dma(dev->id)) {
- 				ata_dev_printk(dev, KERN_INFO, "configured for DMA\n");
- 				dev->xfer_mode = XFER_MW_DMA_0;
- 				dev->xfer_shift = ATA_SHIFT_MWDMA;
+--Benjamin Gilbert
