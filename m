@@ -1,62 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbXFJJc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbXFJJcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbXFJJc3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 05:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXFJJbA
+	id S1752274AbXFJJcn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 05:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbXFJJbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 05:31:00 -0400
-Received: from www.osadl.org ([213.239.205.134]:43043 "EHLO mail.tglx.de"
+	Sun, 10 Jun 2007 05:31:03 -0400
+Received: from www.osadl.org ([213.239.205.134]:43052 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753017AbXFJJaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 05:30:55 -0400
-Message-Id: <20070610092446.513563532@inhelltoy.tec.linutronix.de>
+	id S1753138AbXFJJa4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 05:30:56 -0400
+Message-Id: <20070610092446.549485868@inhelltoy.tec.linutronix.de>
 References: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sun, 10 Jun 2007 09:44:02 -0000
+Date: Sun, 10 Jun 2007 09:44:03 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
        Andi Kleen <ak@suse.de>, Arjan van de Ven <arjan@infradead.org>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>, john stultz <johnstul@us.ibm.com>
-Subject: [patch-mm 04/23] Timekeeping: Fixup shadow variable argument
-Content-Disposition: inline;
-	filename=timekeeping-c-fixup-clock-shadow-global-variable.patch
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch-mm 05/23] timer.c cleanup recently introduced whitespace damage
+Content-Disposition: inline; filename=timer-fix-whitespace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clocksource_adjust() has a clock argument, which shadows the file 
-global clock variable. Fix this up.
-
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: john stultz <johnstul@us.ibm.com>
-
 ---
- kernel/time/timekeeping.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ kernel/timer.c |   24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-Index: linux-2.6.22-rc4-mm/kernel/time/timekeeping.c
+Index: linux-2.6.22-rc4-mm/kernel/timer.c
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/kernel/time/timekeeping.c	2007-06-10 10:44:37.000000000 +0200
-+++ linux-2.6.22-rc4-mm/kernel/time/timekeeping.c	2007-06-10 10:44:38.000000000 +0200
-@@ -401,7 +401,7 @@ static __always_inline int clocksource_b
-  * this is optimized for the most common adjustments of -1,0,1,
-  * for other values we can do a bit more work.
-  */
--static void clocksource_adjust(struct clocksource *clock, s64 offset)
-+static void clocksource_adjust(s64 offset)
+--- linux-2.6.22-rc4-mm.orig/kernel/timer.c	2007-06-10 10:44:37.000000000 +0200
++++ linux-2.6.22-rc4-mm/kernel/timer.c	2007-06-10 10:44:38.000000000 +0200
+@@ -103,14 +103,14 @@ static inline tvec_base_t *tbase_get_bas
+ static inline void timer_set_deferrable(struct timer_list *timer)
  {
- 	s64 error, interval = clock->cycle_interval;
- 	int adj;
-@@ -476,7 +476,7 @@ void update_wall_time(void)
- 	}
+ 	timer->base = ((tvec_base_t *)((unsigned long)(timer->base) |
+-	                               TBASE_DEFERRABLE_FLAG));
++				       TBASE_DEFERRABLE_FLAG));
+ }
  
- 	/* correct the clock when NTP error is too big */
--	clocksource_adjust(clock, offset);
-+	clocksource_adjust(offset);
+ static inline void
+ timer_set_base(struct timer_list *timer, tvec_base_t *new_base)
+ {
+ 	timer->base = (tvec_base_t *)((unsigned long)(new_base) |
+-	                              tbase_get_deferrable(timer->base));
++				      tbase_get_deferrable(timer->base));
+ }
  
- 	/* store full nanoseconds into xtime */
- 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
+ /**
+@@ -445,10 +445,10 @@ EXPORT_SYMBOL(__mod_timer);
+ void add_timer_on(struct timer_list *timer, int cpu)
+ {
+ 	tvec_base_t *base = per_cpu(tvec_bases, cpu);
+-  	unsigned long flags;
++	unsigned long flags;
+ 
+ 	timer_stats_timer_set_start_info(timer);
+-  	BUG_ON(timer_pending(timer) || !timer->function);
++	BUG_ON(timer_pending(timer) || !timer->function);
+ 	spin_lock_irqsave(&base->lock, flags);
+ 	timer_set_base(timer, base);
+ 	internal_add_timer(base, timer);
+@@ -627,7 +627,7 @@ static inline void __run_timers(tvec_bas
+ 	while (time_after_eq(jiffies, base->timer_jiffies)) {
+ 		struct list_head work_list;
+ 		struct list_head *head = &work_list;
+- 		int index = base->timer_jiffies & TVR_MASK;
++		int index = base->timer_jiffies & TVR_MASK;
+ 
+ 		/*
+ 		 * Cascade timers:
+@@ -644,8 +644,8 @@ static inline void __run_timers(tvec_bas
+ 			unsigned long data;
+ 
+ 			timer = list_first_entry(head, struct timer_list,entry);
+- 			fn = timer->function;
+- 			data = timer->data;
++			fn = timer->function;
++			data = timer->data;
+ 
+ 			timer_stats_account_timer(timer);
+ 
+@@ -689,8 +689,8 @@ static unsigned long __next_timer_interr
+ 	index = slot = timer_jiffies & TVR_MASK;
+ 	do {
+ 		list_for_each_entry(nte, base->tv1.vec + slot, entry) {
+- 			if (tbase_get_deferrable(nte->base))
+- 				continue;
++			if (tbase_get_deferrable(nte->base))
++				continue;
+ 
+ 			found = 1;
+ 			expires = nte->expires;
+@@ -834,7 +834,7 @@ void update_process_times(int user_tick)
+ 	if (rcu_pending(cpu))
+ 		rcu_check_callbacks(cpu, user_tick);
+ 	scheduler_tick();
+- 	run_posix_cpu_timers(p);
++	run_posix_cpu_timers(p);
+ }
+ 
+ /*
+@@ -909,7 +909,7 @@ static inline void update_times(unsigned
+ 	update_wall_time();
+ 	calc_load(ticks);
+ }
+-  
++
+ /*
+  * The 64-bit jiffies value is not atomic - you MUST NOT read it
+  * without sampling the sequence number in xtime_lock.
+@@ -1105,7 +1105,7 @@ asmlinkage long sys_gettid(void)
+ /**
+  * do_sysinfo - fill in sysinfo struct
+  * @info: pointer to buffer to fill
+- */ 
++ */
+ int do_sysinfo(struct sysinfo *info)
+ {
+ 	unsigned long mem_total, sav_total;
 
 -- 
 
