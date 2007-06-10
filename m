@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbXFJJvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbXFJKAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbXFJJvs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 05:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXFJJvk
+	id S1755269AbXFJKAj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 06:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbXFJKAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 05:51:40 -0400
-Received: from www.osadl.org ([213.239.205.134]:51315 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751188AbXFJJvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 05:51:40 -0400
-Subject: Re: [patch-mm 06/23] clockevents: Fix resume logic
-From: Thomas Gleixner <tglx@linutronix.de>
-To: nigel@nigel.suspend2.net
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <1181468632.30155.36.camel@nigel.suspend2.net>
-References: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
-	 <20070610092446.588014600@inhelltoy.tec.linutronix.de>
-	 <1181468632.30155.36.camel@nigel.suspend2.net>
-Content-Type: text/plain
-Date: Sun, 10 Jun 2007 11:51:30 +0200
-Message-Id: <1181469090.384.6.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Sun, 10 Jun 2007 06:00:31 -0400
+Received: from smtpgw02.netonehosting.com ([193.192.98.26]:51660 "EHLO
+	smtpgw02.netonehosting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753193AbXFJKAa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 06:00:30 -0400
+Message-ID: <466BCBBC.90305@netone.net.tr>
+Date: Sun, 10 Jun 2007 13:00:28 +0300
+From: Tarkan Erimer <tarkan@netone.net.tr>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: david@lang.hm
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr> <18026.16739.228277.938421@notabene.brown> <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr> <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-9; format=flowed
 Content-Transfer-Encoding: 7bit
+X-NETONE-MailScanner-Information: Please contact the ISP for more information
+X-NETONE-MailScanner: Found to be clean
+X-NETONE-MailScanner-From: tarkan@netone.net.tr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-10 at 19:43 +1000, Nigel Cunningham wrote:
-> Hi Thomas.
-> 
-> On Sun, 2007-06-10 at 09:44 +0000, Thomas Gleixner wrote:
-> > plain text document attachment (clockevents-fix-resume-logic.patch)
-> > We need to make sure, that the clockevent devices are resumed, before
-> > the tick is resumed. The current resume logic does not guarantee this.
-> > 
-> > Add CLOCK_EVT_MODE_RESUME and call the set mode functions of the clock
-> > event devices before resuming the tick / oneshot functionality.
-> > 
-> > Fixup the existing users.
-> 
-> What are the implications of the issue for current (i386) users? (Could
-> suspend/hibernation be broken in any way without this patch?)
-
-I have one box, which needs this patch.
-
-OTOH it breaks Andrew's jinxed VAIO in a very mysterious way:
-http://lkml.org/lkml/2007/6/9/158
-
-	tglx
-
+david@lang.hm wrote:
+> On Sun, 10 Jun 2007, Tarkan Erimer wrote:
+>
+>> Date: Sun, 10 Jun 2007 11:43:28 +0300
+>> From: Tarkan Erimer <tarkan@netone.net.tr>
+>> To: linux-kernel@vger.kernel.org
+>> Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+>>
+>> Jan-Benedict Glaw wrote:
+>>>  On Sat, 2007-06-09 15:57:55 +1000, Neil Brown <neilb@suse.de> wrote:
+>>>
+>>> >  On Saturday June 9, tarkan@netone.net.tr wrote:
+>>> > > >  As we know the forthcoming GPL V3 will be not compatible with 
+>>> the GPL > >  V2 and Linux Kernel is GPL V2 only.
+>>> > >  So, another point is, which is previously mentioned by Linus 
+>>> and > >  others, that if it is decided to upgrade the Linux Kernel's 
+>>> License to > >  GPL V3, it is needed the permission of all the 
+>>> maintainers permission > >  who contributed to the Linux Kernel and 
+>>> there are a lot of lost or > >  dead maintainers. Which makes it 
+>>> impossible to get all the > >  maintainers' permission.
+>>> > > >  You don't need the permission of maintainers.  You need the 
+>>> permission
+>>> >  of copyright owners.  The two groups overlap, but are not the same.
+>>> >  Dead people cannot own anything, even copyright.  Their estate
+>>> >  probably can.  I don't think it is theoretically impossible to get
+>>> >  everyone's permission, though it may be quite close to practically
+>>> >  impossible. >
+>>>  And the next question is: How much copyright does a copyright owner
+>>>  own?  For example, think of drivers written by one person, but a small
+>>>  number of lines changed here and there by others to adopt the code to
+>>>  new APIs.  Ask them all, I think?
+>>>
+>>>  MfG, JBG
+>>>
+>>>
+>>
+>> And maybe another questions should be : How long a copyright owner 
+>> can hold the copyright, if died or lost for sometime ? if died, the 
+>> copyright still should be valid or not ? If lost, what the law orders 
+>> at this point for copyright holding ?
+>
+> I believe that in the US it's life + 90 years.
+>
+> David Lang
+Hmm... Really,it is damn too much time to wait! It's really better idea 
+to replace the code of this person as said before instead of waiting 
+such  90+ years!
 
