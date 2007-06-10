@@ -1,81 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbXFJOCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXFJOQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759282AbXFJOCV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 10:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXFJOCN
+	id S1758349AbXFJOQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 10:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbXFJOQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 10:02:13 -0400
-Received: from thunk.org ([69.25.196.29]:42332 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754636AbXFJOCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 10:02:11 -0400
-Date: Sun, 10 Jun 2007 10:02:00 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: Rules on how to use sysfs in userspace programs
-Message-ID: <20070610140200.GD9726@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-References: <20070608203637.GA9259@kroah.com>
-MIME-Version: 1.0
+	Sun, 10 Jun 2007 10:16:19 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:53358 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754320AbXFJOQS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 10:16:18 -0400
+Date: Sun, 10 Jun 2007 16:16:17 +0200
+From: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Chris Wright <chrisw@sous-sol.org>, john stultz <johnstul@us.ibm.com>
+Subject: Re: [patch-mm 07/23] Tick management: spread timer interrupt
+Message-ID: <20070610141617.GA15173@rhlx01.hs-esslingen.de>
+References: <20070610092437.118387863@inhelltoy.tec.linutronix.de> <20070610092446.625214085@inhelltoy.tec.linutronix.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070608203637.GA9259@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20070610092446.625214085@inhelltoy.tec.linutronix.de>
+User-Agent: Mutt/1.4.2.2i
+X-Priority: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 08, 2007 at 01:36:37PM -0700, Greg KH wrote:
-> The kernel exported sysfs exports internal kernel implementation-details
-> and depends on internal kernel-structures and layout. It is agreed upon
-> kernel developers, that the Linux kernel does not provide a stable
-> internal API.  As sysfs is a direct export of kernel internal
-> structures, the sysfs interface can't provide a stable interface too, it
-> may always change along with internal kernel changes.
+Hi,
 
-I want to step back and ask a very fundamental philosophical question
---- who are the intended users of sysfs?  If it exports an interface,
-part of which is known not be stable, except for backwards
-compatibility issues, why and to whom are we exporting them?
+On Sun, Jun 10, 2007 at 09:44:05AM -0000, Thomas Gleixner wrote:
+> From: john stultz <johnstul@us.ibm.com>
+> 
+> After discussing w/ Thomas over IRC, it seems the issue is the sched
+> tick fires on every cpu at the same time, causing extra lock contention.
 
-If the answer is "no one", then maybe modulo backwards compatibility
-issues, we should only export via sysfs those things that are
-guaranteed to be a stable interface.  Or maybe there should be a mount
-option that filters out anything which isn't guaranteed to be stable,
-so that user programs can easily determine if they are using anything
-"bad" --- and then a year or two from now, we make that mount option
-the default, and require a mount option if people want to see the
-unstable bits of sysfs.
+Hmm, the cpu-specific offset calculation isn't too expensive, hopefully?
+(div/mul in patch, maybe this could be done differently)
 
-Way back in 2003, Rusty's OLS keynote talked at great length about
-kernel design and interface similicity as a hallmark of good design:
+And is it granted that the do_div() compiles into a nice plain void
+on non-SMP? Would be good to verify this.
 
-    1. Compiler/linker won't let you get it wrong.
-    2. Compiler will warn if you get it wrong.
-    3. The simplest use is the correct one.
-    4. The name tells you how to use it.
-    5. Do it right or it will break at runtime.
-    6. Follow common convention and you'll get it right.
-    7. Read the documentation and you'll get it right.
-    8. Read the implementation and you'll get it right.
-    9. Read the correct mailing list thread and you'll get it right.
-    10. Read the documentation and you'll get it wrong.
-    11. Follow common convention and you'll get it wrong.
-    12. Do it right and it will break at runtime.
-    13. The name tells you how not to use it.
-    14. The obvious use is wrong.
-    15. Compiler will warn if you get it right.
-    16. Compiler won't let you get it right.
-    17. It's impossible to get right. 
+And calculation order? Do multiply before division to minimize calculation
+error?
+(for a timer tick it probably doesn't matter, however)
+And of course OTOH doing it the other way might lead to overflows...
 
-The documentation is a good step, but wouldn't it be better if we can
-prohibit (or warn) applications who are getting it wrong in the first
-place?  Providing interfaces that aren't stable, and then requiring
-people to read documentation so they know not to use them, seems to be
-providing an attractive nuisance.
+> This smaller change, adds an extra offset per cpu so the ticks don't
+> line up. This patch also drops the idle latency from 40us down to under
+> 20us.
 
-						- Ted
+Very nice, thanks!
+
+> +	/* Get the next period (per cpu)*/
+>  	ts->sched_timer.expires = tick_init_jiffy_update();
+> +	offset = ktime_to_ns(tick_period) >> 1;
+> +	do_div(offset, NR_CPUS);
+> +	offset *= smp_processor_id();
+
+Andreas Mohr
