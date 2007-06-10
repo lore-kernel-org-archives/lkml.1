@@ -1,94 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763574AbXFJU4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXFJVDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763574AbXFJU4U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 16:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbXFJU4J
+	id S1759429AbXFJVDv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 17:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXFJVDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 16:56:09 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:41903 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753831AbXFJU4I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 16:56:08 -0400
-Subject: Re: Rules on how to use sysfs in userspace programs
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070610095643.c1435a74.randy.dunlap@oracle.com>
-References: <20070608203637.GA9259@kroah.com>
-	 <20070610140200.GD9726@thunk.org>
-	 <20070610095643.c1435a74.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Sun, 10 Jun 2007 22:55:47 +0200
-Message-Id: <1181508947.4566.62.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sun, 10 Jun 2007 17:03:42 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:50133 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751399AbXFJVDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 17:03:42 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
+Date: Sun, 10 Jun 2007 15:03:28 -0600
+User-Agent: KMail/1.9.6
+Cc: Samuel Ortiz <samuel@sortiz.org>,
+       "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>,
+       linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com,
+       linux-pcmcia@lists.infradead.org
+References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <20070607204759.GA6809@sortiz.org> <200706101047.12118.arvidjaar@mail.ru>
+In-Reply-To: <200706101047.12118.arvidjaar@mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706101503.29156.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-10 at 09:56 -0700, Randy Dunlap wrote:
-> On Sun, 10 Jun 2007 10:02:00 -0400 Theodore Tso wrote:
+On Sunday 10 June 2007 12:47:07 am Andrey Borzenkov wrote:
+> > Maybe we should also run the legacy probe when the PnP one fails. I
+> > don't know how the preconfiguration stuff will behave with the device
+> > being PnP enabled, but with your patch Andrey will still need to
+> > modprobe smsc-ircc with smsc_nopnp.
 > 
-> > On Fri, Jun 08, 2007 at 01:36:37PM -0700, Greg KH wrote:
-> > > The kernel exported sysfs exports internal kernel implementation-details
-> > > and depends on internal kernel-structures and layout. It is agreed upon
-> > > kernel developers, that the Linux kernel does not provide a stable
-> > > internal API.  As sysfs is a direct export of kernel internal
-> > > structures, the sysfs interface can't provide a stable interface too, it
-> > > may always change along with internal kernel changes.
-> > 
-> > I want to step back and ask a very fundamental philosophical question
-> > --- who are the intended users of sysfs?  If it exports an interface,
-> > part of which is known not be stable, except for backwards
-> > compatibility issues, why and to whom are we exporting them?
+> One thing that makes me uneasy - ideally we have to do it *after* PnP probe 
+> fails. Currently we lie to PnP layer that we successfully probed for device 
+> while in effect we did not (at least, not where PnP told us to).
 > 
-> I agree that stepping back and asking questions is the right thing
-> to do here.
+> > So, here is the patch I propose (I had to move smsc_ircc_legacy_probe()
+> > a bit earlier in the code to avoid forward declaration, but it's
+> > basically your patch plus a call to smsc_ircc_legacy_probe() from the
+> > pnp_probe() routine):
+
+This patch does the legacy probe if PNP says we have an SMCf010, but
+we couldn't make it work.  In that situation, I think we need a PNP
+quirk or other kernel PNP fix.  Ultimately, we should only use the
+legacy probe if we don't have PNP at all.  
+
+But we're a long ways from that.  First, we have to figure out how
+to make PNP detection work at all, then make sure it works for all
+the machines we know about.
+
+> Yes this patch works:
 > 
-> /proc also reports lots of kernel internals, yet it is required
-> to maintain compatibility.
-> 
-> ISTM that sysfs should allow additions, but only in ways that don't
-> break backwards compatibility.  I.e., it should maintain backwards
-> compatible interfaces when new ones are added.  Yeah, that means
-> leave some crud around.  Yes, it may be as bad as /proc, but I've
-> said that for quite awhile.
+> [58674.337465] pnp: Device 00:0a activated.
+> [58674.337465] smsc_ircc_present(), addr 0x02e8 - no device found!
+> [58674.337465] PnP probe failed
+> [58674.340799] Detected unconfigured Toshiba laptop with ALi ISA bridge SMSC 
+> IrDA chip, pre-configuring device.
 
-We try hard to keep the properties of the exported devices and the
-classification directories stable, but sysfs is an one-to-one export of
-the kernels object-model and unfortunately not a list of artificially
-flat files like /proc. I don't see how a tree of directories, directly
-created by a kernel that change that insanely fast, can be kept stable.
+So while this patch works, I don't think it's the right long-term
+direction.
 
-There is also a big difference to /proc: the /sys layout itself can even
-change at runtime, some devices can be renamed, and others move around
-and change their devpath in the tree while they are active. In /sys, the
-_location_ of the information itself is not stable, only if you follow
-some rules how to extract information from the tree, you will be able to
-find it reliably.
+> {pts/1}% lspnp -vv 00:0a
+> 00:0a SMCf010 SMC Fast Infrared Port
+>     state = active
+>     allocated resources:
+>         io 0x100-0x107
+> ...
 
-Users need to follow some rules how to access information in the /sys
-tree, and sure, it is far more complicated than reading /proc. That's
-what this document tries to explain. It tries to document the rules,
-kind of similar to the (simple and intuitive) rule for /proc, that files
-need to be parsed for keys, instead of just assuming that the order of
-information is always the same, or the content of the files always
-contain the same keys.
+> {pts/1}% cat /proc/ioports
+> ...
+> 0100-013f : pcmcia_socket0
+> ...
 
-Sysfs today exports all the completely useless implementation details of
-the kernel. The recent changes, and the work-in-progress to move
-everything into _one_ single device tree (/sys/devices) and _one_
-symlinks-only based classification (/sys/subsystem) should make it much
-easier to keep the same information around, even when things in the
-kernel object-tree keep changing at the current rate. 
+> {pts/1}% sudo cat /sys/class/pcmcia_socket/pcmcia_socket0/available_resources_io
+> 0x00000100 - 0x000003af
+> 0x000003e0 - 0x000004ff
+> 0x00000820 - 0x000008ff
+> 0x00000a00 - 0x00000aff
+> 0x00000c00 - 0x00000cf7
 
-This document just tries to describe the real world today. If you have
-any better idea, on how to export an internal device-tree from a kernel
-that changes every hour and subsystems come and go, get replaced and get
-changed all the time, we are more that happy to improve things here. :)
+It's indeed very interesting that pcmcia_socket0 seems to have its
+fingers in the same ioport range the IR device thinks it's using.
+I don't know much about PCMCIA, but I can see I'm going to have to
+learn something :-)
 
-Thanks,
-Kay
+Can you send me your "lspci -vv" output, the whole /proc/ioports and
+/proc/iomem, and your dmesg log?  And maybe your pcmcia_socket
+available_resources_io and available_resources_mem for good measure.
 
+Bjorn
