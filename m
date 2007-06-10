@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXFJOQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbXFJOWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbXFJOQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 10:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbXFJOQT
+	id S1756121AbXFJOWM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 10:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXFJOV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 10:16:19 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:53358 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754320AbXFJOQS (ORCPT
+	Sun, 10 Jun 2007 10:21:58 -0400
+Received: from smtpgw02.netonehosting.com ([193.192.98.26]:33187 "EHLO
+	smtpgw02.netonehosting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754636AbXFJOV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 10:16:18 -0400
-Date: Sun, 10 Jun 2007 16:16:17 +0200
-From: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [patch-mm 07/23] Tick management: spread timer interrupt
-Message-ID: <20070610141617.GA15173@rhlx01.hs-esslingen.de>
-References: <20070610092437.118387863@inhelltoy.tec.linutronix.de> <20070610092446.625214085@inhelltoy.tec.linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070610092446.625214085@inhelltoy.tec.linutronix.de>
-User-Agent: Mutt/1.4.2.2i
-X-Priority: none
+	Sun, 10 Jun 2007 10:21:57 -0400
+Message-ID: <466C0901.4000405@netone.net.tr>
+Date: Sun, 10 Jun 2007 17:21:53 +0300
+From: Tarkan Erimer <tarkan@netone.net.tr>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: debian developer <debiandev@gmail.com>
+CC: "david@lang.hm" <david@lang.hm>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       greg@kroah.com
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>	 <18026.16739.228277.938421@notabene.brown>	 <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr>	 <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>	 <466BCBBC.90305@netone.net.tr>	 <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
+In-Reply-To: <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-9; format=flowed
+Content-Transfer-Encoding: 7bit
+X-NETONE-MailScanner-Information: Please contact the ISP for more information
+X-NETONE-MailScanner: Found to be clean
+X-NETONE-MailScanner-From: tarkan@netone.net.tr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+debian developer wrote:
+> On 6/10/07, david@lang.hm <david@lang.hm> wrote:
+>> On Sun, 10 Jun 2007, Tarkan Erimer wrote:
+>>
+>> >> >  And maybe another questions should be : How long a copyright 
+>> owner can
+>> >> >  hold the copyright, if died or lost for sometime ? if died, the
+>> >> >  copyright still should be valid or not ? If lost, what the law 
+>> orders at
+>> >> >  this point for copyright holding ?
+>> >>
+>> >>  I believe that in the US it's life + 90 years.
+>> >>
+>> >>  David Lang
+>> > Hmm... Really,it is damn too much time to wait! It's really better 
+>> idea to
+>> > replace the code of this person as said before instead of waiting 
+>> such  90+
+>> > years!
+>>
+>> exactly, however as others are pointing out, there are a lot of active
+>> developers who do not agree with some of the key points of the GPLv3
+>> (including Linus), so until you convince them that the GPLv3 is 
+>> better it
+>
+> Last heard, Linus was quite impressed with the toned down version of
+> the final draft of GPLv3. I think Linus, and other major developers
+> should make their stand on this issue clear so that the kernel
+> community can discuss the future steps.
+Yep, the GPLv3 probably will release around July time. So;luckily, we 
+had very little time to see the final decision about it :-) I hope we 
+should upgrade to GPLv3 and Sun should "Dual License" the OpenSolaris 
+via GPLv3 (or at least,GPLv3 should be CDDL compatible.). So,we should 
+have more fruits (like ZFS,DTrace etc.) ;-)
 
-On Sun, Jun 10, 2007 at 09:44:05AM -0000, Thomas Gleixner wrote:
-> From: john stultz <johnstul@us.ibm.com>
-> 
-> After discussing w/ Thomas over IRC, it seems the issue is the sched
-> tick fires on every cpu at the same time, causing extra lock contention.
 
-Hmm, the cpu-specific offset calculation isn't too expensive, hopefully?
-(div/mul in patch, maybe this could be done differently)
-
-And is it granted that the do_div() compiles into a nice plain void
-on non-SMP? Would be good to verify this.
-
-And calculation order? Do multiply before division to minimize calculation
-error?
-(for a timer tick it probably doesn't matter, however)
-And of course OTOH doing it the other way might lead to overflows...
-
-> This smaller change, adds an extra offset per cpu so the ticks don't
-> line up. This patch also drops the idle latency from 40us down to under
-> 20us.
-
-Very nice, thanks!
-
-> +	/* Get the next period (per cpu)*/
->  	ts->sched_timer.expires = tick_init_jiffy_update();
-> +	offset = ktime_to_ns(tick_period) >> 1;
-> +	do_div(offset, NR_CPUS);
-> +	offset *= smp_processor_id();
-
-Andreas Mohr
