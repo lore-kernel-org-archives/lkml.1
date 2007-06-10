@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbXFJU3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbXFJU3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757127AbXFJU3a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 16:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXFJU3U
+	id S1760570AbXFJU3t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 16:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXFJU3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 16:29:20 -0400
-Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:37834 "HELO
-	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751024AbXFJU3T (ORCPT
+	Sun, 10 Jun 2007 16:29:38 -0400
+Received: from mailrelay100.isp.belgacom.be ([195.238.6.81]:27774 "EHLO
+	mailgate100.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752066AbXFJU3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 16:29:19 -0400
-X-YMail-OSG: eAjTGOYVM1mfrCh1lpIAI2qC.Chp5vjAyjr3daR0cUVeotynLgY1ncLhT46WuwBxv4ohM9PvRg--
-X-RocketYMMF: rancidfat
-Date: Sun, 10 Jun 2007 13:04:51 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-To: david@lang.hm, Pavel Machek <pavel@ucw.cz>
-Cc: Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706100201540.6675@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <700465.32295.qm@web36612.mail.mud.yahoo.com>
+	Sun, 10 Jun 2007 16:29:37 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAGL8a0ZR8MuT/2dsb2JhbACBTg
+Date: Sun, 10 Jun 2007 22:31:47 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH 1/1] Watchdog driver for AT32AP700X devices
+Message-ID: <20070610203147.GB9209@infomag.infomag.iguana.be>
+References: <1181138647434-git-send-email-hcegtvedt@atmel.com> <20070607160910.34d64842.akpm@linux-foundation.org> <1181287407.28296.17.camel@localhost.localdomain> <1181301608.28296.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181301608.28296.44.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Do you want me to fold all five patches? original + fix1 and fix2 +
+> iounmap patches.
 
---- david@lang.hm wrote:
+Th original driver + the 5 fixes have been added to the linux-2.6-watchdog-mm
+git tree. I'll review the driver later this week.
 
-
-> > Yes, and in the process, AA stores compiled regular expressions in
-> > kernel. Ouch. I'll take "each file it's own label" over _that_ any time.
-> 
-> and if each file has it's own label you are going to need regex or similar 
-> to deal with them as well.
-
-Now that you're going to have to explain. Nothing like that 
-on any of the MLS systems I'm familiar with, and I think that
-I know just about all of them.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+Greetings,
+Wim.
