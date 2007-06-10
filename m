@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbXFJNft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbXFJNiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756084AbXFJNft (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 09:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXFJNfm
+	id S1755278AbXFJNiV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 09:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbXFJNiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 09:35:42 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51538 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753338AbXFJNfl (ORCPT
+	Sun, 10 Jun 2007 09:38:14 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58407 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750955AbXFJNiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 09:35:41 -0400
-Date: Sun, 10 Jun 2007 14:40:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Sun, 10 Jun 2007 09:38:14 -0400
+Date: Sun, 10 Jun 2007 15:38:23 +0200
+From: Adrian Bunk <bunk@stusta.de>
 To: Neil Brown <neilb@suse.de>
 Cc: Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070610144023.1cca3ae4@the-village.bc.nu>
+Message-ID: <20070610133823.GB3588@stusta.de>
+References: <466A3EC6.6030706@netone.net.tr> <18026.16739.228277.938421@notabene.brown> <466BBB0B.4050303@netone.net.tr> <18027.50727.190221.80822@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 In-Reply-To: <18027.50727.190221.80822@notabene.brown>
-References: <466A3EC6.6030706@netone.net.tr>
-	<18026.16739.228277.938421@notabene.brown>
-	<466BBB0B.4050303@netone.net.tr>
-	<18027.50727.190221.80822@notabene.brown>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But I think this is largely academic.  You only need a fairly small
-> number of fairly significant contributors to say "no" and the rest of
-> the process would be pointless.  And at last count, the number of
-> kernel people who were not keen on GPLv3 was fairly high.  Of course
-> no-one knows for certain yet what the final GPLv3 will be, and maybe
-> lots of people would change their mind when it comes out.
+On Sun, Jun 10, 2007 at 07:36:39PM +1000, Neil Brown wrote:
+>...
+> And I wouldn't be surprised if there were some legal precedent that
+> allowed for some process whereby we could make a "best effort" to
+> contact copyright holders (including registered paper letters and
+> entries in the "Public Notices" section of major newspapers) and if
+> no-one stepped forward to claim copyright in a reasonable period of
+> time we could assume that the copyright had lapsed.  But you would
+> need to ask a lawyer, and it would be different in different
+> countries.
+>...
 
-You can take a fair bet someone will say no, or much more likely they or
-whoever inherited their copyright will say $50,000
+A legal precedent valid in all jurisdictions?
+
+Harald suceessfully takes legal actions against people violating his 
+copyright on the Linux kernel under the terms of the GPL in Germany at 
+German courts based on German laws.
+
+If someone finds any legal precedent in Finland or the USA or Russia 
+that some copyright would have lapsed for some reason, would this have 
+any legal effect in Germany?
+
+> NeilBrown
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
