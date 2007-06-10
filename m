@@ -1,76 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbXFJO2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbXFJOau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758835AbXFJO2p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 10:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbXFJO2i
+	id S1757911AbXFJOau (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 10:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXFJOam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 10:28:38 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:65109 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbXFJO2h (ORCPT
+	Sun, 10 Jun 2007 10:30:42 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:58518 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751024AbXFJOal (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 10:28:37 -0400
-Message-Id: <466C09C5.80803@ds.jp.nec.com>
-Date: Sun, 10 Jun 2007 23:25:09 +0900
-From: IKEDA Munehiro <m-ikeda@ds.jp.nec.com>
-User-Agent: Mozilla Thunderbird 1.0.2 (Windows/20050317)
-X-Accept-Language: ja, en-us, en
+	Sun, 10 Jun 2007 10:30:41 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Sun, 10 Jun 2007 16:30:53 +0200
+User-Agent: KMail/1.9.7
+Cc: Neil Brown <neilb@suse.de>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org
+References: <466A3EC6.6030706@netone.net.tr> <18027.50727.190221.80822@notabene.brown> <20070610133823.GB3588@stusta.de>
+In-Reply-To: <20070610133823.GB3588@stusta.de>
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Tsugikazu Shibata <tshibata@ab.jp.nec.com>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de
-Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com>
-In-Reply-To: <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart1437318.yyJ7ayFFi2";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200706101630.53733.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1181485841;8c022d06;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
->> - Character encoding is ISO-2022-JP, which is normally used for email
->>   using Japanese.
-> 
-> 
-> I think there's consensus that documents in the kernel source should
-> be either plain ASCII or UTF-8 (doesn't UTF-8 work for japanese?).
+--nextPart1437318.yyJ7ayFFi2
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Oh really?
-UTF-8 works even for Japanese.  Thank you and Jan for the suggestion.
+[legal precedence to force waiving copyright>=20
 
-> If we start adding translated versions of documentation to the kernel
-> source how should we organize the documents? Should each language get
-> a sepperate directory in Documentation/ - like Documentation/JP/,
-> Documentation/EN/, Documentation/DA/ etc?
-> 
-> With multiple translated versions of the documentation in the tree,
-> don't we run the risk that the translations will quickly become
-> outdated since most people updating the documentation won't be able to
-> update the translations?
-> 
-> Since the common language of most kernel contributors is english I
-> personally feel that we should stick to just that one language in the
-> tree and then perhaps keep translations on a website somewhere. So the
-> authoritative docs stay in the tree, in english, so that as many
-> contributors as possible can read and update them. It would then be a
-> seperate project to generate translations and keep them updated
-> according to what's in the tree.  Perhaps we could get the kernel.org
-> people to create an official space for that and then place a pointer
-> to that site in Documentation/ somewhere.
+> A legal precedent valid in all jurisdictions?
+>=20
+> Harald suceessfully takes legal actions against people violating his=20
+> copyright on the Linux kernel under the terms of the GPL in Germany at=20
+> German courts based on German laws.
+>=20
+> If someone finds any legal precedent in Finland or the USA or Russia=20
+> that some copyright would have lapsed for some reason, would this have=20
+> any legal effect in Germany?
 
-Yes, that's the point.
+That is difficult but AFAIK it work in the "increase protection"
+direction but not the other way around, at least in germany.
 
-At least for Japanese, there is a great activity "JF" as Tsugikazu 
-Shibata mentioned.  It is a separate project from the tree, and it often 
-happens that some documentations are outdated.  If we could merge them, 
-they could be kept up-to-date IMHO.
-But, on the other hand, it is fact that kernel tar ball would bloat.
+=46or example even though the copyright on Micky Mouse is no longer
+valid by german law it is still enforcible under german law because
+the german jurisdiction does acknowledge the (recently extended)
+longer such period in the US.
 
-Your opinion above as "creating official space in kernel.org and putting 
-pointer in Documentation" seems good for me.
+Apart from that I'm sure you'd find some state "legally" waiving a
+copyright on whatever. If that would start an avalanche of similar
+terminations everywhere else I'd be utterly surprised.
 
-Hmm...
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=C3=A4ftsf=C3=BChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
 
---
-IKEDA, Munehiro
+--nextPart1437318.yyJ7ayFFi2
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGbAsdUYYhyuxDQc4RAl95AKCUtut6XaaMPTrQAVxObBZVkOg6swCgjK6D
+rHwkVk0TKZvPtDVLPAwbaP4=
+=gxI7
+-----END PGP SIGNATURE-----
+
+--nextPart1437318.yyJ7ayFFi2--
