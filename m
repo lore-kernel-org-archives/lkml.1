@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbXFJTWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763306AbXFJTWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762235AbXFJTWV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 15:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbXFJTWM
+	id S1763306AbXFJTWw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 15:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbXFJTWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 15:22:12 -0400
-Received: from 1wt.eu ([62.212.114.60]:2968 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755437AbXFJTWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 15:22:11 -0400
-Date: Sun, 10 Jun 2007 21:20:16 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-       akpm@osdl.org, Sam Ravnborg <sam@ravnborg.org>,
-       John Stoffel <john@stoffel.org>, David Woodhouse <dwmw2@infradead.org>,
-       Jamie Lokier <jamie@shareable.org>,
-       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       David Weinehall <tao@acc.umu.se>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Albert Cahalan <acahalan@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Roland Dreier <rdreier@cisco.com>,
-       Ondrej Zajicek <santiago@crfreenet.org>,
-       Ulisses Furquim <ulissesf@gmail.com>
-Subject: Re: [Patch 15/18] fs/logfs/super.c
-Message-ID: <20070610192016.GB5755@1wt.eu>
-References: <20070603183845.GA8952@lazybastard.org> <200706101827.50948.arnd@arndb.de> <20070610173828.GA32619@lazybastard.org> <200706102033.11211.arnd@arndb.de> <20070610191015.GC32619@lazybastard.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 10 Jun 2007 15:22:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:55134 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755726AbXFJTWn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 15:22:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O9H9neU7UmFfOm1yr3FLzaABVk87n7tCN6YIh59gtZ1ewEcfmfOi9RSTxo5qERf+Y+2A1sjB+p8cCBbLQFDapWoLHXBRWihI7B5/sria25/fK/QdHllgyzg2ZnKV0Y2xK6di8iEJUq6qOnIJMfWpEJODR1aZP90G+DZHRgicd0k=
+Message-ID: <f24d23310706101222y6fb527cckf1d0f7ba78aa3254@mail.gmail.com>
+Date: Mon, 11 Jun 2007 00:52:41 +0530
+From: "debian developer" <debiandev@gmail.com>
+To: "Tarkan Erimer" <tarkan@netone.net.tr>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "david@lang.hm" <david@lang.hm>, linux-kernel@vger.kernel.org
+In-Reply-To: <466C0901.4000405@netone.net.tr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070610191015.GC32619@lazybastard.org>
-User-Agent: Mutt/1.5.11
+References: <466A3EC6.6030706@netone.net.tr>
+	 <18026.16739.228277.938421@notabene.brown>
+	 <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr>
+	 <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	 <466BCBBC.90305@netone.net.tr>
+	 <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
+	 <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
+	 <466C0901.4000405@netone.net.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 10, 2007 at 09:10:15PM +0200, Jörn Engel wrote:
- 
-> I don't think logfs on block devices makes too much sense yet, so my
-> personal priority for this is low.  Still, an obvious improvement.
-
-I see it as a good candidate to replace JFFS2 on CompactFlash. That
-one is becoming painfully slow with nowadays' smallest devices (around
-64..128 MB). But since it considerably reduces the number of writes,
-and it can transparently compress, it's still worth using it in some
-environments.
-
-Regards,
-Willy
-
+On 6/10/07, Tarkan Erimer <tarkan@netone.net.tr> wrote:
+> debian developer wrote:
+> > On 6/10/07, david@lang.hm <david@lang.hm> wrote:
+> >> On Sun, 10 Jun 2007, Tarkan Erimer wrote:
+> >>
+> >> >> >  And maybe another questions should be : How long a copyright
+> >> owner can
+> >> >> >  hold the copyright, if died or lost for sometime ? if died, the
+> >> >> >  copyright still should be valid or not ? If lost, what the law
+> >> orders at
+> >> >> >  this point for copyright holding ?
+> >> >>
+> >> >>  I believe that in the US it's life + 90 years.
+> >> >>
+> >> >>  David Lang
+> >> > Hmm... Really,it is damn too much time to wait! It's really better
+> >> idea to
+> >> > replace the code of this person as said before instead of waiting
+> >> such  90+
+> >> > years!
+> >>
+> >> exactly, however as others are pointing out, there are a lot of active
+> >> developers who do not agree with some of the key points of the GPLv3
+> >> (including Linus), so until you convince them that the GPLv3 is
+> >> better it
+> >
+> > Last heard, Linus was quite impressed with the toned down version of
+> > the final draft of GPLv3. I think Linus, and other major developers
+> > should make their stand on this issue clear so that the kernel
+> > community can discuss the future steps.
+> Yep, the GPLv3 probably will release around July time. So;luckily, we
+> had very little time to see the final decision about it :-) I hope we
+> should upgrade to GPLv3 and Sun should "Dual License" the OpenSolaris
+> via GPLv3 (or at least,GPLv3 should be CDDL compatible.). So,we should
+> have more fruits (like ZFS,DTrace etc.) ;-)
+>
+>
+>
+I don't think that upgrading to GPLv3 just for the sake of tools
+present in some other software should be the reason. We are capable
+enough of developing our own tools, and many experienced people are
+working on equivalent(etx4 etc.,) and much sophisticated tools for the
+linux kernel.
