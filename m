@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763330AbXFJUFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbXFJUIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763330AbXFJUFT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 16:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758841AbXFJUFH
+	id S1763463AbXFJUIr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 16:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXFJUIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 16:05:07 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:54207 "EHLO atlrel9.hp.com"
+	Sun, 10 Jun 2007 16:08:39 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:59280 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758785AbXFJUFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 16:05:05 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: 2.6.22-rc: regression: no irda0 interface (2.6.21 was OK), smsc does not find chip
-Date: Sun, 10 Jun 2007 14:04:52 -0600
-User-Agent: KMail/1.9.6
-Cc: "Linus Walleij (LD/EAB)" <linus.walleij@ericsson.com>,
-       "Samuel Ortiz" <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>, ambx1@neo.rr.com
-References: <A6D19A13FE030A409EC4362C172E091F016F51AF@eseldmw101.eemea.ericsson.se> <200706071234.47517.bjorn.helgaas@hp.com> <200706101203.04649.arvidjaar@mail.ru>
-In-Reply-To: <200706101203.04649.arvidjaar@mail.ru>
+	id S1756819AbXFJUIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 16:08:38 -0400
+Date: Sun, 10 Jun 2007 22:06:54 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Folkert van Heusden <folkert@vanheusden.com>
+cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Andrea Righi <righiandr@users.sourceforge.net>, Andi Kleen <ak@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
+In-Reply-To: <20070610195333.GB15616@vanheusden.com>
+Message-ID: <Pine.LNX.4.64.0706102200400.23280@twin.jikos.cz>
+References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr>
+ <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de>
+ <46517817.1080208@users.sourceforge.net> <20070521110406.GA14802@vanheusden.com>
+ <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr> <20070521124734.GB14802@vanheusden.com>
+ <a781481a0705231100q333a589at6c025eb1292019cd@mail.gmail.com>
+ <20070523184535.GE21655@vanheusden.com> <20070610195333.GB15616@vanheusden.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706101404.53083.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 10 June 2007 02:03:03 am Andrey Borzenkov wrote:
-> > Can you set CONFIG_ACPI_DEBUG=y, make it so smsc-ircc2 isn't loaded
-> > automatically, and try this (along with my previous patch to swap
-> > FIR and SIR):
-> >
-> >   # dmesg -n 8
-> >   # echo 0x200 > /sys/module/acpi/parameters/debug_level
-> >   # echo disable > /sys/bus/pnp/devices/00:0a/resources
-> >   # echo activate > /sys/bus/pnp/devices/00:0a/resources
-> >   # modprobe smsc-ircc2
-> >
-> > If you try this, can you collect the whole dmesg log?
-> 
-> well, dmesg (/var/log/messages) is around 35MB :) Even bz2 compressed it is 
-> over 700KB. I put it here: 
-> http://dump.ru:80/loadfile.php?filename=fir_acpi_debug.bz2&id=379192 
-> 
-> This is from /var/log/messages. I do not have serial console and cannot 
-> capture output directly; I can only hope nothing is lost at this rate.
+On Sun, 10 Jun 2007, Folkert van Heusden wrote:
 
-Wow, that is big :-)
+> Signed-of by: Folkert van Heusden <folkert@vanheusden.com
 
-I guess smsc-ircc2 still didn't find the device, so you got
-something like this:
+This looks broken BTW.
 
-  smsc_ircc_present(), addr 0x02e8 - no device found!
+> +			printk(KERN_INFO "Sig %d sent to %d owned by %d.%d (%s), sent by pid %d, uid %d\n",
+> +				sig, t->pid, t->uid, t->gid, t->comm,
+> +				info -> _sifields._kill._pid,
+> +				info -> _sifields._kill._uid);
 
-Right?
+Am I the only one whose eyes are hurt by these spaces?
 
-I'm out of ideas, and I don't want to waste more of your time on
-this.  I'm going to try to find a Portege 4000 to play with myself.
-That might take a few days, and I'm going to be out of the office
-from June 20-July 9, so I'm afraid it will be slow.  But I *will*
-fix it!
-
-Bjorn
-
+-- 
+Jiri Kosina
