@@ -1,38 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbXFJU3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbXFJUh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760570AbXFJU3t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 16:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXFJU3i
+	id S1759626AbXFJUh2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 16:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXFJUhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 16:29:38 -0400
-Received: from mailrelay100.isp.belgacom.be ([195.238.6.81]:27774 "EHLO
-	mailgate100.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752066AbXFJU3h (ORCPT
+	Sun, 10 Jun 2007 16:37:17 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:20690 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbXFJUhQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 16:29:37 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAGL8a0ZR8MuT/2dsb2JhbACBTg
-Date: Sun, 10 Jun 2007 22:31:47 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Hans-Christian Egtvedt <hcegtvedt@atmel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH 1/1] Watchdog driver for AT32AP700X devices
-Message-ID: <20070610203147.GB9209@infomag.infomag.iguana.be>
-References: <1181138647434-git-send-email-hcegtvedt@atmel.com> <20070607160910.34d64842.akpm@linux-foundation.org> <1181287407.28296.17.camel@localhost.localdomain> <1181301608.28296.44.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181301608.28296.44.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 10 Jun 2007 16:37:16 -0400
+Date: Sun, 10 Jun 2007 22:37:14 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jiri Kosina <jikos@jikos.cz>
+cc: Folkert van Heusden <folkert@vanheusden.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrea Righi <righiandr@users.sourceforge.net>, Andi Kleen <ak@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
+In-Reply-To: <Pine.LNX.4.64.0706102200400.23280@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.64.0706102236380.3561@fbirervta.pbzchgretzou.qr>
+References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr>
+ <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de>
+ <46517817.1080208@users.sourceforge.net> <20070521110406.GA14802@vanheusden.com>
+ <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr> <20070521124734.GB14802@vanheusden.com>
+ <a781481a0705231100q333a589at6c025eb1292019cd@mail.gmail.com>
+ <20070523184535.GE21655@vanheusden.com> <20070610195333.GB15616@vanheusden.com>
+ <Pine.LNX.4.64.0706102200400.23280@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Do you want me to fold all five patches? original + fix1 and fix2 +
-> iounmap patches.
 
-Th original driver + the 5 fixes have been added to the linux-2.6-watchdog-mm
-git tree. I'll review the driver later this week.
+On Jun 10 2007 22:06, Jiri Kosina wrote:
+>On Sun, 10 Jun 2007, Folkert van Heusden wrote:
+>
+>> Signed-of by: Folkert van Heusden <folkert@vanheusden.com
+>
+>This looks broken BTW.
+>
+>> +			printk(KERN_INFO "Sig %d sent to %d owned by %d.%d (%s), sent by pid %d, uid %d\n",
+>> +				sig, t->pid, t->uid, t->gid, t->comm,
+>> +				info -> _sifields._kill._pid,
+>> +				info -> _sifields._kill._uid);
+>
+>Am I the only one whose eyes are hurt by these spaces?
 
-Greetings,
-Wim.
+They were discussed before already. And they were fixed up (t->uid...).
+And now new ones got added. Ergh.
+
+
+
+	Jan
+-- 
