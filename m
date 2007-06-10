@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbXFJCk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbXFJCmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758689AbXFJCk7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 22:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbXFJCkv
+	id S1759500AbXFJCmR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 22:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbXFJCmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 22:40:51 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39921 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbXFJCkv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 22:40:51 -0400
-Date: Sun, 10 Jun 2007 03:40:44 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Ulrich Drepper <drepper@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-Message-ID: <20070610024044.GB21478@ftp.linux.org.uk>
-References: <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com> <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com> <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com> <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com> <20070609172429.GF4095@ftp.linux.org.uk> <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com>
-User-Agent: Mutt/1.4.1i
+	Sat, 9 Jun 2007 22:42:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35831 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753666AbXFJCmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 22:42:07 -0400
+Message-ID: <466B64FC.1090509@garzik.org>
+Date: Sat, 09 Jun 2007 22:42:04 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Olof Johansson <olof@lixom.net>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] [2.6.22] libata: fix probe time irq printouts
+References: <20070603233510.GA25750@lixom.net>
+In-Reply-To: <20070603233510.GA25750@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 09, 2007 at 03:27:43PM -0400, Kyle Moffett wrote:
-> SCENARIO 1:
+Olof Johansson wrote:
+> Most drivers don't seem to fill out the host->irq field, resulting in the
+> wrong (no) irq being reported at probe time. For example, sil24 on my system:
 > 
-> Program Thread:   Library Thread:
->                   fd = socket(AF_*, SOCK_*, 0);
-> fork();
->                   int x = FD_CLOEXEC;
->                   fcntl(fd, F_SETFD, &x);
+> ata1: SATA max UDMA/100 cmd 0xd00008009001f000 ctl 0x0000000000000000 bmdma 0x0000000000000000 irq 0
+> ata2: SATA max UDMA/100 cmd 0xd000080090021000 ctl 0x0000000000000000 bmdma 0x0000000000000000 irq 0
+> 
+> Since they're allocated and set up in ata_host_activate(), just save
+> them away there.
+> 
+> 
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> 
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index af62514..7491b11 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -6438,6 +6438,9 @@ int ata_host_activate(struct ata_host *host, int irq,
+>  	if (rc)
+>  		devm_free_irq(host->dev, irq, host);
+>  
+> +	/* Used to print device info at probe */
+> +	host->irq = irq;
+> +
 
-BTW, regardless of anything else, in such situation this "library
-thread" would be better off by just having independent descriptors.
-We _can_ do that just fine.
+applied, thanks for fixing that
 
-That is, if library code using such stuff would be OK with being a thread.
-Any specific examples one way or another?
+
