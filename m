@@ -1,62 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbXFLOlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbXFLOmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbXFLOlv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 10:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbXFLOlT
+	id S1755689AbXFLOmP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 10:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbXFLOlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 10:41:19 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:37074 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753517AbXFLOlO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 10:41:14 -0400
-Date: Tue, 12 Jun 2007 08:40:32 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: allocation failed: out of vmalloc space - use vmalloc=<size> to
- increase size.
-In-reply-to: <fa.VH1FnGj5K9OwLz/eErQti4itl2k@ifi.uio.no>
-To: Jon Dufresne <jon.dufresne@infinitevideocorporation.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Message-id: <466EB060.5040708@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.VH1FnGj5K9OwLz/eErQti4itl2k@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 12 Jun 2007 10:41:23 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1309 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753314AbXFLOlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 10:41:21 -0400
+Date: Sun, 10 Jun 2007 18:43:48 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: David Greaves <david@dgreaves.com>
+Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+Message-ID: <20070610184348.GA4417@ucw.cz>
+References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46680F5E.6070806@dgreaves.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Dufresne wrote:
-> I am writing a linux kernel driver for a custom pci device. I am
-> developing against the stock fedora 6 kernel on an x86. This device has
-> 512 MB of IO memory reserved by BAR 3. Whenever I try to ioremap this
-> space I get the error:
-> 
-> allocation failed: out of vmalloc space - use vmalloc=<size> to increase
-> size.
-> 
-> I think I understand why this is happening. I obviously don't have
-> enough vmalloc space to map such a large chunk of memory. I have been
-> using Corbet's et el's "Linux Device Drivers", Love's "Linux Kernel
-> Development", and many websites as a guide in this development process
-> but have yet to come across information that will help me.
-> 
-> I'm curious if there is a way around this issue. Or a better way of
-> handling it so that I can properly map the entire io memory space.
+Hi!
 
-On an i386 kernel you likely just don't have enough address space 
-available to map something that big. Your kernel address space is only 
-1GB (with the standard 3G/1G user/kernel split) and it somehow has to 
-fit in there along with all the other I/O regions, etc. that are mapped 
-into kernel address space.
+> >On Thu, Jun 07, 2007 at 11:30:05AM +0100, David Greaves 
+> >wrote:
+> >>Tejun Heo wrote:
+> >>>Hello,
+> >>>
+> >>>David Greaves wrote:
+> >>>>Just to be clear. This problem is where my system 
+> >>>>won't resume after s2d
+> >>>>unless I umount my xfs over raid6 filesystem.
+> >>>This is really weird.  I don't see how xfs mount can 
+> >>>affect this at all.
+> >>Indeed.
+> >>It does :)
+> >
+> >Ok, so lets determine if it really is XFS.
+> Seems like a good next step...
+> 
+> >Does the lockup happen with a
+> >different filesystem on the md device? Or if you can't 
+> >test that, does
+> >any other XFS filesystem you have show the same problem?
+> It's a rather full 1.2Tb raid6 array - can't reformat it 
+> - sorry :)
+> I only noticed the problem when I umounted the fs during 
+> tests to prevent corruption - and it worked. I'm doing a 
+> sync each time it hibernates (see below) and a couple of 
+> paranoia xfs_repairs haven't shown any problems.
+> 
+> I do have another xfs filesystem on /dev/hdb2 (mentioned 
+> when I noticed the md/XFS correlation). It doesn't seem 
+> to have/cause any problems.
+> 
+> >If it is xfs that is causing the problem, what happens 
+> >if you
+> >remount read-only instead of unmounting before shutting 
+> >down?
+> Yes, I'm happy to try these tests.
+> nb, the hibernate script is:
+> ethtool -s eth0 wol g
+> sync
+> echo platform > /sys/power/disk
+> echo disk > /sys/power/state
+> 
+> So there has always been a sync before any hibernate.
+> 
+> 
+> cu:~# mount -oremount,ro /huge
+> cu:~# mount
+> /dev/hda2 on / type xfs (rw)
+> proc on /proc type proc (rw)
+> sysfs on /sys type sysfs (rw)
+> usbfs on /proc/bus/usb type usbfs (rw)
+> tmpfs on /dev/shm type tmpfs (rw)
+> devpts on /dev/pts type devpts (rw,gid=5,mode=620)
+> nfsd on /proc/fs/nfsd type nfsd (rw)
+> /dev/hda1 on /boot type ext3 (rw)
+> /dev/md0 on /huge type xfs (ro)
+> /dev/hdb2 on /scratch type xfs (rw)
+> tmpfs on /dev type tmpfs (rw,size=10M,mode=0755)
+> rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs 
+> (rw)
+> cu:(pid2862,port1022) on /net type nfs 
+> (intr,rw,port=1022,toplvl,map=/usr/share/am-utils/amd.net,noac)
+> elm:/space on /amd/elm/root/space type nfs 
+> (rw,vers=3,proto=tcp)
+> elm:/space-backup on /amd/elm/root/space-backup type nfs 
+> (rw,vers=3,proto=tcp)
+> elm:/usr/src on /amd/elm/root/usr/src type nfs 
+> (rw,vers=3,proto=tcp)
+> cu:~# /usr/net/bin/hibernate
+> [this works and resumes]
+> 
+> cu:~# mount -oremount,rw /huge
+> cu:~# /usr/net/bin/hibernate
+> [this works and resumes too !]
+> 
+> cu:~# touch /huge/tst
+> cu:~# /usr/net/bin/hibernate
+> [but this doesn't even hibernate]
 
-You may just have to remap smaller chunks of the BAR on demand and unmap 
-them when you're finished with them.
+This is very probably separate problem... and you should have enough
+data in dmesg to do something with it.
 
-An x86_64 kernel likely would not have this problem..
+							Pavel
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
