@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761924AbXFJDgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761784AbXFJDtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761924AbXFJDgQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 23:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759308AbXFJDgE
+	id S1761784AbXFJDtj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 23:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759401AbXFJDtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 23:36:04 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1233 "EHLO
+	Sat, 9 Jun 2007 23:49:31 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4287 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758481AbXFJDgD (ORCPT
+	with ESMTP id S1758603AbXFJDta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 23:36:03 -0400
+	Sat, 9 Jun 2007 23:49:30 -0400
 X-AuthUser: davidel@xmailserver.org
-Date: Sat, 9 Jun 2007 20:35:55 -0700 (PDT)
+Date: Sat, 9 Jun 2007 20:49:28 -0700 (PDT)
 From: Davide Libenzi <davidel@xmailserver.org>
 X-X-Sender: davide@alien.or.mcafeemobile.com
 To: Linus Torvalds <torvalds@linux-foundation.org>
@@ -22,14 +22,15 @@ cc: Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <alpine.LFD.0.98.0706091623090.20321@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706092033220.23139@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0706092033220.23139@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0706092047270.23139@alien.or.mcafeemobile.com>
 References: <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com>
  <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com>
  <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com>
  <20070609172429.GF4095@ftp.linux.org.uk> <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com>
  <20070609200645.GG4095@ftp.linux.org.uk> <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
  <20070609204907.GH4095@ftp.linux.org.uk> <alpine.LFD.0.98.0706091623090.20321@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706092033220.23139@alien.or.mcafeemobile.com>
 X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
 X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
@@ -37,23 +38,27 @@ Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007, Linus Torvalds wrote:
+On Sat, 9 Jun 2007, Davide Libenzi wrote:
 
-> On Sat, 9 Jun 2007, Al Viro wrote:
+> On Sat, 9 Jun 2007, Linus Torvalds wrote:
+> 
+> > On Sat, 9 Jun 2007, Al Viro wrote:
+> > > 
+> > > Eww...  Idea of pipe(2) taking flags as argument...
 > > 
-> > Eww...  Idea of pipe(2) taking flags as argument...
+> > Right. That was one of the patches, and it was one that I said was too 
+> > damn ugly to live.
+> > 
+> > So I instead suggested the alternate approach of adding a single new 
+> > system call that runs another system call indirectly, with a set of flags 
+> > and/or other behaviour modifications.
 > 
-> Right. That was one of the patches, and it was one that I said was too 
-> damn ugly to live.
-> 
-> So I instead suggested the alternate approach of adding a single new 
-> system call that runs another system call indirectly, with a set of flags 
-> and/or other behaviour modifications.
+> What if we put a data section in the vdso and we let userspace set the 
+> flags or whatever in there? Syslets could use one of those bits to set the 
+> "threadlet mode" w/out calling a syscall at all.
+> In that way we have no new syscalls whatsoever. No?
 
-What if we put a data section in the vdso and we let userspace set the 
-flags or whatever in there? Syslets could use one of those bits to set the 
-"threadlet mode" w/out calling a syscall at all.
-In that way we have no new syscalls whatsoever. No?
+Uhh, never mind :) That won't work in the vdso. Maybe in a TLS area.
 
 
 - Davide
