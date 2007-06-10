@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762085AbXFJGsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762445AbXFJGs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762085AbXFJGsp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 02:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759394AbXFJGsi
+	id S1762445AbXFJGs6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 02:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759496AbXFJGsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 02:48:38 -0400
-Received: from ozlabs.org ([203.10.76.45]:45641 "EHLO ozlabs.org"
+	Sun, 10 Jun 2007 02:48:39 -0400
+Received: from ozlabs.org ([203.10.76.45]:45643 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759108AbXFJGsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759205AbXFJGsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 10 Jun 2007 02:48:37 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18027.39295.464374.371664@cargo.ozlabs.ibm.com>
-Date: Sun, 10 Jun 2007 16:26:07 +1000
+Message-ID: <18027.40637.672203.14305@cargo.ozlabs.ibm.com>
+Date: Sun, 10 Jun 2007 16:48:29 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
        Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <Pine.LNX.4.64.0706090942210.14037@alien.or.mcafeemobile.com>
+In-Reply-To: <463C79D8-88CB-492A-96FD-10C10D16C4B6@mac.com>
 References: <466741BD.20106@redhat.com>
 	<20070607110432.73be7960@the-village.bc.nu>
 	<B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com>
@@ -38,49 +38,46 @@ References: <466741BD.20106@redhat.com>
 	<20070608140150.6f31672f@the-village.bc.nu>
 	<Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
 	<18026.15766.574693.200636@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0706090942210.14037@alien.or.mcafeemobile.com>
+	<463C79D8-88CB-492A-96FD-10C10D16C4B6@mac.com>
 X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi writes:
+Kyle Moffett writes:
 
-> > Why must everything that makes things a bit simpler and more
-> > predictable for application programmers be called a "mistake"?
+> 1)  Linear FD allocation makes it IMPOSSIBLE for libraries to  
+> reliably use persistent FDs behind an application's back.  For  
+
+That's not completely true; for example, openlog() opens a file
+descriptor for the library's own use, as does sethostent().  I agree
+that it creates difficulties if the library implementor wants to use a
+file descriptor in a set of functions that didn't previously use one,
+but with a bit of assistance from the kernel, that can be solved
+without breaking the ABI.
+
+> for (i = 0; i < NR_OPEN; i++)
+> 	if (!fd_is_special_to_us(i))
+> 		close(i);
 > 
-> Because if you give guarantees on something, ppl start using such 
-> guarantee in the wrong way. Kyle's email summarizes it.
+> Note that this is conceptually buggy, but occurs in several major C  
+> programming books, most of the major shells, and a lot of other  
+> software to boot.
 
-OK, my question/protest was a bit terse.
+Buggy in what way?  In the use of the NR_OPEN constant?
 
-What I am objecting to is this idea that many kernel developers seem
-to have, that if there is some aspect of the kernel/user API that
-becomes a bit inconvenient for the kernel to implement, then we can
-put the blame on the applications that rely on that aspect, call them
-names such as "legacy", "abuser", "conceptually buggy", "broken",
-etc., and ultimately justify breaking the ABI -- since it's only those
-applications that we have demonised that will be affected, after all.
+> 3) In order to allocate new FDs, the kernel has to scan over a  
+> (potentially very large) bitmap.  A process with 100,000 fds (not  
+> terribly uncommon) would have 12.5kbyte of FD bitmap and would trash  
+> the cache every time it tried to allocate an FD.
 
-In a way your response quoted above illustrates this perfectly.  If we
-give guarantees then people will start relying on them "in the wrong
-way" -- meaning, in any way that later becomes inconvenient to us.
-What next?  Shall we break the guarantee that when read() returns, the
-data is already in the user's buffer?  I'm sure we could improve
-performance if we didn't have to give that guarantee, and after all,
-only old, broken, legacy, conceptually buggy programs would be abusing
-the interface by relying on that. :)
+For specialized programs like that we can offer alternative fd
+allocation strategies if necessary (although I expect that with
+100,000 fds other things will limit performance more than
+allocation).
 
-> This should really be treated as an opaque handle, with no assumption on 
-> its value.
-
-No.  This is an assertion that you have just conjured up to suit
-yourself, but it is wrong.  It does not reflect either historical UNIX
-practice or what is specified in POSIX.  Application writers are
-perfectly justified in relying on getting the lowest-numbered unused
-file descriptor.
-
-If you don't think we should be bound by POSIX, then you are perfectly
-free to go off and write your own research kernel with whatever
-interface you want, and no programs available to run on it. :)
+None of those things is an excuse for breaking the ABI, however.
+As I said to Davide, I was really protesting about the attitude that
+we can just break the ABI however and whenever we like and force
+programs to adapt.
 
 Paul.
