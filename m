@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbXFJUmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761269AbXFJUod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760448AbXFJUmu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 16:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXFJUmn
+	id S1761269AbXFJUod (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 16:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbXFJUo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 16:42:43 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4638 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbXFJUmn (ORCPT
+	Sun, 10 Jun 2007 16:44:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:52048 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbXFJUoZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 16:42:43 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Simon Arlott" <simon@fire.lp0.eu>, <jengelh@computergmbh.de>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Sun, 10 Jun 2007 13:42:35 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKEELKEHAC.davids@webmaster.com>
+	Sun, 10 Jun 2007 16:44:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=W40JIrQJfhTyMvIKzMhrsVgj5c9g7tNBaVXYLZ2sIyQadOMarkSgn4kpHocrxE+Ez7e2w94dxRE3iugGGX3MEQ+2JMXtabz6JqnQok9i0rO0YDK6fS+YJCJZyRcEOVkxxQF3i8H0ywrRCBWMlLUDOUxjRnalVvTJ1T8Fy+syfYs=
+Message-ID: <5bdc1c8b0706101344o78d202dcx5cfdaea0fd73ddf7@mail.gmail.com>
+Date: Sun, 10 Jun 2007 13:44:21 -0700
+From: "Mark Knecht" <markknecht@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.21-rt9 - IRQ23 consuming a steady 2.7% of CPU
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Lee Revell" <rlrevell@gmail.com>
+In-Reply-To: <20070610180745.GA14912@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <Pine.LNX.4.64.0706101307060.8723@fbirervta.pbzchgretzou.qr>
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sun, 10 Jun 2007 13:42:59 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sun, 10 Jun 2007 13:43:02 -0700
+Content-Disposition: inline
+References: <5bdc1c8b0706100946k3acd6374uac8248e78f97433d@mail.gmail.com>
+	 <20070610172452.GA7560@elte.hu>
+	 <5bdc1c8b0706101038q2f0e3418t1a595e749b5bfe71@mail.gmail.com>
+	 <20070610180745.GA14912@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> http://www.eweek.com/article2/0,1759,1915720,00.asp
-> has the answer. Quoting Linus:
+On 6/10/07, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> "If you want to license a program under any later version of the
-> GPL, you have
-> to state so explicitly. Linux never did."
+> * Mark Knecht <markknecht@gmail.com> wrote:
 >
-> Hence, unless there's a "GPL 2 or later", all the "unspecified GPL" files
-> are GPL2 only.
+> >   GMail is being kranky. Can you please send the patch as a zipped
+> >   attachment?
+>
+> you can pick it up from:
+>
+>    http://people.redhat.com/mingo/realtime-preempt/testing/forcedeth-rt-tweak.patch
+>
+>         Ingo
+>
 
-The GPL states the default position:
+Hi Ingo,
+   Yep, that solved it on my machine. I did have to patch using 'patch
+-p1 -R' I think that's because the paths in your patch file are maybe
+based on your work setup? I don't know. I'm amazed most of the time
+that I can even do this stuff but with your help it seems to work out.
+Thanks.
 
-"If the Program does not specify a version number of this License, you may
-choose any version ever published by the Free Software Foundation."
+   Anyway, top no longer reports the 2.7% CPU usage from IRQ23. I do
+see a little bit of CPU  consumption from X and firefox but that seems
+pretty reasonable.
 
-Leaving the question of whether Linus's comment at the top of the license
-changes the default:
+   If there is more you'd like me to look at or do on my end please let me know.
 
-"Also note that the only valid version of the GPL as far as the kernel is
-concerned is _this_ particular version of the license (ie v2, not v2.2 or
-v3.x or whatever), unless explicitly otherwise stated."
-
-So we have dueling defaults. The GPL says the default is any version. Linus'
-statement at the top of the GPL says the default is v2 only. It's not clear,
-at least to me, that there is any clear reason why one should win out over
-the other.
-
-DS
-
-
+Cheers,
+Mark
