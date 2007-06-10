@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbXFJQDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbXFJQDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbXFJQDD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 12:03:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbXFJQCy
+	id S1758245AbXFJQDc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 12:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbXFJQDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 12:02:54 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57405 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750843AbXFJQCx (ORCPT
+	Sun, 10 Jun 2007 12:03:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35011 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817AbXFJQDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 12:02:53 -0400
-Date: Sun, 10 Jun 2007 17:08:10 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: libata limiting to UDMA/33 instead of UDMA/100
-Message-ID: <20070610170810.71677857@the-village.bc.nu>
-In-Reply-To: <20070609132124.247a6646@laptop.hypervisor.org>
-References: <20070609132124.247a6646@laptop.hypervisor.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 10 Jun 2007 12:03:23 -0400
+Date: Sun, 10 Jun 2007 09:05:31 -0700
+From: Greg KH <greg@kroah.com>
+To: debian developer <debiandev@gmail.com>
+Cc: "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070610160531.GA12179@kroah.com>
+References: <466A3EC6.6030706@netone.net.tr> <18026.16739.228277.938421@notabene.brown> <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr> <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <466BCBBC.90305@netone.net.tr> <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007 13:21:24 +0200
-"Udo A. Steinberg" <us15@os.inf.tu-dresden.de> wrote:
-
-> Hi,
+On Sun, Jun 10, 2007 at 04:25:55PM +0530, debian developer wrote:
+>  On 6/10/07, david@lang.hm <david@lang.hm> wrote:
+> > On Sun, 10 Jun 2007, Tarkan Erimer wrote:
+> >
+> > >> >  And maybe another questions should be : How long a copyright owner 
+> > can
+> > >> >  hold the copyright, if died or lost for sometime ? if died, the
+> > >> >  copyright still should be valid or not ? If lost, what the law orders 
+> > at
+> > >> >  this point for copyright holding ?
+> > >>
+> > >>  I believe that in the US it's life + 90 years.
+> > >>
+> > >>  David Lang
+> > > Hmm... Really,it is damn too much time to wait! It's really better idea 
+> > to
+> > > replace the code of this person as said before instead of waiting such  
+> > 90+
+> > > years!
+> >
+> > exactly, however as others are pointing out, there are a lot of active
+> > developers who do not agree with some of the key points of the GPLv3
+> > (including Linus), so until you convince them that the GPLv3 is better it
 > 
-> After switching an older machine over from the PDC20265 PATA driver to the
-> libata driver pata_pdc202xx_old my HDDs are now limited to UDMA/33. With the
-> old driver they were happily running with UDMA/100.
+>  Last heard, Linus was quite impressed with the toned down version of
+>  the final draft of GPLv3. I think Linus, and other major developers
+>  should make their stand on this issue clear so that the kernel
+>  community can discuss the future steps.
 
-...
+"future steps"?  Hah.
 
-> 
-> I'm including the relevant kernel output for both cases below.
+My code is going to stay GPLv2 as the v3 license is horrible for kernel
+code for all of the reasons I have said in the past, plus a few more
+(what, I can make an "industrial" product but not a commercial one?
+That's horrible...)
 
-Thanks.
+thanks,
 
-> scsi0 : pata_pdc202xx_old
-> scsi1 : pata_pdc202xx_old
-> ata1: PATA max UDMA/100 cmd 0x00019400 ctl 0x00019002 bmdma 0x00018000 irq 0
-> ata2: PATA max UDMA/100 cmd 0x00018800 ctl 0x00018402 bmdma 0x00018008 irq 0
-> ata1.00: ata_hpa_resize 1: sectors = 60036480, hpa_sectors = 60036480
-> ata1.00: ATA-5: IBM-DTLA-307030, TX4OA5AA, max UDMA/100
-> ata1.00: 60036480 sectors, multi 16: LBA 
-> ata1.01: ata_hpa_resize 1: sectors = 241254720, hpa_sectors = 241254720
-> ata1.01: ATA-6: IC35L120AVV207-0, V24OA63A, max UDMA/100
-> ata1.01: 241254720 sectors, multi 16: LBA48 
-> ata1.00: limited to UDMA/33 due to 40-wire cable
-> ata1.01: limited to UDMA/33 due to 40-wire cable
-
-What sort of cable is actually in use here ?
-
-Alan
+greg k-h
