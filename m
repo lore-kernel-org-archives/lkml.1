@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762583AbXFJT3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763366AbXFJT3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762583AbXFJT3T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 15:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbXFJT3K
+	id S1763366AbXFJT3r (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 15:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbXFJT3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 15:29:10 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:40172 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754666AbXFJT3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 15:29:10 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: cat /dev/snapshot == OOPs
-Date: Sun, 10 Jun 2007 22:27:27 +0300
-User-Agent: KMail/1.9.7
-Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, linux-kernel@vger.kernel.org
-References: <200706101542.33951.arekm@maven.pl> <200706101933.53647.rjw@sisk.pl>
-In-Reply-To: <200706101933.53647.rjw@sisk.pl>
+	Sun, 10 Jun 2007 15:29:38 -0400
+Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:52818
+	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756587AbXFJT3h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 15:29:37 -0400
+Message-ID: <466C5112.4090004@hawkeye.stone.uk.eu.org>
+Date: Sun, 10 Jun 2007 20:29:22 +0100
+From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart14412828.ZdryXTr41O";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linux-kernel@vger.kernel.org, hpa@zytor.com, Ian Kent <raven@themaw.net>
+Subject: Re: [PATCH 0/7] Cleanup code to replace DPRINTK with pr_debug
+References: <4669D5B7.7050005@hawkeye.stone.uk.eu.org> <20070610105024.b16d1708.randy.dunlap@oracle.com>
+In-Reply-To: <20070610105024.b16d1708.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706102227.30893.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart14412828.ZdryXTr41O
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Randy Dunlap wrote:
+> Hi,
+> 
+> Doesn't this move printk-debug control from local source files
+> (i.e., targeted, specific ones) to a more global control (DEBUG)?
+> 
+> If so, I don't see that as a generally good thing.
+> 
+> If not, please correct me and tell me how this is useful to just
+> one instance of using pr_debug() in say, ncpfs, without pr_debug()
+> being enabled throughout the entire kernel tree.
+> 
+> Thanks.
 
-10 Haz 2007 Paz tarihinde, Rafael J. Wysocki =C5=9Funlar=C4=B1 yazm=C4=B1=
-=C5=9Ft=C4=B1:=20
-> Can you please try the appended patch?
+I can certainly see that point but using pr_debug means that all the
+debug print statements are centralised so that changes to the format
+could be more uniform. For example, it would be very easy to change the
+macro to print the function name it was called from followed by the message.
 
-I cannot reproduce the oops with that patch applied...
+The only DPRINTK's with specific DEBUGs were alternative.c, which had an
+extra if, and ncpfs which had an extra #ifdef DEBUG_NCP. The alternative
+solution would be to change the #defines to use pr_debug rather than
+printk directly:
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+#define DPRINTK(format, args...) \
+	pr_debug(format, ##args);
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
+The advantage would be maitaining subsystem specific debug control with
+centralised format control.
 
---nextPart14412828.ZdryXTr41O
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGbFCiy7E6i0LKo6YRAkWdAKCUyHmpVgLLFwhRhFeC78p/SYAWvgCggEN6
-NYbxCmi5b+jDod6/714hUto=
-=P0PT
------END PGP SIGNATURE-----
-
---nextPart14412828.ZdryXTr41O--
+Jack
