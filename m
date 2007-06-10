@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbXFJTFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbXFJTPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762944AbXFJTFl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 15:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbXFJTFe
+	id S1761145AbXFJTPT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 15:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbXFJTPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 15:05:34 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:39373 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755437AbXFJTFd (ORCPT
+	Sun, 10 Jun 2007 15:15:07 -0400
+Received: from lazybastard.de ([212.112.238.170]:46577 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220AbXFJTPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 15:05:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=T+jV+Mp6tzJT6y4rFub2B8iCFaJ2KOMyawGb5AIVM/5VXWFJ9pIInlkS//XAxupMhmwzKV9X0xHbjQ8nlDQs2zuCj02ArTlr+7Bbf4tPXszNdWxQwzygA2iCe5/6NJlAUWnkwUJfsdECsVXpjey6f3Cg9e4L+uPutrnuyJU78T4=
-Date: Sun, 10 Jun 2007 23:09:52 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org, miklos@szeredi.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] fuse: ->fs_flags fixlet
-Message-ID: <20070610190952.GA5708@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 10 Jun 2007 15:15:05 -0400
+Date: Sun, 10 Jun 2007 21:10:15 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       David Weinehall <tao@acc.umu.se>, Willy Tarreau <w@1wt.eu>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Dongjun Shin <djshin90@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>, Bill Davidsen <davidsen@tmr.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: [Patch 15/18] fs/logfs/super.c
+Message-ID: <20070610191015.GC32619@lazybastard.org>
+References: <20070603183845.GA8952@lazybastard.org> <200706101827.50948.arnd@arndb.de> <20070610173828.GA32619@lazybastard.org> <200706102033.11211.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706102033.11211.arnd@arndb.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/fuse/inode.c:658:3: error: Initializer entry defined twice
-fs/fuse/inode.c:661:3:   also defined here
+On Sun, 10 June 2007 20:33:05 +0200, Arnd Bergmann wrote:
+> 
+> Then maybe the submit_bio logic should only be done for the ->write
+> path, not for ->read. The data that gets written out should already
+> be present in the page cache for the files, so there is not much point
+> having again, while you can see the read path as blockdev readahead:
+> When you read a physical block that contains a logical block, it's
+> likely to also contain part of another logical block that is going
+> to be read in the near future.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+Makes a lot of sense, yes.
 
- fs/fuse/inode.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+> This way, you would also get exclusively clean pages in the block
+> device address_space, which can be easily discarded.
+> 
+> Also, maintaining correct ordering between write requests can be
+> done easier if you insert the bios directly, instead of waiting
+> for the lru writeback.
 
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -655,10 +655,9 @@ static int fuse_get_sb_blk(struct file_system_type *fs_type,
- static struct file_system_type fuseblk_fs_type = {
- 	.owner		= THIS_MODULE,
- 	.name		= "fuseblk",
--	.fs_flags	= FS_HAS_SUBTYPE,
- 	.get_sb		= fuse_get_sb_blk,
- 	.kill_sb	= kill_block_super,
--	.fs_flags	= FS_REQUIRES_DEV,
-+	.fs_flags	= FS_REQUIRES_DEV | FS_HAS_SUBTYPE,
- };
- 
- static inline int register_fuseblk(void)
+s/easier/only/ ?
 
+I don't think logfs on block devices makes too much sense yet, so my
+personal priority for this is low.  Still, an obvious improvement.
+
+Jörn
+
+-- 
+...one more straw can't possibly matter...
+-- Kirby Bakken
