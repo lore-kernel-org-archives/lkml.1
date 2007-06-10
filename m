@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762161AbXFJRhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762494AbXFJRiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762161AbXFJRhD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 13:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbXFJRgx
+	id S1762494AbXFJRiR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 13:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbXFJRiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 13:36:53 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47283 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753924AbXFJRgx (ORCPT
+	Sun, 10 Jun 2007 13:38:08 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:6966 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756837AbXFJRiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 13:36:53 -0400
-Date: Sun, 10 Jun 2007 18:42:08 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] pata_it821x: (partially) fix DMA in RAID mode
-Message-ID: <20070610184208.2224e023@the-village.bc.nu>
-In-Reply-To: <200706101843.20947.bzolnier@gmail.com>
-References: <200706101843.20947.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 10 Jun 2007 13:38:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NvtE8K0vA0IcrLUdsZ/+5UAfdVjQ/H3NiXzWorb/r3Z7o3j87fUUME8/UVt6r4jBitLqlP80Y2mBEXdy+XUtNm6wKbdQG7H/8iacjqOkH3fIjGK/o/nrr1MmQkDdru6Ol636ASe8LI+bXWl0RLlzn4ZLTaU16Dxwvto4ryli/Bg=
+Message-ID: <5bdc1c8b0706101038q2f0e3418t1a595e749b5bfe71@mail.gmail.com>
+Date: Sun, 10 Jun 2007 10:38:05 -0700
+From: "Mark Knecht" <markknecht@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.21-rt9 - IRQ23 consuming a steady 2.7% of CPU
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Lee Revell" <rlrevell@gmail.com>
+In-Reply-To: <20070610172452.GA7560@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5bdc1c8b0706100946k3acd6374uac8248e78f97433d@mail.gmail.com>
+	 <20070610172452.GA7560@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Cc: Tejun Heo <htejun@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+On 6/10/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Mark Knecht <markknecht@gmail.com> wrote:
+>
+> > 23:    1739277   IO-APIC-fasteoi   ohci_hcd:usb2, eth0
+>
+> > 00:0a.0 Bridge: nVidia Corporation CK804 Ethernet Controller (rev a3)
+>
+> ok, that's forcedeth. Does that behavior go away if you revert the
+> change below, via patch -p0 -R ?
+>
+> but in general, -rt will track IRQ cpu usage accurately, while mainline
+> does not measure it at all when in idle. So a frequent IRQ on mainline
+> might be using up similar amounts of of CPU time as well, but it's not
+> reported.
+>
+>         Ingo
+>
 
+Ingo,
+   GMail is being kranky. Can you please send the patch as a zipped attachment?
 
-Acked-by: Alan Cox <alan@redhat.com>
-
-
-> -	/* Bits 5 and 6 indicate if DMA is active on master/slave */
-> -	/* It is possible that BMDMA isn't allocated */
-> -	if (ap->ioaddr.bmdma_addr)
-> -		dma_enabled = ioread8(ap->ioaddr.bmdma_addr + ATA_DMA_CMD);
-> -
->  	for (i = 0; i < ATA_MAX_DEVICES; i++) {
+Thanks,
+Mark
