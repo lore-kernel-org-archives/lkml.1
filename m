@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759809AbXFJSfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbXFJSqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759809AbXFJSfT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 14:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbXFJSfF
+	id S1755536AbXFJSqI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 14:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbXFJSpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 14:35:05 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:3055 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754953AbXFJSfE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 14:35:04 -0400
-Date: Sun, 10 Jun 2007 20:35:03 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Greg KH <gregkh@suse.de>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
-Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO
- translated into Japanese]
-In-Reply-To: <20070610175228.GA28947@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0706102034490.25718@fbirervta.pbzchgretzou.qr>
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com>
- <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com>
- <20070610162221.GA12830@suse.de> <20070610175228.GA28947@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 10 Jun 2007 14:45:55 -0400
+Received: from www.osadl.org ([213.239.205.134]:33737 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755462AbXFJSpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 14:45:51 -0400
+Subject: Re: [patch-mm 06/23] clockevents: Fix resume logic
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <200706101834.19977.rjw@sisk.pl>
+References: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
+	 <200706101258.48721.rjw@sisk.pl> <1181481454.384.13.camel@chaos>
+	 <200706101834.19977.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Sun, 10 Jun 2007 20:45:49 +0200
+Message-Id: <1181501149.8176.0.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2007-06-10 at 18:34 +0200, Rafael J. Wysocki wrote:
+> On Sunday, 10 June 2007 15:17, Thomas Gleixner wrote:
+> > On Sun, 2007-06-10 at 12:58 +0200, Rafael J. Wysocki wrote:
+> > >
+> > > This is the resume part, or at least it seems so, but the above one is a
+> > > suspend callback.  If I understand it correctly, this one replaces
+> > > hpet_resume(), but is it sufficient for the suspend part too?
+> > 
+> > Oops. Sorry, misunderstood you. Yeah, it's intentional. It gets reset on
+> > power off and we have not seen any problems with this yet.
+> 
+> OK, I wouldn't do it in this patch, though.
+> 
+> IMO it's a bit more than the changelog says and we'll lose the track record of
+> this change if it goes like this.  Would that be possible to separate it?
 
-On Jun 10 2007 19:52, Sam Ravnborg wrote:
->> >  Since the common language of most kernel contributors is english I
->> >  personally feel that we should stick to just that one language in the
->> >  tree and then perhaps keep translations on a website somewhere. So the
->> >  authoritative docs stay in the tree, in english, so that as many
->> >  contributors as possible can read and update them. It would then be a
->> >  seperate project to generate translations and keep them updated
->> >  according to what's in the tree.  Perhaps we could get the kernel.org
->> >  people to create an official space for that and then place a pointer
->> >  to that site in Documentation/ somewhere.
->> 
->> No, I think the translated files should be in the tree proper, we have
->> the space :)
->
->We once discussed about .po files for kconfig and back then
->the conclusion was not to keep them in the kernel tree.
->
->I advocated that they should stay out back then.
->But on the other hand I do not see it causing much troubles
->having scripts/kconfig/po/da.po etc araound.
->
->Any opinion about the .po files?
+Sure. Will do.
 
-Like with translated doc, they might get out of date easily.
+	tglx
 
 
-	Jan
--- 
