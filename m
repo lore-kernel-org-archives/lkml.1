@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbXFJUh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbXFJUmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759626AbXFJUh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 16:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXFJUhR
+	id S1760448AbXFJUmu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 16:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXFJUmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 16:37:17 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:20690 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751510AbXFJUhQ (ORCPT
+	Sun, 10 Jun 2007 16:42:43 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4638 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbXFJUmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 16:37:16 -0400
-Date: Sun, 10 Jun 2007 22:37:14 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jiri Kosina <jikos@jikos.cz>
-cc: Folkert van Heusden <folkert@vanheusden.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrea Righi <righiandr@users.sourceforge.net>, Andi Kleen <ak@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
-In-Reply-To: <Pine.LNX.4.64.0706102200400.23280@twin.jikos.cz>
-Message-ID: <Pine.LNX.4.64.0706102236380.3561@fbirervta.pbzchgretzou.qr>
-References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr>
- <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de>
- <46517817.1080208@users.sourceforge.net> <20070521110406.GA14802@vanheusden.com>
- <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr> <20070521124734.GB14802@vanheusden.com>
- <a781481a0705231100q333a589at6c025eb1292019cd@mail.gmail.com>
- <20070523184535.GE21655@vanheusden.com> <20070610195333.GB15616@vanheusden.com>
- <Pine.LNX.4.64.0706102200400.23280@twin.jikos.cz>
+	Sun, 10 Jun 2007 16:42:43 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Simon Arlott" <simon@fire.lp0.eu>, <jengelh@computergmbh.de>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Sun, 10 Jun 2007 13:42:35 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKEELKEHAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+In-Reply-To: <Pine.LNX.4.64.0706101307060.8723@fbirervta.pbzchgretzou.qr>
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sun, 10 Jun 2007 13:42:59 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sun, 10 Jun 2007 13:43:02 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jun 10 2007 22:06, Jiri Kosina wrote:
->On Sun, 10 Jun 2007, Folkert van Heusden wrote:
+> http://www.eweek.com/article2/0,1759,1915720,00.asp
+> has the answer. Quoting Linus:
 >
->> Signed-of by: Folkert van Heusden <folkert@vanheusden.com
+> "If you want to license a program under any later version of the
+> GPL, you have
+> to state so explicitly. Linux never did."
 >
->This looks broken BTW.
->
->> +			printk(KERN_INFO "Sig %d sent to %d owned by %d.%d (%s), sent by pid %d, uid %d\n",
->> +				sig, t->pid, t->uid, t->gid, t->comm,
->> +				info -> _sifields._kill._pid,
->> +				info -> _sifields._kill._uid);
->
->Am I the only one whose eyes are hurt by these spaces?
+> Hence, unless there's a "GPL 2 or later", all the "unspecified GPL" files
+> are GPL2 only.
 
-They were discussed before already. And they were fixed up (t->uid...).
-And now new ones got added. Ergh.
+The GPL states the default position:
+
+"If the Program does not specify a version number of this License, you may
+choose any version ever published by the Free Software Foundation."
+
+Leaving the question of whether Linus's comment at the top of the license
+changes the default:
+
+"Also note that the only valid version of the GPL as far as the kernel is
+concerned is _this_ particular version of the license (ie v2, not v2.2 or
+v3.x or whatever), unless explicitly otherwise stated."
+
+So we have dueling defaults. The GPL says the default is any version. Linus'
+statement at the top of the GPL says the default is v2 only. It's not clear,
+at least to me, that there is any clear reason why one should win out over
+the other.
+
+DS
 
 
-
-	Jan
--- 
