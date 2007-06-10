@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbXFJRNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760651AbXFJRUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761385AbXFJRNQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 13:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXFJRNA
+	id S1760651AbXFJRUl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 13:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXFJRUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 13:13:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:23266 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755532AbXFJRNA (ORCPT
+	Sun, 10 Jun 2007 13:20:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59745 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751178AbXFJRUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 13:13:00 -0400
-Date: Sun, 10 Jun 2007 10:13:14 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
+	Sun, 10 Jun 2007 13:20:33 -0400
+Date: Sun, 10 Jun 2007 10:20:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH RFC] struct list_node
-Message-Id: <20070610101314.cd63dec2.randy.dunlap@oracle.com>
 In-Reply-To: <1181452290.16428.7.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.0.98.0706101013420.20321@woody.linux-foundation.org>
 References: <1181452290.16428.7.camel@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Jun 2007 15:11:30 +1000 Rusty Russell wrote:
 
+
+On Sun, 10 Jun 2007, Rusty Russell wrote:
+>
 > The current list.h has the same type for list elements and list heads
 > even though most code and coders treat them as distinct.
-> 
-> I've had a version of list.h (for userspace work) for about a year
-> which uses a different type for nodes and it works very well: code is
-> clearer, and mistakes like list_add() argument reversal are detected.
-> Code which really wants to treat a list node as a head can append ".h".
-> 
-> To avoid a massive flag day, this patch uses gcc's "cast to union" to
-> allow either list_head or list_node in various places.
-> 
-> Notes:
-> 1) A new function in_list() is introduced, equivalent to "list_empty(&e)"
->    but for nodes.
 
-in_list() sounds like it would scan an entire list and return true
-if &e is found, false if &e is not found...
+I think the old list.h is technically superior to yours.
 
-and that's what the short description sounds like to me as well...
+Exactly *because* nodes and heads are interchangeable.
 
-I'm just confuzed.  And you aren't supposed to write confuzing
-interfaces.  :)
+In fact, you are incorrect that "most code" treat them as distinct. Most 
+code that uses list.h in fact uses it as a list of entries, often without 
+any head at all (and each *entry* is a point of removal), because the way 
+to actually *find* the structure that contains the lists is separate from 
+the lists themselves.
 
-> +/**
-> + * in_list - tests whether element is in a list.
-> + * @entry: the entry to test
-> + *
-> + * Returns false if the list elem was deleted from list (except __list_del)
+In other words, I think your patch is HORRIBLY BAD, because it totally 
+obscures the beauty of the current list.h implementation, and makes it be 
+something *average*.
 
-What is "elem"?  How can this function determine is a list element was
-deleted vs. was never added?
+The Linux kernel list.h is _better_ than most stupid list implementations 
+that think that a head node is different from the list node. Exactly 
+because it very naturally supports the notion of "this structure exists in 
+a 'ring of entries'" where each node is 100% equivalent to any other node, 
+and there _is_ no head.
 
-> + */
-> +static inline int in_list(const struct list_node *entry)
-> +{
-> +	return entry->h.next == &entry->h;
->  }
+And your patch totally misunderstands that, and breaks it.
 
+Nack.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+		Linus
