@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbXFJQaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758422AbXFJQiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760319AbXFJQaa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 12:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbXFJQaX
+	id S1758422AbXFJQiU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 12:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXFJQiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 12:30:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43106 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751908AbXFJQaX (ORCPT
+	Sun, 10 Jun 2007 12:38:12 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36896 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbXFJQiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 12:30:23 -0400
-Subject: Re: [patch-mm 21/23] x86-64 block irq balancing for timer
-From: Arjan van de Ven <arjan@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <20070610092447.149863776@inhelltoy.tec.linutronix.de>
-References: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
-	 <20070610092447.149863776@inhelltoy.tec.linutronix.de>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sun, 10 Jun 2007 09:29:20 -0700
-Message-Id: <1181492960.2809.1.camel@laptopd505.fenrus.org>
+	Sun, 10 Jun 2007 12:38:12 -0400
+Date: Mon, 11 Jun 2007 01:34:51 +0900 (JST)
+Message-Id: <20070611.013451.74739872.tshibata@ab.jp.nec.com>
+To: gregkh@suse.de
+Cc: jesper.juhl@gmail.com, linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com,
+       tshibata@ab.jp.nec.com
+Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+In-Reply-To: <20070610162221.GA12830@suse.de>
+References: <20070610.204845.115909592.tshibata@ab.jp.nec.com>
+	<9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com>
+	<20070610162221.GA12830@suse.de>
+X-Mailer: Mew version 4.2 on Emacs 20.7 / Mule 4.1
+ =?iso-2022-jp?B?KBskQjAqGyhCKQ==?=
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-1.fc7) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this isn't needed actually.. the userspace irq balancer won't balance
-irq 0 anyway, and if the sysadmin has a REAL good reason to move this
-himself... then why shouldn't we let him?
+On Sun, 10 Jun 2007 09:22:21 -0700, gregkh wrote:
+> On Sun, Jun 10, 2007 at 02:24:51PM +0200, Jesper Juhl wrote:
+> >  On 10/06/07, Tsugikazu Shibata <tshibata@ab.jp.nec.com> wrote:
 
-
-
-On Sun, 2007-06-10 at 09:44 +0000, Thomas Gleixner wrote:
-> plain text document attachment
-> (x86-64-clockevents-irq-balancing.patch)
-> From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+> > > Actually, this is my first trial to post Japanese translated document
+> > > and here are some points I decided ;
+> > >
+> > > - Character encoding is ISO-2022-JP, which is normally used for email
+> > >   using Japanese.
+> > 
+> >  I think there's consensus that documents in the kernel source should
+> >  be either plain ASCII or UTF-8 (doesn't UTF-8 work for japanese?).
 > 
-> Disable irq balancing on IRQ0.
-> 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Andi Kleen <ak@suse.de>
-> 
-> ---
->  arch/x86_64/kernel/time.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c
-> ===================================================================
-> --- linux-2.6.22-rc4-mm.orig/arch/x86_64/kernel/time.c	2007-06-10 10:44:39.000000000 +0200
-> +++ linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c	2007-06-10 10:44:40.000000000 +0200
-> @@ -255,7 +255,7 @@ static unsigned int __init tsc_calibrate
->  
->  static struct irqaction irq0 = {
->  	.handler	= timer_interrupt,
-> -	.flags		= IRQF_DISABLED | IRQF_IRQPOLL,
-> +	.flags		= IRQF_DISABLED | IRQF_IRQPOLL | IRQF_NOBALANCING,
->  	.mask		= CPU_MASK_NONE,
->  	.name		= "timer"
->  };
+> Is it hard to convert it to UTF-8?
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+NO, it's easy.
 
+iconv -f ISO-2022-JP -t UTF-8 <infile >outfile
+
+We are usually using ISO-2022-JP for email exchange and if anyone
+would comment on my document, this is better I believe.
+For documentation purpose, I agree with UTF-8.
+
+Thanks,
+Tsugikazu Shibata
