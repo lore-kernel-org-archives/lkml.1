@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbXFJNrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbXFJN5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758678AbXFJNrW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 09:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbXFJNps
+	id S1758368AbXFJN5H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 09:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXFJN4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 09:45:48 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:29288 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754538AbXFJNpm (ORCPT
+	Sun, 10 Jun 2007 09:56:55 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50149 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752064AbXFJN4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 09:45:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:mime-version:content-disposition:message-id:cc:content-type:content-transfer-encoding;
-        b=c9x1Saxkp/6ITMZxw+xf+hbbWXuVRRqeSdSP4YTVN6jsuykRwdR/BBkcrnaUu0iDIs2OtJfPCtIvY1pOTpctHJDUDvGhH2cmmY8cIcIhZyJP/Czo6/Z0vY2q5c99bajiXevVA0RKylL3oMYTCASBbrFitGx+snjzibkRzUfuEyU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 4/5] sis5513: backport short cables support from pata_sis.c
-Date: Sun, 10 Jun 2007 15:58:33 +0200
+	Sun, 10 Jun 2007 09:56:55 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Sun, 10 Jun 2007 09:56:50 -0400
 User-Agent: KMail/1.9.6
+Cc: Neil Brown <neilb@suse.de>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org
+References: <466A3EC6.6030706@netone.net.tr> <18027.50727.190221.80822@notabene.brown> <20070610144023.1cca3ae4@the-village.bc.nu>
+In-Reply-To: <20070610144023.1cca3ae4@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200706101558.33636.bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706100956.50440.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 10 June 2007 09:40:23 Alan Cox wrote:
+> > But I think this is largely academic.  You only need a fairly small
+> > number of fairly significant contributors to say "no" and the rest of
+> > the process would be pointless.  And at last count, the number of
+> > kernel people who were not keen on GPLv3 was fairly high.  Of course
+> > no-one knows for certain yet what the final GPLv3 will be, and maybe
+> > lots of people would change their mind when it comes out.
+>
+> You can take a fair bet someone will say no, or much more likely they or
+> whoever inherited their copyright will say $50,000
 
-Backport short cables support from pata_sis.c.
+I seeds shades of Merkey there :P
 
-This patch should allow UDMA > 2 modes on ASUS A6K.
+Seriously, though, this was all settled a long time ago. Linus said "While 
+individual parts of the kernel *could* be licensed [with another license] the 
+kernel as a whole is strictly GPLv2" (I've tried to get it right, but my 
+memory isn't as good as it used to be when it comes to useful quotes like 
+that)
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/pci/sis5513.c |   25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
-
-Index: b/drivers/ide/pci/sis5513.c
-===================================================================
---- a/drivers/ide/pci/sis5513.c
-+++ b/drivers/ide/pci/sis5513.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/drivers/ide/pci/sis5513.c	Version 0.20	Mar 4, 2007
-+ * linux/drivers/ide/pci/sis5513.c	Version 0.25	Jun 10, 2007
-  *
-  * Copyright (C) 1999-2000	Andre Hedrick <andre@linux-ide.org>
-  * Copyright (C) 2002		Lionel Bouton <Lionel.Bouton@inet6.fr>, Maintainer
-@@ -796,10 +796,33 @@ static unsigned int __devinit init_chips
- 	return 0;
- }
- 
-+struct sis_laptop {
-+	u16 device;
-+	u16 subvendor;
-+	u16 subdevice;
-+};
-+
-+static const struct sis_laptop sis_laptop[] = {
-+	/* devid, subvendor, subdev */
-+	{ 0x5513, 0x1043, 0x1107 },	/* ASUS A6K */
-+	/* end marker */
-+	{ 0, }
-+};
-+
- static u8 __devinit ata66_sis5513(ide_hwif_t *hwif)
- {
-+	struct pci_dev *pdev = hwif->pci_dev;
-+	const struct sis_laptop *lap = &sis_laptop[0];
- 	u8 ata66 = 0;
- 
-+	while (lap->device) {
-+		if (lap->device == pdev->device &&
-+		    lap->subvendor == pdev->subsystem_vendor &&
-+		    lap->subdevice == pdev->subsystem_device)
-+			return ATA_CBL_PATA40_SHORT;
-+		lap++;
-+	}
-+
- 	if (chipset_family >= ATA_133) {
- 		u16 regw = 0;
- 		u16 reg_addr = hwif->channel ? 0x52: 0x50;
+DRH
