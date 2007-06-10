@@ -1,106 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbXFJJe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbXFJJep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754238AbXFJJe0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 05:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbXFJJbK
+	id S1757242AbXFJJep (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 05:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbXFJJbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 05:31:10 -0400
-Received: from www.osadl.org ([213.239.205.134]:43073 "EHLO mail.tglx.de"
+	Sun, 10 Jun 2007 05:31:15 -0400
+Received: from www.osadl.org ([213.239.205.134]:43077 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753162AbXFJJbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 05:31:01 -0400
-Message-Id: <20070610092446.736352910@inhelltoy.tec.linutronix.de>
+	id S1753618AbXFJJbC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 05:31:02 -0400
+Message-Id: <20070610092446.773377570@inhelltoy.tec.linutronix.de>
 References: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sun, 10 Jun 2007 09:44:08 -0000
+Date: Sun, 10 Jun 2007 09:44:09 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
        Andi Kleen <ak@suse.de>, Arjan van de Ven <arjan@infradead.org>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch-mm 10/23] highres: Improve debug output
-Content-Disposition: inline; filename=highres-improve-debug-output.patch
+Subject: [patch-mm 11/23] hrtimer: speedup hrtimer_enqueue
+Content-Disposition: inline; filename=hrtimer-speedup-enqueue.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-Add some more debug information to the hrtimer and clock events code.
+Speedup hrtimer_enqueue by evaluating the rbtree insertion result.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- arch/i386/kernel/apic.c    |    3 +++
- kernel/hrtimer.c           |    5 ++++-
- kernel/time/tick-oneshot.c |   15 ++++++++++++++-
- 3 files changed, 21 insertions(+), 2 deletions(-)
+ kernel/hrtimer.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-Index: linux-2.6.22-rc4-mm/arch/i386/kernel/apic.c
-===================================================================
---- linux-2.6.22-rc4-mm.orig/arch/i386/kernel/apic.c	2007-06-10 10:44:38.000000000 +0200
-+++ linux-2.6.22-rc4-mm/arch/i386/kernel/apic.c	2007-06-10 10:44:39.000000000 +0200
-@@ -524,6 +524,9 @@ void __init setup_boot_APIC_clock(void)
- 		 */
- 		if (nmi_watchdog != NMI_IO_APIC)
- 			lapic_clockevent.features &= ~CLOCK_EVT_FEAT_DUMMY;
-+		else
-+			printk(KERN_WARNING "APIC timer registered as dummy,"
-+			       " due to nmi_watchdog=1!\n");
- 	}
- 
- 	/* Setup the lapic or request the broadcast */
 Index: linux-2.6.22-rc4-mm/kernel/hrtimer.c
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/kernel/hrtimer.c	2007-06-10 10:44:37.000000000 +0200
+--- linux-2.6.22-rc4-mm.orig/kernel/hrtimer.c	2007-06-10 10:44:39.000000000 +0200
 +++ linux-2.6.22-rc4-mm/kernel/hrtimer.c	2007-06-10 10:44:39.000000000 +0200
-@@ -558,7 +558,8 @@ static inline int hrtimer_enqueue_reprog
-  */
- static int hrtimer_switch_to_hres(void)
- {
--	struct hrtimer_cpu_base *base = &__get_cpu_var(hrtimer_bases);
-+	int cpu = smp_processor_id();
-+	struct hrtimer_cpu_base *base = &per_cpu(hrtimer_bases, cpu);
- 	unsigned long flags;
+@@ -686,6 +686,7 @@ static void enqueue_hrtimer(struct hrtim
+ 	struct rb_node **link = &base->active.rb_node;
+ 	struct rb_node *parent = NULL;
+ 	struct hrtimer *entry;
++	int leftmost = 1;
  
- 	if (base->hres_active)
-@@ -568,6 +569,8 @@ static int hrtimer_switch_to_hres(void)
- 
- 	if (tick_init_highres()) {
- 		local_irq_restore(flags);
-+		printk(KERN_WARNING "Could not switch to high resolution "
-+				    "mode on CPU %d\n", cpu);
- 		return 0;
- 	}
- 	base->hres_active = 1;
-Index: linux-2.6.22-rc4-mm/kernel/time/tick-oneshot.c
-===================================================================
---- linux-2.6.22-rc4-mm.orig/kernel/time/tick-oneshot.c	2007-06-10 10:44:37.000000000 +0200
-+++ linux-2.6.22-rc4-mm/kernel/time/tick-oneshot.c	2007-06-10 10:44:39.000000000 +0200
-@@ -73,8 +73,21 @@ int tick_switch_to_oneshot(void (*handle
- 	struct clock_event_device *dev = td->evtdev;
- 
- 	if (!dev || !(dev->features & CLOCK_EVT_FEAT_ONESHOT) ||
--	    !tick_device_is_functional(dev))
-+		    !tick_device_is_functional(dev)) {
-+
-+		printk(KERN_INFO "Clockevents: "
-+		       "could not switch to one-shot mode:");
-+		if (!dev) {
-+			printk(" no tick device\n");
+ 	/*
+ 	 * Find the right place in the rbtree:
+@@ -697,18 +698,19 @@ static void enqueue_hrtimer(struct hrtim
+ 		 * We dont care about collisions. Nodes with
+ 		 * the same expiry time stay together.
+ 		 */
+-		if (timer->expires.tv64 < entry->expires.tv64)
++		if (timer->expires.tv64 < entry->expires.tv64) {
+ 			link = &(*link)->rb_left;
+-		else
 +		} else {
-+			if (!tick_device_is_functional(dev))
-+				printk(" %s is not functional.\n", dev->name);
-+			else if (!(dev->features & CLOCK_EVT_FEAT_ONESHOT))
-+				printk(" %s does not support one-shot mode.\n",
-+				       dev->name);
+ 			link = &(*link)->rb_right;
++			leftmost = 0;
 +		}
- 		return -EINVAL;
-+	}
+ 	}
  
- 	td->mode = TICKDEV_MODE_ONESHOT;
- 	dev->event_handler = handler;
+ 	/*
+ 	 * Insert the timer to the rbtree and check whether it
+ 	 * replaces the first pending timer
+ 	 */
+-	if (!base->first || timer->expires.tv64 <
+-	    rb_entry(base->first, struct hrtimer, node)->expires.tv64) {
++	if (leftmost) {
+ 		/*
+ 		 * Reprogram the clock event device. When the timer is already
+ 		 * expired hrtimer_enqueue_reprogram has either called the
 
 -- 
 
