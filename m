@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761062AbXFJEpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761807AbXFJEue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761062AbXFJEpY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 00:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756236AbXFJEpM
+	id S1761807AbXFJEue (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 00:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbXFJEu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 00:45:12 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:36287 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754200AbXFJEpL (ORCPT
+	Sun, 10 Jun 2007 00:50:26 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:33272 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756723AbXFJEuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 00:45:11 -0400
-Date: Sat, 9 Jun 2007 21:45:09 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <alpine.LFD.0.98.0706092036500.20321@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706092138340.10324@twinlark.arctic.org>
-References: <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com>
- <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com>
- <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com>
- <20070609172429.GF4095@ftp.linux.org.uk> <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com>
- <20070609200645.GG4095@ftp.linux.org.uk> <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
- <20070610031922.GC21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706092036500.20321@woody.linux-foundation.org>
+	Sun, 10 Jun 2007 00:50:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=ZM/fI6YOjHja1CAFV9+XnGL81wFkB4IvkiHkJyo3ud3NstsgYTuw0xvhArdbjfcoNQqLgVejirMP+hMxr7EV3eTYkTrkqZUgXEhKnz7gOozF3898LZgf55Qqh8EJQMuJL8f9QSry/SE9dZ2nmQQpFPzfEwM0n/jBf3n7f4FQuBQ=
+Message-ID: <466B830B.5020007@gmail.com>
+Date: Sun, 10 Jun 2007 13:50:19 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pata_it821x: sync with IDE it821x driver
+References: <200706090223.20933.bzolnier@gmail.com> <466A417C.5090901@gmail.com> <200706092209.10636.bzolnier@gmail.com>
+In-Reply-To: <200706092209.10636.bzolnier@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007, Linus Torvalds wrote:
+Bartlomiej Zolnierkiewicz wrote:
+>>> @@ -258,8 +259,14 @@ static void it821x_passthru_set_piomode(
+>>>  	static const u8 pio_want[]    = { ATA_66, ATA_66, ATA_66, ATA_66, ATA_ANY };
+>>>  
+>>>  	struct it821x_dev *itdev = ap->private_data;
+>>> +	struct ata_device *pair = ata_dev_pair(adev);
+>>>  	int unit = adev->devno;
+>>> -	int mode_wanted = adev->pio_mode - XFER_PIO_0;
+>>> +	int mode_wanted = adev->pio_mode;
+>>> +
+>>> +	if (pair && adev->pio_mode > pair->pio_mode)
+>>> +		mode_wanted = pair->pio_mode;
+>>> +
+>>> +	mode_wanted -= XFER_PIO_0;
+>> I think this is better done by mode_filter callback which is guaranteed
+>> to be called before any actual mode configuration is performed and in
+>> device order (master then slave).
+> 
+> I was thinking about using ->mode_filter but since all other PATA host
+> drivers are doing PIO filtering in ->set_piomode methods and also since it
+> seemed that using ->mode_filter method would result in slightly more complex
+> code I opted for coherency / simplicity.  However if you (or somebody else)
+> want to make a follow-up change to this driver (and preferably other PATA
+> host drivers ie. pata_sil680) to use ->mode_filter I'm also fine with that.
 
-> IOW, the most common case for libraries is not that they get invoced to do 
-> one thing, but that they get loaded and then used over and over and over 
-> again, and the _reason_ for wanting to have a file descriptor open may 
-> well be that the library wants to cache the file descriptor, rather than 
-> having to open a file over and over again!
+Hmmm... indeed.  Alan, is there any reason we do that in ->set_piomode
+not ->mode_filter?  We end up with mismatching configuration between the
+controller and the higher speed drive.
 
-for an example of a library wanting to cache an open fd ... and failing 
-miserably at protecting itself from the application closing its fd read:
-
-http://bugzilla.padl.com/show_bug.cgi?id=304
-http://bugzilla.padl.com/show_bug.cgi?id=305
-
-basically libnss-ldap is trying to use getsockname/getpeername to prove 
-that an fd belongs to it.  the failure modes are quite delightful.
-
--dean
+-- 
+tejun
