@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762445AbXFJGs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762266AbXFJHFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762445AbXFJGs6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 02:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759496AbXFJGsj
+	id S1762266AbXFJHFU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 03:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760208AbXFJHFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 02:48:39 -0400
-Received: from ozlabs.org ([203.10.76.45]:45643 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759205AbXFJGsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 02:48:37 -0400
+	Sun, 10 Jun 2007 03:05:08 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:20901 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760198AbXFJHFG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 03:05:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ogQD6NOGk+m3Gp1hcIR7u3pE82jf9LDfxfek2KD7EC372LDpHOvTdjYg+I2Kuu0Ye0u54b3FsCWOwKCQPfcp1xqNGNMV6PwMfE+L+CxRMy1Gz+iNgPAAFYGBJYArtP8Pq1tDLPC1eSK2fck6g4OjdyCoY4bz9MrHBi50WabFPRc=
+Message-ID: <a781481a0706100005wf6b1e4ercfd94d9f4a80bbb@mail.gmail.com>
+Date: Sun, 10 Jun 2007 12:35:05 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Marco Berizzi" <pupilla@hotmail.com>
+Subject: Re: XFS internal error xfs_da_do_buf(2) at line 2087 of file fs/xfs/xfs_da_btree.c. Caller 0xc01b00bd
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <BAY103-DAV141D991980E54836534A00B2250@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18027.40637.672203.14305@cargo.ozlabs.ibm.com>
-Date: Sun, 10 Jun 2007 16:48:29 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-In-Reply-To: <463C79D8-88CB-492A-96FD-10C10D16C4B6@mac.com>
-References: <466741BD.20106@redhat.com>
-	<20070607110432.73be7960@the-village.bc.nu>
-	<B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com>
-	<20070607151243.22caab9e.dada1@cosmosbay.com>
-	<Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
-	<466864F8.2050903@cosmosbay.com>
-	<46686810.6030805@redhat.com>
-	<Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
-	<466880A4.3090908@redhat.com>
-	<Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
-	<20070608120746.GD12687@thunk.org>
-	<20070608140150.6f31672f@the-village.bc.nu>
-	<Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
-	<18026.15766.574693.200636@cargo.ozlabs.ibm.com>
-	<463C79D8-88CB-492A-96FD-10C10D16C4B6@mac.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+References: <BAY103-DAV1066400DF0615AD677EA1B2730@phx.gbl>
+	 <20070316012520.GN5743@melbourne.sgi.com>
+	 <BAY103-DAV13EC09E9BCB3E8C9D5EEA2B2710@phx.gbl>
+	 <20070316195951.GB5743@melbourne.sgi.com>
+	 <BAY103-DAV1484A3797D5368C28969CBB2700@phx.gbl>
+	 <BAY103-DAV9C465F21C87A900314523B2760@phx.gbl>
+	 <20070320064632.GO32602149@melbourne.sgi.com>
+	 <BAY103-DAV7076D9B4230E07680B724B2260@phx.gbl>
+	 <20070607130505.GE85884050@sgi.com>
+	 <BAY103-DAV141D991980E54836534A00B2250@phx.gbl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett writes:
+Hi,
 
-> 1)  Linear FD allocation makes it IMPOSSIBLE for libraries to  
-> reliably use persistent FDs behind an application's back.  For  
+On 6/8/07, Marco Berizzi <pupilla@hotmail.com> wrote:
+> After few hours linux has crashed with this message:
+> BUG: at arch/i386/kernel/smp.c:546 smp_call_function()
 
-That's not completely true; for example, openlog() opens a file
-descriptor for the library's own use, as does sethostent().  I agree
-that it creates difficulties if the library implementor wants to use a
-file descriptor in a set of functions that didn't previously use one,
-but with a bit of assistance from the kernel, that can be solved
-without breaking the ABI.
+Which kernel (exactly) was this, and does this occur
+reproducibly? Also, could you please send the dmesg,
+stack trace, etc for when this happened?
 
-> for (i = 0; i < NR_OPEN; i++)
-> 	if (!fd_is_special_to_us(i))
-> 		close(i);
-> 
-> Note that this is conceptually buggy, but occurs in several major C  
-> programming books, most of the major shells, and a lot of other  
-> software to boot.
-
-Buggy in what way?  In the use of the NR_OPEN constant?
-
-> 3) In order to allocate new FDs, the kernel has to scan over a  
-> (potentially very large) bitmap.  A process with 100,000 fds (not  
-> terribly uncommon) would have 12.5kbyte of FD bitmap and would trash  
-> the cache every time it tried to allocate an FD.
-
-For specialized programs like that we can offer alternative fd
-allocation strategies if necessary (although I expect that with
-100,000 fds other things will limit performance more than
-allocation).
-
-None of those things is an excuse for breaking the ABI, however.
-As I said to Davide, I was really protesting about the attitude that
-we can just break the ABI however and whenever we like and force
-programs to adapt.
-
-Paul.
+Satyam
