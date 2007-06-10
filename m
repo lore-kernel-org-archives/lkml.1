@@ -1,86 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbXFJPvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759904AbXFJPwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759566AbXFJPvg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 11:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758866AbXFJPvX
+	id S1759904AbXFJPwZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 11:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbXFJPwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 11:51:23 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51865 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758245AbXFJPvU (ORCPT
+	Sun, 10 Jun 2007 11:52:17 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1102 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753830AbXFJPwQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 11:51:20 -0400
-Date: Sun, 10 Jun 2007 16:56:38 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_it821x: sync with IDE it821x driver
-Message-ID: <20070610165638.2db56f04@the-village.bc.nu>
-In-Reply-To: <200706090223.20933.bzolnier@gmail.com>
-References: <200706090223.20933.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 10 Jun 2007 11:52:16 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 10 Jun 2007 08:52:09 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Paul Mackerras <paulus@samba.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <18027.39295.464374.371664@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0706100831530.24724@alien.or.mcafeemobile.com>
+References: <466741BD.20106@redhat.com> <20070607110432.73be7960@the-village.bc.nu>
+ <B8B9EC80-2E36-433E-87EB-5B31FF42FBCF@mac.com> <20070607151243.22caab9e.dada1@cosmosbay.com>
+ <Pine.LNX.4.64.0706071243090.6445@alien.or.mcafeemobile.com>
+ <466864F8.2050903@cosmosbay.com> <46686810.6030805@redhat.com>
+ <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com>
+ <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com>
+ <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu>
+ <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com>
+ <18026.15766.574693.200636@cargo.ozlabs.ibm.com>
+ <Pine.LNX.4.64.0706090942210.14037@alien.or.mcafeemobile.com>
+ <18027.39295.464374.371664@cargo.ozlabs.ibm.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -258,8 +259,14 @@ static void it821x_passthru_set_piomode(
->  	static const u8 pio_want[]    = { ATA_66, ATA_66, ATA_66, ATA_66, ATA_ANY };
->  
->  	struct it821x_dev *itdev = ap->private_data;
-> +	struct ata_device *pair = ata_dev_pair(adev);
->  	int unit = adev->devno;
-> -	int mode_wanted = adev->pio_mode - XFER_PIO_0;
-> +	int mode_wanted = adev->pio_mode;
-> +
-> +	if (pair && adev->pio_mode > pair->pio_mode)
-> +		mode_wanted = pair->pio_mode;
-> +
-> +	mode_wanted -= XFER_PIO_0;
+On Sun, 10 Jun 2007, Paul Mackerras wrote:
 
-NAK this too
+> What I am objecting to is this idea that many kernel developers seem
+> to have, that if there is some aspect of the kernel/user API that
+> becomes a bit inconvenient for the kernel to implement, then we can
+> put the blame on the applications that rely on that aspect, call them
+> names such as "legacy", "abuser", "conceptually buggy", "broken",
+> etc., and ultimately justify breaking the ABI -- since it's only those
+> applications that we have demonised that will be affected, after all.
+> 
+> In a way your response quoted above illustrates this perfectly.  If we
+> give guarantees then people will start relying on them "in the wrong
+> way" -- meaning, in any way that later becomes inconvenient to us.
+> What next?  Shall we break the guarantee that when read() returns, the
+> data is already in the user's buffer?  I'm sure we could improve
+> performance if we didn't have to give that guarantee, and after all,
+> only old, broken, legacy, conceptually buggy programs would be abusing
+> the interface by relying on that. :)
 
-Please see it821x_program.
+This fds will be out of POSIX definition in any case. They have to be 
+based at very high values in any case in order to be useful, and this 
+already breaks the POSIX definition of them.
 
-it821x_passthru_set_piomode computes the required mode and the preferred
-clock for the mode
-it821x_clock_strategy the computes the best clock to use
-it821x_program the programs the device
 
-Whenever we issue a command it821x_passthru_dev_select then does a timing
-mode switch and loads the PIO timing before doing the dev_select. The
-same is also done when doing a qc_issue_prot so each qc_issue will have
-the right timings loaded for the device.
 
-So if you've got a problem case your diagnosis isn't one that makes a lot
-of sense, and the fix is clearly wrong but I've not seen most of the
-discussion between you and whoever you worked with to judge why.
+> > This should really be treated as an opaque handle, with no assumption on 
+> > its value.
+> 
+> No.  This is an assertion that you have just conjured up to suit
+> yourself, but it is wrong.  It does not reflect either historical UNIX
+> practice or what is specified in POSIX.  Application writers are
+> perfectly justified in relying on getting the lowest-numbered unused
+> file descriptor.
 
-One obvious possibility is that we are not currently doing timing
-clipping for the address setup and merge for the 8bit timings. However
-the docs I have strongly imply that the IT821x PIO/MWDMA timing register
-is for data cycles only.
+You seem to deny the fact that libraries cannot reliably use fds allocated 
+by POSIX rules for internal communication with the kernel. I really don't 
+know what to say, if not that we must have a different definition of the 
+word "reliable".
+Maybe if you go back in the thread and give your solutions, using POSIX 
+fds allocation semantics, to the problems that have been exposed, that 
+might help understanding.
 
-The other would be that there is some kind of pattern of interaction
-between the ATA midlayer and the driver causing the wrong timings to get
-loaded at some point.
 
-Your "fix" would happen to work for both of these cases, but is wrong for
-both of them.
 
-If the register is switching all the timings then the fix is to switch
-the PIO timing loaded to the lowest of the two initially (in _program)
-and flip it back to the correct value at the start of the data transfer
-sequence. We can then flip it back next qc_issue or indeed at the end of
-the data xfer
+- Davide
 
-If we've got an interaction problem then we need proper traces with
-LIBATA debug turned right up so we can fix the actual case where the
-switching occurs wrongly.
 
-Alan
