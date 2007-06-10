@@ -1,79 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760817AbXFJAIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbXFJAeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760817AbXFJAIL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 20:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbXFJAIA
+	id S1754233AbXFJAeS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 20:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbXFJAeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 20:08:00 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:44392
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758630AbXFJAH6 (ORCPT
+	Sat, 9 Jun 2007 20:34:09 -0400
+Received: from CHOKECHERRY.SRV.CS.CMU.EDU ([128.2.185.41]:49236 "EHLO
+	chokecherry.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751304AbXFJAeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 20:07:58 -0400
-Date: Sat, 9 Jun 2007 17:06:38 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Crispin Cowan <crispin@novell.com>, James Morris <jmorris@namei.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: AppArmor FAQ
-In-Reply-To: <20070609230239.GA21229@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0706091702280.6675@asgard.lang.hm>
-References: <20070417181016.GA10903@one.firstfloor.org>
- <657751.18080.qm@web36614.mail.mud.yahoo.com> <20070417211653.GB11944@one.firstfloor.org>
- <20070417225815.000b0fdb@the-village.bc.nu> <Line.LNX.4.64.0704180935100.25495@d.namei>
- <4626746A.9010701@novell.com> <20070609210151.GB6663@elf.ucw.cz>
- <Pine.LNX.4.64.0706091426240.6313@asgard.lang.hm> <20070609230239.GA21229@elf.ucw.cz>
+	Sat, 9 Jun 2007 20:34:08 -0400
+Message-ID: <466B46D5.1020004@cs.cmu.edu>
+Date: Sat, 09 Jun 2007 20:33:25 -0400
+From: Benjamin Gilbert <bgilbert@cs.cmu.edu>
+User-Agent: Icedove 1.5.0.8 (X11/20061208)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Jeff Garzik <jeff@garzik.org>
+CC: Matt Mackall <mpm@selenic.com>, akpm@linux-foundation.org,
+       herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
+References: <20070608214242.23949.30350.stgit@dev> <20070608214253.23949.40465.stgit@dev> <20070609201159.GC11166@waste.org> <466B0C3F.3040300@garzik.org>
+In-Reply-To: <466B0C3F.3040300@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Jun 2007, Pavel Machek wrote:
+Jeff Garzik wrote:
+> Matt Mackall wrote:
+>> Have you benchmarked this against lib/sha1.c? Please post the results.
+>> Until then, I'm frankly skeptical that your unrolled version is faster
+>> because when I introduced lib/sha1.c the rolled version therein won by
+>> a significant margin and had 1/10th the cache footprint.
 
->>>>>> I'm not sure if AppArmor can be made good security for the general case,
->>>>>> but it is a model that works in the limited http environment
->>>>>> (eg .htaccess) and is something people can play with and hack on and may
->>>>>> be possible to configure to be very secure.
->>>>>>
->>>>> Perhaps -- until your httpd is compromised via a buffer overflow or
->>>>> simply misbehaves due to a software or configuration flaw, then the
->>>>> assumptions being made about its use of pathnames and their security
->>>>> properties are out the window.
->>>>>
->>>> How is it that you think a buffer overflow in httpd could allow an
->>>> attacker to break out of an AppArmor profile? This is exactly what
->>>> AppArmor was designed to do, and without specifics, this is just
->>>> FUD.
->>>
->>> No, it is not, I already broke AppArmor once, and it took me less then
->>> one hour.
->>>
->>> Give me machine with root shell, and make app armor permit everything
->>> but reading /etc/secret.file. AppArmor is not designed for this, but
->>> if you want to claim your solution works, this looks like a nice test.
->>>
->>> Actually, give password to everyone, and see who breaks it first.
->>
->> you admit that AA isn't designed for this and then you set this as the
->> test, doesn't that seem unreasonable to you?
->
-> httpd's run at root priviledge, AFAICT, and Crispin just accused
-> someone of spreading fud. Exploited httpd is root shell.
+See the benchmark tables in patch 0 at the head of this thread. 
+Performance improved by at least 25% in every test, and 40-60% was more 
+common for the 32-bit version (on a Pentium IV).
 
-only poorly designed webservers run as root. in general they have not been 
-running as root for many years.
+It's not just the loop unrolling; it's the register allocation and 
+spilling.  For comparison, I built SHATransform() from the 
+drivers/char/random.c in 2.6.11, using gcc 3.3.5 with -O2 and 
+SHA_CODE_SIZE == 3 (i.e., fully unrolled); I'm guessing this is pretty 
+close to what you tested back then.  The resulting code is 49% MOV 
+instructions, and 80% of *those* involve memory.  gcc4 is somewhat 
+better, but it still spills a whole lot, both for the 2.6.11 unrolled 
+code and for the current lib/sha1.c.
 
-however, if you are willing to take a limited shell (root or any other 
-user) that's a different story, what would you want the shell to have 
-permission to do? would read files in directory A and write files in 
-directory B be good enough? or would you want it to be able to execute 
-specific commands?
+In contrast, the assembly implementation in this patch only has to go to 
+memory for data and workspace (with one small exception in the F3 
+rounds), and the workspace has a fifth of the cache footprint of the 
+default implementation.
 
-note that at the moment I am not comitting anyone to provide a box for 
-such a challange, but I'm interested in what you would consider a suitable 
-test.
+> Yes. And it also depends on the CPU as well.  Testing on a server-class 
+> x86 CPU (often with bigger L2, and perhaps even L1, cache) will produce 
+> different result than from popular but less-capable "value" CPUs.
 
-David Lang
+Good point.  I benchmarked the 32-bit assembly code on a couple more boxes:
+
+=== AMD Duron, average of 5 trials ===
+Test#  Bytes/  Bytes/  Cyc/B  Cyc/B  Change
+         block  update    (C)  (asm)
+     0      16      16    104     72     31%
+     1      64      16     52     36     31%
+     2      64      64     45     29     36%
+     3     256      16     33     23     30%
+     4     256      64     27     17     37%
+     5     256     256     24     14     42%
+     6    1024      16     29     20     31%
+     7    1024     256     20     11     45%
+     8    1024    1024     19     11     42%
+     9    2048      16     28     20     29%
+    10    2048     256     19     11     42%
+    11    2048    1024     18     10     44%
+    12    2048    2048     18     10     44%
+    13    4096      16     28     19     32%
+    14    4096     256     18     10     44%
+    15    4096    1024     18     10     44%
+    16    4096    4096     18     10     44%
+    17    8192      16     27     19     30%
+    18    8192     256     18     10     44%
+    19    8192    1024     18     10     44%
+    20    8192    4096     17     10     41%
+    21    8192    8192     17     10     41%
+
+=== Classic Pentium, average of 5 trials ===
+Test#  Bytes/  Bytes/  Cyc/B  Cyc/B  Change
+         block  update    (C)  (asm)
+     0      16      16    145    144      1%
+     1      64      16     72     61     15%
+     2      64      64     65     52     20%
+     3     256      16     46     39     15%
+     4     256      64     39     32     18%
+     5     256     256     36     29     19%
+     6    1024      16     40     33     18%
+     7    1024     256     30     23     23%
+     8    1024    1024     29     23     21%
+     9    2048      16     39     32     18%
+    10    2048     256     29     22     24%
+    11    2048    1024     28     22     21%
+    12    2048    2048     28     22     21%
+    13    4096      16     38     32     16%
+    14    4096     256     28     22     21%
+    15    4096    1024     28     21     25%
+    16    4096    4096     27     21     22%
+    17    8192      16     38     32     16%
+    18    8192     256     28     22     21%
+    19    8192    1024     28     21     25%
+    20    8192    4096     27     21     22%
+    21    8192    8192     27     21     22%
+
+The improvement isn't as good, but it's still noticeable.
+
+--Benjamin Gilbert
+
