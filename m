@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbXFJSKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbXFJSVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762130AbXFJSKX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 14:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755714AbXFJSKL
+	id S1761491AbXFJSVU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 14:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXFJSVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 14:10:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56184 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754666AbXFJSKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 14:10:09 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19047hFqpt087U2eMMrytO59S6uMXXiIkBS/tK7o9
-	bFZJH6wSQlGpFJ
-Date: Sun, 10 Jun 2007 20:10:16 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.22-rc3 nmi watchdog hang
-Message-ID: <20070610181016.GA15979@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org> <20070605091151.GA18385@elte.hu> <20070605022411.f303d28b.akpm@linux-foundation.org> <20070605093349.GA24956@elte.hu> <20070605093958.GA26135@elte.hu> <20070605094246.GA27135@elte.hu> <20070605094555.GA28097@elte.hu> <20070605095025.GA29029@elte.hu> <20070605095600.GA29270@elte.hu>
+	Sun, 10 Jun 2007 14:21:12 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41384 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754228AbXFJSVL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 14:21:11 -0400
+Date: Sun, 10 Jun 2007 11:19:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+In-Reply-To: <466BC0E3.4050600@cosmosbay.com>
+Message-ID: <alpine.LFD.0.98.0706101118500.20321@woody.linux-foundation.org>
+References: <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com>
+ <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com>
+ <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com>
+ <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com>
+ <20070609172429.GF4095@ftp.linux.org.uk> <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com>
+ <20070609200645.GG4095@ftp.linux.org.uk> <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
+ <466BC0E3.4050600@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070605095600.GA29270@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-291363542-1181499549=:20321"
+Content-ID: <alpine.LFD.0.98.0706101119140.20321@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.05 11:56:00 +0200, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > > ah, plain -rc3 hangs too. So it's one of these commits i guess:
-> > > 
-> > > commit 1eeb66a1bb973534dc3d064920a5ca683823372e
-> > > commit 09198e68501a7e34737cd9264d266f42429abcdc
-> > > commit bbba11c35baaad3f70f32e185a2c1d40d7901fe9
-> > > commit bf8696ed6dfa561198b4736deaf11ab68dcc4845
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---1463790079-291363542-1181499549=:20321
+Content-Type: TEXT/PLAIN; CHARSET=iso-8859-15
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.LFD.0.98.0706101119141.20321@woody.linux-foundation.org>
+
+
+
+On Sun, 10 Jun 2007, Eric Dumazet wrote:
+
+> Linus Torvalds a écrit :
 > > 
-> > oh, damn. The resulting kernel after having undone these doesnt even 
-> > build ...
+> > 	close(0);
+> > 	close(1);
+> > 	close(2);
+> > 	.. generate filenames, whatever ..
+> > 	if (open(..) < 0 || open(..) < 0 || open(..) < 0)
+> > 		die("Couldn't redirect stdin/stdout/stderr");
+> > 
+> > and there's absolutely nothing wrong with this kind of setup, even if you
+> > could obviously have done it other ways too (ie by using "dup2()" instead of
+> > "close + open"),
 > 
-> Andi/Linus Cc:-ed - these NMI watchdog changes came over the x86_64 
-> tree. I suspect this patch:
-> 
->  commit 09198e68501a7e34737cd9264d266f42429abcdc
->  Author: Andi Kleen <ak@suse.de>
->  Date:   Wed May 2 19:27:20 2007 +0200
-> 
->      [PATCH] i386: Clean up NMI watchdog code
-> 
-> Andi - just boot with nmi_watchdog=2 on a dual-core Athlon64 CPU.
+> This kind of setup was OK 25 years ago, before multithreading era.
+> You cannot reasonably expect it to work in a multithreaded program.
 
-I still fail to reproduce this, could you send me your config?
+Who said _anything_ about threading?
 
-Thanks,
-Björn
+The above is a totally non-threaded app. 99% of all applications are like 
+that.
+
+Threading is for the 1%. But 99% is what we need to make sure works.
+
+		Linus
+---1463790079-291363542-1181499549=:20321--
