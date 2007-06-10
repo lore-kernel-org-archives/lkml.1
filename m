@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763368AbXFJUyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763525AbXFJUzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763368AbXFJUyQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 16:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756331AbXFJUyF
+	id S1763525AbXFJUzY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 16:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756910AbXFJUzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 16:54:05 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:54380 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756236AbXFJUyD (ORCPT
+	Sun, 10 Jun 2007 16:55:10 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:51710 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756821AbXFJUzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 16:54:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OKmv9wARKQYT2sAXJXt61SPbz57j8fBp9f1M3vum1ILG/izb8U0XneMcanLbARsTYb88gm6zCavgmDn8gkBgLqT0i+Vi9JeNeXVuXGYBjri0JrRSnIY6hKR6gCyrvBmhA2sYiDYW02sVeEf6Ksiicdk7BYDOE0Cbe5e7oDVnk8E=
-Message-ID: <68676e00706101354n5fe7e1a9y12cb690cae2924e3@mail.gmail.com>
-Date: Sun, 10 Jun 2007 22:54:02 +0200
-From: Luca <kronos.it@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>
-Subject: Re: [kvm-devel] [BUG] Oops with KVM-27
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <466BED18.5040708@qumranet.com>
+	Sun, 10 Jun 2007 16:55:08 -0400
+Message-ID: <466C6518.9070501@novell.com>
+Date: Sun, 10 Jun 2007 13:54:48 -0700
+From: Crispin Cowan <crispin@novell.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: david@lang.hm
+CC: Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, Pavel Machek <pavel@ucw.cz>,
+       jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de> <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <Pine.LNX.4.64.0706082207260.6675@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0706082207260.6675@asgard.lang.hm>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070603213432.GA3075@dreamland.darkstar.lan>
-	 <4663DCE9.3000107@qumranet.com>
-	 <20070604202248.GA18668@dreamland.darkstar.lan>
-	 <46647B3E.2090205@qumranet.com>
-	 <20070604212207.GA22365@dreamland.darkstar.lan>
-	 <46651069.5040003@qumranet.com>
-	 <68676e00706071216i4bd051c5hb1c114f3c13ab97f@mail.gmail.com>
-	 <466BED18.5040708@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/10/07, Avi Kivity <avi@qumranet.com> wrote:
-> Luca wrote:
-> > On 6/5/07, Avi Kivity <avi@qumranet.com> wrote:
-> >> Luca Tettamanti wrote:
-> >> > Il Mon, Jun 04, 2007 at 11:51:10PM +0300, Avi Kivity ha scritto:
-> >> >
-> >> >>> While doing repeated tests with the installer I ran into another
-> >> >>> (unrelated) problem. Sometimes the guest kernel hangs at boot at:
-> >> >>>
-> >> >>> NET: Registered protocol family 2
-> >> >>>
-> >> >>> with any kind of networking options (except for -net none, which
-> >> works).
-> >> >>> With -no-kvm it boots with any networking option.
-> >> >>>
-> >> >>>
-> >> >>>
-> >> >> Can you try to pin the guest on a single core with taskset:
-> >> >>
-> >> >>    taskset 1 qemu ...
-> >> >>
-> >> >
-> >> > Doesn't help. What works is 'nolapic', i.e. disabling the local
-> >> APIC on
-> >> > the guest kernel.
-> >> > I've also tried disabling TSC (notsc) and forcing PIT as the
-> >> clocksource
-> >> > (clocksouce=pit clock=pit); neither of them helped.
-> >> >
-> >> >
-> >>
-> >> Is this a regression relative to a previous kvm version?
-> >
-> > Hello,
-> > sorry for the delay, I was having troubles compiling older KVMs with a
-> > recent kernel...
-> > The last version that works is kvm-21; starting from kvm-22 the VM
-> > hangs during network initialization (now always, but pretty often).
-> > This only occurs when the guest is Fedora7 setup ISO. The regular boot
-> > (i.e. from the hd) seems unaffected.
+david@lang.hm wrote:
+> On Fri, 8 Jun 2007, Greg KH wrote:
+>> I still want to see a definition of the AA "model" that we can then use
+>> to try to implement using whatever solution works best.  As that seems
+>> to be missing the current argument of if AA can or can not be
+>> implemented using SELinux or something totally different should be
+>> stopped.
+> the way I would describe the difference betwen AA and SELinux is:
 >
-> I've managed to reproduce this on kvm-21 (it takes many boots for this
-> to happen, but it does eventually).
+> SELinux is like a default allow IPS system, you have to describe
+> EVERYTHING to the system so that it knows what to allow and what to stop.
+>
+> AA is like a default deny firewall, you describe what you want to
+> happen, and it blocks everything else without you even having to
+> realize that it's there.
+That's not quite right:
 
-Hum, any clue on the cause? Should I test older versions?
+    * SELinux Strict Policy is a default-deny system: it specifies
+      everything that is permitted system wide, and all else is denied.
+    * AA and the SELinux Targeted Policy are hybrid systems:
+          o default-deny within a policy or profile: confined processes
+            are only permitted to do what the policy says, and all else
+            is denied.
+          o default-allow system wide: unconfined processes are allowed
+            to do anything that classic DAC permissions allow.
 
-Luca
+Crispin
+
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
+Director of Software Engineering   http://novell.com
+	AppArmor Chat: irc.oftc.net/#apparmor
+
