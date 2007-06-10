@@ -1,47 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbXFJBQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbXFJBy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756421AbXFJBQV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 21:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbXFJBQL
+	id S1755250AbXFJBy1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 21:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXFJByU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 21:16:11 -0400
-Received: from CHOKECHERRY.SRV.CS.CMU.EDU ([128.2.185.41]:49813 "EHLO
-	chokecherry.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751730AbXFJBQK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 21:16:10 -0400
-Message-ID: <466B50C8.1090106@cs.cmu.edu>
-Date: Sat, 09 Jun 2007 21:15:52 -0400
-From: Benjamin Gilbert <bgilbert@cs.cmu.edu>
-User-Agent: Icedove 1.5.0.8 (X11/20061208)
+	Sat, 9 Jun 2007 21:54:20 -0400
+Received: from colo.lackof.org ([198.49.126.79]:41194 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751363AbXFJByU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jun 2007 21:54:20 -0400
+Date: Sat, 9 Jun 2007 19:54:12 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Auke Kok <auke-jan.h.kok@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       gregkh@suse.de, grundler@parisc-linux.org, davem@davemloft.net
+Subject: Re: [PATCH] PCI: also read revision ID for sparc64, ppc, read
+	class at the same time
+Message-ID: <20070610015412.GA26396@colo.lackof.org>
+References: <20070609201221.5868.31948.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: akpm@linux-foundation.org, herbert@gondor.apana.org.au,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
-References: <20070608214242.23949.30350.stgit@dev> <20070608214253.23949.40465.stgit@dev> <Pine.LNX.4.64.0706090931330.4353@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0706090931330.4353@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070609201221.5868.31948.stgit@localhost.localdomain>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.15+20070515 (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jun 8 2007 17:42, Benjamin Gilbert wrote:
->> @@ -0,0 +1,299 @@
->> +/*
->> + * x86-optimized SHA1 hash algorithm (i486 and above)
->> + *
->> + * Originally from Nettle
->> + * Ported from M4 to cpp by Benjamin Gilbert <bgilbert@cs.cmu.edu>
->> + *
->> + * Copyright (C) 2004, Niels M?ller
->> + * Copyright (C) 2006-2007 Carnegie Mellon University
+On Sat, Jun 09, 2007 at 01:12:21PM -0700, Auke Kok wrote:
+> Since the PCI bus class and revision are in the same dword, we
+> can fill in both in the same read.
 > 
-> UTF-8 please. Hint: it should most likely be an ö.
+> Other non-x86 arches use different methods to fill in these values,
+> make sure to adjust those too.
 
-Whoops, I had thought I had gotten that right.  I'll get updates for 
-parts 2 and 3 sent out on Monday.
+Yeah, this looks good to me.
 
-Thanks
---Benjamin Gilbert
+I didn't know ppc  and sparc had their own methods for device discovery.
+
+Acked-by: Grant Grundler <grundler@parisc-linux.org>
+
+thanks,
+grant
+
+> 
+> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+> ---
+> 
+>  arch/powerpc/kernel/pci_64.c |    2 ++
+>  arch/sparc64/kernel/pci.c    |    1 +
+>  drivers/pci/probe.c          |    4 +---
+>  3 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index 249cca2..b2c55ca 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -367,8 +367,10 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
+>  	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+>  		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+>  	dev->class = get_int_prop(node, "class-code", 0);
+> +	dev->revision = get_int_prop(node, "revision-id", 0);
+>  
+>  	DBG("    class: 0x%x\n", dev->class);
+> +	DBG("    revision: 0x%x\n", dev->revision);
+>  
+>  	dev->current_state = 4;		/* unknown power state */
+>  	dev->error_state = pci_channel_io_normal;
+> diff --git a/arch/sparc64/kernel/pci.c b/arch/sparc64/kernel/pci.c
+> index 38a32bc..759cc20 100644
+> --- a/arch/sparc64/kernel/pci.c
+> +++ b/arch/sparc64/kernel/pci.c
+> @@ -448,6 +448,7 @@ struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
+>  		 */
+>  		pci_read_config_dword(dev, PCI_CLASS_REVISION, &class);
+>  		dev->class = class >> 8;
+> +		dev->revision = class & 0xff;
+>  
+>  		sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+>  			dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 0fdb71d..a574b7f 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -702,6 +702,7 @@ static int pci_setup_device(struct pci_dev * dev)
+>  		dev->bus->number, PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
+>  
+>  	pci_read_config_dword(dev, PCI_CLASS_REVISION, &class);
+> +	dev->revision = class & 0xff;
+>  	class >>= 8;				    /* upper 3 bytes */
+>  	dev->class = class;
+>  	class >>= 8;
+> @@ -918,9 +919,6 @@ pci_scan_device(struct pci_bus *bus, int devfn)
+>  	dev->cfg_size = pci_cfg_space_size(dev);
+>  	dev->error_state = pci_channel_io_normal;
+>  
+> -	/* read the PCI revision: 1 byte */
+> -	pci_read_config_byte(dev, PCI_REVISION_ID, &dev->revision);
+> -
+>  	/* Assume 32-bit PCI; let 64-bit PCI cards (which are far rarer)
+>  	   set this higher, assuming the system even supports it.  */
+>  	dev->dma_mask = 0xffffffff;
