@@ -1,69 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbXFJOWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759062AbXFJOX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbXFJOWM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 10:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXFJOV6
+	id S1759062AbXFJOX3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 10:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXFJOXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 10:21:58 -0400
-Received: from smtpgw02.netonehosting.com ([193.192.98.26]:33187 "EHLO
-	smtpgw02.netonehosting.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754636AbXFJOV5 (ORCPT
+	Sun, 10 Jun 2007 10:23:22 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:58486 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754855AbXFJOXW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 10:21:57 -0400
-Message-ID: <466C0901.4000405@netone.net.tr>
-Date: Sun, 10 Jun 2007 17:21:53 +0300
-From: Tarkan Erimer <tarkan@netone.net.tr>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: debian developer <debiandev@gmail.com>
-CC: "david@lang.hm" <david@lang.hm>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       greg@kroah.com
+	Sun, 10 Jun 2007 10:23:22 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: Jiri Kosina <jikos@jikos.cz>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>	 <18026.16739.228277.938421@notabene.brown>	 <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr>	 <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>	 <466BCBBC.90305@netone.net.tr>	 <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
-In-Reply-To: <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-9; format=flowed
+Date: Sun, 10 Jun 2007 16:23:20 +0200
+User-Agent: KMail/1.9.7
+Cc: Neil Brown <neilb@suse.de>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org
+References: <466A3EC6.6030706@netone.net.tr> <18027.50727.190221.80822@notabene.brown> <Pine.LNX.4.64.0706101444400.23280@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0706101444400.23280@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2944232.WI9RLaCX5v";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-NETONE-MailScanner-Information: Please contact the ISP for more information
-X-NETONE-MailScanner: Found to be clean
-X-NETONE-MailScanner-From: tarkan@netone.net.tr
+Message-Id: <200706101623.32733.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1181485401;72e8a204;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-debian developer wrote:
-> On 6/10/07, david@lang.hm <david@lang.hm> wrote:
->> On Sun, 10 Jun 2007, Tarkan Erimer wrote:
->>
->> >> >  And maybe another questions should be : How long a copyright 
->> owner can
->> >> >  hold the copyright, if died or lost for sometime ? if died, the
->> >> >  copyright still should be valid or not ? If lost, what the law 
->> orders at
->> >> >  this point for copyright holding ?
->> >>
->> >>  I believe that in the US it's life + 90 years.
->> >>
->> >>  David Lang
->> > Hmm... Really,it is damn too much time to wait! It's really better 
->> idea to
->> > replace the code of this person as said before instead of waiting 
->> such  90+
->> > years!
->>
->> exactly, however as others are pointing out, there are a lot of active
->> developers who do not agree with some of the key points of the GPLv3
->> (including Linus), so until you convince them that the GPLv3 is 
->> better it
->
-> Last heard, Linus was quite impressed with the toned down version of
-> the final draft of GPLv3. I think Linus, and other major developers
-> should make their stand on this issue clear so that the kernel
-> community can discuss the future steps.
-Yep, the GPLv3 probably will release around July time. So;luckily, we 
-had very little time to see the final decision about it :-) I hope we 
-should upgrade to GPLv3 and Sun should "Dual License" the OpenSolaris 
-via GPLv3 (or at least,GPLv3 should be CDDL compatible.). So,we should 
-have more fruits (like ZFS,DTrace etc.) ;-)
+--nextPart2944232.WI9RLaCX5v
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+> In most of the law systems out there the copyright stays valid for 70=20
+> years (or so) after the holder's death.
 
+[I don't want to appear picky but IMO it is important to be as precise
+as one could possibly be, therefor...]
+
+That is not quite correct. At least for the german law system and
+presumably for most if not all similar systems the corrrect stmts is:
+
+In most of the law systems out there the copyright stays valid for 70=20
+years (or so) after initial publication of the copyrighted work. For
+work whose publication date can't be determined (*) (e.g. unpublished work)
+the creators death is assumed to be the publication date for the sake
+of determining the  aforementioned 70 years protection period.
+
+(*) "can't be determined" does not apply for published work with an
+insecure initial publication date. In those cases the earliest documented
+publication (i.e. prooveable in court) is considered the initial publication
+=2Edate
+
+Note that the original phrase could last indefinitely by simply moving
+the copyright from person to person.
+
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart2944232.WI9RLaCX5v
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGbAlkUYYhyuxDQc4RApaTAJ0bPd/sPjOMmIgyeZY1ecnUBqurFgCdFPCT
+nYUOMH9v3iGw9bwugE985Qw=
+=d8qq
+-----END PGP SIGNATURE-----
+
+--nextPart2944232.WI9RLaCX5v--
