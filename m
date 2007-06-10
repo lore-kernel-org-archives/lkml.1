@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762266AbXFJHFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762383AbXFJHLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762266AbXFJHFU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 03:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760208AbXFJHFI
+	id S1762383AbXFJHLQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 03:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760707AbXFJHLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 03:05:08 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:20901 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760198AbXFJHFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 03:05:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ogQD6NOGk+m3Gp1hcIR7u3pE82jf9LDfxfek2KD7EC372LDpHOvTdjYg+I2Kuu0Ye0u54b3FsCWOwKCQPfcp1xqNGNMV6PwMfE+L+CxRMy1Gz+iNgPAAFYGBJYArtP8Pq1tDLPC1eSK2fck6g4OjdyCoY4bz9MrHBi50WabFPRc=
-Message-ID: <a781481a0706100005wf6b1e4ercfd94d9f4a80bbb@mail.gmail.com>
-Date: Sun, 10 Jun 2007 12:35:05 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Marco Berizzi" <pupilla@hotmail.com>
-Subject: Re: XFS internal error xfs_da_do_buf(2) at line 2087 of file fs/xfs/xfs_da_btree.c. Caller 0xc01b00bd
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <BAY103-DAV141D991980E54836534A00B2250@phx.gbl>
+	Sun, 10 Jun 2007 03:11:00 -0400
+Received: from holomorphy.com ([66.93.40.71]:55756 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759806AbXFJHK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 03:10:59 -0400
+Date: Sun, 10 Jun 2007 00:10:43 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
+Message-ID: <20070610071043.GB6909@holomorphy.com>
+References: <46686810.6030805@redhat.com> <Pine.LNX.4.64.0706071438020.6445@alien.or.mcafeemobile.com> <466880A4.3090908@redhat.com> <Pine.LNX.4.64.0706071534280.6445@alien.or.mcafeemobile.com> <20070608120746.GD12687@thunk.org> <20070608140150.6f31672f@the-village.bc.nu> <Pine.LNX.4.64.0706081108130.5519@alien.or.mcafeemobile.com> <18026.15766.574693.200636@cargo.ozlabs.ibm.com> <Pine.LNX.4.64.0706090942210.14037@alien.or.mcafeemobile.com> <18027.39295.464374.371664@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <BAY103-DAV1066400DF0615AD677EA1B2730@phx.gbl>
-	 <20070316012520.GN5743@melbourne.sgi.com>
-	 <BAY103-DAV13EC09E9BCB3E8C9D5EEA2B2710@phx.gbl>
-	 <20070316195951.GB5743@melbourne.sgi.com>
-	 <BAY103-DAV1484A3797D5368C28969CBB2700@phx.gbl>
-	 <BAY103-DAV9C465F21C87A900314523B2760@phx.gbl>
-	 <20070320064632.GO32602149@melbourne.sgi.com>
-	 <BAY103-DAV7076D9B4230E07680B724B2260@phx.gbl>
-	 <20070607130505.GE85884050@sgi.com>
-	 <BAY103-DAV141D991980E54836534A00B2250@phx.gbl>
+In-Reply-To: <18027.39295.464374.371664@cargo.ozlabs.ibm.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Jun 10, 2007 at 04:26:07PM +1000, Paul Mackerras wrote:
+> If you don't think we should be bound by POSIX, then you are perfectly
+> free to go off and write your own research kernel with whatever
+> interface you want, and no programs available to run on it. :)
 
-On 6/8/07, Marco Berizzi <pupilla@hotmail.com> wrote:
-> After few hours linux has crashed with this message:
-> BUG: at arch/i386/kernel/smp.c:546 smp_call_function()
+This isn't fair to research kernels. Breaking applications is not an
+active area of research.
 
-Which kernel (exactly) was this, and does this occur
-reproducibly? Also, could you please send the dmesg,
-stack trace, etc for when this happened?
 
-Satyam
+-- wli
