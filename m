@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762959AbXFJRnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763192AbXFJRpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762959AbXFJRnj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 13:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757718AbXFJRna
+	id S1763192AbXFJRpL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 13:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758370AbXFJRo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 13:43:30 -0400
-Received: from lazybastard.de ([212.112.238.170]:47884 "EHLO
+	Sun, 10 Jun 2007 13:44:57 -0400
+Received: from lazybastard.de ([212.112.238.170]:47891 "EHLO
 	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755004AbXFJRn3 (ORCPT
+	with ESMTP id S1751098AbXFJRo4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 13:43:29 -0400
-Date: Sun, 10 Jun 2007 19:38:29 +0200
+	Sun, 10 Jun 2007 13:44:56 -0400
+Date: Sun, 10 Jun 2007 19:40:11 +0200
 From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
 To: Arnd Bergmann <arnd@arndb.de>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -30,137 +30,48 @@ Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Roland Dreier <rdreier@cisco.com>,
        Ondrej Zajicek <santiago@crfreenet.org>,
        Ulisses Furquim <ulissesf@gmail.com>
-Subject: Re: [Patch 15/18] fs/logfs/super.c
-Message-ID: <20070610173828.GA32619@lazybastard.org>
-References: <20070603183845.GA8952@lazybastard.org> <20070603184927.GP8952@lazybastard.org> <200706101827.50948.arnd@arndb.de>
+Subject: Re: [Patch 10/18] fs/logfs/inode.c
+Message-ID: <20070610174011.GB32619@lazybastard.org>
+References: <20070603183845.GA8952@lazybastard.org> <20070603184636.GK8952@lazybastard.org> <200706101924.29927.arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <200706101827.50948.arnd@arndb.de>
+In-Reply-To: <200706101924.29927.arnd@arndb.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 June 2007 18:27:49 +0200, Arnd Bergmann wrote:
+On Sun, 10 June 2007 19:24:28 +0200, Arnd Bergmann wrote:
 > On Sunday 03 June 2007, Jörn Engel wrote:
-> > +static int mtdwrite(struct super_block *sb, loff_t ofs, size_t len, void *buf)
+> > +struct inode *logfs_new_inode(struct inode *dir, int mode)
 > > +{
-> > +	struct logfs_super *super = logfs_super(sb);
-> > +	struct mtd_info *mtd = super->s_mtd;
-> > +	struct inode *inode = super->s_dev_inode;
-> > +	size_t retlen;
-> > +	loff_t page_start, page_end;
-> > +	int ret;
+> > +       struct super_block *sb = dir->i_sb;
+> > +       struct inode *inode;
 > > +
-> > +	if (super->s_flags & LOGFS_SB_FLAG_RO)
-> > +		return -EROFS;
+> > +       inode = new_inode(sb);
+> > +       if (!inode)
+> > +               return ERR_PTR(-ENOMEM);
 > > +
-> > +	BUG_ON((ofs >= mtd->size) || (len > mtd->size - ofs));
-> > +	BUG_ON(ofs != (ofs >> super->s_writeshift) << super->s_writeshift);
-> > +	BUG_ON(len > PAGE_CACHE_SIZE);
-> > +	page_start = ofs & PAGE_CACHE_MASK;
-> > +	page_end = PAGE_CACHE_ALIGN(ofs + len) - 1;
-> > +	truncate_inode_pages_range(&inode->i_data, page_start, page_end);
-> > +	ret = mtd->write(mtd, ofs, len, &retlen, buf);
-> > +	if (ret || (retlen != len))
-> > +		return -EIO;
+> > +       logfs_init_inode(inode);
 > > +
-> > +	return 0;
+> > +       inode->i_mode = mode;
+> > +       inode->i_ino = logfs_get_ino(sb);
+> > +
+> > +       insert_inode_hash(inode);
+> > +
+> > +       return inode;
 > > +}
 > 
-> It seems that these functions are completely synchronous and afaics, the
-> writes are called in the pdflush context, effectively blocking out operations
-> on other file systems at the time. Not sure if this is something that
-> should be fixed, but it seems to limit scalability on mtd backends.
-> 
-> It seems that jffs2 has the same behaviour.
+> I think this is missing code that sets the initial i_uid/i_gid,
+> but there may be more missing. Changing the uid value works,
+> but creating files as non-root user doesn't.
 
-Most flash chips are synchronous.  Some support erase suspend - an erase
-operation can be indefinitely suspended to give faster read and write
-operations priority.  That's about it.
-
-For the foreseeable future I believe synchronous operations are the
-correct way to deal with raw flash chips.
-
-> > +static int bdwrite(struct super_block *sb, loff_t to, size_t len, void *buf)
-> > +{
-> > +	struct block_device *bdev = logfs_super(sb)->s_bdev;
-> > +	struct address_space *mapping = bdev->bd_inode->i_mapping;
-> > +	struct page *page;
-> > +	long index = to >> PAGE_SHIFT;
-> > +	long offset = to & (PAGE_SIZE-1);
-> > +	long copylen;
-> > +
-> > +	while (len) {
-> > +		copylen = min((ulong)len, PAGE_SIZE - offset);
-> > +
-> > +		page = read_cache_page(mapping, index,
-> > +				(filler_t*)mapping->a_ops->readpage, NULL);
-> > +		if (!page)
-> > +			return -ENOMEM;
-> > +		if (IS_ERR(page))
-> > +			return PTR_ERR(page);
-> > +		lock_page(page);
-> > +		memcpy(page_address(page) + offset, buf, copylen);
-> > +		set_page_dirty(page);
-> > +		unlock_page(page);
-> > +		page_cache_release(page);
-> > +
-> > +		buf += copylen;
-> > +		len -= copylen;
-> > +		offset = 0;
-> > +		index++;
-> > +	}
-> > +	return 0;
-> > +}
-> 
-> How about using submit_bio here instead of going to the page cache?
-> That would avoid doubling all the memory consumption here.
-
-That may make sense, yes.  "May", because there is no simple mapping
-between physical data and logical data.  In ext3, everything is
-block-aligned, usually to 4KiB == PAGE_SIZE.  So the exact same content
-would exists in two pages.  In LogFS, data is compressed and
-byte-aligned.  A bdev page can contain several full objects that after
-uncompression get stored in one page each.
-
-> > +/*
-> > + * logfs_crash_dump - dump debug information to device
-> > + *
-> > + * The LogFS superblock only occupies part of a segment.  This function will
-> > + * write as much debug information as it can gather into the spare space.
-> > + */
-> > +void logfs_crash_dump(struct super_block *sb)
-> > +{
-> > +	struct logfs_super *super = logfs_super(sb);
-> > +	int i, blockno = 2, bs = sb->s_blocksize;
-> > +	void *scratch = super->s_wblock[0];
-> > +	void *stack = (void *) ((ulong)current & ~0x1fffUL);
-> > +
-> > +	/* all wbufs */
-> > +	for (i=0; i<LOGFS_NO_AREAS; i++) {
-> > +		void *wbuf = super->s_area[i]->a_wbuf;
-> > +		u64 ofs = sb->s_blocksize + i*super->s_writesize;
-> > +		mtdwrite(sb, ofs, super->s_writesize, wbuf);
-> > +	}
-> 
-> shouldn't this use the ->write() function instead of hardcoding mtdwrite.
-
-It should and I've already fixed it since sending the patches.
-
-> > +module_init(logfs_init);
-> > +module_exit(logfs_exit);
-> 
-> You are missing at least a MODULE_LICENSE and should probably
-> add the MODULE_AUTHOR and MODULE_DESCRIPTION tags as well.
-> Right now, it's impossible to even load the module, because
-> it uses a few GPL-only symbols.
-
-Indeed.  Will do.
+Eek!  I'll have a look.
 
 Jörn
 
 -- 
-A defeated army first battles and then seeks victory.
--- Sun Tzu
+When in doubt, punt.  When somebody actually complains, go back and fix it...
+The 90% solution is a good thing.
+-- Rob Landley
