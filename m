@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761937AbXFJR2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762195AbXFJR3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761937AbXFJR2Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 13:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbXFJR2F
+	id S1762195AbXFJR3o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 13:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbXFJR3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 13:28:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35509 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757915AbXFJR2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 13:28:02 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Subject: Re: cat /dev/snapshot == OOPs
-Date: Sun, 10 Jun 2007 19:33:53 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org,
-       "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-References: <200706101542.33951.arekm@maven.pl>
-In-Reply-To: <200706101542.33951.arekm@maven.pl>
+	Sun, 10 Jun 2007 13:29:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39558 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757409AbXFJR3h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 13:29:37 -0400
+Date: Sun, 10 Jun 2007 10:29:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Tarkan Erimer <tarkan@netone.net.tr>
+cc: debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu, greg@kroah.com
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <466C0901.4000405@netone.net.tr>
+Message-ID: <alpine.LFD.0.98.0706101025330.20321@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr>  <18026.16739.228277.938421@notabene.brown>
+  <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr> 
+ <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>  <466BCBBC.90305@netone.net.tr>
+  <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
+ <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
+ <466C0901.4000405@netone.net.tr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706101933.53647.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 10 June 2007 15:42, Arkadiusz Miskiewicz wrote:
-> Hello,
-> 
-> Is this desired behaviour?
-
-Obviously not.
-
-> $ sudo cat /dev/snapshot
-> 
-> ended with:
-> 
-> [54498.464550] device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: 
-> dm-devel@redhat.com
-> [56592.077674] swsusp: Basic memory bitmaps created
-> [56592.084340] BUG: unable to handle kernel NULL pointer dereference at 
-> virtual address 0000000c
-
-Can you please try the appended patch?
-
-Rafael
 
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/user.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+On Sun, 10 Jun 2007, Tarkan Erimer wrote:
+> > 
+> > Last heard, Linus was quite impressed with the toned down version of
+> > the final draft of GPLv3.
 
-Index: linux-2.6.22-rc4/kernel/power/user.c
-===================================================================
---- linux-2.6.22-rc4.orig/kernel/power/user.c	2007-06-10 19:33:36.000000000 +0200
-+++ linux-2.6.22-rc4/kernel/power/user.c	2007-06-10 19:35:59.000000000 +0200
-@@ -99,6 +99,8 @@ static ssize_t snapshot_read(struct file
- 	ssize_t res;
- 
- 	data = filp->private_data;
-+	if (!data->ready)
-+		return -ENODATA;
- 	res = snapshot_read_next(&data->handle, count);
- 	if (res > 0) {
- 		if (copy_to_user(buf, data_of(data->handle), res))
-@@ -163,7 +165,7 @@ static int snapshot_ioctl(struct inode *
- 		break;
- 
- 	case SNAPSHOT_UNFREEZE:
--		if (!data->frozen)
-+		if (!data->frozen || data->ready)
- 			break;
- 		mutex_lock(&pm_mutex);
- 		thaw_processes();
+I was impressed in the sense that it was a hell of a lot better than the 
+disaster that were the earlier drafts.
+
+I still think GPLv2 is simply the better license.
+
+I consider dual-licensing unlikely (and technically quite hard), but at 
+least _possible_ in theory. I have yet to see any actual *reasons* for 
+licensing under the GPLv3, though. All I've heard are shrill voices about 
+"tivoization" (which I expressly think is ok) and panicked worries about 
+Novell-MS (which seems way overblown, and quite frankly, the argument 
+seems to not so much be about the Novell deal, as about an excuse to push 
+the GPLv3).
+
+		Linus
