@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbXFJSzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbXFJS6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760191AbXFJSzI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 14:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbXFJSy5
+	id S1760711AbXFJS6u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 14:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbXFJS6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 14:54:57 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:7797 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753765AbXFJSy4 (ORCPT
+	Sun, 10 Jun 2007 14:58:43 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:33203 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754785AbXFJS6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 14:54:56 -0400
-Date: Sun, 10 Jun 2007 20:54:39 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: linux-kernel@vger.kernel.org
-Subject: ide0=noprobe, hda=noprobe, hda=none ignored?
-Message-ID: <20070610185439.GA12202@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	linux-kernel@vger.kernel.org
+	Sun, 10 Jun 2007 14:58:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=JHgz4EbqbtgvS5twcIxK3JMiRYfupopw6QzXF2KxHRuNTZtfWNn/XcMnxKooOXhD1SCMRF/siqbC2agN+lczLkePM/As74j8aqeC+iW7dgGVyYxEh3iRZAdA4qSTqLlmS6oJE9vORSaJ3+bKXB+KEUmbuB/hv2SzAo+3+wbbBvA=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Remove unneeded test of 'task' in dump_trace()
+Date: Sun, 10 Jun 2007 20:58:42 +0200
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706102058.42727.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been trying for months to get my box to boot faster
-by ignoring the not connected hda/hdb (ide0).
+Remove unneeded test of task != NULL from 
+arch/i386/kernel/traps.c::dump_trace()
 
-ansset:~>dmesg | egrep '(noprobe|ide0|hda|hdb)'
+At the start of the function we have this test:
+        if (!task)
+                task = current;
+so further down there's no need to test 'task'.
 
-Kernel command line: root=/dev/hde3 ro ide0=noprobe
-    ide0: BM-DMA at 0xd800-0xd807, BIOS settings: hda:pio, hdb:pio
-Probing IDE interface ide0...
-hda: IRQ probe failed (0xfffffdb8)
-etc.
 
-or
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-Kernel command line: root=/dev/hde3 ro hda=none hdb=none
-    ide0: BM-DMA at 0xd800-0xd807, BIOS settings: hda:pio, hdb:pio
-Probing IDE interface ide0...
-hda: IRQ probe failed (0xfffffdb8)
+ arch/i386/kernel/traps.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-same for hda=noprobe hdb=noprobe
-
-Nothing helps.
-
-Is this a bug or not? I'd think that saying "noprobe" means
-"do NOT probe" - but it probes anyway.
-
-The documentation also tells me that =none should CERTAINLY
-make it ignore the non-existant drives - but it keeps probing.
-
-Shouldn't an explicitely added kernel parameter be taken a
-little bit more serious by the kernel? Independent on whether
-or not a drive is detected (or what the CMOS might think about
-that), I think that the kernel should REALLY, totally ignore
-an ide and/or hdX if so explicitely requested with a kernel
-parameter.
-
-Anything I missed?
-
--- 
-Carlo Wood <carlo@alinoe.com>
-
-PS Sorry if this is a FAQ (it seems so) -- I just can't find
-   a satisfactory answer anywhere as to why explicit parameters
-   like this are ignored and want to ask to change this. Or,
-   I cannnot find the solution for this problem and get my
-   damn ide0 NOT probed.
-
+diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
+index 90da057..f29a61d 100644
+--- a/arch/i386/kernel/traps.c
++++ b/arch/i386/kernel/traps.c
+@@ -148,7 +148,7 @@ void dump_trace(struct task_struct *task, struct pt_regs *regs,
+ 	if (!stack) {
+ 		unsigned long dummy;
+ 		stack = &dummy;
+-		if (task && task != current)
++		if (task != current)
+ 			stack = (unsigned long *)task->thread.esp;
+ 	}
+ 
