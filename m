@@ -1,252 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbXFJMJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbXFJMKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbXFJMJw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 08:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbXFJMJn
+	id S1756766AbXFJMKn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 08:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbXFJMKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 08:09:43 -0400
-Received: from bay2-f252.bay2.hotmail.com ([65.54.246.77]:48773 "EHLO
-	bay0-omc1-s5.bay0.hotmail.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752141AbXFJMJm convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 08:09:42 -0400
-Message-ID: <BAY103-DAV160F003E4B6DBCE103C7C9B21B0@phx.gbl>
-X-Originating-IP: [85.41.109.158]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-References: <BAY103-DAV1066400DF0615AD677EA1B2730@phx.gbl> <20070316012520.GN5743@melbourne.sgi.com> <BAY103-DAV13EC09E9BCB3E8C9D5EEA2B2710@phx.gbl> <20070316195951.GB5743@melbourne.sgi.com> <BAY103-DAV1484A3797D5368C28969CBB2700@phx.gbl> <BAY103-DAV9C465F21C87A900314523B2760@phx.gbl> <20070320064632.GO32602149@melbourne.sgi.com> <BAY103-DAV7076D9B4230E07680B724B2260@phx.gbl> <20070607130505.GE85884050@sgi.com> <BAY103-DAV141D991980E54836534A00B2250@phx.gbl> <a781481a0706100005wf6b1e4ercfd94d9f4a80bbb@mail.gmail.com>
-Subject: Re: XFS internal error xfs_da_do_buf(2) at line 2087 of file fs/xfs/xfs_da_btree.c. Caller 0xc01b00bd
-Date: Sun, 10 Jun 2007 14:20:52 +0200
+	Sun, 10 Jun 2007 08:10:36 -0400
+Received: from TYO200.gate.nec.co.jp ([210.143.35.50]:43220 "EHLO
+	tyo200.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753993AbXFJMKf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 08:10:35 -0400
+Message-Id: <466BE883.8040003@ds.jp.nec.com>
+Date: Sun, 10 Jun 2007 21:03:15 +0900
+From: IKEDA Munehiro <m-ikeda@ds.jp.nec.com>
+User-Agent: Mozilla Thunderbird 1.0.2 (Windows/20050317)
+X-Accept-Language: ja, en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.2180
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
-X-OriginalArrivalTime: 10 Jun 2007 12:09:41.0731 (UTC) FILETIME=[39B9FB30:01C7AB58]
+To: linux-kernel@vger.kernel.org
+CC: Tsugikazu Shibata <tshibata@ab.jp.nec.com>, gregkh@suse.de,
+       IKEDA Munehiro <m-ikeda@ds.jp.nec.com>
+Subject: [RFD] Documentation/stable_api_nonsense.txt translated into Japanese
+References: <20070610.204845.115909592.tshibata@ab.jp.nec.com>
+In-Reply-To: <20070610.204845.115909592.tshibata@ab.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
+This is Japanese translation of "stable_api_nonsense.txt",
+which is based on the same motivation of Tsugikazu Shibata.
 
-> Hi,
+-----------------------------------------------------------------
+Below lines are Japanese Translation of "stable_api_nonsense.txt"
+-----------------------------------------------------------------
 
-ciao
+Signed-off-by: IKEDA, Munehiro <m-ikeda@ds.jp.nec.com>
+---
+==================================
+これは、
+linux-2.6.19/Documentation/stable_api_nonsense.txt の和訳
+です。
+翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
+翻訳日 ： 2006/12/3
+原著作者: Greg Kroah-Hartman < greg at kroah dot com >
+翻訳者 ： 池田 宗広 < m-ikeda at ds dot jp dot nec dot com >
+校正者 ： Masanori Kobayashi さん < zap03216 at nifty dot ne dot jp >
+          Seiji Kaneko さん < skaneko at a2 dot mbn dot or dot jp >
+==================================
 
-> On 6/8/07, Marco Berizzi <pupilla@hotmail.com> wrote:
->> After few hours linux has crashed with this message:
->> BUG: at arch/i386/kernel/smp.c:546 smp_call_function()
-> 
-> Which kernel (exactly) was this
 
-2.6.21.3
 
->  and does this occur
-> reproducibly?
+Linux カーネルのドライバインターフェース
+（あなたの質問すべてに対する回答とその他諸々）
 
-I don't know. I try to explain. With all debugging options
-enabled 2.6.21.x has never crashed. After two days 2.6.21.3
-was running without any debug options, it has crashed.
-Tomorrow morning I will start that linux box with linux 2.6.21.3
-without any debug options, and I will keep you informed
-(friday evening I have switched back to 2.6.21.3 with debug
-options enabled, so the machine doesn't crash during the week
-end: this system is my company firewall.)
+Greg Kroah-Hartman <greg at kroah dot com>
 
-> Also, could you please send the dmesg,
 
-Jun 4 20:53:05 Pleiadi kernel: sanitize start
-Jun 4 20:53:05 Pleiadi kernel: sanitize end
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 0000000000000000
-size: 000000000009ac00 end: 000000000009ac00 type: 1
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() type is E820_RAM
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 000000000009ac00
-size: 0000000000005400 end: 00000000000a0000 type: 2
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 00000000000ce000
-size: 0000000000002000 end: 00000000000d0000 type: 2
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 00000000000e0000
-size: 0000000000020000 end: 0000000000100000 type: 2
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 0000000000100000
-size: 000000003fdf0000 end: 000000003fef0000 type: 1
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() type is E820_RAM
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 000000003fef0000
-size: 000000000000b000 end: 000000003fefb000 type: 3
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 000000003fefb000
-size: 0000000000005000 end: 000000003ff00000 type: 4
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 000000003ff00000
-size: 0000000000080000 end: 000000003ff80000 type: 1
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() type is E820_RAM
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 000000003ff80000
-size: 0000000000080000 end: 0000000040000000 type: 2
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 00000000e0000000
-size: 0000000010000000 end: 00000000f0000000 type: 2
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 00000000fec00000
-size: 0000000000100400 end: 00000000fed00400 type: 2
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 00000000fee00000
-size: 0000000000100000 end: 00000000fef00000 type: 2
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 00000000ffb00000
-size: 0000000000100000 end: 00000000ffc00000 type: 2
-Jun 4 20:53:05 Pleiadi kernel: copy_e820_map() start: 00000000fff00000
-size: 0000000000100000 end: 0000000100000000 type: 2
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 0000000000000000 -
-000000000009ac00 (usable)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 000000000009ac00 -
-00000000000a0000 (reserved)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 00000000000ce000 -
-00000000000d0000 (reserved)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 00000000000e0000 -
-0000000000100000 (reserved)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 0000000000100000 -
-000000003fef0000 (usable)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 000000003fef0000 -
-000000003fefb000 (ACPI data)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 000000003fefb000 -
-000000003ff00000 (ACPI NVS)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 000000003ff00000 -
-000000003ff80000 (usable)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 000000003ff80000 -
-0000000040000000 (reserved)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 00000000e0000000 -
-00000000f0000000 (reserved)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 00000000fec00000 -
-00000000fed00400 (reserved)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 00000000fee00000 -
-00000000fef00000 (reserved)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 00000000ffb00000 -
-00000000ffc00000 (reserved)
-Jun 4 20:53:05 Pleiadi kernel: BIOS-e820: 00000000fff00000 -
-0000000100000000 (reserved)
-Jun 4 20:53:05 Pleiadi kernel: Zone PFN ranges:
-Jun 4 20:53:05 Pleiadi kernel: DMA 0 -> 4096
-Jun 4 20:53:05 Pleiadi kernel: Normal 4096 -> 229376
-Jun 4 20:53:05 Pleiadi kernel: HighMem 229376 -> 262016
-Jun 4 20:53:05 Pleiadi kernel: early_node_map[1] active PFN ranges
-Jun 4 20:53:05 Pleiadi kernel: 0: 0 -> 262016
-Jun 4 20:53:05 Pleiadi kernel: ACPI: RSDP 000F6BA0, 0024 (r2 PTLTD )
-Jun 4 20:53:05 Pleiadi kernel: ACPI: XSDT 3FEF5381, 004C (r1 PTLTD ^I
-XSDT 6040001 LTP 0)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: FACP 3FEF5441, 00F4 (r3 FSC
-6040001 F4240)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: DSDT 3FEF5535, 597B (r1 FSC
-D1649 6040001 MSFT 2000002)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: FACS 3FEFBFC0, 0040
-Jun 4 20:53:05 Pleiadi kernel: ACPI: SPCR 3FEFAEB0, 0050 (r1 PTLTD
-$UCRTBL$ 6040001 PTL 1)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: MCFG 3FEFAF00, 0040 (r1 PTLTD
-MCFG 6040001 LTP 0)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: APIC 3FEFAF40, 0098 (r1 PTLTD ^I
-APIC 6040001 LTP 0)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: BOOT 3FEFAFD8, 0028 (r1 PTLTD
-$SBFTBL$ 6040001 LTP 1)
-Jun 4 20:53:05 Pleiadi kernel: Processor #0 15:4 APIC version 20
-Jun 4 20:53:05 Pleiadi kernel: Processor #1 15:4 APIC version 20
-Jun 4 20:53:05 Pleiadi kernel: IOAPIC[0]: apic_id 2, version 32,
-address 0xfec00000, GSI 0-23
-Jun 4 20:53:05 Pleiadi kernel: IOAPIC[1]: apic_id 3, version 32,
-address 0xfec80000, GSI 24-47
-Jun 4 20:53:05 Pleiadi kernel: IOAPIC[2]: apic_id 4, version 32,
-address 0xfec80800, GSI 48-71
-Jun 4 20:53:05 Pleiadi kernel: IOAPIC[3]: apic_id 5, version 32,
-address 0xfec84000, GSI 72-95
-Jun 4 20:53:05 Pleiadi kernel: IOAPIC[4]: apic_id 6, version 32,
-address 0xfec84800, GSI 96-119
-Jun 4 20:53:05 Pleiadi kernel: Enabling APIC mode: Flat. Using 5 I/O
-APICs
-Jun 4 20:53:05 Pleiadi kernel: Allocating PCI resources starting at
-50000000 (gap: 40000000:a0000000)
-Jun 4 20:53:05 Pleiadi kernel: Built 1 zonelists. Total pages: 259969
-Jun 4 20:53:05 Pleiadi kernel: PID hash table entries: 4096 (order: 12,
-16384 bytes)
-Jun 4 20:53:05 Pleiadi kernel: Detected 3200.428 MHz processor.
-Jun 4 20:53:05 Pleiadi kernel: Console: colour VGA+ 80x25
-Jun 4 20:53:05 Pleiadi kernel: Dentry cache hash table entries: 131072
-(order: 7, 524288 bytes)
-Jun 4 20:53:05 Pleiadi kernel: Inode-cache hash table entries: 65536
-(order: 6, 262144 bytes)
-Jun 4 20:53:05 Pleiadi kernel: virtual kernel memory layout:
-Jun 4 20:53:05 Pleiadi kernel: fixmap : 0xfff9d000 - 0xfffff000
-( 392 kB)
-Jun 4 20:53:05 Pleiadi kernel: pkmap : 0xff800000 - 0xffc00000
-(4096 kB)
-Jun 4 20:53:05 Pleiadi kernel: vmalloc : 0xf8800000 - 0xff7fe000
-( 111 MB)
-Jun 4 20:53:05 Pleiadi kernel: lowmem : 0xc0000000 - 0xf8000000
-( 896 MB)
-Jun 4 20:53:05 Pleiadi kernel: .init : 0xc039f000 - 0xc03ce000
-( 188 kB)
-Jun 4 20:53:05 Pleiadi kernel: .data : 0xc02fd400 - 0xc0398114
-( 619 kB)
-Jun 4 20:53:05 Pleiadi kernel: .text : 0xc0100000 - 0xc02fd400
-(2037 kB)
-Jun 4 20:53:05 Pleiadi kernel: Checking if this processor honours the
-WP bit even in supervisor mode... Ok.
-Jun 4 20:53:05 Pleiadi kernel: Calibrating delay using timer specific
-routine.. 6403.78 BogoMIPS (lpj=32018905)
-Jun 4 20:53:05 Pleiadi kernel: Mount-cache hash table entries: 512
-Jun 4 20:53:05 Pleiadi kernel: monitor/mwait feature present.
-Jun 4 20:53:05 Pleiadi kernel: using mwait in idle threads.
-Jun 4 20:53:05 Pleiadi kernel: CPU0: Intel(R) Xeon(TM) CPU 3.20GHz
-stepping 0a
-Jun 4 20:53:05 Pleiadi kernel: Booting processor 1/1 eip 2000
-Jun 4 20:53:05 Pleiadi kernel: Calibrating delay using timer specific
-routine.. 6400.45 BogoMIPS (lpj=32002267)
-Jun 4 20:53:05 Pleiadi kernel: monitor/mwait feature present.
-Jun 4 20:53:05 Pleiadi kernel: CPU1: Intel(R) Xeon(TM) CPU 3.20GHz
-stepping 0a
-Jun 4 20:53:05 Pleiadi kernel: ENABLING IO-APIC IRQs
-Jun 4 20:53:05 Pleiadi kernel: migration_cost=142
-Jun 4 20:53:05 Pleiadi kernel: Setting up standard PCI resources
-Jun 4 20:53:05 Pleiadi kernel: ACPI: Device [PS2M] status [00000008]:
-functional but not present; setting present
-Jun 4 20:53:05 Pleiadi kernel: ACPI: Device [ECP] status [00000008]:
-functional but not present; setting present
-Jun 4 20:53:05 Pleiadi kernel: ACPI: Device [COM1] status [00000008]:
-functional but not present; setting present
-Jun 4 20:53:05 Pleiadi kernel: PCI quirk: region f000-f07f claimed by
-ICH4 ACPI/GPIO/TCO
-Jun 4 20:53:05 Pleiadi kernel: PCI quirk: region f180-f1bf claimed by
-ICH4 GPIO
-Jun 4 20:53:05 Pleiadi kernel: PCI: PXH quirk detected, disabling MSI
-for SHPC device
-Jun 4 20:53:05 Pleiadi kernel: PCI: PXH quirk detected, disabling MSI
-for SHPC device
-Jun 4 20:53:05 Pleiadi kernel: ACPI: PCI Interrupt Link [LNKA] (IRQs 3
-4 5 6 7 9 10 *11 12 14 15)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: PCI Interrupt Link [LNKB] (IRQs 3
-4 5 6 7 *9 10 11 12 14 15)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: PCI Interrupt Link [LNKC] (IRQs 3
-4 *5 6 7 9 10 11 12 14 15)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: PCI Interrupt Link [LNKD] (IRQs 3
-4 5 6 7 9 *10 11 12 14 15)
-Jun 4 20:53:05 Pleiadi kernel: ACPI: PCI Interrupt Link [LNKE] (IRQs 3
-4 5 6 7 9 10 11 12 14 15) *0, disabled.
-Jun 4 20:53:05 Pleiadi kernel: ACPI: PCI Interrupt Link [LNKF] (IRQs 3
-4 5 6 7 9 10 11 12 14 15) *0, disabled.
-Jun 4 20:53:05 Pleiadi kernel: ACPI: PCI Interrupt Link [LNKG] (IRQs 3
-4 5 6 7 9 10 11 12 14 15) *0, disabled.
-Jun 4 20:53:05 Pleiadi kernel: ACPI: PCI Interrupt Link [LNKH] (IRQs 3
-*4 5 6 7 9 10 11 12 14 15)
-Jun 4 20:53:05 Pleiadi kernel: IP route cache hash table entries: 32768
-(order: 5, 131072 bytes)
-Jun 4 20:53:05 Pleiadi kernel: TCP established hash table entries:
-131072 (order: 8, 1572864 bytes)
-Jun 4 20:53:05 Pleiadi kernel: TCP bind hash table entries: 65536
-(order: 7, 524288 bytes)
-Jun 4 20:53:05 Pleiadi kernel: highmem bounce pool size: 64 pages
-Jun 4 20:53:05 Pleiadi kernel: PNP: PS/2 controller doesn't have AUX
-irq; using default 12
-Jun 4 20:53:05 Pleiadi kernel: nf_conntrack version 0.5.0 (8188
-buckets, 65504 max)
-Jun 4 20:53:05 Pleiadi kernel: ip_tables: (C) 2000-2006 Netfilter Core
-Team
-Jun 4 20:53:05 Pleiadi kernel: Using IPI Shortcut mode
-Jun 4 20:53:05 Pleiadi kernel: VFS: Mounted root (xfs filesystem)
-readonly.
+この文書は、なぜ Linux ではバイナリカーネルインターフェースが定義
+されていないのか、またはなぜ不変のカーネルインターフェースを持たな
+いのか、ということを説明するために書かれた。ここでの話題は「カーネ
+ル内部の」インターフェースについてであり、ユーザー空間とのインター
+フェースではないことを理解してほしい。カーネルとユーザー空間とのイ
+ンターフェースとはアプリケーションプログラムが使用するものであり、
+つまりシステムコールのインターフェースがこれに当たる。これは今まで
+長きに渡り、かつ今後も「まさしく」不変である。私は確か 0.9 か何か
+より前のカーネルを使ってビルドした古いプログラムを持っているが、そ
+れは最新の 2.6 カーネルでもきちんと動作する。ユーザー空間とのイン
+ターフェースは、ユーザーとアプリケーションプログラマが不変性を信頼
+してよいものの一つである。
 
-> stack trace, etc for when this happened?
 
-I have only a monitor bitmap. Tell me if you want it.
+要旨
+----
+
+あなたは不変のカーネルインターフェースが必要だと考えているかもしれ
+ないが、実際のところはそうではない。あなたは必要としているものが分
+かっていない。あなたが必要としているものは安定して動作するドライバ
+であり、それはドライバがメインのカーネルツリーに含まれる場合のみ得
+ることができる。ドライバがメインのカーネルツリーに含まれていると、
+他にも多くの良いことがある。それは、Linux をより強固で、安定な、成
+熟したオペレーティングシステムにすることができるということだ。これ
+こそ、そもそもあなたが Linux を使う理由のはずだ。
+
+
+はじめに
+--------
+
+カーネル内部のインターフェース変更を心配しなければならないドライバ
+を書きたいなどというのは、変わり者だけだ。この世界のほとんどの人は、
+そのようなドライバがどんなインターフェースを使っているかなど知らな
+いし、そんなドライバのことなど全く気にもかけていない。
+
+
+まず初めに、クローズソースとか、ソースコードの隠蔽とか、バイナリの
+みが配布される使い物にならない代物[訳注(1)]とか、実体はバイナリ
+コードでそれを読み込むためのラッパー部分のみソースコードが公開され
+ているとか、その他用語は何であれ GPL の下にソースコードがリリース
+されていないカーネルドライバに関する法的な問題について、私は「いか
+なる議論も」行うつもりがない。法的な疑問があるのならば、プログラマ
+である私ではなく、弁護士に相談して欲しい。ここでは単に、技術的な問
+題について述べることにする。（法的な問題を軽視しているわけではない。
+それらは実際に存在するし、あなたはそれをいつも気にかけておく必要が
+ある）
+
+訳注(1)
+「使い物にならない代物」の原文は "blob"
+
+
+さてここでは、バイナリカーネルインターフェースについてと、ソースレ
+ベルでのインターフェースの不変性について、という二つの話題を取り上
+げる。この二つは互いに依存する関係にあるが、まずはバイナリインター
+フェースについて議論を行いやっつけてしまおう。
+
+
+バイナリカーネルインターフェース
+--------------------------------
+
+もしソースレベルでのインターフェースが不変ならば、バイナリインター
+フェースも当然のように不変である、というのは正しいだろうか？正しく
+ない。Linux カーネルに関する以下の事実を考えてみてほしい。
+  - あなたが使用するＣコンパイラのバージョンによって、カーネル内部
+    の構造体の配置構造は異なったものになる。また、関数は異なった方
+    法でカーネルに含まれることになるかもしれない（例えばインライン
+    関数として扱われたり、扱われなかったりする）。個々の関数がどの
+    ようにコンパイルされるかはそれほど重要ではないが、構造体のパデ
+    ィングが異なるというのは非常に重要である。
+  - あなたがカーネルのビルドオプションをどのように設定するかによっ
+    て、カーネルには広い範囲で異なった事態が起こり得る。
+      - データ構造は異なるデータフィールドを持つかもしれない
+      - いくつかの関数は全く実装されていない状態になり得る
+        （例：SMP向けではないビルドでは、いくつかのロックは中身が
+          カラにコンパイルされる）
+      - 関数から関数への引数の受け渡しは、異なる方法で行われる可能
+        性がある（CONFIG_REGPARM オプションがこれを制御している）
+      - カーネル内のメモリは、異なった方法で配置され得る。これはビ
+        ルドオプションに依存している。
+  - Linux は様々な異なるプロセッサアーキテクチャ上で動作する。
+    あるアーキテクチャ用のバイナリドライバを、他のアーキテクチャで
+    正常に動作させる方法はない。
+
+
+ある特定のカーネル設定を使用し、カーネルをビルドしたのと正確に同じ
+Ｃコンパイラを使用して単にカーネルモジュールをコンパイルするだけで
+も、あなたはこれらいくつもの問題に直面することになる。ある特定の
+Linux ディストリビューションの、ある特定のリリースバージョン用にモ
+ジュールを提供しようと思っただけでも、これらの問題を引き起こすには
+十分である。にも関わらず Linux ディストリビューションの数と、サ
+ポートするディストリビューションのリリース数を掛け算し、それら一つ
+一つについてビルドを行ったとしたら、今度はリリースごとのビルドオプ
+ションの違いという悪夢にすぐさま悩まされることになる。また、ディス
+トリビューションの各リリースバージョンには、異なるハードウェア（プ
+ロセッサタイプや種々のオプション）に対応するため、何種類かのカーネ
+ルが含まれているということも理解して欲しい。従って、ある一つのリ
+リースバージョンだけのためにモジュールを作成する場合でも、あなたは
+何バージョンものモジュールを用意しなければならない。
+
+
+信じて欲しい。このような方法でサポートを続けようとするなら、あなた
+はいずれ正気を失うだろう。遠い昔、私はそれがいかに困難なことか、身
+をもって学んだのだ・・・
+
+
+不変のカーネルソースレベルインターフェース
+------------------------------------------
+
+メインカーネルツリーに含まれていない Linux カーネルドライバを継続
+してサポートしていこうとしている人たちとの議論においては、これは極
+めて「引火性の高い」話題である。[訳注(2)]
+
+訳注(2)
+「引火性の高い」の原文は "valatile"。
+valatile には「揮発性の」「爆発しやすい」という意味の他、「変わり
+やすい」「移り気な」という意味がある。
+「（この話題は）爆発的に激しい論争を巻き起こしかねない」ということ
+を、「（カーネルのソースレベルインターフェースは）移ろい行くもので
+ある」ということを連想させる "valatile" という単語で表現している。
+
+
+Linux カーネルの開発は継続的に速いペースで行われ、決して歩みを緩め
+ることがない。その中でカーネル開発者達は、現状のインターフェースに
+あるバグを見つけ、より良い方法を考え出す。彼らはやがて、現状のイン
+ターフェースがより正しく動作するように修正を行う。その過程で関数の
+名前は変更されるかもしれず、構造体は大きく、または小さくなるかもし
+れず、関数の引数は検討しなおされるかもしれない。そのような場合、引
+き続き全てが正常に動作するよう、カーネル内でこれらのインターフェー
+スを使用している個所も全て同時に修正される。
+
+
+具体的な例として、カーネル内の USB インターフェースを挙げる。USB
+サブシステムはこれまでに少なくとも３回の書き直しが行われ、その結果
+インターフェースが変更された。これらの書き直しはいくつかの異なった
+問題を修正するために行われた。
+  - 同期的データストリームが非同期に変更された。これにより多数のド
+    ライバを単純化でき、全てのドライバのスループットが向上した。今
+    やほとんど全ての USB デバイスは、考えられる最高の速度で動作し
+    ている。
+  - USB ドライバが USB サブシステムのコアから行う、データパケット
+    用のメモリ確保方法が変更された。これに伴い、いくつもの文書化さ
+    れたデッドロック条件を回避するため、全ての USB ドライバはより
+    多くの情報を USB コアに提供しなければならないようになっている。
+
+
+このできごとは、数多く存在するクローズソースのオペレーティングシス
+テムとは全く対照的だ。それらは長期に渡り古い USB インターフェース
+をメンテナンスしなければならない。古いインターフェースが残ることで、
+新たな開発者が偶然古いインターフェースを使い、正しくない方法で開発
+を行ってしまう可能性が生じる。これによりシステムの安定性は危険にさ
+らされることになる。
+
+
+上に挙げたどちらの例においても、開発者達はその変更が重要かつ必要で
+あることに合意し、比較的楽にそれを実行した。もし Linux がソースレ
+ベルでインターフェースの不変性を保証しなければならないとしたら、新
+しいインターフェースを作ると同時に、古い、問題のある方を今後ともメ
+ンテナンスするという余計な仕事を USB の開発者にさせなければならな
+い。Linux の USB 開発者は、自分の時間を使って仕事をしている。よっ
+て、価値のない余計な仕事を報酬もなしに実行しろと言うことはできない。
+
+
+セキュリティ問題も、Linux にとっては非常に重要である。ひとたびセキ
+ュリティに関する問題が発見されれば、それは極めて短期間のうちに修正
+される。セキュリティ問題の発生を防ぐための修正は、カーネルの内部イ
+ンターフェースの変更を何度も引き起こしてきた。その際同時に、変更さ
+れたインターフェースを使用する全てのドライバもまた変更された。これ
+により問題が解消し、将来偶然に問題が再発してしまわないことが保証さ
+れる。もし内部インターフェースの変更が許されないとしたら、このよう
+にセキュリティ問題を修正し、将来再発しないことを保証することなど不
+可能なのだ。
+
+
+カーネルのインターフェースは時が経つにつれクリーンナップを受ける。
+誰も使っていないインターフェースは削除される。これにより、可能な限
+りカーネルが小さく保たれ、現役の全てのインターフェースが可能な限り
+テストされることを保証しているのだ。（使われていないインターフェー
+スの妥当性をテストすることは不可能と言っていいだろう）
+
+
+
+これから何をすべきか
+-----------------------
+
+では、もしメインのカーネルツリーに含まれない Linux カーネルドライ
+バがあったとして、あなたは、つまり開発者は何をするべきだろうか？全
+てのディストリビューションの全てのカーネルバージョン向けにバイナリ
+のドライバを供給することは悪夢であり、カーネルインターフェースの変
+更を追いかけ続けることもまた過酷な仕事だ。
+
+
+答えは簡単。そのドライバをメインのカーネルツリーに入れてしまえばよ
+い。（ここで言及しているのは、GPL に従って公開されるドライバのこと
+だということに注意してほしい。あなたのコードがそれに該当しないなら
+ば、さよなら。幸運を祈ります。ご自分で何とかしてください。Andrew
+と Linus からのコメント＜Andrew と Linus のコメントへのリンクをこ
+こに置く＞をどうぞ）ドライバがメインツリーに入れば、カーネルのイン
+ターフェースが変更された場合、変更を行った開発者によってドライバも
+修正されることになるだろう。あなたはほとんど労力を払うことなしに、
+常にビルド可能できちんと動作するドライバを手に入れることができる。
+
+
+ドライバをメインのカーネルツリーに入れると、非常に好ましい以下の効
+果がある。
+  - ドライバの品質が向上する一方で、（元の開発者にとっての）メンテ
+    ナンスコストは下がる。
+  - あなたのドライバに他の開発者が機能を追加してくれる。
+  - 誰かがあなたのドライバにあるバグを見つけ、修正してくれる。
+  - 誰かがあなたのドライバにある改善点を見つけてくれる。
+  - 外部インターフェースが変更されドライバの更新が必要になった場合、
+    誰かがあなたの代わりに更新してくれる。
+  - ドライバを入れてくれとディストロに頼まなくても、そのドライバは
+    全ての Linux ディストリビューションに自動的に含まれてリリース
+    される。
+
+
+Linux では、他のどのオペレーティングシステムよりも数多くのデバイス
+が「そのまま」使用できるようになった。また Linux は、どのオペレー
+ティングシステムよりも数多くのプロセッサアーキテクチャ上でそれらの
+デバイスを使用することができるようにもなった。このように、Linux の
+開発モデルは実証されており、今後も間違いなく正しい方向へと進んでい
+くだろう。:)
+
+
+
+------
+
+この文書の初期の草稿に対し、Randy Dunlap, Andrew Morton, David
+Brownell, Hanna Linder, Robert Love, Nishanth Aravamudan から査読
+と助言を頂きました。感謝申し上げます。
+
+
+
 
