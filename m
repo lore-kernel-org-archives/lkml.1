@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbXFJWq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761947AbXFJWql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758841AbXFJWq1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 18:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759816AbXFJWqR
+	id S1761947AbXFJWql (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 18:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932121AbXFJWqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 18:46:17 -0400
-Received: from SMTP.andrew.cmu.edu ([128.2.10.212]:49940 "EHLO
-	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759626AbXFJWqQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 18:46:16 -0400
-Message-ID: <466C7F28.3040805@andrew.cmu.edu>
-Date: Sun, 10 Jun 2007 18:46:00 -0400
-From: James Bruce <bruce@andrew.cmu.edu>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Sun, 10 Jun 2007 18:46:31 -0400
+Received: from rtr.ca ([64.26.128.89]:1250 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932111AbXFJWqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 18:46:30 -0400
+Message-ID: <466C7F44.1040309@rtr.ca>
+Date: Sun, 10 Jun 2007 18:46:28 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: linux-kernel@vger.kernel.org, Tarkan Erimer <tarkan@netone.net.tr>,
-       debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       greg@kroah.com
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr> <20070609071231.GL2649@lug-owl.de>	 <466BB9B0.5030908@netone.net.tr>	 <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>	 <466BCBBC.90305@netone.net.tr>	 <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>	 <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>	 <466C0901.4000405@netone.net.tr>	 <alpine.LFD.0.98.0706101025330.20321@woody.linux-foundation.org>	 <466C69D8.7030401@andrew.cmu.edu> <9a8748490706101447g54e9ac65yb1c81cf1249849da@mail.gmail.com>
-In-Reply-To: <9a8748490706101447g54e9ac65yb1c81cf1249849da@mail.gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch-mm 00/23] High resolution timer updates and x86_64 support
+References: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
+In-Reply-To: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
->> One thing that would make that easier in the future is if contributers
->> at least started to dual-license their submissions.  I.e. if instead
->> of "GPL version 2", one could say "GPL version 2 or GPL version 3".
->> It isn't the same thing as the problematic "GPL version 2 or later",
->> because the developer is not agreeing to an unseen license (GPLv4,
->> etc).  What it does do is make it easier to move to GPLv3 a few years
->> from now, if that is decided then, as a significant fraction of the
->> code will already be GPLv3 compatible.  That way, if a reason is ever
->> found to move to v3, at least some of the work will already be done.
->>
-> Good luck convincing all contributors to do that.
+Thomas Gleixner wrote:
+> The following patch series contains:
+> 
+> - dyntick bugfixes for -mm (caused by the cpuidle changes in ACPI)
+> 
+> - updates and improvements to high resolution timer / dynticks 
+> 
+> - high resolution timer / dynticks support for x86_64
+> 
+> The x86_64 support is based on an initial patch from Chris Wright. Thanks Chris !
+> 
+> The patch set has been tested in the -hrt and -rt trees for quite a while
+> and the initial problems have been sorted out. Thanks to the folks from the
+> PowerTop project for testing and feedback.
+> 
+> The -hrt tree at http://www.tglx.de/projects/hrtimers/2.6.22-rc4/ contains
+> also an hpet force patch series from Venki Pallipadi, but I leave this up to
+> Venki to send it mainline wards.
 
-Well, it's something that pro-GPLv3 people can do right now, instead of 
-just lobbying/complaining.  Given 1000 developers, if 400 start dual 
-licensing now, and down the road some compelling reason for GPLv3 does 
-arise (read: a lawsuit with teeth), that's 600 people you need to 
-contact/convince to change, not 1000.  This is made more interesting by 
-that fact that 40% of the kernel code is already "GPLv2 or later", as 
-someone else pointed out.
+Do you know if there's anything specific in there that would fix
+the start-up race condition with HRTIMERS on my machine here
+(previously discussed, yet unresolved)?
 
-> Personally I'm happy with GPL v2, and I for one won't be
-> dual-licensing anything I contribute until I see a clear benefit of
-> doing so (and I don't yet).
+It still happens sporadically on boot-up -- maybe one in 10 boots without
+any change in the kernel binary..
 
-Well, all my personal (non-kernel) stuff is still GPLv2 only right now 
-(Linus' opinion is what convinced me that "or later" is dumb), and like 
-many I disliked the original GPLv3 draft.  I'm willing to wait until the 
-final one is out though, and I think my libraries will end up being 
-dual-licensed, with contributions required to be dual-licensed.  I want 
-to avoid v3 lock-in, but I don't want to cripple v3 projects either.
-
-> In any case, this whole debate is still a bit premature since GPL v3
-> has not even arrived in its final form yet.
-
-Agreed.
-
-  - Jim Bruce
+Cheers
