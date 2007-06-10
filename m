@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbXFJQXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759820AbXFJQ2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759556AbXFJQXW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 12:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbXFJQXO
+	id S1759820AbXFJQ2h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 12:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbXFJQ23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 12:23:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39063 "EHLO mail.dvmed.net"
+	Sun, 10 Jun 2007 12:28:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35343 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751228AbXFJQXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 12:23:13 -0400
-Message-ID: <466C256C.9040509@garzik.org>
-Date: Sun, 10 Jun 2007 12:23:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1753618AbXFJQ23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 12:28:29 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch-mm 06/23] clockevents: Fix resume logic
+Date: Sun, 10 Jun 2007 18:34:19 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Chris Wright <chrisw@sous-sol.org>
+References: <20070610092437.118387863@inhelltoy.tec.linutronix.de> <200706101258.48721.rjw@sisk.pl> <1181481454.384.13.camel@chaos>
+In-Reply-To: <1181481454.384.13.camel@chaos>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Gregor Jasny <gjasny@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] libata: limit post SRST nsect/lbal wait to ~100ms
-References: <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com> <466196AD.3090502@garzik.org> <9d2cd630706031046n2bd77585o7c0df1c5fea5167f@mail.gmail.com> <46667466.4010500@gmail.com> <9d2cd630706062322v2d73b32dp1da56f97e2069fff@mail.gmail.com> <4667B347.9040900@gmail.com> <alpine.LFD.0.98.0706071352440.4205@woody.linux-foundation.org> <20070607224746.GA23290@havoc.gtf.org> <alpine.LFD.0.98.0706091054360.20321@woody.linux-foundation.org> <466AF98C.80101@garzik.org> <20070610052620.GH29122@htj.dyndns.org>
-In-Reply-To: <20070610052620.GH29122@htj.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200706101834.19977.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> After SRST, libata used to wait for nsect/lbal to be set to 1/1 for
-> the slave device.  However, some ATAPI devices don't set nsect/lbal
-> after SRST and the wait itself isn't too useful as we're gonna wait
-> for !BSY right after that anyway.
+On Sunday, 10 June 2007 15:17, Thomas Gleixner wrote:
+> On Sun, 2007-06-10 at 12:58 +0200, Rafael J. Wysocki wrote:
+> >
+> > This is the resume part, or at least it seems so, but the above one is a
+> > suspend callback.  If I understand it correctly, this one replaces
+> > hpet_resume(), but is it sufficient for the suspend part too?
 > 
-> Before reset-seq update, nsect/lbal wait failure used to be ignored
-> and caused 30sec delay during detection.  After reset-seq, all
-> timeouts are considered error conditions making libata fail to detect
-> such ATAPI devices.
-> 
-> This patch limits nsect/lbal wait to around 100ms.  This should give
-> acceptable behavior to such ATAPI devices while not disturbing the
-> heavily used code path too much.
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
-> Okay, here it is.  Sorry for the delay.
-> 
->  drivers/ata/libata-core.c |   32 +++++++++++++++++++-------------
->  1 file changed, 19 insertions(+), 13 deletions(-)
+> Oops. Sorry, misunderstood you. Yeah, it's intentional. It gets reset on
+> power off and we have not seen any problems with this yet.
 
-Thanks.  Maybe Gregor can confirm this fixes his problem?
+OK, I wouldn't do it in this patch, though.
 
-I'll ACK and push upstream then...
+IMO it's a bit more than the changelog says and we'll lose the track record of
+this change if it goes like this.  Would that be possible to separate it?
+
+Greetings,
+Rafael
 
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
