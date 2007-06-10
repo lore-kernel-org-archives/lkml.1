@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbXFJLI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbXFJLX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbXFJLI2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 07:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbXFJLIU
+	id S1755322AbXFJLX2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 07:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbXFJLXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 07:08:20 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:22352 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753256AbXFJLIT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 07:08:19 -0400
-Date: Sun, 10 Jun 2007 13:08:18 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Simon Arlott <simon@fire.lp0.eu>
-cc: Tarkan Erimer <tarkan@netone.net.tr>, davids@webmaster.com,
-       linux-kernel@vger.kernel.org, neilb@suse.de
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <466BC18F.9090202@simon.arlott.org.uk>
-Message-ID: <Pine.LNX.4.64.0706101307060.8723@fbirervta.pbzchgretzou.qr>
-References: <MDEHLPKNGKAHNMBLJOLKAEFCEHAC.davids@webmaster.com>
- <466BB85B.6050703@netone.net.tr> <466BC18F.9090202@simon.arlott.org.uk>
+	Sun, 10 Jun 2007 07:23:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34698 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753035AbXFJLXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 07:23:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch-mm 06/23] clockevents: Fix resume logic
+Date: Sun, 10 Jun 2007 12:58:47 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Chris Wright <chrisw@sous-sol.org>
+References: <20070610092437.118387863@inhelltoy.tec.linutronix.de> <200706101219.03914.rjw@sisk.pl> <1181471412.384.9.camel@chaos>
+In-Reply-To: <1181471412.384.9.camel@chaos>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706101258.48721.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday, 10 June 2007 12:30, Thomas Gleixner wrote:
+> On Sun, 2007-06-10 at 12:19 +0200, Rafael J. Wysocki wrote:
+> > > -/*
+> > > - * Suspend/resume part
+> > > - */
+> > > -
+> > > -#ifdef CONFIG_PM
+> > > -
+> > > -static int hpet_suspend(struct sys_device *sys_device, pm_message_t state)
+> > > -{
+> > > -	unsigned long cfg = hpet_readl(HPET_CFG);
+> > > -
+> > > -	cfg &= ~(HPET_CFG_ENABLE|HPET_CFG_LEGACY);
+> > > -	hpet_writel(cfg, HPET_CFG);
+> > > -
+> > > -	return 0;
+> > > -}
+> > 
+> > Hmm, I haven't found anything to replace the above in the patch.  Is that
+> > intentional, or is it there, but I haven't noticed?
+> 
+> > > +	case CLOCK_EVT_MODE_RESUME:
+> > > +		hpet_enable_int();
+> > > +		break;
 
-On Jun 10 2007 10:17, Simon Arlott wrote:
->On 10/06/07 09:37, Tarkan Erimer wrote:
->> BTW,I found a really interesting blog entry about which code in Linux
->> Kernel is using which version of GPL :
->> 
->> http://6thsenseless.blogspot.com/2007/02/how-much-linux-kernel-code-is-gpl-2.html
->> 
->> You've got to take MODULE_LICENSE() into account. There is
->> 
->> 	MODULE_LICENSE("GPL");
->> 	MODULE_LICENSE("GPL v2");
->> 	MODULE_LICENSE("GPL and additional rights");
->> 	MODULE_LICENSE("Dual BSD/GPL");
->> 	MODULE_LICENSE("Dual MIT/GPL");
->> 	MODULE_LICENSE("Dual MPL/GPL");
->
->Surely that doesn't work since the entire Linux kernel is (and can only be) 
->released as GPLv2? Wouldn't anyone making changes to those files need to 
->obtain a copy under the other licence and explicitly release it under both 
->licenses in order to maintain that?
+This is the resume part, or at least it seems so, but the above one is a
+suspend callback.  If I understand it correctly, this one replaces
+hpet_resume(), but is it sufficient for the suspend part too?
 
-http://www.eweek.com/article2/0,1759,1915720,00.asp
-has the answer. Quoting Linus:
-
-"If you want to license a program under any later version of the GPL, you have
-to state so explicitly. Linux never did."
-
-Hence, unless there's a "GPL 2 or later", all the "unspecified GPL" files
-are GPL2 only.
+Greetings,
+Rafael
 
 
-	Jan
 -- 
+"Premature optimization is the root of all evil." - Donald Knuth
