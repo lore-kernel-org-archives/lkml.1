@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbXFJLX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbXFJLYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbXFJLX2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 07:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbXFJLXU
+	id S1756265AbXFJLYT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 07:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbXFJLYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 07:23:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34698 "EHLO ogre.sisk.pl"
+	Sun, 10 Jun 2007 07:24:08 -0400
+Received: from ozlabs.org ([203.10.76.45]:47185 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753035AbXFJLXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 07:23:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch-mm 06/23] clockevents: Fix resume logic
-Date: Sun, 10 Jun 2007 12:58:47 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>
-References: <20070610092437.118387863@inhelltoy.tec.linutronix.de> <200706101219.03914.rjw@sisk.pl> <1181471412.384.9.camel@chaos>
-In-Reply-To: <1181471412.384.9.camel@chaos>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706101258.48721.rjw@sisk.pl>
+	id S1753792AbXFJLYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 07:24:06 -0400
+Subject: Re: [PATCH] PCI: also read revision ID for sparc64, ppc, read
+	class at the same time
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Auke Kok <auke-jan.h.kok@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       gregkh@suse.de, grundler@parisc-linux.org, davem@davemloft.net,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070609201221.5868.31948.stgit@localhost.localdomain>
+References: <20070609201221.5868.31948.stgit@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3keEE1/wuSeeIYLRlYup"
+Date: Sun, 10 Jun 2007 21:24:03 +1000
+Message-Id: <1181474643.8351.1.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 10 June 2007 12:30, Thomas Gleixner wrote:
-> On Sun, 2007-06-10 at 12:19 +0200, Rafael J. Wysocki wrote:
-> > > -/*
-> > > - * Suspend/resume part
-> > > - */
-> > > -
-> > > -#ifdef CONFIG_PM
-> > > -
-> > > -static int hpet_suspend(struct sys_device *sys_device, pm_message_t state)
-> > > -{
-> > > -	unsigned long cfg = hpet_readl(HPET_CFG);
-> > > -
-> > > -	cfg &= ~(HPET_CFG_ENABLE|HPET_CFG_LEGACY);
-> > > -	hpet_writel(cfg, HPET_CFG);
-> > > -
-> > > -	return 0;
-> > > -}
-> > 
-> > Hmm, I haven't found anything to replace the above in the patch.  Is that
-> > intentional, or is it there, but I haven't noticed?
-> 
-> > > +	case CLOCK_EVT_MODE_RESUME:
-> > > +		hpet_enable_int();
-> > > +		break;
 
-This is the resume part, or at least it seems so, but the above one is a
-suspend callback.  If I understand it correctly, this one replaces
-hpet_resume(), but is it sufficient for the suspend part too?
+--=-3keEE1/wuSeeIYLRlYup
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Greetings,
-Rafael
+On Sat, 2007-06-09 at 13:12 -0700, Auke Kok wrote:
+> Since the PCI bus class and revision are in the same dword, we
+> can fill in both in the same read.
+>=20
+> Other non-x86 arches use different methods to fill in these values,
+> make sure to adjust those too.
+>=20
+> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+> ---
+>=20
+>  arch/powerpc/kernel/pci_64.c |    2 ++
+>  arch/sparc64/kernel/pci.c    |    1 +
+>  drivers/pci/probe.c          |    4 +---
+>  3 files changed, 4 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index 249cca2..b2c55ca 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -367,8 +367,10 @@ struct pci_dev *of_create_pci_dev(struct device_node=
+ *node,
+>  	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+>  		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+>  	dev->class =3D get_int_prop(node, "class-code", 0);
+> +	dev->revision =3D get_int_prop(node, "revision-id", 0);
 
+It's not clear to me in the spec if nodes are required to have the
+"revision-id" property. I guess 0 is a safe default though.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-3keEE1/wuSeeIYLRlYup
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGa99TdSjSd0sB4dIRAhQwAKC5GIDi7X8ZSgzTejgTZ2dNWxzz5ACeM2Eo
+QCn8vy0lyNQ0B/ext7BuYwk=
+=D4cW
+-----END PGP SIGNATURE-----
+
+--=-3keEE1/wuSeeIYLRlYup--
+
