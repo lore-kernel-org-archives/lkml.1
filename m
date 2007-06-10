@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbXFJJQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbXFJJRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbXFJJQp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 05:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXFJJQh
+	id S1754001AbXFJJRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 05:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbXFJJRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 05:16:37 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:47199 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbXFJJQg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 05:16:36 -0400
-Message-ID: <466BC0E3.4050600@cosmosbay.com>
-Date: Sun, 10 Jun 2007 11:14:11 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Sun, 10 Jun 2007 05:17:14 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:44489 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752141AbXFJJRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 05:17:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
+	b=CR5S/B1J43Ivi6UUs2EdrVyAN8Vl6iTAMx+uXVguqQz43O2Y+8/Cq+bH/u9BYFFZBBdxxJc+Ewdi18+AAi9VmwCVBRfu/V5l+s5ws5KBMbvm9GoW4jytQw1vJnfT89aR;
+Message-ID: <466BC18F.9090202@simon.arlott.org.uk>
+Date: Sun, 10 Jun 2007 10:17:03 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Al Viro <viro@ftp.linux.org.uk>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 7/8] fdmap v2 - implement sys_socket2
-References: <20070609003622.GB4095@ftp.linux.org.uk> <466A0020.50406@redhat.com> <20070609014140.GC4095@ftp.linux.org.uk> <466A0BFB.3070908@redhat.com> <20070609151521.GD4095@ftp.linux.org.uk> <466AD4BA.80407@redhat.com> <20070609165454.GE4095@ftp.linux.org.uk> <466ADEAB.7080202@redhat.com> <20070609172429.GF4095@ftp.linux.org.uk> <2E51520E-EC73-457F-809A-4749ED9A3C97@mac.com> <20070609200645.GG4095@ftp.linux.org.uk> <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706091311040.20321@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 10 Jun 2007 11:14:19 +0200 (CEST)
+To: Tarkan Erimer <tarkan@netone.net.tr>
+CC: davids@webmaster.com, linux-kernel@vger.kernel.org, neilb@suse.de,
+       jengelh@computergmbh.de
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <MDEHLPKNGKAHNMBLJOLKAEFCEHAC.davids@webmaster.com> <466BB85B.6050703@netone.net.tr>
+In-Reply-To: <466BB85B.6050703@netone.net.tr>
+X-Enigmail-Version: 0.95.1
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds a écrit :
-> (And dammit, that _is_ a *real*issue*. No races necessary, no NR_OPEN 
-> iterations, no even *halfway* suspect code. It's perfectly fine to do
+On 10/06/07 09:37, Tarkan Erimer wrote:
+> BTW,I found a really interesting blog entry about which code in Linux
+> Kernel is using which version of GPL :
 > 
-> 	close(0);
-> 	close(1);
-> 	close(2);
-> 	.. generate filenames, whatever ..
-> 	if (open(..) < 0 || open(..) < 0 || open(..) < 0)
-> 		die("Couldn't redirect stdin/stdout/stderr");
+> http://6thsenseless.blogspot.com/2007/02/how-much-linux-kernel-code-is-gpl-2.html
 > 
-> and there's absolutely nothing wrong with this kind of setup, even if you 
-> could obviously have done it other ways too (ie by using "dup2()" instead 
-> of "close + open"),
 > 
+> The work done on a Linux 2.6.20. The result is quite interesting.
+> Because almost half  (Around %60 of the code licensed under "GPLv2 Only"
+> and the rest is "GPLv2 or above","GPL-Version not specified,others that
+> have not stated which and what version of License has been used) of the
+> code is "GPLv2 or above" licensed. And also stated in the article that
+> some of the codes should be "Dual Licensed" not the whole Linux kernel
+> needed to be "Dual Licensed". So,if it is really like this, maybe we can
+> make,for example: "File system related Codes", "Dual Licensed" and it
+> will allow us to port ZFS from OpenSolaris requested by a lot of people
+> or other things maybe ?
 
-This kind of setup was OK 25 years ago, before multithreading era.
-You cannot reasonably expect it to work in a multithreaded program.
-
-Anyway, I would like to give an alternative idea of the double fdmap, and 
-probably more *secure* .
-
-Current fd API mandates integers (32 bits)
-
-Lot of broken code consider a fd must be >= 0, so we currently are limited to 
-31 bits.
-
-With NR_OPEN = 1024*1024 = 2^20, that give us 11 bits that we could use as a 
-signature.
-
-That is, we could use O_NONSEQ as a indication to kernel to give us a 
-composite fd : 20 low order bits give the slot in file table, then 11 bits can 
-  be use to make sure the fd was not stolen by malicious code.
+Once code obtained under the GPLv2 only licence that the kernel is released 
+under is modified and submitted back to Linus for inclusion, that code 
+would become GPLv2 only - only the original would be BSD/LGPL/GPLv2+ and 
+only separate changes to the original could continue to be available under 
+dual licence. Since most files will have been modified at various stages 
+in Linux's development when major internal changes occur, surely practically 
+everything is now GPLv2 only?
 
 
-Legacy app, (without O_NONSEQ in flags) would get POSIX compatables fd in [0, 
-2^20-1] range, with the lowest available fd.
+> So, does it mean we can change the license of the dead people's code ? 
 
-If O_NONSEQ is given, kernel is free to give an fd in [0, 2^31 - 1], with a 
-strategy that could be the one Davide gave in its patch (with a list of 
-available slots). But instead of FIFO, we can use now LIFO, more cache friendly.
+If you can contact whoever currently owns the copyright, they can release 
+it under another licence... however this is no good because the derivative 
+work would be GPLv2 only. Perhaps if you got *everyone* at all stages of 
+development (including code that has been removed if existing code is a 
+derivative work of it) to agree - then it could work.
 
-In fget()/fget_light()/close(), we can then use 20 bits to select the slot in 
-the single fdmap.
-And 11 bits to check the 'signature'.
+It only takes one person's code, uncooperative or not contactable, to 
+prevent a change to the licence, so there's not much point in trying 
+unless you intend to start replacing such code.
 
-So if open( O_NONSEQFD) gave us 0x77000010, we cannot do close(0x10) or 
-read(0x10, ....)
 
-Storage for these bits is already there in Davide fd_slot structure, where we 
-currently use one long to store 3 bits 'only'.
+On 10/06/07 10:03, Jan Engelhardt wrote:
+> You've got to take MODULE_LICENSE() into account. There is
+> 
+> 	MODULE_LICENSE("GPL");
+> 	MODULE_LICENSE("GPL v2");
+> 	MODULE_LICENSE("GPL and additional rights");
+> 	MODULE_LICENSE("Dual BSD/GPL");
+> 	MODULE_LICENSE("Dual MIT/GPL");
+> 	MODULE_LICENSE("Dual MPL/GPL");
 
-This should work even bumping NR_OPEN to say... 8*1024*1024, and 8 bits signature.
+Surely that doesn't work since the entire Linux kernel is (and can only be) 
+released as GPLv2? Wouldn't anyone making changes to those files need to 
+obtain a copy under the other licence and explicitly release it under both 
+licenses in order to maintain that?
 
+-- 
+Simon Arlott
