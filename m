@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762487AbXFJWJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763474AbXFJWLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762487AbXFJWJR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 18:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756417AbXFJWJE
+	id S1763474AbXFJWLR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 18:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbXFJWLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 18:09:04 -0400
-Received: from waste.org ([66.93.16.53]:38563 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755617AbXFJWJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 18:09:01 -0400
-Date: Sun, 10 Jun 2007 17:08:46 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, m-ikeda@ds.jp.nec.com
-Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
-Message-ID: <20070610220846.GF11166@waste.org>
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com>
+	Sun, 10 Jun 2007 18:11:08 -0400
+Received: from cb2.northrockquote.com ([64.251.14.146]:1548 "EHLO
+	dejavu.debianpt.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1758581AbXFJWLH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 18:11:07 -0400
+Message-ID: <466C76B9.7010404@debianpt.org>
+Date: Sun, 10 Jun 2007 23:10:01 +0100
+From: Miguel Figueiredo <elmig@debianpt.org>
+Organization: DebianPT.org
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070610.204845.115909592.tshibata@ab.jp.nec.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Celso <celsopr@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: 2.6.22-rc4-ck1 - Re: -ck patch | Feedback
+References: <1181341039.28846.0.camel@localhost>	 <466A7321.4060304@debianpt.org> <1181494360.4026.10.camel@localhost>
+In-Reply-To: <1181494360.4026.10.camel@localhost>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 10, 2007 at 08:48:45PM +0900, Tsugikazu Shibata wrote:
-> Hi all,
+Celso wrote:
+> Sáb, 2007-06-09 às 10:30 +0100, Miguel Figueiredo escreveu:
+>> Celso wrote:
+>>> Hello, I'm using -ck since... along time ago (I start using it with the
+>>> kernel 2.6.16) . I started using it with Ubuntu and  the response of the
+>>> system  was better. Since that I always compile my kernels with -ck.
+>>> Actually I use 2.6.20-ck1 and I have no problems, even with things that
+>>> needs kernel-sources like gspca for my webcam.
+>>>
+>>> Thanks a lot for the patches. 
+>>>
+>>> PS: when will this go into the official kernel?
+>>>
+>> Hi there,
+>>
+>>   have you tryied a newer kernel with -ck2 [1] ?
+>>
+>> I am also using a -ck patch, 2.6.21-ck2, mostly on 2 machines where i
+>> use as desktop and also play games. With -ck2 the experience seems less
+>> slugish and more smooth while playing 'second life' and have a bunch of
+>> other programs open (mail, a zillion web pages, irc client, feed reader,
+>> consoles, ...).
+>> The desktop seems more confortable to use than with the vanilla kernel.
+>> I also tryed cfs, it's also much better than the vanilla kernel but i
+>> still prefer -ck2 for playing second life as it feels more responsive.
+>>
+>>
+>> If you try the -ck2 or SD 1.0 please report your experience. It's nice
+>> to hear that people are testing/using these improvements on desktop usage.
+>>
+>>
+>>
+>> 1 - ck2 patch to add to vanilla 2.6.21,
+>> http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.21/2.6.21-ck2/patch-2.6.21-ck2.bz2
+>>
+>> PS: I remember i read somewhere that the SD patch (included in -ck) has
+>> became stable (version 1.0) with a few small improvements!
+>>
 > 
-> I am posting Documentation/HOWTO which is translated into Japanese at
-> bottom of this email.
-> This document had been reviewed by JF project which has long history
-> to translate documents into Japanese. (not only kernel but also FAQs).
-> For JF, please see : http://www.linux.or.jp/JF/index.html
-> Please also note that the page is written in Japanese, but you can see
-> a lot of results there.
+> Well, I upgrade to 2.6.21-ck2 and install it on my two pcs (I had before
+> 2.6.20-ck1 on both) and the installation work, like always, fine. No
+> problems. On the pc I use most (the better one :) ) I didn't feel much
+> difference from 2.6.20-ck1 to 2.6.21-ck2 (for regular Desktop use), but
+> in the older pc, where my brother works, he says that was even more
+> "fluid"*.
 > 
-> Actually, this is my first trial to post Japanese translated document
-> and here are some points I decided ;
+> * direct translation sorry if it doesn't sound well
 > 
-> - Character encoding is ISO-2022-JP, which is normally used for email
->   using Japanese.
-> - Added "Singed-off-by" line
-> - Left the JF header strings which include translator/reviewer's name
-> - Non-patch format, simple text
-> 
-> I would be happy if I could get your comments and suggestions.
-> Though I know there are several issues to merge it, I want to have 
-> discussions with you to accomplish it.
-> 
-> This email comes from strong recommendation from Greg K-H when he came
-> to Tokyo two weeks ago. Thanks >Greg
 
-This is a great idea, thanks.
+I don't know if there is an official announcement of patch releases but
+today i spotted and started to use the new 2.6.22-rc4-ck1.
 
-What I'm not clear on is where this is intended to go?
+The list of patches included on 2.6.22-rc4-ck1 it's on
+http://ck.kolivas.org/patches/pre-releases/2.6.22-rc4/2.6.22-rc4-ck1/patches/
 
-The below isn't a patch, so if it's intended to live on a website
-rather than in the kernel tarball, great. We probably want a link from
-the in-kernel HOWTO to that website.
+It's working...
 
-If it is intended to live in the kernel tarball, I'm not sure that's a
-good idea. There are a number of languages we could consider
-translating these and other documents into.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+
+Com os melhores cumprimentos/Best regards,
+
+Miguel Figueiredo
+http://www.DebianPT.org
