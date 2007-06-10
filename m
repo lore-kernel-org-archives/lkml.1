@@ -1,38 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760715AbXFJDJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761321AbXFJDQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760715AbXFJDJh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jun 2007 23:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbXFJDJ3
+	id S1761321AbXFJDQR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jun 2007 23:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbXFJDQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jun 2007 23:09:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55743 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751637AbXFJDJ2 (ORCPT
+	Sat, 9 Jun 2007 23:16:07 -0400
+Received: from rwcrmhc11.comcast.net ([216.148.227.151]:35306 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754779AbXFJDQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jun 2007 23:09:28 -0400
-Date: Sat, 9 Jun 2007 20:08:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>
-Subject: Re: Jinxed VAIO wreckage - current state of affairs
-Message-Id: <20070609200827.635fec79.akpm@linux-foundation.org>
-In-Reply-To: <200706092259.50694.rjw@sisk.pl>
-References: <1181418873.4404.402.camel@chaos>
-	<200706092259.50694.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 9 Jun 2007 23:16:06 -0400
+X-Greylist: delayed 538 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Jun 2007 23:16:06 EDT
+Message-ID: <466B6ADC.7080908@comcast.net>
+Date: Sat, 09 Jun 2007 23:07:08 -0400
+From: John Richard Moser <nigelenki@comcast.net>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: via_drm bug
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007 22:59:49 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Hmm, how's 2.6.22-rc4-mm2 doing on the Vaio?
+This has been an on-going issue for.... I don't know how long.  I
+reported it a while ago but it's still in 2.6.22.
 
-People would have heard if it was busted ;)
+Here's another error log.  Loaded the Via driver in Xorg with kernel
+2.6.22 on Ubuntu, got the following in dmesg.  The [drm:via_mem_alloc]
+error may be the problem.  This is on a 32-bit kernel.
 
-Have seen occasional hangs in e100 resume-from-RAM, and occasional
-all-black-and-dead symptoms after resume-from-RAM, but it seems to work at
-least 90% of the time.
+See also:
+
+https://bugs.launchpad.net/ubuntu/+source/xserver-xorg-video-via/+bug/72630
+
+
+
+[264565.164000] [drm] Initialized via 2.11.1 20070202 on minor 0
+[264565.168000] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level,
+low) -> IRQ 21
+[264565.168000] [drm] Initialized via 2.11.1 20070202 on minor 1
+[264565.184000] agpgart: Found an AGP 3.0 compliant device at 0000:00:00.0.
+[264565.184000] agpgart: Xorg tried to set rate=x12. Setting to AGP3 x8
+mode.
+[264565.184000] agpgart: Putting AGP V3 device at 0000:00:00.0 into 8x mode
+[264565.184000] agpgart: Putting AGP V3 device at 0000:01:00.0 into 8x mode
+[264565.192000] [drm:via_mem_alloc] *ERROR* Attempt to allocate from
+uninitialized memory manager.
+[264565.296000] powernow-k8: error - out of sync, fix 0x2 0xa, vid 0x0 0x0
+[264565.296000] powernow-k8: ph2 null fid transition 0xa
+[264565.692000] irq 21: nobody cared (try booting with the "irqpoll" option)
+[264565.692000]  [<c015bcc4>] __report_bad_irq+0x24/0x80
+[264565.692000]  [<c015bf82>] note_interrupt+0x262/0x2a0
+[264565.692000]  [<c015b1e0>] handle_IRQ_event+0x30/0x60
+[264565.692000]  [<c015c96b>] handle_fasteoi_irq+0xbb/0xf0
+[264565.692000]  [<c0106b1b>] do_IRQ+0x3b/0x70
+[264565.692000]  [<c0118735>] smp_apic_timer_interrupt+0x55/0x80
+[264565.692000]  [<c0102e00>] default_idle+0x0/0x60
+[264565.692000]  [<c0105223>] common_interrupt+0x23/0x30
+[264565.692000]  [<c0102e00>] default_idle+0x0/0x60
+[264565.692000]  [<c011db72>] native_safe_halt+0x2/0x10
+[264565.692000]  [<c0102e3c>] default_idle+0x3c/0x60
+[264565.692000]  [<c0102413>] cpu_idle+0x53/0xe0
+[264565.692000]  [<c03dfa7f>] start_kernel+0x31f/0x3b0
+[264565.692000]  [<c03df1f0>] unknown_bootoption+0x0/0x260
+[264565.692000]  =======================
+[264565.692000] handlers:
+[264565.692000] [<f8eb6480>] (via_driver_irq_handler+0x0/0x1d0 [via])
+[264565.692000] Disabling IRQ #21
+
+
+
+Device:
+
+01:00.0 VGA compatible controller: VIA Technologies, Inc. S3 Unichrome
+Pro VGA Adapter (rev 01)
+
+
+lshw segment:
+
+           *-display
+                description: VGA compatible controller
+                product: S3 Unichrome Pro VGA Adapter
+                vendor: VIA Technologies, Inc.
+                physical id: 0
+                bus info: pci@01:00.0
+                version: 01
+                size: 64MB
+                width: 32 bits
+                clock: 66MHz
+                capabilities: vga bus_master cap_list
+                configuration: latency=32 mingnt=2
+                resources: iomemory:e4000000-e7ffffff
+iomemory:e8000000-e8ffffff irq:21
+
+
+- --
+    We will enslave their women, eat their children and rape their
+    cattle!
+             -- Bosc, Evil alien overlord from the fifth dimension
+LiveCD Creator Poll:  http://ubuntuforums.org/showthread.php?t=435562
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iQIVAwUBRmtq2ws1xW0HCTEFAQKthhAAmEDCkQGl5tEfioxZE67/a1EkVKQisIwk
+YWKKZ/+5uQo/wo1V/HWIekRICByYVjuK3vqnJmXo9VEk37L/ZRQgcDDiMyG5lRwR
+UhtYFVEMkPyr923EKGXyQCjdNaYDHWHz4VWOtf1mpyPMP3WVByvOJcGWikv/wWcl
+BLb37+tk9Wv7846zwoTwREStZHJbhoSac+VSidgV3koIjeeOCqFwicNP+6ycOSbE
+PnBQ/sjsbagw7DdweDR6QvDzxtnS/KP4adGutXGJUQYN1s4R5YDIDF7Qk1M1hNN7
+7IH7KNwNXwzKq3v6jCcYrprOthBrB7Xho2s8nM+fT3Kzwpj+UTy/wvesEQQNbDSD
+jTVGFa4qjQIdgf4G/n88Wv4Pm2yHC1dRyPrrRz8TX2rv4A3cqlC+REYfVyHhS9Uh
+2gNUOctawvAM1rL2peG9SDvsEJNYIzoV/jL61zit3Jpkevc34Aq1wrxj+cyxchJI
+7zUtshxGCOOIiEwgJ9u/5E0T128hXGIX9Nm3Cb6bdj5aVRv+kso/bpMGGcn5+opa
+JdUYg9avJMbJtlmfWtz7EEACLB8DeUTbCFKZ2ctoqCm4UKkyex2uX+sAAI1hbjpZ
+oPYcXEs4bcb8BlZpntykybjlJUtGOeTlCyULeWATNHDF+txgTnpkp7U79Z73EXIL
+vI9KkUJ2qho=
+=hmgi
+-----END PGP SIGNATURE-----
