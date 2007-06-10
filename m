@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763078AbXFJUwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763368AbXFJUyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763078AbXFJUwE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 16:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbXFJUvx
+	id S1763368AbXFJUyQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 16:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756331AbXFJUyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 16:51:53 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:51621 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753205AbXFJUvw (ORCPT
+	Sun, 10 Jun 2007 16:54:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:54380 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756236AbXFJUyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 16:51:52 -0400
-Message-ID: <466C6451.6030907@novell.com>
-Date: Sun, 10 Jun 2007 13:51:29 -0700
-From: Crispin Cowan <crispin@novell.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+	Sun, 10 Jun 2007 16:54:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OKmv9wARKQYT2sAXJXt61SPbz57j8fBp9f1M3vum1ILG/izb8U0XneMcanLbARsTYb88gm6zCavgmDn8gkBgLqT0i+Vi9JeNeXVuXGYBjri0JrRSnIY6hKR6gCyrvBmhA2sYiDYW02sVeEf6Ksiicdk7BYDOE0Cbe5e7oDVnk8E=
+Message-ID: <68676e00706101354n5fe7e1a9y12cb690cae2924e3@mail.gmail.com>
+Date: Sun, 10 Jun 2007 22:54:02 +0200
+From: Luca <kronos.it@gmail.com>
+To: "Avi Kivity" <avi@qumranet.com>
+Subject: Re: [kvm-devel] [BUG] Oops with KVM-27
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <466BED18.5040708@qumranet.com>
 MIME-Version: 1.0
-To: casey@schaufler-ca.com
-CC: david@lang.hm, Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-References: <700465.32295.qm@web36612.mail.mud.yahoo.com>
-In-Reply-To: <700465.32295.qm@web36612.mail.mud.yahoo.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070603213432.GA3075@dreamland.darkstar.lan>
+	 <4663DCE9.3000107@qumranet.com>
+	 <20070604202248.GA18668@dreamland.darkstar.lan>
+	 <46647B3E.2090205@qumranet.com>
+	 <20070604212207.GA22365@dreamland.darkstar.lan>
+	 <46651069.5040003@qumranet.com>
+	 <68676e00706071216i4bd051c5hb1c114f3c13ab97f@mail.gmail.com>
+	 <466BED18.5040708@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
-> --- david@lang.hm wrote:
->   
->>> Yes, and in the process, AA stores compiled regular expressions in
->>> kernel. Ouch. I'll take "each file it's own label" over _that_ any time.
->>>       
->> and if each file has it's own label you are going to need regex or similar 
->> to deal with them as well.
->>     
-> Now that you're going to have to explain. Nothing like that 
-> on any of the MLS systems I'm familiar with, and I think that
-> I know just about all of them.
->   
-I suspect that David meant that if you were using "unique label per
-file" as an implementation technique to implement AA on top of SELinux,
-that you would then need a regexp to discern labels.
+On 6/10/07, Avi Kivity <avi@qumranet.com> wrote:
+> Luca wrote:
+> > On 6/5/07, Avi Kivity <avi@qumranet.com> wrote:
+> >> Luca Tettamanti wrote:
+> >> > Il Mon, Jun 04, 2007 at 11:51:10PM +0300, Avi Kivity ha scritto:
+> >> >
+> >> >>> While doing repeated tests with the installer I ran into another
+> >> >>> (unrelated) problem. Sometimes the guest kernel hangs at boot at:
+> >> >>>
+> >> >>> NET: Registered protocol family 2
+> >> >>>
+> >> >>> with any kind of networking options (except for -net none, which
+> >> works).
+> >> >>> With -no-kvm it boots with any networking option.
+> >> >>>
+> >> >>>
+> >> >>>
+> >> >> Can you try to pin the guest on a single core with taskset:
+> >> >>
+> >> >>    taskset 1 qemu ...
+> >> >>
+> >> >
+> >> > Doesn't help. What works is 'nolapic', i.e. disabling the local
+> >> APIC on
+> >> > the guest kernel.
+> >> > I've also tried disabling TSC (notsc) and forcing PIT as the
+> >> clocksource
+> >> > (clocksouce=pit clock=pit); neither of them helped.
+> >> >
+> >> >
+> >>
+> >> Is this a regression relative to a previous kvm version?
+> >
+> > Hello,
+> > sorry for the delay, I was having troubles compiling older KVMs with a
+> > recent kernel...
+> > The last version that works is kvm-21; starting from kvm-22 the VM
+> > hangs during network initialization (now always, but pretty often).
+> > This only occurs when the guest is Fedora7 setup ISO. The regular boot
+> > (i.e. from the hd) seems unaffected.
+>
+> I've managed to reproduce this on kvm-21 (it takes many boots for this
+> to happen, but it does eventually).
 
-It's hard to recall with all the noise, but at this point in the thread
-the discussion is about the best way to implement AA. Some have alleged
-that AA layered on top of SELinux is the best way. I think that is
-clearly wrong; AA layered on top of SELinux is possible, but would
-require a bunch of enhancements to SELinux first, and the result would
-be more complex than the proposed AA patch and have weaker functionality
-and performance.
+Hum, any clue on the cause? Should I test older versions?
 
-Crispin
-
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
-Director of Software Engineering   http://novell.com
-	AppArmor Chat: irc.oftc.net/#apparmor
-
+Luca
