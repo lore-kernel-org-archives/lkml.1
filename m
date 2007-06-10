@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762873AbXFJTDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbXFJTFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762873AbXFJTDu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 15:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbXFJTDn
+	id S1762944AbXFJTFl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 15:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbXFJTFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 15:03:43 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51782 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756319AbXFJTDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 15:03:42 -0400
-Date: Sun, 10 Jun 2007 21:04:44 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Greg KH <gregkh@suse.de>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com,
-       tlktp-general@lists.sourceforge.net
-Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO translated into Japanese]
-Message-ID: <20070610190444.GA29599@uranus.ravnborg.org>
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <20070610175228.GA28947@uranus.ravnborg.org> <Pine.LNX.4.64.0706102034490.25718@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
+	Sun, 10 Jun 2007 15:05:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:39373 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755437AbXFJTFd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 15:05:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=T+jV+Mp6tzJT6y4rFub2B8iCFaJ2KOMyawGb5AIVM/5VXWFJ9pIInlkS//XAxupMhmwzKV9X0xHbjQ8nlDQs2zuCj02ArTlr+7Bbf4tPXszNdWxQwzygA2iCe5/6NJlAUWnkwUJfsdECsVXpjey6f3Cg9e4L+uPutrnuyJU78T4=
+Date: Sun, 10 Jun 2007 23:09:52 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org, miklos@szeredi.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fuse: ->fs_flags fixlet
+Message-ID: <20070610190952.GA5708@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706102034490.25718@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 10, 2007 at 08:35:03PM +0200, Jan Engelhardt wrote:
-> >> No, I think the translated files should be in the tree proper, we have
-> >> the space :)
-> >
-> >We once discussed about .po files for kconfig and back then
-> >the conclusion was not to keep them in the kernel tree.
-> >
-> >I advocated that they should stay out back then.
-> >But on the other hand I do not see it causing much troubles
-> >having scripts/kconfig/po/da.po etc araound.
-> >
-> >Any opinion about the .po files?
-> 
-> Like with translated doc, they might get out of date easily.
+fs/fuse/inode.c:658:3: error: Initializer entry defined twice
+fs/fuse/inode.c:661:3:   also defined here
 
-The difference here is that with .po files we have tools
-to report the actual translation status.
-And having the .po files included in the source makes it
-much easier to use the latest versions.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-The Linux Kernel Translation Project
-http://tlktp.sourceforge.net/
-have nice statisitcs for the different translations.
+ fs/fuse/inode.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Italian is 100% followed by Hungarian with almost 70%.
-We have a number of dedicated people, so why not
-make the works available to more users by including it
-in the kernel.
+--- a/fs/fuse/inode.c
++++ b/fs/fuse/inode.c
+@@ -655,10 +655,9 @@ static int fuse_get_sb_blk(struct file_system_type *fs_type,
+ static struct file_system_type fuseblk_fs_type = {
+ 	.owner		= THIS_MODULE,
+ 	.name		= "fuseblk",
+-	.fs_flags	= FS_HAS_SUBTYPE,
+ 	.get_sb		= fuse_get_sb_blk,
+ 	.kill_sb	= kill_block_super,
+-	.fs_flags	= FS_REQUIRES_DEV,
++	.fs_flags	= FS_REQUIRES_DEV | FS_HAS_SUBTYPE,
+ };
+ 
+ static inline int register_fuseblk(void)
 
-I trust the tlktp people enough that we will not see patches
-for the language with less than ~5% translated strings.
-
-I would assume that Japanese soon get higher btw - there
-is quite a number of people listed as translators.
-
-	Sam
