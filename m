@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763192AbXFJRpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbXFJRt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763192AbXFJRpL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 13:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758370AbXFJRo5
+	id S1762139AbXFJRt4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 13:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbXFJRtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 13:44:57 -0400
-Received: from lazybastard.de ([212.112.238.170]:47891 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbXFJRo4 (ORCPT
+	Sun, 10 Jun 2007 13:49:49 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:46638 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754004AbXFJRts (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 13:44:56 -0400
-Date: Sun, 10 Jun 2007 19:40:11 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Jamie Lokier <jamie@shareable.org>,
-       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       David Weinehall <tao@acc.umu.se>, Willy Tarreau <w@1wt.eu>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Dongjun Shin <djshin90@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, Bill Davidsen <davidsen@tmr.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Albert Cahalan <acahalan@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Roland Dreier <rdreier@cisco.com>,
-       Ondrej Zajicek <santiago@crfreenet.org>,
-       Ulisses Furquim <ulissesf@gmail.com>
-Subject: Re: [Patch 10/18] fs/logfs/inode.c
-Message-ID: <20070610174011.GB32619@lazybastard.org>
-References: <20070603183845.GA8952@lazybastard.org> <20070603184636.GK8952@lazybastard.org> <200706101924.29927.arnd@arndb.de>
+	Sun, 10 Jun 2007 13:49:48 -0400
+Date: Sun, 10 Jun 2007 10:50:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, raven@themaw.net
+Subject: Re: [PATCH 0/7] Cleanup code to replace DPRINTK with pr_debug
+Message-Id: <20070610105024.b16d1708.randy.dunlap@oracle.com>
+In-Reply-To: <4669D5B7.7050005@hawkeye.stone.uk.eu.org>
+References: <4669D5B7.7050005@hawkeye.stone.uk.eu.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200706101924.29927.arnd@arndb.de>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 June 2007 19:24:28 +0200, Arnd Bergmann wrote:
-> On Sunday 03 June 2007, Jörn Engel wrote:
-> > +struct inode *logfs_new_inode(struct inode *dir, int mode)
-> > +{
-> > +       struct super_block *sb = dir->i_sb;
-> > +       struct inode *inode;
-> > +
-> > +       inode = new_inode(sb);
-> > +       if (!inode)
-> > +               return ERR_PTR(-ENOMEM);
-> > +
-> > +       logfs_init_inode(inode);
-> > +
-> > +       inode->i_mode = mode;
-> > +       inode->i_ino = logfs_get_ino(sb);
-> > +
-> > +       insert_inode_hash(inode);
-> > +
-> > +       return inode;
-> > +}
+On Fri, 08 Jun 2007 23:18:31 +0100 Jack Stone wrote:
+
+> This patch series replaces DPRINTK with pr_debug in alternative.c,
+> autofs, autofs4
+> and ncpfs. A new function called pr_err is also added to keep
+> functionality in
+> ncpfs. The last 2 patches add support for pr_debug_pid and apply it to
+> autofs4 to
+> keep the output the same as the current DPRINTK statements.
 > 
-> I think this is missing code that sets the initial i_uid/i_gid,
-> but there may be more missing. Changing the uid value works,
-> but creating files as non-root user doesn't.
+> All patches have been compile tested but not boot tested
 
-Eek!  I'll have a look.
+Hi,
 
-Jörn
+Doesn't this move printk-debug control from local source files
+(i.e., targeted, specific ones) to a more global control (DEBUG)?
 
--- 
-When in doubt, punt.  When somebody actually complains, go back and fix it...
-The 90% solution is a good thing.
--- Rob Landley
+If so, I don't see that as a generally good thing.
+
+If not, please correct me and tell me how this is useful to just
+one instance of using pr_debug() in say, ncpfs, without pr_debug()
+being enabled throughout the entire kernel tree.
+
+Thanks.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
