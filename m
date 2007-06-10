@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbXFJUty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763078AbXFJUwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762801AbXFJUty (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 16:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbXFJUtr
+	id S1763078AbXFJUwE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 16:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbXFJUvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 16:49:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54245 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751637AbXFJUtr (ORCPT
+	Sun, 10 Jun 2007 16:51:53 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:51621 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753205AbXFJUvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 16:49:47 -0400
-Date: Sun, 10 Jun 2007 21:54:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "debian developer" <debiandev@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, greg@kroah.com
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070610215458.0319cdce@the-village.bc.nu>
-In-Reply-To: <f24d23310706101232l335fbf1amff832c00339aa954@mail.gmail.com>
-References: <466A3EC6.6030706@netone.net.tr>
-	<20070609071231.GL2649@lug-owl.de>
-	<466BB9B0.5030908@netone.net.tr>
-	<Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<466BCBBC.90305@netone.net.tr>
-	<Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
-	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
-	<466C0901.4000405@netone.net.tr>
-	<alpine.LFD.0.98.0706101025330.20321@woody.linux-foundation.org>
-	<20070610184736.464d1e32@the-village.bc.nu>
-	<f24d23310706101232l335fbf1amff832c00339aa954@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 10 Jun 2007 16:51:52 -0400
+Message-ID: <466C6451.6030907@novell.com>
+Date: Sun, 10 Jun 2007 13:51:29 -0700
+From: Crispin Cowan <crispin@novell.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+MIME-Version: 1.0
+To: casey@schaufler-ca.com
+CC: david@lang.hm, Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+References: <700465.32295.qm@web36612.mail.mud.yahoo.com>
+In-Reply-To: <700465.32295.qm@web36612.mail.mud.yahoo.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > GPLv2 probably forbids Tivoisation anyway. Which is good IMHO even if not
->               ^^^^^^^^
-> 
-> Now that is a bit waving in the air. GPLv2 forbids Tivoisation
-> theoretically but practically it didnt stop them doing it practically.
+Casey Schaufler wrote:
+> --- david@lang.hm wrote:
+>   
+>>> Yes, and in the process, AA stores compiled regular expressions in
+>>> kernel. Ouch. I'll take "each file it's own label" over _that_ any time.
+>>>       
+>> and if each file has it's own label you are going to need regex or similar 
+>> to deal with them as well.
+>>     
+> Now that you're going to have to explain. Nothing like that 
+> on any of the MLS systems I'm familiar with, and I think that
+> I know just about all of them.
+>   
+I suspect that David meant that if you were using "unique label per
+file" as an implementation technique to implement AA on top of SELinux,
+that you would then need a regexp to discern labels.
 
-They've never been given permission and there is no caselaw yet, doesn't
-mean they are allowed to.
+It's hard to recall with all the noise, but at this point in the thread
+the discussion is about the best way to implement AA. Some have alleged
+that AA layered on top of SELinux is the best way. I think that is
+clearly wrong; AA layered on top of SELinux is possible, but would
+require a bunch of enhancements to SELinux first, and the result would
+be more complex than the proposed AA patch and have weaker functionality
+and performance.
 
-GPL2 actually in some ways was saner than GPL3 on this - you could
-sensibly argue the key was part of the source/build environment but it
-didn't then get muddled in with questions like ROMs which the new GPL3
-wording is a bit messy about still.
+Crispin
 
-Alan
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
+Director of Software Engineering   http://novell.com
+	AppArmor Chat: irc.oftc.net/#apparmor
+
