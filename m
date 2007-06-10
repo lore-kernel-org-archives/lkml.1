@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbXFJK5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbXFJLI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756439AbXFJK5d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 06:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbXFJK5Y
+	id S1755568AbXFJLI2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 07:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbXFJLIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 06:57:24 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1253 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755768AbXFJK5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 06:57:23 -0400
-Date: Sun, 10 Jun 2007 10:57:12 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Christoph Hellwig <hch@infradead.org>, Len Brown <lenb@kernel.org>,
-       Andi Drebes <lists-receive@programmierforen.de>,
-       kernel-janitors@lists.osdl.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [KJ] [PATCH] drivers/acpi: sizeof/sizeof array size calculations replaced with ARRAY_SIZE
-Message-ID: <20070610105712.GA4695@ucw.cz>
-References: <200705261239.27485.lists-receive@programmierforen.de> <46581C06.7000005@student.ltu.se> <200705261558.24912.lists-receive@programmierforen.de> <200705301525.05905.lenb@kernel.org> <20070531095603.GA24654@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070531095603.GA24654@infradead.org>
-User-Agent: Mutt/1.5.9i
+	Sun, 10 Jun 2007 07:08:20 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:22352 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753256AbXFJLIT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 07:08:19 -0400
+Date: Sun, 10 Jun 2007 13:08:18 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: Tarkan Erimer <tarkan@netone.net.tr>, davids@webmaster.com,
+       linux-kernel@vger.kernel.org, neilb@suse.de
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <466BC18F.9090202@simon.arlott.org.uk>
+Message-ID: <Pine.LNX.4.64.0706101307060.8723@fbirervta.pbzchgretzou.qr>
+References: <MDEHLPKNGKAHNMBLJOLKAEFCEHAC.davids@webmaster.com>
+ <466BB85B.6050703@netone.net.tr> <466BC18F.9090202@simon.arlott.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > > > Any reason to not just replace ACPI_RSD_TABLE_SIZE with ARRAY_SIZE?
-> > 
-> > Probably because ARRAY_SIZE doesn't exist in ACPICA, which is
-> > where this code comes from...
-> > 
-> > When we change syntax in ACPICA files in Linux to make it more "beautiful",
-> > then it creates more work for me -- as forever on, that syntax difference
-> > must be manually compared to upstream ACPICA and Linux -- and that syntax
-> > difference causes upstream patches to no longer apply and require
-> > hand merging.
-> 
-> Or we could stop that ACPCICA crap ASAP.  The acpi code not only looks
-> like crap because of that but it's buggy as hell now.
+On Jun 10 2007 10:17, Simon Arlott wrote:
+>On 10/06/07 09:37, Tarkan Erimer wrote:
+>> BTW,I found a really interesting blog entry about which code in Linux
+>> Kernel is using which version of GPL :
+>> 
+>> http://6thsenseless.blogspot.com/2007/02/how-much-linux-kernel-code-is-gpl-2.html
+>> 
+>> You've got to take MODULE_LICENSE() into account. There is
+>> 
+>> 	MODULE_LICENSE("GPL");
+>> 	MODULE_LICENSE("GPL v2");
+>> 	MODULE_LICENSE("GPL and additional rights");
+>> 	MODULE_LICENSE("Dual BSD/GPL");
+>> 	MODULE_LICENSE("Dual MIT/GPL");
+>> 	MODULE_LICENSE("Dual MPL/GPL");
+>
+>Surely that doesn't work since the entire Linux kernel is (and can only be) 
+>released as GPLv2? Wouldn't anyone making changes to those files need to 
+>obtain a copy under the other licence and explicitly release it under both 
+>licenses in order to maintain that?
 
-+1.
+http://www.eweek.com/article2/0,1759,1915720,00.asp
+has the answer. Quoting Linus:
 
-Len, acpi subsystem is old enough to live by kernel standards, and
-important enough that it should look&feel like a kernel code. It also
-does not seem to change quickly, so merging patches should not be a
-big deal.
-							Pavel
+"If you want to license a program under any later version of the GPL, you have
+to state so explicitly. Linux never did."
+
+Hence, unless there's a "GPL 2 or later", all the "unspecified GPL" files
+are GPL2 only.
+
+
+	Jan
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
