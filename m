@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbXFJOfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbXFJOtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759278AbXFJOfk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 10:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbXFJOfd
+	id S1758716AbXFJOtT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 10:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbXFJOtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 10:35:33 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:35407 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751512AbXFJOfc (ORCPT
+	Sun, 10 Jun 2007 10:49:10 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58455 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754690AbXFJOtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 10:35:32 -0400
-Date: Sun, 10 Jun 2007 16:35:30 +0200
-From: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [patch-mm 07/23] Tick management: spread timer interrupt
-Message-ID: <20070610143530.GA2138@rhlx01.hs-esslingen.de>
-References: <20070610092437.118387863@inhelltoy.tec.linutronix.de> <20070610092446.625214085@inhelltoy.tec.linutronix.de> <20070610141617.GA15173@rhlx01.hs-esslingen.de> <1181485863.384.15.camel@chaos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 10 Jun 2007 10:49:09 -0400
+Date: Sun, 10 Jun 2007 16:49:19 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Michael Gerdau <mgd@technosis.de>
+Cc: Jiri Kosina <jikos@jikos.cz>, Neil Brown <neilb@suse.de>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070610144919.GC3588@stusta.de>
+References: <466A3EC6.6030706@netone.net.tr> <18027.50727.190221.80822@notabene.brown> <Pine.LNX.4.64.0706101444400.23280@twin.jikos.cz> <200706101623.32733.mgd@technosis.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1181485863.384.15.camel@chaos>
-User-Agent: Mutt/1.4.2.2i
-X-Priority: none
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706101623.32733.mgd@technosis.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Jun 10, 2007 at 04:23:20PM +0200, Michael Gerdau wrote:
+> > In most of the law systems out there the copyright stays valid for 70 
+> > years (or so) after the holder's death.
+> 
+> [I don't want to appear picky but IMO it is important to be as precise
+> as one could possibly be, therefor...]
+> 
+> That is not quite correct. At least for the german law system and
+> presumably for most if not all similar systems the corrrect stmts is:
+> 
+> In most of the law systems out there the copyright stays valid for 70 
+> years (or so) after initial publication of the copyrighted work.
+>...
 
-On Sun, Jun 10, 2007 at 04:31:03PM +0200, Thomas Gleixner wrote:
-> That's one time during setup, no hot path.
+Please read the German "Gesetz über Urheberrecht und verwandte 
+Schutzrechte" before making completely false claims - in Germany it's
+70 years after the death of the author.
 
-Urks, should have looked at actual file then instead of patch context only,
-sorry!
+> Best,
+> Michael
 
-Andreas Mohr
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
