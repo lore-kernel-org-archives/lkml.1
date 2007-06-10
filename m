@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbXFJNRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbXFJNft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbXFJNRt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 09:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbXFJNRn
+	id S1756084AbXFJNft (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 09:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXFJNfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 09:17:43 -0400
-Received: from www.osadl.org ([213.239.205.134]:47054 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752293AbXFJNRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 09:17:42 -0400
-Subject: Re: [patch-mm 06/23] clockevents: Fix resume logic
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <200706101258.48721.rjw@sisk.pl>
-References: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
-	 <200706101219.03914.rjw@sisk.pl> <1181471412.384.9.camel@chaos>
-	 <200706101258.48721.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sun, 10 Jun 2007 15:17:34 +0200
-Message-Id: <1181481454.384.13.camel@chaos>
+	Sun, 10 Jun 2007 09:35:42 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51538 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753338AbXFJNfl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 09:35:41 -0400
+Date: Sun, 10 Jun 2007 14:40:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Neil Brown <neilb@suse.de>
+Cc: Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070610144023.1cca3ae4@the-village.bc.nu>
+In-Reply-To: <18027.50727.190221.80822@notabene.brown>
+References: <466A3EC6.6030706@netone.net.tr>
+	<18026.16739.228277.938421@notabene.brown>
+	<466BBB0B.4050303@netone.net.tr>
+	<18027.50727.190221.80822@notabene.brown>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-10 at 12:58 +0200, Rafael J. Wysocki wrote:
->
-> This is the resume part, or at least it seems so, but the above one is a
-> suspend callback.  If I understand it correctly, this one replaces
-> hpet_resume(), but is it sufficient for the suspend part too?
+> But I think this is largely academic.  You only need a fairly small
+> number of fairly significant contributors to say "no" and the rest of
+> the process would be pointless.  And at last count, the number of
+> kernel people who were not keen on GPLv3 was fairly high.  Of course
+> no-one knows for certain yet what the final GPLv3 will be, and maybe
+> lots of people would change their mind when it comes out.
 
-Oops. Sorry, misunderstood you. Yeah, it's intentional. It gets reset on
-power off and we have not seen any problems with this yet.
-
-	tglx
-
-
+You can take a fair bet someone will say no, or much more likely they or
+whoever inherited their copyright will say $50,000
