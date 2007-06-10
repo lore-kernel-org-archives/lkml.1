@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbXFJOBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbXFJOCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759246AbXFJOBB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 10:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbXFJOAv
+	id S1759282AbXFJOCV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 10:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXFJOCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 10:00:51 -0400
-Received: from waste.org ([66.93.16.53]:47832 "EHLO waste.org"
+	Sun, 10 Jun 2007 10:02:13 -0400
+Received: from thunk.org ([69.25.196.29]:42332 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754789AbXFJOAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 10:00:50 -0400
-Date: Sun, 10 Jun 2007 08:59:56 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Benjamin Gilbert <bgilbert@cs.cmu.edu>
-Cc: Jeff Garzik <jeff@garzik.org>, akpm@linux-foundation.org,
-       herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
-Message-ID: <20070610135956.GS11115@waste.org>
-References: <20070608214242.23949.30350.stgit@dev> <20070608214253.23949.40465.stgit@dev> <20070609201159.GC11166@waste.org> <466B0C3F.3040300@garzik.org> <466B46D5.1020004@cs.cmu.edu>
+	id S1754636AbXFJOCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 10:02:11 -0400
+Date: Sun, 10 Jun 2007 10:02:00 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: Rules on how to use sysfs in userspace programs
+Message-ID: <20070610140200.GD9726@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+References: <20070608203637.GA9259@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <466B46D5.1020004@cs.cmu.edu>
+In-Reply-To: <20070608203637.GA9259@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 09, 2007 at 08:33:25PM -0400, Benjamin Gilbert wrote:
-> Jeff Garzik wrote:
-> >Matt Mackall wrote:
-> >>Have you benchmarked this against lib/sha1.c? Please post the results.
-> >>Until then, I'm frankly skeptical that your unrolled version is faster
-> >>because when I introduced lib/sha1.c the rolled version therein won by
-> >>a significant margin and had 1/10th the cache footprint.
-> 
-> See the benchmark tables in patch 0 at the head of this thread. 
-> Performance improved by at least 25% in every test, and 40-60% was more 
-> common for the 32-bit version (on a Pentium IV).
-> 
-> It's not just the loop unrolling; it's the register allocation and 
-> spilling.  For comparison, I built SHATransform() from the 
-> drivers/char/random.c in 2.6.11, using gcc 3.3.5 with -O2 and 
-> SHA_CODE_SIZE == 3 (i.e., fully unrolled); I'm guessing this is pretty 
-> close to what you tested back then.  The resulting code is 49% MOV 
-> instructions, and 80% of *those* involve memory.  gcc4 is somewhat 
-> better, but it still spills a whole lot, both for the 2.6.11 unrolled 
-> code and for the current lib/sha1.c.
+On Fri, Jun 08, 2007 at 01:36:37PM -0700, Greg KH wrote:
+> The kernel exported sysfs exports internal kernel implementation-details
+> and depends on internal kernel-structures and layout. It is agreed upon
+> kernel developers, that the Linux kernel does not provide a stable
+> internal API.  As sysfs is a direct export of kernel internal
+> structures, the sysfs interface can't provide a stable interface too, it
+> may always change along with internal kernel changes.
 
-Wait, your benchmark is comparing against the unrolled code?
+I want to step back and ask a very fundamental philosophical question
+--- who are the intended users of sysfs?  If it exports an interface,
+part of which is known not be stable, except for backwards
+compatibility issues, why and to whom are we exporting them?
 
-> In contrast, the assembly implementation in this patch only has to go to 
-> memory for data and workspace (with one small exception in the F3 
-> rounds), and the workspace has a fifth of the cache footprint of the 
-> default implementation.
+If the answer is "no one", then maybe modulo backwards compatibility
+issues, we should only export via sysfs those things that are
+guaranteed to be a stable interface.  Or maybe there should be a mount
+option that filters out anything which isn't guaranteed to be stable,
+so that user programs can easily determine if they are using anything
+"bad" --- and then a year or two from now, we make that mount option
+the default, and require a mount option if people want to see the
+unstable bits of sysfs.
 
-How big is the -code- footprint?
+Way back in 2003, Rusty's OLS keynote talked at great length about
+kernel design and interface similicity as a hallmark of good design:
 
-Earlier you wrote:
+    1. Compiler/linker won't let you get it wrong.
+    2. Compiler will warn if you get it wrong.
+    3. The simplest use is the correct one.
+    4. The name tells you how to use it.
+    5. Do it right or it will break at runtime.
+    6. Follow common convention and you'll get it right.
+    7. Read the documentation and you'll get it right.
+    8. Read the implementation and you'll get it right.
+    9. Read the correct mailing list thread and you'll get it right.
+    10. Read the documentation and you'll get it wrong.
+    11. Follow common convention and you'll get it wrong.
+    12. Do it right and it will break at runtime.
+    13. The name tells you how not to use it.
+    14. The obvious use is wrong.
+    15. Compiler will warn if you get it right.
+    16. Compiler won't let you get it right.
+    17. It's impossible to get right. 
 
-> On the aforementioned Pentium IV, /dev/urandom throughput goes from
-> 3.7 MB/s to 5.6 MB/s with the patches; on the Core 2, it increases
-> from 5.5 MB/s to 8.1 MB/s.
+The documentation is a good step, but wouldn't it be better if we can
+prohibit (or warn) applications who are getting it wrong in the first
+place?  Providing interfaces that aren't stable, and then requiring
+people to read documentation so they know not to use them, seems to be
+providing an attractive nuisance.
 
-Whoa. We've regressed something horrible here:
-
-http://groups.google.com/group/linux.kernel/msg/fba056363c99d4f9?dmode=source&hl=en
-
-In 2003, I was getting 17MB/s out of my Athlon. Now I'm getting 2.7MB/s.
-Were your tests with or without the latest /dev/urandom fixes? This
-one in particular:
-
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.21.y.git;a=commitdiff;h=374f167dfb97c1785515a0c41e32a66b414859a8
-
--- 
-Mathematics is the supreme nostalgia of our time.
+						- Ted
