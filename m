@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbXFLACJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbXFLACk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbXFLACJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 20:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXFLAB5
+	id S1757233AbXFLACk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 20:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbXFLACa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 20:01:57 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:43287 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752313AbXFLAB4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 20:01:56 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jun 2007 20:01:56 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-YMail-OSG:In-Reply-To:References:Mime-Version:Content-Type:Message-Id:Cc:Content-Transfer-Encoding:From:Subject:Date:To:X-Mailer;
-  b=LgboeKPznHVEp0/h0uw3AEDyzFmHZRoDlVvKAYDrK1tXJBf86nITwwxPv/ItlaiJPcyLEpiXAxvzHbBVJUWT0CRbV4E6YrfmT8uKUVtGXGrGBxq5dk0dQdXwDK6X8QUf6YKPQzrm6Tcu9RwIoygDNLwKD4vxgezafJq9opbjLc8=  ;
-X-YMail-OSG: 86gXg0gVM1n81qRrHQplGKd0Rnb2YVAiYfxtUPlxvqkhq5LyF91JIyscsOoUWnbkU36tRXLFug--
-In-Reply-To: <20070611101319.GA14284@DervishD>
-References: <20070611101319.GA14284@DervishD>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <191337B7-F4CC-4824-B669-48AE194BE141@sbcglobal.net>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-From: Kevin K <k_krieser@sbcglobal.net>
-Subject: Re: ext2 on flash memory
-Date: Mon, 11 Jun 2007 18:53:26 -0500
-To: DervishD <lkml@dervishd.net>
-X-Mailer: Apple Mail (2.752.2)
+	Mon, 11 Jun 2007 20:02:30 -0400
+Received: from lazybastard.de ([212.112.238.170]:42645 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbXFLAC3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 20:02:29 -0400
+Date: Tue, 12 Jun 2007 01:57:39 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       David Weinehall <tao@acc.umu.se>, Willy Tarreau <w@1wt.eu>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Dongjun Shin <djshin90@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>, Bill Davidsen <davidsen@tmr.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: [Patch 10/18] fs/logfs/inode.c
+Message-ID: <20070611235739.GB5377@lazybastard.org>
+References: <20070603183845.GA8952@lazybastard.org> <200706101924.29927.arnd@arndb.de> <20070611232803.GA5377@lazybastard.org> <200706120151.36520.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706120151.36520.arnd@arndb.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 June 2007 01:51:34 +0200, Arnd Bergmann wrote:
+> On Tuesday 12 June 2007, JÃ¶rn Engel wrote:
+> > The initial storm of review comments has calmed down. Â I get the
+> > impression that people either lose interest or run out of simple things
+> > to point out. Â Maybe I should wait a bit before resending?
+> 
+> Your last series had a todo list of 11 items, plus more stuff
+> found in the review. How about you submit logfs for inclusion in -mm
+> when all easy stuff is gone from that list?
 
-On Jun 11, 2007, at 5:13 AM, DervishD wrote:
+I was hoping to get more comments still.  But maybe your are right.
+Half of your last comments looked more like test reports than code
+review.
 
->     Hi all :)
->
->     I was wondering: is there any reason not to use ext2 on an USB
-> pendrive? Really my question is not only about USB pendrives, but any
-> device whose storage is flash based. Let's assume that the device  
-> has a
-> good quality flash memory with wear leveling and the like...
->
->     Thanks a lot in advance :)
->
->     Raúl Núñez de Arenas Coronado
->
+JÃ¶rn
 
-
-My opinion is that, unless the flash is really cheap, or it is being  
-written to excessively, that it probably doesn't matter too much.   
-With the growth in size of flash, just how long do you think it will  
-continue to be used before you go to something larger?
-
-A 256MB flash of a few years ago has been supplanted in many cases by  
-today's 2-4gb memory.
-
-One suggestion with ext2 might be to mount it with the noatime  
-option, so it doesn't update the last access time for directories and  
-files.  Otherwise, you are doing a write even when you only plan to  
-read a file.
-
-
+-- 
+Linux is more the core point of a concept that surrounds "open source"
+which, in turn, is based on a false concept. This concept is that
+people actually want to look at source code.
+-- Rob Enderle
