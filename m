@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbXFKLU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbXFKL0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbXFKLU1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 07:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbXFKLUU
+	id S1751954AbXFKL0a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 07:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbXFKL0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 07:20:20 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:46726 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbXFKLUU (ORCPT
+	Mon, 11 Jun 2007 07:26:22 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:44263 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750795AbXFKL0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 07:20:20 -0400
-Message-ID: <466D2F28.8070307@gmail.com>
-Date: Mon, 11 Jun 2007 13:16:56 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Mon, 11 Jun 2007 07:26:20 -0400
+Message-ID: <466D3148.2050607@de.ibm.com>
+Date: Mon, 11 Jun 2007 13:26:00 +0200
+From: Martin Peschke <mp3@de.ibm.com>
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Qi Yong <qiyong@fc-cn.com>, Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, m-ikeda@ds.jp.nec.com
-Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com>	<20070611115557.4340f45e.kamezawa.hiroyu@jp.fujitsu.com>	<2cd57c900706110321r2ff4cf88g18191b4e0c566f62@mail.gmail.com> <20070611194649.e84ab477.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070611194649.e84ab477.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, jbaron@redhat.com, rostedt@goodmis.org,
+       linux-s390@vger.kernel.org
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+References: <1181165656.7133.23.camel@dix> <20070606230641.GA11592@elte.hu> <46674EA9.9090601@de.ibm.com> <20070607044017.GA3828@gnuppy.monkey.org> <4667ADDA.2070202@de.ibm.com> <20070607073021.GA21139@elte.hu> <20070607085645.GA29054@gnuppy.monkey.org>
+In-Reply-To: <20070607085645.GA29054@gnuppy.monkey.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/11/2007 12:46 PM, KAMEZAWA Hiroyuki wrote:
+Bill Huey (hui) wrote:
+ > However, I don't understand why all of this
+ > is so heavy weight when the current measurements that Peter makes is
+ > completely sufficient for any reasonable purpose I can think of at the
+ > moment.
 
-> "Qi Yong" <qiyong@fc-cn.com> wrote:
-> 
->> On 11/06/07, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>> Hi, thank you for your work. I was impressed.
->>>
->>> BTW, how about adding following lines (both in Japanese and English) ?
->>> ==
->>> This is translated "HOWTO" documentation. Original "HOWTO" is maintaind by
->>> Greg Kroah-Hartman <greg@kroah.com> and linux kernal mailing list.
->>> And this one is maintained by Tsugikazu Shibata <tsugikazu.shibata@jp.nec.com>
->>> and JF Projet <www.linux.or.jp/JF>. Because original HOWTO documentation itself
->>> is being updated day and night, this file may contain old sentences. Please contact
->>> JF project if you find problems in translation.
->>>
->>> It is guaranteed that this file is just a translation and doesn't contains any
->> There are language problems, like s/contains/contain/. The author
->> please try fixing them at the fist place instead of adding jobs to
->> janitors.
->>
-> Oh, sorry. I know I have language problem for years. 
-> My doc itself is of-no-use, I know. They will write their own by themselves.
+It wasn't meant to be or to stay heavy weight. To make the best of my
+recent attempt: It's good that such issues show up.
 
-Please don't say that -- I perfectly understood what you were saying and as 
-such it was of perfect use. There's a large number of non-native English 
-speakers around the Linux kernel and noone is expected to write flawless 
-English (that's including native speakers in fact).
+ > What's this stuff with labels about ?
 
-Getting a native speaker to clean up grammer and spelling is fine ofcourse 
-as it's makes for a lower effort read for many others but please don't say 
-that something which isn't flawlessly spelled is of no use. As long as the 
-content is clear, it's of great use!
+Sorry, I didn't come around to posting a documentation update.
 
-Rene.
+It's an optional callback that allows a user to label an entry of
+a statistic when it is printed. I have used this feature for adding
+symbol strings to instruction pointers.
+
+ > It's important to get the points of contention so that the greater
+ > kernel group can fix this issues and not log statistics for the purpose
+ > of logging it. The original purpose should not be ignore when working
+ > on this stuff.
+
+Sure.
+
+ > By the way, what's the purpose of all of this stuff ? like what do you
+ > intend to do with it over the long haul ?
+
+Well, it started as statistics code of a device driver. When I realized
+that I was increasing code duplication in the kernel, I tried to abstract
+the code out that is device driver independent, allowing others to reuse it.
+I have done a couple of iterations, adapting the code to requirements
+which showed up when using the code for another driver etc.
+
+This time, my lock contentaion patch showed two issues that require work:
+struct statistics needs to be slimmed down or be eliminated alltogether;
+allocations might be fine for some users but not for all. Solving
+these issues is feasible. Anyway, I don't think I can effort pursueing
+it further.
+
+Martin
 
