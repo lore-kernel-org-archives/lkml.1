@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbXFKG2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbXFKG3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbXFKG2Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 02:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbXFKG2D
+	id S1756472AbXFKG3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 02:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbXFKG3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 02:28:03 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59399 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750778AbXFKG2A (ORCPT
+	Mon, 11 Jun 2007 02:29:03 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34006
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbXFKG3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 02:28:00 -0400
-Date: Sun, 10 Jun 2007 23:26:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Cc: "Herbert Xu" <herbert@gondor.apana.org.au>,
-       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
-       "Leech, Christopher" <christopher.leech@intel.com>,
-       "Jeff Garzik" <jeff@garzik.org>, davem@davemloft.net,
-       "Wolfgang Denk" <wd@denx.de>
-Subject: Re: 2.6.22-rc4-mm1
-Message-Id: <20070610232659.ceff247c.akpm@linux-foundation.org>
-In-Reply-To: <e9c3a7c20706102201y536de24ft2daf8fbed066e28f@mail.gmail.com>
-References: <20070606020737.4663d686.akpm@linux-foundation.org>
-	<200706062132.37430.m.kozlowski@tuxland.pl>
-	<20070606132439.3f59f0cf.akpm@linux-foundation.org>
-	<20070606212831.GA1534@gondor.apana.org.au>
-	<20070606164202.a3dcd176.akpm@linux-foundation.org>
-	<Pine.LNX.4.61.0706070852580.1547@yvahk01.tjqt.qr>
-	<20070607070108.GA8013@gondor.apana.org.au>
-	<20070607001218.742c0ba5.akpm@linux-foundation.org>
-	<e9c3a7c20706102201y536de24ft2daf8fbed066e28f@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jun 2007 02:29:00 -0400
+Date: Sun, 10 Jun 2007 23:27:19 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@ucw.cz>
+cc: Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+In-Reply-To: <20070610210547.GC25138@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0706102322490.6675@asgard.lang.hm>
+References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de>
+ <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de>
+ <20070609001703.GA17644@kroah.com> <Pine.LNX.4.64.0706081757070.18969@asgard.lang.hm>
+ <20070610083427.GA24808@elf.ucw.cz> <Pine.LNX.4.64.0706100201540.6675@asgard.lang.hm>
+ <20070610210547.GC25138@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Jun 2007 22:01:34 -0700 "Dan Williams" <dan.j.williams@intel.com> wrote:
+On Sun, 10 Jun 2007, Pavel Machek wrote:
 
-> It would be very helpful to have a clear merge path for dmaengine
-> changes and the async offload api.
+>>>> extended out this can come close to giving each file it's own label. AA
+>>>> essentially does this and calls the label the path and computes it at
+>>>> runtime instead of storing it somewhere.
+>>>
+>>> Yes, and in the process, AA stores compiled regular expressions in
+>>> kernel. Ouch. I'll take "each file it's own label" over _that_ any time.
+>>
+>> and if each file has it's own label you are going to need regex or similar
+>> to deal with them as well.
+>
+> But you have that regex in _user_ space, in a place where policy
+> is loaded into kernel.
 
-Yes, this needs some attention.
+then the kernel is going to have to call out to userspace every time a 
+file is created or renamed and the policy is going to be enforced 
+incorrectly until userspace finished labeling/relabeling whatever is 
+moved. building this sort of race condigion for security into the kernel 
+is highly questionable at best.
 
-I'd suggest that you prepare a standalone tree for Linus to pull and we aim at
-asking him to pull that for 2.6.23-rc1.
+> AA has regex parser in _kernel_ space, which is very wrong.
 
-In the meanwhile I'd suggest that you get the core patch(es) out
-onto the relevant lists again and cc'ed to the relevant maintainers.
+see Linus' rants about why it's not automaticaly the best thing to move 
+functionality into userspace.
 
-Of course, good changelogging and commenting makes the review a) more
-effective, b) more likely to happen and c) less work for reviewers.  The
-changelog you have for 7556477664edcbe1c9a2fdf60edddfd8455d198b is nice,
-but it's awfully short for a 1/4MB patch.  It tells us at a high level what
-the code does, but it has nothing to say about how it does it: a high-level
-design description, of you will.
+remember that the files covered by an AA policy can change as files are 
+renamed. this isn't the case with SELinux so it doesn't have this sort of 
+problem.
 
-Put yourself in the position of an experienced kernel developer who doesn't
-know this code, and who doesn't know the hardware.  What can you do to make
-their review easier and more effective?
-
-So.  Please have a think about what you can do there, and also see what can
-be done about the 312 warnings which
-
-	perl scripts/checkpatch.pl patches/git-md-accel.patch
-
-emits.  Then send 'em all out again (say, a week from now) and let's all just dig
-in and make this thing happen?
-
+David Lang
