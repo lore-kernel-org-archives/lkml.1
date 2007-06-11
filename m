@@ -1,34 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764428AbXFKK0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764410AbXFKKcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764428AbXFKK0M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 06:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbXFKKZ5
+	id S1764410AbXFKKcR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 06:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759203AbXFKKcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 06:25:57 -0400
-Received: from max.aladin.ro ([80.96.155.2]:59917 "EHLO aladin.ro"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756983AbXFKKZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 06:25:57 -0400
-Message-ID: <466D2342.6010507@aladin.ro>
-Date: Mon, 11 Jun 2007 13:26:10 +0300
-From: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 11 Jun 2007 06:32:01 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:9448 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756983AbXFKKcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 06:32:00 -0400
+Message-ID: <466D2498.3000105@de.ibm.com>
+Date: Mon, 11 Jun 2007 12:31:52 +0200
+From: Martin Peschke <mp3@de.ibm.com>
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: jdike@karaya.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] UML: fix missing non-blocking I/O, now DEBUG_SHIRQ
- works
-References: <1181514048.3157.9.camel@localhost>
-In-Reply-To: <1181514048.3157.9.camel@localhost>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, jbaron@redhat.com, rostedt@goodmis.org,
+       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
+Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
+References: <1181165656.7133.23.camel@dix> <1181202258.7348.217.camel@twins> <46698B1D.3000806@de.ibm.com> <1181322460.5728.2.camel@lappy> <46698F7F.4090407@de.ibm.com> <1181323622.5728.6.camel@lappy> <466993CF.4050804@de.ibm.com> <1181325030.5728.14.camel@lappy>
+In-Reply-To: <1181325030.5728.14.camel@lappy>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*This message was transferred with a trial version of CommuniGate(r) Pro*
-Eduard-Gabriel Munteanu wrote:
-> The patch was written and tested on Linux 2.6.22-rc2-mm1. 
+Peter Zijlstra wrote:
+> On Fri, 2007-06-08 at 19:37 +0200, Martin Peschke wrote:
+>> Peter Zijlstra wrote:
+>>> On Fri, 2007-06-08 at 19:18 +0200, Martin Peschke wrote:
+>>>> Peter Zijlstra wrote:
+>>>>> On Fri, 2007-06-08 at 19:00 +0200, Martin Peschke wrote:
+>>>>>> Peter Zijlstra wrote:
+>>>>>>> I'm confused as to where the class->stat objects are initialised? Is
+>>>>>>> that done in lock_stat_init()? If so, then you have a bug.
+>>>>>> static struct lock_class lock_classes[MAX_LOCKDEP_KEYS];
+>>>>>>
+>>>>>> I assume this gets us class structures containing all zeros, doesn't it?
+>>>>>> Then class->stat is zeros as well, which is handled by lib/statistics.
+>>>>>> (In this case, data gathering hasn't been turned on yet, and statistic_inc()
+>>>>>> and similar functions don't access other areas of struct statistic.)
+>>>>> Who eventually calls percpu_alloc?
+>>>> There is a small state machine calling percpu_alloc when users do
+>>>>
+>>>>     echo state=on > /debug/statistics/lockdep/definition
+>>>>
+>>>> So data gathering is off by default.
+>>>>
+>>>> It might make sense to allow "state=on" as a default. Then allocation would
+>>>> be done in the context of statistic_attach().
+>>> Right, the problem here is that you iterate over all_lock_classes once
+>>> at init.
+>>>
+>>> Contrary to what the name might suggest, it are not all possible
+>>> classes, just all active ones. So you'll only attach the classes which
+>>> have been used up until the init point. All other classes used later
+>>> will never be initialized.
 
-Also tested on git. I forgot to tell you the diff is done against git 
-(it was made on that -mm, diffed, applied to git and then git-diffed 
-against HEAD).
+One could work around this by iterating over the entire array...
+
+Anyway, this is not good enough. The right solution was to teach my
+code to deal with static (per-cpu) statistic counter arrays in addition
+to buffers allocated with percpu_alloc(). Both use cases are valid.
+
+Thanks for your feedback.
+
+Martin
+
