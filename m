@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763579AbXFKIiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762135AbXFKIph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763579AbXFKIiw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 04:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbXFKIip
+	id S1762135AbXFKIph (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 04:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbXFKIp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 04:38:45 -0400
-Received: from smtpgw02.netonehosting.com ([193.192.98.26]:35376 "EHLO
-	smtpgw02.netonehosting.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751336AbXFKIio (ORCPT
+	Mon, 11 Jun 2007 04:45:29 -0400
+Received: from wx-out-0506.google.com ([66.249.82.233]:20762 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750742AbXFKIp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 04:38:44 -0400
-Message-ID: <466D0A12.5030607@netone.net.tr>
-Date: Mon, 11 Jun 2007 11:38:42 +0300
-From: Tarkan Erimer <tarkan@netone.net.tr>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Mon, 11 Jun 2007 04:45:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pafZ9NqxoV+WtsIhrPM5bbW4ED1K/UMo81Ws4S+w7kytrdiYmEAkVpi7bE7wBqrEjQs0ayx8vKwsdjQ3DjFvc/VSKr0LUhAeCdFouNEfCma7qIppg9BBihhCdJEtLAXlzFLkzN8aBqfKU8anPS15beDrd3UyN+KG1HlKY9+REJI=
+Message-ID: <98df96d30706110145i290dad15lb83b5d46524bd803@mail.gmail.com>
+Date: Mon, 11 Jun 2007 17:45:27 +0900
+From: "Hiro Yoshioka" <lkml.hyoshiok@gmail.com>
+Reply-To: hyoshiok@miraclelinux.com
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Tsugikazu Shibata" <tshibata@ab.jp.nec.com>,
+       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com,
+       "Hiro Yoshioka" <hyoshiok@miraclelinux.com>
+In-Reply-To: <20070611060906.GC914@suse.de>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>  <18026.16739.228277.938421@notabene.brown>  <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr>  <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>  <466BCBBC.90305@netone.net.tr>  <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com> <466C0901.4000405@netone.net.tr> <alpine.LFD.0.98.0706101025330.20321@woody.linux-foundation.org> <alpine.LFD.0.98.0706101029300.20321@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706101029300.20321@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-9; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-NETONE-MailScanner-Information: Please contact the ISP for more information
-X-NETONE-MailScanner: Found to be clean
-X-NETONE-MailScanner-From: tarkan@netone.net.tr
+Content-Disposition: inline
+References: <20070610.204845.115909592.tshibata@ab.jp.nec.com>
+	 <20070611115557.4340f45e.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20070611060906.GC914@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Sun, 10 Jun 2007, Linus Torvalds wrote:
->   
->> I have yet to see any actual *reasons* for licensing under the GPLv3, 
->> though.
->>     
->
-> Btw, if Sun really _is_ going to release OpenSolaris under GPLv3, that 
-> _may_ be a good reason. I don't think the GPLv3 is as good a license as 
-> v2, but on the other hand, I'm pragmatic, and if we can avoid having two 
-> kernels with two different licenses and the friction that causes, I at 
-> least see the _reason_ for GPLv3. As it is, I don't really see a reason at 
-> all.
->
-> I personally doubt it will happen, but hey, I didn't really expect them to 
-> open-source Java either(*), so it's not like I'm infallible in my 
-> predictions.
->
-> 				Linus
->
-> (*) And I've been pushing for that since before they even released it - I 
-> walked out on Bill Joy at a private event where they discussed their 
-> horrible previous Java license.
->   
+Hi,
 
-Thanks for making things more clear :-) Some really strong indications 
-that Sun is very willing to,at least, "Dual-License" the OpenSolaris 
-with GPLv3. I think; in a very short time; we will see when the GPLv3 
-finalized and released.
+Shibata san's contribution was really great. I was impressed too.
+
+I think the important point is that Shibata san let the
+linux kernel community knows the translation work has been done
+and ask the feedback.
+
+I think this two way communication is very important.
+
+On 6/11/07, Greg KH <gregkh@suse.de> wrote:
+> On Mon, Jun 11, 2007 at 11:55:57AM +0900, KAMEZAWA Hiroyuki wrote:
+> >
+> > Hi, thank you for your work. I was impressed.
+> >
+> > BTW, how about adding following lines (both in Japanese and English) ?
+> > ==
+> > This is translated "HOWTO" documentation. Original "HOWTO" is maintaind by
+> > Greg Kroah-Hartman <greg@kroah.com> and linux kernal mailing list.
+> > And this one is maintained by Tsugikazu Shibata <tsugikazu.shibata@jp.nec.com>
+> > and JF Projet <www.linux.or.jp/JF>. Because original HOWTO documentation itself
+> > is being updated day and night, this file may contain old sentences. Please contact
+> > JF project if you find problems in translation.
+> >
+> > It is guaranteed that this file is just a translation and doesn't contains any
+> > additional information, sentences. If you want to update "HOWTO", please update
+> > English version first. Don't fork from original if you update this file.
+> >
+> > Last Updated: 2007/06/04  Version: 2.6.21
+> > ==
+> >
+> > not worth writing ?
+>
+> That sounds fine with me, and would be good to have.  I also have no
+> problem also CC:ing anyone who wants to translate this file with patches
+> that happen to modify the originals.  That way they can easily keep up
+> with the minor number of changes that happen over time.
+
+I think that some members of YLUG (Yokohama Linux Users Group)
+may help to review the translations. :-)
 
 Regards,
-
-Tarkan
+  Hiro
+-- 
+Hiro Yoshioka
+mailto:hyoshiok at miraclelinux.com
