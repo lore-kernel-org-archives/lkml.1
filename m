@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbXFKEwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761399AbXFKE5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbXFKEwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 00:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbXFKEwZ
+	id S1761399AbXFKE5v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 00:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbXFKE5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 00:52:25 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42048 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750714AbXFKEwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 00:52:24 -0400
-Message-ID: <466CD502.6010201@garzik.org>
-Date: Mon, 11 Jun 2007 00:52:18 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Mon, 11 Jun 2007 00:57:43 -0400
+Received: from mx-out.forthnet.gr ([193.92.150.103]:57437 "EHLO
+	mx-out-01.forthnet.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbXFKE5n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 00:57:43 -0400
+X-Greylist: delayed 2939 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jun 2007 00:57:42 EDT
+Authentication-Results: MX-IN-04.forthnet.gr smtp.mail=mmargaron@gmail.com; spf=neutral
+Authentication-Results: MX-IN-04.forthnet.gr header.from=mmargaron@gmail.com; sender-id=neutral
+Date: Mon, 11 Jun 2007 07:12:32 +0300 (EEST)
+From: Miltiadis Margaronis <mmargaron@gmail.com>
+X-X-Sender: miltux@micmac.localdomain
+To: dmitry.torokhov@gmail.com
+cc: linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz
+Subject: [PATCH] input: make 2 macros in gameport.c TSC-aware
+Message-ID: <alpine.BSF.0.99.0706110624150.5014@micmac.localdomain>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] pata_it821x: (partially) fix DMA in RAID mode
-References: <200706101843.20947.bzolnier@gmail.com>
-In-Reply-To: <200706101843.20947.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> Code intended to check DMA status was checking DMA command register.
-> 
-> Moreover firmware seems to "forget" to set DMA capable bit for the
-> slave device (at least in RAID mode but without ITE RAID volumes) so
-> check device ID for DMA capable bit when deciding whether to use DMA
-> and remove DMA status check completely.
-> 
-> Thanks to Pavol ©imo for the bugreport and testing the initial fix.
-> 
-> This change unfortunately still doesn't fix DMA in RAID mode (which
-> works fine with IDE it821x) but Alan is working on the missing pieces
-> (pata_it821x vs libata EH issues).
-> 
-> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Cc: Tejun Heo <htejun@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
-> 
->  drivers/ata/pata_it821x.c |   11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
 
-Patch is OK but it's mangled by your mailer:
+  This makes DELTA and GET_TIME in drivers/input/gameport/gameport.c
+  similar to the ones in drivers/input/joystick/analog.c . Worked on
+  2.6.22-rc4-git2.
 
-@@ -79,7 +80,7 @@
-=20
-=20
-  #define DRV_NAME "pata_it821x"
-=2D#define DRV_VERSION "0.3.6"
-+#define DRV_VERSION "0.3.7"
-=20
-  struct it821x_dev
+Signed-off-by: Miltiadis Margaronis <mmargaron@gmail.com>
+
+
+--- a/drivers/input/gameport/gameport.c	2007-06-05 03:57:02.000000000 +0300
++++ b/drivers/input/gameport/gameport.c	2007-06-09 07:20:45.000000000 +0300
+@@ -64,8 +64,8 @@ static void gameport_disconnect_port(str
+
+  #include <asm/i8253.h>
+
+-#define DELTA(x,y)      ((y)-(x)+((y)<(x)?1193182/HZ:0))
+-#define GET_TIME(x)     do { x = get_time_pit(); } while (0)
++#define DELTA(x,y)      (cpu_has_tsc ? ((y) - (x)) : ((y) - (x) +((y) < (x) ? CLOCK_TICK_RATE / HZ : 0)))
++#define GET_TIME(x)     do { if (cpu_has_tsc) rdtscl(x); else x = get_time_pit(); } while (0)
+
+  static unsigned int get_time_pit(void)
   {
-@@ -460,14 +461,8 @@ static unsigned int it821x_passthru_qc_i
-=20
 
-=2D     int dma_enabled =3D 0;
-         int i;
-=20
-
-etc.
+-- 
+Miltos
 
