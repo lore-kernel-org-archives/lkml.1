@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762992AbXFKIc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbXFKIf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762992AbXFKIc5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 04:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750742AbXFKIcu
+	id S1760061AbXFKIf7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 04:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbXFKIfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 04:32:50 -0400
-Received: from smtpgw02.netonehosting.com ([193.192.98.26]:36296 "EHLO
-	smtpgw02.netonehosting.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750741AbXFKIct (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 04:32:49 -0400
-Message-ID: <466D08AE.6090309@netone.net.tr>
-Date: Mon, 11 Jun 2007 11:32:46 +0300
-From: Tarkan Erimer <tarkan@netone.net.tr>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Mon, 11 Jun 2007 04:35:51 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:39308 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753373AbXFKIft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 04:35:49 -0400
+Date: Mon, 11 Jun 2007 17:34:29 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Denis Vlasenko <vda.linux@googlemail.com>
+Cc: Rene Herman <rene.herman@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Greg KH <gregkh@suse.de>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
+       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
+Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO translated into Japanese]
+Message-ID: <20070611083429.GA24145@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Denis Vlasenko <vda.linux@googlemail.com>,
+	Rene Herman <rene.herman@gmail.com>,
+	Sam Ravnborg <sam@ravnborg.org>, Greg KH <gregkh@suse.de>,
+	Jesper Juhl <jesper.juhl@gmail.com>,
+	Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
+	linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
+References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <200706110159.00482.vda.linux@googlemail.com> <20070611005613.GA20984@linux-sh.org> <200706110946.11808.vda.linux@googlemail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Al Viro <viro@ftp.linux.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466BCBBC.90305@netone.net.tr> <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com> <466C0901.4000405@netone.net.tr> <20070610161306.GA12310@kroah.com> <466CEFBA.7090807@netone.net.tr> <20070611070842.GH21478@ftp.linux.org.uk> <466CF812.5020105@netone.net.tr> <20070611075024.GD32446@elte.hu> <466D0054.5060807@netone.net.tr> <20070611081829.GB9852@elte.hu>
-In-Reply-To: <20070611081829.GB9852@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-9; format=flowed
-Content-Transfer-Encoding: 7bit
-X-NETONE-MailScanner-Information: Please contact the ISP for more information
-X-NETONE-MailScanner: Found to be clean
-X-NETONE-MailScanner-From: tarkan@netone.net.tr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706110946.11808.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Tarkan Erimer <tarkan@netone.net.tr> wrote:
->
->   
->> [...] Just, I asked simple question and included a simple example in 
->> it. [...]
->>     
->
-> actually, what you said was this:
->
-> " I hope we should upgrade to GPLv3 and Sun should "Dual License"
->   the OpenSolaris via GPLv3 (or at least,GPLv3 should be CDDL
->   compatible.). "
->   
-Why don't you include the last sentence I wrote: "So,we should have more 
-fruits (like ZFS,DTrace etc.) ;-) "
-So, that's why I said it. Because, as all the time, we did it: Importing 
-and exporting codes to/from different open source projects.
+On Mon, Jun 11, 2007 at 09:46:11AM +0200, Denis Vlasenko wrote:
+> On Monday 11 June 2007 02:56, Paul Mundt wrote:
+> > That's a ridiculous statement. Non-native language abilities and
+> > technical competence have very little to do with each other. People have
+> > to understand the code and figure out what it is that they want to
+> > change. As long as this is done cleanly and the intent is obvious,
+> > language doesn't even factor in beyond the Signed-off-by tag. Explanation
+> > is necessary from time to time, but it really depends on the area in
+> > which someone is working. If it's a complicated and involved change, then
+> > of course it takes a bit more effort on both sides, but that doesn't
+> > invalidate the importance or necessity of the work.
+> 
+> Point me to one person who doesn't know English at all
+> and who has successfully participated in l-k devel.
+> 
+There are entire architectures that have been merged and maintained by
+folks who speak little to no english, for example. I'll let you figure
+out which ones. Many drivers and such, too. Perhaps you've simply never
+noticed since these folks tend not to be terribly vocal.
 
-> and to that the answer was:
->
-> " The OpenSolaris community has already stated that they do not want to
->   accept GPLv3 [...] "
->
-> in other words: your hypothetical is false today. You called us to do a 
-> specific action, but why did you then include a factually false 
-> 'example' to underline that point of yours? Or if you simply did not 
-> know about the OpenSolaris community's position beforehand, why dont you 
-> just admit that and withdraw from that line of argument gracefully?
->
-> 	Ingo
->   
+This is not to say that there aren't communication barriers, but things
+do gradually get done in any case.
 
-As I mentioned in my previous posts: This is **not** in the hands of the 
-"OpenSolaris Community" to make and apply such decision. Sun itself 
-**will decide** it. Also, there are strong indications that Sun is very 
-interested to make "OpenSolaris" at least "Dual-Licensed" with GPLv3.
+> I'm not saying that non-English should banned or something.
+> In Kconfig it can even make sense. A section on kernel.org
+> where people can put translations is also a good idea.
+> I can still think that it is almost useless activity,
+> but who knows, maybe I'm wrong.
+> 
+> Just not Documentation/<lang>/* thing and no i18n of printks.
 
-Regards,
+Documentation/* is in enough disarray as it is, I think it's worth having
+more people looking at it and verifying that things are up to date and
+accurate, regardless of what language they happen to be working in.
 
-Tarkan
+Kconfig localization (is is that time of year already?) is another
+problem entirely, and one that doesn't have a lot of chance of being kept
+up to date. Documentation/* on the other hand isn't terribly prone to
+heavy modification, I'd wager most people would rather be lining up to
+voluntarily rewrite the floppy driver than even accidentally cd in to
+Documentation/. In any event, the rate of change is far lower, and people
+at least have a chance of keeping translations updated.
+
+Documentation is one area where we simply suck, the more people working
+on it, the better.
