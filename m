@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbXFKVPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbXFKVQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbXFKVPU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 17:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbXFKVPH
+	id S1755088AbXFKVQW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 17:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbXFKVQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 17:15:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41918 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752824AbXFKVPE (ORCPT
+	Mon, 11 Jun 2007 17:16:14 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:48758 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbXFKVQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 17:15:04 -0400
-Date: Mon, 11 Jun 2007 14:14:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool
- handling
-Message-Id: <20070611141449.bfbc4769.akpm@linux-foundation.org>
-In-Reply-To: <20070611204442.GA4074@linux-os.sc.intel.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
-	<200706090056.49279.ak@suse.de>
-	<Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
-	<200706091147.24705.ak@suse.de>
-	<20070611204442.GA4074@linux-os.sc.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 11 Jun 2007 17:16:13 -0400
+Date: Mon, 11 Jun 2007 17:16:04 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] UML: fix missing non-blocking I/O, now DEBUG_SHIRQ works
+Message-ID: <20070611211604.GA8859@c2.user-mode-linux.org>
+References: <1181512917.3157.8.camel@localhost> <20070611173154.GA6889@c2.user-mode-linux.org> <466DA50C.5050301@aladin.ro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466DA50C.5050301@aladin.ro>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jun 2007 13:44:42 -0700
-"Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
+On Mon, Jun 11, 2007 at 10:39:56PM +0300, Eduard-Gabriel Munteanu wrote:
+> No offense, but this is an ugly hack. 
 
-> In the first implementation of ours, we had used mempools api's to 
-> allocate memory and we were told that mempools with GFP_ATOMIC is
-> useless and hence in the second implementation we came up with
-> resource pools ( which is preallocate pools) and again as I understand
-> the argument is why create another when we have slab allocation which
-> is similar to this resource pools.
+I'm not going to defend it too much, but the alternatives don't seem any
+better to me.
 
-Odd.  mempool with GFP_ATOMIC is basically equivalent to your
-resource-pools, isn't it?: we'll try the slab allocator and if that failed,
-fall back to the reserves.
+> What if sizeof(int) !=  sizeof(long)?
 
-It's missing the recharge-from-a-kernel-thread functionality but that can be
-added easily enough if it's useful.  It's slightly abusive of the mempool
-philosophy, but it's probably better to do that than to create a new and
-very-similar thing.
+Doesn't matter - the casting will preserve the value.  Of greater
+concern is the relationship between sizeof(void *) and sizeof(long).
+That's not guaranteed by the standard, but is by gcc.
 
-> Hence, can I assume that the conclusion of this 
-> discussion is to use kmem_cache_alloc() functions 
-> to allocate memory in dma_map_{single|sg} API's?
-> 
-> Again, if dma_map_{single|sg} API's fails due to 
-> failure to allocate memory, the only thing that can
-> be done is to panic as this is what few of the other 
-> IOMMU implementation is doing today. 
+> You're calling glibc functions
+> with that fd as a parameter. On some arches, compiling will issue
+> warnings or simply fail. 
 
-If the only option is to panic then something's busted.  If it's network IO
-then there should be a way of dropping the frame.  If it's disk IO then we
-should report the failure and cause an IO error.
+Which ones?
 
+> An alternative would be to use kmalloc instead of a global static 
+> variable. Do you like this one more?
+
+No, that trades the global variable for a new point of failure.
+
+The main reason I like the current casting better than your global
+(not by a lot) is that globals have to be audited for SMP safety.  So,
+I don't want any globals which don't need to be.  This implies a
+local, and to minimize the machinery associated with that (kmalloc, or
+passing a pointer and synchronizing to avoid returning too soon), just
+passing the descriptor in the pointer and accepting the casting needed
+to get it through the compiler.
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
