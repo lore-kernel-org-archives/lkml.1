@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbXFKVt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbXFKVxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755758AbXFKVt4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 17:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbXFKVtu
+	id S1753576AbXFKVxO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 17:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbXFKVw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 17:49:50 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33513 "EHLO pasmtpB.tele.dk"
+	Mon, 11 Jun 2007 17:52:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40168 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751388AbXFKVtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 17:49:49 -0400
-Date: Mon, 11 Jun 2007 23:50:52 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kbuild: fix section mismatch check for vmlinux
-Message-ID: <20070611215052.GA8132@uranus.ravnborg.org>
-References: <466D2337.76E4.0078.0@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751388AbXFKVw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 17:52:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.22-rc4-mm2: Resume from RAM on HPC nx6325 broken
+Date: Mon, 11 Jun 2007 23:59:19 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Lee Trager <lt73@cs.drexel.edu>
+References: <200706111649.00578.rjw@sisk.pl> <200706112203.30032.bzolnier@gmail.com>
+In-Reply-To: <200706112203.30032.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <466D2337.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200706112359.20028.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 10:25:59AM +0200, Jan Beulich wrote:
-> >vmlinux does not contain relocation entries which is
-> >used by the section mismatch checks.
-> >Reported by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> >
-> >Use the individual objects as inputs to overcome
-> >this limitation.
-> >In modpost check the .o files and skip non-ELF files.
-> >
-> >Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+On Monday, 11 June 2007 22:03, Bartlomiej Zolnierkiewicz wrote:
 > 
-> This still doesn't appear to catch all cases - since the checking logic works
-> on a per-module basis, references between the individual .o files aren't
-> being checked. A current instance where this is visible is x86-64's recently
-> added alloc_bootmem_high_node (non-__init, in arch/x86_64/mm/built-in.o)
-> calling __alloc_bootmem_core (__init, in mm/built-in.o). I suppose there's
-> no way around linking $(KBUILD_VMLINUX_OBJS) into vmlinux.o, and
-> checking that file instead.
+> Hi,
+> 
+> On Monday 11 June 2007, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > Here's the result of the search for the second patch that breaks resuming
+> > from RAM on HPC nx6325 (x86_64):
+> > 
+> > ide-ide-hpa-detect-from-resume.patch
+> > 
+> > The symptom is that after the resume there's no backlight and the screen
+> > apparently doesn't work, 100% of the time, although apart from this the system
+> > seems to be functional.
+> 
+> I find it hard to accept that IDE patch is to blame for that. ;)
 
-It is planned to do something around these lines.
-Today we do a lot of linking in the final stages and the Makefile
-magic involved is starting to make my head spinning.
-So my plan is to redo all the "link vmlinux" stuff and
-locate it in the top-level Kbuild file.
-As part of this process I would then create vmlinux.o as one
-of the steps - it will have all sections intact and allow
-for a full modpost run.
+But still (actually, I only don't know why it appeared to be functional :-)).
 
-We would then lack the hint about what subsystem caused the
-warning bot most often a "git grep" tells me that in less than 10
-seconds anyway.
+> > The box doesn't even have an IDE HDD, but the DVD is handled by the atiixp
+> > driver.
+> 
+> If there are no IDE disks in the system there should be absolutely no
+> change in the functionality.
 
-The extra link step would also benefit kallsyms check I think so
-it will not be waste of time.
+Sorry, but the patch is buggy.  Fix appended, details in the changelog.
 
-But summer has hit us so it may be after next merge window.
-The changes would anyway need to cook in -mm a while before
-I would push them to mainstream.
+Greetings,
+Rafael
 
-	Sam
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+generic_ide_resume() should check if dev->driver is not NULL before applying
+to_ide_driver() to it.  Fix that.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/ide/ide.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.22-rc4/drivers/ide/ide.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/ide/ide.c
++++ linux-2.6.22-rc4/drivers/ide/ide.c
+@@ -1010,7 +1010,6 @@ static int generic_ide_resume(struct dev
+ {
+ 	ide_drive_t *drive = dev->driver_data;
+ 	ide_hwif_t *hwif = HWIF(drive);
+-	ide_driver_t *drv = to_ide_driver(dev->driver);
+ 	struct request rq;
+ 	struct request_pm_state rqpm;
+ 	ide_task_t args;
+@@ -1033,8 +1032,12 @@ static int generic_ide_resume(struct dev
+ 
+ 	err = ide_do_drive_cmd(drive, &rq, ide_head_wait);
+ 
+-	if (err == 0 && drv && drv->resume)
+-		drv->resume(drive);
++	if (err == 0 && dev->driver) {
++		ide_driver_t *drv = to_ide_driver(dev->driver);
++
++		if (drv->resume)
++			drv->resume(drive);
++	}
+ 
+ 	return err;
+ }
