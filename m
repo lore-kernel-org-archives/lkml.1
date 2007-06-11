@@ -1,60 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbXFKVoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbXFKVo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbXFKVoR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 17:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbXFKVoA
+	id S1756084AbXFKVo7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 17:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXFKVow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 17:44:00 -0400
-Received: from mga02.intel.com ([134.134.136.20]:40813 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752780AbXFKVn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 17:43:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
-   d="scan'208";a="253227100"
-Date: Mon, 11 Jun 2007 14:40:04 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
-Message-ID: <20070611214004.GA19162@linux-os.sc.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <200706090056.49279.ak@suse.de> <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com> <200706091147.24705.ak@suse.de> <20070611204442.GA4074@linux-os.sc.intel.com> <Pine.LNX.4.64.0706111428410.20454@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706111428410.20454@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 11 Jun 2007 17:44:52 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:36035 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751160AbXFKVov (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 17:44:51 -0400
+Message-ID: <466DC246.4010004@fr.ibm.com>
+Date: Mon, 11 Jun 2007 23:44:38 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Cedric Le Goater <clg@fr.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, Kirill Korotaev <dev@sw.ru>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH -mm 2/2] user namespace : add unshare
+References: <46697244.7000900@fr.ibm.com> <20070608121627.f7d97cc4.akpm@linux-foundation.org> <466D2070.9020306@fr.ibm.com>
+In-Reply-To: <466D2070.9020306@fr.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 02:29:56PM -0700, Christoph Lameter wrote:
-> On Mon, 11 Jun 2007, Keshavamurthy, Anil S wrote:
+Cedric Le Goater wrote:
+> Andrew Morton wrote:
+>> On Fri, 08 Jun 2007 17:14:12 +0200
+>> Cedric Le Goater <clg@fr.ibm.com> wrote:
+>>
+>>> Changelog: Fix !CONFIG_USER_NS clone with CLONE_NEWUSER so it returns -EINVAL
+>>> 	rather than 0, so that userspace knows they didn't get a new user
+>>> 	namespace.
+>> This changelog doesn't seem to match this patch.
 > 
-> > Hence, can I assume that the conclusion of this 
-> > discussion is to use kmem_cache_alloc() functions 
-> > to allocate memory in dma_map_{single|sg} API's?
+> Indeed. the changelog entry is now deprecated since I removed 
+> CONFIG_USER_NS. 
 > 
-> 
-> Use the page allocator for page size allocations. If you need to have 
-> specially aligned memory in less than page sized chunks then use 
-> kmem_cache_alloc with a specially configured slab.
+> that was a fix for the issue you reported about that patch breaking 
+> the mouse under FC5 when the kernel was compiled without CONFIG_USER_NS. 
 
-Okay, will do this change and get back to the list.
+So here's a more appropriate changelog for the patch.
+
+C.
 
 
-> > 
-> > Again, if dma_map_{single|sg} API's fails due to 
-> > failure to allocate memory, the only thing that can
-> > be done is to panic as this is what few of the other 
-> > IOMMU implementation is doing today. 
-> 
-> Why does it have to be so severe? The I/O operation fails right?
-Not sure. Also most of the callers today don;t check for failures.
+This patch enables the unshare of user namespaces. 
 
--Anil
+It adds a new clone flag CLONE_NEWUSER and implements copy_user_ns()
+which resets the current user_struct and adds a new root user (uid ==
+0)
+
+For now, unsharing the user namespace allows a process to reset its
+user_struct accounting and uid 0 in the new user namespace should be
+contained using appropriate means, for instance selinux
+
+The plan, when the full support is complete (all uid checks covered),
+is to keep the original user's rights in the original namespace, and
+let a process become uid 0 in the new namespace, with full
+capabilities to the new namespace.
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+Acked-by: Pavel Emelianov <xemul@openvz.org>
+Cc: Herbert Poetzl <herbert@13thfloor.at>
+Cc: Kirill Korotaev <dev@sw.ru>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+---
+
+ include/linux/sched.h          |    1 
+ include/linux/user_namespace.h |    4 +++
+ kernel/fork.c                  |    2 -
+ kernel/nsproxy.c               |    5 ++--
+ kernel/user_namespace.c        |   46 ++++++++++++++++++++++++++++++++++++++++-
+ 5 files changed, 54 insertions(+), 4 deletions(-)
+
+Index: 2.6.22-rc4-mm2/include/linux/sched.h
+===================================================================
+--- 2.6.22-rc4-mm2.orig/include/linux/sched.h
++++ 2.6.22-rc4-mm2/include/linux/sched.h
+@@ -25,6 +25,7 @@
+ #define CLONE_STOPPED		0x02000000	/* Start in stopped state */
+ #define CLONE_NEWUTS		0x04000000	/* New utsname group? */
+ #define CLONE_NEWIPC		0x08000000	/* New ipcs */
++#define CLONE_NEWUSER		0x10000000	/* New user namespace */
+ 
+ /*
+  * Scheduling policies
+Index: 2.6.22-rc4-mm2/include/linux/user_namespace.h
+===================================================================
+--- 2.6.22-rc4-mm2.orig/include/linux/user_namespace.h
++++ 2.6.22-rc4-mm2/include/linux/user_namespace.h
+@@ -4,6 +4,7 @@
+ #include <linux/kref.h>
+ #include <linux/nsproxy.h>
+ #include <linux/sched.h>
++#include <linux/err.h>
+ 
+ #define UIDHASH_BITS	(CONFIG_BASE_SMALL ? 3 : 8)
+ #define UIDHASH_SZ	(1 << UIDHASH_BITS)
+@@ -45,6 +46,9 @@ static inline struct user_namespace *get
+ static inline struct user_namespace *copy_user_ns(int flags,
+ 						  struct user_namespace *old_ns)
+ {
++	if (flags & CLONE_NEWUSER)
++		return ERR_PTR(-EINVAL);
++
+ 	return NULL;
+ }
+ 
+Index: 2.6.22-rc4-mm2/kernel/fork.c
+===================================================================
+--- 2.6.22-rc4-mm2.orig/kernel/fork.c
++++ 2.6.22-rc4-mm2/kernel/fork.c
+@@ -1616,7 +1616,7 @@ asmlinkage long sys_unshare(unsigned lon
+ 	err = -EINVAL;
+ 	if (unshare_flags & ~(CLONE_THREAD|CLONE_FS|CLONE_NEWNS|CLONE_SIGHAND|
+ 				CLONE_VM|CLONE_FILES|CLONE_SYSVSEM|
+-				CLONE_NEWUTS|CLONE_NEWIPC))
++				CLONE_NEWUTS|CLONE_NEWIPC|CLONE_NEWUSER))
+ 		goto bad_unshare_out;
+ 
+ 	if ((err = unshare_thread(unshare_flags)))
+Index: 2.6.22-rc4-mm2/kernel/nsproxy.c
+===================================================================
+--- 2.6.22-rc4-mm2.orig/kernel/nsproxy.c
++++ 2.6.22-rc4-mm2/kernel/nsproxy.c
+@@ -117,7 +117,7 @@ int copy_namespaces(int flags, struct ta
+ 
+ 	get_nsproxy(old_ns);
+ 
+-	if (!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC)))
++	if (!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER)))
+ 		return 0;
+ 
+ 	if (!capable(CAP_SYS_ADMIN)) {
+@@ -163,7 +163,8 @@ int unshare_nsproxy_namespaces(unsigned 
+ 	struct nsproxy *old_ns = current->nsproxy;
+ 	int err = 0;
+ 
+-	if (!(unshare_flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC)))
++	if (!(unshare_flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
++			       CLONE_NEWUSER)))
+ 		return 0;
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+Index: 2.6.22-rc4-mm2/kernel/user_namespace.c
+===================================================================
+--- 2.6.22-rc4-mm2.orig/kernel/user_namespace.c
++++ 2.6.22-rc4-mm2/kernel/user_namespace.c
+@@ -21,6 +21,45 @@ EXPORT_SYMBOL_GPL(init_user_ns);
+ 
+ #ifdef CONFIG_USER_NS
+ 
++/*
++ * Clone a new ns copying an original user ns, setting refcount to 1
++ * @old_ns: namespace to clone
++ * Return NULL on error (failure to kmalloc), new ns otherwise
++ */
++static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
++{
++	struct user_namespace *ns;
++	struct user_struct *new_user;
++	int n;
++
++	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
++	if (!ns)
++		return NULL;
++
++	kref_init(&ns->kref);
++
++	for (n = 0; n < UIDHASH_SZ; ++n)
++		INIT_LIST_HEAD(ns->uidhash_table + n);
++
++	/* Insert new root user.  */
++	ns->root_user = alloc_uid(ns, 0);
++	if (!ns->root_user) {
++		kfree(ns);
++		return NULL;
++	}
++
++	/* Reset current->user with a new one */
++	new_user = alloc_uid(ns, current->uid);
++	if (!new_user) {
++		free_uid(ns->root_user);
++		kfree(ns);
++		return NULL;
++	}
++
++	switch_uid(new_user);
++	return ns;
++}
++
+ struct user_namespace * copy_user_ns(int flags, struct user_namespace *old_ns)
+ {
+ 	struct user_namespace *new_ns;
+@@ -28,7 +67,12 @@ struct user_namespace * copy_user_ns(int
+ 	BUG_ON(!old_ns);
+ 	get_user_ns(old_ns);
+ 
+-	new_ns = old_ns;
++	if (!(flags & CLONE_NEWUSER))
++		return old_ns;
++
++	new_ns = clone_user_ns(old_ns);
++
++	put_user_ns(old_ns);
+ 	return new_ns;
+ }
+ 
