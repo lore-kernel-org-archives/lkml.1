@@ -1,124 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbXFKPzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbXFKP4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbXFKPzo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 11:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbXFKPzc
+	id S1756345AbXFKP4R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 11:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbXFKPz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 11:55:32 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:57946 "EHLO e1.ny.us.ibm.com"
+	Mon, 11 Jun 2007 11:55:59 -0400
+Received: from ns2.suse.de ([195.135.220.15]:51859 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752426AbXFKPz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 11:55:29 -0400
-Date: Mon, 11 Jun 2007 08:55:27 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dinakar Guniguntala <dino@in.ibm.com>
-Subject: Re: v2.6.21.4-rt11
-Message-ID: <20070611155527.GD9102@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070609210507.GA29194@elte.hu> <20070611011954.GG27982@linux.vnet.ibm.com> <20070611073634.GB32446@elte.hu> <20070611144401.GA9102@linux.vnet.ibm.com> <20070611153855.GA21136@elte.hu>
+	id S1753386AbXFKPz4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 11:55:56 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
+Date: Mon, 11 Jun 2007 17:55:32 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <20070514110607.549397248@suse.de> <200706110110.35553.agruen@suse.de> <1181572416.8805.73.camel@moss-spartans.epoch.ncsc.mil>
+In-Reply-To: <1181572416.8805.73.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070611153855.GA21136@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706111755.33162.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 05:38:55PM +0200, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > > hm, what affinity do they start out with? Could they all be pinned 
-> > > to CPU#0 by default?
-> > 
-> > They start off with affinity masks of 0xf on a 4-CPU system.  I would 
-> > expect them to load-balance across the four CPUs, but they stay all on 
-> > the same CPU until long after I lose patience (many minutes).
-> 
-> ugh. Would be nice to figure out why this happens. I enabled rcutorture 
-> on a dual-core CPU and all the threads are spread evenly.
+On Monday 11 June 2007 16:33, Stephen Smalley wrote:
+> On Mon, 2007-06-11 at 01:10 +0200, Andreas Gruenbacher wrote:
+> > On Wednesday 06 June 2007 15:09, Stephen Smalley wrote:
+> > > On Mon, 2007-06-04 at 16:30 +0200, Andreas Gruenbacher wrote:
+> > > > On Monday 04 June 2007 15:12, Pavel Machek wrote:
+> > > > > How will kernel work with very long paths? I'd suspect some
+> > > > > problems, if path is 1MB long and I attempt to print it in /proc
+> > > > > somewhere.
+> > > >
+> > > > Pathnames are only used for informational purposes in the kernel,
+> > > > except in AppArmor of course.
+> > >
+> > > I don't mean this as a flame, but isn't the above statement the very
+> > > crux of this discussion?
+> >
+> > I think the question at the core of it all is, shall a pathname based
+> > security mechanism be allowed. I was under the impression that this
+> > question had already been answered affirmatively. If the answer here was
+> > no, then we could stop the entire discussion right there.
+>
+> There is a difference between using the pathname at the kernel/userland
+> interface as part of configuring a security mechanism and using it as
+> the basis for the runtime checking itself.
 
-Here is the /proc/cpuinfo in case this helps.  I am starting up a test
-on a dual-core CPU to see if that works better.
+Yes, there is a difference. When I say pathname based security mechanism, I 
+literally mean a pathname based security mechanism, meaning the pathnames 
+determine the outcome o the decision. This includes designs that are based on 
+different abstractions internally, but the bahavior observable from 
+user-space must be the same (or else, it's a different model).
 
-							Thanx, Paul
+Unfortunately, translating pathnames to labels destroys this fundamental 
+abstraction. We explained why this is so in the following postings:
 
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 5
-model name      : AMD Opteron(tm) Processor 844
-stepping        : 8
-cpu MHz         : 1793.105
-cache size      : 1024 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall mmxext lm 3dnowext 3dnow
-bogomips        : 3522.56
+	http://lkml.org/lkml/2007/6/9/94
+	http://lkml.org/lkml/2007/6/10/141
 
-processor       : 1
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 5
-model name      : AMD Opteron(tm) Processor 844
-stepping        : 8
-cpu MHz         : 1793.105
-cache size      : 1024 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall mmxext lm 3dnowext 3dnow
-bogomips        : 3579.90
+> Further, there is a difference between generating and matching full
+> pathnames on each access vs. caching information in the parent dentry and
+> making decisions based on that cached information and the last
+> component-name.
 
-processor       : 2
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 5
-model name      : AMD Opteron(tm) Processor 844
-stepping        : 8
-cpu MHz         : 1793.105
-cache size      : 1024 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall mmxext lm 3dnowext 3dnow
-bogomips        : 3579.90
+Wait, you are mixing two issues here: access checks on existing files, and the 
+creation of new files. For AppArmor as it stands today the two are the same, 
+but when looking at emulating AppArmor using labels, they are not. Let's look 
+at things one at a time.
 
-processor       : 3
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 5
-model name      : AMD Opteron(tm) Processor 844
-stepping        : 8
-cpu MHz         : 1793.105
-cache size      : 1024 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall mmxext lm 3dnowext 3dnow
-bogomips        : 3579.90
+Generating and matching full pathnames on each access takes time, no question 
+about that. (In fact we are not checking on each access but only when 
+pathnames are involved, such as on open. Filehandle based operations do not 
+require access checks, but that's not a very important difference at this 
+level of discussion.) That's a quantitative statement though, not a 
+qualitative one: retrieving xattrs and checking labels also takes time; 
+additional checks are never for free. We find that doing the pathname checks 
+is easily fast enough. You may disagree, but then you don't have to use 
+AppArmor, and we are not standing in your way.
 
+As far as new files are concerned, basing decisions on the parent dentry and 
+component name requires that you know where in the filesystem hierarchy this 
+dentry is located: with bind mounts, the same dentry shows up in multiple 
+locations in a process's namespace, corresponding to different pathnames. In 
+other words, to make the right decision, the dentry alone is not enough; it 
+takes a <dentry, vfsmount> pair. So there we are again.
+
+>From the point on where you have a <dentry, vfsmount> pair of objects, you can 
+do two things: you can compute the full pathname and base your decision on 
+that, or you can do some caching to hopefully cut some of that work short 
+frequently enough to set off the additional cost. The difference between the 
+two approaches is quantitative -- if there is a difference in results, then 
+that's obviously a bug. I believe that caching could speed up things 
+measurably, but up to this point, neither I nor anybody else had the time to 
+look into it, and so we are not doing it -- not yet, any perhaps never at 
+all. It may be counter to your intuition, but doing those checks is not a big 
+issue.
+
+> The only question I saw being answered was the abstract one of "can a
+> pathname play a role in the security mechanism" not "should the kernel be
+> regenerating a full path on each open and glob matching it against a
+> list of file globs."
+
+No glob matching involved, and no list of patterns. There is a single DFA per 
+profile (and each process is in at most one profile at any one time), and 
+each access check involves exactly one DFA traversal.
+
+[cut here for lack of time right now -- will take another look later]
+
+> > Without the vfsmounts propagated down you won't know the pathnames.
+> > Whether or not a different problem can be solved without the vfsmounts is
+> > not really relevant.
+>
+> Well, that presumes that your mechanism has to generate full pathnames
+> on each access check.  But even if so, you could be doing your checking
+> in the higher level code then where you have a vfsmount available.
+
+The LSM hooks are pretty high-level, meant for being able to plug in different 
+access checks. That's the right level of abstraction. We just need the 
+vfsmounts passed down as well. That's what the bulk of common code patches 
+are there for.
+
+Andreas
