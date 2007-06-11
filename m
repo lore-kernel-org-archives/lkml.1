@@ -1,136 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbXFKTZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbXFKT2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbXFKTZp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbXFKTYt
+	id S1756658AbXFKT2p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbXFKT2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:24:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39969 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756193AbXFKTYr (ORCPT
+	Mon, 11 Jun 2007 15:28:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:7968 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752577AbXFKT2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:24:47 -0400
-Date: Mon, 11 Jun 2007 12:24:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHY fixed driver: rework release path and update phy_id
- notation
-Message-Id: <20070611122432.30219cfd.akpm@linux-foundation.org>
-In-Reply-To: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
-References: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 Jun 2007 15:28:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=At1BAzJ9WIqOCnEeMN+YMTyuXhP2ujWF+SzVL+f3CXHJkT81NVtJlNYA69MXmWmSSXCw32cGmJQBQVPl0+2d3+xg2B31reYzNJlU5Ek2avteVPoYAOiXeJphqvo5MlFi9mF3Ur7LIpf9+N0Wqxp7a52zmiWkh/Jha2x0CY0o4Fc=
+Message-ID: <d120d5000706111228g4ada3a8dxf8e31dc62cfab476@mail.gmail.com>
+Date: Mon, 11 Jun 2007 15:28:37 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Paul Albrecht" <albrecht@rdi1.com>
+Subject: Re: [BUG] via c3/2.6.20 -- ps/2 keyboard doesn't work with console
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1181586424.2436.15.camel@albrecht.rdi1.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1181236651.15435.1.camel@albrecht.rdi1.com>
+	 <200706072323.05576.dtor@insightbb.com>
+	 <1181325648.2437.5.camel@albrecht.rdi1.com>
+	 <d120d5000706081208q217ca432w6cc6d860a84700e8@mail.gmail.com>
+	 <1181582562.6982.5.camel@albrecht.rdi1.com>
+	 <d120d5000706111126w59c00bd2p826b7d9f588533ba@mail.gmail.com>
+	 <1181586424.2436.15.camel@albrecht.rdi1.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 09 Jun 2007 20:21:18 +0400
-Vitaly Bordug <vitb@kernel.crashing.org> wrote:
+On 6/11/07, Paul Albrecht <albrecht@rdi1.com> wrote:
+> On Mon, 2007-06-11 at 14:26 -0400, Dmitry Torokhov wrote:
+> > Hi Paul,
+> >
+> > On 6/11/07, Paul Albrecht <albrecht@rdi1.com> wrote:
+> > >
+> > > Resending message from last week ... don't usually subscribe to the
+> > > kernel mailing list so please cc me in your response.
+> > >
+> > > PNP: PS/2 Controller [PNP0303:PS2K] at 0x60,0x64 irq 1
+> > > PNP: PS/2 controller doesn't have AUX irq; using default 12
+> >
+> > Does it start working if you boot with i8042.noloop?
+> >
+>
+> No, that doesn't work. Here's the dmesg output:
+>
 
-> 
-> device_bind_driver() error code returning has been fixed. 
-> release() function has been written, so that to free resources
-> in correct way; the release path is now clean.
-> 
-> Before the rework, it used to cause
->  Device 'fixed@100:1' does not have a release() function, it is broken
->  and must be fixed.
->  BUG: at drivers/base/core.c:104 device_release()
->  
->  Call Trace:  
->   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
->   [<ffffffff802ec3ab>] kobject_release+0x0/0x9
->   [<ffffffff802ecf3f>] kref_put+0x74/0x81
->   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
->   [<ffffffff80564d31>] fixed_init+0x1f/0x35
->   [<ffffffff802071a4>] init+0x147/0x2fb
->   [<ffffffff80223b6e>] schedule_tail+0x36/0x92
->   [<ffffffff8020a678>] child_rip+0xa/0x12
->   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
->   [<ffffffff8020705d>] init+0x0/0x2fb
->   [<ffffffff8020a66e>] child_rip+0x0/0x12  
-> 
-> 
-> Also changed the notation of the fixed phy definition on
-> mdio bus to the form of <speed>+<duplex> to make it able to be used by
-> gianfar and ucc_geth that define phy_id strictly as "%d:%d"
-> 
->  
->  static int fixed_mdio_register_device(int number, int speed, int duplex)
->  {
-> @@ -221,6 +238,12 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
->  	}
->  
->  	fixed->regs = kzalloc(MII_REGS_NUM*sizeof(int), GFP_KERNEL);
-> +	if (NULL == fixed->regs) {
-> +		kfree(dev);
-> +		kfree(new_bus);
-> +		kfree(fixed);
-> +		return -ENOMEM;
-> +	}
->  	fixed->regs_num = MII_REGS_NUM;
->  	fixed->phy_status.speed = speed;
->  	fixed->phy_status.duplex = duplex;
-> @@ -249,57 +272,43 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
->  	fixed->phydev = phydev;
->  
->  	if(NULL == phydev) {
-> -		err = -ENOMEM;
-> -		goto device_create_fail;
-> +		kfree(dev);
-> +		kfree(new_bus);
-> +		kfree(fixed->regs);
-> +		kfree(fixed);
-> +		return -ENOMEM;
->  	}
->  
->  	phydev->irq = PHY_IGNORE_INTERRUPT;
->  	phydev->dev.bus = &mdio_bus_type;
->  
-> -	if(number)
-> -		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> -				"fixed_%d@%d:%d", number, speed, duplex);
-> -	else
-> -		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> -				"fixed@%d:%d", speed, duplex);
-> +	snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> +				"%d:%d", number, speed + duplex);
-> +
->  	phydev->bus = new_bus;
->  
-> +	phydev->dev.driver = &fixed_mdio_driver.driver;
-> + 	phydev->dev.release = fixed_mdio_release;
-> + 
-> + 	err = phydev->dev.driver->probe(&phydev->dev);
-> + 	if(err < 0) {
-> + 		printk(KERN_ERR "Phy %s: problems with fixed driver\n",
-> +				phydev->dev.bus_id);
-> + 		kfree(phydev);
-> + 		kfree(dev);
-> + 		kfree(new_bus);
-> + 		kfree(fixed->regs);
-> + 		kfree(fixed);
-> + 		return err;
-> + 	}
+Argh, I meant i8042.noaux. Sorry for the confusion.
 
-This is pretty fragile code.  It would be better to consolidate all the
-cleanup in a single spot at the end of fixed_mdio_register_device() and to
-then employ the usual `goto err_foo;' technique.
-
-Generally, embedding multiple return points into a large function like this
-is a thing we prefer to avoid: it increases the risk that later changes will
-introduce resource leaks, locking errors, etc.
-
-
-Also, the
-
-	if (NULL == some_ptr)
-
-thing does look rather weird.  It is normally done to force a compile error
-if someone uses "=" instead of "==", but gcc will warn about that anyway,
-so it isn't really needed.
-
-
+-- 
+Dmitry
