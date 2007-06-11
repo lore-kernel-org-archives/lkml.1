@@ -1,118 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbXFKOTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbXFKOUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbXFKOTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 10:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbXFKOTd
+	id S1753455AbXFKOUj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 10:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXFKOUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 10:19:33 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:64648 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751839AbXFKOTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 10:19:32 -0400
-Date: Mon, 11 Jun 2007 16:19:26 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: kernel BUG at mm/slub.c:3689!
-Message-ID: <20070611161926.2a9f8efd@dhcp-255-175.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jun 2007 10:20:32 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:30099 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbXFKOUb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 10:20:31 -0400
+Date: Mon, 11 Jun 2007 10:20:30 -0400
+From: Mike Schmidt <mike@intello.com>
+Subject: Re: How does dummy network driver get its mac addresses?
+In-reply-to: <20070608123506.3397283f@localhost.localdomain>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <466D5A2E.3090307@intello.com>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_ToRIFJXWi70WMz2BrwM1Lw)"
+X-Greylist: Sender succeeded SMTP AUTH authentication,
+ not delayed by milter-greylist-3.0 (deepspace.sepia.com [205.236.40.42]); Mon,
+ 11 Jun 2007 10:15:39 -0400 (EDT)
+References: <4669A80E.1050102@intello.com>
+ <20070608123506.3397283f@localhost.localdomain>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While trying to get SLUB debugging to not break DMA on AVR32, I ran
-into this:
+This is a multi-part message in MIME format.
 
-(...)
-adding slab: name=kmalloc-64 size=64 objsize=64
-adding slab: name=kmalloc-32 size=32 objsize=32
-adding slab: name=kmalloc-16 size=32 objsize=16
-kobject_add failed for :0000032 with -EEXIST, don't try to register things with the same name in the same directory.
-Call trace:
- [<9000f14e>] dump_stack+0x1a/0x24
- [<90093144>] kobject_shadow_add+0xc4/0xe8
- [<90093170>] kobject_add+0x8/0xc
- [<9003ded8>] sysfs_slab_add+0xc8/0x10c
- [<900046c6>] slab_sysfs_init+0x26/0x78
- [<900003f0>] kernel_init+0x74/0x1c0
- [<90015cd0>] do_exit+0x0/0x52c
+--Boundary_(ID_ToRIFJXWi70WMz2BrwM1Lw)
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
 
-------------[ cut here ]------------
-kernel BUG at /home/hskinnemoen/git/linux/mm/slub.c:3689!
-Oops: Kernel BUG, sig: 9 [#1]
-FRAME_POINTER chip: 0x01f:0x1e82 rev 0
-Modules linked in:
-PC is at slab_sysfs_init+0x28/0x78
-LR is at 0x9014e654
-pc : [<900046c8>]    lr : [<9014e654>]    Not tainted
-sp : 901cbf98  r12: ffffffef  r11: 00000001
-r10: 00000001  r9 : 00000000  r8 : 9014e654
-r7 : 901cbf98  r6 : 9014a2b4  r5 : 00000000  r4 : 00000000
-r3 : 00000000  r2 : 90015cd0  r1 : 9000b4d0  r0 : 00000000
-Flags: qvNzc
-Mode bits: hrje....g
-CPU Mode: Supervisor
-Process: swapper [1] (task: 901c9000 thread: 901ca000)
-Stack: (0x901cbf98 to 0x901cc000)
-bf80:                                                       900003f0 901cbfdc
-bfa0: 90009b20 00000000 00000000 00000000 00000000 00000000 00400000 9000ebd0
-bfc0: 9000ebd0 901cc000 00000000 00000000 00000000 00000000 00000000 90015cd0
-bfe0: 00000000 00000000 00000000 00000000 00000000 90015cd0 9000037c 00000000
-Call trace:
- [<900003f0>] kernel_init+0x74/0x1c0
- [<90015cd0>] do_exit+0x0/0x52c
+Thanks a lot for the responses I've received. I really appreciate the help.
 
-Kernel panic - not syncing: Attempted to kill init!
+Sorry about posting in the wrong mailing list. I'll pay more attention 
+next time.
+
+Mike
+
+Stephen Hemminger wrote:
+> On Fri, 08 Jun 2007 15:03:42 -0400
+> Mike Schmidt <mike@intello.com> wrote:
+>
+>   
+>> please cc me directly with any responses - I am not (yet) a member of this mailing list.
+>>
+>> I just created 99 dummy network devices, and they all had different, random-looking addresses. I recently searched though all the IANA/IEEE documentation looking for a mechanism or policy to select local, virtual mac addresses that could not interfere with real ones. But there seems to be no clear concensus. Even the use of the 'local' bit seems to be inconsistent, I saw registered OUIs in the AA:... (from memory) range, for example. 
+>>
+>> I noticed that all the mac addresses assigned by the dummy driver have the 'local' bit set. For those who are wondering, that's the second least significant bit  in the first digit of the mac address: so all addresses that start with x2, x3, x6, x7, xA, xB, and xE, xF are 'local'. The last bit is the multicast bit.
+>>
+>> In the 2.4 kernels, these devices all received a 00:00:00... mac address, although this is declared incorrect in the RFCs I read. So, I was making my own, somewhat arbitrarily. In 2.6, this seems to be solved. Can anyone tell me what the algorithm/criteria are that allow the 2.6 kernels to set up random mac addresses without conflicting with real devices?
+>>     
+>
+>
+>   
+>> I have searched the mailing list, but it's pretty hard to select for this kind of information. 
+>>
+>> Thanks very much. This is a great mailing list. It's been very responsive to me so far. I thank you all. 
+>>     
+>
+>
+> 1. Learn to read the kernel source.  dummy gets its addresses from
+>    random_ether_addr()
+>
+> 2. Read the maintainers file, questions like this goto netdev@vger.kernel.org
+>
+>
+>   
+
+--Boundary_(ID_ToRIFJXWi70WMz2BrwM1Lw)
+Content-type: text/x-vcard; charset=utf-8; name=mike.vcf
+Content-transfer-encoding: 7BIT
+Content-disposition: attachment; filename=mike.vcf
+
+begin:vcard
+fn:Mike Schmidt
+n:Schmidt;Mike
+org:Intello Technologies Inc. 
+adr;quoted-printable;quoted-printable:;;580 1=C3=A8re Rue;Saint-Jean-sur-Richelieu;Qu=C3=A9;J2X 3B4;Canada
+email;internet:mike@intello.com
+title:Vice-President
+tel;work:450-358-2266 x223
+tel;cell:514-835-9497
+x-mozilla-html:FALSE
+url:http://www.intello.com
+version:2.1
+end:vcard
 
 
-The "adding slab" messages were added by me; see the patch below.
-
-I think the combination that triggered this bug was:
-  * CONFIG_SLUB_DEBUG=y
-  * ARCH_KMALLOC_MINALIGN=32
-  * slub_debug not set at the command line
-
-If I disable CONFIG_SLUB_DEBUG or add slub_debug to the command line,
-everything is fine.
-
-Please let me know if you need any additional information.
-
-Haavard
-
-diff --git a/include/asm-avr32/cache.h b/include/asm-avr32/cache.h
-index dabb955..d3cf35a 100644
---- a/include/asm-avr32/cache.h
-+++ b/include/asm-avr32/cache.h
-@@ -4,6 +4,15 @@
- #define L1_CACHE_SHIFT 5
- #define L1_CACHE_BYTES (1 << L1_CACHE_SHIFT)
- 
-+/*
-+ * Memory returned by kmalloc() may be used for DMA, so we must make
-+ * sure that all such allocations are cache aligned. Otherwise,
-+ * unrelated code may cause parts of the buffer to be read into the
-+ * cache before the transfer is done, causing old data to be seen by
-+ * the CPU.
-+ */
-+#define ARCH_KMALLOC_MINALIGN	L1_CACHE_BYTES
-+
- #ifndef __ASSEMBLER__
- struct cache_info {
- 	unsigned int ways;
-diff --git a/mm/slub.c b/mm/slub.c
-index c9ab688..6c45b4c 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -3587,6 +3587,9 @@ static int sysfs_slab_add(struct kmem_cache *s)
- 		/* Defer until later */
- 		return 0;
- 
-+	printk(KERN_NOTICE "adding slab: name=%s size=%d objsize=%d\n",
-+			s->name, s->size, s->objsize);
-+
- 	unmergeable = slab_unmergeable(s);
- 	if (unmergeable) {
- 		/*
+--Boundary_(ID_ToRIFJXWi70WMz2BrwM1Lw)--
