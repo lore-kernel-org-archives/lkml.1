@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbXFKUvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbXFKUx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887AbXFKUvh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 16:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbXFKUva
+	id S1755237AbXFKUx6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 16:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbXFKUxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 16:51:30 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:39484 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196AbXFKUv3 (ORCPT
+	Mon, 11 Jun 2007 16:53:50 -0400
+Received: from smtpa1.netcabo.pt ([212.113.174.16]:45760 "EHLO
+	exch01smtp03.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752178AbXFKUxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 16:51:29 -0400
-Message-ID: <466DB5B8.80005@zytor.com>
-Date: Mon, 11 Jun 2007 13:51:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 11 Jun 2007 16:53:49 -0400
+Message-ID: <466DB581.8050306@rncbc.org>
+Date: Mon, 11 Jun 2007 21:50:09 +0100
+From: Rui Nuno Capela <rncbc@rncbc.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Steve Fox <drfickle@us.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] move the kernel to 16MB for NUMA-Q
-References: <466D550C.4030600@shadowen.org> <63a08cc7547f14065becdf9a94d0d529@pinky> <20070611091558.f468f205.akpm@linux-foundation.org> <20070611172006.GI9174@redhat.com> <466D882D.70001@zytor.com> <Pine.LNX.4.64.0706112019310.19578@fbirervta.pbzchgretzou.qr> <466D9C00.6030608@zytor.com> <Pine.LNX.4.64.0706112239080.19578@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0706112239080.19578@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.0
+To: Daniel Walker <dwalker@mvista.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: 2.6.21-rt2..8 troubles
+References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>	 <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu>	 <46574DE4.2080900@rncbc.org> <1180195709.4264.7.camel@chaos>	 <4658A4F4.1080204@rncbc.org>  <46660369.2070104@rncbc.org>	 <1181317625.4404.332.camel@chaos>	 <59605.213.13.107.141.1181326897.squirrel@www.rncbc.org>	 <1181328636.4404.335.camel@chaos>  <466DA42A.6010600@rncbc.org>	 <1181591122.8176.159.camel@chaos> <1181591733.11539.217.camel@imap.mvista.com>
+In-Reply-To: <1181591733.11539.217.camel@imap.mvista.com>
+X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Jun 2007 20:53:46.0161 (UTC) FILETIME=[9A7AFA10:01C7AC6A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> (yay, 3.09 bogomips and a totally incapable processor :p)
-> Have not tried more recent kernels yet though.
+Daniel Walker wrote:
+> On Mon, 2007-06-11 at 21:45 +0200, Thomas Gleixner wrote:
+>> On Mon, 2007-06-11 at 20:36 +0100, Rui Nuno Capela wrote:
+>>>> I'm spinning -rt10 with a couple of fixes. Should be out sometimes
+>>>> tomorrow. If the problem persists, we need to dig deeper.
+>>>>
+>>> Uhoh. I'm sorry to tell, but the problem is still creeping on
+>>> 2.6.21.4-rt11 and -rt12 :(
+>>>
+>>> So sorry.
+>> Hmm. Does it happen, when you boot with maxcpus=1 on the kernel
+>> commandline ?
+> 
+> I think 2.6.21-rt2 had some apic updates also, (along with hpet updates)
+> so testing with "noapic" on the command line might be helpful too .. 
+>
 
-Too bad I don't still have access to the 0.59 bogomips "double sigma"
-386 machine that had the dubious honor of being the slowest Linux
-machine in the world for quite a while.  That machine had 3 MB of RAM.
+Thomas,
 
-However, to tie it back to the original discussion, these
-extremely-low-memory machines need nonstandard kernel options anyay.
+Yes, "maxcpus=1" seems to keep it running, but then I render my Core2
+just half-baked ;)
 
-While doing my SuperRescue disk I was able to get it down to the point
-where I could successfully boot and use the system on a 24 MB machine; I
-personally run a 32 MB box as a server today.
+Daniel,
 
-	-hpa
+No, "noapic" does not seem to help any better.
+
+HTH
+-- 
+rncbc aka Rui Nuno Capela
+rncbc@rncbc.org
