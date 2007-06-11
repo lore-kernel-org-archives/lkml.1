@@ -1,147 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764457AbXFKJ6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764208AbXFKKCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764457AbXFKJ6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 05:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757478AbXFKJ6M
+	id S1764208AbXFKKCx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 06:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbXFKKCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 05:58:12 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:53169 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755682AbXFKJ6K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 05:58:10 -0400
-To: davem@davemloft.net
-CC: viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20070607.184731.10907840.davem@davemloft.net> (message from
-	David Miller on Thu, 07 Jun 2007 18:47:31 -0700 (PDT))
-Subject: Re: [PATCH] fix race in AF_UNIX
-References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
-	<20070605.224128.104032917.davem@davemloft.net>
-	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu> <20070607.184731.10907840.davem@davemloft.net>
-Message-Id: <E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 11 Jun 2007 11:57:27 +0200
+	Mon, 11 Jun 2007 06:02:46 -0400
+Received: from styx.suse.cz ([82.119.242.94]:51299 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757088AbXFKKCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 06:02:46 -0400
+Date: Mon, 11 Jun 2007 12:15:21 +0200
+From: Jan Kara <jack@suse.cz>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] UDF: fix deadlock on inode being dropped
+Message-ID: <20070611101521.GF567@duck.suse.cz>
+References: <20070606175351.GA8397@cvg> <20070607093606.GA12549@duck.suse.cz> <20070607135458.GA8393@cvg> <20070607144121.GC12549@duck.suse.cz> <20070609133536.GA8654@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070609133536.GA8654@cvg>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC'd Al Viro and Alan Cox, restored patch]
-
-> > There are races involving the garbage collector, that can throw away
-> > perfectly good packets with AF_UNIX sockets in them.
-> > 
-> > The problems arise when a socket goes from installed to in-flight or
-> > vice versa during garbage collection.  Since gc is done with a
-> > spinlock held, this only shows up on SMP.
-> > 
-> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+On Sat 09-06-07 17:35:36, Cyrill Gorcunov wrote:
+> [Jan Kara - Thu, Jun 07, 2007 at 04:41:21PM +0200]
+> | On Thu 07-06-07 17:54:58, Cyrill Gorcunov wrote:
+> | > [Jan Kara - Thu, Jun 07, 2007 at 11:36:07AM +0200]
+> | > |   Hi Cyrill!
+> | > | 
+> | > | On Wed 06-06-07 21:53:51, Cyrill Gorcunov wrote:
+> | > | > This patch prevents from deadlock on inode being dropped.
+> | > | > The deadlock is caused by inderect call of mark_inode_dirty()
+> | > | > within udf_drop_inode() but inode lock is already kept
+> | > | > by the kernel. So moving code from udf_drop_inode() to
+> | > | > udf_delete_inode() we save its functionality and avoid
+> | > | > deadlock.
+> | > |   The patch is wrong. You cannot truncate the extent just in delete_inode.
+> | > | That would lead to inodes with untruncated last extent on disk after
+> | > | unmounting, which is forbidden in the specification. You need to truncate
+> | > | the last extent whenever inode is being removed from memory or something
+> | > | like that... I'm already thinking how to do it and avoid calling
+> | > | mark_inode_dirty()...
+> | > | 
+> | > 
+> | > Arh, thanks... Jan, actually the reason I've moved the code into
+> | > 'delete' section was that I found no reasonable difference for our
+> | > case between 'drop' and 'delete'. Moreover, by seeing into VFS code
+> | > the only diff between 'drop' and 'delete' is that
+> | > inside generic_delete_inode() a few inode structure elements
+> | > are being destroyed and then our udf_drop_inode is called. So assuming,
+> | > that you're right in drop_inode I've code just moved to 'delete' section.
+> |   The difference is that udf_delete_inode() is called only when inode has
+> | i_nlink == 0 and thus it's being deleted on disk. udf_drop_inode() is
+> | called whenever inode is removed from memory which is what we want.
+> |   I'm already testing a patch which should fix the problem...
 > 
-> I'm going to hold off on this one for now.
-> 
-> Holding all of the read locks kind of defeats the purpose of using
-> the per-socket lock.
-> 
-> Can't you just lock purely around the receive queue operation?
+> how your progress? Could I help with something?
+  Eric has run his UDF test suite on it and it seems to survive fine so I'm
+going to submit the patch to Andrew in a while.
 
-That's already protected by the receive queue spinlock.  The race
-however happens _between_ pushing the root set and marking of the
-in-flight but reachable sockets.
+									Honza
 
-If in that space any of the AF_UNIX sockets goes from in-flight to
-installed into a file descriptor, the garbage collector can miss it.
-If we want to protect against this using unix_sk(s)->readlock, then we
-have to hold all of them for the duration of the marking.
-
-Al, Alan, you have more experience with this piece of code.  Do you
-have better ideas about how to fix this?
-
-Thanks,
-Miklos
-
-> Index: linux-2.6.22-rc2/net/unix/garbage.c
-> ===================================================================
-> --- linux-2.6.22-rc2.orig/net/unix/garbage.c	2007-06-03 23:58:11.000000000 +0200
-> +++ linux-2.6.22-rc2/net/unix/garbage.c	2007-06-06 09:48:36.000000000 +0200
-> @@ -186,7 +186,21 @@ void unix_gc(void)
->  
->  	forall_unix_sockets(i, s)
->  	{
-> -		unix_sk(s)->gc_tree = GC_ORPHAN;
-> +		struct unix_sock *u = unix_sk(s);
-> +
-> +		u->gc_tree = GC_ORPHAN;
-> +
-> +		/*
-> +		 * Hold ->readlock to protect against sockets going from
-> +		 * in-flight to installed
-> +		 *
-> +		 * Can't sleep on this, because
-> +		 *   a) we are under spinlock
-> +		 *   b) skb_recv_datagram() could be waiting for a packet that
-> +		 *      is to be sent by this thread
-> +		 */
-> +		if (!mutex_trylock(&u->readlock))
-> +			goto lock_failed;
->  	}
->  	/*
->  	 *	Everything is now marked
-> @@ -207,8 +221,6 @@ void unix_gc(void)
->  
->  	forall_unix_sockets(i, s)
->  	{
-> -		int open_count = 0;
-> -
->  		/*
->  		 *	If all instances of the descriptor are not
->  		 *	in flight we are in use.
-> @@ -218,10 +230,20 @@ void unix_gc(void)
->  		 *	In this case (see unix_create1()) we set artificial
->  		 *	negative inflight counter to close race window.
->  		 *	It is trick of course and dirty one.
-> +		 *
-> +		 *	Get the inflight counter first, then the open
-> +		 *	counter.  This avoids problems if racing with
-> +		 *	sendmsg
-> +		 *
-> +		 *	If just created socket is not yet attached to
-> +		 *	a file descriptor, assume open_count of 1
->  		 */
-> +		int inflight_count = atomic_read(&unix_sk(s)->inflight);
-> +		int open_count = 1;
-> +
->  		if (s->sk_socket && s->sk_socket->file)
->  			open_count = file_count(s->sk_socket->file);
-> -		if (open_count > atomic_read(&unix_sk(s)->inflight))
-> +		if (open_count > inflight_count)
->  			maybe_unmark_and_push(s);
->  	}
->  
-> @@ -300,6 +322,7 @@ void unix_gc(void)
->  			spin_unlock(&s->sk_receive_queue.lock);
->  		}
->  		u->gc_tree = GC_ORPHAN;
-> +		mutex_unlock(&u->readlock);
->  	}
->  	spin_unlock(&unix_table_lock);
->  
-> @@ -309,4 +332,19 @@ void unix_gc(void)
->  
->  	__skb_queue_purge(&hitlist);
->  	mutex_unlock(&unix_gc_sem);
-> +	return;
-> +
-> + lock_failed:
-> +	{
-> +		struct sock *s1;
-> +		forall_unix_sockets(i, s1) {
-> +			if (s1 == s) {
-> +				spin_unlock(&unix_table_lock);
-> +				mutex_unlock(&unix_gc_sem);
-> +				return;
-> +			}
-> +			mutex_unlock(&unix_sk(s1)->readlock);
-> +		}
-> +		BUG();
-> +	}
->  }
-> 
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
