@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbXFKSjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbXFKSqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756564AbXFKSjw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 14:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbXFKSjp
+	id S1756052AbXFKSqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 14:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbXFKSqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 14:39:45 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37211 "EHLO pasmtpB.tele.dk"
+	Mon, 11 Jun 2007 14:46:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39519 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753176AbXFKSjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 14:39:44 -0400
-Date: Mon, 11 Jun 2007 20:40:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Paul Mundt <lethal@linux-sh.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: mm: memory/cpu hotplug section mismatch.
-Message-ID: <20070611184046.GA6458@uranus.ravnborg.org>
-References: <20070611043543.GA22910@linux-sh.org> <20070611140145.05726c0f.kamezawa.hiroyu@jp.fujitsu.com> <20070611050955.GA23215@linux-sh.org> <20070611082732.70018522.randy.dunlap@oracle.com> <20070611154428.GA27644@linux-sh.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752743AbXFKSqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 14:46:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH -mm 1/7] PM: Remove pm_parent from struct dev_pm_info
+Date: Mon, 11 Jun 2007 20:52:32 +0200
+User-Agent: KMail/1.9.5
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+References: <Pine.LNX.4.44L0.0706111147160.2611-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0706111147160.2611-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070611154428.GA27644@linux-sh.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200706112052.32872.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday, 11 June 2007 17:59, Alan Stern wrote:
+> On Mon, 11 Jun 2007, Rafael J. Wysocki wrote:
 > 
-> If CONFIG_MEMORY_HOTPLUG=n __meminit == __init, and if
-> CONFIG_HOTPLUG_CPU=n __cpuinit == __init. However, with one set and the
-> other disabled, you end up with a reference between __init and a regular
-> non-init function.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > The pm_parent member of struct dev_pm_info (defined in include/linux/pm.h) is
+> > only used to check if the device's parent is in the right state while the
+> > device is being suspended or resumed.  However, this can be done just as well
+> > with the help of the parent pointer in struct device, so pm_parent can be
+> > removed along with some code that handles it.
+> 
+> > @@ -61,21 +40,26 @@ int device_pm_add(struct device * dev)
+> >  		 kobject_name(&dev->kobj));
+> >  	mutex_lock(&dpm_list_mtx);
+> >  	list_add_tail(&dev->power.entry, &dpm_active);
+> > -	device_pm_set_parent(dev, dev->parent);
+> > -	if ((error = dpm_sysfs_add(dev)))
+> > +	/*
+> > +	 * The device's parent must not be released until the device itself is
+> > +	 * removed from the dpm_active list.
+> > +	 */
+> > +	get_device(dev->parent);
+> > +	error = dpm_sysfs_add(dev);
+> > +	if (error)
+> >  		list_del(&dev->power.entry);
+> >  	mutex_unlock(&dpm_list_mtx);
+> >  	return error;
+> >  }
+> 
+> The error pathway here does an unbalanced get_device on dev->parent.
+> 
+> Anyway, I don't think you need to do this get_device at all (or the
+> coresponding put in device_pm_remove).  As long as a device is
+> registered it retains a reference to its parent, and unregistration
+> always calls device_pm_remove.
 
-My plan is to define dedicated sections for both __devinit and __meminit.
-Then we can apply the checks no matter the definition of CONFIG_HOTPLUG*
-But we are a few steps away form doing so:
-1) All harcoded uses of .init.text needs to go (at least done in assembler files)
-2) The arch lds files needs to be unified a bit too.
+Yes, I've just come to the same conclusion.  I'll remove the
+get_device(dev->parent) and the correspondint put_device(dev->parent)
+from device_pm_remove().
 
-Then we can during the final link stage decide if __devinit shall be merged
-into .text or .init.text (after applying the modpost checks).
+Greetings,
+Rafael
 
-But do not hold your breath.
 
-The even more important precondition is to sort out all the current
-section mismatch warnings. But here we are getting close.
-
-	Sam
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
