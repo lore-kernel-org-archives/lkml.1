@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764085AbXFKA3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763865AbXFKA5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764085AbXFKA3v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 20:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762956AbXFKA3o
+	id S1763865AbXFKA5m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 20:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760576AbXFKA5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 20:29:44 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58907 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760668AbXFKA3n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 20:29:43 -0400
-Date: Mon, 11 Jun 2007 02:29:54 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Greg KH <gregkh@suse.de>, Jesper Juhl <jesper.juhl@gmail.com>,
+	Sun, 10 Jun 2007 20:57:34 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:58828 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753831AbXFKA5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jun 2007 20:57:33 -0400
+Date: Mon, 11 Jun 2007 09:56:13 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Denis Vlasenko <vda.linux@googlemail.com>
+Cc: Rene Herman <rene.herman@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Greg KH <gregkh@suse.de>, Jesper Juhl <jesper.juhl@gmail.com>,
        Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
        linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
-Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO
-	translated into Japanese]
-Message-ID: <20070611002954.GG3588@stusta.de>
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <20070610175228.GA28947@uranus.ravnborg.org>
+Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO translated into Japanese]
+Message-ID: <20070611005613.GA20984@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Denis Vlasenko <vda.linux@googlemail.com>,
+	Rene Herman <rene.herman@gmail.com>,
+	Sam Ravnborg <sam@ravnborg.org>, Greg KH <gregkh@suse.de>,
+	Jesper Juhl <jesper.juhl@gmail.com>,
+	Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
+	linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
+References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <20070610175228.GA28947@uranus.ravnborg.org> <466C49DB.6040409@gmail.com> <200706110159.00482.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070610175228.GA28947@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200706110159.00482.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 10, 2007 at 07:52:28PM +0200, Sam Ravnborg wrote:
-> On Sun, Jun 10, 2007 at 09:22:21AM -0700, Greg KH wrote:
-> > >  Since the common language of most kernel contributors is english I
-> > >  personally feel that we should stick to just that one language in the
-> > >  tree and then perhaps keep translations on a website somewhere. So the
-> > >  authoritative docs stay in the tree, in english, so that as many
-> > >  contributors as possible can read and update them. It would then be a
-> > >  seperate project to generate translations and keep them updated
-> > >  according to what's in the tree.  Perhaps we could get the kernel.org
-> > >  people to create an official space for that and then place a pointer
-> > >  to that site in Documentation/ somewhere.
-> > 
-> > No, I think the translated files should be in the tree proper, we have
-> > the space :)
+On Mon, Jun 11, 2007 at 01:59:00AM +0200, Denis Vlasenko wrote:
+> On Sunday 10 June 2007 20:58, Rene Herman wrote:
+> > All that stuff only serves to multiply the speed at which a fixed
+> > percentage of content obsoletes itself. When it's still new and
+> > shiny, sure, stuff will get translated but in no time at all it'll
+> > become a fragmented mess which nobody ever feels right about removing
+> > because that would be anti-social to all those poor non-english
+> > speaking kernel hackers out there.
 > 
-> We once discussed about .po files for kconfig and back then
-> the conclusion was not to keep them in the kernel tree.
+> I agree. i18n efforts won't help one iota because people just have
+> to know English in order to participate in l-k development.
+
+That's a ridiculous statement. Non-native language abilities and
+technical competence have very little to do with each other. People have
+to understand the code and figure out what it is that they want to
+change. As long as this is done cleanly and the intent is obvious,
+language doesn't even factor in beyond the Signed-off-by tag. Explanation
+is necessary from time to time, but it really depends on the area in
+which someone is working. If it's a complicated and involved change, then
+of course it takes a bit more effort on both sides, but that doesn't
+invalidate the importance or necessity of the work.
+
+> They should be able to read _and_ reply_ to lkml posts,
+> and read and understnd code _and_ comments_.
 > 
-> I advocated that they should stay out back then.
-> But on the other hand I do not see it causing much troubles
-> having scripts/kconfig/po/da.po etc araound.
+> Those who cannot participate in development because they don't
+> know English, won't get much help from some bits of semi-obsolete
+> Documentation/* being available. Ok, they will read it, then what?
+> How they are supposed to read the code? Write email? etc...
 > 
-> Any opinion about the .po files?
+It's arguable whether those that know English well derive any benefit
+from semi-obsolete Documentation/* files either. One could speculate that
+not being able to read semi-obsolete documentation and being forced to
+read the code is actually more productive ;-)
 
-Why not (if there are people willing to do the translation work).
+Besides, Kconfig localization is more for the end users than the
+developers anyways. I certainly don't see any problem with this, the more
+people eyeballing the documentation, the easier it is to find out areas
+where we're lacking or that are simply wrong.
 
-The only thing I consider important is that this doesn't imply any kind 
-of string freeze at some time prior to a release (but .po updates 
-through -stable shouldn't be a problem).
-
-> 	Sam
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+> There is only one practical solution: learn the language.
+> 
+I suggest you step outside of your box and spend more time working with
+people who speak little to none of the languages you understand.
