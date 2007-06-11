@@ -1,232 +1,516 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbXFKQ1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbXFKQ2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbXFKQ1x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 12:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXFKQ1q
+	id S1755122AbXFKQ2y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 12:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXFKQ2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 12:27:46 -0400
-Received: from ns2.suse.de ([195.135.220.15]:42149 "EHLO mx2.suse.de"
+	Mon, 11 Jun 2007 12:28:45 -0400
+Received: from mx1.suse.de ([195.135.220.2]:42931 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbXFKQ1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 12:27:45 -0400
-Date: Mon, 11 Jun 2007 18:27:38 +0200
-From: Stefan Seyfried <seife@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>
-Subject: [PATCH] make disable_console_suspend runtime configurable
-Message-ID: <20070611162737.GC14645@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Operating-System: openSUSE 10.3 (i586) Alpha4plus, Kernel 2.6.22-rc3-git2-5-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+	id S1751622AbXFKQ2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 12:28:43 -0400
+Subject: Re: Documentation - How to debug ACPI Problems
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: "Brown, Len" <len.brown@intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>, Zhang Rui <rui.zhang@intel.com>,
+       Alexey Starikovskiy <aystarik@gmail.com>
+In-Reply-To: <9a8748490706060759s5d8c43bdoc34334fcf56ee96@mail.gmail.com>
+References: <1181140008.28514.259.camel@queen.suse.de>
+	 <9a8748490706060759s5d8c43bdoc34334fcf56ee96@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="=-cl6kTzTe0KXF5HRQJSa+"
+Organization: Novell/SUSE
+Date: Mon, 11 Jun 2007 18:28:41 +0200
+Message-Id: <1181579321.28514.304.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I hate having to recompile the kernel, just to be able to debug suspend.
-Remove CONFIG_DISABLE_CONSOLE_SUSPEND, replace it by a sysctl in
-/proc/sys/kernel/disable_console_suspend.
 
-Signed-off-by: Stefan Seyfried <seife@suse.de>
+--=-cl6kTzTe0KXF5HRQJSa+
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+Thanks a lot for all your input!
+
+Here is an updated version in patch format.
+Len, it would be great if you can also add this one to your test tree.
+
+On Wed, 2007-06-06 at 16:59 +0200, Jesper Juhl wrote:
+> On 06/06/07, Thomas Renninger <trenn@suse.de> wrote:
+> > Hi,
+> >
+> > (patches already exist in
+> >          2.6.22-rcX-mm?) to send syslog messages over firewire.
+> >          The latter might be the only way to debug early hangs on laptops
+> >          without serial console anyway.
+> >
+> 
+> "without a serial console" ???
+Without a serial device (or serial port?), better?
+> 
+> >    3.2.2 Using ACPI_DEBUG Boot Parameters via /sysfs and /proc
+> >
+> >          The same as 3.2.1., you can also pass the parameters at runtime e.g.
+> >          via:
+> >          echo 0x1F >/proc/acpi/debug_level    # before 2.6.22 or
+> >          echo ?!?  >/sys/?/!/?                # Rui?
+> 
+> Seems like some bits are missing here ^^^
+Thanks to Rui, updated..
+
+    Thomas
+
+Create Documentation/acpi dir and add first ACPI debug How-To
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+
 ---
-Patch is against 2.6.22-rc4
+ Documentation/00-INDEX                |    3 
+ Documentation/acpi/00-INDEX           |    4 
+ Documentation/acpi/acpi_debugging.txt |  181 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 188 insertions(+)
 
- Documentation/power/basic-pm-debugging.txt |   16 +++++++++-------
- drivers/serial/serial_core.c               |    8 ++------
- include/linux/console.h                    |    7 ++-----
- include/linux/sysctl.h                     |    1 +
- kernel/power/Kconfig                       |   11 -----------
- kernel/printk.c                            |    7 +++++--
- kernel/sysctl.c                            |    9 +++++++++
+Index: linux-2.6.22-rc3/Documentation/acpi/acpi_debugging.txt
+===================================================================
+--- /dev/null
++++ linux-2.6.22-rc3/Documentation/acpi/acpi_debugging.txt
+@@ -0,0 +1,181 @@
++How to debug ACPI (Advanced Configuration and Power Interface) Problems
++=======================================================================
++
++Thomas Renninger <trenn@suse.de>, 2007
++Copyright (C) 2007 SUSE Linux GmbH
++
++
++1. Introduction
++---------------
++
++1.1. General Info
++- - - - - - - -
++
++Please refer to the latest ACPI spec for general ACPI information:
++http://www.acpi.info/spec.htm
++
++
++ACPI is required by most recent x86, x86_64 and IA64 architecture based
++machines.
++
++In general ACPI tables provide information from the BIOS to the OS.
++There are ACPI tables (DSDT and SSDTs), written in the ACPI Source
++Language (ASL) which include byte code (similar to Java byte code) that gets
++interpreted by the OS. The kernel makes use of BIOS functions declared and
++described there by interpreting them to setup and access different hardware.
++
++There exist two compilers/interpreters for ASL code, one from Microsoft and
++one from Intel. The Intel code has an Open Source license. The software package
++is called ACPICA. It includes the code for disassembling DSDT tables,
++(re-)compiling them, parsing several ACPI tables and interpreting ACPI Machine
++Language (AML, the compiled ASL..). The code is used to provide several
++userspace tools, but large parts are also contributed to the linux kernel and
++other OSs.
++drivers/acpi/*.c currently is Linux code implementing most parts of the ACPI
++spec, everything in the directories below, gets synchronized with the ACPICA
++Intel package.
++
++
++1.2. Useful Userspace Tools for Table Playing
++- - - - - - - - - - - - - - - - - - - - - - -
++
++The ACPI tables of your system can be extracted with the acpidump tool in the
++latest pmutils package from here:
++ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils
++
++acpixtract, iasl, acpiexec can be found in the ACPICA sources:
++http://developer.intel.com/technology/iapc/acpi/downloads.htm
++
++You can now:
++acpidump >acpidump       # cp your ACPI tables from memory to disk
++acpixtract -a acpidump   # extract them into raw, single tables
++iasl -d TABLE.dat        # disassemble/parse a specific table
++iasl -sa DSDT.dsl        # e.g. recompile a modified, disassembled DSDT for
++                           initramfs inclusion (see later)
++acpiexec DSDT.dat        # parse, interpret and load a DSDT in userspace
++
++The latter can sometimes be very useful to debug buggy DSDTs in userspace.
++It provides a debug shell which e.g. offers execution of specific ACPI
++functions, increase of debug output and more.
++
++
++2. Overriding DSDT
++------------------
++
++The DSDT (there is a patch also for SSDTs) can be overridden by the user.
++The tables get copied to RAM when booting and the kernel can override them with
++alternative tables at early boot time.
++
++Historically people used to override their DSDT to workaround BIOS or even
++kernel bugs. This is a bad idea, the override functionality is for short
++term workarounds and mainly for debugging! Please always report such bugs to
++bugzilla.kernel.org or post to linux-acpi@vger.kernel.org if unsure.
++
++There are two possibilities to override the DSDT:
++
++  - via CONFIG_ACPI_CUSTOM_DSDT (and _FILE) compile option(s)
++  - via adding a customized DSDT into initramfs
++
++The second approach does not need kernel recompilation and some distributions
++provide the patch, which is not included in mainline, in their kernels.
++
++The patch and more information can be found here (many thanks to Markus
++Gaugusch and Eric Piel):
++http://gaugusch.at/kernel.shtml
++
++
++3. Problem Analysis and Solving
++-------------------------------
++
++3.1. I see Warnings or Errors when disassembling or compiling my DSDT
++- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
++
++Some might be sever ACPICA or BIOS bugs, some might just be incompatibilities
++with the Microsoft compiler. We want to fix both, therefore a bug should be
++filed at bugzilla.kernel.org
++In general you should watch your system, if you don't miss any functionality
++there is no reason to panic (e.g. modify the DSDT and override your original
++one, you really should not do that if you do not see any big advantage and even
++then, better try to get a real fix or at least a kernel workaround like a
++boot or module parameter).
++
++You should be able to debug this with userspace tools (See:
++"1.2. Useful Userspace Tools for Table Playing")
++
++
++3.2. Hardware accessed by ACPI is not working correctly - Using ACPI_DEBUG
++- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
++
++If you suspect the bug to be in a module in drivers/acpi/*.c code, you may be
++able to find or narrow down the culprit simply by adding printk()'s.
++
++For more complicated bugs you should make use of the ACPI_DEBUG=y facility.
++This allows you to fine grain enable specific output in the ACPI interpreter.
++
++
++   3.2.1 Using ACPI_DEBUG Boot Parameters acpi.debug_level and acpi.debug_layer
++
++         Note: In kernel versions before 2.6.22 the boot parameters were:
++	       acpi_dbg_level and acpi_dbg_layer
++
++         ACPI can produce tons of debug output if these debug masks are
++         switched to full on.
++	 include/acpi/acoutput.h shows which flags can be enabled for level and
++         layer (cat /proc/acpi/debug_{level,layer} also shows you the flags,
++	 but that interface will move to sysfs, not sure whether there still
++	 will be such a help).
++
++         Therefore, switch on debug flags carefully. You also might want to
++	 increase the kernel ring buffer by passing:
++	 log_buf_len=XY in bytes and later use dmesg -s XY to get more than
++	 16k kernel log output.
++	 Instead of serial console logging you might want to use the netconsole
++	 interface (Documentation/networking/netconsole.txt) to send syslog
++	 messages over network or firewire to send syslog messages over
++	 firewire.
++	 The latter might be the only way to debug early hangs on laptops
++	 without a serial device anyway.
++
++   3.2.2 Using ACPI_DEBUG Boot Parameters via /sysfs and /proc
++
++	 The same as 3.2.1., you can also pass the parameters at runtime e.g.
++	 via:
++	 echo 0x1F >/sys/module/acpi/parameters/debug_{level,layer}
++
++	 Be aware that this interface exists since 2.6.22. In older kernels
++	 it is /proc/acpi/debug_{level,layer}, which worked in the same way.
++
++	 Wrapping such statements around loading and unloading a bug affected
++	 ACPI module might give you the possibility to increase debug_level,
++	 but still only give you a manageable amount of debug output.
++
++   3.2.3 Using ACPI_DEBUG ASL debug object
++
++	 You can also add a kind of printk to DSDT code(see 2. Overriding DSDT)
++	 Store (XY, debug), will print the value of the ACPI XY variable into
++	 syslog. Be aware that you need to have the
++	 #define ACPI_LV_DEBUG_OBJECT        0x00000008
++	 value defined in the debug_level mask to see any output.
++	 This may only be useful if you get too much output with 3.2.[12] and
++	 you think it is convenient to debug a very specific part of the ACPI
++	 code.
++
++   3.2.4 Using ACPI_DEBUG acpi_dbg_layer and acpi_dbg_level kernel variables
++
++	 Similar, but more powerful than 3.2.3 is to modify the global kernel
++	 variables for level and layer conditionally in the kernel code for
++	 your needs.
++	 E.g.
++	 acpi_debug_level=0xFFFFFFFF /* increase debug output to max */
++	 status = acpi_ut_evaluate_object(...) /* by kernel invoked ACPI method
++						  that should get debugged with
++						  very high debug output*/
++ 	 acpi_debug_level=0x3        /* lower debug output again */
++
++
++
++
++"It seems unfortunate if we do this work and get our
++partners to do the work and the result is that Linux works great without
++having to do the work" (Bill Gates on Making ACPI Not Work with Linux,
++http://www.osnews.com/story.php/17689/Bill-Gates-on-Making-ACPI-Not-Work-with-Linux)
+Index: linux-2.6.22-rc3/Documentation/acpi/00-INDEX
+===================================================================
+--- /dev/null
++++ linux-2.6.22-rc3/Documentation/acpi/00-INDEX
+@@ -0,0 +1,4 @@
++00-INDEX
++	- this file
++acpi_debugging.txt
++	- How to debug ACPI problems
+\ No newline at end of file
+Index: linux-2.6.22-rc3/Documentation/00-INDEX
+===================================================================
+--- linux-2.6.22-rc3.orig/Documentation/00-INDEX
++++ linux-2.6.22-rc3/Documentation/00-INDEX
+@@ -12,6 +12,9 @@ Following translations are available on 
+ 
+ 00-INDEX
+ 	- this file.
++acpi/
++	- general ACPI information
++
+ BUG-HUNTING
+ 	- brute force method of doing binary search of patches to find bug.
+ Changes
 
-diff -rup a/Documentation/power/basic-pm-debugging.txt b/Documentation/power/basic-pm-debugging.txt
---- a/Documentation/power/basic-pm-debugging.txt	2007-06-05 02:57:25.000000000 +0200
-+++ b/Documentation/power/basic-pm-debugging.txt	2007-06-11 16:07:24.000000000 +0200
-@@ -78,13 +78,15 @@ c) Advanced debugging
- In case the STD does not work on your system even in the minimal configuration
- and compiling more drivers as modules is not practical or some modules cannot
- be unloaded, you can use one of the more advanced debugging techniques to find
--the problem.  First, if there is a serial port in your box, you can set the
--CONFIG_DISABLE_CONSOLE_SUSPEND kernel configuration option and try to log kernel
--messages using the serial console.  This may provide you with some information
--about the reasons of the suspend (resume) failure.  Alternatively, it may be
--possible to use a FireWire port for debugging with firescope
--(ftp://ftp.firstfloor.org/pub/ak/firescope/).  On i386 it is also possible to
--use the PM_TRACE mechanism documented in Documentation/s2ram.txt .
-+the problem.  First, if there is a serial port in your box, you can
-+
-+# echo 1 > /proc/sys/kernel/disable_console_suspend
-+
-+and try to log kernel messages using the serial console.  This may provide you
-+with some information about the reasons of the suspend (resume) failure.
-+Alternatively, it may be possible to use a FireWire port for debugging with
-+firescope (ftp://ftp.firstfloor.org/pub/ak/firescope/).  On i386 it is also
-+possible to use the PM_TRACE mechanism documented in Documentation/s2ram.txt .
- 
- 2. Testing suspend to RAM (STR)
- 
-diff -rup a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
---- a/drivers/serial/serial_core.c	2007-06-05 02:57:25.000000000 +0200
-+++ b/drivers/serial/serial_core.c	2007-06-11 16:07:24.000000000 +0200
-@@ -1934,12 +1934,10 @@ int uart_suspend_port(struct uart_driver
- 
- 	mutex_lock(&state->mutex);
- 
--#ifdef CONFIG_DISABLE_CONSOLE_SUSPEND
--	if (uart_console(port)) {
-+	if (disable_console_suspend && uart_console(port)) {
- 		mutex_unlock(&state->mutex);
- 		return 0;
- 	}
--#endif
- 
- 	if (state->info && state->info->flags & UIF_INITIALIZED) {
- 		const struct uart_ops *ops = port->ops;
-@@ -1982,12 +1980,10 @@ int uart_resume_port(struct uart_driver 
- 
- 	mutex_lock(&state->mutex);
- 
--#ifdef CONFIG_DISABLE_CONSOLE_SUSPEND
--	if (uart_console(port)) {
-+	if (disable_console_suspend && uart_console(port)) {
- 		mutex_unlock(&state->mutex);
- 		return 0;
- 	}
--#endif
- 
- 	uart_change_pm(state, 0);
- 
-diff -rup a/include/linux/console.h b/include/linux/console.h
---- a/include/linux/console.h	2007-06-05 02:57:25.000000000 +0200
-+++ b/include/linux/console.h	2007-06-11 16:10:02.000000000 +0200
-@@ -64,6 +64,8 @@ extern const struct consw vga_con;	/* VG
- extern const struct consw newport_con;	/* SGI Newport console  */
- extern const struct consw prom_con;	/* SPARC PROM console */
- 
-+extern int disable_console_suspend;
-+
- int con_is_bound(const struct consw *csw);
- int register_con_driver(const struct consw *csw, int first, int last);
- int unregister_con_driver(const struct consw *csw);
-@@ -120,14 +122,9 @@ extern void console_stop(struct console 
- extern void console_start(struct console *);
- extern int is_console_locked(void);
- 
--#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
- /* Suspend and resume console messages over PM events */
- extern void suspend_console(void);
- extern void resume_console(void);
--#else
--static inline void suspend_console(void) {}
--static inline void resume_console(void) {}
--#endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
- 
- int mda_console_init(void);
- void prom_con_init(void);
-diff -rup a/include/linux/sysctl.h b/include/linux/sysctl.h
---- a/include/linux/sysctl.h	2007-06-05 02:57:25.000000000 +0200
-+++ b/include/linux/sysctl.h	2007-06-11 16:11:10.000000000 +0200
-@@ -165,6 +165,7 @@ enum
- 	KERN_MAX_LOCK_DEPTH=74,
- 	KERN_NMI_WATCHDOG=75, /* int: enable/disable nmi watchdog */
- 	KERN_PANIC_ON_NMI=76, /* int: whether we will panic on an unrecovered */
-+	KERN_CONSOLE_SUSPEND=77, /* int: disable consoles on system suspend */
- };
- 
- 
-diff -rup a/kernel/power/Kconfig b/kernel/power/Kconfig
---- a/kernel/power/Kconfig	2007-06-05 02:57:25.000000000 +0200
-+++ b/kernel/power/Kconfig	2007-06-11 16:07:24.000000000 +0200
-@@ -37,17 +37,6 @@ config PM_DEBUG
- 	code. This is helpful when debugging and reporting various PM bugs, 
- 	like suspend support.
- 
--config DISABLE_CONSOLE_SUSPEND
--	bool "Keep console(s) enabled during suspend/resume (DANGEROUS)"
--	depends on PM && PM_DEBUG
--	default n
--	---help---
--	This option turns off the console suspend mechanism that prevents
--	debug messages from reaching the console during the suspend/resume
--	operations.  This may be helpful when debugging device drivers'
--	suspend/resume routines, but may itself lead to problems, for example
--	if netconsole is used.
--
- config PM_TRACE
- 	bool "Suspend/resume event tracing"
- 	depends on PM && PM_DEBUG && X86_32 && EXPERIMENTAL
-diff -rup a/kernel/printk.c b/kernel/printk.c
---- a/kernel/printk.c	2007-06-05 02:57:25.000000000 +0200
-+++ b/kernel/printk.c	2007-06-11 16:07:24.000000000 +0200
-@@ -76,6 +76,7 @@ struct console *console_drivers;
-  * locked without the console sempahore held
-  */
- static int console_locked, console_suspended;
-+int disable_console_suspend;
- 
- /*
-  * logbuf_lock protects log_buf, log_start, log_end, con_start and logged_chars
-@@ -726,7 +727,6 @@ int __init add_preferred_console(char *n
- 	return 0;
- }
- 
--#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
- /**
-  * suspend_console - suspend the console subsystem
-  *
-@@ -734,6 +734,8 @@ int __init add_preferred_console(char *n
-  */
- void suspend_console(void)
- {
-+	if (disable_console_suspend)
-+		return;
- 	printk("Suspending console(s)\n");
- 	acquire_console_sem();
- 	console_suspended = 1;
-@@ -741,10 +743,11 @@ void suspend_console(void)
- 
- void resume_console(void)
- {
-+	if (disable_console_suspend)
-+		return;
- 	console_suspended = 0;
- 	release_console_sem();
- }
--#endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
- 
- /**
-  * acquire_console_sem - lock the console system for exclusive use.
-diff -rup a/kernel/sysctl.c b/kernel/sysctl.c
---- a/kernel/sysctl.c	2007-06-05 02:57:25.000000000 +0200
-+++ b/kernel/sysctl.c	2007-06-11 16:07:24.000000000 +0200
-@@ -45,6 +45,7 @@
- #include <linux/syscalls.h>
- #include <linux/nfs_fs.h>
- #include <linux/acpi.h>
-+#include <linux/console.h>
- 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -575,6 +576,14 @@ static ctl_table kern_table[] = {
- 		.proc_handler	= &proc_doulongvec_minmax,
- 	},
- #endif
-+	{
-+		.ctl_name	= KERN_CONSOLE_SUSPEND,
-+		.procname	= "disable_console_suspend",
-+		.data		= &disable_console_suspend,
-+		.maxlen		= sizeof (int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- #ifdef CONFIG_IA64
- 	{
- 		.ctl_name	= KERN_IA64_UNALIGNED,
--- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
 
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+--=-cl6kTzTe0KXF5HRQJSa+
+Content-Disposition: attachment; filename=acpi_debug_doc.patch
+Content-Type: text/x-patch; name=acpi_debug_doc.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Create Documentation/acpi dir and add first ACPI debug How-To
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+
+---
+ Documentation/00-INDEX                |    3 
+ Documentation/acpi/00-INDEX           |    4 
+ Documentation/acpi/acpi_debugging.txt |  181 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 188 insertions(+)
+
+Index: linux-2.6.22-rc3/Documentation/acpi/acpi_debugging.txt
+===================================================================
+--- /dev/null
++++ linux-2.6.22-rc3/Documentation/acpi/acpi_debugging.txt
+@@ -0,0 +1,181 @@
++How to debug ACPI (Advanced Configuration and Power Interface) Problems
++=======================================================================
++
++Thomas Renninger <trenn@suse.de>, 2007
++Copyright (C) 2007 SUSE Linux GmbH
++
++
++1. Introduction
++---------------
++
++1.1. General Info
++- - - - - - - -
++
++Please refer to the latest ACPI spec for general ACPI information:
++http://www.acpi.info/spec.htm
++
++
++ACPI is required by most recent x86, x86_64 and IA64 architecture based
++machines.
++
++In general ACPI tables provide information from the BIOS to the OS.
++There are ACPI tables (DSDT and SSDTs), written in the ACPI Source
++Language (ASL) which include byte code (similar to Java byte code) that gets
++interpreted by the OS. The kernel makes use of BIOS functions declared and
++described there by interpreting them to setup and access different hardware.
++
++There exist two compilers/interpreters for ASL code, one from Microsoft and
++one from Intel. The Intel code has an Open Source license. The software package
++is called ACPICA. It includes the code for disassembling DSDT tables,
++(re-)compiling them, parsing several ACPI tables and interpreting ACPI Machine
++Language (AML, the compiled ASL..). The code is used to provide several
++userspace tools, but large parts are also contributed to the linux kernel and
++other OSs.
++drivers/acpi/*.c currently is Linux code implementing most parts of the ACPI
++spec, everything in the directories below, gets synchronized with the ACPICA
++Intel package.
++
++
++1.2. Useful Userspace Tools for Table Playing
++- - - - - - - - - - - - - - - - - - - - - - -
++
++The ACPI tables of your system can be extracted with the acpidump tool in the
++latest pmutils package from here:
++ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils
++
++acpixtract, iasl, acpiexec can be found in the ACPICA sources:
++http://developer.intel.com/technology/iapc/acpi/downloads.htm
++
++You can now:
++acpidump >acpidump       # cp your ACPI tables from memory to disk
++acpixtract -a acpidump   # extract them into raw, single tables
++iasl -d TABLE.dat        # disassemble/parse a specific table
++iasl -sa DSDT.dsl        # e.g. recompile a modified, disassembled DSDT for
++                           initramfs inclusion (see later)
++acpiexec DSDT.dat        # parse, interpret and load a DSDT in userspace
++
++The latter can sometimes be very useful to debug buggy DSDTs in userspace.
++It provides a debug shell which e.g. offers execution of specific ACPI
++functions, increase of debug output and more.
++
++
++2. Overriding DSDT
++------------------
++
++The DSDT (there is a patch also for SSDTs) can be overridden by the user.
++The tables get copied to RAM when booting and the kernel can override them with
++alternative tables at early boot time.
++
++Historically people used to override their DSDT to workaround BIOS or even
++kernel bugs. This is a bad idea, the override functionality is for short
++term workarounds and mainly for debugging! Please always report such bugs to
++bugzilla.kernel.org or post to linux-acpi@vger.kernel.org if unsure.
++
++There are two possibilities to override the DSDT:
++
++  - via CONFIG_ACPI_CUSTOM_DSDT (and _FILE) compile option(s)
++  - via adding a customized DSDT into initramfs
++
++The second approach does not need kernel recompilation and some distributions
++provide the patch, which is not included in mainline, in their kernels.
++
++The patch and more information can be found here (many thanks to Markus
++Gaugusch and Eric Piel):
++http://gaugusch.at/kernel.shtml
++
++
++3. Problem Analysis and Solving
++-------------------------------
++
++3.1. I see Warnings or Errors when disassembling or compiling my DSDT
++- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
++
++Some might be sever ACPICA or BIOS bugs, some might just be incompatibilities
++with the Microsoft compiler. We want to fix both, therefore a bug should be
++filed at bugzilla.kernel.org
++In general you should watch your system, if you don't miss any functionality
++there is no reason to panic (e.g. modify the DSDT and override your original
++one, you really should not do that if you do not see any big advantage and even
++then, better try to get a real fix or at least a kernel workaround like a
++boot or module parameter).
++
++You should be able to debug this with userspace tools (See:
++"1.2. Useful Userspace Tools for Table Playing")
++
++
++3.2. Hardware accessed by ACPI is not working correctly - Using ACPI_DEBUG
++- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
++
++If you suspect the bug to be in a module in drivers/acpi/*.c code, you may be
++able to find or narrow down the culprit simply by adding printk()'s.
++
++For more complicated bugs you should make use of the ACPI_DEBUG=y facility.
++This allows you to fine grain enable specific output in the ACPI interpreter.
++
++
++   3.2.1 Using ACPI_DEBUG Boot Parameters acpi.debug_level and acpi.debug_layer
++
++         Note: In kernel versions before 2.6.22 the boot parameters were:
++	       acpi_dbg_level and acpi_dbg_layer
++
++         ACPI can produce tons of debug output if these debug masks are
++         switched to full on.
++	 include/acpi/acoutput.h shows which flags can be enabled for level and
++         layer (cat /proc/acpi/debug_{level,layer} also shows you the flags,
++	 but that interface will move to sysfs, not sure whether there still
++	 will be such a help).
++
++         Therefore, switch on debug flags carefully. You also might want to
++	 increase the kernel ring buffer by passing:
++	 log_buf_len=XY in bytes and later use dmesg -s XY to get more than
++	 16k kernel log output.
++	 Instead of serial console logging you might want to use the netconsole
++	 interface (Documentation/networking/netconsole.txt) to send syslog
++	 messages over network or firewire to send syslog messages over
++	 firewire.
++	 The latter might be the only way to debug early hangs on laptops
++	 without a serial device anyway.
++
++   3.2.2 Using ACPI_DEBUG Boot Parameters via /sysfs and /proc
++
++	 The same as 3.2.1., you can also pass the parameters at runtime e.g.
++	 via:
++	 echo 0x1F >/sys/module/acpi/parameters/debug_{level,layer}
++
++	 Be aware that this interface exists since 2.6.22. In older kernels
++	 it is /proc/acpi/debug_{level,layer}, which worked in the same way.
++
++	 Wrapping such statements around loading and unloading a bug affected
++	 ACPI module might give you the possibility to increase debug_level,
++	 but still only give you a manageable amount of debug output.
++
++   3.2.3 Using ACPI_DEBUG ASL debug object
++
++	 You can also add a kind of printk to DSDT code(see 2. Overriding DSDT)
++	 Store (XY, debug), will print the value of the ACPI XY variable into
++	 syslog. Be aware that you need to have the
++	 #define ACPI_LV_DEBUG_OBJECT        0x00000008
++	 value defined in the debug_level mask to see any output.
++	 This may only be useful if you get too much output with 3.2.[12] and
++	 you think it is convenient to debug a very specific part of the ACPI
++	 code.
++
++   3.2.4 Using ACPI_DEBUG acpi_dbg_layer and acpi_dbg_level kernel variables
++
++	 Similar, but more powerful than 3.2.3 is to modify the global kernel
++	 variables for level and layer conditionally in the kernel code for
++	 your needs.
++	 E.g.
++	 acpi_debug_level=0xFFFFFFFF /* increase debug output to max */
++	 status = acpi_ut_evaluate_object(...) /* by kernel invoked ACPI method
++						  that should get debugged with
++						  very high debug output*/
++ 	 acpi_debug_level=0x3        /* lower debug output again */
++
++
++
++
++"It seems unfortunate if we do this work and get our
++partners to do the work and the result is that Linux works great without
++having to do the work" (Bill Gates on Making ACPI Not Work with Linux,
++http://www.osnews.com/story.php/17689/Bill-Gates-on-Making-ACPI-Not-Work-with-Linux)
+Index: linux-2.6.22-rc3/Documentation/acpi/00-INDEX
+===================================================================
+--- /dev/null
++++ linux-2.6.22-rc3/Documentation/acpi/00-INDEX
+@@ -0,0 +1,4 @@
++00-INDEX
++	- this file
++acpi_debugging.txt
++	- How to debug ACPI problems
+\ No newline at end of file
+Index: linux-2.6.22-rc3/Documentation/00-INDEX
+===================================================================
+--- linux-2.6.22-rc3.orig/Documentation/00-INDEX
++++ linux-2.6.22-rc3/Documentation/00-INDEX
+@@ -12,6 +12,9 @@ Following translations are available on 
+ 
+ 00-INDEX
+ 	- this file.
++acpi/
++	- general ACPI information
++
+ BUG-HUNTING
+ 	- brute force method of doing binary search of patches to find bug.
+ Changes
+
+--=-cl6kTzTe0KXF5HRQJSa+--
+
