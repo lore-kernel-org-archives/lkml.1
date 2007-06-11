@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764475AbXFKKvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbXFKLBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764475AbXFKKvl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 06:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759244AbXFKKve
+	id S1758701AbXFKLBF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 07:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbXFKLAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 06:51:34 -0400
-Received: from bay0-omc1-s36.bay0.hotmail.com ([65.54.246.108]:19524 "EHLO
-	bay0-omc1-s36.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755716AbXFKKvd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 06:51:33 -0400
-Message-ID: <BAY128-F371814D6A3033FD7855953BC1A0@phx.gbl>
-X-Originating-IP: [80.200.248.200]
-X-Originating-Email: [ghpille@hotmail.com]
-In-Reply-To: <466C3C98.8060800@shaw.ca>
-From: "Gerard H. Pille" <ghpille@hotmail.com>
-To: hancockr@shaw.ca, mikpe@it.uu.se
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: system clock slow on Athlon AMD64 since 2.6.21
-Date: Mon, 11 Jun 2007 12:51:30 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-X-OriginalArrivalTime: 11 Jun 2007 10:51:32.0914 (UTC) FILETIME=[79630920:01C7AC16]
+	Mon, 11 Jun 2007 07:00:51 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44537 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751905AbXFKLAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 07:00:50 -0400
+Date: Mon, 11 Jun 2007 13:00:43 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: david@lang.hm
+Cc: Crispin Cowan <crispin@novell.com>, casey@schaufler-ca.com,
+       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
+Message-ID: <20070611110043.GD30166@elf.ucw.cz>
+References: <700465.32295.qm@web36612.mail.mud.yahoo.com> <466C6451.6030907@novell.com> <Pine.LNX.4.64.0706102328200.6675@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706102328200.6675@asgard.lang.hm>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
+> ACPI should have taught everyone that sometimes putting an interpreter in 
+> the kernel really is the best option. looking at the problems of bouncing 
+> back out to userspace for file creation and renames it looks like a regex 
+> in the kernel is a lot safer and more reliable.
 
+What do ACPI and AA have in common?
 
->From: Robert Hancock <hancockr@shaw.ca>
->To: Mikael Pettersson <mikpe@it.uu.se>
->CC: ghpille@hotmail.com, linux-kernel@vger.kernel.org
->Subject: Re: PROBLEM: system clock slow on Athlon AMD64 since 2.6.21
->Date: Sun, 10 Jun 2007 12:02:00 -0600
->
->Mikael Pettersson wrote:
->>On Fri, 08 Jun 2007 10:14:03 +0200, Gerard H. Pille wrote:
->>>[1.] One line summary of the problem:
->>>Since I switched from 2.6.20 to 2.6.21 on my Athlon AMD64 laptop, the 
->>>system time is slow - about 1' on 15'.
->>
->>According to your system description it seems that you have a
->>Targa Visionary laptop with a VIA chipset and a Mobile Athlon64.
->>If so, then you probably have the same problem I reported some time
->>ago: see <http://marc.info/?l=linux-kernel&m=117681226421346&w=2>
->>and the followup messages. The conclusion was that the chipset's
->>ACPI PM timer slows down when the CPU is in C2.
->>
->>The workaround is to boot with processor.max_cstate=1.
->
->Which, if true, is extremely bizarre, as the whole point and reason for 
->existence of the ACPI PM timer is that it NOT do this, and remain at the 
->same rate regardless of CPU power management changes..
->
->--
->Robert Hancock      Saskatoon, SK, Canada
->To email, remove "nospam" from hancockr@nospamshaw.ca
->Home Page: http://www.roberthancock.com/
->
+* they both start with A
 
-So I shouldn't have started a new bug report, sorry.  I had once read your  
-problem report, but I could not relocate it afterwards.
+* there are both nightmare
 
-If I can provide any assistance in debugging, please let me know.
+* they both put interpretter into kernel
 
-Thanks,
-
-Gerard
-
-_________________________________________________________________
-Looking for an old friend? You may find him in  your friends' friends list ! 
-http://spaces.live.com/default.aspx?page=Ed01&ss=True
-
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
