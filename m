@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXFKVaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbXFKVfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbXFKVaM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 17:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXFKV36
+	id S1754740AbXFKVfK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 17:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXFKVe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 17:29:58 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47166 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751255AbXFKV36 (ORCPT
+	Mon, 11 Jun 2007 17:34:59 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:39797 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbXFKVe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 17:29:58 -0400
-Date: Mon, 11 Jun 2007 14:29:56 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
-In-Reply-To: <20070611204442.GA4074@linux-os.sc.intel.com>
-Message-ID: <Pine.LNX.4.64.0706111428410.20454@schroedinger.engr.sgi.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
- <200706090056.49279.ak@suse.de> <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
- <200706091147.24705.ak@suse.de> <20070611204442.GA4074@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 11 Jun 2007 17:34:59 -0400
+Subject: [shm][hugetlb] Fix get_policy for stacked shared memory files
+From: Adam Litke <agl@us.ibm.com>
+To: dean gaudet <dean@arctic.org>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, ak@suse.de, clameter@sgi.com
+In-Reply-To: <Pine.LNX.4.64.0706092106220.10324@twinlark.arctic.org>
+References: <Pine.LNX.4.64.0705152222550.14691@twinlark.arctic.org>
+	 <20070516061259.GZ19966@holomorphy.com>
+	 <Pine.LNX.4.64.0706092106220.10324@twinlark.arctic.org>
+Content-Type: text/plain
+Date: Mon, 11 Jun 2007 16:34:54 -0500
+Message-Id: <1181597696.22671.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jun 2007, Keshavamurthy, Anil S wrote:
+Here's another breakage as a result of shared memory stacked files :(
 
-> Hence, can I assume that the conclusion of this 
-> discussion is to use kmem_cache_alloc() functions 
-> to allocate memory in dma_map_{single|sg} API's?
+The NUMA policy for a VMA is determined by checking the following (in the order
+given):
 
+1) vma->vm_ops->get_policy() (if defined)
+2) vma->vm_policy (if defined)
+3) task->mempolicy (if defined)
+4) Fall back to default_policy
 
-Use the page allocator for page size allocations. If you need to have 
-specially aligned memory in less than page sized chunks then use 
-kmem_cache_alloc with a specially configured slab.
-> 
-> Again, if dma_map_{single|sg} API's fails due to 
-> failure to allocate memory, the only thing that can
-> be done is to panic as this is what few of the other 
-> IOMMU implementation is doing today. 
+By switching to stacked files for shared memory, get_policy() is now always set
+to shm_get_policy which is a wrapper function.  This causes us to stop at step
+1, which yields NULL for hugetlb instead of task->mempolicy which was the
+previous (and correct) result.
 
-Why does it have to be so severe? The I/O operation fails right?
+This patch modifies the shm_get_policy() wrapper to maintain steps 1-3 for the
+wrapped vm_ops.  Andi and Christoph, does this look right to you?
+
+Signed-off-by: Adam Litke <agl@us.ibm.com>
+
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 4fefbad..8d2672d 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -254,8 +254,10 @@ struct mempolicy *shm_get_policy(struct vm_area_struct *vma, unsigned long addr)
+ 
+ 	if (sfd->vm_ops->get_policy)
+ 		pol = sfd->vm_ops->get_policy(vma, addr);
+-	else
++	else if (vma->vm_policy)
+ 		pol = vma->vm_policy;
++	else
++		pol = current->mempolicy;
+ 	return pol;
+ }
+ #endif
+
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
 
