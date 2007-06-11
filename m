@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbXFKCD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763983AbXFKCV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764001AbXFKCD2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 22:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762209AbXFKCDW
+	id S1763983AbXFKCV3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 22:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762947AbXFKCVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 22:03:22 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:45039 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758585AbXFKCDV (ORCPT
+	Sun, 10 Jun 2007 22:21:20 -0400
+Received: from pumpkin.explorerforum.com ([209.209.36.42]:40538 "EHLO
+	pumpkin.explorerforum.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763203AbXFKCVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 22:03:21 -0400
-Message-ID: <466CAD2D.3070607@zytor.com>
-Date: Sun, 10 Jun 2007 19:02:21 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Sun, 10 Jun 2007 22:21:19 -0400
+X-Greylist: delayed 2517 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 Jun 2007 22:21:19 EDT
+Message-ID: <466CA75B.4040803@nersc.gov>
+Date: Sun, 10 Jun 2007 18:37:31 -0700
+From: Thomas Davis <tdavis@nersc.gov>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Pavel Machek <pavel@ucw.cz>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: A kexec approach to hibernation
-References: <878xb3l888.fsf@jbms.ath.cx> <200706020114.37245.rjw@sisk.pl> <87odjz9qo9.fsf@jbms.ath.cx> <200706020233.44509.rjw@sisk.pl> <87k5un9l4n.fsf@jbms.ath.cx> <20070604104621.GB4405@elf.ucw.cz> <20070604122054.GB26615@srcf.ucam.org> <20070604131000.GD1971@elf.ucw.cz> <20070604131624.GA27565@srcf.ucam.org>
-In-Reply-To: <20070604131624.GA27565@srcf.ucam.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: Jinxed VAIO wreckage - current state of affairs
+References: <1181418873.4404.402.camel@chaos> <200706092259.50694.rjw@sisk.pl> <20070609200827.635fec79.akpm@linux-foundation.org>
+In-Reply-To: <20070609200827.635fec79.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (pumpkin.explorerforum.com [209.209.36.42]); Sun, 10 Jun 2007 18:38:06 -0700 (PDT)
+X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> No, it only supports ext2 (and reading ext3 as if it's ext2). Right now, 
-> the assumption that syncing during suspend will cause data to hit 
-> something grub can read isn't a safe one.
+Andrew Morton wrote:
+> On Sat, 9 Jun 2007 22:59:49 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+>> Hmm, how's 2.6.22-rc4-mm2 doing on the Vaio?
+> 
+> People would have heard if it was busted ;)
+> 
+> Have seen occasional hangs in e100 resume-from-RAM, and occasional
+> all-black-and-dead symptoms after resume-from-RAM, but it seems to work at
+> least 90% of the time.
 
-I brought this issue up quite a few years ago at an OLS BOF.  We pretty
-much need a "supersync" system call; you can do this by bmapping any
-file on ext3, but having something supported across filesystems would be
-good.
+You doing than I am on my S580p.
 
-	-hpa
+if AHCI is loaded, damn thing will not turn off.  Goofy part is, another 
+Sony S80p at work does NOT have this probelm - same bios, same drive 
+firmware.
+
+Suspend to disk mostly works - sometimes when you return, the screen is 
+kinda wonky.
+
+Suspend to ram - going in appears to work, coming out it's dead.
+
+thomas
