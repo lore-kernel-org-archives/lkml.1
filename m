@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbXFKXz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbXFKX4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbXFKXz6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 19:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXFKXzt
+	id S1756789AbXFKX4U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 19:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXFKX4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 19:55:49 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:53642 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752313AbXFKXzs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 19:55:48 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: =?utf-8?q?J=C3=B6rn_Engel?= <joern@lazybastard.org>
-Subject: Re: [Patch 10/18] fs/logfs/inode.c
-Date: Tue, 12 Jun 2007 01:51:34 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Jamie Lokier <jamie@shareable.org>,
-       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       David Weinehall <tao@acc.umu.se>, Willy Tarreau <w@1wt.eu>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Dongjun Shin <djshin90@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, Bill Davidsen <davidsen@tmr.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Albert Cahalan <acahalan@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Roland Dreier <rdreier@cisco.com>,
-       Ondrej Zajicek <santiago@crfreenet.org>,
-       Ulisses Furquim <ulissesf@gmail.com>
-References: <20070603183845.GA8952@lazybastard.org> <200706101924.29927.arnd@arndb.de> <20070611232803.GA5377@lazybastard.org>
-In-Reply-To: <20070611232803.GA5377@lazybastard.org>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Mon, 11 Jun 2007 19:56:05 -0400
+Received: from mga01.intel.com ([192.55.52.88]:45960 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756316AbXFKX4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 19:56:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
+   d="scan'208";a="255733032"
+Date: Mon, 11 Jun 2007 16:52:08 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
+       davem@davemloft.net
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+Message-ID: <20070611235208.GC25022@linux-os.sc.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <200706090056.49279.ak@suse.de> <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com> <200706091147.24705.ak@suse.de> <20070611204442.GA4074@linux-os.sc.intel.com> <20070611141449.bfbc4769.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706120151.36520.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19jh0iHloI6zU1X69JyxlgRvey8fAOOXiRwuqg
- LQ/mzoVXzg1douqp1jbe04iDBfxSU5Fst0OnyeNmuGhi/nWyqX
- vxs6zJ6G3GLxXMXUzgKyg==
+In-Reply-To: <20070611141449.bfbc4769.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 June 2007, Jörn Engel wrote:
-> The initial storm of review comments has calmed down.  I get the
-> impression that people either lose interest or run out of simple things
-> to point out.  Maybe I should wait a bit before resending?
+On Mon, Jun 11, 2007 at 02:14:49PM -0700, Andrew Morton wrote:
+> On Mon, 11 Jun 2007 13:44:42 -0700
+> "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
+> 
+> > In the first implementation of ours, we had used mempools api's to 
+> > allocate memory and we were told that mempools with GFP_ATOMIC is
+> > useless and hence in the second implementation we came up with
+> > resource pools ( which is preallocate pools) and again as I understand
+> > the argument is why create another when we have slab allocation which
+> > is similar to this resource pools.
+> 
+> Odd.  mempool with GFP_ATOMIC is basically equivalent to your
+> resource-pools, isn't it?: we'll try the slab allocator and if that failed,
+> fall back to the reserves.
 
-Your last series had a todo list of 11 items, plus more stuff
-found in the review. How about you submit logfs for inclusion in -mm
-when all easy stuff is gone from that list?
+slab allocators don;t reserve the memory, in other words this memory 
+can be consumed by VM under memory pressure which we don;t want in
+IOMMU case.
 
-	Arnd <><
+Nope,they both are exactly opposite. 
+mempool with GFP_ATOMIC, first tries to get memory from OS and
+if that fails, it looks for the object in the pool and returns.
+
+Where as resource pool is exactly opposite of mempool, where each 
+time it looks for an object in the pool and if it exist then we 
+return that object else we try to get the memory for OS while 
+scheduling the work to grow the pool objects. In fact, the  work
+is schedule to grow the pool when the low threshold point is hit.
+
+Hence, I still feel resource pool implementation is best choice 
+for IOMMU.
+
+-Anil
