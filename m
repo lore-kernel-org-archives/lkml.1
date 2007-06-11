@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbXFKTQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbXFKTSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbXFKTQL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXFKTP5
+	id S1757259AbXFKTSR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXFKTSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:15:57 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58159 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751365AbXFKTP4 (ORCPT
+	Mon, 11 Jun 2007 15:18:08 -0400
+Received: from CHOKECHERRY.SRV.CS.CMU.EDU ([128.2.185.41]:51943 "EHLO
+	chokecherry.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752598AbXFKTSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:15:56 -0400
-Date: Mon, 11 Jun 2007 20:17:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dave Jones <davej@redhat.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Steve Fox <drfickle@us.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] move the kernel to 16MB for NUMA-Q
-Message-ID: <20070611201716.3ab98187@the-village.bc.nu>
-In-Reply-To: <20070611184621.GA25371@redhat.com>
-References: <466D550C.4030600@shadowen.org>
-	<63a08cc7547f14065becdf9a94d0d529@pinky>
-	<20070611091558.f468f205.akpm@linux-foundation.org>
-	<20070611172006.GI9174@redhat.com>
-	<466D882D.70001@zytor.com>
-	<Pine.LNX.4.64.0706112019310.19578@fbirervta.pbzchgretzou.qr>
-	<20070611184621.GA25371@redhat.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 Jun 2007 15:18:07 -0400
+Message-ID: <466D9FDB.2010305@cs.cmu.edu>
+Date: Mon, 11 Jun 2007 15:17:47 -0400
+From: Benjamin Gilbert <bgilbert@cs.cmu.edu>
+User-Agent: Icedove 1.5.0.8 (X11/20061208)
+MIME-Version: 1.0
+To: linux@horizon.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
+References: <20070611075321.8887.qmail@science.horizon.com>
+In-Reply-To: <20070611075321.8887.qmail@science.horizon.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Do such beasts even exist ?  My memories of low-memory x86en I had
-> only allowed power of 2 memory sizes.
+linux@horizon.com wrote:
+> /* Majority: (x^y)|(y&z)|(z&x) = (x & z) + ((x ^ z) & y)
+> #define F3(x,y,z,dest)		\
+> 	movl	z, TMP;		\
+> 	andl	x, TMP;		\
+> 	addl	TMP, dest;	\
+> 	movl	z, TMP;		\
+> 	xorl	x, TMP;		\
+> 	andl	y, TMP;		\
+> 	addl	TMP, dest
+> 
+> Since y is the most recently computed result (it's rotated in the
+> previous round), I arranged the code to delay its use as late as
+> possible.
+> 
+> 
+> Now you have one more register to play with.
 
-They existed. If you had two memory banks you could load 4MB and 1MB. If
-you had a single set of memory sockets then you got powers of two
+Okay, thanks.  It doesn't actually give one more register except in the 
+F3 rounds (TMP2 is normally used to hold the magic constants) but it's a 
+good cleanup.
+
+> A faster way is to unroll 5 iterations and do:
+> 	e += F(b, c, d) + K + rol32(a, 5) + W[i  ]; b = rol32(b, 30);
+> 	d += F(a, b, c) + K + rol32(e, 5) + W[i+1]; a = rol32(a, 30);
+> 	c += F(e, a, b) + K + rol32(d, 5) + W[i+2]; e = rol32(e, 30);
+> 	b += F(d, e, a) + K + rol32(c, 5) + W[i+3]; d = rol32(d, 30);
+> 	a += F(c, d, e) + K + rol32(b, 5) + W[i+4]; c = rol32(c, 30);
+> then loop over that 4 times each.  This is somewhat larger, but
+> still reasonably compact; only 20 of the 80 rounds are written out
+> long-hand.
+
+I got this code from Nettle, originally, and I never looked at the SHA-1 
+round structure very closely.  I'll give that approach a try.
+
+Thanks
+--Benjamin Gilbert
