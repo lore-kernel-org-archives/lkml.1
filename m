@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbXFKGxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbXFKG6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbXFKGxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 02:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXFKGxJ
+	id S1758716AbXFKG6e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 02:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXFKG60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 02:53:09 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:54945 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830AbXFKGxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 02:53:08 -0400
-Date: Mon, 11 Jun 2007 15:51:45 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       "Leech, Christopher" <christopher.leech@intel.com>,
-       Jeff Garzik <jeff@garzik.org>, davem@davemloft.net,
-       Wolfgang Denk <wd@denx.de>
-Subject: Re: 2.6.22-rc4-mm1
-Message-ID: <20070611065145.GA23404@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Jan Engelhardt <jengelh@linux01.gwdg.de>,
-	Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-	linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-	"Leech, Christopher" <christopher.leech@intel.com>,
-	Jeff Garzik <jeff@garzik.org>, davem@davemloft.net,
-	Wolfgang Denk <wd@denx.de>
-References: <20070606020737.4663d686.akpm@linux-foundation.org> <200706062132.37430.m.kozlowski@tuxland.pl> <20070606132439.3f59f0cf.akpm@linux-foundation.org> <20070606212831.GA1534@gondor.apana.org.au> <20070606164202.a3dcd176.akpm@linux-foundation.org> <Pine.LNX.4.61.0706070852580.1547@yvahk01.tjqt.qr> <20070607070108.GA8013@gondor.apana.org.au> <20070607001218.742c0ba5.akpm@linux-foundation.org> <e9c3a7c20706102201y536de24ft2daf8fbed066e28f@mail.gmail.com>
+	Mon, 11 Jun 2007 02:58:26 -0400
+Received: from smtpgw02.netonehosting.com ([193.192.98.26]:59351 "EHLO
+	smtpgw02.netonehosting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751689AbXFKG6Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 02:58:25 -0400
+Message-ID: <466CF28E.9040804@netone.net.tr>
+Date: Mon, 11 Jun 2007 09:58:22 +0300
+From: Tarkan Erimer <tarkan@netone.net.tr>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e9c3a7c20706102201y536de24ft2daf8fbed066e28f@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: debian developer <debiandev@gmail.com>
+CC: "david@lang.hm" <david@lang.hm>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>	 <18026.16739.228277.938421@notabene.brown>	 <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr>	 <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>	 <466BCBBC.90305@netone.net.tr>	 <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>	 <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>	 <466C0901.4000405@netone.net.tr> <f24d23310706101222y6fb527cckf1d0f7ba78aa3254@mail.gmail.com>
+In-Reply-To: <f24d23310706101222y6fb527cckf1d0f7ba78aa3254@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-9; format=flowed
+Content-Transfer-Encoding: 7bit
+X-NETONE-MailScanner-Information: Please contact the ISP for more information
+X-NETONE-MailScanner: Found to be clean
+X-NETONE-MailScanner-From: tarkan@netone.net.tr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 10, 2007 at 10:01:34PM -0700, Dan Williams wrote:
-> Overall, I feel that async_tx is perhaps justifiably receiving the
-> silent treatment because offload engines are not a mainstream
-> occurrence.  Currently only people with an Xscale IOP or a PPC 440spe
-> [4] will notice that mainline lacks support for all the features of
-> their platform.  I see async_tx as a nod to the embedded space where
-> offload engines act to make up for the absence of multi-Ghz CPUs with
-> streaming SIMD instructions.
-> 
-For what it's worth, I'm planning on tying in the SH DMA stuff to
-the dmaengine code, as the async_tx stuff certainly has quite a few bits
-of interest. This is probably something I won't get around to for 2.6.23
-though, due to time constraints.
+debian developer wrote:
+> On 6/10/07, Tarkan Erimer <tarkan@netone.net.tr> wrote:
+>> debian developer wrote:
+>> > On 6/10/07, david@lang.hm <david@lang.hm> wrote:
+>> >> On Sun, 10 Jun 2007, Tarkan Erimer wrote:
+>> >>
+>> >> >> >  And maybe another questions should be : How long a copyright
+>> >> owner can
+>> >> >> >  hold the copyright, if died or lost for sometime ? if died, the
+>> >> >> >  copyright still should be valid or not ? If lost, what the law
+>> >> orders at
+>> >> >> >  this point for copyright holding ?
+>> >> >>
+>> >> >>  I believe that in the US it's life + 90 years.
+>> >> >>
+>> >> >>  David Lang
+>> >> > Hmm... Really,it is damn too much time to wait! It's really better
+>> >> idea to
+>> >> > replace the code of this person as said before instead of waiting
+>> >> such  90+
+>> >> > years!
+>> >>
+>> >> exactly, however as others are pointing out, there are a lot of 
+>> active
+>> >> developers who do not agree with some of the key points of the GPLv3
+>> >> (including Linus), so until you convince them that the GPLv3 is
+>> >> better it
+>> >
+>> > Last heard, Linus was quite impressed with the toned down version of
+>> > the final draft of GPLv3. I think Linus, and other major developers
+>> > should make their stand on this issue clear so that the kernel
+>> > community can discuss the future steps.
+>> Yep, the GPLv3 probably will release around July time. So;luckily, we
+>> had very little time to see the final decision about it :-) I hope we
+>> should upgrade to GPLv3 and Sun should "Dual License" the OpenSolaris
+>> via GPLv3 (or at least,GPLv3 should be CDDL compatible.). So,we should
+>> have more fruits (like ZFS,DTrace etc.) ;-)
+>>
+>>
+>>
+> I don't think that upgrading to GPLv3 just for the sake of tools
+> present in some other software should be the reason. We are capable
+> enough of developing our own tools, and many experienced people are
+> working on equivalent(etx4 etc.,) and much sophisticated tools for the
+> linux kernel.
+It is not because of the sake of the tools and we have no capable enough 
+developers. It's just about an example that came to my mind, as I 
+mentioned before and also,it is the same thing as we, all the time, did. 
+I mean getting and sharing codes from many different open source 
+projects like BSD and countless others. So, OpenSolaris makes no 
+difference at this.
+
+Regards,
+
+Tarkan
