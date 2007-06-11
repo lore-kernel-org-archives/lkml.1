@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763945AbXFKFNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764136AbXFKFTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763945AbXFKFNq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 01:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbXFKFNj
+	id S1764136AbXFKFTj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 01:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbXFKFTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 01:13:39 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:54112 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbXFKFNi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 01:13:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=O6+S4SpsJTN5dqGGXMpJ63hoBETz/LRuFEveYQzPJYNyWPpryxPDirQJvQn/NV4pLU3q4bWbQCYwWn8ej1elMcQc+SarzyjHuZprt7gItLzFfK1p0gULaQSQ+E7CJ00kmnpsotKYFaaxRaDnlf2/NpFbCAPnryBqGdKJ435Z/gU=
-Date: Mon, 11 Jun 2007 14:03:27 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: linux-kernel@vger.kernel.org, greg@kroah.com, akpm@linux-foundation.org,
-       cebbert@redhat.com, sandeen@redhat.com, maneesh@in.ibm.com,
-       cs@tequila.co.jp
-Subject: [PATCH 2/3] sysfs: fix condition check in sysfs_drop_dentry()
-Message-ID: <20070611050327.GL29122@htj.dyndns.org>
-References: <20070611050107.GJ29122@htj.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070611050107.GJ29122@htj.dyndns.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 11 Jun 2007 01:19:32 -0400
+Received: from www.osadl.org ([213.239.205.134]:42702 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750705AbXFKFTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 01:19:32 -0400
+Subject: Re: [patch-mm 00/23] High resolution timer updates and x86_64
+	support
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Mark Lord <lkml@rtr.ca>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <466C7F44.1040309@rtr.ca>
+References: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
+	 <466C7F44.1040309@rtr.ca>
+Content-Type: text/plain
+Date: Mon, 11 Jun 2007 07:19:25 +0200
+Message-Id: <1181539165.8176.38.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The condition check doesn't make much sense as it basically always
-succeeds.  This causes NULL dereferencing on certain cases.  It seems
-that parentheses are put in the wrong place.  Fix it.
+Mark,
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/inode.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Sun, 2007-06-10 at 18:46 -0400, Mark Lord wrote:
+> Do you know if there's anything specific in there that would fix
+> the start-up race condition with HRTIMERS on my machine here
+> (previously discussed, yet unresolved)?
+> 
+> It still happens sporadically on boot-up -- maybe one in 10 boots without
+> any change in the kernel binary..
 
-Index: work1/fs/sysfs/inode.c
-===================================================================
---- work1.orig/fs/sysfs/inode.c
-+++ work1/fs/sysfs/inode.c
-@@ -252,7 +252,7 @@ void sysfs_drop_dentry(struct sysfs_dire
- 	if (dentry) {
- 		spin_lock(&dcache_lock);
- 		spin_lock(&dentry->d_lock);
--		if (!(d_unhashed(dentry) && dentry->d_inode)) {
-+		if (!d_unhashed(dentry) && dentry->d_inode) {
- 			inode = dentry->d_inode;
- 			spin_lock(&inode->i_lock);
- 			__iget(inode);
+on which kernel version ?
+
+	tglx
+
+
+
