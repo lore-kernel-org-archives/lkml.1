@@ -1,91 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762170AbXFKHaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761068AbXFKHfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762170AbXFKHaE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 03:30:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbXFKH3x
+	id S1761068AbXFKHfs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 03:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbXFKHfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 03:29:53 -0400
-Received: from co202.xi-lite.net ([149.6.83.202]:48266 "EHLO
-	toronto.xi-lite.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751021AbXFKH3w (ORCPT
+	Mon, 11 Jun 2007 03:35:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52181 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751021AbXFKHfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 03:29:52 -0400
-Message-ID: <466CF903.10003@parrot.com>
-Date: Mon, 11 Jun 2007 09:25:55 +0200
-From: Matthieu CASTET <matthieu.castet@parrot.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Tom <fivemiletom@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: RE : Building kernel 2.6.21.3 for arm on cygwin
-References: <4660971E.5020609@gmail.com> <12D4B80525C5B744A216276E209921D9CE8016@MIAMI.xi-lite.lan> <46645DC9.8080003@gmail.com> <20070607204707.GB16634@uranus.ravnborg.org> <46697C5E.9060607@parrot.com> <20070608221032.GA26637@uranus.ravnborg.org>
-In-Reply-To: <20070608221032.GA26637@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 11 Jun 2007 03:35:39 -0400
+Date: Mon, 11 Jun 2007 00:35:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Mario Guenterberg <mg@havelsoft.com>, linux-wireless@vger.kernel.org
+Subject: Re: some iwlwifi problems
+Message-Id: <20070611003529.2a0c1136.akpm@linux-foundation.org>
+In-Reply-To: <20070607082609.GA4603@/bin/dnsdomainname>
+References: <20070607082609.GA4603@/bin/dnsdomainname>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Jun 2007 07:28:24.0005 (UTC) FILETIME=[183B1F50:01C7ABFA]
-X-AV-Checked: No Virus Found
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+On Thu, 7 Jun 2007 10:26:09 +0200 Mario Guenterberg <mg@havelsoft.com> wrote:
 
-Sam Ravnborg wrote:
-> Hi Matthieu.
+> Hi...
 > 
-> Can you please try to tell what your patch actually does.
+> I have compiled the 2.6.22-rc4 kernel with the mm1 patchset.
+> It works fine for my z16m lenovo laptop. The only mistake I have is
+> the iwlwifi driver for the Intel Corporation PRO/Wireless 3945ABG
+> network controller. The bitrate settings are sometimes very different.
+> Sometimes it says 6 Mb/s, sometimes 11 Mb/s or 54 Mb/s and maybe 
+> sometimes 5.5 Mb/s.
 > 
-> As for the part added in the MAkefile you pass -lintl for Cygwin -
-> but I fail to see _why_ -lintl is needed.
-If I don't do it, I got [1] or [2].
+> The other thing is the message in log:
+> wlan0: duplicate address detected!
+> I have no machine with the same address in my network and no other
+> accesspoint in the range of my wlan.
+> 
+> With the 2.6.22.3 kernel and the iwp3945 driver the bitrate settings 
+> only 54 Mb/s and the message never found in logs.
+> 
 
-Matthieu
-
-[1]
-scripts/kconfig/conf.o:conf.c:(.text+0x91): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/conf.o:conf.c:(.text+0xa5): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/conf.o:conf.c:(.text+0xb9): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/conf.o:conf.c:(.text+0x7b8): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/conf.o:conf.c:(.text+0xf19): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/conf.o:conf.c:(.text+0x1026): more undefined references 
-to `_libintl_gettext' follow
-collect2: ld returned 1 exit status
-
-[2]
-scripts/kconfig/mconf.o:mconf.c:(.text+0x923): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/mconf.o:mconf.c:(.text+0x9c9): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/mconf.o:mconf.c:(.text+0xa66): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/mconf.o:mconf.c:(.text+0xa91): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/mconf.o:mconf.c:(.text+0xab1): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/mconf.o:mconf.c:(.text+0xadd): more undefined references 
-to `_libintl_gettext' follow
-scripts/kconfig/mconf.o:mconf.c:(.text+0x11af): undefined reference to 
-`_libintl_bindtextdomain'
-scripts/kconfig/mconf.o:mconf.c:(.text+0x11bb): undefined reference to 
-`_libintl_textdomain'
-scripts/kconfig/mconf.o:mconf.c:(.text+0x1207): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/mconf.o:mconf.c:(.text+0x1414): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/mconf.o:mconf.c:(.text+0x1467): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/mconf.o:mconf.c:(.text+0x1482): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/mconf.o:mconf.c:(.text+0x14af): undefined reference to 
-`_libintl_gettext'
-scripts/kconfig/zconf.tab.o:zconf.tab.c:(.text+0x54e6): more undefined 
-references to `_libintl_gettext' follow
-Info: resolving _stdscr by linking to __imp__stdscr (auto-import)
-Info: resolving _COLS by linking to __imp__COLS (auto-import)
-Info: resolving _LINES by linking to __imp__LINES (auto-import)
-collect2: ld returned 1 exit status
+(cc linux-wireless)
