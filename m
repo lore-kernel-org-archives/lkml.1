@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756470AbXFKQDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbXFKQK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756470AbXFKQDx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 12:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXFKQDk
+	id S1754055AbXFKQK0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 12:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbXFKQKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 12:03:40 -0400
-Received: from smtp24.orange.fr ([193.252.22.28]:39749 "EHLO smtp24.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752229AbXFKQDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 12:03:39 -0400
-X-ME-UUID: 20070611160337764.BA96B1C00093@mwinf2447.orange.fr
-Subject: Re: A kexec approach to hibernation
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Cc: nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <87r6oimqva.fsf@jbms.ath.cx>
-References: <878xb3l888.fsf@jbms.ath.cx> <200706020114.37245.rjw@sisk.pl>
-	 <87odjz9qo9.fsf@jbms.ath.cx> <200706020233.44509.rjw@sisk.pl>
-	 <87k5un9l4n.fsf@jbms.ath.cx> <1181533248.17758.55.camel@nigel.suspend2.net>
-	 <87abv6o7qo.fsf@jbms.ath.cx>
-	 <1181576723.11365.45.camel@frg-rhel40-em64t-04>
-	 <87r6oimqva.fsf@jbms.ath.cx>
-Content-Type: text/plain
-Date: Mon, 11 Jun 2007 18:03:28 +0200
-Message-Id: <1181577808.11365.49.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jun 2007 12:10:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57360 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751033AbXFKQKL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 12:10:11 -0400
+Date: Mon, 11 Jun 2007 09:10:08 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ak@suse.de, gregkh@suse.de, muli@il.ibm.com, asit.k.mallick@intel.com,
+       suresh.b.siddha@intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
+       davem@davemloft.net
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+In-Reply-To: <466C2915.3080706@linux.intel.com>
+Message-ID: <Pine.LNX.4.64.0706110908440.15326@schroedinger.engr.sgi.com>
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
+ <20070606190042.510643000@askeshav-devel.jf.intel.com>
+ <20070607162726.2236a296.akpm@linux-foundation.org>
+ <20070608182156.GA24865@linux-os.sc.intel.com>
+ <Pine.LNX.4.64.0706081531161.3966@schroedinger.engr.sgi.com>
+ <20070608224539.GA9851@linux-os.sc.intel.com>
+ <Pine.LNX.4.64.0706081553030.4332@schroedinger.engr.sgi.com>
+ <466C2915.3080706@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-11 at 11:51 -0400, Jeremy Maitin-Shepard wrote:
-> Xavier Bestel <xavier.bestel@free.fr> writes:
-> 
-> > On Mon, 2007-06-11 at 11:01 -0400, Jeremy Maitin-Shepard wrote:
-> >> >> You might claim then that the solution is to simply keep the network
-> >> >> driver quiesced or stopped.  But then it is impossible to write the
-> >> >> image over the network.  The way to get around this problem is to write
-> >> >> the image over the network using a fresh network stack.
-> >> 
-> >> > Or teach the driver stack about the difference/reset it. Remember that
-> >> > even if you get a fresh network stack, you'll still be getting packets
-> >> > for the old stack. Getting a new ip (assuming one is available) won't
-> >> > stop other connections getting killed, either because we send resets
-> >> > from the kexec'd kernel, or because they timeout looking for the old
-> >> > ip.
-> >> 
-> >> I could be mistaken, but I think that bringing up the network interface
-> >> with a different IP address would prevent it from reseting existing TCP
-> >> connections, because it would never receive the packets for those
-> >> existing connections.  
-> 
-> > That can't work. There are networks where the client must have a fixed
-> > IP, or must accept the adress given by dhcp in order to talk to
-> > fileservers. And you still have the same mac adress, which may cause
-> > problems.
-> 
-> I wasn't suggesting that using a different IP address would be a general
-> solution.  It might be a solution for a few people.
-> 
-> In general, I'd imagine that most people would not bring up the network
-> interface at all, and most of the people that do would bring it up with
-> the same IP address, causing some existing TCP connections to possibly
-> be reset.
-> 
-> I think that causing connections to be reset is, however, far better
-> than acking packets that are then silently thrown away.
+On Sun, 10 Jun 2007, Arjan van de Ven wrote:
 
-If I were helping you coding I'd suggest to only concentrate on having
-your project work on standard filesystems, and then when it works maybe
-think about suspending on crypto-over-loop-over-fuse-over-vpn-over-wifi.
-But talk is cheap so I'm shutting up. Right now. :)
+> Christoph Lameter wrote:
+> > On Fri, 8 Jun 2007, Keshavamurthy, Anil S wrote:
+> > 
+> > > > What functionality are you missing in the page allocator? It seems that
+> > > > is does what you want?
+> > > Humm..I basically want to allocate memory during interrupt context and
+> > > expect not to fail. I know this is a hard requirement :)
+> > 
+> > The page allocator can do that for you. The reserves are configurable. Not
+> > failing is a thing unseen in the computer world.
+> 
+> but the page allocator reserve is shared.. and you will need this one EXACTLY
+> when the shared pool is getting low... it's not an uncorrelated thing!
 
-	Xav
-
-
+I think what needs to be done first is to define under what conditions the 
+allocation should not fail. There is certainly no way to have GFP_ATOMIC 
+allocation that never fail. After all memory is limited and at some point 
+we need to reclaim memory.
+ 
