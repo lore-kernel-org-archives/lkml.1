@@ -1,232 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbXFKPKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbXFKPRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407AbXFKPKF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 11:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXFKPJz
+	id S1754040AbXFKPRX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 11:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbXFKPRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 11:09:55 -0400
-Received: from smtp3.nextra.sk ([195.168.1.142]:4416 "EHLO mailhub3.nextra.sk"
+	Mon, 11 Jun 2007 11:17:12 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:35815 "EHLO jazzhorn.ncsc.mil"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751472AbXFKPJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 11:09:54 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: daniel.ritz@gmx.ch
-Subject: [PATCH] Fix broken ifdefs in usbtouchscreen
-Date: Mon, 11 Jun 2007 17:09:50 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_+WWbGAQsbnfr+4j"
-Message-Id: <200706111709.50605.linux@rainbow-software.org>
+	id S1752294AbXFKPRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 11:17:10 -0400
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+	pathname matching
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Pavel Machek <pavel@ucw.cz>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Karl MacMillan <kmacmillan@mentalrootkit.com>
+In-Reply-To: <200706090003.57722.agruen@suse.de>
+References: <20070514110607.549397248@suse.de>
+	 <200706042303.28785.agruen@suse.de>
+	 <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil>
+	 <200706090003.57722.agruen@suse.de>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 11 Jun 2007 11:16:05 -0400
+Message-Id: <1181574965.8805.103.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_+WWbGAQsbnfr+4j
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sat, 2007-06-09 at 00:03 +0200, Andreas Gruenbacher wrote:
+> On Wednesday 06 June 2007 15:26, Stephen Smalley wrote:
+> > - under AA, each file may have an arbitrary set of "labels" or
+> > "policies" applied to it depending on what programs are accessing it and
+> > what names are being used to reference it - there is no system view of
+> > the subjects and objects and thus no way to identify the overall system
+> > policy for a given file.
+> 
+> Look at it this way: under SELinux, the set of files that share a label forms 
+> an equivalence class -- they are all treated identically by the system's 
+> security policy. The rules in AppArmor profiles also define equivalence 
+> classes in the sense that they partition the filesystem namespace into sets 
+> of files that are treated identically, but this classification is not 
+> explicit -- the entire rule base contributes to the classification. This 
+> doesn't mean that there is not a global policy, just that the policy is 
+> modeled differently. The equivalence classes are not directly obvious from 
+> the AA profiles.
 
-Hello,
-this patch fixes ifdefs in usbtouchscreen that got broken by Kconfig changes, 
-resulting in non-working module with empty device table.
+No, it really does mean that there is no global policy, and it goes
+beyond "not directly obvious" to "can not be determined" from the AA
+profiles.  You can't compose the set of AA profiles and say anything
+useful, because they are written in terms of ambiguous and unstable
+identifiers.  /a/b/c may refer to completely different objects in two
+different profiles, or to the same object as /d/e/f in the same or
+another profile.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+> Contrast this with SEEdit, which compiles AA-style rules into labels (and thus 
+> equivalence classes). The resulting SELinux policy is a static snapshot that 
+> cannot easily accommodate rule base changes, is more limited with respect to 
+> new files (which would likely be fixable), and behaves differently in complex 
+> ways with file renames. What's more, most likely the compiled policy will be 
+> anywhere from very hard to impossible to analyze, so you pretty much lose on 
+> all ends.
+
+Just to clarify, you can change the allowed accesses from a given
+subject to a given object without relabeling, just by changing the
+policy allow rules; you only have to relabel the object in the case
+where you want to distinguish that object from another object with the
+same label for the same subject.  I think the new file situation could
+be improved without any major change to the SELinux model, and am not
+opposed to leveraging the component name there, as previously noted.  On
+the file rename case, I think we have it right - access rights shouldn't
+change automatically when a file is renamed, any more than DAC ownership
+or file modes should.
+
+> > - names are far less tranquil than labels.
+> 
+> If I'm getting things right, a tranquil system with respect to labels would be 
+> one that does not permit re-labeling, while a tranquil system with respect to 
+> path names would be one that does not permit renaming. Both approaches would 
+> buy greater analyzability with reduced usability, and both seem unrealistic 
+> to me. SELinux and AppArmor evidently have different goals, and tranquility 
+> is more important to SELinux.
+
+Tranquility is important to correctness and understandability of policy;
+if labels (or pathnames in your case) can change at any time, then you
+have the problems of revocation of access (impractical to completely
+implement in Linux) and your effective policy now varies over time, so
+you have to consider time as a factor in your policy analysis.
+
+> AppArmor is meant to be relatively easy to understand, manage, and customize, 
+> and introducing a labels layer wouldn't help these goals. SELinux is 
+> applicable in areas where AppArmor is not (e.g., MLS), but this comes at a 
+> cost. For me the question is not SELinux or AppArmor, but if AppArmor's 
+> security model is a good solution in common scenarios. In my opinion, 
+> AppArmor is a better answer than SELinux in a number of scenarios. This gives 
+> it value, nonwithstanding the fact that SELinux can be taken further.
+
+I'd agree that we shouldn't try to emulate AA as it is on SELinux.  The
+question is more of whether we can meet the higher level functionality
+goals that make some people want to use AA via SELinux.  That requires
+separating those goals from the implementation details of AA.
 
 -- 
-Ondrej Zary
+Stephen Smalley
+National Security Agency
 
---Boundary-00=_+WWbGAQsbnfr+4j
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="usbtouchscreen-ifdef.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="usbtouchscreen-ifdef.patch"
-
---- linux-2.6.22-rc4-orig/drivers/input/touchscreen/usbtouchscreen.c	2007-06-05 02:57:25.000000000 +0200
-+++ linux-2.6.22-rc4/drivers/input/touchscreen/usbtouchscreen.c	2007-06-11 14:07:40.000000000 +0200
-@@ -91,7 +91,7 @@
- };
- 
- 
--#if defined(CONFIG_USB_TOUCHSCREEN_EGALAX) || defined(CONFIG_USB_TOUCHSCREEN_ETURBO)
-+#if defined(CONFIG_TOUCHSCREEN_USB_EGALAX) || defined(CONFIG_TOUCHSCREEN_USB_ETURBO)
- #define MULTI_PACKET
- #endif
- 
-@@ -113,7 +113,7 @@
- };
- 
- static struct usb_device_id usbtouch_devices[] = {
--#ifdef CONFIG_USB_TOUCHSCREEN_EGALAX
-+#ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
- 	{USB_DEVICE(0x3823, 0x0001), .driver_info = DEVTYPE_EGALAX},
- 	{USB_DEVICE(0x3823, 0x0002), .driver_info = DEVTYPE_EGALAX},
- 	{USB_DEVICE(0x0123, 0x0001), .driver_info = DEVTYPE_EGALAX},
-@@ -123,30 +123,30 @@
- 	{USB_DEVICE(0x1234, 0x0002), .driver_info = DEVTYPE_EGALAX},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_PANJIT
-+#ifdef CONFIG_TOUCHSCREEN_USB_PANJIT
- 	{USB_DEVICE(0x134c, 0x0001), .driver_info = DEVTYPE_PANJIT},
- 	{USB_DEVICE(0x134c, 0x0002), .driver_info = DEVTYPE_PANJIT},
- 	{USB_DEVICE(0x134c, 0x0003), .driver_info = DEVTYPE_PANJIT},
- 	{USB_DEVICE(0x134c, 0x0004), .driver_info = DEVTYPE_PANJIT},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_3M
-+#ifdef CONFIG_TOUCHSCREEN_USB_3M
- 	{USB_DEVICE(0x0596, 0x0001), .driver_info = DEVTYPE_3M},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_ITM
-+#ifdef CONFIG_TOUCHSCREEN_USB_ITM
- 	{USB_DEVICE(0x0403, 0xf9e9), .driver_info = DEVTYPE_ITM},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_ETURBO
-+#ifdef CONFIG_TOUCHSCREEN_USB_ETURBO
- 	{USB_DEVICE(0x1234, 0x5678), .driver_info = DEVTYPE_ETURBO},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_GUNZE
-+#ifdef CONFIG_TOUCHSCREEN_USB_GUNZE
- 	{USB_DEVICE(0x0637, 0x0001), .driver_info = DEVTYPE_GUNZE},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_DMC_TSC10
-+#ifdef CONFIG_TOUCHSCREEN_USB_DMC_TSC10
- 	{USB_DEVICE(0x0afa, 0x03e8), .driver_info = DEVTYPE_DMC_TSC10},
- #endif
- 
-@@ -158,7 +158,7 @@
-  * eGalax part
-  */
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_EGALAX
-+#ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
- 
- #define EGALAX_PKT_TYPE_MASK		0xFE
- #define EGALAX_PKT_TYPE_REPT		0x80
-@@ -197,7 +197,7 @@
- /*****************************************************************************
-  * PanJit Part
-  */
--#ifdef CONFIG_USB_TOUCHSCREEN_PANJIT
-+#ifdef CONFIG_TOUCHSCREEN_USB_PANJIT
- static int panjit_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
- {
- 	dev->x = ((pkt[2] & 0x0F) << 8) | pkt[1];
-@@ -212,7 +212,7 @@
- /*****************************************************************************
-  * 3M/Microtouch Part
-  */
--#ifdef CONFIG_USB_TOUCHSCREEN_3M
-+#ifdef CONFIG_TOUCHSCREEN_USB_3M
- 
- #define MTOUCHUSB_ASYNC_REPORT          1
- #define MTOUCHUSB_RESET                 7
-@@ -262,7 +262,7 @@
- /*****************************************************************************
-  * ITM Part
-  */
--#ifdef CONFIG_USB_TOUCHSCREEN_ITM
-+#ifdef CONFIG_TOUCHSCREEN_USB_ITM
- static int itm_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
- {
- 	int touch;
-@@ -296,7 +296,7 @@
- /*****************************************************************************
-  * eTurboTouch part
-  */
--#ifdef CONFIG_USB_TOUCHSCREEN_ETURBO
-+#ifdef CONFIG_TOUCHSCREEN_USB_ETURBO
- static int eturbo_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
- {
- 	unsigned int shift;
-@@ -327,7 +327,7 @@
- /*****************************************************************************
-  * Gunze part
-  */
--#ifdef CONFIG_USB_TOUCHSCREEN_GUNZE
-+#ifdef CONFIG_TOUCHSCREEN_USB_GUNZE
- static int gunze_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
- {
- 	if (!(pkt[0] & 0x80) || ((pkt[1] | pkt[2] | pkt[3]) & 0x80))
-@@ -348,7 +348,7 @@
-  *   http://www.dmccoltd.com/files/controler/tsc10usb_pi_e.pdf
-  *   http://www.dmccoltd.com/files/controler/tsc25_usb_e.pdf
-  */
--#ifdef CONFIG_USB_TOUCHSCREEN_DMC_TSC10
-+#ifdef CONFIG_TOUCHSCREEN_USB_DMC_TSC10
- 
- /* supported data rates. currently using 130 */
- #define TSC10_RATE_POINT	0x50
-@@ -419,7 +419,7 @@
-  * the different device descriptors
-  */
- static struct usbtouch_device_info usbtouch_dev_info[] = {
--#ifdef CONFIG_USB_TOUCHSCREEN_EGALAX
-+#ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
- 	[DEVTYPE_EGALAX] = {
- 		.min_xc		= 0x0,
- 		.max_xc		= 0x07ff,
-@@ -433,7 +433,7 @@
- 	},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_PANJIT
-+#ifdef CONFIG_TOUCHSCREEN_USB_PANJIT
- 	[DEVTYPE_PANJIT] = {
- 		.min_xc		= 0x0,
- 		.max_xc		= 0x0fff,
-@@ -444,7 +444,7 @@
- 	},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_3M
-+#ifdef CONFIG_TOUCHSCREEN_USB_3M
- 	[DEVTYPE_3M] = {
- 		.min_xc		= 0x0,
- 		.max_xc		= 0x4000,
-@@ -456,7 +456,7 @@
- 	},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_ITM
-+#ifdef CONFIG_TOUCHSCREEN_USB_ITM
- 	[DEVTYPE_ITM] = {
- 		.min_xc		= 0x0,
- 		.max_xc		= 0x0fff,
-@@ -468,7 +468,7 @@
- 	},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_ETURBO
-+#ifdef CONFIG_TOUCHSCREEN_USB_ETURBO
- 	[DEVTYPE_ETURBO] = {
- 		.min_xc		= 0x0,
- 		.max_xc		= 0x07ff,
-@@ -482,7 +482,7 @@
- 	},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_GUNZE
-+#ifdef CONFIG_TOUCHSCREEN_USB_GUNZE
- 	[DEVTYPE_GUNZE] = {
- 		.min_xc		= 0x0,
- 		.max_xc		= 0x0fff,
-@@ -493,7 +493,7 @@
- 	},
- #endif
- 
--#ifdef CONFIG_USB_TOUCHSCREEN_DMC_TSC10
-+#ifdef CONFIG_TOUCHSCREEN_USB_DMC_TSC10
- 	[DEVTYPE_DMC_TSC10] = {
- 		.min_xc		= 0x0,
- 		.max_xc		= 0x03ff,
-
---Boundary-00=_+WWbGAQsbnfr+4j--
