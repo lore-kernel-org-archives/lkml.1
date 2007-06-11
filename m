@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbXFKT65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbXFKT7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757498AbXFKT65 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbXFKT6u
+	id S1756694AbXFKT7u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbXFKT7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:58:50 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:44543 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752430AbXFKT6t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:58:49 -0400
-Subject: Re: 2.6.21-rt2..8 troubles
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Rui Nuno Capela <rncbc@rncbc.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-In-Reply-To: <1181591122.8176.159.camel@chaos>
-References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>
-	 <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu>
-	 <46574DE4.2080900@rncbc.org> <1180195709.4264.7.camel@chaos>
-	 <4658A4F4.1080204@rncbc.org>  <46660369.2070104@rncbc.org>
-	 <1181317625.4404.332.camel@chaos>
-	 <59605.213.13.107.141.1181326897.squirrel@www.rncbc.org>
-	 <1181328636.4404.335.camel@chaos>  <466DA42A.6010600@rncbc.org>
-	 <1181591122.8176.159.camel@chaos>
-Content-Type: text/plain
-Date: Mon, 11 Jun 2007 12:55:33 -0700
-Message-Id: <1181591733.11539.217.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Mon, 11 Jun 2007 15:59:30 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47866 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754251AbXFKT72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 15:59:28 -0400
+Message-ID: <466DA99C.4050105@garzik.org>
+Date: Mon, 11 Jun 2007 15:59:24 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       htejun@gmail.com, arjan@linux.intel.com
+Subject: Re: [patch 1/3] Store interrupt value
+References: <20070611184146.448266229@intel.com> <20070611114810.f918bc1d.kristen.c.accardi@intel.com>
+In-Reply-To: <20070611114810.f918bc1d.kristen.c.accardi@intel.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-11 at 21:45 +0200, Thomas Gleixner wrote:
-> On Mon, 2007-06-11 at 20:36 +0100, Rui Nuno Capela wrote:
-> > > I'm spinning -rt10 with a couple of fixes. Should be out sometimes
-> > > tomorrow. If the problem persists, we need to dig deeper.
-> > > 
-> > 
-> > Uhoh. I'm sorry to tell, but the problem is still creeping on
-> > 2.6.21.4-rt11 and -rt12 :(
-> > 
-> > So sorry.
+Kristen Carlson Accardi wrote:
+> Use a stored value for which interrupts to enable.  Changing this allows
+> us to selectively turn off certain interrupts later and have them 
+> stay off.
 > 
-> Hmm. Does it happen, when you boot with maxcpus=1 on the kernel
-> commandline ?
+> Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-I think 2.6.21-rt2 had some apic updates also, (along with hpet updates)
-so testing with "noapic" on the command line might be helpful too .. 
-
-Daniel
+Seems OK, though a bit disappointing that this cannot be initial set in
+ahci_save_initial_config() [which admittedly only saves per-HBA settings 
+at the moment, but due to new init model, need not be limited as such]
 
