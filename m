@@ -1,106 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbXFKWjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbXFKWm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbXFKWjh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 18:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbXFKWj3
+	id S1755737AbXFKWm4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 18:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXFKWmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 18:39:29 -0400
-Received: from max.aladin.ro ([80.96.155.2]:33379 "EHLO aladin.ro"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752224AbXFKWj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 18:39:28 -0400
-Message-ID: <466DCF1D.9050508@aladin.ro>
-Date: Tue, 12 Jun 2007 01:39:25 +0300
-From: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] UML: fix missing non-blocking I/O, now DEBUG_SHIRQ
- works
-References: <1181512917.3157.8.camel@localhost> <20070611173154.GA6889@c2.user-mode-linux.org> <466DA50C.5050301@aladin.ro> <20070611211604.GA8859@c2.user-mode-linux.org>
-In-Reply-To: <20070611211604.GA8859@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jun 2007 18:42:49 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:35566 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752198AbXFKWmt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 18:42:49 -0400
+Subject: Re: beeping patch for debugging acpi sleep
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Christian Leber <christian@leber.de>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070611120034.f6d972de.akpm@linux-foundation.org>
+References: <20070518213701.GA810@core> <20070520200142.GB5235@ucw.cz>
+	 <20070602182014.GB29546@core> <20070609130817.GI27793@elf.ucw.cz>
+	 <20070611120034.f6d972de.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-0JOppPrNeO4BCBqcgoMP"
+Date: Tue, 12 Jun 2007 08:42:51 +1000
+Message-Id: <1181601771.5064.2.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*This message was transferred with a trial version of CommuniGate(r) Pro*
-Jeff Dike wrote:
-> *This message was transferred with a trial version of CommuniGate(r) Pro*
-> *This message was transferred with a trial version of CommuniGate(r) Pro*
-> On Mon, Jun 11, 2007 at 10:39:56PM +0300, Eduard-Gabriel Munteanu wrote:
->> No offense, but this is an ugly hack. 
-> 
-> I'm not going to defend it too much, but the alternatives don't seem any
-> better to me.
-> 
->> What if sizeof(int) !=  sizeof(long)?
-> 
-> Doesn't matter - the casting will preserve the value.  Of greater
-> concern is the relationship between sizeof(void *) and sizeof(long).
-> That's not guaranteed by the standard, but is by gcc.
-> 
 
-The cast isn't done right. Doing "fd = (long) dev_id;" doesn't help, 
-since you pass fd to mconsole_get_request() as is. And 
-mconsole_get_request() expects an integer:
-int mconsole_get_request(int fd, struct mc_request *req)
+--=-0JOppPrNeO4BCBqcgoMP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This will generate at least a warning on arches where sizeof(int) != 
-sizeof(long). And as you say, then there is the problem with void 
-pointers and longs.
+Hi.
 
-And by the way, AFAIK, GCC has the habit of breaking compatibility with 
-some userspace apps when a new GCC major version is released. And, 
-AFAIK, they're moving towards standards, so relying on GCC's 
-"guarantees" may backfire.
+Wouldn't it be much more useful if it was unconditionally compiled in
+and controlled instead by a sysfs entry? That way it will be far more
+useful to $user who doesn't know or want to know how to compile and
+install a kernel, but wants to do what they can to get provide helpful
+debugging info and perhaps even get it going.
 
->> You're calling glibc functions
->> with that fd as a parameter. On some arches, compiling will issue
->> warnings or simply fail. 
-> 
-> Which ones?
->
+Yes, Pavel, I'll supply a patch if you (plural) agree.
 
-An example is sparc64:
-quote from http://lxr.linux.no/source/include/asm-sparc64/types.h#L49
+Regards,
 
-38 #define BITS_PER_LONG 64
-39
-40 #ifndef __ASSEMBLY__
-41
-42 typedef __signed__ char s8;
-43 typedef unsigned char u8;
-44
-45 typedef __signed__ short s16;
-46 typedef unsigned short u16;
-47
-48 typedef __signed__ int s32;
-49 typedef unsigned int u32;
-50
-51 typedef __signed__ long s64;
-52 typedef unsigned long u64
+Nigel
 
->> An alternative would be to use kmalloc instead of a global static 
->> variable. Do you like this one more?
-> 
-> No, that trades the global variable for a new point of failure.
-> 
-> The main reason I like the current casting better than your global
-> (not by a lot) is that globals have to be audited for SMP safety.  So,
-> I don't want any globals which don't need to be.  This implies a
-> local, and to minimize the machinery associated with that (kmalloc, or
-> passing a pointer and synchronizing to avoid returning too soon), just
-> passing the descriptor in the pointer and accepting the casting needed
-> to get it through the compiler.
-> 
-> 				Jeff
-> 
+--=-0JOppPrNeO4BCBqcgoMP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Really, a kmalloc() isn't such a big deal, it only happens once and 
-we're not in interrupt context. One the other hand, ensuring safety and 
-portability on other arches is something that needs to be taken care of.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Of course, you could also cast to int when calling 
-mconsole_get_request(), but IMO that doesn't look nicer.
+iD8DBQBGbc/rN0y+n1M3mo0RAuRbAKDaBJjYUAdqBhXt+MoLwwD2nH4MOACg80UY
+xTetNQhtycB7PQ7XSmGaWKc=
+=a+Tj
+-----END PGP SIGNATURE-----
+
+--=-0JOppPrNeO4BCBqcgoMP--
+
