@@ -1,67 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755062AbXFKXwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbXFKXwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755062AbXFKXwb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 19:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXFKXwZ
+	id S1755435AbXFKXwz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 19:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXFKXwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 19:52:25 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60179 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751677AbXFKXwY (ORCPT
+	Mon, 11 Jun 2007 19:52:47 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:47930 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752828AbXFKXwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 19:52:24 -0400
-Date: Tue, 12 Jun 2007 01:52:35 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: linux-kernel@vger.kernel.org, Mark Lord <lkml@rtr.ca>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: divorce CONFIG_X86_PAE from CONFIG_HIGHMEM64G
-Message-ID: <20070611235235.GR3588@stusta.de>
-References: <20070608023551.GJ15426@holomorphy.com>
+	Mon, 11 Jun 2007 19:52:46 -0400
+Message-ID: <466DE04C.4020303@zytor.com>
+Date: Mon, 11 Jun 2007 16:52:44 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070608023551.GJ15426@holomorphy.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Can we get rid of zImage this time?
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 07:35:51PM -0700, William Lee Irwin III wrote:
->...
->  config X86_PAE
->...
-> +	help
-> +	  PAE is required for NX support, and furthermore enables
-> +	  larger swapspace support for non-overcommit purposes. It
-> +	  has the cost of more pagetable lookup overhead, and also
-> +	  consumes more pagetable space per process.
->...
+I brought this up a few years ago, and had it shot down, because of a
+few poorly substantiated claims of zImage-only machines; those claims
+really need to be debugged since they might indicate A20-related failures.
 
+Anyway...
 
-It's not specific to this help text, but I start becoming a bit picky 
-about this issues:
+Can we please kill zImage?  In addition to be completely useless for
+modern kernels, it causes unnecessary complexity in boot loaders.
 
-If you understand this help text after reading it, you don't need a help 
-text for this option...  ;-)
-
-What is "NX support"?
-What are "non-overcommit purposes"?
-What is "pagetable lookup overhead"?
-
-And if in doubt, should I say Y or N?
-
-"System administrator who knows which hardware components he put into 
-the computer and which filesystems his data is on" might be a good 
-description for the average kconfig user, and these are the people who 
-should understand this help text.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	-hpa
