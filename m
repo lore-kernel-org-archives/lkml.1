@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbXFKMZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbXFKM1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752269AbXFKMZr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 08:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbXFKMZe
+	id S1752693AbXFKM1v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 08:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbXFKM1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 08:25:34 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:62806 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbXFKMZc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 08:25:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DRVv/nlABR8ukhgnpAI84Da0KgqyldKM8fPf6QERPKmR/w8fgUQ8HxXV7qMCo3MVu1Oht9iCCr9hU+csNtR1p8iM4YHL48CK3Oop2cIgrTFIRk6DE/u0/OXeReRAf14pkAn1FyAfSX6zvNkfGsWSif9cTNI0i/xZyJiflv5Y+Mo=
-Message-ID: <82faac5b0706110525s56bade43rb24619b54687770d@mail.gmail.com>
-Date: Mon, 11 Jun 2007 22:25:31 +1000
-From: "Darren Jenkins" <darrenrjenkins@gmail.com>
-To: "Andi Drebes" <lists-receive@programmierforen.de>
-Subject: Re: [KJ] Re: [PATCH] drivers/isdn/hisax: ARRAY_SIZE instead of sizeof
-Cc: "Jan-Benedict Glaw" <jbglaw@lug-owl.de>, kernel-janitors@lists.osdl.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Karsten Keil" <kkeil@suse.de>
-In-Reply-To: <200706111120.07730.lists-receive@programmierforen.de>
+	Mon, 11 Jun 2007 08:27:42 -0400
+Received: from mail.suse.de ([195.135.220.2]:43361 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbXFKM1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 08:27:41 -0400
+Date: Mon, 11 Jun 2007 12:45:32 +0200
+From: Stefan Seyfried <seife@suse.de>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: 2.6.22-rc regression: s2ram fails to suspend + fails to resume w/ Xorg
+Message-ID: <20070611104532.GA6289@suse.de>
+References: <1181493847.4503.11.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <200706101235.09578.lists-receive@programmierforen.de>
-	 <20070610131122.GB3588@pingi.kke.suse.de>
-	 <20070610131402.GR2649@lug-owl.de>
-	 <200706111120.07730.lists-receive@programmierforen.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1181493847.4503.11.camel@localhost>
+X-Operating-System: openSUSE 10.3 (i586) Alpha4plus, Kernel 2.6.22-rc3-git2-5-default
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-G'day Andi,
+On Sun, Jun 10, 2007 at 06:44:07PM +0200, Soeren Sonnenburg wrote:
+> Dear all,
+> 
+> I noticed 2 regressions to 2.6.21.X on my macbook pro:
+> 
+> 1. on git-current something broke s2ram completely, i.e. s2ram does not
+> even suspend anymore but hangs (blinking cursor on console)
 
-On 6/11/07, Andi Drebes <lists-receive@programmierforen.de> wrote:
+I have had a report, where "vga=0" (instead of using vesafb) worked
+around a similar issue on a macbook. I don't know the kernel version, though.
+-- 
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
 
-> > I'd suggest to not use another define, but use ARRAY_SIZE(foo)
-> > _instead of_ eg. FNCOUNT.
-> I thought of this, too, but I tried to keep things consistent. Let me
-> explain that a little bit more in detail. If you have a look at the files
-> in drivers/isdn/hisax then you will see that a lot of array size definitions
-> are assigned to preprocessor macros. So I thought removing just one
-> of the macros while the other continue to exist would make the code
-> a little bit more inconsistent. However, one might disagree about that.
-> So here's another patch that includes the changes from the original patch
-> and removes the FNCOUNT preprocessor definition. Perhaps the original
-> authors of the files should decide wether they want to keep it or not.
-
-I think what was meant here was to remove _all_ the macros that you
-assigned to the ARRAY_SIZE() macro.
-
-
-If you look at the two advantages replacing code with the ARRAY_SIZE()
-macro has;
-1. More readable/consistent code.
-2. Faster compile times, because of less macros being defined.
-
-If you were to simply redefine other macro's to be an ARRAY_SIZE()
-macro, the code will still contain the original macro's that people
-will have to look up, so would _not_ be more readable/consistent and
-you now have two stages of macro replacement, so the code will
-actually take _longer_ to compile.
-
-So to get the benefit of this change you have to _remove_ all the
-macros that are somehow equivalent to ARRAY_SIZE(), and replace their
-use in the code, with an appropriate ARRAY_SIZE() usage.
-
-Darren J.
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
