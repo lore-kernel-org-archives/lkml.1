@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbXFKHq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763514AbXFKHvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760061AbXFKHq3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 03:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbXFKHqX
+	id S1763514AbXFKHvJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 03:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXFKHu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 03:46:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:37408 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751926AbXFKHqW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 03:46:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=DuYiojMG6yu1QDtk3P/iDyc6x7tgoMX7Pb/5l5l/LR6gpm40ItH/T+0/EeVnyC938/xxCRXfKf4P5h1vHlpqTTvxyTn6TQsbgi7YyrZv6Pfo2AQ7YJd9oA5lvFCf5SMbsEpM7DK6oiqcMu4vAzG5JTvghWORCKvaX/MtVeF0QO4=
-From: Denis Vlasenko <vda.linux@googlemail.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO translated into Japanese]
-Date: Mon, 11 Jun 2007 09:46:11 +0200
-User-Agent: KMail/1.8.2
-Cc: Rene Herman <rene.herman@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Greg KH <gregkh@suse.de>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <200706110159.00482.vda.linux@googlemail.com> <20070611005613.GA20984@linux-sh.org>
-In-Reply-To: <20070611005613.GA20984@linux-sh.org>
+	Mon, 11 Jun 2007 03:50:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49121 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751274AbXFKHu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 03:50:56 -0400
+Date: Mon, 11 Jun 2007 09:50:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tarkan Erimer <tarkan@netone.net.tr>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070611075024.GD32446@elte.hu>
+References: <466BB9B0.5030908@netone.net.tr> <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <466BCBBC.90305@netone.net.tr> <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com> <466C0901.4000405@netone.net.tr> <20070610161306.GA12310@kroah.com> <466CEFBA.7090807@netone.net.tr> <20070611070842.GH21478@ftp.linux.org.uk> <466CF812.5020105@netone.net.tr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706110946.11808.vda.linux@googlemail.com>
+In-Reply-To: <466CF812.5020105@netone.net.tr>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 June 2007 02:56, Paul Mundt wrote:
-> On Mon, Jun 11, 2007 at 01:59:00AM +0200, Denis Vlasenko wrote:
-> > On Sunday 10 June 2007 20:58, Rene Herman wrote:
-> > > All that stuff only serves to multiply the speed at which a fixed
-> > > percentage of content obsoletes itself. When it's still new and
-> > > shiny, sure, stuff will get translated but in no time at all it'll
-> > > become a fragmented mess which nobody ever feels right about removing
-> > > because that would be anti-social to all those poor non-english
-> > > speaking kernel hackers out there.
-> > 
-> > I agree. i18n efforts won't help one iota because people just have
-> > to know English in order to participate in l-k development.
-> 
-> That's a ridiculous statement. Non-native language abilities and
-> technical competence have very little to do with each other. People have
-> to understand the code and figure out what it is that they want to
-> change. As long as this is done cleanly and the intent is obvious,
-> language doesn't even factor in beyond the Signed-off-by tag. Explanation
-> is necessary from time to time, but it really depends on the area in
-> which someone is working. If it's a complicated and involved change, then
-> of course it takes a bit more effort on both sides, but that doesn't
-> invalidate the importance or necessity of the work.
 
-Point me to one person who doesn't know English at all
-and who has successfully participated in l-k devel.
+* Tarkan Erimer <tarkan@netone.net.tr> wrote:
 
-I'm not saying that non-English should banned or something.
-In Kconfig it can even make sense. A section on kernel.org
-where people can put translations is also a good idea.
-I can still think that it is almost useless activity,
-but who knows, maybe I'm wrong.
+> > > >> I hope we should upgrade to GPLv3 and Sun should "Dual License" 
+> > > >> the OpenSolaris via GPLv3 (or at least,GPLv3 should be CDDL 
+> > > >> compatible.).
+> > > >
+> > > > The OpenSolaris community has already stated that they do not 
+> > > > want to accept GPLv3, why not discuss this with them if you want 
+> > > > to try to change their minds?
+> > >
+> > > It was just an example came to my mind at first when thinking 
+> > > about "Dual Licensing" or upgrading Linux Kernel to the GPLv3. 
+> > > Yeah maybe,the "OpenSolaris Community" do not want GPLv3. But; 
+> > > IMHO, it is in the hands of "Sun" not the "OpenSolaris Community".
+> >
+> > Perhaps.  However, since the only thing in hands of your kind of 
+> > advocates is best not mentioned on a family-friendly maillist, may I 
+> > suggest taking that exciting thread to more appropriate place?
+>
+> I don't think that this thread is going unfriendly or harmfully. 
+> However, what is your suggestion ?
 
-Just not Documentation/<lang>/* thing and no i18n of printks.
---
-vda
+if you want to change the minds of the OpenSolaris community, i'd 
+proffer that it's perhaps more efficient to talk to them, not to the 
+linux-kernel mailing list. Thanks,
+
+	Ingo
