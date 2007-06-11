@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbXFKX7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbXFLACJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbXFKX7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 19:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXFKX7O
+	id S1756697AbXFLACJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 20:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXFLAB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 19:59:14 -0400
-Received: from holomorphy.com ([66.93.40.71]:41310 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752828AbXFKX7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 19:59:13 -0400
-Date: Mon, 11 Jun 2007 17:00:26 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org, Mark Lord <lkml@rtr.ca>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: divorce CONFIG_X86_PAE from CONFIG_HIGHMEM64G
-Message-ID: <20070612000026.GC6909@holomorphy.com>
-References: <20070608023551.GJ15426@holomorphy.com> <20070611235235.GR3588@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070611235235.GR3588@stusta.de>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 11 Jun 2007 20:01:57 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:43287 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752313AbXFLAB4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 20:01:56 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jun 2007 20:01:56 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-YMail-OSG:In-Reply-To:References:Mime-Version:Content-Type:Message-Id:Cc:Content-Transfer-Encoding:From:Subject:Date:To:X-Mailer;
+  b=LgboeKPznHVEp0/h0uw3AEDyzFmHZRoDlVvKAYDrK1tXJBf86nITwwxPv/ItlaiJPcyLEpiXAxvzHbBVJUWT0CRbV4E6YrfmT8uKUVtGXGrGBxq5dk0dQdXwDK6X8QUf6YKPQzrm6Tcu9RwIoygDNLwKD4vxgezafJq9opbjLc8=  ;
+X-YMail-OSG: 86gXg0gVM1n81qRrHQplGKd0Rnb2YVAiYfxtUPlxvqkhq5LyF91JIyscsOoUWnbkU36tRXLFug--
+In-Reply-To: <20070611101319.GA14284@DervishD>
+References: <20070611101319.GA14284@DervishD>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <191337B7-F4CC-4824-B669-48AE194BE141@sbcglobal.net>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 8BIT
+From: Kevin K <k_krieser@sbcglobal.net>
+Subject: Re: ext2 on flash memory
+Date: Mon, 11 Jun 2007 18:53:26 -0500
+To: DervishD <lkml@dervishd.net>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 07:35:51PM -0700, William Lee Irwin III wrote:
->> +	  PAE is required for NX support, and furthermore enables
->> +	  larger swapspace support for non-overcommit purposes. It
->> +	  has the cost of more pagetable lookup overhead, and also
->> +	  consumes more pagetable space per process.
 
-On Tue, Jun 12, 2007 at 01:52:35AM +0200, Adrian Bunk wrote:
-> It's not specific to this help text, but I start becoming a bit picky 
-> about this issues:
-> If you understand this help text after reading it, you don't need a help 
-> text for this option...  ;-)
-> What is "NX support"?
-> What are "non-overcommit purposes"?
-> What is "pagetable lookup overhead"?
-> And if in doubt, should I say Y or N?
-> "System administrator who knows which hardware components he put into 
-> the computer and which filesystems his data is on" might be a good 
-> description for the average kconfig user, and these are the people who 
-> should understand this help text.
+On Jun 11, 2007, at 5:13 AM, DervishD wrote:
 
-I would like to have some place to explain issues such as those, but
-there are as of yet no designated places for tutorial-level information.
-
-If such a place were provided, I would provide storybook commentary to
-explain all those. Similarly actually holds for kernel function docbook.
+>     Hi all :)
+>
+>     I was wondering: is there any reason not to use ext2 on an USB
+> pendrive? Really my question is not only about USB pendrives, but any
+> device whose storage is flash based. Let's assume that the device  
+> has a
+> good quality flash memory with wear leveling and the like...
+>
+>     Thanks a lot in advance :)
+>
+>     Raúl Núñez de Arenas Coronado
+>
 
 
--- wli
+My opinion is that, unless the flash is really cheap, or it is being  
+written to excessively, that it probably doesn't matter too much.   
+With the growth in size of flash, just how long do you think it will  
+continue to be used before you go to something larger?
+
+A 256MB flash of a few years ago has been supplanted in many cases by  
+today's 2-4gb memory.
+
+One suggestion with ext2 might be to mount it with the noatime  
+option, so it doesn't update the last access time for directories and  
+files.  Otherwise, you are doing a write even when you only plan to  
+read a file.
+
+
