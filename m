@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764208AbXFKKCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932127AbXFKKDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764208AbXFKKCx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 06:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbXFKKCq
+	id S932127AbXFKKDR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 06:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764372AbXFKKC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 06:02:46 -0400
-Received: from styx.suse.cz ([82.119.242.94]:51299 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757088AbXFKKCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 06:02:46 -0400
-Date: Mon, 11 Jun 2007 12:15:21 +0200
-From: Jan Kara <jack@suse.cz>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] UDF: fix deadlock on inode being dropped
-Message-ID: <20070611101521.GF567@duck.suse.cz>
-References: <20070606175351.GA8397@cvg> <20070607093606.GA12549@duck.suse.cz> <20070607135458.GA8393@cvg> <20070607144121.GC12549@duck.suse.cz> <20070609133536.GA8654@cvg>
+	Mon, 11 Jun 2007 06:02:59 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:40912 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764360AbXFKKC6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 06:02:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=F7QiU5QurWeNQJW4FXK7mO1riUgLmDmzWjmEZp1xQj4Ql5PPFBWWyBsEL2C/5GJZ75WftYPKuxkiBnvESaKDgG0VXL34AtiM7jME5pAN7Ma1hczH8yXY7xuQCa5osALoeIPJcDBtxU+laYZ7L6JYgaTxJLx1ayUoOLRw3XRt5EI=
+Message-ID: <466D1DC5.7020503@gmail.com>
+Date: Mon, 11 Jun 2007 19:02:45 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070609133536.GA8654@cvg>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET 2.6.22-rc4] sysfs: fix race conditions
+References: <20070611050107.GJ29122@htj.dyndns.org> <466D1CAC.6060307@aladin.ro>
+In-Reply-To: <466D1CAC.6060307@aladin.ro>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 09-06-07 17:35:36, Cyrill Gorcunov wrote:
-> [Jan Kara - Thu, Jun 07, 2007 at 04:41:21PM +0200]
-> | On Thu 07-06-07 17:54:58, Cyrill Gorcunov wrote:
-> | > [Jan Kara - Thu, Jun 07, 2007 at 11:36:07AM +0200]
-> | > |   Hi Cyrill!
-> | > | 
-> | > | On Wed 06-06-07 21:53:51, Cyrill Gorcunov wrote:
-> | > | > This patch prevents from deadlock on inode being dropped.
-> | > | > The deadlock is caused by inderect call of mark_inode_dirty()
-> | > | > within udf_drop_inode() but inode lock is already kept
-> | > | > by the kernel. So moving code from udf_drop_inode() to
-> | > | > udf_delete_inode() we save its functionality and avoid
-> | > | > deadlock.
-> | > |   The patch is wrong. You cannot truncate the extent just in delete_inode.
-> | > | That would lead to inodes with untruncated last extent on disk after
-> | > | unmounting, which is forbidden in the specification. You need to truncate
-> | > | the last extent whenever inode is being removed from memory or something
-> | > | like that... I'm already thinking how to do it and avoid calling
-> | > | mark_inode_dirty()...
-> | > | 
-> | > 
-> | > Arh, thanks... Jan, actually the reason I've moved the code into
-> | > 'delete' section was that I found no reasonable difference for our
-> | > case between 'drop' and 'delete'. Moreover, by seeing into VFS code
-> | > the only diff between 'drop' and 'delete' is that
-> | > inside generic_delete_inode() a few inode structure elements
-> | > are being destroyed and then our udf_drop_inode is called. So assuming,
-> | > that you're right in drop_inode I've code just moved to 'delete' section.
-> |   The difference is that udf_delete_inode() is called only when inode has
-> | i_nlink == 0 and thus it's being deleted on disk. udf_drop_inode() is
-> | called whenever inode is removed from memory which is what we want.
-> |   I'm already testing a patch which should fix the problem...
+Eduard-Gabriel Munteanu wrote:
+> *This message was transferred with a trial version of CommuniGate(r) Pro*
+> Tejun Heo wrote:
 > 
-> how your progress? Could I help with something?
-  Eric has run his UDF test suite on it and it seems to survive fine so I'm
-going to submit the patch to Andrew in a while.
+>> This patchset contains three minimal backports of fixes in -mm.  With
+>> all patches in the patchset and sysfs-races.patch applied, kernel
+>> survived ~20 hours of stress test without any problem.
+>>
+> 
+> Seriously, do you think adding a few sleeps fixes anything? It just
+> makes it harder to happen, and even harder to debug, so this is no good.
+> Race condition are fixed by proper locking, ordering and so on.
+> 
+> (No offence, this has to be the patch of the week. :) )
 
-									Honza
+Dude, what are you smoking and can I get some?  The attached patch is to
+trigger the race conditions more easily for verification.  Actual fixes
+are in the three patches posted as reply to the head message.
 
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+tejun
