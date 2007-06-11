@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbXFKNMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbXFKNNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbXFKNMO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 09:12:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbXFKNME
+	id S1753273AbXFKNNX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 09:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbXFKNNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 09:12:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50608 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750714AbXFKNMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 09:12:00 -0400
-Date: Mon, 11 Jun 2007 15:11:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: IRQ handler type mismatch for IRQ 7
-Message-ID: <20070611131147.GA31307@elte.hu>
-References: <19f34abd0706110607u6cf889dci9b8d48494cb40be0@mail.gmail.com>
+	Mon, 11 Jun 2007 09:13:16 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41493 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751491AbXFKNNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 09:13:15 -0400
+X-Authenticated: #19095397
+X-Provags-ID: V01U2FsdGVkX1+xHhIT0ZyxCoN89aLO0LBR2sxYoJd0mPhFzfzT7V
+	S60Wmr5r3nuM1y
+From: Bernd Schubert <bernd-schubert@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: API changes / 2.6.21 sysctl changes
+Date: Mon, 11 Jun 2007 15:13:12 +0200
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <19f34abd0706110607u6cf889dci9b8d48494cb40be0@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200706111513.12998.bernd-schubert@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+in 2.6.21 register_sysctl_table(), struct ctl_table and probably something 
+else did change. Unfortunately so far I didn't figure out the "something 
+else". 
 
-> I receive this on a fresh install of Fedora 7 (x86_64) running 
-> 2.6.21-1.3194.fc7, and wonder if it's something to worry about:
-> 
-> IRQ handler type mismatch for IRQ 7
-> current handler: parport0
+Please, if generic interface modifications render all available documentation 
+in the web invalid, is it so hard to also write kernel api documentation then 
+(even if it so far does not exist in the Documentation/ dir)?
 
-> [<ffffffff802adf6d>] request_irq+0xd7/0xfd
-> [<ffffffff8039a583>] serial8250_startup+0x423/0x56f
+I mean the time overhead of thousands of coders digging through git commits is 
+huge, just because API changes are not properly documented.
 
-so both parport and serial is on the same IRQ: #7, but the parport one 
-does not support shared interrupt lines (IRQF_SHARED). You can probably 
-change the mapping in the BIOS (change the serial one to say IRQ#3 or 
-IRQ#4). I suspect you dont have any real parallel port hardware 
-attached? (and probably no serial port hardware either?) So you can 
-safely ignore this.
+E.g.: Documentation/api/sysctl.txt
 
-	Ingo
+Up to 2.6.20:
+struct ctl_table_header *register_sysctl_table(ctl_table * table, int 
+insert_at_head);
+
+
+Beginning with 2.6.21-rcX:
+struct ctl_table_header *register_sysctl_table(ctl_table * table);
+
+struct ctl_table:
+	removed entry struct proc_dir_entry *de
+	added entry ctl_table *parent
+
+[Maybe also something like]
+
+Additionaly to different functions calls, programmers also need to change ...
+
+
+Thanks,
+Bernd
+
+
+Thanks,
+Bernd
