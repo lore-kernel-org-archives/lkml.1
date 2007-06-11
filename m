@@ -1,408 +1,458 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757735AbXFKTuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXFKTvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757735AbXFKTuo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXFKTuf
+	id S1757213AbXFKTvS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXFKTvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:50:35 -0400
-Received: from host-66-43-248-10 ([67.55.143.10]:41303 "EHLO albrecht.rdi1.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752430AbXFKTue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:50:34 -0400
-Subject: Re: [BUG] via c3/2.6.20 -- ps/2 keyboard doesn't work with console
-From: Paul Albrecht <albrecht@rdi1.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <d120d5000706111228g4ada3a8dxf8e31dc62cfab476@mail.gmail.com>
-References: <1181236651.15435.1.camel@albrecht.rdi1.com>
-	 <200706072323.05576.dtor@insightbb.com>
-	 <1181325648.2437.5.camel@albrecht.rdi1.com>
-	 <d120d5000706081208q217ca432w6cc6d860a84700e8@mail.gmail.com>
-	 <1181582562.6982.5.camel@albrecht.rdi1.com>
-	 <d120d5000706111126w59c00bd2p826b7d9f588533ba@mail.gmail.com>
-	 <1181586424.2436.15.camel@albrecht.rdi1.com>
-	 <d120d5000706111228g4ada3a8dxf8e31dc62cfab476@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 11 Jun 2007 14:54:55 -0400
-Message-Id: <1181588095.2436.5.camel@albrecht.rdi1.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+	Mon, 11 Jun 2007 15:51:03 -0400
+Received: from CHOKECHERRY.SRV.CS.CMU.EDU ([128.2.185.41]:53888 "EHLO
+	chokecherry.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753039AbXFKTvA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 15:51:00 -0400
+From: Benjamin Gilbert <bgilbert@cs.cmu.edu>
+Subject: [PATCH] [CRYPTO] Add optimized SHA-1 implementation for i486+
+To: jengelh@computergmbh.de
+Cc: akpm@linux-foundation.org, herbert@gondor.apana.org.au,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 11 Jun 2007 15:50:52 -0400
+Message-ID: <20070611195051.25068.16858.stgit@dev>
+In-Reply-To: <466DA6DF.1080403@cs.cmu.edu>
+References: <466DA6DF.1080403@cs.cmu.edu>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-11 at 15:28 -0400, Dmitry Torokhov wrote:
-> On 6/11/07, Paul Albrecht <albrecht@rdi1.com> wrote:
-> > On Mon, 2007-06-11 at 14:26 -0400, Dmitry Torokhov wrote:
-> > > Hi Paul,
-> > >
-> > > On 6/11/07, Paul Albrecht <albrecht@rdi1.com> wrote:
-> > > >
-> > > > Resending message from last week ... don't usually subscribe to the
-> > > > kernel mailing list so please cc me in your response.
-> > > >
-> > > > PNP: PS/2 Controller [PNP0303:PS2K] at 0x60,0x64 irq 1
-> > > > PNP: PS/2 controller doesn't have AUX irq; using default 12
-> > >
-> > > Does it start working if you boot with i8042.noloop?
-> > >
-> >
-> > No, that doesn't work. Here's the dmesg output:
-> >
-> 
-> Argh, I meant i8042.noaux. Sorry for the confusion.
-> 
+Add x86-optimized implementation of the SHA-1 hash function, taken from
+Nettle under the LGPL.  This code will be enabled on kernels compiled for
+486es or better; kernels which support 386es will use the generic
+implementation (since we need BSWAP).
 
-Yes, i8042.noaux works. Here's the dmesg output:
+We disable building lib/sha1.o when an optimized implementation is
+available, as the library link order for x86 (and x86_64) would otherwise
+ignore the optimized version.  The existing optimized implementation for ARM
+does not do this; the library link order for that architecture appears to
+favor the arch/arm/ version automatically.  I've left this situation alone
+since I'm not familiar with the ARM code, but a !ARM condition could be
+added to CONFIG_SHA1_GENERIC if it makes sense.
 
+The code has been tested with tcrypt and the NIST test vectors.
 
+Signed-off-by: Benjamin Gilbert <bgilbert@cs.cmu.edu>
+---
 
-Linux version 2.6.21.4 (root@albrecht.rdi1.com) (gcc version 3.3.3) #1
-Fri Jun 8 11:55:16 EDT 2007
-BIOS-provided physical RAM map:
-sanitize start
-sanitize end
-copy_e820_map() start: 0000000000000000 size: 000000000009fc00 end:
-000000000009fc00 type: 1
-copy_e820_map() type is E820_RAM
-copy_e820_map() start: 000000000009fc00 size: 0000000000000400 end:
-00000000000a0000 type: 2
-copy_e820_map() start: 00000000000f0000 size: 0000000000010000 end:
-0000000000100000 type: 2
-copy_e820_map() start: 0000000000100000 size: 000000001f6f0000 end:
-000000001f7f0000 type: 1
-copy_e820_map() type is E820_RAM
-copy_e820_map() start: 000000001f7f0000 size: 0000000000003000 end:
-000000001f7f3000 type: 4
-copy_e820_map() start: 000000001f7f3000 size: 000000000000d000 end:
-000000001f800000 type: 3
-copy_e820_map() start: 00000000ffff0000 size: 0000000000010000 end:
-0000000100000000 type: 2
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000001f7f0000 (usable)
- BIOS-e820: 000000001f7f0000 - 000000001f7f3000 (ACPI NVS)
- BIOS-e820: 000000001f7f3000 - 000000001f800000 (ACPI data)
- BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
-503MB LOWMEM available.
-Entering add_active_range(0, 0, 129008) 0 entries of 256 used
-Zone PFN ranges:
-  DMA             0 ->     4096
-  Normal       4096 ->   129008
-early_node_map[1] active PFN ranges
-    0:        0 ->   129008
-On node 0 totalpages: 129008
-  DMA zone: 32 pages used for memmap
-  DMA zone: 0 pages reserved
-  DMA zone: 4064 pages, LIFO batch:0
-  Normal zone: 975 pages used for memmap
-  Normal zone: 123937 pages, LIFO batch:31
-DMI 2.3 present.
-ACPI: RSDP 000F7510, 0014 (r0 VIA605)
-ACPI: RSDT 1F7F3040, 0028 (r1 VIA605 AWRDACPI 42302E31 AWRD        0)
-ACPI: FACP 1F7F30C0, 0074 (r1 VIA605 AWRDACPI 42302E31 AWRD        0)
-ACPI: DSDT 1F7F3180, 2218 (r1 VIA605 AWRDACPI     1000 MSFT  100000E)
-ACPI: FACS 1F7F0000, 0040
-Allocating PCI resources starting at 20000000 (gap: 1f800000:e07f0000)
-Built 1 zonelists.  Total pages: 128001
-Kernel command line: THINIXCONF=true root=/dev/hda1 vga=791
-splash=silent ide=nodma quiet noinitrd i8042.debug log_buf_len=131072
-i8042.noaux
-ide_setup: ide=nodma : Prevented DMA
-log_buf_len: 131072
-No local APIC present or hardware disabled
-mapped APIC to ffffd000 (01412000)
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-PID hash table entries: 2048 (order: 11, 8192 bytes)
-Detected 800.024 MHz processor.
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Memory: 503572k/516032k available (4452k kernel code, 11872k reserved,
-1952k data, 240k init, 0k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xfffb6000 - 0xfffff000   ( 292 kB)
-    vmalloc : 0xe0000000 - 0xfffb4000   ( 511 MB)
-    lowmem  : 0xc0000000 - 0xdf7f0000   ( 503 MB)
-      .init : 0xc0744000 - 0xc0780000   ( 240 kB)
-      .data : 0xc0559110 - 0xc074140c   (1952 kB)
-      .text : 0xc0100000 - 0xc0559110   (4452 kB)
-Checking if this processor honours the WP bit even in supervisor mode...
-Ok.
-Calibrating delay using timer specific routine.. 1601.87 BogoMIPS
-(lpj=3203753)
-Mount-cache hash table entries: 512
-CPU: After generic identify, caps: 0381b03f 00000000 00000000 00000000
-00000000 00000000 00000000
-CPU: L1 I Cache: 64K (32 bytes/line), D cache 64K (32 bytes/line)
-CPU: L2 Cache: 64K (32 bytes/line)
-CPU: After all inits, caps: 0381b13f 00000000 00000000 00000000 00000000
-000000dd 00000000
-Compat vDSO mapped to ffffe000.
-CPU: Centaur VIA Nehemiah stepping 08
-Checking 'hlt' instruction... OK.
-ACPI: Core revision 20070126
-ACPI: setting ELCR to 0080 (from 1c80)
-NET: Registered protocol family 16
-ACPI: bus type pci registered
-PCI: PCI BIOS revision 2.10 entry at 0xfb4d0, last bus=2
-PCI: Using configuration type 1
-Setting up standard PCI resources
-ACPI: Interpreter enabled
-ACPI: (supports S0 S3 S4 S5)
-ACPI: Using PIC for interrupt routing
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-PCI: Probing PCI hardware (bus 00)
-PCI quirk: region 6000-607f claimed by vt82c686 HW-mon
-PCI quirk: region 5000-500f claimed by vt82c686 SMB
-Boot video device is 0000:01:00.0
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs 1 3 4 5 6 7 *10 11 12 14 15)
-ACPI: PCI Interrupt Link [LNKB] (IRQs 1 3 4 5 6 7 10 11 12 14 15) *0,
-disabled.
-ACPI: PCI Interrupt Link [LNKC] (IRQs 1 3 4 5 6 7 10 *11 12 14 15)
-ACPI: PCI Interrupt Link [LNKD] (IRQs 1 3 4 5 6 7 10 11 *12 14 15)
-Linux Plug and Play Support v0.97 (c) Adam Belay
-pnp: PnP ACPI init
-pnp: PnP ACPI: found 11 devices
-SCSI subsystem initialized
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-PCI: Using ACPI for IRQ routing
-PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a
-report
-pnp: 00:00: iomem range 0xcc000-0xcffff could not be reserved
-pnp: 00:00: iomem range 0xda800-0xdbfff has been reserved
-pnp: 00:00: iomem range 0xf0000-0xfbfff could not be reserved
-pnp: 00:00: iomem range 0xfc000-0xfffff could not be reserved
-PCI: Bridge: 0000:00:01.0
-  IO window: disabled.
-  MEM window: ec000000-ec0fffff
-  PREFETCH window: e0000000-e7ffffff
-PCI: Bus 2, cardbus bridge: 0000:00:0d.0
-  IO window: 00001000-000010ff
-  IO window: 00001400-000014ff
-  PREFETCH window: 20000000-23ffffff
-  MEM window: 24000000-27ffffff
-PCI: Setting latency timer of device 0000:00:01.0 to 64
-Time: tsc clocksource has been installed.
-ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 10
-PCI: setting IRQ 10 as level-triggered
-ACPI: PCI Interrupt 0000:00:0d.0[A] -> Link [LNKA] -> GSI 10 (level,
-low) -> IRQ 10
-NET: Registered protocol family 2
-IP route cache hash table entries: 4096 (order: 2, 16384 bytes)
-TCP established hash table entries: 16384 (order: 5, 131072 bytes)
-TCP bind hash table entries: 16384 (order: 4, 65536 bytes)
-TCP: Hash tables configured (established 16384 bind 16384)
-TCP reno registered
-checking if image is initramfs...it isn't (bad gzip magic numbers);
-looks like an initrd
-Freeing initrd memory: 22k freed
-audit: initializing netlink socket (disabled)
-audit(1181572600.292:1): initialized
-squashfs: version 3.2-r2 (2007/01/15) Phillip Lougher
-Coda Kernel/Venus communications, v6.0.0, coda@cs.cmu.edu
-NTFS driver 2.1.28 [Flags: R/W].
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-PCI: Disabling Via external APIC routing
-vesafb: framebuffer at 0xe0000000, mapped to 0xe0080000, using 3072k,
-total 7104k
-vesafb: mode is 1024x768x16, linelength=2048, pages=3
-vesafb: protected mode interface info at c000:79d0
-vesafb: pmi: set display start = c00c7a5a, set palette = c00c7aa3
-vesafb: scrolling: redraw
-vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-Console: switching to colour frame buffer device 128x48
-fb0: VESA VGA frame buffer device
-input: Power Button (FF) as /class/input/input0
-ACPI: Power Button (FF) [PWRF]
-input: Power Button (CM) as /class/input/input1
-ACPI: Power Button (CM) [PWRB]
-ACPI: CPU0 (power states: C1[C1] C2[C2])
-ACPI: Processor [CPU0] (supports 2 throttling states)
-lp: driver loaded but no devices found
-Generic RTC Driver v1.07
-Non-volatile memory driver v1.2
-VIA RNG detected
-Linux agpgart interface v0.102 (c) Dave Jones
-agpgart: Detected VIA ProSavage PM133/PL133/PN133 chipset
-agpgart: AGP aperture is 64M @ 0xe8000000
-[drm] Initialized drm 1.1.0 20060810
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-Time: pit clocksource has been installed.
-serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:09: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-parport_pc: VIA 686A/8231 detected
-parport_pc: probing current configuration
-parport_pc: Current parallel port base: 0x0
-parport_pc: VIA parallel port disabled in BIOS
-FDC 0 is a post-1991 82077
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-via-rhine: Broken BIOS detected, avoid_D3 enabled.
-PPP generic driver version 2.4.2
-PPP Deflate Compression module registered
-PPP BSD Compression module registered
-NET: Registered protocol family 24
-8139too Fast Ethernet driver 0.9.28
-ACPI: PCI Interrupt Link [LNKC] enabled at IRQ 11
-PCI: setting IRQ 11 as level-triggered
-ACPI: PCI Interrupt 0000:00:09.0[A] -> Link [LNKC] -> GSI 11 (level,
-low) -> IRQ 11
-eth0: RealTek RTL8139 at 0xc800, 00:e0:4c:69:2b:a5, IRQ 11
-eth0:  Identified 8139 chip type 'RTL-8100B/8139D'
-tun: Universal TUN/TAP device driver, 1.6
-tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
-orinoco 0.15 (David Gibson <hermes@gibson.dropbear.id.au>, Pavel Roskin
-<proski@gnu.org>, et al)
-orinoco_cs 0.15 (David Gibson <hermes@gibson.dropbear.id.au>, Pavel
-Roskin <proski@gnu.org>, et al)
-Linux video capture interface: v2.00
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with
-idebus=xx
-VP_IDE: IDE controller at PCI slot 0000:00:07.1
-VP_IDE: chipset revision 6
-VP_IDE: not 100% native mode: will probe irqs later
-VP_IDE: VIA vt82c686b (rev 40) IDE UDMA100 controller on pci0000:00:07.1
-    ide0: BM-DMA at 0xdd00-0xdd07, BIOS settings: hda:DMA, hdb:pio
-    ide1: BM-DMA at 0xdd08-0xdd0f, BIOS settings: hdc:pio, hdd:pio
-Probing IDE interface ide0...
-hda: SanDisk SDCFB-1024, CFA DISK drive
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-Probing IDE interface ide1...
-Probing IDE interface ide1...
-Probing IDE interface ide2...
-Probing IDE interface ide3...
-hda: max request size: 128KiB
-hda: 2001888 sectors (1024 MB) w/1KiB Cache, CHS=1986/16/63
- hda: hda1 hda2
-Yenta: CardBus bridge found at 0000:00:0d.0 [3412:7856]
-Yenta: ISA IRQ mask 0x0000, PCI irq 10
-Socket status: 30000006
-usbmon: debugfs is not available
-ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-USB Universal Host Controller Interface driver v3.0
-ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 12
-PCI: setting IRQ 12 as level-triggered
-ACPI: PCI Interrupt 0000:00:07.2[D] -> Link [LNKD] -> GSI 12 (level,
-low) -> IRQ 12
-uhci_hcd 0000:00:07.2: UHCI Host Controller
-uhci_hcd 0000:00:07.2: new USB bus registered, assigned bus number 1
-uhci_hcd 0000:00:07.2: irq 12, io base 0x0000e000
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 2 ports detected
-ACPI: PCI Interrupt 0000:00:07.3[D] -> Link [LNKD] -> GSI 12 (level,
-low) -> IRQ 12
-uhci_hcd 0000:00:07.3: UHCI Host Controller
-uhci_hcd 0000:00:07.3: new USB bus registered, assigned bus number 2
-uhci_hcd 0000:00:07.3: irq 12, io base 0x0000dc00
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 2 ports detected
-usb 2-1: new low speed USB device using uhci_hcd and address 2
-usb 2-1: configuration #1 chosen from 1 choice
-usbcore: registered new interface driver usblp
-drivers/usb/class/usblp.c: v0.13: USB Printer Device Class driver
-Initializing USB Mass Storage driver...
-usbcore: registered new interface driver usb-storage
-USB Mass Storage support registered.
-usbcore: registered new interface driver hiddev
-input: Microsoft Basic Optical Mouse as /class/input/input2
-input: USB HID v1.10 Mouse [Microsoft Basic Optical Mouse] on
-usb-0000:00:07.3-1
-usbcore: registered new interface driver usbhid
-drivers/usb/input/hid-core.c: v2.6:USB HID core driver
-usbcore: registered new interface driver usblcd
-usbcore: registered new interface driver usbled
-usbcore: registered new interface driver uss720
-drivers/usb/misc/uss720.c: v0.6:USB Parport Cable driver for Cables
-using the Lucent Technologies USS720 Chip
-drivers/usb/misc/uss720.c: NOTE: this is a special purpose driver to
-allow nonstandard
-drivers/usb/misc/uss720.c: protocols (eg. bitbang) over USS720 usb to
-parallel cables
-drivers/usb/misc/uss720.c: If you just want to connect to a printer, use
-usblp instead
-PNP: PS/2 Controller [PNP0303:PS2K] at 0x60,0x64 irq 1
-drivers/input/serio/i8042.c: 20 -> i8042 (command) [0]
-drivers/input/serio/i8042.c: 67 <- i8042 (return) [0]
-drivers/input/serio/i8042.c: 60 -> i8042 (command) [0]
-drivers/input/serio/i8042.c: 76 -> i8042 (parameter) [0]
-drivers/input/serio/i8042.c: 60 -> i8042 (command) [0]
-drivers/input/serio/i8042.c: 67 -> i8042 (parameter) [0]
-serio: i8042 KBD port at 0x60,0x64 irq 1
-mice: PS/2 mouse device common for all mice
-drivers/input/serio/i8042.c: f2 -> i8042 (kbd-data) [0]
-drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 0, 1) [1]
-drivers/input/serio/i8042.c: ab <- i8042 (interrupt, 0, 1) [1]
-drivers/input/serio/i8042.c: 41 <- i8042 (interrupt, 0, 1) [1]
-drivers/input/serio/i8042.c: ed -> i8042 (kbd-data) [1]
-drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 0, 1) [3]
-drivers/input/serio/i8042.c: 00 -> i8042 (kbd-data) [3]
-drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 0, 1) [3]
-drivers/input/serio/i8042.c: f3 -> i8042 (kbd-data) [3]
-drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 0, 1) [4]
-drivers/input/serio/i8042.c: 00 -> i8042 (kbd-data) [4]
-drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 0, 1) [5]
-drivers/input/serio/i8042.c: f4 -> i8042 (kbd-data) [5]
-drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 0, 1) [6]
-input: AT Translated Set 2 keyboard as /class/input/input3
-input: PC Speaker as /class/input/input4
-Linux telephony interface: v1.00
-ixj driver initialized.
-device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised:
-dm-devel@redhat.com
-Advanced Linux Sound Architecture Driver Version 1.0.14rc3 (Wed Mar 14
-07:25:50 2007 UTC).
-ACPI: PCI Interrupt 0000:00:07.5[C] -> Link [LNKC] -> GSI 11 (level,
-low) -> IRQ 11
-PCI: Setting latency timer of device 0000:00:07.5 to 64
-usbcore: registered new interface driver snd-usb-audio
-usbcore: registered new interface driver snd-usb-usx2y
-ALSA device list:
-  #0: VIA 82C686A/B rev50 with VIA1612A at 0xc000, irq 11
-ip_tables: (C) 2000-2006 Netfilter Core Team
-arp_tables: (C) 2002 David S. Miller
-TCP cubic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
-All bugs added by David S. Miller <davem@redhat.com>
-Using IPI Shortcut mode
-ReiserFS: hda1: warning: read_super_block: found reiserfs format "3.6"
-with non-standard journal
-ReiserFS: hda1: using ordered data mode
-ReiserFS: hda1: journal params: device hda1, size 512, journal first
-block 18, max trans len 256, max batch 225, max commit age 30, max trans
-age 30
-ReiserFS: hda1: checking transaction log (hda1)
-ReiserFS: hda1: Using r5 hash to sort names
-VFS: Mounted root (reiserfs filesystem) readonly.
-Freeing unused kernel memory: 240k freed
-ReiserFS: dm-0: warning: read_super_block: found reiserfs format "3.6"
-with non-standard journal
-ReiserFS: dm-0: using ordered data mode
-ReiserFS: dm-0: journal params: device dm-0, size 2048, journal first
-block 18, max trans len 1024, max batch 900, max commit age 30, max
-trans age 30
-ReiserFS: dm-0: checking transaction log (dm-0)
-ReiserFS: dm-0: replayed 30 transactions in 10 seconds
-ReiserFS: dm-0: Using r5 hash to sort names
+ arch/i386/kernel/i386_ksyms.c |    5 +
+ arch/i386/lib/Makefile        |    1 
+ arch/i386/lib/sha1.S          |  299 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/cryptohash.h    |    9 +
+ lib/Kconfig                   |   13 ++
+ lib/Makefile                  |    3 
+ 6 files changed, 328 insertions(+), 2 deletions(-)
 
+diff --git a/arch/i386/kernel/i386_ksyms.c b/arch/i386/kernel/i386_ksyms.c
+index e3d4b73..812bc4e 100644
+--- a/arch/i386/kernel/i386_ksyms.c
++++ b/arch/i386/kernel/i386_ksyms.c
+@@ -1,4 +1,5 @@
+ #include <linux/module.h>
++#include <linux/cryptohash.h>
+ #include <asm/checksum.h>
+ #include <asm/desc.h>
+ 
+@@ -28,3 +29,7 @@ EXPORT_SYMBOL(__read_lock_failed);
+ #endif
+ 
+ EXPORT_SYMBOL(csum_partial);
++
++#ifdef CONFIG_SHA1_X86
++EXPORT_SYMBOL(sha_transform);
++#endif
+diff --git a/arch/i386/lib/Makefile b/arch/i386/lib/Makefile
+index 22d8ac5..69f4845 100644
+--- a/arch/i386/lib/Makefile
++++ b/arch/i386/lib/Makefile
+@@ -6,6 +6,7 @@
+ lib-y = checksum.o delay.o usercopy.o getuser.o putuser.o memcpy.o strstr.o \
+ 	bitops.o semaphore.o
+ 
++lib-$(CONFIG_SHA1_X86) += sha1.o
+ lib-$(CONFIG_X86_USE_3DNOW) += mmx.o
+ 
+ obj-$(CONFIG_SMP)	+= msr-on-cpu.o
+diff --git a/arch/i386/lib/sha1.S b/arch/i386/lib/sha1.S
+new file mode 100644
+index 0000000..a84d829
+--- /dev/null
++++ b/arch/i386/lib/sha1.S
+@@ -0,0 +1,299 @@
++/*
++ * x86-optimized SHA1 hash algorithm (i486 and above)
++ *
++ * Originally from Nettle
++ * Ported from M4 to cpp by Benjamin Gilbert <bgilbert@cs.cmu.edu>
++ *
++ * Copyright (C) 2004, Niels Möller
++ * Copyright (C) 2006-2007 Carnegie Mellon University
++ *
++ * This library is free software; you can redistribute it and/or modify it
++ * under the terms of version 2.1 of the GNU Lesser General Public License as
++ * published by the Free Software Foundation.  A copy of the GNU Lesser General
++ * Public License should have been distributed along with this library in the
++ * file LICENSE.LGPL.
++ *
++ * This library is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
++ * for more details.
++ */
++
++#include <linux/linkage.h>
++#include <asm/dwarf2.h>
++
++/* Register usage */
++#define SA	%eax
++#define SB	%ebx
++#define SC	%ecx
++#define SD	%edx
++#define SE	%ebp
++#define DATA	%esp
++#define TMP	%edi
++#define TMP2	%esi			/* Used by SWAP and F3 */
++#define TMP3	64(%esp)
++
++/* Constants */
++#define K1VALUE	$0x5A827999		/* Rounds  0-19 */
++#define K2VALUE	$0x6ED9EBA1		/* Rounds 20-39 */
++#define K3VALUE	$0x8F1BBCDC		/* Rounds 40-59 */
++#define K4VALUE	$0xCA62C1D6		/* Rounds 60-79 */
++
++/* Convert stack offsets in words to offsets in bytes */
++#define OFFSET(i) 4*(i)
++
++/* Reads the input via TMP2 into register, byteswaps it, and stores it in
++   the DATA array. */
++#define SWAP(index, register)					\
++	movl	OFFSET(index)(TMP2), register;			\
++	bswap	register;					\
++	movl	register, OFFSET(index)(DATA)
++
++/* Sets the workspace word at the given index to TMP. */
++#define CLEAR(index)						\
++	movl	TMP, OFFSET(index)(DATA)
++
++/* pushl/popl wrappers that update the DWARF unwind table */
++#define PUSH(regname)						\
++	pushl			%regname;			\
++	CFI_ADJUST_CFA_OFFSET	4;				\
++	CFI_REL_OFFSET		regname, 0
++
++#define POP(regname)						\
++	popl			%regname;			\
++	CFI_ADJUST_CFA_OFFSET	-4;				\
++	CFI_RESTORE		regname
++
++/*
++ * expand(i) is the expansion function
++ *
++ *   W[i] = (W[i - 16] ^ W[i - 14] ^ W[i - 8] ^ W[i - 3]) <<< 1
++ *
++ * where W[i] is stored in DATA[i mod 16].
++ *
++ * Result is stored back in W[i], and also left in TMP, the only
++ * register that is used.
++ */
++#define EXPAND(i)						\
++	movl	OFFSET(i % 16)(DATA), TMP;			\
++	xorl	OFFSET((i + 2) % 16)(DATA), TMP;		\
++	xorl	OFFSET((i + 8) % 16)(DATA), TMP;		\
++	xorl	OFFSET((i + 13) % 16)(DATA), TMP;		\
++	roll	$1, TMP;					\
++	movl	TMP, OFFSET(i % 16)(DATA)
++
++/*
++ * The f functions,
++ *
++ *  f1(x,y,z) = z ^ (x & (y ^ z))
++ *  f2(x,y,z) = x ^ y ^ z
++ *  f3(x,y,z) = (x & y) | (z & (x | y))
++ *  f4 = f2
++ *
++ * The macro Fk(x,y,z) computes = fk(x,y,z).
++ * Result is left in TMP.
++ */
++#define F1(x,y,z)						\
++	movl	z, TMP;						\
++	xorl	y, TMP;						\
++	andl	x, TMP;						\
++	xorl	z, TMP
++
++#define F2(x,y,z)						\
++	movl	x, TMP;						\
++	xorl	y, TMP;						\
++	xorl	z, TMP
++
++#define F3(x,y,z)						\
++	movl	x, TMP2;					\
++	andl	y, TMP2;					\
++	movl	x, TMP;						\
++	orl	y, TMP;						\
++	andl	z, TMP;						\
++	orl	TMP2, TMP
++
++/*
++ * The form of one sha1 round is
++ *
++ *   a' = e + a <<< 5 + f( b, c, d ) + k + w;
++ *   b' = a;
++ *   c' = b <<< 30;
++ *   d' = c;
++ *   e' = d;
++ *
++ * where <<< denotes rotation. We permute our variables, so that we
++ * instead get
++ *
++ *   e += a <<< 5 + f( b, c, d ) + k + w;
++ *   b <<<= 30
++ *
++ * Using the TMP register for the rotate could be avoided, by rotating
++ * %a in place, adding, and then rotating back.
++ */
++#define ROUND(a,b,c,d,e,f,k,w)					\
++	addl	k, e;						\
++	addl	w, e;						\
++	f(b,c,d);						\
++	addl	TMP, e;						\
++	movl	a, TMP;						\
++	roll	$5, TMP;					\
++	addl	TMP, e;						\
++	roll	$30, b;
++
++/* sha_transform(__u32 *digest, const char *in, __u32 *W) */
++/* The workspace argument is ignored; we don't have enough registers to handle
++   a workspace that isn't on our own stack. */
++.text
++ENTRY(sha_transform)
++	CFI_STARTPROC
++	/* save all registers that need to be saved */
++	PUSH(ebx)		/* 80(%esp) */
++	PUSH(ebp)		/* 76(%esp) */
++	PUSH(esi)		/* 72(%esp) */
++	PUSH(edi)		/* 68(%esp) */
++
++	subl	$68, %esp	/* %esp = W */
++	CFI_ADJUST_CFA_OFFSET	68
++
++	/* Load and byteswap data */
++	movl	92(%esp), TMP2
++
++	SWAP( 0, %eax); SWAP( 1, %ebx); SWAP( 2, %ecx); SWAP( 3, %edx)
++	SWAP( 4, %eax); SWAP( 5, %ebx); SWAP( 6, %ecx); SWAP( 7, %edx)
++	SWAP( 8, %eax); SWAP( 9, %ebx); SWAP(10, %ecx); SWAP(11, %edx)
++	SWAP(12, %eax); SWAP(13, %ebx); SWAP(14, %ecx); SWAP(15, %edx)
++
++	/* load the state vector */
++	movl	88(%esp),TMP
++	movl	(TMP),   SA
++	movl	4(TMP),  SB
++	movl	8(TMP),  SC
++	movl	12(TMP), SD
++	movl	16(TMP), SE
++
++	movl	K1VALUE, TMP2
++	ROUND(SA, SB, SC, SD, SE, F1, TMP2, OFFSET( 0)(DATA))
++	ROUND(SE, SA, SB, SC, SD, F1, TMP2, OFFSET( 1)(DATA))
++	ROUND(SD, SE, SA, SB, SC, F1, TMP2, OFFSET( 2)(DATA))
++	ROUND(SC, SD, SE, SA, SB, F1, TMP2, OFFSET( 3)(DATA))
++	ROUND(SB, SC, SD, SE, SA, F1, TMP2, OFFSET( 4)(DATA))
++
++	ROUND(SA, SB, SC, SD, SE, F1, TMP2, OFFSET( 5)(DATA))
++	ROUND(SE, SA, SB, SC, SD, F1, TMP2, OFFSET( 6)(DATA))
++	ROUND(SD, SE, SA, SB, SC, F1, TMP2, OFFSET( 7)(DATA))
++	ROUND(SC, SD, SE, SA, SB, F1, TMP2, OFFSET( 8)(DATA))
++	ROUND(SB, SC, SD, SE, SA, F1, TMP2, OFFSET( 9)(DATA))
++
++	ROUND(SA, SB, SC, SD, SE, F1, TMP2, OFFSET(10)(DATA))
++	ROUND(SE, SA, SB, SC, SD, F1, TMP2, OFFSET(11)(DATA))
++	ROUND(SD, SE, SA, SB, SC, F1, TMP2, OFFSET(12)(DATA))
++	ROUND(SC, SD, SE, SA, SB, F1, TMP2, OFFSET(13)(DATA))
++	ROUND(SB, SC, SD, SE, SA, F1, TMP2, OFFSET(14)(DATA))
++
++	ROUND(SA, SB, SC, SD, SE, F1, TMP2, OFFSET(15)(DATA))
++	EXPAND(16); ROUND(SE, SA, SB, SC, SD, F1, TMP2, TMP)
++	EXPAND(17); ROUND(SD, SE, SA, SB, SC, F1, TMP2, TMP)
++	EXPAND(18); ROUND(SC, SD, SE, SA, SB, F1, TMP2, TMP)
++	EXPAND(19); ROUND(SB, SC, SD, SE, SA, F1, TMP2, TMP)
++
++	/* TMP2 is free to use in these rounds */
++	movl	K2VALUE, TMP2
++	EXPAND(20); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
++	EXPAND(21); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
++	EXPAND(22); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
++	EXPAND(23); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
++	EXPAND(24); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++
++	EXPAND(25); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
++	EXPAND(26); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
++	EXPAND(27); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
++	EXPAND(28); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
++	EXPAND(29); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++
++	EXPAND(30); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
++	EXPAND(31); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
++	EXPAND(32); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
++	EXPAND(33); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
++	EXPAND(34); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++
++	EXPAND(35); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
++	EXPAND(36); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
++	EXPAND(37); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
++	EXPAND(38); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
++	EXPAND(39); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++
++	/* We have to put this constant on the stack */
++	movl	K3VALUE, TMP3
++	EXPAND(40); ROUND(SA, SB, SC, SD, SE, F3, TMP3, TMP)
++	EXPAND(41); ROUND(SE, SA, SB, SC, SD, F3, TMP3, TMP)
++	EXPAND(42); ROUND(SD, SE, SA, SB, SC, F3, TMP3, TMP)
++	EXPAND(43); ROUND(SC, SD, SE, SA, SB, F3, TMP3, TMP)
++	EXPAND(44); ROUND(SB, SC, SD, SE, SA, F3, TMP3, TMP)
++
++	EXPAND(45); ROUND(SA, SB, SC, SD, SE, F3, TMP3, TMP)
++	EXPAND(46); ROUND(SE, SA, SB, SC, SD, F3, TMP3, TMP)
++	EXPAND(47); ROUND(SD, SE, SA, SB, SC, F3, TMP3, TMP)
++	EXPAND(48); ROUND(SC, SD, SE, SA, SB, F3, TMP3, TMP)
++	EXPAND(49); ROUND(SB, SC, SD, SE, SA, F3, TMP3, TMP)
++
++	EXPAND(50); ROUND(SA, SB, SC, SD, SE, F3, TMP3, TMP)
++	EXPAND(51); ROUND(SE, SA, SB, SC, SD, F3, TMP3, TMP)
++	EXPAND(52); ROUND(SD, SE, SA, SB, SC, F3, TMP3, TMP)
++	EXPAND(53); ROUND(SC, SD, SE, SA, SB, F3, TMP3, TMP)
++	EXPAND(54); ROUND(SB, SC, SD, SE, SA, F3, TMP3, TMP)
++
++	EXPAND(55); ROUND(SA, SB, SC, SD, SE, F3, TMP3, TMP)
++	EXPAND(56); ROUND(SE, SA, SB, SC, SD, F3, TMP3, TMP)
++	EXPAND(57); ROUND(SD, SE, SA, SB, SC, F3, TMP3, TMP)
++	EXPAND(58); ROUND(SC, SD, SE, SA, SB, F3, TMP3, TMP)
++	EXPAND(59); ROUND(SB, SC, SD, SE, SA, F3, TMP3, TMP)
++
++	movl	K4VALUE, TMP2
++	EXPAND(60); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
++	EXPAND(61); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
++	EXPAND(62); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
++	EXPAND(63); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
++	EXPAND(64); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++
++	EXPAND(65); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
++	EXPAND(66); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
++	EXPAND(67); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
++	EXPAND(68); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
++	EXPAND(69); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++
++	EXPAND(70); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
++	EXPAND(71); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
++	EXPAND(72); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
++	EXPAND(73); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
++	EXPAND(74); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++
++	EXPAND(75); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
++	EXPAND(76); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
++	EXPAND(77); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
++	EXPAND(78); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
++	EXPAND(79); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++
++	/* Update the state vector */
++	movl	88(%esp),TMP
++	addl	SA, (TMP)
++	addl	SB, 4(TMP)
++	addl	SC, 8(TMP)
++	addl	SD, 12(TMP)
++	addl	SE, 16(TMP)
++
++	/* Clear the workspace for security */
++	xorl	TMP, TMP
++	CLEAR( 0); CLEAR( 1); CLEAR( 2); CLEAR( 3);
++	CLEAR( 4); CLEAR( 5); CLEAR( 6); CLEAR( 7);
++	CLEAR( 8); CLEAR( 9); CLEAR(10); CLEAR(11);
++	CLEAR(12); CLEAR(13); CLEAR(14); CLEAR(15);
++
++	addl	$68, %esp
++	CFI_ADJUST_CFA_OFFSET	-68
++	POP(edi)
++	POP(esi)
++	POP(ebp)
++	POP(ebx)
++	ret
++	CFI_ENDPROC
++ENDPROC(sha_transform)
+diff --git a/include/linux/cryptohash.h b/include/linux/cryptohash.h
+index a172401..0da331c 100644
+--- a/include/linux/cryptohash.h
++++ b/include/linux/cryptohash.h
+@@ -1,8 +1,15 @@
+ #ifndef __CRYPTOHASH_H
+ #define __CRYPTOHASH_H
+ 
++#include <linux/linkage.h>
++
+ #define SHA_DIGEST_WORDS 5
++
++#if defined(CONFIG_SHA1_X86)
++#define SHA_WORKSPACE_WORDS 0
++#else
+ #define SHA_WORKSPACE_WORDS 80
++#endif
+ 
+ /**
+  * sha_init - initialize the vectors for a SHA1 digest
+@@ -17,7 +24,7 @@ static inline void sha_init(__u32 *buf)
+ 	buf[4] = 0xc3d2e1f0;
+ }
+ 
+-void sha_transform(__u32 *digest, const char *data, __u32 *W);
++asmlinkage void sha_transform(__u32 *digest, const char *data, __u32 *W);
+ 
+ __u32 half_md4_transform(__u32 buf[4], __u32 const in[8]);
+ 
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 2e7ae6b..69fdb64 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -124,4 +124,17 @@ config HAS_DMA
+ 	depends on !NO_DMA
+ 	default y
+ 
++#
++# Optimized SHA-1 support is autoconfigured
++#
++config SHA1_X86
++	bool
++	depends on (X86 || UML_X86) && !64BIT && X86_BSWAP
++	default y
++
++config SHA1_GENERIC
++	bool
++	depends on !SHA1_X86
++	default y
++
+ endmenu
+diff --git a/lib/Makefile b/lib/Makefile
+index c8c8e20..f67be29 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -5,10 +5,11 @@
+ lib-y := ctype.o string.o vsprintf.o cmdline.o \
+ 	 rbtree.o radix-tree.o dump_stack.o \
+ 	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
+-	 sha1.o irq_regs.o reciprocal_div.o
++	 irq_regs.o reciprocal_div.o
+ 
+ lib-$(CONFIG_MMU) += ioremap.o
+ lib-$(CONFIG_SMP) += cpumask.o
++lib-$(CONFIG_SHA1_GENERIC) += sha1.o
+ 
+ lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
+ 
 
-
-Is i8042.noaux a workaround or a fix?
-
-Paul Albrecht
