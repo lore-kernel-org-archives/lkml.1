@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbXFKQfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbXFKQhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754369AbXFKQfn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 12:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXFKQfe
+	id S1754894AbXFKQhP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 12:37:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbXFKQg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 12:35:34 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:54082 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbXFKQfc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 12:35:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=NnFMA2XNw3hvZcrAayuLvTC7qK+BnwIflfTgEZmI3PL0dgUKpBZPmMJPuU3C06gqaOCZYFldlDBvqwpWfNSIrfa/95XG8A24lUcMd45FpsPwM/I03zJqonE9JX2AgY8c/H1D6ToiQTKLB4h0cR2KPBoeqwrKurs/SyZkmxeXtzw=
-Date: Mon, 11 Jun 2007 20:41:32 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Bernd Schubert <bernd-schubert@gmx.de>
+	Mon, 11 Jun 2007 12:36:59 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:62698 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751252AbXFKQg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 12:36:58 -0400
+Date: Mon, 11 Jun 2007 19:36:11 +0200
+From: DervishD <lkml@dervishd.net>
+To: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: API changes / 2.6.21 sysctl changes
-Message-ID: <20070611164132.GB5715@martell.zuzino.mipt.ru>
-References: <200706111513.12998.bernd-schubert@gmx.de> <20070611154627.GA5715@martell.zuzino.mipt.ru> <200706111759.45774.bernd-schubert@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: ext2 on flash memory
+Message-ID: <20070611173611.GA2433@DervishD>
+Mail-Followup-To: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>,
+	linux-kernel@vger.kernel.org
+References: <20070611101319.GA14284@DervishD> <466D2DF7.9020709@aladin.ro>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200706111759.45774.bernd-schubert@gmx.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <466D2DF7.9020709@aladin.ro>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 05:59:45PM +0200, Bernd Schubert wrote:
-> On Monday 11 June 2007 17:46:27 Alexey Dobriyan wrote:
-> > On Mon, Jun 11, 2007 at 03:13:12PM +0200, Bernd Schubert wrote:
-> > > in 2.6.21 register_sysctl_table(), struct ctl_table and probably
-> > > something else did change. Unfortunately so far I didn't figure out the
-> > > "something else".
-> >
-> > Do you have a problem porting your sysctls to newer kernels?
->
-> A little bit, yes. Well, I got it working, but I don't understand why I had to
-> do that whay.
->
-> I'm porting lustre to newer kernel versions and up to 2.6.20 the procfs/sysctl
-> logic was
->
-> 1.) register_sysctl_table() -> creates /proc/sys/lnet
->
-> 2.) create_proc_entry()  -> add additional files in /proc/sys/lnet
+    Hi Eduard :)
 
-Glue all your ctl_table's in tree and register it with one call. See how
-XFS does this: fs/xfs/linux-2.6/xfs_sysctl.c
+ * Eduard-Gabriel Munteanu <maxdamage@aladin.ro> dixit:
+> >    I was wondering: is there any reason not to use ext2 on an USB
+> >pendrive? Really my question is not only about USB pendrives, but any
+> >device whose storage is flash based. Let's assume that the device has
+> >a good quality flash memory with wear leveling and the like...
+> 
+> Your USB pendrive will wear faster if you use an inappropriate
+> filesystem. Such filesystems require frequent writes and change their
+> internal state often.
 
-> With 2.6.21 creating additional entries in /proc/sys/lnet fails and I have to
-> first call "proc_mkdir("sys/lnet", NULL)". I did this proc_mkdir() call even
-> before the register_sysctl_table() call, hoping that its correct.
->
-> My guess is that register_sysctl_table() doesn't create /proc/sys/lnet
-> anymore, but I have now idea why. Either I did something wrong or its
-> intended.
+    That's what I supposed.
 
+> Really, why don't you try a more suitable fs for your pendrive, one that 
+> changes itself less than usual fs's?
+
+    I was just wondering if, apart from the excessive wear, there were
+other reasons. One of the reasons I would like to use a good filesystem
+for a pendrive is to be able to store file metadata (UID, GID, mode,
+etc.) properly, for example to store a "live" copy of my home dir in the
+pendrive.
+
+    Thanks for your answer :)
+
+    Raúl Núñez de Arenas Coronado
+
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
