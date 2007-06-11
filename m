@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbXFKTM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbXFKTQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbXFKTM2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbXFKTMU
+	id S1756716AbXFKTQL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXFKTP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:12:20 -0400
-Received: from www.osadl.org ([213.239.205.134]:42569 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753478AbXFKTMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:12:19 -0400
-Subject: [patch-mm 19a/23] x86_64: hpet restore vread
-From: Thomas Gleixner <tglx@linutronix.de>
-To: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>,
-       Gilles Carry <Gilles.Carry@ext.bull.net>
-In-Reply-To: <20070611104740.22adc9bc@frecb000686.frec.bull.fr>
-References: <20070610092437.118387863@inhelltoy.tec.linutronix.de>
-	 <20070610092447.072839259@inhelltoy.tec.linutronix.de>
-	 <20070611104740.22adc9bc@frecb000686.frec.bull.fr>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 11 Jun 2007 21:12:14 +0200
-Message-Id: <1181589134.8176.157.camel@chaos>
+	Mon, 11 Jun 2007 15:15:57 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58159 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751365AbXFKTP4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 15:15:56 -0400
+Date: Mon, 11 Jun 2007 20:17:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dave Jones <davej@redhat.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, Steve Fox <drfickle@us.ibm.com>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] move the kernel to 16MB for NUMA-Q
+Message-ID: <20070611201716.3ab98187@the-village.bc.nu>
+In-Reply-To: <20070611184621.GA25371@redhat.com>
+References: <466D550C.4030600@shadowen.org>
+	<63a08cc7547f14065becdf9a94d0d529@pinky>
+	<20070611091558.f468f205.akpm@linux-foundation.org>
+	<20070611172006.GI9174@redhat.com>
+	<466D882D.70001@zytor.com>
+	<Pine.LNX.4.64.0706112019310.19578@fbirervta.pbzchgretzou.qr>
+	<20070611184621.GA25371@redhat.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: x86_64: hpet restore vread
+> Do such beasts even exist ?  My memories of low-memory x86en I had
+> only allowed power of 2 memory sizes.
 
->From Sébastien Dugué <sebastien.dugue@bull.net>
-
-It seems the hpet clocksource's vread method was lost in the x86_64
-conversion to clockevents. So here it is.
-
-Signed-off-by: Sébastien Dugué <sebastien.dugue@bull.net>
-Signed-off-by: Thomas Gleixner <tglx@linutronix,de>
-
- arch/i386/kernel/hpet.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-Index: linux-2.6.22-rc4-mm/arch/i386/kernel/hpet.c
-===================================================================
---- linux-2.6.22-rc4-mm.orig/arch/i386/kernel/hpet.c	2007-06-11 21:19:11.000000000 +0200
-+++ linux-2.6.22-rc4-mm/arch/i386/kernel/hpet.c	2007-06-11 21:20:14.000000000 +0200
-@@ -255,6 +255,13 @@ static cycle_t read_hpet(void)
- 	return (cycle_t)hpet_readl(HPET_COUNTER);
- }
- 
-+#ifdef CONFIG_X86_64
-+static cycle_t __vsyscall_fn vread_hpet(void)
-+{
-+	return readl((const void __iomem *)fix_to_virt(VSYSCALL_HPET) + 0xf0);
-+}
-+#endif
-+
- static struct clocksource clocksource_hpet = {
- 	.name		= "hpet",
- 	.rating		= 250,
-@@ -263,6 +270,9 @@ static struct clocksource clocksource_hp
- 	.shift		= HPET_SHIFT,
- 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
- 	.resume		= hpet_start_counter,
-+#ifdef CONFIG_X86_64
-+	.vread		= vread_hpet,
-+#endif
- };
- 
- /*
-
-
+They existed. If you had two memory banks you could load 4MB and 1MB. If
+you had a single set of memory sockets then you got powers of two
