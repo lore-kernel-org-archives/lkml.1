@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763895AbXFKAVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763927AbXFKAZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763895AbXFKAVw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 20:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760540AbXFKAVo
+	id S1763927AbXFKAZU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 20:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760576AbXFKAZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 20:21:44 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58895 "EHLO
+	Sun, 10 Jun 2007 20:25:08 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58903 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751315AbXFKAVn (ORCPT
+	with ESMTP id S1751315AbXFKAZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 20:21:43 -0400
-Date: Mon, 11 Jun 2007 02:21:54 +0200
+	Sun, 10 Jun 2007 20:25:07 -0400
+Date: Mon, 11 Jun 2007 02:25:18 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Diego Calleja <diegocg@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Greg KH <gregkh@suse.de>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
-Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO
-	translated into Japanese]
-Message-ID: <20070611002154.GE3588@stusta.de>
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <20070610175228.GA28947@uranus.ravnborg.org> <20070610214138.3d17be8a.diegocg@gmail.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Tsugikazu Shibata <tshibata@ab.jp.nec.com>, gregkh@suse.de,
+       jesper.juhl@gmail.com, linux-kernel@vger.kernel.org,
+       m-ikeda@ds.jp.nec.com
+Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
+Message-ID: <20070611002518.GF3588@stusta.de>
+References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <20070611.013451.74739872.tshibata@ab.jp.nec.com> <Pine.LNX.4.64.0706101844500.25718@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070610214138.3d17be8a.diegocg@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0706101844500.25718@fbirervta.pbzchgretzou.qr>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 10, 2007 at 09:41:38PM +0200, Diego Calleja wrote:
-> El Sun, 10 Jun 2007 19:52:28 +0200, Sam Ravnborg <sam@ravnborg.org> escribió:
+On Sun, Jun 10, 2007 at 06:46:17PM +0200, Jan Engelhardt wrote:
 > 
-> > I advocated that they should stay out back then.
-> > But on the other hand I do not see it causing much troubles
-> > having scripts/kconfig/po/da.po etc araound.
-> > 
-> > Any opinion about the .po files?
+> On Jun 11 2007 01:34, Tsugikazu Shibata wrote:
+> >
+> >We are usually using ISO-2022-JP for email exchange and if anyone
+> >would comment on my document,
 > 
-> These days the configuration menus are not something that users need to
-> read, they're more like a developer tool. IMO there's not much value in it,
-> because the people who read it already know english most of the times.
+> well I can't! Not sure if this is a flaw in pine, but all I get is
+> [hexcode][hexcode][hexcode] and a bit of 7bit throughout.
+> EUC-JP and UTF-8 are no problem though. *shrug*
 
-The majority of Kconfig users are _not_ kernel developers.
+It's correctly displayed with alpine 0.99 - you might consider upgrading?
 
-There are many different reasons why people compile their own kernel, 
-and "sysadmin who knows his hardware and the filesystems of his disks" 
-is really sufficient for compiling your own kernel.
-
-Whether non-English Kconfig texts are important might be a question, but 
-if there are people doing the translation work there's no problem with 
-it.
+> 	Jan
 
 cu
 Adrian
