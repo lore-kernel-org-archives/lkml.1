@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbXFKV3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXFKVaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbXFKV3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 17:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbXFKV3H
+	id S1755407AbXFKVaM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 17:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXFKV36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 17:29:07 -0400
-Received: from smtpa3.netcabo.pt ([212.113.174.18]:53325 "EHLO
-	exch01smtp02.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751367AbXFKV3G (ORCPT
+	Mon, 11 Jun 2007 17:29:58 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47166 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751255AbXFKV36 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 17:29:06 -0400
-Message-ID: <466DBDC2.8030509@rncbc.org>
-Date: Mon, 11 Jun 2007 22:25:22 +0100
-From: Rui Nuno Capela <rncbc@rncbc.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Mon, 11 Jun 2007 17:29:58 -0400
+Date: Mon, 11 Jun 2007 14:29:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
+       davem@davemloft.net
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+In-Reply-To: <20070611204442.GA4074@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0706111428410.20454@schroedinger.engr.sgi.com>
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
+ <200706090056.49279.ak@suse.de> <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
+ <200706091147.24705.ak@suse.de> <20070611204442.GA4074@linux-os.sc.intel.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Daniel Walker <dwalker@mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: 2.6.21-rt2..8 troubles
-References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>	 <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu>	 <46574DE4.2080900@rncbc.org> <1180195709.4264.7.camel@chaos>	 <4658A4F4.1080204@rncbc.org>  <46660369.2070104@rncbc.org>	 <1181317625.4404.332.camel@chaos>	 <59605.213.13.107.141.1181326897.squirrel@www.rncbc.org>	 <1181328636.4404.335.camel@chaos>  <466DA42A.6010600@rncbc.org>	 <1181591122.8176.159.camel@chaos>	 <1181591733.11539.217.camel@imap.mvista.com>  <466DB581.8050306@rncbc.org> <1181596473.8176.162.camel@chaos>
-In-Reply-To: <1181596473.8176.162.camel@chaos>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Jun 2007 21:28:59.0561 (UTC) FILETIME=[862A3990:01C7AC6F]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Mon, 2007-06-11 at 21:50 +0100, Rui Nuno Capela wrote:
->> Thomas,
->>
->> Yes, "maxcpus=1" seems to keep it running, but then I render my Core2
->> just half-baked ;)
-> 
-> Yes, I know :(
-> 
-> /me goes into desperate mode
-> 
-> Is this a DELL laptop ?
-> 
+On Mon, 11 Jun 2007, Keshavamurthy, Anil S wrote:
 
-Nope. It's a Fujitsu-Siemens Amilo Si 1520 -- Intel Core2 Duo T7200@2.0Ghz.
+> Hence, can I assume that the conclusion of this 
+> discussion is to use kmem_cache_alloc() functions 
+> to allocate memory in dma_map_{single|sg} API's?
 
-Works great with 2.6.21-rt1, and 2.6.22-rc4-hrt5, but that you already
-know :)
 
-Cheers.
--- 
-rncbc aka Rui Nuno Capela
-rncbc@rncbc.org
+Use the page allocator for page size allocations. If you need to have 
+specially aligned memory in less than page sized chunks then use 
+kmem_cache_alloc with a specially configured slab.
+> 
+> Again, if dma_map_{single|sg} API's fails due to 
+> failure to allocate memory, the only thing that can
+> be done is to panic as this is what few of the other 
+> IOMMU implementation is doing today. 
+
+Why does it have to be so severe? The I/O operation fails right?
+
