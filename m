@@ -1,110 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760817AbXFKHSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761399AbXFKHWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760817AbXFKHSN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 03:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbXFKHR6
+	id S1761399AbXFKHWJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 03:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbXFKHV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 03:17:58 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:34314 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184AbXFKHR5 (ORCPT
+	Mon, 11 Jun 2007 03:21:57 -0400
+Received: from smtpgw02.netonehosting.com ([193.192.98.26]:52086 "EHLO
+	smtpgw02.netonehosting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751021AbXFKHV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 03:17:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=k13vZ8MC3mNOgyV0xtkaSBWyzf1v70QCLE96Qopif4QNL6v1w0by9u44O2TPHHqAbhPBdS8DuiuQSEyn/IMwaDeYs8bh0Ow8YfXo8rgl26ew0kTq0i8erHJvkc2ZBHXU1Wq6ls+pACSxkglCFK8iruHxiuZZbtkoymbBTwIDuEw=
-Message-ID: <466CF71B.2000907@gmail.com>
-Date: Mon, 11 Jun 2007 16:17:47 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Mon, 11 Jun 2007 03:21:56 -0400
+Message-ID: <466CF812.5020105@netone.net.tr>
+Date: Mon, 11 Jun 2007 10:21:54 +0300
+From: Tarkan Erimer <tarkan@netone.net.tr>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-rc4-mm2: GPF during suspend to RAM on HPC nx6325
-References: <200706110102.52946.rjw@sisk.pl>
-In-Reply-To: <200706110102.52946.rjw@sisk.pl>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------050301020803010704060709"
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <18026.16739.228277.938421@notabene.brown> <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr> <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <466BCBBC.90305@netone.net.tr> <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com> <466C0901.4000405@netone.net.tr> <20070610161306.GA12310@kroah.com> <466CEFBA.7090807@netone.net.tr> <20070611070842.GH21478@ftp.linux.org.uk>
+In-Reply-To: <20070611070842.GH21478@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-9; format=flowed
+Content-Transfer-Encoding: 7bit
+X-NETONE-MailScanner-Information: Please contact the ISP for more information
+X-NETONE-MailScanner: Found to be clean
+X-NETONE-MailScanner-From: tarkan@netone.net.tr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050301020803010704060709
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-
-Hello, Rafael.
-
-Rafael J. Wysocki wrote:
-> gregkh-driver-sysfs-use-singly-linked-list-for-sysfs_dirent-tree.patch breaks
-> suspend to RAM on HPC nx6325 (x86_64).
-> 
-> With this patch applied I get a general protection fault in mutex_lock+0x15
-> (kernel/mutex.c:91), called by sysfs_hash_and_remove() (fs/sysfs/inode.c:298),
-> called by threshold_cpu_callback(), called from _cpu_down().
-
-I'm not sure whether this is bug in sysfs or in sysfs handling code in
-mce_amd and I can't test mce_amd here.  Can you please apply the
-attached patch and post the resulting dmesg including oops?
-
-Thanks.
-
--- 
-tejun
-
---------------050301020803010704060709
-Content-Type: text/x-patch;
- name="debug.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="debug.patch"
-
-diff --git a/arch/x86_64/kernel/mce_amd.c b/arch/x86_64/kernel/mce_amd.c
-index 03356e6..96da4aa 100644
---- a/arch/x86_64/kernel/mce_amd.c
-+++ b/arch/x86_64/kernel/mce_amd.c
-@@ -434,6 +434,7 @@ static __cpuinit int allocate_threshold_blocks(unsigned int cpu,
- 	kobject_set_name(&b->kobj, "misc%i", block);
- 	b->kobj.parent = &per_cpu(threshold_banks, cpu)[bank]->kobj;
- 	b->kobj.ktype = &threshold_ktype;
-+	printk("XXX%d registering %s (%p)\n", cpu, kobject_name(&b->kobj), &b->kobj);
- 	err = kobject_register(&b->kobj);
- 	if (err)
- 		goto out_free;
-@@ -454,6 +455,7 @@ recurse:
- 
- out_free:
- 	if (b) {
-+		printk("XXX%d unregistering %s (%p)\n", cpu, kobject_name(&b->kobj), &b->kobj);
- 		kobject_unregister(&b->kobj);
- 		kfree(b);
- 	}
-@@ -511,6 +513,7 @@ static __cpuinit int threshold_create_bank(unsigned int cpu, unsigned int bank)
- #else
- 	b->cpus = cpu_core_map[cpu];
- #endif
-+	printk("XXX%d registering %s (%p)\n", cpu, kobject_name(&b->kobj), &b->kobj);
- 	err = kobject_register(&b->kobj);
- 	if (err)
- 		goto out_free;
-@@ -580,6 +583,7 @@ static void deallocate_threshold_block(unsigned int cpu,
- 		return;
- 
- 	list_for_each_entry_safe(pos, tmp, &head->blocks->miscj, miscj) {
-+		printk("XXX%d unregistering %s (%p)\n", cpu, kobject_name(&pos->kobj), &pos->kobj);
- 		kobject_unregister(&pos->kobj);
- 		list_del(&pos->miscj);
- 		kfree(pos);
-@@ -626,6 +630,7 @@ static void threshold_remove_bank(unsigned int cpu, int bank)
- 	deallocate_threshold_block(cpu, bank);
- 
- free_out:
-+	printk("XXX%d unregistering %s (%p)\n", cpu, kobject_name(&b->kobj), &b->kobj);
- 	kobject_unregister(&b->kobj);
- 	kfree(b);
- 	per_cpu(threshold_banks, cpu)[bank] = NULL;
-
---------------050301020803010704060709--
+Al Viro wrote:
+> Perhaps.  However, since the only thing in hands of your kind of advocates
+> is best not mentioned on a family-friendly maillist, may I suggest taking
+> that exciting thread to more appropriate place?
+>   
+I don't think that this thread is going unfriendly or harmfully. 
+However, what is your suggestion ?
