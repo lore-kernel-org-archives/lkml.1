@@ -1,104 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbXFKU0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXFKUab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbXFKU0T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 16:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbXFKU0M
+	id S1753958AbXFKUab (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 16:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbXFKUaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 16:26:12 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:46766 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbXFKU0L (ORCPT
+	Mon, 11 Jun 2007 16:30:24 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59960 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752332AbXFKUaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 16:26:11 -0400
-Message-ID: <466DAEDE.8050500@gmail.com>
-Date: Mon, 11 Jun 2007 22:21:50 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Mon, 11 Jun 2007 16:30:23 -0400
+Date: Mon, 11 Jun 2007 22:30:32 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Benjamin Gilbert <bgilbert@cs.cmu.edu>
+Cc: akpm@linux-foundation.org, herbert@gondor.apana.org.au,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] Add optimized SHA-1 implementations for x86 and
+	x86_64
+Message-ID: <20070611203032.GI3588@stusta.de>
+References: <20070608214242.23949.30350.stgit@dev>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>
-CC: Jan Engelhardt <jengelh@computergmbh.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Steve Fox <drfickle@us.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] move the kernel to 16MB for NUMA-Q
-References: <466D550C.4030600@shadowen.org> <63a08cc7547f14065becdf9a94d0d529@pinky> <20070611091558.f468f205.akpm@linux-foundation.org> <20070611172006.GI9174@redhat.com> <466D882D.70001@zytor.com> <Pine.LNX.4.64.0706112019310.19578@fbirervta.pbzchgretzou.qr> <20070611184621.GA25371@redhat.com> <466DAB95.2040909@gmail.com>
-In-Reply-To: <466DAB95.2040909@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070608214242.23949.30350.stgit@dev>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/11/2007 10:07 PM, Rene Herman wrote:
+On Fri, Jun 08, 2007 at 05:42:42PM -0400, Benjamin Gilbert wrote:
+> The following 3-part series adds assembly implementations of the SHA-1
+> transform for x86 and x86_64.  For x86_64 the optimized code is always
+> selected; on x86 it is selected if the kernel is compiled for i486 or above
+> (since the code needs BSWAP).  These changes primarily improve the
+> performance of the CryptoAPI SHA-1 module and of /dev/urandom.  I've
+> included some performance data from my test boxes below.
+> 
+> This version incorporates feedback from Herbert Xu.  Andrew, I'm sending
+> this to you because of the (admittedly tiny) intersection with arm and s390
+> in part 1.
+> 
+> -
+> 
+> tcrypt performance tests:
+> 
+> === Pentium IV in 32-bit mode, average of 5 trials ===
+> Test#  Bytes/  Bytes/  Cyc/B  Cyc/B  Change
+>...
+> I've also done informal tests on other boxes, and the performance
+> improvement has been in the same ballpark.
+> 
+> On the aforementioned Pentium IV, /dev/urandom throughput goes from 3.7 MB/s
+> to 5.6 MB/s with the patches; on the Core 2, it increases from 5.5 MB/s to
+> 8.1 MB/s.
+>...
 
-> But, it's just a default anyway. Would it be considered beneficial to 
-> more explicitly provide a few options through a config menu, something 
-> like the attached?
+With which gcc version and compiler flags?
 
-Ehm, so now where did that long help actually end up? :-|
+And why is the C code slower?
+Problems in the C code?
+gcc problems?
 
-If the notion is considered okay, this wants someone with a little more 
-Kconfig insight it seems.
+Generally, I'd really prefer one C implementation that works good on all 
+platforms over getting dozens of different assembler implemenations, 
+each potentially with different bugs.
 
-> diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-> index 8770a5d..6737529 100644
-> --- a/arch/i386/Kconfig
-> +++ b/arch/i386/Kconfig
-> @@ -813,9 +813,10 @@ config CRASH_DUMP
->            PHYSICAL_START.
->  	  For more details see Documentation/kdump/kdump.txt
->  
-> -config PHYSICAL_START
-> -	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
-> -	default "0x100000"
-> +choice
-> +	depends on EMBEDDED || CRASH_DUMP
-> +	prompt "Physical address where the kernel is loaded"
-> +	default PHYSICAL_START_1M
->  	help
->  	  This gives the physical address where the kernel is loaded.
->  
-> @@ -854,6 +855,40 @@ config PHYSICAL_START
->  
->  	  Don't change this unless you know what you are doing.
->  
-> +	config PHYSICAL_START_1M
-> +		bool "1M"
-> +		help
-> +		  Choose this to load the kernel at the standard 1M address.
-> +
-> +	config PHYSICAL_START_4M
-> +		bool "4M"
-> +		help
-> +		  Loading the kernel at a 4M aligned physical address can
-> +		  make for a slightly faster kernel.
-> +
-> +		  Choose this if you have 8M or more installed.
-> +
-> +	config PHYSICAL_START_16M
-> +		bool "16M"
-> +		help
-> +		  Loading the kernel at a 4M aligned physical address can
-> +		  make for a slightly faster kernel.
-> +
-> +		  Additionally, loading it at 16M gets it out of the legacy
-> +		  DMA zone which you might consider beneficial if you use
-> +		  devices doing legacy DMA (such as a floppy drive, an ECP
-> +		  parallel port or DMA capable ISA peripherals).
-> +
-> +		  Choose this if you have 20M or more installed and a need
-> +		  for legacy DMA.
-> +endchoice
-> +
-> +config PHYSICAL_START
-> +	hex
-> +	default "0x100000" if PHYSICAL_START_1M
-> +	default "0x400000" if PHYSICAL_START_4M
-> +	default "0x1000000" if PHYSICAL_START_16M
-> +
->  config RELOCATABLE
->  	bool "Build a relocatable kernel(EXPERIMENTAL)"
->  	depends on EXPERIMENTAL
+cu
+Adrian
 
-Rene.
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
