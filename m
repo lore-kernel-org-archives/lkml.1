@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbXFKQxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbXFKQ5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbXFKQxi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 12:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbXFKQxa
+	id S1755559AbXFKQ5V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 12:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbXFKQ5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 12:53:30 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:10295 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754038AbXFKQx3 (ORCPT
+	Mon, 11 Jun 2007 12:57:14 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:44326 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751012AbXFKQ5N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 12:53:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=W6Ful1DtriuGdu4RdZis4AgG+OYLWxZ4fnqDTd9NTG+aDRNLsLnw9Tk2F7oYvXyfqufrm1MPbrP85nLIoyT1fegg9XjT6AyQztQdfVrFJiksZcgtAwwwSAwDF3m/fZ3ndwzi7k2xLNb7bNG2MfmQzag1XGgD9WVKwdty+Rts45Y=
-Message-ID: <d120d5000706110953l26e73559v75c2aef90f03e502@mail.gmail.com>
-Date: Mon, 11 Jun 2007 12:53:28 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Daniel Ritz" <daniel.ritz@gmx.ch>
-Subject: Re: [PATCH] Fix broken ifdefs in usbtouchscreen
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       "Ondrej Zary" <linux@rainbow-software.org>
+	Mon, 11 Jun 2007 12:57:13 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Mon, 11 Jun 2007 12:55:05 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Daniel Ritz <daniel.ritz@gmx.ch>
+cc: Dmitry Torokhov <dtor@mail.ru>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Ondrej Zary <linux@rainbow-software.org>
+Subject: Re: Fwd: [PATCH] Fix broken ifdefs in usbtouchscreen
 In-Reply-To: <466D7B38.8030403@gmx.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Message-ID: <Pine.LNX.4.64.0706111254090.25822@localhost.localdomain>
 References: <466D7B38.8030403@gmx.ch>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	TW_SB 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/11/07, Daniel Ritz <daniel.ritz@gmx.ch> wrote:
+On Mon, 11 Jun 2007, Daniel Ritz wrote:
+
 > dmitry was a bad boy...:)
 >
 > Signed-off-by: Daniel Ritz <daniel.ritz@gmx.ch>
 
-Yep, that was me. I already had a patch lined up but I will take this
-one as it has been tested, thanks!
+i emailed dmitry a week ago pointing out the config variable problems
+so i suspect he may have already fixed that.
 
+rday
 -- 
-Dmitry
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
