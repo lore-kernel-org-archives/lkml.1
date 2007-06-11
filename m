@@ -1,33 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764109AbXFKKOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764534AbXFKKOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764109AbXFKKOB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 06:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbXFKKNw
+	id S1764534AbXFKKOZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 06:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758301AbXFKKOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 06:13:52 -0400
-Received: from max.aladin.ro ([80.96.155.2]:59890 "EHLO aladin.ro"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756533AbXFKKNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 06:13:51 -0400
-Message-ID: <466D206C.4020706@aladin.ro>
-Date: Mon, 11 Jun 2007 13:14:04 +0300
-From: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 11 Jun 2007 06:14:15 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:42796 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756983AbXFKKON (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 06:14:13 -0400
+Message-ID: <466D2070.9020306@fr.ibm.com>
+Date: Mon, 11 Jun 2007 12:14:08 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET 2.6.22-rc4] sysfs: fix race conditions
-References: <20070611050107.GJ29122@htj.dyndns.org> <466D1CAC.6060307@aladin.ro> <466D1DC5.7020503@gmail.com>
-In-Reply-To: <466D1DC5.7020503@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, Kirill Korotaev <dev@sw.ru>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH -mm 2/2] user namespace : add unshare
+References: <46697244.7000900@fr.ibm.com> <20070608121627.f7d97cc4.akpm@linux-foundation.org>
+In-Reply-To: <20070608121627.f7d97cc4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*This message was transferred with a trial version of CommuniGate(r) Pro*
-Tejun Heo wrote:
-> Dude, what are you smoking and can I get some?  The attached patch is to
-> trigger the race conditions more easily for verification.  Actual fixes
-> are in the three patches posted as reply to the head message.
+Andrew Morton wrote:
+> On Fri, 08 Jun 2007 17:14:12 +0200
+> Cedric Le Goater <clg@fr.ibm.com> wrote:
+> 
+>> Changelog: Fix !CONFIG_USER_NS clone with CLONE_NEWUSER so it returns -EINVAL
+>> 	rather than 0, so that userspace knows they didn't get a new user
+>> 	namespace.
+> 
+> This changelog doesn't seem to match this patch.
 
-Sorry, I thought that was meant to be a fix.
+Indeed. the changelog entry is now deprecated since I removed 
+CONFIG_USER_NS. 
+
+that was a fix for the issue you reported about that patch breaking 
+the mouse under FC5 when the kernel was compiled without CONFIG_USER_NS. 
+
+C.
