@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbXFKSLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbXFKSLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbXFKSLR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 14:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbXFKSLH
+	id S1756189AbXFKSLn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 14:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbXFKSLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 14:11:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:33649 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbXFKSLG (ORCPT
+	Mon, 11 Jun 2007 14:11:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55814 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751322AbXFKSLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 14:11:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hJuImzwOADxh87N4g3hDnWsxgufyUylxcFZyVutkUeRsyJMwvVOcdk4zMLwnF58gLZ3Nabqrj4YXfyO2+z1DeXE6Y6+xM4i40BQ9tUFc+0xdmOmvnSAewv0XqlYw0Sab4nsitgt5YkPGMDpfqGH4a6V7X7ydI7+cnWU2Nuk6jAA=
-Message-ID: <86802c440706111111s3f52e572uc90efaf18652538e@mail.gmail.com>
-Date: Mon, 11 Jun 2007 11:11:05 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [RFC] Runtime allocation of PCI resources
-Cc: "Matthew Garrett" <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de
-In-Reply-To: <p73d502uzsj.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 11 Jun 2007 14:11:33 -0400
+Date: Mon, 11 Jun 2007 11:11:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Albert Cahalan <acahalan@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org, Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [PATCH] shm: Fix the filename of hugetlb sysv shared memory
+Message-Id: <20070611111111.2345470d.akpm@linux-foundation.org>
+In-Reply-To: <m1vedyqaft.fsf_-_@ebiederm.dsl.xmission.com>
+References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
+	<20070606204432.b670a7b1.akpm@linux-foundation.org>
+	<787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
+	<20070607162004.GA27802@vino.hallyn.com>
+	<m1ir9zrtwe.fsf@ebiederm.dsl.xmission.com>
+	<46697EDA.9000209@us.ibm.com>
+	<m1vedyqaft.fsf_-_@ebiederm.dsl.xmission.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070611165112.GA30272@srcf.ucam.org>
-	 <p73d502uzsj.fsf@bingen.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11 Jun 2007 20:11:24 +0200, Andi Kleen <andi@firstfloor.org> wrote:
-> Matthew Garrett <mjg59@srcf.ucam.org> writes:
->
-> > BIOS authors don't always program all the features of hardware. This is
-> > often the case for Intel IDE controllers, which are usually able to run
-> > in AHCI mode but are rarely configured to do so. Reprogramming them is
-> > easy enough other than the requirement for some MMIO space. If the BIOS
-> > hasn't allocated this, it's necessary for us to do so manually.
->
-> Traditionally we've had bad experiences forcing hardware to do something
-> the BIOS didn't consider. e.g. occasionally the BIOS has good reasons
-> to not allow it; maybe it knows about some errata or other problem
-> the kernel doesn't.
->
-> If you do this then don't make it default at least, but only allow
-> to force it use an option.
+On Fri, 08 Jun 2007 17:43:34 -0600
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-Esp for AMD system with several Hypertranport chain. try to allocate
-pci resource in kernel  also need some region adjust in NB
-configuration space.
+> Some user space tools need to identify SYSV shared memory when
+> examining /proc/<pid>/maps.  To do so they look for a block device
+> with major zero, a dentry named SYSV<sysv key>, and having the minor of
+> the internal sysv shared memory kernel mount.
+> 
+> To help these tools and to make it easier for people just browsing
+> /proc/<pid>/maps this patch modifies hugetlb sysv shared memory to
+> use the SYSV<key> dentry naming convention.
+> 
+> User space tools will still have to be aware that hugetlb sysv
+> shared memory lives on a different internal kernel mount and so
+> has a different block device minor number from the rest of sysv
+> shared memory.
 
-So leave some work to ACPI DSDT AML code at least
+So..  I am sitting here believing that this patch and Badari's
+restore-shmid-as-inode-to-fix-proc-pid-maps-abi-breakage.patch are both
+needed in 2.6.22 and that they will fix all these issues up.
 
-YH
+If that is untrue, someone please let us know..
