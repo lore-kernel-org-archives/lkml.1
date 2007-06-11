@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbXFKX3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbXFKXaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757096AbXFKX3L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 19:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbXFKX26
+	id S1757201AbXFKXaY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 19:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXFKXaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 19:28:58 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52665 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754339AbXFKX26 (ORCPT
+	Mon, 11 Jun 2007 19:30:14 -0400
+Received: from web50105.mail.re2.yahoo.com ([206.190.38.33]:45295 "HELO
+	web50105.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754190AbXFKXaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 19:28:58 -0400
-Date: Mon, 11 Jun 2007 16:28:56 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
-In-Reply-To: <200706120016.58317.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0706111627340.23990@schroedinger.engr.sgi.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
- <20070611204442.GA4074@linux-os.sc.intel.com> <20070611141449.bfbc4769.akpm@linux-foundation.org>
- <200706120016.58317.ak@suse.de>
+	Mon, 11 Jun 2007 19:30:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=5jM2JcwT7aF/ANQIGvm/DVwSO8eKm5wvpqV6VQEof8s+UFOmkTdO5TRzE1S6pz4EfgPW6zs6+rI6RiSsFajgEo8dOWrwo/Ztb5n3L/acQa6n46XiBi/8dfpuB7Al9AyVl7bnJudgMIXqvBub7GYN6ePe+q39Ktoee4fA9Rm7RSY=;
+X-YMail-OSG: lVjaYkYVM1l5mTFEHw4CtADZADAniGhnpiNdexgAh.Qz1USix.A8lIoWAnhQZY.jjbdH.Q--
+Date: Mon, 11 Jun 2007 16:30:11 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Reply-To: dougthompson@xmission.com
+Subject: Re: [PATCH 4/6] include linux pci_id-h add amd northbridge defines
+To: Greg KH <greg@kroah.com>, dougthompson@xmission.com
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, akpm@osdl.org
+In-Reply-To: <20070609000827.GA17624@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <963615.80973.qm@web50105.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007, Andi Kleen wrote:
 
-> > If the only option is to panic then something's busted.  If it's network IO
-> > then there should be a way of dropping the frame.  If it's disk IO then we
-> > should report the failure and cause an IO error.
+--- Greg KH <greg@kroah.com> wrote:
+
+> On Fri, Jun 08, 2007 at 10:45:10AM -0600, dougthompson@xmission.com wrote:
+> > From:	Douglas Thompson <dougthompson@xmission.com>
+> > 
+> > pci_ids.h needs two of the AMD NB device-ids namely,
+> > Addressmap and the Memory Controller devices
 > 
-> An block IO error is basically catastrophic for the system too. There isn't really
-> a concept of "temporary IO error that will resolve itself" concept in Unix.
+> Does any kernel driver need this?  We're trying to only include things
+> in the pci_ids.h file that are needed in more than one file to cut down
+> on the churn here for unnecessary ids.
 
-In Unix? You mean the block layer cannot handle a I/O error? Not too 
-familiar with it but from what I can tell an I/O operation can be aborted 
-in the request function.
+not at the moment, but I have the k8_edac.c EDAC driver in my queue, which was in the -mm tree but
+I had to pull it back once.
 
-> There are still lots of users of pci_map_single() that don't check the return
-> value unfortunately.   That is mostly in old drivers; it is generally
-> picked on in reviews now. But then there is no guarantee that these rarely
-> used likely untested error handling paths actually work.
+I am working with the k8 driver and its dealing with a race with the mcelog device as both access
+the K8 NB. The K8 driver does use these regs and it currently has #ifndef s in it for both of
+them.
 
-Then we need to review the code and clean these up.
+I guess I could have submitted the patch when the K8 driver was submitted.
+
+thanks
+
+doug t
+
+> 
+> thanks,
+> 
+> greg k-h
+> 
+
