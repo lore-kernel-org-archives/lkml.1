@@ -1,39 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbXFKMuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbXFKM60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbXFKMuR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 08:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbXFKMuE
+	id S1752934AbXFKM60 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 08:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbXFKM6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 08:50:04 -0400
-Received: from smtp-01b.mandic.com.br ([200.225.81.136]:37879 "EHLO
-	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751356AbXFKMuB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 08:50:01 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jun 2007 08:50:01 EDT
-Message-ID: <466D4361.7080305@mandic.com.br>
-Date: Mon, 11 Jun 2007 09:43:13 -0300
-From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: bart@samwel.tk
-Subject: [Documentation] laptop-mode
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jun 2007 08:58:15 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:51978 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751446AbXFKM6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 08:58:14 -0400
+Date: Mon, 11 Jun 2007 14:59:03 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, ak@suse.de
+Subject: Re: [patch 4/9] lguest: the asm offsets
+Message-ID: <20070611125903.GA3933@uranus.ravnborg.org>
+References: <200705090951.l499pa6G020397@shell0.pdx.osdl.net> <20070509204613.GA10336@uranus.ravnborg.org> <1178755780.7286.175.camel@localhost.localdomain> <E1HxjKu-0004G6-7d@flower>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1HxjKu-0004G6-7d@flower>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi for all!
-in linux-2.6.21.1/Documentation/laptop-mode.txt we see this link:
-<http://www.xs4all.nl/~bsamwel/laptop_mode/tools/>
+On Mon, Jun 11, 2007 at 02:49:32PM +0200, Oleg Verych wrote:
+> * Date: Thu, 10 May 2007 10:09:39 +1000
+> >
+> > On Wed, 2007-05-09 at 22:46 +0200, Sam Ravnborg wrote:
+> >> On Wed, May 09, 2007 at 02:51:36AM -0700, akpm@linux-foundation.org wrote:
+> >> > From: Rusty Russell <rusty@rustcorp.com.au>
+> >> > 
+> >> > This is the structure offsets required by lg.ko's switcher.S.
+> >> > 
+> >> > Unfortunately we don't have infrastructure for private asm-offsets
+> >> > creation.
+> >> Someone maybe it was Oleg? did an OK job to abstract out asm-offset
+> >> generation. I asked to have it rebased but never heard anything back.
+> >> 
+> >> I would like to get this generic approach in and then let lguest use it.
+> >> But I do not see this as a reason to hold back inclusion in -linus.
+> >
+> > Hi Sam,
+> >
+> > 	Yeah, I never heard back either.  And I'm reluctant to try to fix it
+> > myself: I've never managed to patch the build system without causing you
+> > to rewrite it better 8)
+> 
+> If it's still open, i can try, after getting back from RL and 28k LKML
+> backlog ;)
 
-But it not exist.
+Hi Olg.
 
-And this too:
-"...which is located in /etc/default/laptop-mode on Debian-based systems..."
-
-But in Debian Etch correct is: /etc/laptop-mode/laptop-mode.conf
-
-Best regards,
-Renato S. Yamane
+Please do so.
+Thanks,
+	Sam
