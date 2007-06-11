@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763951AbXFKAOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763895AbXFKAVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763951AbXFKAOb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jun 2007 20:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760668AbXFKAOY
+	id S1763895AbXFKAVw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jun 2007 20:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760540AbXFKAVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jun 2007 20:14:24 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58881 "EHLO
+	Sun, 10 Jun 2007 20:21:44 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58895 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760540AbXFKAOY (ORCPT
+	with ESMTP id S1751315AbXFKAVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jun 2007 20:14:24 -0400
-Date: Mon, 11 Jun 2007 02:14:34 +0200
+	Sun, 10 Jun 2007 20:21:43 -0400
+Date: Mon, 11 Jun 2007 02:21:54 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Denis Vlasenko <vda.linux@googlemail.com>
-Cc: Rene Herman <rene.herman@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Greg KH <gregkh@suse.de>, Jesper Juhl <jesper.juhl@gmail.com>,
+To: Diego Calleja <diegocg@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Greg KH <gregkh@suse.de>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
        Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
        linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
 Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO
 	translated into Japanese]
-Message-ID: <20070611001434.GD3588@stusta.de>
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <20070610175228.GA28947@uranus.ravnborg.org> <466C49DB.6040409@gmail.com> <200706110159.00482.vda.linux@googlemail.com>
+Message-ID: <20070611002154.GE3588@stusta.de>
+References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <20070610175228.GA28947@uranus.ravnborg.org> <20070610214138.3d17be8a.diegocg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200706110159.00482.vda.linux@googlemail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070610214138.3d17be8a.diegocg@gmail.com>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 01:59:00AM +0200, Denis Vlasenko wrote:
-> On Sunday 10 June 2007 20:58, Rene Herman wrote:
-> > All that stuff only serves to multiply the speed at which a fixed percentage 
-> > of content obsoletes itself. When it's still new and shiny, sure, stuff will 
-> > get translated but in no time at all it'll become a fragmented mess which 
-> > nobody ever feels right about removing because that would be anti-social to 
-> > all those poor non-english speaking kernel hackers out there.
+On Sun, Jun 10, 2007 at 09:41:38PM +0200, Diego Calleja wrote:
+> El Sun, 10 Jun 2007 19:52:28 +0200, Sam Ravnborg <sam@ravnborg.org> escribió:
 > 
-> I agree. i18n efforts won't help one iota because people just have
-> to know English in order to participate in l-k development.
-> They should be able to read _and_ reply_ to lkml posts,
-> and read and understnd code _and_ comments_.
->...
+> > I advocated that they should stay out back then.
+> > But on the other hand I do not see it causing much troubles
+> > having scripts/kconfig/po/da.po etc araound.
+> > 
+> > Any opinion about the .po files?
+> 
+> These days the configuration menus are not something that users need to
+> read, they're more like a developer tool. IMO there's not much value in it,
+> because the people who read it already know english most of the times.
 
-Kconfig is different since the target audience and the majority of users 
-are not kernel developers.
+The majority of Kconfig users are _not_ kernel developers.
 
-> vda
+There are many different reasons why people compile their own kernel, 
+and "sysadmin who knows his hardware and the filesystems of his disks" 
+is really sufficient for compiling your own kernel.
+
+Whether non-English Kconfig texts are important might be a question, but 
+if there are people doing the translation work there's no problem with 
+it.
 
 cu
 Adrian
