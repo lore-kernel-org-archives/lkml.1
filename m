@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbXFKPpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbXFKPqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905AbXFKPpq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 11:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbXFKPpi
+	id S1756050AbXFKPqA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 11:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbXFKPpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 11:45:38 -0400
-Received: from smtp24.orange.fr ([193.252.22.25]:8890 "EHLO smtp24.orange.fr"
+	Mon, 11 Jun 2007 11:45:50 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:51111 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753775AbXFKPph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 11:45:37 -0400
-X-ME-UUID: 20070611154535665.1036A1C000AA@mwinf2437.orange.fr
-Subject: Re: A kexec approach to hibernation
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Cc: nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <87abv6o7qo.fsf@jbms.ath.cx>
-References: <878xb3l888.fsf@jbms.ath.cx> <200706020114.37245.rjw@sisk.pl>
-	 <87odjz9qo9.fsf@jbms.ath.cx> <200706020233.44509.rjw@sisk.pl>
-	 <87k5un9l4n.fsf@jbms.ath.cx> <1181533248.17758.55.camel@nigel.suspend2.net>
-	 <87abv6o7qo.fsf@jbms.ath.cx>
-Content-Type: text/plain
-Date: Mon, 11 Jun 2007 17:45:23 +0200
-Message-Id: <1181576723.11365.45.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 7bit
+	id S1755949AbXFKPpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 11:45:49 -0400
+Date: Tue, 12 Jun 2007 00:44:28 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: mm: memory/cpu hotplug section mismatch.
+Message-ID: <20070611154428.GA27644@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Sam Ravnborg <sam@ravnborg.org>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+References: <20070611043543.GA22910@linux-sh.org> <20070611140145.05726c0f.kamezawa.hiroyu@jp.fujitsu.com> <20070611050955.GA23215@linux-sh.org> <20070611082732.70018522.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070611082732.70018522.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-11 at 11:01 -0400, Jeremy Maitin-Shepard wrote:
-> >> You might claim then that the solution is to simply keep the network
-> >> driver quiesced or stopped.  But then it is impossible to write the
-> >> image over the network.  The way to get around this problem is to write
-> >> the image over the network using a fresh network stack.
+On Mon, Jun 11, 2007 at 08:27:32AM -0700, Randy Dunlap wrote:
+> On Mon, 11 Jun 2007 14:09:55 +0900 Paul Mundt wrote:
+> > On Mon, Jun 11, 2007 at 02:01:45PM +0900, KAMEZAWA Hiroyuki wrote:
+> > > On Mon, 11 Jun 2007 13:35:43 +0900
+> > > Paul Mundt <lethal@linux-sh.org> wrote:
+> > > > This happens because CONFIG_HOTPLUG_CPU=n sets __cpuinit to __init, but
+> > > > CONFIG_MEMORY_HOTPLUG=y unsets __meminit.
+> > > 
+> > > It seems this zone_batchsize() is called by cpu-hotplug and
+> > > memory-hotplug.  So, __init_refok doesn't look good, here.
+> > > 
+> > > maybe we can use __devinit here. (Because HOTPLUG_CPU and
+> > > MEMORY_HOTPLUG are depend on CONFIG_HOTPLUG.)
+> > > 
+> > Yes, that's probably a more reasonable way to go. The __devinit name is a
+> > bit misleading, though..
 > 
-> > Or teach the driver stack about the difference/reset it. Remember that
-> > even if you get a fresh network stack, you'll still be getting packets
-> > for the old stack. Getting a new ip (assuming one is available) won't
-> > stop other connections getting killed, either because we send resets
-> > from the kexec'd kernel, or because they timeout looking for the old
-> > ip.
+> __meminit does not fit/work here?
 > 
-> I could be mistaken, but I think that bringing up the network interface
-> with a different IP address would prevent it from reseting existing TCP
-> connections, because it would never receive the packets for those
-> existing connections.  
+No, for the reasons already noted.
 
-That can't work. There are networks where the client must have a fixed
-IP, or must accept the adress given by dhcp in order to talk to
-fileservers. And you still have the same mac adress, which may cause
-problems.
+If CONFIG_MEMORY_HOTPLUG=n __meminit == __init, and if
+CONFIG_HOTPLUG_CPU=n __cpuinit == __init. However, with one set and the
+other disabled, you end up with a reference between __init and a regular
+non-init function.
 
-	Xav
+CONFIG_HOTPLUG is the only thing that they both have in common, so only
+__devinit will gaurantee the proper behaviour. __init_refok is the
+opposite of the behaviour that is desired, as Kamezawa-san was quick to
+point out.
 
-
+Simply switching to __meminit will cause zone_batchlist() to emit a
+section mismatch on CONFIG_HOTPLUG_CPU=y and CONFIG_MEMORY_HOTPLUG=n
+configurations instead of the other way around.
