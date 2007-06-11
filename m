@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXFKTvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbXFKTwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbXFKTvS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXFKTvD
+	id S1757772AbXFKTwx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXFKTwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:51:03 -0400
-Received: from CHOKECHERRY.SRV.CS.CMU.EDU ([128.2.185.41]:53888 "EHLO
+	Mon, 11 Jun 2007 15:52:45 -0400
+Received: from CHOKECHERRY.SRV.CS.CMU.EDU ([128.2.185.41]:53992 "EHLO
 	chokecherry.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753039AbXFKTvA (ORCPT
+	by vger.kernel.org with ESMTP id S1752133AbXFKTwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:51:00 -0400
+	Mon, 11 Jun 2007 15:52:43 -0400
 From: Benjamin Gilbert <bgilbert@cs.cmu.edu>
-Subject: [PATCH] [CRYPTO] Add optimized SHA-1 implementation for i486+
+Subject: [PATCH] [CRYPTO] Add optimized SHA-1 implementation for x86_64
 To: jengelh@computergmbh.de
 Cc: akpm@linux-foundation.org, herbert@gondor.apana.org.au,
        linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 11 Jun 2007 15:50:52 -0400
-Message-ID: <20070611195051.25068.16858.stgit@dev>
+Date: Mon, 11 Jun 2007 15:52:35 -0400
+Message-ID: <20070611195235.25087.90810.stgit@dev>
 In-Reply-To: <466DA6DF.1080403@cs.cmu.edu>
 References: <466DA6DF.1080403@cs.cmu.edu>
 User-Agent: StGIT/0.12.1
@@ -26,73 +26,62 @@ Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add x86-optimized implementation of the SHA-1 hash function, taken from
-Nettle under the LGPL.  This code will be enabled on kernels compiled for
-486es or better; kernels which support 386es will use the generic
-implementation (since we need BSWAP).
-
-We disable building lib/sha1.o when an optimized implementation is
-available, as the library link order for x86 (and x86_64) would otherwise
-ignore the optimized version.  The existing optimized implementation for ARM
-does not do this; the library link order for that architecture appears to
-favor the arch/arm/ version automatically.  I've left this situation alone
-since I'm not familiar with the ARM code, but a !ARM condition could be
-added to CONFIG_SHA1_GENERIC if it makes sense.
+Add optimized implementation of the SHA-1 hash function for x86_64, ported
+from the x86 implementation in Nettle (which is LGPLed).
 
 The code has been tested with tcrypt and the NIST test vectors.
 
 Signed-off-by: Benjamin Gilbert <bgilbert@cs.cmu.edu>
 ---
 
- arch/i386/kernel/i386_ksyms.c |    5 +
- arch/i386/lib/Makefile        |    1 
- arch/i386/lib/sha1.S          |  299 +++++++++++++++++++++++++++++++++++++++++
- include/linux/cryptohash.h    |    9 +
- lib/Kconfig                   |   13 ++
- lib/Makefile                  |    3 
- 6 files changed, 328 insertions(+), 2 deletions(-)
+ arch/x86_64/kernel/x8664_ksyms.c |    3 
+ arch/x86_64/lib/Makefile         |    2 
+ arch/x86_64/lib/sha1.S           |  281 ++++++++++++++++++++++++++++++++++++++
+ include/linux/cryptohash.h       |    2 
+ lib/Kconfig                      |    7 +
+ 5 files changed, 293 insertions(+), 2 deletions(-)
 
-diff --git a/arch/i386/kernel/i386_ksyms.c b/arch/i386/kernel/i386_ksyms.c
-index e3d4b73..812bc4e 100644
---- a/arch/i386/kernel/i386_ksyms.c
-+++ b/arch/i386/kernel/i386_ksyms.c
-@@ -1,4 +1,5 @@
+diff --git a/arch/x86_64/kernel/x8664_ksyms.c b/arch/x86_64/kernel/x8664_ksyms.c
+index 77c25b3..bc641ab 100644
+--- a/arch/x86_64/kernel/x8664_ksyms.c
++++ b/arch/x86_64/kernel/x8664_ksyms.c
+@@ -3,6 +3,7 @@
+ 
  #include <linux/module.h>
+ #include <linux/smp.h>
 +#include <linux/cryptohash.h>
- #include <asm/checksum.h>
- #include <asm/desc.h>
  
-@@ -28,3 +29,7 @@ EXPORT_SYMBOL(__read_lock_failed);
- #endif
+ #include <asm/semaphore.h>
+ #include <asm/processor.h>
+@@ -60,3 +61,5 @@ EXPORT_SYMBOL(init_level4_pgt);
+ EXPORT_SYMBOL(load_gs_index);
  
- EXPORT_SYMBOL(csum_partial);
+ EXPORT_SYMBOL(_proxy_pda);
 +
-+#ifdef CONFIG_SHA1_X86
 +EXPORT_SYMBOL(sha_transform);
-+#endif
-diff --git a/arch/i386/lib/Makefile b/arch/i386/lib/Makefile
-index 22d8ac5..69f4845 100644
---- a/arch/i386/lib/Makefile
-+++ b/arch/i386/lib/Makefile
-@@ -6,6 +6,7 @@
- lib-y = checksum.o delay.o usercopy.o getuser.o putuser.o memcpy.o strstr.o \
- 	bitops.o semaphore.o
+diff --git a/arch/x86_64/lib/Makefile b/arch/x86_64/lib/Makefile
+index c943271..6c8110b 100644
+--- a/arch/x86_64/lib/Makefile
++++ b/arch/x86_64/lib/Makefile
+@@ -9,5 +9,5 @@ obj-$(CONFIG_SMP)	+= msr-on-cpu.o
  
-+lib-$(CONFIG_SHA1_X86) += sha1.o
- lib-$(CONFIG_X86_USE_3DNOW) += mmx.o
- 
- obj-$(CONFIG_SMP)	+= msr-on-cpu.o
-diff --git a/arch/i386/lib/sha1.S b/arch/i386/lib/sha1.S
+ lib-y := csum-partial.o csum-copy.o csum-wrappers.o delay.o \
+ 	usercopy.o getuser.o putuser.o  \
+-	thunk.o clear_page.o copy_page.o bitstr.o bitops.o
++	thunk.o clear_page.o copy_page.o bitstr.o bitops.o sha1.o
+ lib-y += memcpy.o memmove.o memset.o copy_user.o rwlock.o copy_user_nocache.o
+diff --git a/arch/x86_64/lib/sha1.S b/arch/x86_64/lib/sha1.S
 new file mode 100644
-index 0000000..a84d829
+index 0000000..f928ac3
 --- /dev/null
-+++ b/arch/i386/lib/sha1.S
-@@ -0,0 +1,299 @@
++++ b/arch/x86_64/lib/sha1.S
+@@ -0,0 +1,281 @@
 +/*
-+ * x86-optimized SHA1 hash algorithm (i486 and above)
++ * sha1-x86_64 - x86_64-optimized SHA1 hash algorithm
 + *
 + * Originally from Nettle
 + * Ported from M4 to cpp by Benjamin Gilbert <bgilbert@cs.cmu.edu>
++ * Ported from x86 to x86_64 by Benjamin Gilbert
 + *
 + * Copyright (C) 2004, Niels Möller
 + * Copyright (C) 2006-2007 Carnegie Mellon University
@@ -112,16 +101,20 @@ index 0000000..a84d829
 +#include <linux/linkage.h>
 +#include <asm/dwarf2.h>
 +
-+/* Register usage */
-+#define SA	%eax
-+#define SB	%ebx
-+#define SC	%ecx
-+#define SD	%edx
-+#define SE	%ebp
-+#define DATA	%esp
-+#define TMP	%edi
-+#define TMP2	%esi			/* Used by SWAP and F3 */
-+#define TMP3	64(%esp)
++/* Register usage.  r12-15 must be saved if they will be used.  Accessing
++   r8-r15 takes an extra instruction byte. */
++#define P_STATE	%rdi			/* Pointer parameter */
++#define P_DATA	%rsi			/* Pointer parameter */
++#define DATA	%rdx			/* Pointer parameter */
++#define SA	%edi			/* Reuses P_STATE */
++#define SB	%esi			/* Reuses P_DATA */
++#define SC	%eax
++#define SD	%ebx			/* Callee-saved */
++#define SE	%ebp			/* Callee-saved */
++#define TMP	%ecx
++#define TMP2	%r8d			/* Used by F3 */
++#define CONST	%r9d
++#define STATE	%r10
 +
 +/* Constants */
 +#define K1VALUE	$0x5A827999		/* Rounds  0-19 */
@@ -129,29 +122,25 @@ index 0000000..a84d829
 +#define K3VALUE	$0x8F1BBCDC		/* Rounds 40-59 */
 +#define K4VALUE	$0xCA62C1D6		/* Rounds 60-79 */
 +
-+/* Convert stack offsets in words to offsets in bytes */
++/* Convert stack offsets in 32-bit words to offsets in bytes */
 +#define OFFSET(i) 4*(i)
 +
-+/* Reads the input via TMP2 into register, byteswaps it, and stores it in
++/* Reads the input via P_DATA into register, byteswaps it, and stores it in
 +   the DATA array. */
 +#define SWAP(index, register)					\
-+	movl	OFFSET(index)(TMP2), register;			\
++	movl	OFFSET(index)(P_DATA), register;		\
 +	bswap	register;					\
 +	movl	register, OFFSET(index)(DATA)
 +
-+/* Sets the workspace word at the given index to TMP. */
-+#define CLEAR(index)						\
-+	movl	TMP, OFFSET(index)(DATA)
-+
-+/* pushl/popl wrappers that update the DWARF unwind table */
++/* push/pop wrappers that update the DWARF unwind table */
 +#define PUSH(regname)						\
-+	pushl			%regname;			\
-+	CFI_ADJUST_CFA_OFFSET	4;				\
++	push			%regname;			\
++	CFI_ADJUST_CFA_OFFSET	8;				\
 +	CFI_REL_OFFSET		regname, 0
 +
 +#define POP(regname)						\
-+	popl			%regname;			\
-+	CFI_ADJUST_CFA_OFFSET	-4;				\
++	pop			%regname;			\
++	CFI_ADJUST_CFA_OFFSET	-8;				\
 +	CFI_RESTORE		regname
 +
 +/*
@@ -217,11 +206,13 @@ index 0000000..a84d829
 + *   e += a <<< 5 + f( b, c, d ) + k + w;
 + *   b <<<= 30
 + *
++ * k is not an explicit parameter; it's always stored in CONST.
++ *
 + * Using the TMP register for the rotate could be avoided, by rotating
 + * %a in place, adding, and then rotating back.
 + */
-+#define ROUND(a,b,c,d,e,f,k,w)					\
-+	addl	k, e;						\
++#define ROUND(a,b,c,d,e,f,w)					\
++	addl	CONST, e;					\
 +	addl	w, e;						\
 +	f(b,c,d);						\
 +	addl	TMP, e;						\
@@ -231,228 +222,172 @@ index 0000000..a84d829
 +	roll	$30, b;
 +
 +/* sha_transform(__u32 *digest, const char *in, __u32 *W) */
-+/* The workspace argument is ignored; we don't have enough registers to handle
-+   a workspace that isn't on our own stack. */
++/* We expect a 64-byte workspace. */
 +.text
 +ENTRY(sha_transform)
 +	CFI_STARTPROC
-+	/* save all registers that need to be saved */
-+	PUSH(ebx)		/* 80(%esp) */
-+	PUSH(ebp)		/* 76(%esp) */
-+	PUSH(esi)		/* 72(%esp) */
-+	PUSH(edi)		/* 68(%esp) */
-+
-+	subl	$68, %esp	/* %esp = W */
-+	CFI_ADJUST_CFA_OFFSET	68
++	PUSH(rbx)
++	PUSH(rbp)
 +
 +	/* Load and byteswap data */
-+	movl	92(%esp), TMP2
++	SWAP( 0,  %eax); SWAP( 1,  %ebx); SWAP( 2,  %ecx); SWAP( 3,  %ebp)
++	SWAP( 4,  %r8d); SWAP( 5,  %r9d); SWAP( 6, %r10d); SWAP( 7, %r11d)
++	SWAP( 8,  %eax); SWAP( 9,  %ebx); SWAP(10,  %ecx); SWAP(11,  %ebp)
++	SWAP(12,  %r8d); SWAP(13,  %r9d); SWAP(14, %r10d); SWAP(15, %r11d)
 +
-+	SWAP( 0, %eax); SWAP( 1, %ebx); SWAP( 2, %ecx); SWAP( 3, %edx)
-+	SWAP( 4, %eax); SWAP( 5, %ebx); SWAP( 6, %ecx); SWAP( 7, %edx)
-+	SWAP( 8, %eax); SWAP( 9, %ebx); SWAP(10, %ecx); SWAP(11, %edx)
-+	SWAP(12, %eax); SWAP(13, %ebx); SWAP(14, %ecx); SWAP(15, %edx)
++	/* P_DATA now dead; free up P_STATE for other uses */
++	movq	P_STATE, STATE
 +
 +	/* load the state vector */
-+	movl	88(%esp),TMP
-+	movl	(TMP),   SA
-+	movl	4(TMP),  SB
-+	movl	8(TMP),  SC
-+	movl	12(TMP), SD
-+	movl	16(TMP), SE
++	movl	(STATE),   SA
++	movl	4(STATE),  SB
++	movl	8(STATE),  SC
++	movl	12(STATE), SD
++	movl	16(STATE), SE
 +
-+	movl	K1VALUE, TMP2
-+	ROUND(SA, SB, SC, SD, SE, F1, TMP2, OFFSET( 0)(DATA))
-+	ROUND(SE, SA, SB, SC, SD, F1, TMP2, OFFSET( 1)(DATA))
-+	ROUND(SD, SE, SA, SB, SC, F1, TMP2, OFFSET( 2)(DATA))
-+	ROUND(SC, SD, SE, SA, SB, F1, TMP2, OFFSET( 3)(DATA))
-+	ROUND(SB, SC, SD, SE, SA, F1, TMP2, OFFSET( 4)(DATA))
++	movl	K1VALUE, CONST
++	ROUND(SA, SB, SC, SD, SE, F1, OFFSET( 0)(DATA))
++	ROUND(SE, SA, SB, SC, SD, F1, OFFSET( 1)(DATA))
++	ROUND(SD, SE, SA, SB, SC, F1, OFFSET( 2)(DATA))
++	ROUND(SC, SD, SE, SA, SB, F1, OFFSET( 3)(DATA))
++	ROUND(SB, SC, SD, SE, SA, F1, OFFSET( 4)(DATA))
 +
-+	ROUND(SA, SB, SC, SD, SE, F1, TMP2, OFFSET( 5)(DATA))
-+	ROUND(SE, SA, SB, SC, SD, F1, TMP2, OFFSET( 6)(DATA))
-+	ROUND(SD, SE, SA, SB, SC, F1, TMP2, OFFSET( 7)(DATA))
-+	ROUND(SC, SD, SE, SA, SB, F1, TMP2, OFFSET( 8)(DATA))
-+	ROUND(SB, SC, SD, SE, SA, F1, TMP2, OFFSET( 9)(DATA))
++	ROUND(SA, SB, SC, SD, SE, F1, OFFSET( 5)(DATA))
++	ROUND(SE, SA, SB, SC, SD, F1, OFFSET( 6)(DATA))
++	ROUND(SD, SE, SA, SB, SC, F1, OFFSET( 7)(DATA))
++	ROUND(SC, SD, SE, SA, SB, F1, OFFSET( 8)(DATA))
++	ROUND(SB, SC, SD, SE, SA, F1, OFFSET( 9)(DATA))
 +
-+	ROUND(SA, SB, SC, SD, SE, F1, TMP2, OFFSET(10)(DATA))
-+	ROUND(SE, SA, SB, SC, SD, F1, TMP2, OFFSET(11)(DATA))
-+	ROUND(SD, SE, SA, SB, SC, F1, TMP2, OFFSET(12)(DATA))
-+	ROUND(SC, SD, SE, SA, SB, F1, TMP2, OFFSET(13)(DATA))
-+	ROUND(SB, SC, SD, SE, SA, F1, TMP2, OFFSET(14)(DATA))
++	ROUND(SA, SB, SC, SD, SE, F1, OFFSET(10)(DATA))
++	ROUND(SE, SA, SB, SC, SD, F1, OFFSET(11)(DATA))
++	ROUND(SD, SE, SA, SB, SC, F1, OFFSET(12)(DATA))
++	ROUND(SC, SD, SE, SA, SB, F1, OFFSET(13)(DATA))
++	ROUND(SB, SC, SD, SE, SA, F1, OFFSET(14)(DATA))
 +
-+	ROUND(SA, SB, SC, SD, SE, F1, TMP2, OFFSET(15)(DATA))
-+	EXPAND(16); ROUND(SE, SA, SB, SC, SD, F1, TMP2, TMP)
-+	EXPAND(17); ROUND(SD, SE, SA, SB, SC, F1, TMP2, TMP)
-+	EXPAND(18); ROUND(SC, SD, SE, SA, SB, F1, TMP2, TMP)
-+	EXPAND(19); ROUND(SB, SC, SD, SE, SA, F1, TMP2, TMP)
++	ROUND(SA, SB, SC, SD, SE, F1, OFFSET(15)(DATA))
++	EXPAND(16); ROUND(SE, SA, SB, SC, SD, F1, TMP)
++	EXPAND(17); ROUND(SD, SE, SA, SB, SC, F1, TMP)
++	EXPAND(18); ROUND(SC, SD, SE, SA, SB, F1, TMP)
++	EXPAND(19); ROUND(SB, SC, SD, SE, SA, F1, TMP)
 +
-+	/* TMP2 is free to use in these rounds */
-+	movl	K2VALUE, TMP2
-+	EXPAND(20); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
-+	EXPAND(21); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
-+	EXPAND(22); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
-+	EXPAND(23); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
-+	EXPAND(24); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++	movl	K2VALUE, CONST
++	EXPAND(20); ROUND(SA, SB, SC, SD, SE, F2, TMP)
++	EXPAND(21); ROUND(SE, SA, SB, SC, SD, F2, TMP)
++	EXPAND(22); ROUND(SD, SE, SA, SB, SC, F2, TMP)
++	EXPAND(23); ROUND(SC, SD, SE, SA, SB, F2, TMP)
++	EXPAND(24); ROUND(SB, SC, SD, SE, SA, F2, TMP)
 +
-+	EXPAND(25); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
-+	EXPAND(26); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
-+	EXPAND(27); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
-+	EXPAND(28); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
-+	EXPAND(29); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++	EXPAND(25); ROUND(SA, SB, SC, SD, SE, F2, TMP)
++	EXPAND(26); ROUND(SE, SA, SB, SC, SD, F2, TMP)
++	EXPAND(27); ROUND(SD, SE, SA, SB, SC, F2, TMP)
++	EXPAND(28); ROUND(SC, SD, SE, SA, SB, F2, TMP)
++	EXPAND(29); ROUND(SB, SC, SD, SE, SA, F2, TMP)
 +
-+	EXPAND(30); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
-+	EXPAND(31); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
-+	EXPAND(32); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
-+	EXPAND(33); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
-+	EXPAND(34); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++	EXPAND(30); ROUND(SA, SB, SC, SD, SE, F2, TMP)
++	EXPAND(31); ROUND(SE, SA, SB, SC, SD, F2, TMP)
++	EXPAND(32); ROUND(SD, SE, SA, SB, SC, F2, TMP)
++	EXPAND(33); ROUND(SC, SD, SE, SA, SB, F2, TMP)
++	EXPAND(34); ROUND(SB, SC, SD, SE, SA, F2, TMP)
 +
-+	EXPAND(35); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
-+	EXPAND(36); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
-+	EXPAND(37); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
-+	EXPAND(38); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
-+	EXPAND(39); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++	EXPAND(35); ROUND(SA, SB, SC, SD, SE, F2, TMP)
++	EXPAND(36); ROUND(SE, SA, SB, SC, SD, F2, TMP)
++	EXPAND(37); ROUND(SD, SE, SA, SB, SC, F2, TMP)
++	EXPAND(38); ROUND(SC, SD, SE, SA, SB, F2, TMP)
++	EXPAND(39); ROUND(SB, SC, SD, SE, SA, F2, TMP)
 +
-+	/* We have to put this constant on the stack */
-+	movl	K3VALUE, TMP3
-+	EXPAND(40); ROUND(SA, SB, SC, SD, SE, F3, TMP3, TMP)
-+	EXPAND(41); ROUND(SE, SA, SB, SC, SD, F3, TMP3, TMP)
-+	EXPAND(42); ROUND(SD, SE, SA, SB, SC, F3, TMP3, TMP)
-+	EXPAND(43); ROUND(SC, SD, SE, SA, SB, F3, TMP3, TMP)
-+	EXPAND(44); ROUND(SB, SC, SD, SE, SA, F3, TMP3, TMP)
++	movl	K3VALUE, CONST
++	EXPAND(40); ROUND(SA, SB, SC, SD, SE, F3, TMP)
++	EXPAND(41); ROUND(SE, SA, SB, SC, SD, F3, TMP)
++	EXPAND(42); ROUND(SD, SE, SA, SB, SC, F3, TMP)
++	EXPAND(43); ROUND(SC, SD, SE, SA, SB, F3, TMP)
++	EXPAND(44); ROUND(SB, SC, SD, SE, SA, F3, TMP)
 +
-+	EXPAND(45); ROUND(SA, SB, SC, SD, SE, F3, TMP3, TMP)
-+	EXPAND(46); ROUND(SE, SA, SB, SC, SD, F3, TMP3, TMP)
-+	EXPAND(47); ROUND(SD, SE, SA, SB, SC, F3, TMP3, TMP)
-+	EXPAND(48); ROUND(SC, SD, SE, SA, SB, F3, TMP3, TMP)
-+	EXPAND(49); ROUND(SB, SC, SD, SE, SA, F3, TMP3, TMP)
++	EXPAND(45); ROUND(SA, SB, SC, SD, SE, F3, TMP)
++	EXPAND(46); ROUND(SE, SA, SB, SC, SD, F3, TMP)
++	EXPAND(47); ROUND(SD, SE, SA, SB, SC, F3, TMP)
++	EXPAND(48); ROUND(SC, SD, SE, SA, SB, F3, TMP)
++	EXPAND(49); ROUND(SB, SC, SD, SE, SA, F3, TMP)
 +
-+	EXPAND(50); ROUND(SA, SB, SC, SD, SE, F3, TMP3, TMP)
-+	EXPAND(51); ROUND(SE, SA, SB, SC, SD, F3, TMP3, TMP)
-+	EXPAND(52); ROUND(SD, SE, SA, SB, SC, F3, TMP3, TMP)
-+	EXPAND(53); ROUND(SC, SD, SE, SA, SB, F3, TMP3, TMP)
-+	EXPAND(54); ROUND(SB, SC, SD, SE, SA, F3, TMP3, TMP)
++	EXPAND(50); ROUND(SA, SB, SC, SD, SE, F3, TMP)
++	EXPAND(51); ROUND(SE, SA, SB, SC, SD, F3, TMP)
++	EXPAND(52); ROUND(SD, SE, SA, SB, SC, F3, TMP)
++	EXPAND(53); ROUND(SC, SD, SE, SA, SB, F3, TMP)
++	EXPAND(54); ROUND(SB, SC, SD, SE, SA, F3, TMP)
 +
-+	EXPAND(55); ROUND(SA, SB, SC, SD, SE, F3, TMP3, TMP)
-+	EXPAND(56); ROUND(SE, SA, SB, SC, SD, F3, TMP3, TMP)
-+	EXPAND(57); ROUND(SD, SE, SA, SB, SC, F3, TMP3, TMP)
-+	EXPAND(58); ROUND(SC, SD, SE, SA, SB, F3, TMP3, TMP)
-+	EXPAND(59); ROUND(SB, SC, SD, SE, SA, F3, TMP3, TMP)
++	EXPAND(55); ROUND(SA, SB, SC, SD, SE, F3, TMP)
++	EXPAND(56); ROUND(SE, SA, SB, SC, SD, F3, TMP)
++	EXPAND(57); ROUND(SD, SE, SA, SB, SC, F3, TMP)
++	EXPAND(58); ROUND(SC, SD, SE, SA, SB, F3, TMP)
++	EXPAND(59); ROUND(SB, SC, SD, SE, SA, F3, TMP)
 +
-+	movl	K4VALUE, TMP2
-+	EXPAND(60); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
-+	EXPAND(61); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
-+	EXPAND(62); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
-+	EXPAND(63); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
-+	EXPAND(64); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++	movl	K4VALUE, CONST
++	EXPAND(60); ROUND(SA, SB, SC, SD, SE, F2, TMP)
++	EXPAND(61); ROUND(SE, SA, SB, SC, SD, F2, TMP)
++	EXPAND(62); ROUND(SD, SE, SA, SB, SC, F2, TMP)
++	EXPAND(63); ROUND(SC, SD, SE, SA, SB, F2, TMP)
++	EXPAND(64); ROUND(SB, SC, SD, SE, SA, F2, TMP)
 +
-+	EXPAND(65); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
-+	EXPAND(66); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
-+	EXPAND(67); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
-+	EXPAND(68); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
-+	EXPAND(69); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++	EXPAND(65); ROUND(SA, SB, SC, SD, SE, F2, TMP)
++	EXPAND(66); ROUND(SE, SA, SB, SC, SD, F2, TMP)
++	EXPAND(67); ROUND(SD, SE, SA, SB, SC, F2, TMP)
++	EXPAND(68); ROUND(SC, SD, SE, SA, SB, F2, TMP)
++	EXPAND(69); ROUND(SB, SC, SD, SE, SA, F2, TMP)
 +
-+	EXPAND(70); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
-+	EXPAND(71); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
-+	EXPAND(72); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
-+	EXPAND(73); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
-+	EXPAND(74); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++	EXPAND(70); ROUND(SA, SB, SC, SD, SE, F2, TMP)
++	EXPAND(71); ROUND(SE, SA, SB, SC, SD, F2, TMP)
++	EXPAND(72); ROUND(SD, SE, SA, SB, SC, F2, TMP)
++	EXPAND(73); ROUND(SC, SD, SE, SA, SB, F2, TMP)
++	EXPAND(74); ROUND(SB, SC, SD, SE, SA, F2, TMP)
 +
-+	EXPAND(75); ROUND(SA, SB, SC, SD, SE, F2, TMP2, TMP)
-+	EXPAND(76); ROUND(SE, SA, SB, SC, SD, F2, TMP2, TMP)
-+	EXPAND(77); ROUND(SD, SE, SA, SB, SC, F2, TMP2, TMP)
-+	EXPAND(78); ROUND(SC, SD, SE, SA, SB, F2, TMP2, TMP)
-+	EXPAND(79); ROUND(SB, SC, SD, SE, SA, F2, TMP2, TMP)
++	EXPAND(75); ROUND(SA, SB, SC, SD, SE, F2, TMP)
++	EXPAND(76); ROUND(SE, SA, SB, SC, SD, F2, TMP)
++	EXPAND(77); ROUND(SD, SE, SA, SB, SC, F2, TMP)
++	EXPAND(78); ROUND(SC, SD, SE, SA, SB, F2, TMP)
++	EXPAND(79); ROUND(SB, SC, SD, SE, SA, F2, TMP)
 +
 +	/* Update the state vector */
-+	movl	88(%esp),TMP
-+	addl	SA, (TMP)
-+	addl	SB, 4(TMP)
-+	addl	SC, 8(TMP)
-+	addl	SD, 12(TMP)
-+	addl	SE, 16(TMP)
++	addl	SA, (STATE)
++	addl	SB, 4(STATE)
++	addl	SC, 8(STATE)
++	addl	SD, 12(STATE)
++	addl	SE, 16(STATE)
 +
-+	/* Clear the workspace for security */
-+	xorl	TMP, TMP
-+	CLEAR( 0); CLEAR( 1); CLEAR( 2); CLEAR( 3);
-+	CLEAR( 4); CLEAR( 5); CLEAR( 6); CLEAR( 7);
-+	CLEAR( 8); CLEAR( 9); CLEAR(10); CLEAR(11);
-+	CLEAR(12); CLEAR(13); CLEAR(14); CLEAR(15);
-+
-+	addl	$68, %esp
-+	CFI_ADJUST_CFA_OFFSET	-68
-+	POP(edi)
-+	POP(esi)
-+	POP(ebp)
-+	POP(ebx)
++	POP(rbp)
++	POP(rbx)
 +	ret
 +	CFI_ENDPROC
 +ENDPROC(sha_transform)
 diff --git a/include/linux/cryptohash.h b/include/linux/cryptohash.h
-index a172401..0da331c 100644
+index 0da331c..b3b14a3 100644
 --- a/include/linux/cryptohash.h
 +++ b/include/linux/cryptohash.h
-@@ -1,8 +1,15 @@
- #ifndef __CRYPTOHASH_H
- #define __CRYPTOHASH_H
+@@ -7,6 +7,8 @@
  
-+#include <linux/linkage.h>
-+
- #define SHA_DIGEST_WORDS 5
-+
-+#if defined(CONFIG_SHA1_X86)
-+#define SHA_WORKSPACE_WORDS 0
-+#else
+ #if defined(CONFIG_SHA1_X86)
+ #define SHA_WORKSPACE_WORDS 0
++#elif defined(CONFIG_SHA1_X86_64)
++#define SHA_WORKSPACE_WORDS 16
+ #else
  #define SHA_WORKSPACE_WORDS 80
-+#endif
- 
- /**
-  * sha_init - initialize the vectors for a SHA1 digest
-@@ -17,7 +24,7 @@ static inline void sha_init(__u32 *buf)
- 	buf[4] = 0xc3d2e1f0;
- }
- 
--void sha_transform(__u32 *digest, const char *data, __u32 *W);
-+asmlinkage void sha_transform(__u32 *digest, const char *data, __u32 *W);
- 
- __u32 half_md4_transform(__u32 buf[4], __u32 const in[8]);
- 
+ #endif
 diff --git a/lib/Kconfig b/lib/Kconfig
-index 2e7ae6b..69fdb64 100644
+index 69fdb64..23a84ed 100644
 --- a/lib/Kconfig
 +++ b/lib/Kconfig
-@@ -124,4 +124,17 @@ config HAS_DMA
- 	depends on !NO_DMA
+@@ -132,9 +132,14 @@ config SHA1_X86
+ 	depends on (X86 || UML_X86) && !64BIT && X86_BSWAP
  	default y
  
-+#
-+# Optimized SHA-1 support is autoconfigured
-+#
-+config SHA1_X86
++config SHA1_X86_64
 +	bool
-+	depends on (X86 || UML_X86) && !64BIT && X86_BSWAP
++	depends on (X86 || UML_X86) && 64BIT
 +	default y
 +
-+config SHA1_GENERIC
-+	bool
-+	depends on !SHA1_X86
-+	default y
-+
+ config SHA1_GENERIC
+ 	bool
+-	depends on !SHA1_X86
++	depends on !SHA1_X86 && !SHA1_X86_64
+ 	default y
+ 
  endmenu
-diff --git a/lib/Makefile b/lib/Makefile
-index c8c8e20..f67be29 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -5,10 +5,11 @@
- lib-y := ctype.o string.o vsprintf.o cmdline.o \
- 	 rbtree.o radix-tree.o dump_stack.o \
- 	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
--	 sha1.o irq_regs.o reciprocal_div.o
-+	 irq_regs.o reciprocal_div.o
- 
- lib-$(CONFIG_MMU) += ioremap.o
- lib-$(CONFIG_SMP) += cpumask.o
-+lib-$(CONFIG_SHA1_GENERIC) += sha1.o
- 
- lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
- 
 
