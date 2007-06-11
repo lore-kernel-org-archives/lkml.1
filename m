@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbXFKOpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbXFKPAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbXFKOpe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 10:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbXFKOpW
+	id S1753638AbXFKPAr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 11:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXFKPAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 10:45:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38725 "EHLO ogre.sisk.pl"
+	Mon, 11 Jun 2007 11:00:34 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38814 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752415AbXFKOpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 10:45:21 -0400
+	id S1751337AbXFKPAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 11:00:31 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] swsusp: Fix userland interface
-Date: Mon, 11 Jun 2007 16:52:01 +0200
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [RFC][PATCH -mm 0/7] PM: Remove unused and unnecessary features from suspend and resume core
+Date: Mon, 11 Jun 2007 16:55:49 +0200
 User-Agent: KMail/1.9.5
-Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706111652.01994.rjw@sisk.pl>
+Message-Id: <200706111655.50022.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[2.6.22 candidate, IMHO]
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-Fix oops caused by 'cat /dev/snapshot', reported by Arkadiusz Miskiewicz, and
-make it impossible to thaw tasks with the help of the swsusp userland interface
-while there is a snapshot image ready to save.
+The following series of patches removes some unused and unnecessary features
+from the suspend and resume core code.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/user.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Comments welcome.
 
-Index: linux-2.6.22-rc4/kernel/power/user.c
-===================================================================
---- linux-2.6.22-rc4.orig/kernel/power/user.c	2007-06-10 19:33:36.000000000 +0200
-+++ linux-2.6.22-rc4/kernel/power/user.c	2007-06-10 19:35:59.000000000 +0200
-@@ -99,6 +99,8 @@ static ssize_t snapshot_read(struct file
- 	ssize_t res;
- 
- 	data = filp->private_data;
-+	if (!data->ready)
-+		return -ENODATA;
- 	res = snapshot_read_next(&data->handle, count);
- 	if (res > 0) {
- 		if (copy_to_user(buf, data_of(data->handle), res))
-@@ -163,7 +165,7 @@ static int snapshot_ioctl(struct inode *
- 		break;
- 
- 	case SNAPSHOT_UNFREEZE:
--		if (!data->frozen)
-+		if (!data->frozen || data->ready)
- 			break;
- 		mutex_lock(&pm_mutex);
- 		thaw_processes();
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
+
