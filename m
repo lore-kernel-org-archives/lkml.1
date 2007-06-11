@@ -1,56 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbXFKSqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbXFKStm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbXFKSqs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 14:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbXFKSqk
+	id S1756784AbXFKStm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 14:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbXFKStc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 14:46:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58657 "EHLO mx1.redhat.com"
+	Mon, 11 Jun 2007 14:49:32 -0400
+Received: from mga09.intel.com ([134.134.136.24]:62647 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752763AbXFKSqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 14:46:39 -0400
-Date: Mon, 11 Jun 2007 14:46:21 -0400
-From: Dave Jones <davej@redhat.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Steve Fox <drfickle@us.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] move the kernel to 16MB for NUMA-Q
-Message-ID: <20070611184621.GA25371@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Andy Whitcroft <apw@shadowen.org>, Steve Fox <drfickle@us.ibm.com>,
-	Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-References: <466D550C.4030600@shadowen.org> <63a08cc7547f14065becdf9a94d0d529@pinky> <20070611091558.f468f205.akpm@linux-foundation.org> <20070611172006.GI9174@redhat.com> <466D882D.70001@zytor.com> <Pine.LNX.4.64.0706112019310.19578@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706112019310.19578@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1753086AbXFKSta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 14:49:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
+   d="scan'208";a="95502683"
+Date: Mon, 11 Jun 2007 11:46:00 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: jeff@garzik.org, james.bottomley@steeleye.com
+Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, htejun@gmail.com, arjan@linux.intel.com
+Subject: [patch 0/3] AHCI Link Power Management
+Message-Id: <20070611114600.7fca1c24.kristen.c.accardi@intel.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 08:19:57PM +0200, Jan Engelhardt wrote:
- > 
- > On Jun 11 2007 10:36, H. Peter Anvin wrote:
- > >
- > >Picking the 16 MB base is a bit obnoxious on small-memory machines, 4 MB
- > >would probably be a more reasonable base.  Of course, 16 MB would avoid
- > >  the issue of the handful of machines with memory holes at 15-16 MB.
- > 
- > How will this work at all with a 5 MB machine?
+Hi,
+This series of patches enables Aggressive Link Power Management for AHCI 
+devices, as documented in the AHCI spec.  On my laptop (a Lenovo X60), this
+saves me a full watt of power.  On other systems, reported power savings
+range from .5-1.5 Watts.  It has been tested by the kind folks at #powertop
+with similar results.  Please give it a try and let me know what you think.
 
-Unless you're running with a bunch of CONFIG_EMBEDDED options enabled,
-and a seriously pared down (almost to the point of uselessness)
-userspace, you may have already lost.
-
-Do such beasts even exist ?  My memories of low-memory x86en I had
-only allowed power of 2 memory sizes.
-
-	Dave
+thanks,
+Kristen
 
 -- 
-http://www.codemonkey.org.uk
