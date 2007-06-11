@@ -1,119 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbXFKHJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760817AbXFKHSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762171AbXFKHJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 03:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761080AbXFKHJG
+	id S1760817AbXFKHSN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 03:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbXFKHR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 03:09:06 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46686 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760389AbXFKHI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 03:08:59 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX1/iI5ls8b/iG4Lmbn28bh/peMN0E04UavCQSw9nOg
-	FRJmv4lVE+D0u3
-Message-ID: <466CF518.7040703@gmx.net>
-Date: Mon, 11 Jun 2007 09:09:12 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Mon, 11 Jun 2007 03:17:58 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:34314 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752184AbXFKHR5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 03:17:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=k13vZ8MC3mNOgyV0xtkaSBWyzf1v70QCLE96Qopif4QNL6v1w0by9u44O2TPHHqAbhPBdS8DuiuQSEyn/IMwaDeYs8bh0Ow8YfXo8rgl26ew0kTq0i8erHJvkc2ZBHXU1Wq6ls+pACSxkglCFK8iruHxiuZZbtkoymbBTwIDuEw=
+Message-ID: <466CF71B.2000907@gmail.com>
+Date: Mon, 11 Jun 2007 16:17:47 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: man-pages-2.55 is released
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc4-mm2: GPF during suspend to RAM on HPC nx6325
+References: <200706110102.52946.rjw@sisk.pl>
+In-Reply-To: <200706110102.52946.rjw@sisk.pl>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/mixed;
+ boundary="------------050301020803010704060709"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+This is a multi-part message in MIME format.
+--------------050301020803010704060709
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 
-I just released man-pages-2.55.
+Hello, Rafael.
 
-This release is now available for download at:
+Rafael J. Wysocki wrote:
+> gregkh-driver-sysfs-use-singly-linked-list-for-sysfs_dirent-tree.patch breaks
+> suspend to RAM on HPC nx6325 (x86_64).
+> 
+> With this patch applied I get a general protection fault in mutex_lock+0x15
+> (kernel/mutex.c:91), called by sysfs_hash_and_remove() (fs/sysfs/inode.c:298),
+> called by threshold_cpu_callback(), called from _cpu_down().
 
-    http://www.kernel.org/pub/linux/docs/manpages
-    or ftp://ftp.kernel.org/pub/linux/docs/manpages
+I'm not sure whether this is bug in sysfs or in sysfs handling code in
+mce_amd and I can't test mce_amd here.  Can you please apply the
+attached patch and post the resulting dmesg including oops?
 
-and soon at:
-
-    ftp://ftp.win.tue.nl/pub/linux-local/manpages
-
-Changes that may be of interest to readers of this list are noted below.
-
-Cheers,
-
-Michael
-
-PS A note of thanks to my employer... much of my work on man-pages is
-nowadays supported by Google, as a Google engineer 20% project.
-
-==================== Changes in man-pages-2.55 ====================
-
-Global changes
---------------
-
-clone.2
-getdents.2
-gettid.2
-ioprio_set.2
-llseek.2
-mmap2.2
-modify_ldt.2
-mq_getsetattr.2
-pivot_root.2
-quotactl.2
-readdir.2
-sysctl.2
-syslog.2
-tkill.2
-    mtk, after a note by Mike Frysinger
-        Updated to reflect the fact that the _syscallN() macros
-        have gone away,
-
-Changes to individual pages
----------------------------
-
-bind.2
-    mtk
-        Expand example program, and move it to new EXAMPLE section.
-        Added text pointing to example in getaddrinfo.3.
-
-signal.2
-    mtk, after a note from Alexander Taboriskiy
-        Strengthen warning against the use of signal().
-        Added siginterrupt(3) to SEE ALSO list.
-    mtk
-        Rewrote various parts; added an ERRORS section.
-
-stat.2
-    mtk
-        Added EXAMPLE program.
-
-sysctl.2
-    mtk
-        Improved the example program.
-
-getaddrinfo.3
-    mtk
-        Add example programs.
-        Add getnameinfo() to SEE ALSO list.
-
-inotify.7
-    mtk
-        Added text describing what happens when the buffer given to
-        read(2) is too small to return information about the next event,
-        and noting the behaviour change in 2.6.21.
-
-ld.so.8
-    mtk
-        Simplify text describing --inhibit-rpath.
-    mtk, after a note by John Reiser
-        Describe use of $ORIGIN in rpath.
+Thanks.
 
 -- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
+tejun
 
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
+--------------050301020803010704060709
+Content-Type: text/x-patch;
+ name="debug.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="debug.patch"
+
+diff --git a/arch/x86_64/kernel/mce_amd.c b/arch/x86_64/kernel/mce_amd.c
+index 03356e6..96da4aa 100644
+--- a/arch/x86_64/kernel/mce_amd.c
++++ b/arch/x86_64/kernel/mce_amd.c
+@@ -434,6 +434,7 @@ static __cpuinit int allocate_threshold_blocks(unsigned int cpu,
+ 	kobject_set_name(&b->kobj, "misc%i", block);
+ 	b->kobj.parent = &per_cpu(threshold_banks, cpu)[bank]->kobj;
+ 	b->kobj.ktype = &threshold_ktype;
++	printk("XXX%d registering %s (%p)\n", cpu, kobject_name(&b->kobj), &b->kobj);
+ 	err = kobject_register(&b->kobj);
+ 	if (err)
+ 		goto out_free;
+@@ -454,6 +455,7 @@ recurse:
+ 
+ out_free:
+ 	if (b) {
++		printk("XXX%d unregistering %s (%p)\n", cpu, kobject_name(&b->kobj), &b->kobj);
+ 		kobject_unregister(&b->kobj);
+ 		kfree(b);
+ 	}
+@@ -511,6 +513,7 @@ static __cpuinit int threshold_create_bank(unsigned int cpu, unsigned int bank)
+ #else
+ 	b->cpus = cpu_core_map[cpu];
+ #endif
++	printk("XXX%d registering %s (%p)\n", cpu, kobject_name(&b->kobj), &b->kobj);
+ 	err = kobject_register(&b->kobj);
+ 	if (err)
+ 		goto out_free;
+@@ -580,6 +583,7 @@ static void deallocate_threshold_block(unsigned int cpu,
+ 		return;
+ 
+ 	list_for_each_entry_safe(pos, tmp, &head->blocks->miscj, miscj) {
++		printk("XXX%d unregistering %s (%p)\n", cpu, kobject_name(&pos->kobj), &pos->kobj);
+ 		kobject_unregister(&pos->kobj);
+ 		list_del(&pos->miscj);
+ 		kfree(pos);
+@@ -626,6 +630,7 @@ static void threshold_remove_bank(unsigned int cpu, int bank)
+ 	deallocate_threshold_block(cpu, bank);
+ 
+ free_out:
++	printk("XXX%d unregistering %s (%p)\n", cpu, kobject_name(&b->kobj), &b->kobj);
+ 	kobject_unregister(&b->kobj);
+ 	kfree(b);
+ 	per_cpu(threshold_banks, cpu)[bank] = NULL;
+
+--------------050301020803010704060709--
