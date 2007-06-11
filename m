@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763565AbXFKHhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763863AbXFKHiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763565AbXFKHhS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 03:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbXFKHhH
+	id S1763863AbXFKHiV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 03:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbXFKHiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 03:37:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42686 "EHLO mx3.mail.elte.hu"
+	Mon, 11 Jun 2007 03:38:12 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:48146 "EHLO mail.sf-mail.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752184AbXFKHhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 03:37:05 -0400
-Date: Mon, 11 Jun 2007 09:36:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dinakar Guniguntala <dino@in.ibm.com>
-Subject: Re: v2.6.21.4-rt11
-Message-ID: <20070611073634.GB32446@elte.hu>
-References: <20070609210507.GA29194@elte.hu> <20070611011954.GG27982@linux.vnet.ibm.com>
+	id S1753366AbXFKHiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 03:38:11 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch 34/54] Fix roundup_pow_of_two(1)
+Date: Mon, 11 Jun 2007 09:38:17 +0200
+User-Agent: KMail/1.9.7
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
+       Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Greg Kroah-Hartman <gregkh@suse.de>
+References: <20070608072127.352723000@sous-sol.org> <20070608081944.GA12687@thunk.org> <20070608182325.GH3723@sequoia.sous-sol.org>
+In-Reply-To: <20070608182325.GH3723@sequoia.sous-sol.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070611011954.GG27982@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/signed;
+  boundary="nextPart5603236.KTNfWSHCfO";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706110938.19895.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart5603236.KTNfWSHCfO
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+Chris Wright wrote:
+> * Theodore Tso (tytso@mit.edu) wrote:
+> > If this doesn't fix a user-visiable bug, should we be including it in
+> > the stable patch series?  (Assuming that it doesn't, I wouldn't, but I
+> > tend to be more conservative about what I would include in a stable
+> > production release.)
+>
+> Rolf, despite simplicity of patch, I'm inclined to agree with Ted.
+> Were you effected by this in the wild, or just noticed by code
+> inspection?
 
-> 2.6.21.4-rt12 boots on 4-CPU Opteron and passes several hours of 
-> rcutorture.  However, if I simply do "modprobe rcutorture", the kernel 
-> threads do not spread across the CPUs as I would expect them to, even 
-> given CFS.  Instead, the readers all stack up on a single CPU, and I 
-> have to use the "taskset" command to spread them out manually.  Is 
-> there some config parameter I am missing out on?
+Code inspection. Drop it if you like, it's in mainline already.
 
-hm, what affinity do they start out with? Could they all be pinned to 
-CPU#0 by default?
+--nextPart5603236.KTNfWSHCfO
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGbPvrXKSJPmm5/E4RAoLPAJ4t80g0cJPFbSGWdmUkQE+gMp0xtACgkAYe
+9Pf07LYmUizuw944Te9mfLg=
+=zUss
+-----END PGP SIGNATURE-----
+
+--nextPart5603236.KTNfWSHCfO--
