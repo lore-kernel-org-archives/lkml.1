@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbXFKUGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbXFKUIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752468AbXFKUGH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 16:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbXFKUFz
+	id S1752826AbXFKUIy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 16:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbXFKUIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 16:05:55 -0400
-Received: from main.gmane.org ([80.91.229.2]:58157 "EHLO ciao.gmane.org"
+	Mon, 11 Jun 2007 16:08:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34718 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733AbXFKUFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 16:05:54 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Matthieu CASTET <castet.matthieu@free.fr>
-Subject: Re: beeping patch for debugging acpi sleep
-Date: Mon, 11 Jun 2007 19:49:44 +0000 (UTC)
-Message-ID: <pan.2007.06.11.19.49.44@free.fr>
-References: <20070518213701.GA810@core> <20070520200142.GB5235@ucw.cz>
-	<20070602182014.GB29546@core> <20070609130817.GI27793@elf.ucw.cz>
-	<20070611120034.f6d972de.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: cac94-1-81-57-151-96.fbx.proxad.net
-User-Agent: Pan/0.129 (Benson & Hedges Moscow Gold)
+	id S1750733AbXFKUIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 16:08:46 -0400
+Message-ID: <466DAAD9.2030207@sandeen.net>
+Date: Mon, 11 Jun 2007 15:04:41 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Karl Pickett <karl.pickett@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Kernel BUG when using corrupted ext3 fs
+References: <f9be06770706080751y4bbb60d0q3a2286d8e2b576f6@mail.gmail.com> <f9be06770706080753m41959da2m2034e428854c1c0b@mail.gmail.com>
+In-Reply-To: <f9be06770706080753m41959da2m2034e428854c1c0b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Mon, 11 Jun 2007 12:00:34 -0700, Andrew Morton wrote:
-
-> On Sat, 9 Jun 2007 15:08:17 +0200
-> Pavel Machek <pavel@ucw.cz> wrote:
+Karl Pickett wrote:
+> I had to hard shutdown a fc6 machine due to vmware and nvidia doing
+> ridiculous things to my screen resolution and locking up.  ugh.
+> Anyway, upon reboot it recovers the journal and mounts / rw fine.
+> Then rc.sysinit tries to delete various things from /tmp (.ICE-unix,
+> .font stuff, etc), kernel shows a BUG, and boot stops.  Booting from a
+> fc7 live cd and trying to mount /dev/sda2 rw and delete /tmp/* also
+> causes a BUG.  This dump is from fc7:
 > 
-> 
 
-> How does the beep get turned off again?
-May be it is turn off by the speaker driver.
+...
 
+The corrupted orphan inode list bug I fixed,
 
-BTW can't we do something with led ? This way it can be always enabled 
-without anoying people
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2988a7740dc0dd9a0cb56576e8fe1d777dff0db3
 
+is in that fc7 kernel, so that's probably not it (though your fc6 kernel
+probably didn't have that fix)  (it's related to link & unlink racing)
 
-Matthieu
+Perhaps this could be related to Vasily's issue w/ bad_inodes not
+getting removed from the list ?
 
+[RFC PATCH ext3/ext4] orphan list corruption due bad inode
+http://lkml.org/lkml/2007/6/4/7
+
+I haven't looked at all the ways we could get bad inodes on the orphan
+inode list, and not properly removed...
+
+-Eric
