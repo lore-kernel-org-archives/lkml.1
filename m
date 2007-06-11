@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbXFKUnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbXFKUog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbXFKUnH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 16:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbXFKUmz
+	id S1754664AbXFKUog (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 16:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbXFKUo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 16:42:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:28153 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbXFKUmy (ORCPT
+	Mon, 11 Jun 2007 16:44:28 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:26848 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752321AbXFKUo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 16:42:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=IkQlI/5luaBIRM6Gb5tZXfNQJE37fPu0K2V3lzg3mRFcKExITgsRWTcVnoqvocqjB18VSZsIs8geS7PTYOL4+QhfLN6bQAxI6SeI+NZpk6dan8cEkSsIkvVtYT+AUSvfR5V16o0bg09f+VLiwg6AgzNp1yCDZwU0DTqQIsQmjws=
-Message-ID: <466DCFD4.9080702@gmail.com>
-Date: Tue, 12 Jun 2007 00:42:28 +0200
-From: Robert de Rooy <robert.de.rooy@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Mon, 11 Jun 2007 16:44:27 -0400
+Date: Mon, 11 Jun 2007 22:44:26 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, Steve Fox <drfickle@us.ibm.com>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] move the kernel to 16MB for NUMA-Q
+In-Reply-To: <466D9C00.6030608@zytor.com>
+Message-ID: <Pine.LNX.4.64.0706112239080.19578@fbirervta.pbzchgretzou.qr>
+References: <466D550C.4030600@shadowen.org> <63a08cc7547f14065becdf9a94d0d529@pinky>
+ <20070611091558.f468f205.akpm@linux-foundation.org> <20070611172006.GI9174@redhat.com>
+ <466D882D.70001@zytor.com> <Pine.LNX.4.64.0706112019310.19578@fbirervta.pbzchgretzou.qr>
+ <466D9C00.6030608@zytor.com>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Jiri Kosina <jikos@jikos.cz>, Greg KH <greg@kroah.com>,
-       Joel.Becker@oracle.com,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] ThinkPad T41 - Strange USB 2.0 behaviour
-References: <Pine.LNX.4.44L0.0706101129070.29131-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0706101129070.29131-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> Okay.  It's clear that you've got a hardware problem of some sort.  
-> Hard to say what it is, but evidently the EHCI controller thinks that 
-> the device is repeatedly being unplugged and replugged.
->
-> Anyway, this isn't a problem of recognizing that a single device is
-> having problems.  In fact the computer has no way of knowing that a
-> single device is involved; all it knows is that _something_ gets
-> plugged into the port and then removed.  There's no way to tell if it's 
-> the same _something_ from one iteration to the next.
->
-> You can manually force the port to run at full speed instead of high 
-> speed as follows:
->
-> 	echo '4' >/sys/class/usb_host/usb_host4/companion
->
-> The "companion" attribute file contains a list of ports which are 
-> permanently set to be handled by the EHCI's companion controller.  To 
-> return to high-speed operation, use '-4' instead of '4' above.  This 
-> might or might not solve your problem -- the hardware bug might cause 
-> the port to return automatically to high-speed regardless.
->
-> Let me know what happens.
->
-> Alan Stern
 
-Yes that works.
-I tried to plug and unplug the device repeatedly and each time it came 
-up in full-speed mode.
+On Jun 11 2007 12:01, H. Peter Anvin wrote:
+>Jan Engelhardt wrote:
+>> On Jun 11 2007 10:36, H. Peter Anvin wrote:
+>>> Picking the 16 MB base is a bit obnoxious on small-memory machines, 4 MB
+>>> would probably be a more reasonable base.  Of course, 16 MB would avoid
+>>>  the issue of the handful of machines with memory holes at 15-16 MB.
+>> 
+>> How will this work at all with a 5 MB machine?
+>
+>Does current kernels work at all on a 5 MB machine?
+>
+>(I used Linux on a 5 MB machine many years ago, but modern kernels are a
+>different issue...)
 
+Yes, I ran an unmodified 2.6.13 with a minimal but somewhat minimal
+userspace (sash, glibc) on an fpu-less 386.
+http://jengelh.hopto.org/GFX/mach/386sx.jpg
+http://jengelh.hopto.org/GFX/mach/proc386.jpg
+(yay, 3.09 bogomips and a totally incapable processor :p)
+Have not tried more recent kernels yet though.
+
+
+	Jan
+-- 
