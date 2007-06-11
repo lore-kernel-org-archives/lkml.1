@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763525AbXFKFdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbXFKGJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763525AbXFKFdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 01:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXFKFdb
+	id S1756670AbXFKGJU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 02:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbXFKGJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 01:33:31 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:51142 "EHLO smtp.ocgnet.org"
+	Mon, 11 Jun 2007 02:09:10 -0400
+Received: from mx2.suse.de ([195.135.220.15]:44896 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbXFKFda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 01:33:30 -0400
-Date: Mon, 11 Jun 2007 14:32:09 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>, Adam Belay <abelay@novell.com>,
-       Len Brown <lenb@kernel.org>, Dave Miller <davem@davemloft.net>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [patch-mm 01/23] NOHZ: Fix ARM,SH,SPARC64 idle nohz handling
-Message-ID: <20070611053209.GA23365@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-	Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Chris Wright <chrisw@sous-sol.org>, Adam Belay <abelay@novell.com>,
-	Len Brown <lenb@kernel.org>, Dave Miller <davem@davemloft.net>,
-	Russell King <rmk+kernel@arm.linux.org.uk>
-References: <20070610092437.118387863@inhelltoy.tec.linutronix.de> <20070610092446.402212606@inhelltoy.tec.linutronix.de> <20070611002614.GA20676@linux-sh.org> <1181539259.8176.40.camel@chaos>
+	id S1750728AbXFKGJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 02:09:09 -0400
+Date: Sun, 10 Jun 2007 23:02:59 -0700
+From: Greg KH <gregkh@suse.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
+       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
+Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO
+	translated into Japanese]
+Message-ID: <20070611060259.GA914@suse.de>
+References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <20070610175228.GA28947@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1181539259.8176.40.camel@chaos>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070610175228.GA28947@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 07:20:59AM +0200, Thomas Gleixner wrote:
-> On Mon, 2007-06-11 at 09:26 +0900, Paul Mundt wrote:
-> >
-> > There are two paths here depending on hlt/nohlt setting, we need to have
-> > tick_nohz_stop_sched_tick() for the TIF_POLLING_NRFLAG case, too.
+On Sun, Jun 10, 2007 at 07:52:28PM +0200, Sam Ravnborg wrote:
+> On Sun, Jun 10, 2007 at 09:22:21AM -0700, Greg KH wrote:
+> > >  Since the common language of most kernel contributors is english I
+> > >  personally feel that we should stick to just that one language in the
+> > >  tree and then perhaps keep translations on a website somewhere. So the
+> > >  authoritative docs stay in the tree, in english, so that as many
+> > >  contributors as possible can read and update them. It would then be a
+> > >  seperate project to generate translations and keep them updated
+> > >  according to what's in the tree.  Perhaps we could get the kernel.org
+> > >  people to create an official space for that and then place a pointer
+> > >  to that site in Documentation/ somewhere.
+> > 
+> > No, I think the translated files should be in the tree proper, we have
+> > the space :)
 > 
-> Do you really want to run through that in every loop iteration ? If you
-> have nohlt, then nohz is rather pointless.
+> We once discussed about .po files for kconfig and back then
+> the conclusion was not to keep them in the kernel tree.
 > 
-Well, nohlt is a corner case, but even so, nohz doesn't really make much
-sense in the polling case. tick_nohz_restart_sched_tick() is also safe in
-either path, so let's just go with your original patch. Sorry for the noise.
+> I advocated that they should stay out back then.
+> But on the other hand I do not see it causing much troubles
+> having scripts/kconfig/po/da.po etc araound.
+> 
+> Any opinion about the .po files?
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+I have no objection for them to be around in the tree, it might help out
+some users who want to build their own kernels, and allow the -stable
+kernels to catch up on the translations.
+
+So I would encourage their addition, if possible.
+
+thanks,
+
+greg 'not everyone speaks english' k-h
