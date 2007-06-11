@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbXFLARp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbXFLAT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308AbXFLARp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 20:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXFLARi
+	id S1756634AbXFLAT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 20:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbXFLATt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 20:17:38 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:51705 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753283AbXFLARh (ORCPT
+	Mon, 11 Jun 2007 20:19:49 -0400
+Received: from wilma.widomaker.com ([204.17.220.5]:3140 "EHLO
+	wilma.widomaker.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752512AbXFLATs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 20:17:37 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Subject: Re: ext2 on flash memory
-Date: Tue, 12 Jun 2007 02:17:24 +0200
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>, maxdamage@aladin.ro
-References: <466D379C.6000809@wpkg.org>
-In-Reply-To: <466D379C.6000809@wpkg.org>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Mon, 11 Jun 2007 20:19:48 -0400
+X-Greylist: delayed 1457 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jun 2007 20:19:48 EDT
+Message-ID: <466DE0F1.6080401@widomaker.com>
+Date: Mon, 11 Jun 2007 19:55:29 -0400
+From: Charles Shannon Hendrix <shannon@widomaker.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: linux-kernel@vger.kernel.org
+Subject: sata_nv adma issues
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706120217.24546.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+U3DX3KAlPDbsrAlsNQzJKzQH0eA0rtFz6I0d
- KQoxcgworNl9JpPlZIKto19P9VC6ru04qugJJpphVp76VhCoYX
- 32le77fzmsjsn9dL2pmSA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 June 2007, Tomasz Chmielewski wrote:
-> Also, ext2 provides a nice feature other filesystems lack: xip. 
-> Especially, if a pendrive is used as a rootfs for a small device.
 
-Well, xip cannot work on NAND flash media, including USB pen drives,
-because the data is not mapped into the addressable memory space,
-so that is not really an interesting argument.
+My system has issues running adma mode with sata_nv.  I have an nforce4 
+motherboard.
 
-	Arnd <><
+What is the current status of this problem?
+
+Is there any information I can provide to help debug it?
+
+I gave up trying various fixes about 6 months ago, and put "sata_nv.adma=0" on 
+the kernel command line in LILO, and that fixed the problem.
+
+However, recently I changed distributions and went back to 2.6.20 (kubuntu 7.04).
+
+This kernel says that sata_nv.adma=0 is an invalid kernel option.
+
+I'm pretty puzzled by that, because it is supposed to disable adma mode in the 
+sata_nv driver.
+
+/proc/cmdline says:
+
+root=<hash> ro sata_nv.adma=0 quiet splash
+
+...so it seems I did give the parameter properly.
+
+Any ideas appreciated.
+
+Is there a better way to deal with this?
+
+Also, one more: does it hurt to wait until the sata_nv driver fails a few 
+times (at which point it stops bitching) and use the machine?  Once it
+fails about 6 times, I no longer have any issues, and speed is still good 
+enough to use until a real fix can be had.
+
+Thanks.
+
+
+
+-- 
+shannon           | An Irishman is never drunk as long as he can hold onto
+                   | one blade of grass and not fall off the face of the earth.
