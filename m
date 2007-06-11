@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbXFKNoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbXFKNry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740AbXFKNoP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 09:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXFKNoG
+	id S1753167AbXFKNry (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 09:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXFKNrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 09:44:06 -0400
-Received: from waste.org ([66.93.16.53]:36246 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751812AbXFKNoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 09:44:05 -0400
-Date: Mon, 11 Jun 2007 08:43:26 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Matthias Schniedermeyer <ms@citd.de>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
-Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
-Message-ID: <20070611134326.GH11166@waste.org>
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <466C3B64.4070806@citd.de> <20070611060759.GB914@suse.de>
+	Mon, 11 Jun 2007 09:47:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:45989 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751830AbXFKNrq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 09:47:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RN/QVVH+X4N8erjGdcHcyIRhNnU5MOEcAoBpxWn6XsB5YL+KDWhlbC1ScKRhLatTyV4tz4M/rtvwNRce302/kQflL9d28sGDoQfl/jdxS3RJpabqZwB6jc67oxb09TlRxHg9SSD+l6e6o24C0+VV7ts5dGwt1HPqtL+gaF5oZak=
+Message-ID: <5bdc1c8b0706110647j30e95d3en3ca70470524fb8e2@mail.gmail.com>
+Date: Mon, 11 Jun 2007 06:47:39 -0700
+From: "Mark Knecht" <markknecht@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.21-rt9 - IRQ23 consuming a steady 2.7% of CPU
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Lee Revell" <rlrevell@gmail.com>
+In-Reply-To: <20070611075722.GA9852@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070611060759.GB914@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <5bdc1c8b0706100946k3acd6374uac8248e78f97433d@mail.gmail.com>
+	 <20070610172452.GA7560@elte.hu>
+	 <5bdc1c8b0706101038q2f0e3418t1a595e749b5bfe71@mail.gmail.com>
+	 <20070610180745.GA14912@elte.hu>
+	 <5bdc1c8b0706101344o78d202dcx5cfdaea0fd73ddf7@mail.gmail.com>
+	 <20070611075722.GA9852@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 10, 2007 at 11:07:59PM -0700, Greg KH wrote:
-> So, Tsugikazu, care to resend this file as a patch that I can apply to
-> the Documentation directory of the kernel tree?  I think it would be
-> good to have there.
+On 6/11/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Mark Knecht <markknecht@gmail.com> wrote:
+>
+> > Hi Ingo,
+> >   Yep, that solved it on my machine. I did have to patch using 'patch
+> > -p1 -R' I think that's because the paths in your patch file are maybe
+> > based on your work setup? I don't know. I'm amazed most of the time
+> > that I can even do this stuff but with your help it seems to work out.
+> > Thanks.
+> >
+> >   Anyway, top no longer reports the 2.7% CPU usage from IRQ23. I do
+> > see a little bit of CPU consumption from X and firefox but that seems
+> > pretty reasonable.
+>
+> ok, thanks - i took that change out from -rt.
+>
+>         Ingo
+>
+Thanks Ingo. Have a great week.
 
-I'd rather have a single file, marked "Japanese" (in Japanese), that
-had pointers to current translations. These will always be at least as
-current as whatever we have in the tree, if not more so. Especially
-when someone is trying to figure out how to work based on the year-old
-kernel their embedded vendor gave them.
-
-Further, it might be good for someone to be the "Japanese maintainer".
-This person's job would be to accept patches from non-English-speaking
-contributors, translate their commit messages and comments, then
-forward them to the appropriate places (Andrew, subsystem maintainers,
-LKML, etc.). They should also distill and translate feedback.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+- Mark
