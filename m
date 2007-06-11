@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbXFKS7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbXFKTA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbXFKS7z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 14:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbXFKS7p
+	id S1756193AbXFKTA4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbXFKTAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 14:59:45 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:43128 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753081AbXFKS7o (ORCPT
+	Mon, 11 Jun 2007 15:00:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52401 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753038AbXFKTAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 14:59:44 -0400
-Date: Mon, 11 Jun 2007 11:59:34 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: api <linuxgent@kpnplanet.nl>
-Cc: linux-kernel@vger.kernel.org, scsi <linux-scsi@vger.kernel.org>,
-       jejb <james.bottomley@steeleye.com>, jgarzik <jgarzik@pobox.com>
-Subject: [PATCH] scsi disk help file is not complete
-Message-Id: <20070611115934.9097fb04.randy.dunlap@oracle.com>
-In-Reply-To: <466D9440.3080005@kpnplanet.nl>
-References: <466D9440.3080005@kpnplanet.nl>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 11 Jun 2007 15:00:47 -0400
+Date: Mon, 11 Jun 2007 12:00:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Christian Leber <christian@leber.de>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: beeping patch for debugging acpi sleep
+Message-Id: <20070611120034.f6d972de.akpm@linux-foundation.org>
+In-Reply-To: <20070609130817.GI27793@elf.ucw.cz>
+References: <20070518213701.GA810@core>
+	<20070520200142.GB5235@ucw.cz>
+	<20070602182014.GB29546@core>
+	<20070609130817.GI27793@elf.ucw.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jun 2007 20:28:16 +0200 api wrote:
+On Sat, 9 Jun 2007 15:08:17 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
-> Good day,
-> When doing make menuconfig one comes across CONFIG_BLK_DEV_SD.
-> The help file states that this is for scsi disks.NO MENTION IS MADE THAT
-> IT IS NEEDE FOR SATA DISKS AS WELL!
-> Would have saved me a lot of time if the help was up to date.
-> I hope this can be changed so others can make a kernel for sata systems
-> quicker.
+> 
+> Starting beeper as soon as ACPI sleep returns is very useful in
+> debugging "apparently dead" machines. If it beeps at all, it makes
+> sense to start playing with CMOS tracer.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> diff --git a/arch/i386/kernel/acpi/wakeup.S b/arch/i386/kernel/acpi/wakeup.S
+> index b781b38..cbf136e 100644
+> --- a/arch/i386/kernel/acpi/wakeup.S
+> +++ b/arch/i386/kernel/acpi/wakeup.S
+> @@ -11,7 +11,22 @@ # Do we need to deal with A20? It is oka
+>  #
+>  # If physical address of wakeup_code is 0x12345, BIOS should call us with
+>  # cs = 0x1234, eip = 0x05
+> -# 
+> +#
+> +
+> +#define BEEP \
+> +	inb	$97, %al; 	\
+> +	outb	%al, $0x80; 	\
+> +	movb	$3, %al; 	\
+> +	outb	%al, $97; 	\
+> +	outb	%al, $0x80; 	\
+> +	movb	$-74, %al; 	\
+> +	outb	%al, $67; 	\
+> +	outb	%al, $0x80; 	\
+> +	movb	$-119, %al; 	\
+> +	outb	%al, $66; 	\
+> +	outb	%al, $0x80; 	\
+> +	movb	$15, %al; 	\
+> +	outb	%al, $66;
+>  
+>  ALIGN
+>  	.align	4096
+> @@ -20,6 +35,9 @@ wakeup_code:
+>  	wakeup_code_start = .
+>  	.code16
+>  
+> +# Uncomment this to make your computer start producing ugly noise as soon
+> +# as BIOS returns to this real-mode entry point.
+> +#	BEEP
+>   	movw	$0xb800, %ax
+>  	movw	%ax,%fs
+>  	movw	$0x0e00 + 'L', %fs:(0x10)
+> 
 
+How does the beep get turned off again?
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Should the BEEP line be uncommented (in -mm at least)?
 
-Add help info for BLK_DEV_SD referring to its use in
-SATA or PATA driver configurations.
-
-Add help text for "ATA" indicating that it probably needs
-some SCSI config symbols enabled in order to be useful.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/ata/Kconfig  |    5 +++++
- drivers/scsi/Kconfig |    1 +
- 2 files changed, 6 insertions(+)
-
---- linux-2622-rc4.orig/drivers/scsi/Kconfig
-+++ linux-2622-rc4/drivers/scsi/Kconfig
-@@ -60,6 +60,7 @@ config BLK_DEV_SD
- 	depends on SCSI
- 	---help---
- 	  If you want to use SCSI hard disks, Fibre Channel disks,
-+	  Serial ATA (SATA) or Parallel ATA (PATA) hard disks,
- 	  USB storage or the SCSI or parallel port version of
- 	  the IOMEGA ZIP drive, say Y and read the SCSI-HOWTO,
- 	  the Disk-HOWTO and the Multi-Disk-HOWTO, available from
---- linux-2622-rc4.orig/drivers/ata/Kconfig
-+++ linux-2622-rc4/drivers/ata/Kconfig
-@@ -17,6 +17,11 @@ menuconfig ATA
- 	  that "speaks" the ATA protocol, also called ATA controller),
- 	  because you will be asked for it.
- 
-+	  NOTE: ATA enables basic SCSI support; *however*,
-+	  'SCSI disk support', 'SCSI tape support', or
-+	  'SCSI CDROM support' may also be needed,
-+	  depending on your hardware configuration.
-+
- if ATA
- 
- config ATA_NONSTANDARD
