@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbXFKJbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763896AbXFKJds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760181AbXFKJbw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 05:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbXFKJbp
+	id S1763896AbXFKJds (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 05:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbXFKJdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 05:31:45 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:37243 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbXFKJbo (ORCPT
+	Mon, 11 Jun 2007 05:33:42 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34214 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752106AbXFKJdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 05:31:44 -0400
-Message-ID: <466D15BB.2080705@gmail.com>
-Date: Mon, 11 Jun 2007 11:28:27 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Denis Vlasenko <vda.linux@googlemail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Greg KH <gregkh@suse.de>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
-Subject: Re: kconfig .po files in kernel tree? [Was: Documentation/HOWTO	translated
- into Japanese]
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <20070610175228.GA28947@uranus.ravnborg.org> <466C49DB.6040409@gmail.com> <200706110159.00482.vda.linux@googlemail.com> <20070611001434.GD3588@stusta.de>
-In-Reply-To: <20070611001434.GD3588@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 11 Jun 2007 05:33:41 -0400
+Date: Mon, 11 Jun 2007 10:38:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: debian developer <debiandev@gmail.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070611103855.7c12f2df@the-village.bc.nu>
+In-Reply-To: <20070611034234.GA32558@kroah.com>
+References: <466BB9B0.5030908@netone.net.tr>
+	<Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<466BCBBC.90305@netone.net.tr>
+	<Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
+	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
+	<466C0901.4000405@netone.net.tr>
+	<alpine.LFD.0.98.0706101025330.20321@woody.linux-foundation.org>
+	<20070610184736.464d1e32@the-village.bc.nu>
+	<f24d23310706101232l335fbf1amff832c00339aa954@mail.gmail.com>
+	<20070610215458.0319cdce@the-village.bc.nu>
+	<20070611034234.GA32558@kroah.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/11/2007 02:14 AM, Adrian Bunk wrote:
+> Now yes, they didn't consult with the individual owners of the kernel,
+> who might hold different views as to if v2 covers keys like you have
+> stated in the past, but the FSF's position in this area does hold some
+> ammount of weight, especially in court if it were to come to that.
 
-> On Mon, Jun 11, 2007 at 01:59:00AM +0200, Denis Vlasenko wrote:
+The authors position does have rather a lot of weight too. Especially as
+they have been made plain to Tivo and various other relevant parties.
 
->> I agree. i18n efforts won't help one iota because people just have
->> to know English in order to participate in l-k development.
->> They should be able to read _and_ reply_ to lkml posts,
->> and read and understnd code _and_ comments_.
->> ...
-> 
-> Kconfig is different since the target audience and the majority of users 
-> are not kernel developers.
-
-Well, hardly. The percentages quoted vary wildly with the point someone is 
-trying to make but "user users" are expected to just use whatever their 
-distribution provided them with meaning the Kconfig target audience is 
-developers and "power users". Enough of the latter around certainly but I 
-have no indication whatsoever that a significant number of them is lost in 
-the water without Kconfig translations either.
-
-Internationalization is not very useful, has great potential to introduce 
-even more chronically bit-rotting content and is finally counter-productive 
-  in maintaining a non-forking single community, at least in so far as it is 
-today. One should spit on internationalization.
-
-Rene.
+Alan
