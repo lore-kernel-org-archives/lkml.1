@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbXFKWyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbXFKXEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbXFKWyt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 18:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbXFKWyi
+	id S1755205AbXFKXEZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 19:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbXFKXER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 18:54:38 -0400
-Received: from gretel.pobox.com ([208.58.1.197]:51047 "EHLO gretel.pobox.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751251AbXFKWyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 18:54:37 -0400
-Message-ID: <466DCF43.5060304@pobox.com>
-Date: Mon, 11 Jun 2007 18:40:03 -0400
-From: Mark Lord <mlord@pobox.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 11 Jun 2007 19:04:17 -0400
+Received: from mailout05.sul.t-online.com ([194.25.134.82]:39078 "EHLO
+	mailout05.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751545AbXFKXEQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 19:04:16 -0400
+Message-ID: <466DD4E1.4030305@t-online.de>
+Date: Tue, 12 Jun 2007 01:04:01 +0200
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070519)
 MIME-Version: 1.0
-To: Robert de Rooy <robert.de.rooy@gmail.com>
-Cc: Mark Lord <liml@rtr.ca>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, bzolnier@gmail.com,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: libata and legacy ide pcmcia failure
-References: <466718B6.4080105@gmail.com> <4667B39D.209@gmail.com> <46685AE5.4010908@gmail.com> <466900F3.7040801@gmail.com> <46694FB2.6040007@pobox.com> <4669D2D8.3020806@gmail.com> <4669D3F5.7040300@rtr.ca> <466B4D86.1020808@gmail.com> <466C631D.2000001@rtr.ca> <466C723C.6000300@gmail.com> <20070610221322.GA18196@flint.arm.linux.org.uk> <466C7A9F.1080700@rtr.ca> <466DCE55.30507@gmail.com>
-In-Reply-To: <466DCE55.30507@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, "Wu, Bryan" <Bryan.Wu@analog.com>,
+       Greg Ungerer <gerg@snapgear.com>
+Subject: Re: [PATCH, RFD]: Unbreak no-mmu mmap
+References: <46695F6D.5050600@t-online.de> <20070609191010.GB11166@waste.org> <8bd0f97a0706111509s161c6287pdce612946194d87@mail.gmail.com>
+In-Reply-To: <8bd0f97a0706111509s161c6287pdce612946194d87@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-ID: Z62NjOZ-ZeucXVqeehFKwcu3HEWwFc7VJqr0vlEOGWBiT4lccyI80F
+X-TOI-MSGID: f81c8c1a-a66a-4719-b7f9-91f4e122bc79
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert de Rooy wrote:
-> (after applying the ide-polling experimental patch)
->
-> With this I can declare success!! I was able to read and write to the 
-> card without any problems, although I did not try to stress it.
+Mike Frysinger wrote:
+> On 6/9/07, Matt Mackall <mpm@selenic.com> wrote:
+>> On Fri, Jun 08, 2007 at 03:53:49PM +0200, Bernd Schmidt wrote:
+>> > 2. It is no longer possible to get blocks smaller than a page through
+>> >    mmap.  This behaviour was used by simplemalloc, which is an insane
+>> >    way of implementing malloc on nommu systems and hopefully not used
+>> >    by anyone anymore.
+>>
+>> That's worrisome. Breaking existing apps/libraries seems like a bad
+>> idea.
 > 
-> Jun 12 00:19:42 localhost kernel: pccard: PCMCIA card inserted into slot 0
-> Jun 12 00:19:42 localhost kernel: cs: memory probe 
-> 0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
-> Jun 12 00:19:42 localhost kernel: cs: memory probe 
-> 0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
-> 0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
-> 0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
-> 0xcfa00000-0xd01fffff
-> Jun 12 00:19:42 localhost kernel: pcmcia: registering new device pcmcia0.0
-> Jun 12 00:19:42 localhost kernel: Uniform Multi-Platform E-IDE driver 
-> Revision: 7.00alpha2
-> Jun 12 00:19:42 localhost kernel: ide: Assuming 33MHz system bus speed 
-> for PIO modes; override with idebus=xx
-> Jun 12 00:19:45 localhost kernel: hda: Memory Card Adapter, CFA DISK drive
-> Jun 12 00:19:45 localhost kernel: ide0 at 0x4100-0x4107,0x410e on irq 3
-> Jun 12 00:19:45 localhost kernel: ide-cs: hda: Vpp = 0.0
-> Jun 12 00:19:45 localhost udevd-event[20730]: udev_rules_apply_format: 
-> unknown format variable '$modalias'
-> Jun 12 00:19:45 localhost kernel: hda: max request size: 128KiB
-> Jun 12 00:19:45 localhost kernel: hda: 253696 sectors (129 MB) w/1KiB 
-> Cache, CHS=991/16/16
-> Jun 12 00:19:45 localhost kernel:  hda: hda1
-> Jun 12 00:19:48 localhost hald: mounted /dev/hda1 on behalf of uid 0
+> it isnt breaking anything ... simplemalloc() will continue to execute
+> in newer kernels
 
-Okay, Tejun / Bart / Alan:
+While that's true, it'll have an even bigger memory overhead than it
+already does (simplemalloc, by trapping into the kernel and creating
+vm_area/vm_list structures for every malloc call, has huge overheads in
+both time and space).
+I've posted this as an RFD to get a feeling for whether we can change
+behaviour here - I do expect that nommu embedded systems are less
+constrained by backwards compatibility considerations, but I'd like to
+hear from other embedded users whether this is a change they'd welcome.
 
-This proves that the device does work correctly in most respects
-except for interrupt delivery.  The status bits are working and
-it can be probed for, configured, and used.
 
-So, next step might be to try and understand the interrupt mis-delivery
-problem some more.   I've lost the history of the original issue,
-but we now know that everything except the actual interrupt seems good.
-
-Cheers
+Bernd
 -- 
-Mark Lord
-Real-Time Remedies Inc.
-mlord@pobox.com
+This footer brought to you by insane German lawmakers.
+Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
+Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
+Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
