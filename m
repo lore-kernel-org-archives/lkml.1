@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbXFKRi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbXFKRkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755687AbXFKRi2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 13:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXFKRiO
+	id S1755570AbXFKRkV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 13:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbXFKRkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 13:38:14 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:36413 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbXFKRiM (ORCPT
+	Mon, 11 Jun 2007 13:40:08 -0400
+Received: from CHOKECHERRY.SRV.CS.CMU.EDU ([128.2.185.41]:48446 "EHLO
+	chokecherry.srv.cs.cmu.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752377AbXFKRkG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 13:38:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VKKdG4hbsQzSEIYWzTpm5+/VLpRNpshrmn4fRauzKz5GFfwkrL1XElz2PLzBrYD1SCYeJKircVzgBDWcY7QHyJQ5sdYn01ggEvvgLbekRPk19XoaljrKRUfWTRQDAnMdA/znnboTBNVCY1AvdTQjyRkhHJUa8MuWnZWg3ofqmoI=
-Message-ID: <12c511ca0706111038j37e188b6n2677b1789d14de23@mail.gmail.com>
-Date: Mon, 11 Jun 2007 10:38:10 -0700
-From: "Tony Luck" <tony.luck@gmail.com>
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
-Cc: "Greg KH" <gregkh@suse.de>, "Matthias Schniedermeyer" <ms@citd.de>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Tsugikazu Shibata" <tshibata@ab.jp.nec.com>,
-       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
-In-Reply-To: <20070611134326.GH11166@waste.org>
+	Mon, 11 Jun 2007 13:40:06 -0400
+Message-ID: <466D88C0.70403@cs.cmu.edu>
+Date: Mon, 11 Jun 2007 13:39:12 -0400
+From: Benjamin Gilbert <bgilbert@cs.cmu.edu>
+User-Agent: Icedove 1.5.0.8 (X11/20061208)
 MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: Jeff Garzik <jeff@garzik.org>, akpm@linux-foundation.org,
+       herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
+References: <20070608214242.23949.30350.stgit@dev> <20070608214253.23949.40465.stgit@dev> <20070609201159.GC11166@waste.org> <466B0C3F.3040300@garzik.org> <466B46D5.1020004@cs.cmu.edu> <20070610135956.GS11115@waste.org>
+In-Reply-To: <20070610135956.GS11115@waste.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com>
-	 <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com>
-	 <20070610162221.GA12830@suse.de> <466C3B64.4070806@citd.de>
-	 <20070611060759.GB914@suse.de> <20070611134326.GH11166@waste.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'd rather have a single file, marked "Japanese" (in Japanese), that
-> had pointers to current translations. These will always be at least as
-> current as whatever we have in the tree, if not more so. Especially
-> when someone is trying to figure out how to work based on the year-old
-> kernel their embedded vendor gave them.
+Matt Mackall wrote:
+> In 2003, I was getting 17MB/s out of my Athlon. Now I'm getting 2.7MB/s.
+> Were your tests with or without the latest /dev/urandom fixes? This
+> one in particular:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.21.y.git;a=commitdiff;h=374f167dfb97c1785515a0c41e32a66b414859a8
 
-Knowing whether a translation is current or not would be useful ... perhaps
-the translated files could include the GIT blob SHA1 of the version they
-were translated from (and some human readable version string too :-)
-This would allow someone reading the documentation to know whether
-is really was current.  If it isn't, it provides an easy path to see what
-changed in the source document since the translation was made. This
-same diff should lighten the load for people maintaining the translation.
+With.  I just tried 2.6.11 (the oldest that will boot) on the Pentium IV 
+box and got 3.7 MB/s, so if it's a regression it's been around for a while.
 
--Tony
+--Benjamin Gilbert
