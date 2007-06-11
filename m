@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbXFKXJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbXFKXJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbXFKXJB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 19:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXFKXII
+	id S1756851AbXFKXJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 19:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbXFKXIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 19:08:08 -0400
+	Mon, 11 Jun 2007 19:08:09 -0400
 Received: from norsk5.dsl.xmission.com ([166.70.24.44]:13352 "EHLO
 	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752931AbXFKXIE (ORCPT
+	by vger.kernel.org with ESMTP id S1753834AbXFKXIF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 19:08:04 -0400
-Date: Mon, 11 Jun 2007 17:11:22 -0600
+	Mon, 11 Jun 2007 19:08:05 -0400
+Date: Mon, 11 Jun 2007 17:11:23 -0600
 From: dougthompson@xmission.com
 To: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH 3/5] driver edac mod edac_align_ptr function
-Message-ID: <466dd69a.K9Sc1d6jWnbc1hsb%dougthompson@xmission.com>
+Subject: [PATCH 4/5] driver edac mod edac_opt_state_to_string function
+Message-ID: <466dd69b.89uG8Kpz3SmXXfSx%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.1 6/15/06
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,98 +24,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From:   Douglas Thompson <dougthompson@xmission.com>
 
-refactor the edac_align_ptr() function to reduce the noise of
-casting the aligned pointer to the various types of data objects
-and modified its callers to its new signature
+Refactored the function edac_op_state_toString() to be edac_op_state_to_string()
+for consistent style, and its callers
 
 Signed-off-by:  Douglas Thompson <dougthompson@xmission.com>
 ---
- edac_core.h         |   11 -----
- edac_device.c       |  105 ++++++++++++++++++++++++++--------------------------
- edac_device_sysfs.c |   22 +++-------
- 3 files changed, 62 insertions(+), 76 deletions(-)
+ edac_core.h   |    2 +-
+ edac_device.c |    2 +-
+ edac_module.c |    4 ++--
+ edac_pci.c    |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
 Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_core.h
 ===================================================================
 --- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_core.h
 +++ linux-2.6.22-rc4-mm2/drivers/edac/edac_core.h
-@@ -211,8 +211,6 @@ enum scrub_type {
- #define OP_RUNNING_POLL_INTR	0x203
- #define OP_OFFLINE		0x300
- 
--extern char *edac_align_ptr(void *ptr, unsigned size);
--
+@@ -845,6 +845,6 @@ extern void edac_pci_remove_sysfs(struct
  /*
-  * There are several things to be aware of that aren't at all obvious:
-  *
+  * edac misc APIs
+  */
+-extern char *edac_op_state_toString(int op_state);
++extern char *edac_op_state_to_string(int op_state);
+ 
+ #endif				/* _EDAC_CORE_H_ */
+Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_module.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_module.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/edac_module.c
+@@ -35,9 +35,9 @@ static struct sysdev_class edac_class = 
+ static int edac_class_valid;
+ 
+ /*
+- * edac_op_state_toString()
++ * edac_op_state_to_string()
+  */
+-char *edac_op_state_toString(int opstate)
++char *edac_op_state_to_string(int opstate)
+ {
+ 	if (opstate == OP_RUNNING_POLL)
+ 		return "POLLED";
+Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_pci.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_pci.c
++++ linux-2.6.22-rc4-mm2/drivers/edac/edac_pci.c
+@@ -321,7 +321,7 @@ int edac_pci_add_device(struct edac_pci_
+ 			" DEV '%s' (%s)\n",
+ 			pci->mod_name,
+ 			pci->ctl_name,
+-			dev_name(pci), edac_op_state_toString(pci->op_state));
++			dev_name(pci), edac_op_state_to_string(pci->op_state));
+ 
+ 	edac_unlock_pci_list();
+ 	return 0;
 Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_device.c
 ===================================================================
 --- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_device.c
 +++ linux-2.6.22-rc4-mm2/drivers/edac/edac_device.c
-@@ -89,17 +89,14 @@ struct edac_device_ctl_info *edac_device
- 	dev_ctl = (struct edac_device_ctl_info *)NULL;
+@@ -461,7 +461,7 @@ int edac_device_add_device(struct edac_d
+ 				edac_dev->mod_name,
+ 				edac_dev->ctl_name,
+ 				dev_name(edac_dev),
+-				edac_op_state_toString(edac_dev->op_state));
++				edac_op_state_to_string(edac_dev->op_state));
  
- 	/* Calc the 'end' offset past the ctl_info structure */
--	dev_inst = (struct edac_device_instance *)
--		edac_align_ptr(&dev_ctl[1], sizeof(*dev_inst));
-+	dev_inst = edac_align_ptr(&dev_ctl[1], sizeof(*dev_inst));
- 
- 	/* Calc the 'end' offset past the instance array */
--	dev_blk = (struct edac_device_block *)
--		edac_align_ptr(&dev_inst[nr_instances], sizeof(*dev_blk));
-+	dev_blk = edac_align_ptr(&dev_inst[nr_instances], sizeof(*dev_blk));
- 
- 	/* Calc the 'end' offset past the dev_blk array */
- 	count = nr_instances * nr_blocks;
--	dev_attrib = (struct edac_attrib *)
--		edac_align_ptr(&dev_blk[count], sizeof(*dev_attrib));
-+	dev_attrib = edac_align_ptr(&dev_blk[count], sizeof(*dev_attrib));
- 
- 	/* Check for case of NO attributes specified */
- 	if (nr_attribs > 0)
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_mc.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_mc.c
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_mc.c
-@@ -85,7 +85,7 @@ static void edac_mc_dump_mci(struct mem_
-  * If 'size' is a constant, the compiler will optimize this whole function
-  * down to either a no-op or the addition of a constant to the value of 'ptr'.
-  */
--char *edac_align_ptr(void *ptr, unsigned size)
-+void *edac_align_ptr(void *ptr, unsigned size)
- {
- 	unsigned align, r;
- 
-@@ -109,7 +109,7 @@ char *edac_align_ptr(void *ptr, unsigned
- 	if (r == 0)
- 		return (char *)ptr;
- 
--	return (char *)(((unsigned long)ptr) + align - r);
-+	return (void *)(((unsigned long)ptr) + align - r);
- }
- 
- /**
-@@ -144,9 +144,8 @@ struct mem_ctl_info *edac_mc_alloc(unsig
- 	 * hardcode everything into a single struct.
- 	 */
- 	mci = (struct mem_ctl_info *)0;
--	csi = (struct csrow_info *)edac_align_ptr(&mci[1], sizeof(*csi));
--	chi = (struct channel_info *)
--		edac_align_ptr(&csi[nr_csrows], sizeof(*chi));
-+	csi = edac_align_ptr(&mci[1], sizeof(*csi));
-+	chi = edac_align_ptr(&csi[nr_csrows], sizeof(*chi));
- 	pvt = edac_align_ptr(&chi[nr_chans * nr_csrows], sz_pvt);
- 	size = ((unsigned long)pvt) + sz_pvt;
- 
-Index: linux-2.6.22-rc4-mm2/drivers/edac/edac_module.h
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/edac/edac_module.h
-+++ linux-2.6.22-rc4-mm2/drivers/edac/edac_module.h
-@@ -44,6 +44,7 @@ extern void edac_device_workq_setup(stru
- extern void edac_device_workq_teardown(struct edac_device_ctl_info *edac_dev);
- extern void edac_device_reset_delay_period(struct edac_device_ctl_info
- 					   *edac_dev, unsigned long value);
-+extern void *edac_align_ptr(void *ptr, unsigned size);
- 
- /*
-  * EDAC PCI functions
+ 	up(&device_ctls_mutex);
+ 	return 0;
