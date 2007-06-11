@@ -1,116 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbXFKMVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbXFKMZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbXFKMVO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 08:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbXFKMVA
+	id S1752269AbXFKMZr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 08:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbXFKMZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 08:21:00 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:6483 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbXFKMU5 (ORCPT
+	Mon, 11 Jun 2007 08:25:34 -0400
+Received: from wx-out-0506.google.com ([66.249.82.233]:62806 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbXFKMZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 08:20:57 -0400
-Message-ID: <466D3E23.3020009@de.ibm.com>
-Date: Mon, 11 Jun 2007 14:20:51 +0200
-From: Martin Peschke <mp3@de.ibm.com>
-Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
- =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
- =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
- =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
- =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Mon, 11 Jun 2007 08:25:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DRVv/nlABR8ukhgnpAI84Da0KgqyldKM8fPf6QERPKmR/w8fgUQ8HxXV7qMCo3MVu1Oht9iCCr9hU+csNtR1p8iM4YHL48CK3Oop2cIgrTFIRk6DE/u0/OXeReRAf14pkAn1FyAfSX6zvNkfGsWSif9cTNI0i/xZyJiflv5Y+Mo=
+Message-ID: <82faac5b0706110525s56bade43rb24619b54687770d@mail.gmail.com>
+Date: Mon, 11 Jun 2007 22:25:31 +1000
+From: "Darren Jenkins" <darrenrjenkins@gmail.com>
+To: "Andi Drebes" <lists-receive@programmierforen.de>
+Subject: Re: [KJ] Re: [PATCH] drivers/isdn/hisax: ARRAY_SIZE instead of sizeof
+Cc: "Jan-Benedict Glaw" <jbglaw@lug-owl.de>, kernel-janitors@lists.osdl.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Karsten Keil" <kkeil@suse.de>
+In-Reply-To: <200706111120.07730.lists-receive@programmierforen.de>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org, jbaron@redhat.com, rostedt@goodmis.org,
-       billh@gnuppy.monkey.org, mingo@elte.hu, linux-s390@vger.kernel.org
-Subject: Re: [RFC] [Patch 4/4] lock contention tracking slimmed down
-References: <1181165656.7133.23.camel@dix> <1181204221.7348.238.camel@twins>
-In-Reply-To: <1181204221.7348.238.camel@twins>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200706101235.09578.lists-receive@programmierforen.de>
+	 <20070610131122.GB3588@pingi.kke.suse.de>
+	 <20070610131402.GR2649@lug-owl.de>
+	 <200706111120.07730.lists-receive@programmierforen.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Wed, 2007-06-06 at 23:34 +0200, Martin Peschke wrote:
-> 
->> +#ifdef CONFIG_LOCK_STAT
->> +enum lock_stat_enum {
->> +	LOCK_STAT_CONT,
->> +	LOCK_STAT_WAIT_READ,
->> +	LOCK_STAT_WAIT_WRITE,
->> +	LOCK_STAT_HOLD_READ,
->> +	LOCK_STAT_HOLD_WRITE,
->> +	_LOCK_STAT_NUMBER
->> +};
->> +#endif
->> +
->>  /*
->>   * The lock-class itself:
->>   */
->> @@ -117,30 +129,11 @@ struct lock_class {
->>  	int				name_version;
->>  
->>  #ifdef CONFIG_LOCK_STAT
->> -	unsigned long			contention_point[4];
->> +	struct statistic		stat[_LOCK_STAT_NUMBER];
->> +	struct statistic_coll		stat_coll;
->>  #endif
->>  };
-> 
-> 
-> sizeof(struct statistic_coll) = 16+64+8+8+4+8+8 = 116
-> sizeof(struct statistic) = 4+4+8+8+8+8+8+4+8+4+4 = 68
->                          + 8*NR_CPUS
-> 			 + kmalloc_size(obj)*nr_cpu_ids
-> 
-> 
-> 4 objs with size 40, gives 4*64 = 256 * nr_cpu_ids
+G'day Andi,
 
-This looks like 4 * struct statistic_entry_util with members
-for min, max etc. Used for contention point tracking.
+On 6/11/07, Andi Drebes <lists-receive@programmierforen.de> wrote:
 
-I have noticed that many lock classes show less than 4, or even no
-contention points. Unlike the original code, my code doesn't eat
-up memory for contentions that don't show.
+> > I'd suggest to not use another define, but use ARRAY_SIZE(foo)
+> > _instead of_ eg. FNCOUNT.
+> I thought of this, too, but I tried to keep things consistent. Let me
+> explain that a little bit more in detail. If you have a look at the files
+> in drivers/isdn/hisax then you will see that a lot of array size definitions
+> are assigned to preprocessor macros. So I thought removing just one
+> of the macros while the other continue to exist would make the code
+> a little bit more inconsistent. However, one might disagree about that.
+> So here's another patch that includes the changes from the original patch
+> and removes the FNCOUNT preprocessor definition. Perhaps the original
+> authors of the files should decide wether they want to keep it or not.
 
-I doubt that my patch scores 414400 bytes per cpu then.
+I think what was meant here was to remove _all_ the macros that you
+assigned to the ARRAY_SIZE() macro.
 
-> 1 obj with size 32 + more
-> 
-> 
-> for 2048 total classes this gives:
-> 
-> 2048 * (116+68) = 376832
-> 
-> for each active class this adds per cpu:
-> 
->   8+256+32+some = 296+
-> 
-> we have around 1400 locks in the kernel, this would give 414400 per cpu.
-> 
-> vs the old code:
-> 
-> 2048*(4*8) = 65536
-> +
-> 2048*(4*4*8 + 4*8) = 327680 per cpu
-> 
-> worst case
-> 
-> I'm not convinced 300 lines less code is worth that extra bloat.
 
-In general, you are right.
+If you look at the two advantages replacing code with the ARRAY_SIZE()
+macro has;
+1. More readable/consistent code.
+2. Faster compile times, because of less macros being defined.
 
-First, struct statistic is too expensive. Allowing sets of statistics
-instead of individual statistics to be switched on and off would suffice
-surely. This alone would allow to move several members from struct
-statistic to struct statistic_coll (one per lock class) or struct
-statistic_ui (for all lock contention statistics). In the end it might
-be feasible to reduce struct statistic to a per-cpu data pointer.
+If you were to simply redefine other macro's to be an ARRAY_SIZE()
+macro, the code will still contain the original macro's that people
+will have to look up, so would _not_ be more readable/consistent and
+you now have two stages of macro replacement, so the code will
+actually take _longer_ to compile.
 
-Second, my code should not depend on struct statistic and percpu_alloc,
-allowing users to bring their own static data areas, at least for simple
-things like counters, min, max etc.
+So to get the benefit of this change you have to _remove_ all the
+macros that are somehow equivalent to ARRAY_SIZE(), and replace their
+use in the code, with an appropriate ARRAY_SIZE() usage.
 
-Martin
-
+Darren J.
