@@ -1,50 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbXFKHI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbXFKHJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbXFKHI5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 03:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXFKHIt
+	id S1762171AbXFKHJV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 03:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761080AbXFKHJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 03:08:49 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44592 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbXFKHIs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 03:08:48 -0400
-Date: Mon, 11 Jun 2007 08:08:42 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Tarkan Erimer <tarkan@netone.net.tr>
-Cc: Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070611070842.GH21478@ftp.linux.org.uk>
-References: <18026.16739.228277.938421@notabene.brown> <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr> <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <466BCBBC.90305@netone.net.tr> <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com> <466C0901.4000405@netone.net.tr> <20070610161306.GA12310@kroah.com> <466CEFBA.7090807@netone.net.tr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <466CEFBA.7090807@netone.net.tr>
-User-Agent: Mutt/1.4.1i
+	Mon, 11 Jun 2007 03:09:06 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46686 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1760389AbXFKHI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 03:08:59 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX1/iI5ls8b/iG4Lmbn28bh/peMN0E04UavCQSw9nOg
+	FRJmv4lVE+D0u3
+Message-ID: <466CF518.7040703@gmx.net>
+Date: Mon, 11 Jun 2007 09:09:12 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.55 is released
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 09:46:18AM +0300, Tarkan Erimer wrote:
-> Greg KH wrote:
-> >On Sun, Jun 10, 2007 at 05:21:53PM +0300, Tarkan Erimer wrote:
-> >  
-> >> I hope we should upgrade to GPLv3 and Sun should "Dual License" the
-> >> OpenSolaris via GPLv3 (or at least,GPLv3 should be CDDL compatible.).
-> >>    
-> >
-> >The OpenSolaris community has already stated that they do not want to
-> >accept GPLv3, why not discuss this with them if you want to try to
-> >change their minds?
-> >  
-> It was just an example came to my mind at first when thinking about 
-> "Dual Licensing" or upgrading Linux Kernel to the GPLv3. Yeah maybe,the 
-> "OpenSolaris Community" do not want GPLv3. But; IMHO, it is in the hands 
-> of "Sun" not the "OpenSolaris Community".
+Gidday,
 
-Perhaps.  However, since the only thing in hands of your kind of advocates
-is best not mentioned on a family-friendly maillist, may I suggest taking
-that exciting thread to more appropriate place?
+I just released man-pages-2.55.
+
+This release is now available for download at:
+
+    http://www.kernel.org/pub/linux/docs/manpages
+    or ftp://ftp.kernel.org/pub/linux/docs/manpages
+
+and soon at:
+
+    ftp://ftp.win.tue.nl/pub/linux-local/manpages
+
+Changes that may be of interest to readers of this list are noted below.
+
+Cheers,
+
+Michael
+
+PS A note of thanks to my employer... much of my work on man-pages is
+nowadays supported by Google, as a Google engineer 20% project.
+
+==================== Changes in man-pages-2.55 ====================
+
+Global changes
+--------------
+
+clone.2
+getdents.2
+gettid.2
+ioprio_set.2
+llseek.2
+mmap2.2
+modify_ldt.2
+mq_getsetattr.2
+pivot_root.2
+quotactl.2
+readdir.2
+sysctl.2
+syslog.2
+tkill.2
+    mtk, after a note by Mike Frysinger
+        Updated to reflect the fact that the _syscallN() macros
+        have gone away,
+
+Changes to individual pages
+---------------------------
+
+bind.2
+    mtk
+        Expand example program, and move it to new EXAMPLE section.
+        Added text pointing to example in getaddrinfo.3.
+
+signal.2
+    mtk, after a note from Alexander Taboriskiy
+        Strengthen warning against the use of signal().
+        Added siginterrupt(3) to SEE ALSO list.
+    mtk
+        Rewrote various parts; added an ERRORS section.
+
+stat.2
+    mtk
+        Added EXAMPLE program.
+
+sysctl.2
+    mtk
+        Improved the example program.
+
+getaddrinfo.3
+    mtk
+        Add example programs.
+        Add getnameinfo() to SEE ALSO list.
+
+inotify.7
+    mtk
+        Added text describing what happens when the buffer given to
+        read(2) is too small to return information about the next event,
+        and noting the behaviour change in 2.6.21.
+
+ld.so.8
+    mtk
+        Simplify text describing --inhibit-rpath.
+    mtk, after a note by John Reiser
+        Describe use of $ORIGIN in rpath.
+
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
+
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
