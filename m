@@ -1,164 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbXFKTtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbXFKTty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757577AbXFKTtg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXFKTt3
+	id S1757825AbXFKTty (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbXFKTtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:49:29 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:33737 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754365AbXFKTt2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:49:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=eKskn403qrBYfxdrMcRs9BU6bNkH5F59GT1zninHW2AhSwVa9wVsfrQfbFM341TbLA9R8i+7ixVGTOtKhWa+lxhEPxc5R/j2PvlRNF2VrSyfJfbiEea9PQ1QuaZFkVI5wiY+2yJ4viSCRJlC1vagIyWCSyz4slniwJrvfAaZvyo=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.22-rc4-mm2: Resume from RAM on HPC nx6325 broken
-Date: Mon, 11 Jun 2007 22:03:29 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Mon, 11 Jun 2007 15:49:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39733 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756101AbXFKTto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 15:49:44 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH -mm 1/7] PM: Remove pm_parent from struct dev_pm_info
+Date: Mon, 11 Jun 2007 21:55:57 +0200
+User-Agent: KMail/1.9.5
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
        LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Lee Trager <lt73@cs.drexel.edu>
-References: <200706111649.00578.rjw@sisk.pl>
-In-Reply-To: <200706111649.00578.rjw@sisk.pl>
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+References: <Pine.LNX.4.44L0.0706111147160.2611-100000@iolanthe.rowland.org> <200706112052.32872.rjw@sisk.pl>
+In-Reply-To: <200706112052.32872.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200706112203.30032.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706112155.58189.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Monday 11 June 2007, Rafael J. Wysocki wrote:
-> Hi,
+On Monday, 11 June 2007 20:52, Rafael J. Wysocki wrote:
+> On Monday, 11 June 2007 17:59, Alan Stern wrote:
+> > On Mon, 11 Jun 2007, Rafael J. Wysocki wrote:
+> > 
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > The pm_parent member of struct dev_pm_info (defined in include/linux/pm.h) is
+> > > only used to check if the device's parent is in the right state while the
+> > > device is being suspended or resumed.  However, this can be done just as well
+> > > with the help of the parent pointer in struct device, so pm_parent can be
+> > > removed along with some code that handles it.
+> > 
+> > > @@ -61,21 +40,26 @@ int device_pm_add(struct device * dev)
+> > >  		 kobject_name(&dev->kobj));
+> > >  	mutex_lock(&dpm_list_mtx);
+> > >  	list_add_tail(&dev->power.entry, &dpm_active);
+> > > -	device_pm_set_parent(dev, dev->parent);
+> > > -	if ((error = dpm_sysfs_add(dev)))
+> > > +	/*
+> > > +	 * The device's parent must not be released until the device itself is
+> > > +	 * removed from the dpm_active list.
+> > > +	 */
+> > > +	get_device(dev->parent);
+> > > +	error = dpm_sysfs_add(dev);
+> > > +	if (error)
+> > >  		list_del(&dev->power.entry);
+> > >  	mutex_unlock(&dpm_list_mtx);
+> > >  	return error;
+> > >  }
+> > 
+> > The error pathway here does an unbalanced get_device on dev->parent.
+> > 
+> > Anyway, I don't think you need to do this get_device at all (or the
+> > coresponding put in device_pm_remove).  As long as a device is
+> > registered it retains a reference to its parent, and unregistration
+> > always calls device_pm_remove.
 > 
-> Here's the result of the search for the second patch that breaks resuming
-> from RAM on HPC nx6325 (x86_64):
-> 
-> ide-ide-hpa-detect-from-resume.patch
-> 
-> The symptom is that after the resume there's no backlight and the screen
-> apparently doesn't work, 100% of the time, although apart from this the system
-> seems to be functional.
+> Yes, I've just come to the same conclusion.  I'll remove the
+> get_device(dev->parent) and the correspondint put_device(dev->parent)
+> from device_pm_remove().
 
-I find it hard to accept that IDE patch is to blame for that. ;)
+OK
 
-> The box doesn't even have an IDE HDD, but the DVD is handled by the atiixp
-> driver.
+The updated patch follows.
 
-If there are no IDE disks in the system there should be absolutely no
-change in the functionality.  Please also take a look at the patch (below)
-- it adds support for device driver ->resume method and implements it only
-for ide-disk driver.
-
-Either bisection went wrong and this is not the "guilty" patch (could you
-please check that applying just this patch to -rc4 breaks resume too?) or
-something really weird is going on...
-
-Bart
-
-[PATCH] ide: HPA detect from resume
-
-From: Lee Trager <lt73@cs.drexel.edu>
-
-Currently when system which have HPA require HPA to be detected and
-disabled upon resume from RAM or disk. The current IDE drivers do not do
-this nor does libata (obviously it since it doesn't support HPA yet).
-
-I have implemented this into the current IDE drivers and it has been
-tested by many others since 7/15/2006 in bug number 6840:
-
-	http://bugzilla.kernel.org/show_bug.cgi?id=6840
-
-and it has been confirmed to work fine with no problems.
-
-bart: added drv != NULL check to generic_ide_suspend()
-
-From: Lee Trager <lt73@cs.drexel.edu>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Greetings,
+Rafael
 
 ---
- drivers/ide/ide-disk.c |   12 ++++++++++++
- drivers/ide/ide.c      |    9 ++++++++-
- include/linux/ide.h    |    1 +
- 3 files changed, 21 insertions(+), 1 deletion(-)
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Index: b/drivers/ide/ide-disk.c
+The pm_parent member of struct dev_pm_info (defined in include/linux/pm.h) is
+only used to check if the device's parent is in the right state while the
+device is being suspended or resumed.  However, this can be done just as well
+with the help of the parent pointer in struct device, so pm_parent can be
+removed along with some code that handles it.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c    |   30 ++++--------------------------
+ drivers/base/power/resume.c  |    7 +++----
+ drivers/base/power/suspend.c |    7 +++----
+ include/linux/pm.h           |    3 ---
+ 4 files changed, 10 insertions(+), 37 deletions(-)
+
+Index: linux-2.6.22-rc4/drivers/base/power/main.c
 ===================================================================
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -1037,6 +1037,17 @@ static void ide_disk_release(struct kref
+--- linux-2.6.22-rc4.orig/drivers/base/power/main.c	2007-06-10 19:35:49.000000000 +0200
++++ linux-2.6.22-rc4/drivers/base/power/main.c	2007-06-11 21:05:10.000000000 +0200
+@@ -31,28 +31,7 @@ DEFINE_MUTEX(dpm_list_mtx);
  
- static int ide_disk_probe(ide_drive_t *drive);
+ int (*platform_enable_wakeup)(struct device *dev, int is_on);
  
-+/*
-+ * On HPA drives the capacity needs to be
-+ * reinitilized on resume otherwise the disk
-+ * can not be used and a hard reset is required
-+ */
-+static void ide_disk_resume(ide_drive_t *drive)
-+{
-+	if (idedisk_supports_hpa(drive->id))
-+		init_idedisk_capacity(drive);
-+}
-+
- static void ide_device_shutdown(ide_drive_t *drive)
+-
+-/**
+- *	device_pm_set_parent - Specify power dependency.
+- *	@dev:		Device who needs power.
+- *	@parent:	Device that supplies power.
+- *
+- *	This function is used to manually describe a power-dependency
+- *	relationship. It may be used to specify a transversal relationship
+- *	(where the power supplier is not the physical (or electrical)
+- *	ancestor of a specific device.
+- *	The effect of this is that the supplier will not be powered down
+- *	before the power dependent.
+- */
+-
+-void device_pm_set_parent(struct device * dev, struct device * parent)
+-{
+-	put_device(dev->power.pm_parent);
+-	dev->power.pm_parent = get_device(parent);
+-}
+-EXPORT_SYMBOL_GPL(device_pm_set_parent);
+-
+-int device_pm_add(struct device * dev)
++int device_pm_add(struct device *dev)
  {
- #ifdef	CONFIG_ALPHA
-@@ -1071,6 +1082,7 @@ static ide_driver_t idedisk_driver = {
- 	},
- 	.probe			= ide_disk_probe,
- 	.remove			= ide_disk_remove,
-+	.resume			= ide_disk_resume,
- 	.shutdown		= ide_device_shutdown,
- 	.version		= IDEDISK_VERSION,
- 	.media			= ide_disk,
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -1010,9 +1010,11 @@ static int generic_ide_resume(struct dev
- {
- 	ide_drive_t *drive = dev->driver_data;
- 	ide_hwif_t *hwif = HWIF(drive);
-+	ide_driver_t *drv = to_ide_driver(dev->driver);
- 	struct request rq;
- 	struct request_pm_state rqpm;
- 	ide_task_t args;
-+	int err;
+ 	int error;
  
- 	/* Call ACPI _STM only once */
- 	if (!(drive->dn % 2))
-@@ -1029,7 +1031,12 @@ static int generic_ide_resume(struct dev
- 	rqpm.pm_step = ide_pm_state_start_resume;
- 	rqpm.pm_state = PM_EVENT_ON;
- 
--	return ide_do_drive_cmd(drive, &rq, ide_head_wait);
-+	err = ide_do_drive_cmd(drive, &rq, ide_head_wait);
-+
-+	if (err == 0 && drv && drv->resume)
-+		drv->resume(drive);
-+
-+	return err;
+@@ -61,21 +40,20 @@ int device_pm_add(struct device * dev)
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+ 	list_add_tail(&dev->power.entry, &dpm_active);
+-	device_pm_set_parent(dev, dev->parent);
+-	if ((error = dpm_sysfs_add(dev)))
++	error = dpm_sysfs_add(dev);
++	if (error)
+ 		list_del(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+ 	return error;
  }
  
- int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device *bdev,
-Index: b/include/linux/ide.h
+-void device_pm_remove(struct device * dev)
++void device_pm_remove(struct device *dev)
+ {
+ 	pr_debug("PM: Removing info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+ 	dpm_sysfs_remove(dev);
+-	put_device(dev->power.pm_parent);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+ }
+Index: linux-2.6.22-rc4/drivers/base/power/resume.c
 ===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1001,6 +1001,7 @@ struct ide_driver_s {
- 	struct device_driver	gen_driver;
- 	int		(*probe)(ide_drive_t *);
- 	void		(*remove)(ide_drive_t *);
-+	void		(*resume)(ide_drive_t *);
- 	void		(*shutdown)(ide_drive_t *);
- #ifdef CONFIG_IDE_PROC_FS
- 	ide_proc_entry_t	*proc;
+--- linux-2.6.22-rc4.orig/drivers/base/power/resume.c	2007-06-10 19:35:49.000000000 +0200
++++ linux-2.6.22-rc4/drivers/base/power/resume.c	2007-06-11 21:04:44.000000000 +0200
+@@ -29,12 +29,11 @@ int resume_device(struct device * dev)
+ 
+ 	down(&dev->sem);
+ 
+-	if (dev->power.pm_parent
+-			&& dev->power.pm_parent->power.power_state.event) {
++	if (dev->parent && dev->parent->power.power_state.event) {
+ 		dev_err(dev, "PM: resume from %d, parent %s still %d\n",
+ 			dev->power.power_state.event,
+-			dev->power.pm_parent->bus_id,
+-			dev->power.pm_parent->power.power_state.event);
++			dev->parent->bus_id,
++			dev->parent->power.power_state.event);
+ 	}
+ 
+ 	if (dev->bus && dev->bus->resume) {
+Index: linux-2.6.22-rc4/drivers/base/power/suspend.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/base/power/suspend.c	2007-06-10 19:35:49.000000000 +0200
++++ linux-2.6.22-rc4/drivers/base/power/suspend.c	2007-06-11 21:04:44.000000000 +0200
+@@ -55,13 +55,12 @@ int suspend_device(struct device * dev, 
+ 		dev_dbg(dev, "PM: suspend %d-->%d\n",
+ 			dev->power.power_state.event, state.event);
+ 	}
+-	if (dev->power.pm_parent
+-			&& dev->power.pm_parent->power.power_state.event) {
++	if (dev->parent && dev->parent->power.power_state.event) {
+ 		dev_err(dev,
+ 			"PM: suspend %d->%d, parent %s already %d\n",
+ 			dev->power.power_state.event, state.event,
+-			dev->power.pm_parent->bus_id,
+-			dev->power.pm_parent->power.power_state.event);
++			dev->parent->bus_id,
++			dev->parent->power.power_state.event);
+ 	}
+ 
+ 	dev->power.prev_state = dev->power.power_state;
+Index: linux-2.6.22-rc4/include/linux/pm.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/linux/pm.h	2007-06-10 19:35:49.000000000 +0200
++++ linux-2.6.22-rc4/include/linux/pm.h	2007-06-11 21:04:44.000000000 +0200
+@@ -237,13 +237,10 @@ struct dev_pm_info {
+ 	unsigned		should_wakeup:1;
+ 	pm_message_t		prev_state;
+ 	void			* saved_state;
+-	struct device		* pm_parent;
+ 	struct list_head	entry;
+ #endif
+ };
+ 
+-extern void device_pm_set_parent(struct device * dev, struct device * parent);
+-
+ extern int device_power_down(pm_message_t state);
+ extern void device_power_up(void);
+ extern void device_resume(void);
