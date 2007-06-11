@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbXFKWT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbXFKW0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbXFKWT2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 18:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbXFKWTV
+	id S1754151AbXFKW0T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 18:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbXFKW0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 18:19:21 -0400
-Received: from gate.crashing.org ([63.228.1.57]:32820 "EHLO gate.crashing.org"
+	Mon, 11 Jun 2007 18:26:11 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47239 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753309AbXFKWTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 18:19:20 -0400
-Subject: Re: [BUG] ptraced process waiting on syscall may return kernel
-	internal errnos
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, davidel@xmailserver.org
-In-Reply-To: <alpine.LFD.0.98.0706072015520.4205@woody.linux-foundation.org>
-References: <20070606105900.DE5E94D0592@magilla.localdomain>
-	 <alpine.LFD.0.98.0706060811470.4205@woody.linux-foundation.org>
-	 <87sl949eyx.wl%takeuchi_satoru@jp.fujitsu.com>
-	 <alpine.LFD.0.98.0706070852390.4205@woody.linux-foundation.org>
-	 <1181255068.14818.77.camel@localhost.localdomain>
-	 <alpine.LFD.0.98.0706072015520.4205@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 12 Jun 2007 08:16:18 +1000
-Message-Id: <1181600178.14818.237.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1751726AbXFKW0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 18:26:10 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+Date: Tue, 12 Jun 2007 00:16:58 +0200
+User-Agent: KMail/1.9.6
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, muli@il.ibm.com, asit.k.mallick@intel.com,
+       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
+       shaohua.li@intel.com, davem@davemloft.net
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com> <20070611204442.GA4074@linux-os.sc.intel.com> <20070611141449.bfbc4769.akpm@linux-foundation.org>
+In-Reply-To: <20070611141449.bfbc4769.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706120016.58317.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Don't let signalfd dequeue private signals off other threads (in the
-case of things like SIGILL or SIGSEGV, trying to do so would result
-in undefined behaviour on who actually gets the signal, since they
-are force unblocked).
+> 
+> If the only option is to panic then something's busted.  If it's network IO
+> then there should be a way of dropping the frame.  If it's disk IO then we
+> should report the failure and cause an IO error.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+An block IO error is basically catastrophic for the system too. There isn't really
+a concept of "temporary IO error that will resolve itself" concept in Unix.
 
-Davide asked me to re-send this one. So here it is.
+There are still lots of users of pci_map_single() that don't check the return
+value unfortunately.   That is mostly in old drivers; it is generally
+picked on in reviews now. But then there is no guarantee that these rarely
+used likely untested error handling paths actually work.
 
+The alternative is writing out random junk which is somewhat risky.
 
-Index: linux-work/kernel/signal.c
-===================================================================
---- linux-work.orig/kernel/signal.c	2007-06-08 15:28:00.000000000 +1000
-+++ linux-work/kernel/signal.c	2007-06-08 15:28:44.000000000 +1000
-@@ -363,7 +363,13 @@ static int __dequeue_signal(struct sigpe
-  */
- int dequeue_signal(struct task_struct *tsk, sigset_t *mask, siginfo_t *info)
- {
--	int signr = __dequeue_signal(&tsk->pending, mask, info);
-+	int signr = 0;
-+
-+	/* We only dequeue private signals from ourselves, we don't let
-+	 * signalfd steal them
-+	 */
-+	if (tsk == current)
-+		signr = __dequeue_signal(&tsk->pending, mask, info);
- 	if (!signr) {
- 		signr = __dequeue_signal(&tsk->signal->shared_pending,
- 					 mask, info);
+We fixed over time all the pci_map_sg()s at least to do the checks correctly.
 
+When I wrote the IOMMU code originally this wasn't the case and it destroyed
+several file systems of test systems due to IOMMU leaks in drivers
+(writing junk over the super block  when the IOMMU is full doesn't make
+mount happy after the next reboot) 
 
+Because of these experiences I'm more inclined towards the panic option,
+although x86-64 defaults to not panic these days.
+
+It would be really much better if sleeping was allowed, but it is hard.
+
+-Andi
