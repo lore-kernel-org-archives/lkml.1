@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbXFKS7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbXFKS7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755109AbXFKS7d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 14:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbXFKS7Z
+	id S1756106AbXFKS7z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 14:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbXFKS7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 14:59:25 -0400
-Received: from lug-owl.de ([195.71.106.12]:51571 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753023AbXFKS7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 14:59:23 -0400
-Date: Mon, 11 Jun 2007 20:59:22 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Andi Drebes <lists-receive@programmierforen.de>,
-       kernel-janitors@lists.osdl.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Darren Jenkins <darrenrjenkins@gmail.com>
-Subject: Re: [KJ] Re: [PATCH] drivers/isdn/hisax: ARRAY_SIZE instead of sizeof
-Message-ID: <20070611185922.GC22027@lug-owl.de>
-Mail-Followup-To: Andi Drebes <lists-receive@programmierforen.de>,
-	kernel-janitors@lists.osdl.org,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Darren Jenkins <darrenrjenkins@gmail.com>
-References: <200706101235.09578.lists-receive@programmierforen.de> <20070610131122.GB3588@pingi.kke.suse.de> <20070610131402.GR2649@lug-owl.de> <200706111120.07730.lists-receive@programmierforen.de> <82faac5b0706110525s56bade43rb24619b54687770d@mail.gmail.com> <20070611174706.GA9150@pingi.kke.suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="xo44VMWPx7vlQ2+2"
-Content-Disposition: inline
-In-Reply-To: <20070611174706.GA9150@pingi.kke.suse.de>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 11 Jun 2007 14:59:45 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:43128 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753081AbXFKS7o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 14:59:44 -0400
+Date: Mon, 11 Jun 2007 11:59:34 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: api <linuxgent@kpnplanet.nl>
+Cc: linux-kernel@vger.kernel.org, scsi <linux-scsi@vger.kernel.org>,
+       jejb <james.bottomley@steeleye.com>, jgarzik <jgarzik@pobox.com>
+Subject: [PATCH] scsi disk help file is not complete
+Message-Id: <20070611115934.9097fb04.randy.dunlap@oracle.com>
+In-Reply-To: <466D9440.3080005@kpnplanet.nl>
+References: <466D9440.3080005@kpnplanet.nl>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 11 Jun 2007 20:28:16 +0200 api wrote:
 
---xo44VMWPx7vlQ2+2
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Good day,
+> When doing make menuconfig one comes across CONFIG_BLK_DEV_SD.
+> The help file states that this is for scsi disks.NO MENTION IS MADE THAT
+> IT IS NEEDE FOR SATA DISKS AS WELL!
+> Would have saved me a lot of time if the help was up to date.
+> I hope this can be changed so others can make a kernel for sata systems
+> quicker.
 
-On Mon, 2007-06-11 19:47:06 +0200, Karsten Keil <kkeil@suse.de> wrote:
-> diff --git a/drivers/isdn/hisax/callc.c b/drivers/isdn/hisax/callc.c
-> index 7c56c44..0b9ed8e 100644
-> --- a/drivers/isdn/hisax/callc.c
-> +++ b/drivers/isdn/hisax/callc.c
-> @@ -834,8 +834,6 @@ static struct FsmNode fnlist[] __initdata =3D
->  };
->  /* *INDENT-ON* */
-> =20
-> -#define FNCOUNT (sizeof(fnlist)/sizeof(struct FsmNode))
-> -
->  int __init
->  CallcNew(void)
->  {
-> @@ -843,7 +841,7 @@ CallcNew(void)
->  	callcfsm.event_count =3D EVENT_COUNT;
->  	callcfsm.strEvent =3D strEvent;
->  	callcfsm.strState =3D strState;
-> -	return FsmNew(&callcfsm, fnlist, FNCOUNT);
-> +	return FsmNew(&callcfsm, fnlist, ARRAY_SIZE(fnlist));
->  }
-> =20
->  void
 
-I think that's really a nice improvement :)  Thanks for the work,
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-MfG, JBG
+Add help info for BLK_DEV_SD referring to its use in
+SATA or PATA driver configurations.
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-Signature of:           Ich hatte in letzter Zeit ein bi=C3=9Fchen viel Rea=
-litycheck.
-the second  :               Langsam m=C3=B6chte ich mal wieder weitertr=C3=
-=A4umen k=C3=B6nnen.
-                             -- Maximilian Wilhelm (18. Mai 2006, #lug-owl.=
-de)
+Add help text for "ATA" indicating that it probably needs
+some SCSI config symbols enabled in order to be useful.
 
---xo44VMWPx7vlQ2+2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/ata/Kconfig  |    5 +++++
+ drivers/scsi/Kconfig |    1 +
+ 2 files changed, 6 insertions(+)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGbZuKHb1edYOZ4bsRArFXAJ0bbLgx4ipZejqnDvIdUgOx+QoxNACgjlrG
-UQ453c4D4Wyw6R+ih9fi6T8=
-=+Hgy
------END PGP SIGNATURE-----
-
---xo44VMWPx7vlQ2+2--
+--- linux-2622-rc4.orig/drivers/scsi/Kconfig
++++ linux-2622-rc4/drivers/scsi/Kconfig
+@@ -60,6 +60,7 @@ config BLK_DEV_SD
+ 	depends on SCSI
+ 	---help---
+ 	  If you want to use SCSI hard disks, Fibre Channel disks,
++	  Serial ATA (SATA) or Parallel ATA (PATA) hard disks,
+ 	  USB storage or the SCSI or parallel port version of
+ 	  the IOMEGA ZIP drive, say Y and read the SCSI-HOWTO,
+ 	  the Disk-HOWTO and the Multi-Disk-HOWTO, available from
+--- linux-2622-rc4.orig/drivers/ata/Kconfig
++++ linux-2622-rc4/drivers/ata/Kconfig
+@@ -17,6 +17,11 @@ menuconfig ATA
+ 	  that "speaks" the ATA protocol, also called ATA controller),
+ 	  because you will be asked for it.
+ 
++	  NOTE: ATA enables basic SCSI support; *however*,
++	  'SCSI disk support', 'SCSI tape support', or
++	  'SCSI CDROM support' may also be needed,
++	  depending on your hardware configuration.
++
+ if ATA
+ 
+ config ATA_NONSTANDARD
