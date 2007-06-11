@@ -1,127 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbXFKS4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbXFKS6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754521AbXFKS4V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 14:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbXFKS4M
+	id S1754244AbXFKS6b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 14:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbXFKS6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 14:56:12 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43979 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752542AbXFKS4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 14:56:11 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1/V80EIR3fVg+Ql2ldkuucXbTaVU8fyagv80JUZ4F
-	HeGHMACIuYeKxK
-Date: Mon, 11 Jun 2007 20:56:08 +0200
-From: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>
-To: linux-kernel@vger.kernel.org
-Cc: clameter@sgi.com
-Subject: profiling likely/unlikely in slub.c
-Message-ID: <20070611185608.GB4592@alice>
+	Mon, 11 Jun 2007 14:58:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56634 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751252AbXFKS6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 14:58:22 -0400
+Date: Mon, 11 Jun 2007 20:56:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de,
+       kernel@kolivas.org, containers@lists.osdl.org,
+       ckrm-tech@lists.sourceforge.net, akpm@linux-foundation.org,
+       pwil3058@bigpond.net.au, tingy@cs.umass.edu, tong.n.li@intel.com,
+       wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       dmitry.adamushko@gmail.com, balbir@in.ibm.com
+Subject: Re: [RFC][PATCH 1/6] Introduce struct sched_entity and struct lrq
+Message-ID: <20070611185658.GA19095@elte.hu>
+References: <20070611154724.GA32435@in.ibm.com> <20070611155046.GA2109@in.ibm.com> <alpine.LFD.0.98.0706111146220.14121@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.22-rc3 (x86_64)
-X-Uptime: 20:49:07 up 12:48,  5 users,  load average: 0.08, 0.09, 0.14
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Y-GMX-Trusted: 0
+In-Reply-To: <alpine.LFD.0.98.0706111146220.14121@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
 
-when taking a look at /proc/likely_prof i noticed the following
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-+unlikely | 40969931|  6228144  __slab_free()@:mm/slub.c@1606
-+unlikely | 47198075|        0  __slab_free()@:mm/slub.c@1599
--likely   |        0| 47198075  slab_free()@:mm/slub.c@1660
-+unlikely | 47280864|        0  __slab_alloc()@:mm/slub.c@1475
-+unlikely |    26857|        0  new_slab()@:mm/slub.c@1107
-+unlikely | 47280864|        0  slab_alloc()@:mm/slub.c@1557
+> 
+> 
+> On Mon, 11 Jun 2007, Srivatsa Vaddagiri wrote:
+> > 
+> > struct sched_entity
+> >         stores essential attributes/execution-history used by CFS core
+> >         to drive fairness between 'schedulable entities' (tasks, users etc)
+> 
+> Wouldn't this be sensible to integrate into CFS _regardless_ of 
+> anything else?
 
-three of the unlikely cases are caused by "if (unlikely(SlabDebug(page)))"
-if SLUB_DEBUG is turned off, it really is unlikely, since SlabDebug()
-always returns 0, if SLUB_DEBUG is turned on it is likely (not sure if there are
-cases where it can return 0) therefore it makes sense to change this
-to likely for the SLUB_DEBUG case. 
+yeah, that's what i asked Srivatsa to do, and his currently patchset 
+largely achieves that. I'm looking now into applying the core bits and 
+checking that it's in essence a NOP when this isnt used. (that makes the 
+later merging of group fairness and container scheduling a lot less 
+contentious)
 
-The following patch changes the SlabDebug() functions to defines, so gcc
-can easily optimize the if away entirely and changes the unlikely() to a
-likely().
-
-Remaining problem is, that if likely/unlikely profiling is turned on,
-gcc does not optimize away a likely(0), and they still show up in the
-stats... guess heisenbug is involved in this :-)
-
-
-Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-
---- linux/mm/slub.c.orig	2007-06-11 09:04:15.000000000 +0000
-+++ linux/mm/slub.c	2007-06-11 17:11:36.000000000 +0000
-@@ -101,12 +101,6 @@
- 
- #define FROZEN (1 << PG_active)
- 
--#ifdef CONFIG_SLUB_DEBUG
--#define SLABDEBUG (1 << PG_error)
--#else
--#define SLABDEBUG 0
--#endif
--
- static inline int SlabFrozen(struct page *page)
- {
- 	return page->flags & FROZEN;
-@@ -122,6 +116,9 @@ static inline void ClearSlabFrozen(struc
- 	page->flags &= ~FROZEN;
- }
- 
-+#ifdef CONFIG_SLUB_DEBUG
-+
-+#define SLABDEBUG (1 << PG_error)
- static inline int SlabDebug(struct page *page)
- {
- 	return page->flags & SLABDEBUG;
-@@ -136,6 +133,13 @@ static inline void ClearSlabDebug(struct
- {
- 	page->flags &= ~SLABDEBUG;
- }
-+#else
-+
-+#define SlabDebug(x) 0
-+#define SetSlabDebug(x) 
-+#define ClearSlabDebug(x)
-+
-+#endif
- 
- /*
-  * Issues still to be resolved:
-@@ -1129,7 +1133,7 @@ static void __free_slab(struct kmem_cach
- {
- 	int pages = 1 << s->order;
- 
--	if (unlikely(SlabDebug(page))) {
-+	if (likely(SlabDebug(page))) {
- 		void *p;
- 
- 		slab_pad_check(s, page);
-@@ -1472,7 +1476,7 @@ load_freelist:
- 	object = page->freelist;
- 	if (unlikely(!object))
- 		goto another_slab;
--	if (unlikely(SlabDebug(page)))
-+	if (likely(SlabDebug(page)))
- 		goto debug;
- 
- 	object = page->freelist;
-@@ -1596,7 +1600,7 @@ static void __slab_free(struct kmem_cach
- 
- 	slab_lock(page);
- 
--	if (unlikely(SlabDebug(page)))
-+	if (likely(SlabDebug(page)))
- 		goto debug;
- checks_ok:
- 	prior = object[page->offset] = page->freelist;
-
+	Ingo
