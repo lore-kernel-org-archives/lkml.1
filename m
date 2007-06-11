@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbXFKFLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763945AbXFKFNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbXFKFLZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 01:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXFKFLQ
+	id S1763945AbXFKFNq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 01:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbXFKFNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 01:11:16 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:52847 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbXFKFLQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 01:11:16 -0400
-Date: Mon, 11 Jun 2007 14:09:55 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: mm: memory/cpu hotplug section mismatch.
-Message-ID: <20070611050955.GA23215@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Sam Ravnborg <sam@ravnborg.org>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org
-References: <20070611043543.GA22910@linux-sh.org> <20070611140145.05726c0f.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 11 Jun 2007 01:13:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:54112 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbXFKFNi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 01:13:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=O6+S4SpsJTN5dqGGXMpJ63hoBETz/LRuFEveYQzPJYNyWPpryxPDirQJvQn/NV4pLU3q4bWbQCYwWn8ej1elMcQc+SarzyjHuZprt7gItLzFfK1p0gULaQSQ+E7CJ00kmnpsotKYFaaxRaDnlf2/NpFbCAPnryBqGdKJ435Z/gU=
+Date: Mon, 11 Jun 2007 14:03:27 +0900
+From: Tejun Heo <htejun@gmail.com>
+To: linux-kernel@vger.kernel.org, greg@kroah.com, akpm@linux-foundation.org,
+       cebbert@redhat.com, sandeen@redhat.com, maneesh@in.ibm.com,
+       cs@tequila.co.jp
+Subject: [PATCH 2/3] sysfs: fix condition check in sysfs_drop_dentry()
+Message-ID: <20070611050327.GL29122@htj.dyndns.org>
+References: <20070611050107.GJ29122@htj.dyndns.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070611140145.05726c0f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070611050107.GJ29122@htj.dyndns.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 02:01:45PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Mon, 11 Jun 2007 13:35:43 +0900
-> Paul Mundt <lethal@linux-sh.org> wrote:
-> 
-> > When building with memory hotplug enabled and cpu hotplug disabled, we
-> > end up with the following section mismatch:
-> > 
-> > WARNING: mm/built-in.o(.text+0x4e58): Section mismatch: reference to
-> > .init.text: (between 'free_area_init_node' and '__build_all_zonelists')
-> > 
-> > This happens as a result of:
-> > 
-> > 	-> free_area_init_node()
-> > 	  -> free_area_init_core()
-> > 	    -> zone_pcp_init() <-- all __meminit up to this point
-> > 	      -> zone_batchsize() <-- marked as __cpuinit
-> > 
-> > This happens because CONFIG_HOTPLUG_CPU=n sets __cpuinit to __init, but
-> > CONFIG_MEMORY_HOTPLUG=y unsets __meminit.
-> > 
-> > Changing zone_batchsize() to __init_refok fixes this.
-> > 
-> 
-> It seems this zone_batchsize() is called by cpu-hotplug and memory-hotplug.
-> So, __init_refok doesn't look good, here.
-> 
-> maybe we can use __devinit here. (Because HOTPLUG_CPU and MEMORY_HOTPLUG are
-> depend on CONFIG_HOTPLUG.)
-> 
-Yes, that's probably a more reasonable way to go. The __devinit name is a
-bit misleading, though..
+The condition check doesn't make much sense as it basically always
+succeeds.  This causes NULL dereferencing on certain cases.  It seems
+that parentheses are put in the wrong place.  Fix it.
 
---
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+ fs/sysfs/inode.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index bd8e335..05ace44 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1968,7 +1968,7 @@ void zone_init_free_lists(struct pglist_data *pgdat, struct zone *zone,
- 	memmap_init_zone((size), (nid), (zone), (start_pfn), MEMMAP_EARLY)
- #endif
- 
--static int __cpuinit zone_batchsize(struct zone *zone)
-+static int __devinit zone_batchsize(struct zone *zone)
- {
- 	int batch;
- 
+Index: work1/fs/sysfs/inode.c
+===================================================================
+--- work1.orig/fs/sysfs/inode.c
++++ work1/fs/sysfs/inode.c
+@@ -252,7 +252,7 @@ void sysfs_drop_dentry(struct sysfs_dire
+ 	if (dentry) {
+ 		spin_lock(&dcache_lock);
+ 		spin_lock(&dentry->d_lock);
+-		if (!(d_unhashed(dentry) && dentry->d_inode)) {
++		if (!d_unhashed(dentry) && dentry->d_inode) {
+ 			inode = dentry->d_inode;
+ 			spin_lock(&inode->i_lock);
+ 			__iget(inode);
