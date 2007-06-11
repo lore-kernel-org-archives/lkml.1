@@ -1,106 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbXFKRwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbXFKRx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755101AbXFKRwk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 13:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXFKRwd
+	id S1755917AbXFKRx3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 13:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbXFKRxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 13:52:33 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34524 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752503AbXFKRwc (ORCPT
+	Mon, 11 Jun 2007 13:53:22 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:34738 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751663AbXFKRxV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 13:52:32 -0400
-Date: Mon, 11 Jun 2007 10:52:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: =?ISO-8859-1?Q?H=E5vard_Skinnemoen?= <hskinnemoen@gmail.com>
-cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kernel BUG at mm/slub.c:3689!
-In-Reply-To: <1defaf580706111011w641b26fbu68d6d34028f6e953@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706111041160.17264@schroedinger.engr.sgi.com>
-References: <20070611161926.2a9f8efd@dhcp-255-175.norway.atmel.com> 
- <Pine.LNX.4.64.0706110918340.15466@schroedinger.engr.sgi.com> 
- <1defaf580706110943q56d83939t9ab6331cc45b4810@mail.gmail.com> 
- <Pine.LNX.4.64.0706110946430.15910@schroedinger.engr.sgi.com>
- <1defaf580706111011w641b26fbu68d6d34028f6e953@mail.gmail.com>
+	Mon, 11 Jun 2007 13:53:21 -0400
+Message-ID: <466D8B0F.3080608@gmail.com>
+Date: Mon, 11 Jun 2007 19:49:03 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-1534404380-1181584352=:17264"
+To: Dave Jones <davej@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steve Fox <drfickle@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] move the kernel to 16MB for NUMA-Q
+References: <466D550C.4030600@shadowen.org> <63a08cc7547f14065becdf9a94d0d529@pinky> <20070611091558.f468f205.akpm@linux-foundation.org> <20070611172006.GI9174@redhat.com>
+In-Reply-To: <20070611172006.GI9174@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On 06/11/2007 07:20 PM, Dave Jones wrote:
 
----1700579579-1534404380-1181584352=:17264
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+> FWIW, waay back when (sometime last year if memory serves)
+> Linus suggested changing the default to 0x1000000 for all x86.
+> The reasoning was some performance microoptimisation regarding
+> 4MB aligned TLBs iirc.
 
-On Mon, 11 Jun 2007, H=E5vard Skinnemoen wrote:
+Yup. Or rather, he suggested 4M (0x400000):
 
-> On 6/11/07, Christoph Lameter <clameter@sgi.com> wrote:
-> > Ahhh... I see its the same phenomenon as before but triggered by
-> > a different cause.
-> >=20
-> > If you set the align to 32 then the first kmalloc slabs of size
-> >=20
-> > 8
-> > 16
-> > 32
-> >=20
-> > are all of the same size which leads to duplicate files in sysfs.
->=20
-> Yes, that seems to be the problem.
->=20
-> > Does this patch fix it?
->=20
-> Unfortunately, no. But I get a different error message; see below...
+http://lkml.org/lkml/2006/2/23/189
 
-Hmmmm.. Yeah slabs with different user object sizes may coexist.
+Aligning the kernel image on 4M could gain an additional TLB entry if the 
+kernel image would fit in one (4M aligned) hugepage, but not in the 3M 
+that's left after loading the kernel at 1M physical. And that stuff about 
+the MTRRs...
 
-Argh!
+That 0x1000000 (16M) is another potentially interesting value on machines 
+with enough memory as it gets the kernel image out of the old ZONE_DMA.
 
-Ok. Drop the patch and use this one instead. This one avoids the use
-of smaller slabs that cause the conflict. The first slab will be sized 32
-bytes instead of 8.
+> The details have long since evaded my memory, but as an experiment,
+> I made the change to the Fedora kernel.  FC5,FC6 and F7 have been
+> this way for a while now, with no obvious problems. Ditto RHEL5.
+> We did get some performance numbers at the time of the change,
+> but they weren't amazing (basically in the noise).
+> Given it never seemed to actually get worse, I never got around
+> to reverting it..
 
-Note that I do not get why you would be aligning the objects to 32 bytes.=
-=20
-Increasing the smallest cache size wastes a lot of memory. And it is=20
-usually advantageous if multiple related objects are in the same cacheline=
-=20
-unless you have heavy SMP contention.
+I've been loading the kernel at 16M physical for ages now on x86. No 
+problems either.
 
----
- include/linux/slub_def.h |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Rene.
 
-Index: linux-2.6/include/linux/slub_def.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/include/linux/slub_def.h=092007-06-11 10:50:09.000000000=
- -0700
-+++ linux-2.6/include/linux/slub_def.h=092007-06-11 10:50:58.000000000 -070=
-0
-@@ -56,7 +56,8 @@ struct kmem_cache {
- /*
-  * Kmalloc subsystem.
-  */
--#define KMALLOC_SHIFT_LOW 3
-+#define KMALLOC_SHIFT_LOW 5
-+
-=20
- /*
-  * We keep the general caches in an array of slab caches that are used for
-@@ -76,6 +77,9 @@ static inline int kmalloc_index(size_t s
- =09if (size > KMALLOC_MAX_SIZE)
- =09=09return -1;
-=20
-+=09if (size <=3D (1 << KMALLOC_SHIFT_LOW))
-+=09=09return KMALLOC_SHIFT_LOW;
-+
- =09if (size > 64 && size <=3D 96)
- =09=09return 1;
- =09if (size > 128 && size <=3D 192)
----1700579579-1534404380-1181584352=:17264--
