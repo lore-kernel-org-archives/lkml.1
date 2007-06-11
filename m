@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763767AbXFKKVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932133AbXFKKXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763767AbXFKKVl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 06:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbXFKKVd
+	id S932133AbXFKKXz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 06:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757478AbXFKKXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 06:21:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:57969 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756983AbXFKKVc (ORCPT
+	Mon, 11 Jun 2007 06:23:48 -0400
+Received: from paragon.brong.net ([66.232.154.163]:39168 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756983AbXFKKXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 06:21:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=bc/aGNYy+b/gEmt7ZAPNJTMOpLevk279oQwa4ZPiBZC9j2LSSzCUueNHES3qZ7jS7c5dlgBvZkRIylsDHnReZCSfF6DNOKkmPraH9utT6ZoytXIoDibN9vwApvjCi044vpc4SGSHLI8hOtAKTSSXUrx5Sg6+pyiMs54HBJS9Q6o=
-Message-ID: <2cd57c900706110321r2ff4cf88g18191b4e0c566f62@mail.gmail.com>
-Date: Mon, 11 Jun 2007 18:21:30 +0800
-From: "Qi Yong" <qiyong@fc-cn.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
-Cc: "Tsugikazu Shibata" <tshibata@ab.jp.nec.com>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, m-ikeda@ds.jp.nec.com
-In-Reply-To: <20070611115557.4340f45e.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 11 Jun 2007 06:23:47 -0400
+Date: Mon, 11 Jun 2007 20:23:41 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Tarkan Erimer <tarkan@netone.net.tr>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070611102340.GB26904@brong.net>
+References: <466BB9B0.5030908@netone.net.tr> <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <466BCBBC.90305@netone.net.tr> <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com> <466C0901.4000405@netone.net.tr> <alpine.LFD.0.98.0706101025330.20321@woody.linux-foundation.org> <alpine.LFD.0.98.0706101029300.20321@woody.linux-foundation.org> <466D0A12.5030607@netone.net.tr> <20070611090348.GA18894@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com>
-	 <20070611115557.4340f45e.kamezawa.hiroyu@jp.fujitsu.com>
-X-Google-Sender-Auth: 109e812596e93ab0
+In-Reply-To: <20070611090348.GA18894@elte.hu>
+Organization: brong.net
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/06/07, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->
-> Hi, thank you for your work. I was impressed.
->
-> BTW, how about adding following lines (both in Japanese and English) ?
-> ==
-> This is translated "HOWTO" documentation. Original "HOWTO" is maintaind by
-> Greg Kroah-Hartman <greg@kroah.com> and linux kernal mailing list.
-> And this one is maintained by Tsugikazu Shibata <tsugikazu.shibata@jp.nec.com>
-> and JF Projet <www.linux.or.jp/JF>. Because original HOWTO documentation itself
-> is being updated day and night, this file may contain old sentences. Please contact
-> JF project if you find problems in translation.
->
-> It is guaranteed that this file is just a translation and doesn't contains any
+On Mon, Jun 11, 2007 at 11:03:48AM +0200, Ingo Molnar wrote:
+> 
+> * Tarkan Erimer <tarkan@netone.net.tr> wrote:
+> 
+> > > (*) And I've been pushing for that since before they even released 
+> > > it - I walked out on Bill Joy at a private event where they 
+> > > discussed their horrible previous Java license.
+> > 
+> > Thanks for making things more clear :-) Some really strong indications 
+> > that Sun is very willing to,at least, "Dual-License" the OpenSolaris 
+> > with GPLv3. I think; in a very short time; we will see when the GPLv3 
+> > finalized and released.
+> 
+> that would certainly be a good and productive move from them. Note the 
+> issue that others have pointed out to you: OpenSolaris is probably more 
+> interested in picking up code from Linux than the other way around! :-) 
+> You mentioned "dtrace" and "ZFS". Firstly, Linux already has a "dtrace" 
+> equivalent. Secondly, ZFS might be interesting in theory
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There are language problems, like s/contains/contain/. The author
-please try fixing them at the fist place instead of adding jobs to
-janitors.
+Having just got my first Sun box (one of those 48 disk Thumper machines)
+I can say it's very interesting in practice too.  The admin tools for
+zfs are a dream to use (unlike just about everything else on Solaris
+which is a bugwards compatible nightmare to use) and the attitude of
+checksumming everything on to disk and checking that those checksums
+match on the way back out presses my "do your own safety checking and
+don't trust the hardware" buttons very much the right way - especially
+with that much hardware in there.
 
-> additional information, sentences. If you want to update "HOWTO", please update
-> English version first. Don't fork from original if you update this file.
->
-> Last Updated: 2007/06/04  Version: 2.6.21
-> ==
->
-> not worth writing ?
->
-> -Kame
+I would love to see Sun GPL3 OpenSolaris, not so much for the code
+itself (maybe not portable into Linux) but for the clarity it would
+give to the patent position.  The patent peace would be portable back
+to GPL2.
 
--- 
-Qi Yong
+Bron.
