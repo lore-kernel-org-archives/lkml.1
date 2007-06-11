@@ -1,104 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbXFKTYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbXFKTZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbXFKTYq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbXFKTYh
+	id S1756828AbXFKTZK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbXFKTYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:24:37 -0400
-Received: from mga03.intel.com ([143.182.124.21]:8456 "EHLO mga03.intel.com"
+	Mon, 11 Jun 2007 15:24:43 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:45553 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753122AbXFKTYg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:24:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
-   d="scan'208";a="237917370"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1756007AbXFKTYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 15:24:42 -0400
+Message-ID: <466DA173.70205@us.ibm.com>
+Date: Mon, 11 Jun 2007 14:24:35 -0500
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch-mm 21/23] x86-64 block irq balancing for timer
-Date: Mon, 11 Jun 2007 12:24:33 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F50101D663@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <1181492960.2809.1.camel@laptopd505.fenrus.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch-mm 21/23] x86-64 block irq balancing for timer
-Thread-Index: AcerfLacDccDJpYyR+6c0IkTm12NjQAAJujg
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
-       "Chris Wright" <chrisw@sous-sol.org>
-X-OriginalArrivalTime: 11 Jun 2007 19:24:34.0057 (UTC) FILETIME=[2460B790:01C7AC5E]
+To: Gerd Hoffmann <kraxel@redhat.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] Re: More virtio users
+References: <466BA965.6050208@qumranet.com>	<1181463220.16428.24.camel@localhost.localdomain> <466D04C2.8010403@redhat.com>
+In-Reply-To: <466D04C2.8010403@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Gerd Hoffmann wrote:
+>   Hi,
+> 
+>> Framebuffer is an interesting one.  Virtio doesn't assume shared memory,
+>> so naively the fb you would just send outbufs describing changed memory.
+>> This would work, but describing rectangles is better.  A helper might be
+>> the right approach here
+> 
+> Rectangles work just fine for a framebuffer console.  They stop working 
+> once you plan to run any graphical stuff such as an X-Server on top of 
+> the framebuffer.  Only way to get notified about changes is page faults, 
+> i.e. 4k granularity on the linear framebuffer memory.
+> 
+> Related to Framebuffer is virtual keyboard and virtual mouse (or better 
+> touchscreen), which probably works perfectly fine with virtio.  I'd 
+> guess you can even reuse the input layer event struct for the virtio 
+> events.
+
+Virtio seems like overkill for either of those things.  It's necessary 
+for pure PV but not at all necessary for something like KVM.
+
+> Xen has virtual framebuffer, kbd & mouse, although not (yet?) in the 
+> paravirt_ops patch queue, so there is something you can look at ;)
+
+In retrospect, IMHO, a shared framebuffer was a bad idea for Xen.  It's 
+easy enough for dealing with an unaccelerated display, but once you 
+start getting into more advanced features like blitting (which is really 
+important actually for decent VNC performance), the synchronization 
+becomes a big problem.
+
+If we were to do a PV display driver again, I really think something 
+that is closer to a VNC protocol is the right way to go.  There simply 
+isn't a significant performance overhead to copying the relatively small 
+amount of memory.
+
+So virtio in it's current form would actually be pretty useful for that.
+
+Regards,
+
+Anthony Liguori
 
 
-This just makes x86_64 behave like i386 which sets the flag today.
+> cheers,
+>   Gerd
 
-With tick-broadcast, even though we handle timer tick happening
-anywhere, it will be nice if timer always goes to CPU 0 and we then
-broadcast to any other CPUs. This is not a must have patch from my
-perspective. But, we should make i386 and x86_64 same. So, we need to
-change either one.
-
-Thanks,
-Venki
-
->-----Original Message-----
->From: Arjan van de Ven [mailto:arjan@infradead.org] 
->Sent: Sunday, June 10, 2007 9:29 AM
->To: Thomas Gleixner
->Cc: LKML; Andrew Morton; Ingo Molnar; Andi Kleen; Pallipadi, 
->Venkatesh; Chris Wright
->Subject: Re: [patch-mm 21/23] x86-64 block irq balancing for timer
->
->this isn't needed actually.. the userspace irq balancer won't balance
->irq 0 anyway, and if the sysadmin has a REAL good reason to move this
->himself... then why shouldn't we let him?
->
->
->
->On Sun, 2007-06-10 at 09:44 +0000, Thomas Gleixner wrote:
->> plain text document attachment
->> (x86-64-clockevents-irq-balancing.patch)
->> From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
->> 
->> Disable irq balancing on IRQ0.
->> 
->> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->> Cc: Andi Kleen <ak@suse.de>
->> 
->> ---
->>  arch/x86_64/kernel/time.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->> 
->> Index: linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c
->> ===================================================================
->> --- linux-2.6.22-rc4-mm.orig/arch/x86_64/kernel/time.c	
->2007-06-10 10:44:39.000000000 +0200
->> +++ linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c	
->2007-06-10 10:44:40.000000000 +0200
->> @@ -255,7 +255,7 @@ static unsigned int __init tsc_calibrate
->>  
->>  static struct irqaction irq0 = {
->>  	.handler	= timer_interrupt,
->> -	.flags		= IRQF_DISABLED | IRQF_IRQPOLL,
->> +	.flags		= IRQF_DISABLED | IRQF_IRQPOLL | 
->IRQF_NOBALANCING,
->>  	.mask		= CPU_MASK_NONE,
->>  	.name		= "timer"
->>  };
->
->-- 
->if you want to mail me at work (you don't), use arjan (at) 
->linux.intel.com
->Test the interaction between Linux and your BIOS via 
->http://www.linuxfirmwarekit.org
->
