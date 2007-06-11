@@ -1,134 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758007AbXFKTy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbXFKTzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758007AbXFKTy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbXFKTyv
+	id S1758134AbXFKTzU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbXFKTyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:54:51 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55604 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753244AbXFKTyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:54:50 -0400
-Date: Mon, 11 Jun 2007 21:55:52 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>
-Cc: Kaz Kojima <kkojima@rr.iij4u.or.jp>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH for -rc] kbuild: fix sh64 section mismatch problems
-Message-ID: <20070611195552.GB7238@uranus.ravnborg.org>
+	Mon, 11 Jun 2007 15:54:54 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:49538 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756685AbXFKTyx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 15:54:53 -0400
+Subject: Re: [PATCH] shm: Fix the filename of hugetlb sysv shared memory
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>,
+       Albert Cahalan <acahalan@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       torvalds@linux-foundation.org
+In-Reply-To: <20070611111111.2345470d.akpm@linux-foundation.org>
+References: <787b0d920706062027s5a8fd35q752f8da5d446afc@mail.gmail.com>
+	 <20070606204432.b670a7b1.akpm@linux-foundation.org>
+	 <787b0d920706062153u7ad64179p1c4f3f663c3882f@mail.gmail.com>
+	 <20070607162004.GA27802@vino.hallyn.com>
+	 <m1ir9zrtwe.fsf@ebiederm.dsl.xmission.com> <46697EDA.9000209@us.ibm.com>
+	 <m1vedyqaft.fsf_-_@ebiederm.dsl.xmission.com>
+	 <20070611111111.2345470d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 11 Jun 2007 12:55:33 -0700
+Message-Id: <1181591733.22665.5.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
+On Mon, 2007-06-11 at 11:11 -0700, Andrew Morton wrote:
+> On Fri, 08 Jun 2007 17:43:34 -0600
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+> 
+> > Some user space tools need to identify SYSV shared memory when
+> > examining /proc/<pid>/maps.  To do so they look for a block device
+> > with major zero, a dentry named SYSV<sysv key>, and having the minor of
+> > the internal sysv shared memory kernel mount.
+> > 
+> > To help these tools and to make it easier for people just browsing
+> > /proc/<pid>/maps this patch modifies hugetlb sysv shared memory to
+> > use the SYSV<key> dentry naming convention.
+> > 
+> > User space tools will still have to be aware that hugetlb sysv
+> > shared memory lives on a different internal kernel mount and so
+> > has a different block device minor number from the rest of sysv
+> > shared memory.
+> 
+> So..  I am sitting here believing that this patch and Badari's
+> restore-shmid-as-inode-to-fix-proc-pid-maps-abi-breakage.patch are both
+> needed in 2.6.22 and that they will fix all these issues up.
+> 
+> If that is untrue, someone please let us know..
 
-Please apply following 2 liners fix.
-It will fix a lot of false section mismatch warnings on sh64 and
-Paul asked to have in included before the relase hit the street.
+Andrew,
 
-Please pull this single patch from:
-	git://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fix.git
+My restore-shmid-as-inode-to-fix-proc-pid-maps-abi-breakage.patch is
+definitely needed for 2.6.22 to fix ABI issue.
 
-	Sam
+Eric's patch goes beyond and provides same naming convention for
+hugetlbfs backed shm segs (which we never did in the past). So,
+its not absolutely need for 2.6.22. You can queue up for next 
+release,  unless Albert really wants to extend proc-ps utils for
+hugetlbfs segments too.
 
-Patch below for reference:
+But, its very simple patch - you might as well push this too.
 
- modpost.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
->From 2648a53acf16a837e11836203aadb219bd951a1e Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 11 Jun 2007 21:52:04 +0200
-Subject: [PATCH] kbuild: fix sh64 section mismatch problems
-
-There's a special .cranges section that is almost always generated,
-with data being moved to the appropriate section by the linker at a later
-stage.
-
-To give a bit of background, sh64 has both a native SHmedia instruction
-set (32-bit instructions) and SHcompact (which is compatability with
-normal SH -- 16-bit, a massively reduced register set, etc.). code ranges
-are emitted when we're using the 32-bit ABI, but not the 64-bit one.
-
-It is a special staging section used solely by binutils where code with
-different flags get placed (more specifically differing flags for input
-and output sections), before being lazily merged by the linker.
-
-The closest I've been able to find to documentation is:
-  http://sources.redhat.com/cgi-bin/cvsweb.cgi/src/ld/emultempl/sh64elf.em?rev=1.10&content-type=text/x-cvsweb-markup&cvsroot=src
-
-It's an array of 8-byte Elf32_CRange structure given in
-  http://sources.redhat.com/cgi-bin/cvsweb.cgi/src/bfd/elf32-sh64.h?rev=1.4&content-type=text/x-cvsweb-markup&cvsroot=src
-that describes for which ISA a range is used.
-
-Silence the warnings by allowing references from .init.text to .cranges.
-
-The following warnings are fixed:
-
-WARNING: init/built-in.o(.cranges+0x0): Section mismatch: reference to .init.text:
-WARNING: init/built-in.o(.cranges+0xa): Section mismatch: reference to .init.text:
-WARNING: init/built-in.o(.cranges+0x14): Section mismatch: reference to .init.text:
-WARNING: init/built-in.o(.cranges+0x1e): Section mismatch: reference to .init.text:
-WARNING: init/built-in.o(.cranges+0x28): Section mismatch: reference to .init.text:
-WARNING: init/built-in.o(.cranges+0x32): Section mismatch: reference to .init.text:
-WARNING: kernel/built-in.o(.cranges+0x50): Section mismatch: reference to .init.text:
-WARNING: kernel/built-in.o(.cranges+0x5a): Section mismatch: reference to .init.text:
-WARNING: kernel/built-in.o(.cranges+0x64): Section mismatch: reference to .init.text:
-WARNING: kernel/built-in.o(.cranges+0xfa): Section mismatch: reference to .init.text:
-WARNING: kernel/built-in.o(.cranges+0x104): Section mismatch: reference to .init.text:
-WARNING: kernel/built-in.o(.cranges+0x10e): Section mismatch: reference to .init.text:
-WARNING: kernel/built-in.o(.cranges+0x14a): Section mismatch: reference to .init.text:
-WARNING: kernel/built-in.o(.cranges+0x154): Section mismatch: reference to .init.text:
-WARNING: kernel/built-in.o(.cranges+0x15e): Section mismatch: reference to .init.text:
-WARNING: mm/built-in.o(.cranges+0x6e): Section mismatch: reference to .init.text:
-WARNING: mm/built-in.o(.cranges+0x78): Section mismatch: reference to .init.text:
-WARNING: mm/built-in.o(.cranges+0x82): Section mismatch: reference to .init.text:
-WARNING: mm/built-in.o(.cranges+0xaa): Section mismatch: reference to .init.text:
-WARNING: fs/built-in.o(.cranges+0x136): Section mismatch: reference to .init.text:
-WARNING: fs/built-in.o(.cranges+0x140): Section mismatch: reference to .init.text:
-WARNING: fs/built-in.o(.cranges+0x14a): Section mismatch: reference to .init.text:
-WARNING: fs/built-in.o(.cranges+0x168): Section mismatch: reference to .init.text:
-WARNING: fs/built-in.o(.cranges+0x1f4): Section mismatch: reference to .init.text:
-WARNING: fs/built-in.o(.cranges+0x1fe): Section mismatch: reference to .init.text:
-WARNING: net/built-in.o(.cranges+0x302): Section mismatch: reference to .init.text:
-WARNING: net/built-in.o(.cranges+0x30c): Section mismatch: reference to .init.text:
-WARNING: net/built-in.o(.cranges+0x316): Section mismatch: reference to .init.text:
-WARNING: net/built-in.o(.cranges+0x3a2): Section mismatch: reference to .init.text:
-WARNING: net/built-in.o(.cranges+0x3ac): Section mismatch: reference to .init.text:
-WARNING: net/built-in.o(.cranges+0x4ce): Section mismatch: reference to .init.text:
-WARNING: net/built-in.o(.cranges+0x4d8): Section mismatch: reference to .init.text:
-
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Cc: Kaz Kojima <kkojima@rr.iij4u.or.jp>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- scripts/mod/modpost.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 8e5610d..3645e98 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1052,6 +1052,7 @@ static int init_section_ref_ok(const char *name)
- 		".plt",  /* seen on ARCH=um build on x86_64. Harmless */
- 		"__ftr_fixup",		/* powerpc cpu feature fixup */
- 		"__fw_ftr_fixup",	/* powerpc firmware feature fixup */
-+		".cranges",	/* used by sh64 */
- 		NULL
- 	};
- 	/* Start of section names */
-@@ -1132,6 +1133,7 @@ static int exit_section_ref_ok(const char *name)
- 		".fixup",
- 		".smp_locks",
- 		".plt",  /* seen on ARCH=um build on x86_64. Harmless */
-+		".cranges",	/* used by sh64 */
- 		NULL
- 	};
- 	/* Start of section names */
--- 
-1.5.1.rc3.1544.g8a923
+Thanks,
+Badari
 
