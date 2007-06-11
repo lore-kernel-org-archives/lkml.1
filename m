@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbXFKOUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbXFKOaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbXFKOUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 10:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXFKOUc
+	id S1753204AbXFKOaf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 10:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXFKOa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 10:20:32 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:30099 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbXFKOUb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 10:20:31 -0400
-Date: Mon, 11 Jun 2007 10:20:30 -0400
-From: Mike Schmidt <mike@intello.com>
-Subject: Re: How does dummy network driver get its mac addresses?
-In-reply-to: <20070608123506.3397283f@localhost.localdomain>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <466D5A2E.3090307@intello.com>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_ToRIFJXWi70WMz2BrwM1Lw)"
-X-Greylist: Sender succeeded SMTP AUTH authentication,
- not delayed by milter-greylist-3.0 (deepspace.sepia.com [205.236.40.42]); Mon,
- 11 Jun 2007 10:15:39 -0400 (EDT)
-References: <4669A80E.1050102@intello.com>
- <20070608123506.3397283f@localhost.localdomain>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-To: unlisted-recipients:; (no To-header on input)
+	Mon, 11 Jun 2007 10:30:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38648 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751951AbXFKOa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 10:30:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: fix oops on cat /dev/snapshot
+Date: Mon, 11 Jun 2007 16:36:42 +0200
+User-Agent: KMail/1.9.5
+Cc: B.Steinbrink@gmx.de, Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+References: <20070611121716.GA1904@elf.ucw.cz>
+In-Reply-To: <20070611121716.GA1904@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706111636.42555.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Monday, 11 June 2007 14:17, Pavel Machek wrote:
+> What /dev/snapshot is simply cat-ed -- without ioctls used in normal
+> operation -- it oopses. This one should fix it.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> --- clean-mm/kernel/power/user.c	2007-06-09 16:18:12.000000000 +0200
+> +++ linux-mm/kernel/power/user.c	2007-06-11 14:06:19.000000000 +0200
+> @@ -99,6 +99,8 @@
+>  	ssize_t res;
+>  
+>  	data = filp->private_data;
+> +	if (!data->ready)
+> +		return -EINVAL;
 
---Boundary_(ID_ToRIFJXWi70WMz2BrwM1Lw)
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
+I'd like to use -ENODATA here.
 
-Thanks a lot for the responses I've received. I really appreciate the help.
+>  	res = snapshot_read_next(&data->handle, count);
+>  	if (res > 0) {
+>  		if (copy_to_user(buf, data_of(data->handle), res))
+> 
 
-Sorry about posting in the wrong mailing list. I'll pay more attention 
-next time.
+I have a patch for that and I'm going to post it in a while if you don't
+mind.
 
-Mike
+I've already posted it once, here: http://lkml.org/lkml/2007/6/10/146
 
-Stephen Hemminger wrote:
-> On Fri, 08 Jun 2007 15:03:42 -0400
-> Mike Schmidt <mike@intello.com> wrote:
->
->   
->> please cc me directly with any responses - I am not (yet) a member of this mailing list.
->>
->> I just created 99 dummy network devices, and they all had different, random-looking addresses. I recently searched though all the IANA/IEEE documentation looking for a mechanism or policy to select local, virtual mac addresses that could not interfere with real ones. But there seems to be no clear concensus. Even the use of the 'local' bit seems to be inconsistent, I saw registered OUIs in the AA:... (from memory) range, for example. 
->>
->> I noticed that all the mac addresses assigned by the dummy driver have the 'local' bit set. For those who are wondering, that's the second least significant bit  in the first digit of the mac address: so all addresses that start with x2, x3, x6, x7, xA, xB, and xE, xF are 'local'. The last bit is the multicast bit.
->>
->> In the 2.4 kernels, these devices all received a 00:00:00... mac address, although this is declared incorrect in the RFCs I read. So, I was making my own, somewhat arbitrarily. In 2.6, this seems to be solved. Can anyone tell me what the algorithm/criteria are that allow the 2.6 kernels to set up random mac addresses without conflicting with real devices?
->>     
->
->
->   
->> I have searched the mailing list, but it's pretty hard to select for this kind of information. 
->>
->> Thanks very much. This is a great mailing list. It's been very responsive to me so far. I thank you all. 
->>     
->
->
-> 1. Learn to read the kernel source.  dummy gets its addresses from
->    random_ether_addr()
->
-> 2. Read the maintainers file, questions like this goto netdev@vger.kernel.org
->
->
->   
-
---Boundary_(ID_ToRIFJXWi70WMz2BrwM1Lw)
-Content-type: text/x-vcard; charset=utf-8; name=mike.vcf
-Content-transfer-encoding: 7BIT
-Content-disposition: attachment; filename=mike.vcf
-
-begin:vcard
-fn:Mike Schmidt
-n:Schmidt;Mike
-org:Intello Technologies Inc. 
-adr;quoted-printable;quoted-printable:;;580 1=C3=A8re Rue;Saint-Jean-sur-Richelieu;Qu=C3=A9;J2X 3B4;Canada
-email;internet:mike@intello.com
-title:Vice-President
-tel;work:450-358-2266 x223
-tel;cell:514-835-9497
-x-mozilla-html:FALSE
-url:http://www.intello.com
-version:2.1
-end:vcard
+Greetings,
+Rafael
 
 
---Boundary_(ID_ToRIFJXWi70WMz2BrwM1Lw)--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
