@@ -1,96 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751150AbXFKLHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752148AbXFKLIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751150AbXFKLHP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 07:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbXFKLG1
+	id S1752148AbXFKLIJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 07:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbXFKLH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 07:06:27 -0400
-Received: from mx1.suse.de ([195.135.220.2]:59774 "EHLO mx1.suse.de"
+	Mon, 11 Jun 2007 07:07:56 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33250 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbXFKLGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 07:06:05 -0400
-To: Benjamin Gilbert <bgilbert@cs.cmu.edu>
-Cc: akpm@linux-foundation.org, herbert@gondor.apana.org.au,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] [CRYPTO] Add optimized SHA-1 implementation for x86_64
+	id S1750836AbXFKLHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 07:07:55 -0400
+To: Matt Mackall <mpm@selenic.com>
+Cc: Benjamin Gilbert <bgilbert@cs.cmu.edu>, akpm@linux-foundation.org,
+       herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
 References: <20070608214242.23949.30350.stgit@dev>
-	<20070608214258.23949.67358.stgit@dev>
+	<20070608214253.23949.40465.stgit@dev>
+	<20070609201159.GC11166@waste.org>
 From: Andi Kleen <andi@firstfloor.org>
-Date: 11 Jun 2007 14:01:56 +0200
-In-Reply-To: <20070608214258.23949.67358.stgit@dev>
-Message-ID: <p73lkeqvgwb.fsf@bingen.suse.de>
+Date: 11 Jun 2007 14:04:05 +0200
+In-Reply-To: <20070609201159.GC11166@waste.org>
+Message-ID: <p73hcpevgsq.fsf@bingen.suse.de>
 User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Gilbert <bgilbert@cs.cmu.edu> writes:
+Matt Mackall <mpm@selenic.com> writes:
+> 
+> Have you benchmarked this against lib/sha1.c? Please post the results.
+> Until then, I'm frankly skeptical that your unrolled version is faster
+> because when I introduced lib/sha1.c the rolled version therein won by
+> a significant margin and had 1/10th the cache footprint.
 
-> +/* push/pop wrappers that update the DWARF unwind table */
-> +#define PUSH(regname)						\
-> +	push			%regname;			\
-> +	CFI_ADJUST_CFA_OFFSET	8;				\
-> +	CFI_REL_OFFSET		regname, 0
-> +
-> +#define POP(regname)						\
-> +	pop			%regname;			\
-> +	CFI_ADJUST_CFA_OFFSET	-8;				\
-> +	CFI_RESTORE		regname
+I would always suggest to benchmark such functions with forced cold i/d caches
 
-Please don't do these kinds of wrappers. They just obfuscate the code.
-
-And BTW plain gas macros (.macro) are much nicer to read too
-than cpp macros.
-
-
-> +#define EXPAND(i)						\
-> +	movl	OFFSET(i % 16)(DATA), TMP;			\
-> +	xorl	OFFSET((i + 2) % 16)(DATA), TMP;		\
-
-Such overlapping memory accesses are somewhat dangerous as they tend
-to stall some CPUs.  Better probably to do a quad load and then extract.
-
-If you care about the last cycle I would suggest you run 
-it at least once through the Pipeline simulator in the Linux
-version of AMD CodeAnalyst or through vtune.
-
-I haven't checked in detail if it's possible but it's suspicious you
-never use quad operations for anything. You keep at least half
-the CPU's bits idle all the time.
-
-> +	EXPAND(75); ROUND(SA, SB, SC, SD, SE, F2, TMP)
-> +	EXPAND(76); ROUND(SE, SA, SB, SC, SD, F2, TMP)
-> +	EXPAND(77); ROUND(SD, SE, SA, SB, SC, F2, TMP)
-> +	EXPAND(78); ROUND(SC, SD, SE, SA, SB, F2, TMP)
-> +	EXPAND(79); ROUND(SB, SC, SD, SE, SA, F2, TMP)
-
-Gut feeling is that the unroll factor is far too large.
-Have you tried a smaller one? That would save icache
-which is very important in the kernel. Unlike in your micro benchmark
-when kernel code runs normally caches are cold.  Smaller is faster then.
-And most kernel SHA applications don't process very much data anyways
-so startup costs are important.
-
-> diff --git a/lib/Kconfig b/lib/Kconfig
-> index 69fdb64..23a84ed 100644
-> --- a/lib/Kconfig
-> +++ b/lib/Kconfig
-> @@ -132,9 +132,14 @@ config SHA1_X86
->  	depends on (X86 || UML_X86) && !64BIT && X86_BSWAP
->  	default y
->  
-> +config SHA1_X86_64
-> +	bool
-> +	depends on (X86 || UML_X86) && 64BIT
-> +	default y
-> +
->  config SHA1_GENERIC
->  	bool
-> -	depends on !SHA1_X86
-> +	depends on !SHA1_X86 && !SHA1_X86_64
-
-Better define a SHA_ARCH_OPTIMIZED helper symbol, otherwise
-this will get messy as more architectures add optimized versions.
+(memset(x, 0, 5*1024*1024) and running some very large generated
+function every few iterations of the benchmark) 
 
 -Andi
