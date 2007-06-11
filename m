@@ -1,65 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbXFKScm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbXFKSgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbXFKScm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 14:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbXFKScg
+	id S1756355AbXFKSgv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 14:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbXFKSgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 14:32:36 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38418 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751026AbXFKScf (ORCPT
+	Mon, 11 Jun 2007 14:36:43 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:55703 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbXFKSgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 14:32:35 -0400
-Date: Mon, 11 Jun 2007 11:32:33 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: =?ISO-8859-1?Q?H=E5vard_Skinnemoen?= <hskinnemoen@gmail.com>
-cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kernel BUG at mm/slub.c:3689!
-In-Reply-To: <1defaf580706111122n78ab46c3sda05cbd4ace97319@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706111129270.18327@schroedinger.engr.sgi.com>
-References: <20070611161926.2a9f8efd@dhcp-255-175.norway.atmel.com> 
- <Pine.LNX.4.64.0706110918340.15466@schroedinger.engr.sgi.com> 
- <1defaf580706110943q56d83939t9ab6331cc45b4810@mail.gmail.com> 
- <Pine.LNX.4.64.0706110946430.15910@schroedinger.engr.sgi.com> 
- <1defaf580706111011w641b26fbu68d6d34028f6e953@mail.gmail.com> 
- <Pine.LNX.4.64.0706111041160.17264@schroedinger.engr.sgi.com>
- <1defaf580706111122n78ab46c3sda05cbd4ace97319@mail.gmail.com>
+	Mon, 11 Jun 2007 14:36:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BB88UshbJbXfbk8PzGZQ/pI3U4zgav02z8fpBHcG+YTzT1Q+54/h/DGkh67+DsASDo4AQYOY8swkYbslnVDUC9pD6PlI8uPamsNySOEW3Po8YT3LVBozt/pgBdNq7SnGjsAFXKtLK1T26wuCq5uxaI4CjHSH6qzKiuF0O7Y092Q=
+Message-ID: <fca78b970706111136q46ffce7cs1b9a49d7b351d281@mail.gmail.com>
+Date: Mon, 11 Jun 2007 19:36:41 +0100
+From: "Patrick Andrieux" <patrick.andrieux@gmail.com>
+To: "Ian McDonald" <ian.mcdonald@jandi.co.nz>
+Subject: Re: [PATCH] Kprobes i386 fix for mark ro data
+Cc: prasanna@in.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Andi Kleen" <ak@suse.de>, "Jim Keniston" <jkenisto@us.ibm.com>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       "David S. Miller" <davem@davemloft.net>,
+       "DCCP Mailing List" <dccp@vger.kernel.org>, jbeulich@novell.com,
+       systemtap@sources.redhat.com
+In-Reply-To: <5640c7e00706092324kd0ea8e0pef4a4cd764fce5d3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-700153460-1181586753=:18327"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5640c7e00706061347v42c9ecbahb5354f6687a70a78@mail.gmail.com>
+	 <46673B76.2090508@redhat.com>
+	 <5640c7e00706061612h62074699wdbd2725654a164@mail.gmail.com>
+	 <20070607042229.GA9350@in.ibm.com>
+	 <5640c7e00706092324kd0ea8e0pef4a4cd764fce5d3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi,
 
----1700579579-700153460-1181586753=:18327
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+This patch fixed my problem. I re-enabled CONFIG_DEBUG_RODATA and I
+don't have seg fault with or without your DCCP patches. Inserting
+`dccp_probe` or `tcp_probe`module doesn't cause any troubles.
 
-On Mon, 11 Jun 2007, H=E5vard Skinnemoen wrote:
+Patrick.
 
-> > Note that I do not get why you would be aligning the objects to 32 byte=
-s.
-> > Increasing the smallest cache size wastes a lot of memory. And it is
-> > usually advantageous if multiple related objects are in the same cachel=
-ine
-> > unless you have heavy SMP contention.
->=20
-> It's not about performance at all, it's about DMA buffers allocated
-> using kmalloc() getting corrupted. Imagine this:
 
-Uhhh... How about using a separate slab for the DMA buffers?
-=20
-> Maybe there are other solutions to this problem, but the old SLAB
-> allocator did guarantee 32-byte alignment as long as SLAB debugging
-> was turned off, so setting ARCH_KMALLOC_MINALIGN seemed like the
-> easiest way to get back to the old, known-working behaviour.
-
-SLABs mininum object size is 32 thus you had no problems. I see. SLAB=20
-does not guarantee 32 byte alignment. It just happened to work. If you=20
-switch on CONFIG_SLAB_DEBUG you will likely get into trouble.
-
-So I'd suggest to set up a special slab for your DMA buffers.
----1700579579-700153460-1181586753=:18327--
+On 10/06/07, Ian McDonald <ian.mcdonald@jandi.co.nz> wrote:
+> On 6/7/07, S. P. Prasanna <prasanna@in.ibm.com> wrote:
+> > > >It faulted when it tried to write the breakpoint instruction into the
+> > > >running kernel's executable code. Apparently the kernel code is now marked
+> > > >read-only?
+> > > >
+> > > >
+> > > Yes it would appear to be the case as user has CONFIG_DEBUG_RODATA
+> > > set. Patrick - can you turn this off and retest? It's under Kernel
+> > > Hacking, Write protect kernel read only data structures.
+> > >
+> >
+> > Ian,
+> >
+> > Please find the fix as suggested by Andi Kleen
+> > for the above stated problem.
+> >
+> > Thanks
+> > Prasanna
+> >
+> >
+> I went to test the fix and first of all went to replicate the problem.
+> My build has CONFIG_DEBUG_RODATA set but the problem does not occur
+> without the patch. Should I be concerned about this and raise a bug
+> for that as I would think that means there is a problem that the read
+> only protection isn't working (this is off Linus' tree synced
+> tonight).
+>
+> Patrick - can you test whether this patch fixes your problem? You said
+> disabling CONFIG_DEBUG_RODATA fixed your problem but can you try
+> re-enabling and testing this patch?
+>
+> Ian
+> --
+> Web: http://wand.net.nz/~iam4/
+> Blog: http://iansblog.jandi.co.nz
+> WAND Network Research Group
+>
