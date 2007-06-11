@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbXFKXaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbXFKXdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757201AbXFKXaY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 19:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXFKXaO
+	id S1756469AbXFKXdR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 19:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbXFKXdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 19:30:14 -0400
-Received: from web50105.mail.re2.yahoo.com ([206.190.38.33]:45295 "HELO
-	web50105.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754190AbXFKXaN (ORCPT
+	Mon, 11 Jun 2007 19:33:04 -0400
+Received: from lazybastard.de ([212.112.238.170]:42853 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753984AbXFKXdC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 19:30:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=5jM2JcwT7aF/ANQIGvm/DVwSO8eKm5wvpqV6VQEof8s+UFOmkTdO5TRzE1S6pz4EfgPW6zs6+rI6RiSsFajgEo8dOWrwo/Ztb5n3L/acQa6n46XiBi/8dfpuB7Al9AyVl7bnJudgMIXqvBub7GYN6ePe+q39Ktoee4fA9Rm7RSY=;
-X-YMail-OSG: lVjaYkYVM1l5mTFEHw4CtADZADAniGhnpiNdexgAh.Qz1USix.A8lIoWAnhQZY.jjbdH.Q--
-Date: Mon, 11 Jun 2007 16:30:11 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Reply-To: dougthompson@xmission.com
-Subject: Re: [PATCH 4/6] include linux pci_id-h add amd northbridge defines
-To: Greg KH <greg@kroah.com>, dougthompson@xmission.com
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, akpm@osdl.org
-In-Reply-To: <20070609000827.GA17624@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <963615.80973.qm@web50105.mail.re2.yahoo.com>
+	Mon, 11 Jun 2007 19:33:02 -0400
+Date: Tue, 12 Jun 2007 01:28:03 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       David Weinehall <tao@acc.umu.se>, Willy Tarreau <w@1wt.eu>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Dongjun Shin <djshin90@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>, Bill Davidsen <davidsen@tmr.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: [Patch 10/18] fs/logfs/inode.c
+Message-ID: <20070611232803.GA5377@lazybastard.org>
+References: <20070603183845.GA8952@lazybastard.org> <20070603184636.GK8952@lazybastard.org> <200706101924.29927.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706101924.29927.arnd@arndb.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Greg KH <greg@kroah.com> wrote:
-
-> On Fri, Jun 08, 2007 at 10:45:10AM -0600, dougthompson@xmission.com wrote:
-> > From:	Douglas Thompson <dougthompson@xmission.com>
-> > 
-> > pci_ids.h needs two of the AMD NB device-ids namely,
-> > Addressmap and the Memory Controller devices
+On Sun, 10 June 2007 19:24:28 +0200, Arnd Bergmann wrote:
 > 
-> Does any kernel driver need this?  We're trying to only include things
-> in the pci_ids.h file that are needed in more than one file to cut down
-> on the churn here for unnecessary ids.
+> I think this is missing code that sets the initial i_uid/i_gid,
+> but there may be more missing. Changing the uid value works,
+> but creating files as non-root user doesn't.
 
-not at the moment, but I have the k8_edac.c EDAC driver in my queue, which was in the -mm tree but
-I had to pull it back once.
+Fixed in patch 557, see
+http://logfs.org/logfs/patches
 
-I am working with the k8 driver and its dealing with a race with the mcelog device as both access
-the K8 NB. The K8 driver does use these regs and it currently has #ifndef s in it for both of
-them.
+The initial storm of review comments has calmed down.  I get the
+impression that people either lose interest or run out of simple things
+to point out.  Maybe I should wait a bit before resending?
 
-I guess I could have submitted the patch when the K8 driver was submitted.
+Jörn
 
-thanks
-
-doug t
-
-> 
-> thanks,
-> 
-> greg k-h
-> 
-
+-- 
+The competent programmer is fully aware of the strictly limited size of
+his own skull; therefore he approaches the programming task in full
+humility, and among other things he avoids clever tricks like the plague.
+-- Edsger W. Dijkstra
