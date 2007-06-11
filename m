@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbXFKTpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXFKTpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757123AbXFKTpf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 15:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbXFKTp2
+	id S1757511AbXFKTpr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 15:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbXFKTpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 15:45:28 -0400
-Received: from www.osadl.org ([213.239.205.134]:42813 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752507AbXFKTp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 15:45:27 -0400
-Subject: Re: 2.6.21-rt2..8 troubles
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Rui Nuno Capela <rncbc@rncbc.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <466DA42A.6010600@rncbc.org>
-References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>
-	 <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu>
-	 <46574DE4.2080900@rncbc.org> <1180195709.4264.7.camel@chaos>
-	 <4658A4F4.1080204@rncbc.org>  <46660369.2070104@rncbc.org>
-	 <1181317625.4404.332.camel@chaos>
-	 <59605.213.13.107.141.1181326897.squirrel@www.rncbc.org>
-	 <1181328636.4404.335.camel@chaos>  <466DA42A.6010600@rncbc.org>
-Content-Type: text/plain
-Date: Mon, 11 Jun 2007 21:45:22 +0200
-Message-Id: <1181591122.8176.159.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Mon, 11 Jun 2007 15:45:36 -0400
+Received: from bill.weihenstephan.org ([82.135.35.21]:40697 "EHLO
+	bill.weihenstephan.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756928AbXFKTpf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 15:45:35 -0400
+X-Greylist: delayed 1064 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jun 2007 15:45:34 EDT
+From: Juergen Beisert <juergen127@kreuzholzen.de>
+Organization: Privat
+To: DervishD <lkml@dervishd.net>, Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ext2 on flash memory
+Date: Mon, 11 Jun 2007 21:27:41 +0200
+User-Agent: KMail/1.9.4
+References: <20070611101319.GA14284@DervishD> <Pine.LNX.4.64.0706110754280.12140@blackbox.fnordora.org> <20070611174223.GB2433@DervishD>
+In-Reply-To: <20070611174223.GB2433@DervishD>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706112127.42119.juergen127@kreuzholzen.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-11 at 20:36 +0100, Rui Nuno Capela wrote:
-> > I'm spinning -rt10 with a couple of fixes. Should be out sometimes
-> > tomorrow. If the problem persists, we need to dig deeper.
-> > 
-> 
-> Uhoh. I'm sorry to tell, but the problem is still creeping on
-> 2.6.21.4-rt11 and -rt12 :(
-> 
-> So sorry.
+On Monday 11 June 2007 19:42, DervishD wrote:
+>     I just was curious about the issue and I was asking to know if
+> anybody had tried this.
 
-Hmm. Does it happen, when you boot with maxcpus=1 on the kernel
-commandline ?
+Think about compact flash devices. They also using some kind of flash memory 
+and also doing wear leveling. And I think they are not only used with 
+FAT16/32! If they run with different filesystems, then your pendrive stick 
+will also. Only the interface is different.
 
-	tglx
+> I know about cheap pendrives that you cannot format even with FAT32, only
+> with FAT16.
 
+I'm not sure if the price was the reason that they failed with different 
+filesystems. Some kind of wear leveling tries to guess which blocks of the 
+filesystem are in use and which are unused (to avoid wear leveling of unused 
+data).
+But it only works if you are using a filesystem that is "known" by the wear 
+leveling process. If you are using a different one, it fails badly, because 
+it tries to interpret a FAT that does not exists, and destroys your 
+filesystem while the wear leveling process is running. So this cheap pendrive 
+was too intelligent for filesystems other than FAT16....
 
+So if you can use a different filesystem than FAT16/32 on your pendrive, it 
+does not matter what kind of filesystem you are using. The wear leveling 
+process has no clue about it and always "wear leveling" used *and* unused 
+data (means: every block of the whole disk) until it ruins the flash memory.
+
+Hope it helps
+Juergen
