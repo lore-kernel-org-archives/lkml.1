@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751641AbXFKLLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751885AbXFKLNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751641AbXFKLLp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 07:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXFKLLi
+	id S1751885AbXFKLNX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 07:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbXFKLNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 07:11:38 -0400
-Received: from max.aladin.ro ([80.96.155.2]:60009 "EHLO aladin.ro"
+	Mon, 11 Jun 2007 07:13:15 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:34094 "EHLO relay4.usu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750715AbXFKLLi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 07:11:38 -0400
-Message-ID: <466D2DF7.9020709@aladin.ro>
-Date: Mon, 11 Jun 2007 14:11:51 +0300
-From: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1750741AbXFKLNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 07:13:14 -0400
+Message-ID: <466D2E52.4000904@ums.usu.ru>
+Date: Mon, 11 Jun 2007 17:13:22 +0600
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-To: DervishD <lkml@dervishd.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: ext2 on flash memory
-References: <20070611101319.GA14284@DervishD>
-In-Reply-To: <20070611101319.GA14284@DervishD>
+To: Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org
+Subject: Re: ide0=noprobe, hda=noprobe, hda=none ignored?
+References: <20070610185439.GA12202@alinoe.com>
+In-Reply-To: <20070610185439.GA12202@alinoe.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*This message was transferred with a trial version of CommuniGate(r) Pro*
-DervishD wrote:
-> *This message was transferred with a trial version of CommuniGate(r) Pro*
-> *This message was transferred with a trial version of CommuniGate(r) Pro*
->     Hi all :)
+Carlo Wood wrote:
+> I've been trying for months to get my box to boot faster
+> by ignoring the not connected hda/hdb (ide0).
 > 
->     I was wondering: is there any reason not to use ext2 on an USB
-> pendrive? Really my question is not only about USB pendrives, but any
-> device whose storage is flash based. Let's assume that the device has a
-> good quality flash memory with wear leveling and the like...
+> ansset:~>dmesg | egrep '(noprobe|ide0|hda|hdb)'
 > 
->     Thanks a lot in advance :)
+> Kernel command line: root=/dev/hde3 ro ide0=noprobe
+>     ide0: BM-DMA at 0xd800-0xd807, BIOS settings: hda:pio, hdb:pio
+> Probing IDE interface ide0...
+> hda: IRQ probe failed (0xfffffdb8)
+> etc.
 > 
->     Raúl Núñez de Arenas Coronado
+> or
 > 
+> Kernel command line: root=/dev/hde3 ro hda=none hdb=none
+>     ide0: BM-DMA at 0xd800-0xd807, BIOS settings: hda:pio, hdb:pio
+> Probing IDE interface ide0...
+> hda: IRQ probe failed (0xfffffdb8)
+> 
+> same for hda=noprobe hdb=noprobe
+> 
+> Nothing helps.
+> 
+> Is this a bug or not? I'd think that saying "noprobe" means
+> "do NOT probe" - but it probes anyway.
 
-Your USB pendrive will wear faster if you use an inappropriate 
-filesystem. Such filesystems require frequent writes and change their 
-internal state often.
 
-This could be alleviated by COWing the filesystem somehow and flushing 
-writes when you're finished. But the modifications will be lost if 
-crashes occur. The filesystem structures will still change a lot and 
-require  big writes to update it.
+If your kernel uses modular IDE drivers and an initrd/initramfs that loads 
+them, your result is the expected one (i.e.: not a bug). One should add the 
+following or similar options into /etc/modprobe.conf in the initrd in order 
+to get the result:
 
-Really, why don't you try a more suitable fs for your pendrive, one that 
-changes itself less than usual fs's?
+options ide_core options="ide0=noprobe hda=noprobe hdb=noprobe"
 
+If you don't use initrd, or have a non-modular IDE driver, please ignore 
+this message.
+
+-- 
+Alexander E. Patrakov
