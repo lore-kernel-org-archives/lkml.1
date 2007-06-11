@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbXFKPUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbXFKP0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755181AbXFKPUl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 11:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXFKPUd
+	id S1754195AbXFKP0A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 11:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbXFKPZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 11:20:33 -0400
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:50181 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752427AbXFKPUc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 11:20:32 -0400
-Date: Mon, 11 Jun 2007 17:22:11 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: New hwmon maintainer
-Message-ID: <20070611172211.24d29a87@hyperion.delvare>
-In-Reply-To: <20070609160031.GE3357@jupiter.solarsys.private>
-References: <20070609160031.GE3357@jupiter.solarsys.private>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jun 2007 11:25:49 -0400
+Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:39740 "EHLO
+	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752567AbXFKPZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 11:25:48 -0400
+X-Greylist: delayed 1608 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jun 2007 11:25:48 EDT
+Date: Mon, 11 Jun 2007 07:58:59 -0700 (PDT)
+From: alan <alan@clueserver.org>
+X-X-Sender: alan@blackbox.fnordora.org
+To: DervishD <lkml@dervishd.net>
+cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ext2 on flash memory
+In-Reply-To: <20070611101319.GA14284@DervishD>
+Message-ID: <Pine.LNX.4.64.0706110754280.12140@blackbox.fnordora.org>
+References: <20070611101319.GA14284@DervishD>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jun 2007 12:00:31 -0400, Mark M. Hoffman wrote:
-> I am maintaining a git tree for the hwmon subsystem now.  You may pull from
-> it here:
-> 
-> 	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git testing
-> 
-> The current contents include the remainder of Jean Delvare's quilt patch
-> series, plus a single patch to MAINTAINERS.  Once you start pulling from
-> this git tree, Jean said he will delete his patch series entirely.
+On Mon, 11 Jun 2007, DervishD wrote:
 
-Mark has my blessing, needless to say.
-http://marc.info/?l=lm-sensors&m=117621009823952&w=2
+>    Hi all :)
+>
+>    I was wondering: is there any reason not to use ext2 on an USB
+> pendrive? Really my question is not only about USB pendrives, but any
+> device whose storage is flash based. Let's assume that the device has a
+> good quality flash memory with wear leveling and the like...
+>
+>    Thanks a lot in advance :)
 
-> BTW: None of these patches are needed before 2.6.23.
+It depends...
 
-Confirmed.
+Do you need to use OSes other than Linux?  FAT16/32 seems to be a pretty 
+universal filesystem at this point.  You can mount ext2 on Windows, but it 
+is a pain.  Not certain what it takes to mount it on OS X.
 
-> PS: Thanks for your good work and help, Jean.
-
-Well, thanks Mark for taking over :) I have no doubt you'll make good
-work too.
+I have encountered flash drives that do not format well for anything other 
+than FAT16, but they were old and small.  Hopefully that problem no longer 
+exists with modern hardware.  I would format it then test the hell out of 
+it before trusting it with important data.
 
 -- 
-Jean Delvare
+"ANSI C says access to the padding fields of a struct is undefined.
+ANSI C also says that struct assignment is a memcpy. Therefore struct
+assignment in ANSI C is a violation of ANSI C..."
+                                   - Alan Cox
