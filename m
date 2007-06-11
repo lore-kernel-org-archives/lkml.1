@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbXFKP0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbXFKP3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbXFKP0V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 11:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbXFKP0D
+	id S1754886AbXFKP3L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 11:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbXFKP26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 11:26:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38793 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754190AbXFKPZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 11:25:59 -0400
-Subject: Re: RFC airo : wpa support
-From: Dan Williams <dcbw@redhat.com>
-To: matthieu castet <castet.matthieu@free.fr>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-In-Reply-To: <463BB946.3000807@free.fr>
-References: <463BB946.3000807@free.fr>
-Content-Type: text/plain
-Date: Mon, 11 Jun 2007 11:18:53 -0400
-Message-Id: <1181575133.4656.3.camel@xo-28-0B-88.localdomain>
+	Mon, 11 Jun 2007 11:28:58 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23007 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752229AbXFKP25 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 11:28:57 -0400
+Date: Mon, 11 Jun 2007 08:27:32 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: mm: memory/cpu hotplug section mismatch.
+Message-Id: <20070611082732.70018522.randy.dunlap@oracle.com>
+In-Reply-To: <20070611050955.GA23215@linux-sh.org>
+References: <20070611043543.GA22910@linux-sh.org>
+	<20070611140145.05726c0f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070611050955.GA23215@linux-sh.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-05 at 00:52 +0200, matthieu castet wrote: 
-> Hi,
-> 
-> I attach a diff against 2.6.21 for adding wpa support for airo driver.
-> In then end of 2005 I manage to make work wpa but the code was really 
-> ugly. I manage to find some time to clean it.
-> 
-> 
-> To support wpa, a new interface of the firmware should be used. This 
-> interface is incompatible with the old interface and using both 
-> interface at the same time make the firmware hang.
-> 
-> Porting OPEN and WEP mode to new interface need some driver rewrite, and 
-> the old interface should be keep for the older cards (or the cards that 
-> doesn't have newer firmware).
+On Mon, 11 Jun 2007 14:09:55 +0900 Paul Mundt wrote:
 
-What's involved in doing this?  Do you have any pointers or sample code
-that could be used here?
+> On Mon, Jun 11, 2007 at 02:01:45PM +0900, KAMEZAWA Hiroyuki wrote:
+> > On Mon, 11 Jun 2007 13:35:43 +0900
+> > Paul Mundt <lethal@linux-sh.org> wrote:
+> > 
+> > > When building with memory hotplug enabled and cpu hotplug disabled, we
+> > > end up with the following section mismatch:
+> > > 
+> > > WARNING: mm/built-in.o(.text+0x4e58): Section mismatch: reference to
+> > > .init.text: (between 'free_area_init_node' and '__build_all_zonelists')
+> > > 
+> > > This happens as a result of:
+> > > 
+> > > 	-> free_area_init_node()
+> > > 	  -> free_area_init_core()
+> > > 	    -> zone_pcp_init() <-- all __meminit up to this point
+> > > 	      -> zone_batchsize() <-- marked as __cpuinit
+> > > 
+> > > This happens because CONFIG_HOTPLUG_CPU=n sets __cpuinit to __init, but
+> > > CONFIG_MEMORY_HOTPLUG=y unsets __meminit.
+> > > 
+> > > Changing zone_batchsize() to __init_refok fixes this.
+> > > 
+> > 
+> > It seems this zone_batchsize() is called by cpu-hotplug and memory-hotplug.
+> > So, __init_refok doesn't look good, here.
+> > 
+> > maybe we can use __devinit here. (Because HOTPLUG_CPU and MEMORY_HOTPLUG are
+> > depend on CONFIG_HOTPLUG.)
+> > 
+> Yes, that's probably a more reasonable way to go. The __devinit name is a
+> bit misleading, though..
 
-I'd assume that we'd just use AUTH_CIPHER_WEP/AUTH_CIPHER_NONE and
-AUTH_KEY_MGMT_NONE in ConfigRidExtra.  But where does the WEP key
-material go, does it get stuffed into the WpaKeyRid too or somewhere
-else?
+__meminit does not fit/work here?
 
-Dan
 
-> That's why I didn't do it, and I added a module parameter for choosing 
-> between the old driver behavior (with no wpa support) or the driver with 
-> wpa only support.
+> --
 > 
-> 
-> The wireless extension handlers are a bit ugly, I will be very happy, if 
-> somebody could help me to clean them.
-> 
-> Any comments are appreciated.
-> 
-> 
-> Matthieu
-> 
-> 
-> PS : the lastest version of the driver can be found in 
-> http://svn.gna.org/viewcvs/airo-wpa/branches/kernel/
-> 
-> PS2 : There is some remaining trace in the driver for debug purpose, 
-> that will be removed in the final version
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index bd8e335..05ace44 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1968,7 +1968,7 @@ void zone_init_free_lists(struct pglist_data *pgdat, struct zone *zone,
+>  	memmap_init_zone((size), (nid), (zone), (start_pfn), MEMMAP_EARLY)
+>  #endif
+>  
+> -static int __cpuinit zone_batchsize(struct zone *zone)
+> +static int __devinit zone_batchsize(struct zone *zone)
+>  {
+>  	int batch;
+>  
 
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
