@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbXFKVfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbXFKVgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbXFKVfK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 17:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXFKVe7
+	id S1755469AbXFKVgh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 17:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbXFKVgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 17:34:59 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:39797 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbXFKVe7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 17:34:59 -0400
-Subject: [shm][hugetlb] Fix get_policy for stacked shared memory files
-From: Adam Litke <agl@us.ibm.com>
-To: dean gaudet <dean@arctic.org>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, ak@suse.de, clameter@sgi.com
-In-Reply-To: <Pine.LNX.4.64.0706092106220.10324@twinlark.arctic.org>
-References: <Pine.LNX.4.64.0705152222550.14691@twinlark.arctic.org>
-	 <20070516061259.GZ19966@holomorphy.com>
-	 <Pine.LNX.4.64.0706092106220.10324@twinlark.arctic.org>
-Content-Type: text/plain
-Date: Mon, 11 Jun 2007 16:34:54 -0500
-Message-Id: <1181597696.22671.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jun 2007 17:36:31 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57113 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751082AbXFKVga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 17:36:30 -0400
+Date: Mon, 11 Jun 2007 23:36:22 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arkadiusz Miskiewicz <arekm@maven.pl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] swsusp: Fix userland interface
+Message-ID: <20070611213622.GC3917@elf.ucw.cz>
+References: <200706111652.01994.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706111652.01994.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's another breakage as a result of shared memory stacked files :(
+Hi!
 
-The NUMA policy for a VMA is determined by checking the following (in the order
-given):
+> [2.6.22 candidate, IMHO]
 
-1) vma->vm_ops->get_policy() (if defined)
-2) vma->vm_policy (if defined)
-3) task->mempolicy (if defined)
-4) Fall back to default_policy
+It is trivial enough that it can go there, yes. But it is not a
+regression neither it is particulary serious.
 
-By switching to stacked files for shared memory, get_policy() is now always set
-to shm_get_policy which is a wrapper function.  This causes us to stop at step
-1, which yields NULL for hugetlb instead of task->mempolicy which was the
-previous (and correct) result.
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Fix oops caused by 'cat /dev/snapshot', reported by Arkadiusz Miskiewicz, and
+> make it impossible to thaw tasks with the help of the swsusp userland interface
+> while there is a snapshot image ready to save.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-This patch modifies the shm_get_policy() wrapper to maintain steps 1-3 for the
-wrapped vm_ops.  Andi and Christoph, does this look right to you?
-
-Signed-off-by: Adam Litke <agl@us.ibm.com>
-
-diff --git a/ipc/shm.c b/ipc/shm.c
-index 4fefbad..8d2672d 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -254,8 +254,10 @@ struct mempolicy *shm_get_policy(struct vm_area_struct *vma, unsigned long addr)
- 
- 	if (sfd->vm_ops->get_policy)
- 		pol = sfd->vm_ops->get_policy(vma, addr);
--	else
-+	else if (vma->vm_policy)
- 		pol = vma->vm_policy;
-+	else
-+		pol = current->mempolicy;
- 	return pol;
- }
- #endif
+ACK. 
+									Pavel
 
 -- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
