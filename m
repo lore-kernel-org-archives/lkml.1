@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbXFLOIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbXFLOJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753723AbXFLOIq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 10:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXFLOIj
+	id S1754700AbXFLOJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 10:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXFLOJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 10:08:39 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:19666 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751332AbXFLOIj (ORCPT
+	Tue, 12 Jun 2007 10:09:20 -0400
+Received: from stinky.trash.net ([213.144.137.162]:37019 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbXFLOJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 10:08:39 -0400
-Subject: Re: [patch 1/4] lockdep: variuos fixes
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: debian developer <debiandev@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <f24d23310706120647n4e125964i3885bd5c340b8903@mail.gmail.com>
-References: <20070612121351.448814658@chello.nl>
-	 <20070612121916.533503225@chello.nl>
-	 <f24d23310706120647n4e125964i3885bd5c340b8903@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 12 Jun 2007 16:08:19 +0200
-Message-Id: <1181657299.7348.327.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 10:09:18 -0400
+Message-ID: <466EA861.2070509@trash.net>
+Date: Tue, 12 Jun 2007 16:06:25 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: cannot set IP for ethernet
+References: <200706121441.13561.oliver@neukum.org>
+In-Reply-To: <200706121441.13561.oliver@neukum.org>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------020208040209090108060507"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-12 at 19:17 +0530, debian developer wrote:
+This is a multi-part message in MIME format.
+--------------020208040209090108060507
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-> On 6/12/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> > Index: linux-2.6/kernel/lockdep.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/lockdep.c
-> > +++ linux-2.6/kernel/lockdep.c
-> > @@ -5,7 +5,8 @@
-> >   *
-> >   * Started by Ingo Molnar:
-> >   *
-> > - *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
-> > + *  Copyright (C) 2006,2007 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
-> > + *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-> >   *
-> >   * this code maps all the lock dependencies as they occur in a live kernel
-> >   * and will warn about the following classes of locking bugs:
-
-> What exactly is being copyright'ed here?
-
-Thanks for being triply impolite! You score: anonymous, top-posting and
-dropping CC-lists.
-
-The code in these files, as in most other files in the Linux kernel, is
-copyrighted. The code is Licensed under GPLv2, but copyright belongs to
-Red Hat and it's authors are Ingo and myself.
-
-That is, say you want to use this code in a non GPLv2 project (say this
-GPLv3 thing) then you would need to contact the copyright owner of this
-code.
+Oliver Neukum wrote:
+> with 2.6.22-rc4-git2 I am getting errors when setting IP for ethernet
+> interfaces:
+> 
+> ioctl(4, SIOCSIFADDR, 0x7fff94931600)   = -1 ENOBUFS (No buffer space available)
+> 
+> The error is independant of the interface. It happens to all interfaces.
+> There's nothing in the syslog.
+> 
+> valisk:/home/oliver # uname -a
+> Linux valisk 2.6.22-rc4-git2-default #3 SMP Tue Jun 12 13:27:54 CEST 2007 x86_64 x86_64 x86_64 GNU/Linux
 
 
+This can happen if the initial inetdev allocation when the netdevice is
+registered fails. I think it would make sense to try to allocate again
+when adding addresses in that case, otherwise there is no way of
+recovery other than unregistering and registering the device again.
 
+
+--------------020208040209090108060507
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+diff --git a/net/ipv4/devinet.c b/net/ipv4/devinet.c
+index abf6352..dc77e91 100644
+--- a/net/ipv4/devinet.c
++++ b/net/ipv4/devinet.c
+@@ -401,8 +401,11 @@ static int inet_set_ifa(struct net_device *dev, struct in_ifaddr *ifa)
+ 	ASSERT_RTNL();
+ 
+ 	if (!in_dev) {
+-		inet_free_ifa(ifa);
+-		return -ENOBUFS;
++		in_dev = inetdev_init(dev);
++		if (!in_dev) {
++			inet_free_ifa(ifa);
++			return -ENOBUFS;
++		}
+ 	}
+ 	ipv4_devconf_setall(in_dev);
+ 	if (ifa->ifa_dev != in_dev) {
+@@ -514,8 +517,11 @@ static struct in_ifaddr *rtm_to_ifaddr(struct nlmsghdr *nlh)
+ 
+ 	in_dev = __in_dev_get_rtnl(dev);
+ 	if (in_dev == NULL) {
+-		err = -ENOBUFS;
+-		goto errout;
++		in_dev = inetdev_init(dev);
++		if (!in_dev) {
++			err = -ENOBUFS;
++			goto errout;
++		}
+ 	}
+ 
+ 	ipv4_devconf_setall(in_dev);
+
+--------------020208040209090108060507--
