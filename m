@@ -1,38 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbXFLV7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbXFLV7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754397AbXFLV7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 17:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXFLV73
+	id S1755542AbXFLV7t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 17:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbXFLV7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 17:59:29 -0400
-Received: from khc.piap.pl ([195.187.100.11]:45566 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbXFLV73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 17:59:29 -0400
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Can we get rid of zImage this time?
-References: <466DE04C.4020303@zytor.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 12 Jun 2007 23:59:26 +0200
-In-Reply-To: <466DE04C.4020303@zytor.com> (H. Peter Anvin's message of "Mon, 11 Jun 2007 16:52:44 -0700")
-Message-ID: <m3ir9sygu9.fsf@maximus.localdomain>
+	Tue, 12 Jun 2007 17:59:38 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:16489 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754562AbXFLV7h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 17:59:37 -0400
+Date: Tue, 12 Jun 2007 23:59:36 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Michael Tokarev <mjt@tls.msk.ru>
+cc: Claas Langbehn <claas@rootdir.de>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: VIA C7 / VIA PC-1 (PC2500) anyone?
+In-Reply-To: <466E993D.5080308@msgid.tls.msk.ru>
+Message-ID: <Pine.LNX.4.64.0706122359080.19578@fbirervta.pbzchgretzou.qr>
+References: <466E65A7.3000206@msgid.tls.msk.ru>
+ <5699f8f00706120344h40fe6f88vb7601c9326bd589f@mail.gmail.com>
+ <466E8A5B.4080205@msgid.tls.msk.ru> <466E976D.7060103@rootdir.de>
+ <466E993D.5080308@msgid.tls.msk.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> Can we please kill zImage?  In addition to be completely useless for
-> modern kernels, it causes unnecessary complexity in boot loaders.
+On Jun 12 2007 17:01, Michael Tokarev wrote:
+>
+>Claas Langbehn wrote:
+>>> Hmm.  I wonder how to *enable* it in the first place.. ;)
+>>> e_powersaver.ko and acpi_cpufreq gives "No such device"
+>>>
+>> cat /proc/cpuinfo and have a look at the flags. Does it support "eps"?
+>
+>I've looked at e_powersaver sources and noticied the second test in
+>init function (after checking for CPU model) - it fails on this very
+>test:
 
-I hope so.
+Actually you may want to try longhaul.ko
 
-BTW: I'd just kill old zImage and make it identical to bzImage
-(I mean "make zImage" would now produce arch/i386/zImage identical
-to arch/i386/bzImage made by "make bzImage").
 
-Then we could use zImage as for other platforms.
+
+	Jan
 -- 
-Krzysztof Halasa
