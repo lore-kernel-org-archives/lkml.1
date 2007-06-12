@@ -1,60 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbXFLM2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbXFLMbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbXFLM2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 08:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXFLM2b
+	id S1755939AbXFLMbu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 08:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXFLMbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 08:28:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:41244 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbXFLM2a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 08:28:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PnzemHlfGE9HKyBURKdg6MQdtNw/yQAneSSwpOxJT9KtvT1A8xK8U0221sfc6fXnlr1HfNrTDGiIvWqAD3zMAoBOxgFhinT9SPBAG+KoY2yNsH/+y2g303bZHkbYv53MpIiHEKoDN8ynvvzceCG2J8I2LyLfp+XSpCWVRPMRcsQ=
-Message-ID: <d9b9d95f0706120528k20ff8feem507efa54e6ac6824@mail.gmail.com>
-Date: Tue, 12 Jun 2007 13:28:28 +0100
-From: "Renato Golin" <rengolin@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: joydev.c and saitek cyborg evo force
-Cc: linux-kernel@vger.kernel.org,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-In-Reply-To: <d9b9d95f0706041546h4eef0b4eo2e191968be13d59a@mail.gmail.com>
+	Tue, 12 Jun 2007 08:31:43 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:60344 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752472AbXFLMbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 08:31:42 -0400
+Message-ID: <466E9220.5050507@dgreaves.com>
+Date: Tue, 12 Jun 2007 13:31:28 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
+To: David Chinner <dgc@sgi.com>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com> <20070607222813.GG85884050@sgi.com>
+In-Reply-To: <20070607222813.GG85884050@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
-	 <d9b9d95f0705300818h2eaa8130mf8a7a37966d29cc5@mail.gmail.com>
-	 <d9b9d95f0705301526i66e99ef3v6c35165aa1a5f5c6@mail.gmail.com>
-	 <d120d5000705311253n67d4247eh194e6f4457a0b4c@mail.gmail.com>
-	 <Pine.LNX.4.64.0705312220250.5177@jikos.suse.cz>
-	 <d9b9d95f0706011116j59fff917x9a86aac377f88937@mail.gmail.com>
-	 <Pine.LNX.4.64.0706031139570.5177@jikos.suse.cz>
-	 <d9b9d95f0706041506l257819a7pbcb8b8efc2eec049@mail.gmail.com>
-	 <Pine.LNX.4.64.0706050008160.5177@jikos.suse.cz>
-	 <d9b9d95f0706041546h4eef0b4eo2e191968be13d59a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/06/07, Renato Golin <rengolin@gmail.com> wrote:
-> > Well calibration using jscal might be needed, that should be fine. The
-> > question is whether the ranges are now correct and calibration using jscal
-> > works fine.
->
-> Ok, so maybe in that case my automatic calibration is still worth to
-> put on joydev.c
-> and users from all joysticks in the quirk list would benefit.
+[RESEND since I sent this late last friday and it's probably been buried by now.]
 
-Hi Dmitry,
+I had this as a PS, then I thought, we could all be wasting our time...
 
-The patch to joydev.c was updated on Andrew's list do you see any
-problem with it?
+I don't like these "Section mismatch" warnings but that's because I'm paranoid
+rather than because I know what they mean. I'll be happier when someone says
+"That's OK, I know about them, they're not the problem"
 
-cheers,
---renato
+WARNING: arch/i386/kernel/built-in.o(.text+0x968f): Section mismatch: reference
+to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0x9781): Section mismatch: reference
+to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0x9786): Section mismatch: reference
+to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa25c): Section mismatch: reference
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa303): Section mismatch: reference
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa31b): Section mismatch: reference
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa344): Section mismatch: reference
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.exit.text+0x19): Section mismatch:
+reference to .init.text: (between 'cache_remove_dev' and 'powernow_k6_exit')
+WARNING: arch/i386/kernel/built-in.o(.data+0x2160): Section mismatch: reference
+to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mce_work')
+WARNING: kernel/built-in.o(.text+0x14502): Section mismatch: reference to
+.init.text: (between 'kthreadd' and 'init_waitqueue_head')
 
-Reclaim your digital rights, eliminate DRM, learn more at
-http://www.defectivebydesign.org/what_is_drm
+I'm paranoid because Andrew Morton said a couple of weeks ago:
+> Could the people who write these bugs, please, like, fix them?
+> It's not trivial noise.  These things lead to kernel crashes.
+
+Anyhow...
+
+David Chinner wrote:
+> sync just guarantees that metadata changes are logged and data is
+> on disk - it doesn't stop the filesystem from doing anything after
+> the sync...
+No, but there are no apps accessing the filesystem. It's just available for NFS
+serving. Seems safer before potentially hanging the machine?
+
+
+Also I made these changes to the kernel:
+cu:/boot# diff config-2.6.22-rc4-TejuTst-dbg3-dirty
+config-2.6.22-rc4-TejuTst-dbg1-dirty
+3,4c3,4
+< # Linux kernel version: 2.6.22-rc4-TejuTst-dbg3
+< # Thu Jun  7 20:00:34 2007
+---
+> # Linux kernel version: 2.6.22-rc4-TejuTst3
+> # Thu Jun  7 10:59:21 2007
+242,244c242
+< CONFIG_PM_DEBUG=y
+< CONFIG_DISABLE_CONSOLE_SUSPEND=y
+< # CONFIG_PM_TRACE is not set
+---
+> # CONFIG_PM_DEBUG is not set
+
+positive: I can now get sysrq-t :)
+negative: if I build skge into the kernel the behaviour changes so I can't run
+netconsole
+
+Just to be sure I tested and this kernel suspends/restores with /huge unmounted.
+It also hangs without an umount so the behaviour is the same.
+
+> Ok, so a clean inode is sufficient to prevent hibernate from working.
+> 
+> So, what's different between a sync and a remount?
+> 
+> do_remount_sb() does:
+> 
+>     599         shrink_dcache_sb(sb);
+>     600         fsync_super(sb);
+> 
+> of which a sync does neither. sync does what fsync_super() does in
+> different sort of way, but does not call sync_blockdev() on each
+> block device. It looks like that is the two main differences between
+> sync and remount - remount trims the dentry cache and syncs the blockdev,
+> sync doesn't.
+> 
+>>> What about freezing the filesystem?
+>> cu:~# xfs_freeze -f /huge
+>> cu:~# /usr/net/bin/hibernate
+>> [but this doesn't even hibernate - same as the 'touch']
+> 
+> I suspect that the frozen filesystem might cause other problems
+> in the hibernate process. However, while a freeze calls sync_blockdev()
+> it does not trim the dentry cache.....
+> 
+> So, rather than a remount before hibernate, lets see if we can 
+> remove the dentries some other way to determine if removing excess
+> dentries/inodes from the caches makes a difference. Can you do:
+> 
+> # touch /huge/foo
+> # sync
+> # echo 1 > /proc/sys/vm/drop_caches
+> # hibernate
+success
+> 
+> # touch /huge/bar
+> # sync
+> # echo 2 > /proc/sys/vm/drop_caches
+> # hibernate
+success
+> 
+> # touch /huge/baz
+> # sync
+> # echo 3 > /proc/sys/vm/drop_caches
+> # hibernate
+success
+
+So I added
+# touch /huge/bork
+# sync
+# hibernate
+
+And it still succeeded - sigh.
+
+So I thought a bit and did:
+rm /huge/b* /huge/foo
+
+> Clean boot
+> # touch /huge/bar
+> # sync
+> # echo 2 > /proc/sys/vm/drop_caches
+> # hibernate
+hangs on suspend (sysrq-b doesn't work)
+
+> Clean boot
+> # touch /huge/baz
+> # sync
+> # echo 3 > /proc/sys/vm/drop_caches
+> # hibernate
+hangs on suspend (sysrq-b doesn't work)
+
+So I rebooted and hibernated to make sure I'm not having random behaviour - yep,
+hang on resume (as per usual).
+
+Now I wonder if any other mounts have an effect...
+reboot and umount /dev/hdb2 xfs fs, - hang on hibernate
+
+
+I'm confused. I'm going to order chinese takeaway and then find a serial cable...
+
+David
+PS 2.6.21.1 works fine.
+PPS the takeaway was nice.
+
+
+
