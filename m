@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbXFLDfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbXFLDgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757624AbXFLDfU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 23:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbXFLDfH
+	id S1758257AbXFLDgZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 23:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbXFLDgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 23:35:07 -0400
-Received: from mga01.intel.com ([192.55.52.88]:59828 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752756AbXFLDfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 23:35:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
-   d="scan'208";a="255789181"
-Date: Tue, 12 Jun 2007 11:34:25 +0800
-From: Wang Zhenyu <zhenyu.z.wang@intel.com>
-To: Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       andi@rhlx01.fht-esslingen.de, Keith Packard <keithp@keithp.com>
-Subject: Re: [RFC][AGPGART]intel-agp: save whole config space in suspend/resume
-Message-ID: <20070612033424.GA30200@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
-	Keith Packard <keithp@keithp.com>
-References: <20070612015459.GB28668@zhen-devel.sh.intel.com> <20070612022320.GA2125@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070612022320.GA2125@redhat.com>
-User-Agent: Mutt/1.4.2.1i
-X-Mailer: mutt
-X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
+	Mon, 11 Jun 2007 23:36:18 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:59427 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752756AbXFLDgS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 23:36:18 -0400
+Date: Mon, 11 Jun 2007 20:36:17 -0700 (PDT)
+From: dean gaudet <dean@arctic.org>
+To: Adam Litke <agl@us.ibm.com>
+cc: William Lee Irwin III <wli@holomorphy.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, ak@suse.de, clameter@sgi.com
+Subject: Re: [shm][hugetlb] Fix get_policy for stacked shared memory files
+In-Reply-To: <1181597696.22671.2.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0706112035260.15086@twinlark.arctic.org>
+References: <Pine.LNX.4.64.0705152222550.14691@twinlark.arctic.org> 
+ <20070516061259.GZ19966@holomorphy.com>  <Pine.LNX.4.64.0706092106220.10324@twinlark.arctic.org>
+ <1181597696.22671.2.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.11 22:23:21 +0000, Dave Jones wrote:
-> 
-> I'd feel much safer if we only did this on chipsets where we know we 
-> have to do it.   Doing this for *every* Intel chipset ever made _will_
-> bite us.  There are some early chipsets (440BX era iirc) that would just
-> hang the box when you tried to read from various write-only registers.
-> 
-> But even on the chipsets where we _do_ need to save/restore something in
-> the upper part of the config space, surely it'd be a lot safer
-> to just save/restore what we need to rather than risk all sorts
-> of mayhem by writing to bits that may trigger hardware events.
-> 
+On Mon, 11 Jun 2007, Adam Litke wrote:
 
-I understand. Before James reported his problem on i915, I have thought
-the basic restore on that chip should already be enough, but he proved I was
-wrong and I'm not sure if this also happens on other i915 board with different
-BIOS. 
+> Here's another breakage as a result of shared memory stacked files :(
+> 
+> The NUMA policy for a VMA is determined by checking the following (in the order
+> given):
+> 
+> 1) vma->vm_ops->get_policy() (if defined)
+> 2) vma->vm_policy (if defined)
+> 3) task->mempolicy (if defined)
+> 4) Fall back to default_policy
+> 
+> By switching to stacked files for shared memory, get_policy() is now always set
+> to shm_get_policy which is a wrapper function.  This causes us to stop at step
+> 1, which yields NULL for hugetlb instead of task->mempolicy which was the
+> previous (and correct) result.
+> 
+> This patch modifies the shm_get_policy() wrapper to maintain steps 1-3 for the
+> wrapped vm_ops.  Andi and Christoph, does this look right to you?
 
-And with my patch it has already removed the restore cases for 440BX like type,
-coz it's gmch_chip_id == 0 and intel_private.pcidev is NULL, so it won't save
-extra space on those chips.
+thanks for the patch -- seems to do the trick for me.  it seems like it 
+would be a candidate for stable series as well.
+
+-dean
