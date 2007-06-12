@@ -1,157 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbXFLVZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbXFLVar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753395AbXFLVZx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 17:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbXFLVZo
+	id S1752980AbXFLVar (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 17:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747AbXFLVak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 17:25:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55348 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751912AbXFLVZn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 17:25:43 -0400
-Date: Tue, 12 Jun 2007 14:25:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: raid5: coding style cleanup / refactor
-Message-Id: <20070612142532.b45ee9bf.akpm@linux-foundation.org>
-In-Reply-To: <1181670063.12913.5.camel@dwillia2-linux.ch.intel.com>
-References: <1181670063.12913.5.camel@dwillia2-linux.ch.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 17:30:40 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53651 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750745AbXFLVak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 17:30:40 -0400
+Date: Tue, 12 Jun 2007 23:30:20 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Message-ID: <20070612213020.GA13747@elf.ucw.cz>
+References: <200706071530.51552.jesse.barnes@intel.com> <20070612145007.GA5986@ucw.cz> <200706120829.21465.jesse.barnes@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706120829.21465.jesse.barnes@intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007 10:41:03 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
+Hi!
 
-> Most of the raid5 code predates git so the coding style violations have
-> been present for a long time.  However, now that major new patches are
-> arriving, checkpatch.pl complains about these old violations.  Instead of
-> attempting to justify the warnings as "this is what raid5 used to do", this
-> patch brings the code in line with the current style.
+> > > On some machines, buggy BIOSes don't properly setup WB MTRRs to
+> > > cover all available RAM, meaning the last few megs (or even gigs)
+> > > of memory will be marked uncached.  Since Linux tends to allocate
+> > > from high memory addresses first, this causes the machine to be
+> > > unusably slow as soon as the kernel starts really using memory
+> > > (i.e. right around init time).
+> > >
+> > > +	if ((highest_addr >> PAGE_SHIFT) != end_pfn) {
+> > > +		printk(KERN_WARNING "***************\n");
+> > > +		printk(KERN_WARNING "**** WARNING: likely BIOS bug\n");
+> > > +		printk(KERN_WARNING "**** MTRRs don't cover all of "
+> > > +		       "memory, trimmed %ld pages\n", end_pfn -
+> > > +		       (highest_addr >> PAGE_SHIFT));
+> > > +		printk(KERN_WARNING "***************\n");
+> > > +		end_pfn = highest_addr >> PAGE_SHIFT;
+> >
+> > Missing 4K of memory is not worth 4K of junk in syslog per boot. Can
+> > you drop the stars and stop shouting?
 > 
-> Note that this is more than a simple reformatting.  The majority of the
-> 80-column violations were in the handle_stripe5 and handle_stripe6
-> routines.  By introducing the 'stripe_head_state' and 'r6_state' objects
-> large portions of the logic could be moved to sub-routines, reclaiming a
-> column's worth of indentation.
-> 
-> 'stripe_head_state' consumes all of the automatic variables that previously
-> stood alone in handle_stripe.  'r6_state' contains the handle_stripe6
-> specific variables like p_failed and q_failed.  
-> 
-> One of the nice side effects of the 'stripe_head_state' change is that it
-> allows for further reductions in code duplication between raid5 and raid6
-> (note: unfortunately the other 80-column violations hide the code
-> duplication-removal effect in the diffstat).  The following new routines
-> are shared between raid5 and raid6:
-> 
-> 	handle_completed_write_requests
-> 	handle_requests_to_failed_array
-> 	handle_stripe_expansion
-> 
-> Trivia:
-> * PRINTK and RAID5_DEBUG is replaced with pr_debug
-> * struct field comments moved to the top (kernel-doc format)
+> How missing about 1G of memory?  We already discussed this, and Andi and 
+> Venki felt that either a panic or a really obnoxious message was the 
+> way to go...
 
-Unfortunately these cleanups get into a huge fight with your very own
-git-md-accel.patch:
+Just use panic, then.
+									Pavel,
+	who still thinks anyone missing 1GB of ram will not miss
+	friendly notice in dmesg, even if it goes without 20 stars.
 
-patching file drivers/md/raid5.c
-Hunk #1 succeeded at 58 (offset 1 line).
-Hunk #2 succeeded at 78 (offset 1 line).
-Hunk #3 succeeded at 91 (offset 1 line).
-Hunk #4 FAILED at 127.
-Hunk #5 succeeded at 157 (offset 2 lines).
-Hunk #6 succeeded at 167 (offset 2 lines).
-Hunk #7 succeeded at 211 (offset 2 lines).
-Hunk #8 succeeded at 224 (offset 2 lines).
-Hunk #9 succeeded at 235 with fuzz 1 (offset 3 lines).
-Hunk #10 succeeded at 263 (offset 3 lines).
-Hunk #11 succeeded at 304 (offset 3 lines).
-Hunk #12 succeeded at 943 (offset 578 lines).
-Hunk #13 succeeded at 995 (offset 578 lines).
-Hunk #14 succeeded at 1015 (offset 578 lines).
-Hunk #15 succeeded at 1124 (offset 578 lines).
-Hunk #16 succeeded at 1136 (offset 578 lines).
-Hunk #17 succeeded at 1155 (offset 578 lines).
-Hunk #18 succeeded at 1206 (offset 578 lines).
-Hunk #19 succeeded at 1251 (offset 578 lines).
-Hunk #20 succeeded at 1269 (offset 578 lines).
-Hunk #21 succeeded at 1278 (offset 578 lines).
-Hunk #22 FAILED at 1524.
-Hunk #23 FAILED at 1555.
-Hunk #24 succeeded at 1541 (offset 547 lines).
-Hunk #25 succeeded at 1989 with fuzz 2 (offset 978 lines).
-Hunk #26 FAILED at 2009.
-Hunk #27 FAILED at 2056.
-Hunk #28 FAILED at 2064.
-Hunk #29 FAILED at 2084.
-Hunk #30 FAILED at 2094.
-Hunk #31 FAILED at 2135.
-Hunk #32 FAILED at 2182.
-Hunk #33 FAILED at 2193.
-Hunk #34 FAILED at 2215.
-Hunk #35 FAILED at 2225.
-Hunk #36 FAILED at 2242.
-Hunk #37 FAILED at 2278.
-Hunk #38 succeeded at 3381 with fuzz 1 (offset 2026 lines).
-Hunk #39 FAILED at 4002.
-Hunk #40 FAILED at 4016.
-Hunk #41 FAILED at 4054.
-Hunk #42 FAILED at 4216.
-Hunk #43 FAILED at 4235.
-Hunk #44 FAILED at 4253.
-Hunk #45 FAILED at 4282.
-Hunk #46 FAILED at 4309.
-Hunk #47 FAILED at 4330.
-Hunk #48 FAILED at 4358.
-Hunk #49 FAILED at 4400.
-Hunk #50 FAILED at 4419.
-Hunk #51 FAILED at 4427.
-Hunk #52 FAILED at 4482.
-Hunk #53 FAILED at 4501.
-Hunk #54 FAILED at 4534.
-Hunk #55 FAILED at 4564.
-Hunk #56 FAILED at 4619.
-Hunk #57 FAILED at 4663.
-Hunk #58 succeeded at 3377 (offset 648 lines).
-Hunk #59 succeeded at 3415 (offset 648 lines).
-Hunk #60 succeeded at 3503 (offset 648 lines).
-Hunk #61 succeeded at 3538 (offset 648 lines).
-Hunk #62 succeeded at 3580 (offset 648 lines).
-Hunk #63 succeeded at 3617 (offset 648 lines).
-Hunk #64 succeeded at 3814 (offset 648 lines).
-Hunk #65 succeeded at 3865 (offset 648 lines).
-Hunk #66 succeeded at 3918 (offset 648 lines).
-Hunk #67 succeeded at 3972 (offset 650 lines).
-Hunk #68 succeeded at 4032 (offset 650 lines).
-Hunk #69 succeeded at 4123 (offset 650 lines).
-Hunk #70 succeeded at 4157 (offset 650 lines).
-Hunk #71 succeeded at 4197 (offset 650 lines).
-Hunk #72 succeeded at 4228 (offset 650 lines).
-Hunk #73 succeeded at 4340 (offset 650 lines).
-Hunk #74 succeeded at 4375 (offset 650 lines).
-Hunk #75 succeeded at 4514 (offset 650 lines).
-Hunk #76 succeeded at 4549 (offset 650 lines).
-Hunk #77 succeeded at 4633 (offset 650 lines).
-Hunk #78 succeeded at 4652 (offset 650 lines).
-Hunk #79 succeeded at 4670 (offset 650 lines).
-Hunk #80 succeeded at 4699 (offset 650 lines).
-34 out of 80 hunks FAILED -- saving rejects to file drivers/md/raid5.c.rej
-patching file include/linux/raid/raid5.h
-Hunk #2 FAILED at 118.
-Hunk #3 FAILED at 192.
-Hunk #4 succeeded at 302 (offset 57 lines).
-Hunk #5 succeeded at 335 (offset 57 lines).
-Hunk #6 succeeded at 370 (offset 57 lines).
-2 out of 6 hunks FAILED -- saving rejects to file include/linux/raid/raid5.h.rej
-
-I assume that you're prepared to repair all that damage to your tree, but
-it seems a bit masochistic?
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
