@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXFLPUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbXFLPYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbXFLPUS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 11:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbXFLPT1
+	id S1756881AbXFLPYr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbXFLPYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 11:19:27 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:55094 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757132AbXFLPTZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 11:19:25 -0400
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: [PATCH 1/3] powerpc: during VM oom condition,
-	kill all threads in process group
-To: linuxppc-dev@ozlabs.org, anton@samba.org, linux-kernel@vger.kernel.org
-Cc: will_schmidt@vnet.ibm.com
-Date: Tue, 12 Jun 2007 10:19:01 -0500
-Message-ID: <20070612151901.2869.59390.stgit@farscape.rchland.ibm.com>
-User-Agent: StGIT/0.12
+	Tue, 12 Jun 2007 11:24:40 -0400
+Received: from styx.suse.cz ([82.119.242.94]:56862 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754796AbXFLPYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 11:24:39 -0400
+Date: Tue, 12 Jun 2007 17:25:52 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Renato Golin <rengolin@gmail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: joydev.c and saitek cyborg evo force
+In-Reply-To: <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706121715480.10204@jikos.suse.cz>
+References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com> 
+ <Pine.LNX.4.64.0705312220250.5177@jikos.suse.cz> 
+ <d9b9d95f0706011116j59fff917x9a86aac377f88937@mail.gmail.com> 
+ <Pine.LNX.4.64.0706031139570.5177@jikos.suse.cz> 
+ <d9b9d95f0706041506l257819a7pbcb8b8efc2eec049@mail.gmail.com> 
+ <Pine.LNX.4.64.0706050008160.5177@jikos.suse.cz> 
+ <d9b9d95f0706041546h4eef0b4eo2e191968be13d59a@mail.gmail.com> 
+ <Pine.LNX.4.64.0706121436070.10204@jikos.suse.cz> 
+ <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com> 
+ <d120d5000706120613o7a328e59v3cba37f0ced88e77@mail.gmail.com>
+ <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Jun 2007, Renato Golin wrote:
 
-During a VM oom condition, kill all threads in the process group.
+> At joydev_connect, the last parameter "input_dev" reports me that range 
+> (dev->absmax[i] and dev->absmin[i]). When I turned on HID_DEBUG it 
+> reported [0, 4096] for both axis 0 and 1, which is correct so it must be 
+> between HID and joydev.
 
-We have had complaints where a threaded application is left in a bad state
-after one of it's threads is killed when we hit a VM: out_of_memory
-condition.
+Renato,
 
-Killing just one of the process threads can leave the application in a
-bad state, whereas killing the entire process group would
-allow for the application to restart, or otherwise handled, and makes it
-very obvious that something has gone wrong.
+could you please apply the stupid patch below (against 2.6.20, I know you 
+are using it :) ) and report the result? It should show us whether the 
+values 0 and 4096 (which can be seen in your hid parsing debug dump) are 
+correctly passed from HID to input, or they are garbled inside the hid 
+layer somewhere already.
 
-This change allows the entire process group to be taken down, rather than
-just the one thread.
+Thanks.
 
-lightly tested on powerpc
-
-Signed-off-by: Will <will_schmidt@vnet.ibm.com>
----
-
- arch/powerpc/mm/fault.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 03aeb3a..de1dcee 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -393,7 +393,7 @@ out_of_memory:
- 	}
- 	printk("VM: killing process %s\n", current->comm);
- 	if (user_mode(regs))
--		do_exit(SIGKILL);
-+		do_group_exit(SIGKILL);
- 	return SIGKILL;
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index c7a6833..9dea1e8 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -665,9 +665,16 @@ static void hidinput_configure_usage(str
+ 			b = field->logical_maximum = 255;
+ 		}
  
- do_sigbus:
-
-
+-		if (field->application == HID_GD_GAMEPAD || field->application == HID_GD_JOYSTICK)
++		if (field->application == HID_GD_GAMEPAD || field->application == HID_GD_JOYSTICK) {
++			printk(KERN_DEBUG "calling input_set_abs_params, code: %x, min: %x, max: %x, fuzz: %x, flat: %x\n", 
++					usage->code, a, b, (b - a) >> 8, (b - a) >> 4);
+ 			input_set_abs_params(input, usage->code, a, b, (b - a) >> 8, (b - a) >> 4);
+-		else	input_set_abs_params(input, usage->code, a, b, 0, 0);
++		}
++		else {
++			printk(KERN_DEBUG "calling input_set_abs_params, code: %x, min: %x, max: %x, fuzz: %x, flat: %x\n", 
++					usage->code, a, b, (b - a) >> 8, (b - a) >> 4);
++			input_set_abs_params(input, usage->code, a, b, 0, 0);
++		}
+ 
+ 	}
+ 
