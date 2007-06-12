@@ -1,223 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbXFLQMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbXFLQNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbXFLQMM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 12:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXFLQMA
+	id S1755664AbXFLQNx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 12:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbXFLQNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 12:12:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:36410 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbXFLQL7 (ORCPT
+	Tue, 12 Jun 2007 12:13:45 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:24452 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbXFLQNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 12:11:59 -0400
-Date: Tue, 12 Jun 2007 09:12:09 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>, kbuild-devel@lists.sourceforge.net
-Subject: Re: [patch] kbuild: remember ARCH in the object directory
-Message-Id: <20070612091209.760b5225.randy.dunlap@oracle.com>
-In-Reply-To: <E1Hy3fI-0001Tw-Fy@flower>
-References: <200705090951.l499pa6G020397@shell0.pdx.osdl.net>
-	<20070509204613.GA10336@uranus.ravnborg.org>
-	<1178755780.7286.175.camel@localhost.localdomain>
-	<E1HxjKu-0004G6-7d@flower>
-	<20070611125903.GA3933@uranus.ravnborg.org>
-	<E1Hy3fI-0001Tw-Fy@flower>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 12:13:44 -0400
+Date: Tue, 12 Jun 2007 12:10:29 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+Message-ID: <20070612161029.GB28279@think.oraclecorp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 X-Whitelist: TRUE
 X-Whitelist: TRUE
 X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007 12:31:56 +0200 Oleg Verych wrote:
+Hello everyone,
 
-> [patch] kbuild: remember ARCH in the object directory
-> 
->  - rephrase some related (misspelled) comments,
->  - remove all trailing whitespace in the top Makefile,
-> 
->  * remember ARCH in the output directory, thus making build of i386
->    on amd64 *actually* convenient,
-> 
->  - harmless refactoring of the Makefile generating.
-> 
-> Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
-> ---
-> 
->  Just lazy typing `make ARCH=i386` every time i want to check lguest.
-> 
->  Makefile           |   17 ++++++++---------
->  scripts/mkmakefile |   42 ++++++++++++++++++++++++------------------
->  2 files changed, 32 insertions(+), 27 deletions(-)
+After the last FS summit, I started working on a new filesystem that
+maintains checksums of all file data and metadata.  Many thanks to Zach
+Brown for his ideas, and to Dave Chinner for his help on 
+benchmarking analysis.
 
-I did:
+The basic list of features looks like this:
 
-# build a linux-2.6.22-rc4-git4 kernel source tree & cd into it
-# mkdir BLD
-$ make ARCH=i386 O=BLD defconfig
-$ make -j4 O=BLD all >BLD/bld.out 2>&1
+	* Extent based file storage (2^64 max file size)
+	* Space efficient packing of small files
+	* Space efficient indexed directories
+	* Dynamic inode allocation
+	* Writable snapshots
+	* Subvolumes (separate internal filesystem roots)
+	- Object level mirroring and striping
+	* Checksums on data and metadata (multiple algorithms available)
+	- Strong integration with device mapper for multiple device support
+	- Online filesystem check
+	* Very fast offline filesystem check
+	- Efficient incremental backup and FS mirroring
 
-and it cried to me:
+The ones with marked with * are mostly working, and the others are on
+my todo list.  There are more details on the FS design, some benchmarks
+and download links here:
 
-  GEN     /scsi/linsrc/linux-2.6.22-rc4-git4/BLD/Makefile
-scripts/kconfig/conf -s arch/x86_64/Kconfig
-#... many config warning lines
-*
-* Restart config...
-*
-*
-* Processor type and features
-*
-Subarchitecture Type
-> 1. PC-compatible (X86_PC)
-  2. Support for ScaleMP vSMP (X86_VSMP) (NEW)
-choice[1-2]: aborted!
+http://oss.oracle.com/~mason/btrfs/
 
-Console input/output is redirected. Run 'make oldconfig' to update configuration.
+The current status is a very early alpha state, and the kernel code
+weighs in at a sparsely commented 10,547 lines.  I'm releasing now in
+hopes of finding people interested in testing, benchmarking,
+documenting, and contributing to the code.
 
-make[3]: *** [silentoldconfig] Error 1
-make[2]: *** [silentoldconfig] Error 2
-make[1]: *** [include/config/auto.conf] Error 2
-make: *** [all] Error 2
+I've gotten this far pretty quickly, and plan on continuing to knock off
+the features as fast as I can.  Hopefully I'll manage a release every
+few weeks or so.  The disk format will probably change in some major way
+every couple of releases.
 
+The TODO list has some critical stuff:
 
-I.e., see the line above that says:
-scripts/kconfig/conf -s arch/x86_64/Kconfig
+	* Ability to return -ENOSPC instead of oopsing
+	* mmap()ed writes
+	* Fault tolerance, (EIO, bad metadata etc)
+	* Concurrency.  I use one mutex for all operations today
+	* ACLs and extended attributes
+	* Reclaim dead roots after a crash
+	* Various other bits from the feature list above
 
-It defaulted to ARCH=x86_64 even though BLD/Makefile contained:
+And finally, here's a quick and dirty summary of the FS design points:
 
-ARCH		= i386
+	* One large Btree per subvolume
+	* Copy on write logging for all data and metadata
+	* Reference count snapshots are the basis of the transaction
+	  system.  A transaction is just a snapshot where the old root
+	  is immediately deleted on commit
+	* Subvolumes can be snapshotted any number of times
+	* Snapshots are read/write and can be snapshotted again
+	* Directories are doubly indexed to improve readdir speeds
 
+So, please give it a try or a look and let me know what you think.
 
-What did I do wrong??
+-chris
 
-
-> Index: linux-2.6.22-rc4-mm2/scripts/mkmakefile
-> ===================================================================
-> --- linux-2.6.22-rc4-mm2.orig/scripts/mkmakefile	2007-06-12 11:21:27.755466250 +0200
-> +++ linux-2.6.22-rc4-mm2/scripts/mkmakefile	2007-06-12 12:04:13.675826250 +0200
-> @@ -1,6 +1,6 @@
-> -#!/bin/sh
-> +#!/bin/sh -e
->  # Generates a small Makefile used in the root of the output
-> -# directory, to allow make to be started from there.
-> -# The Makefile also allow for more convinient build of external modules
-> +# directory, to allow kernel build to be started from there.
-> +# External modules can't built with it as well.
->  
->  # Usage
-> @@ -9,28 +9,34 @@
->  # $3 - version
->  # $4 - patchlevel
-> +# $5 - ARCH
->  
-> +set -e
->  
-> -test ! -r $2/Makefile -o -O $2/Makefile || exit 0
->  echo "  GEN     $2/Makefile"
-> +echo "#
-> +# Automatically generated by
-> +# $0
-> +#
-> +VERSION		= $3
-> +PATCHLEVEL	= $4
-> +
-> +KERNELSRC	= $1
-> +KERNELOUTPUT	= $2
-> +ARCH		= $5
-> +" >$2/Makefile
->  
-> -cat << EOF > $2/Makefile
-> -# Automatically generated by $0: don't edit
-> +cat << "EOF" >> $2/Makefile
-> +MAKEFLAGS	+= -rR --no-print-directory
->  
-> -VERSION = $3
-> -PATCHLEVEL = $4
-> +export ARCH
->  
-> -KERNELSRC    := $1
-> -KERNELOUTPUT := $2
-> -
-> -MAKEFLAGS += --no-print-directory
-> +all:
-> +	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT)
->  
-> -.PHONY: all \$(MAKECMDGOALS)
-> +$(filter-out all Makefile,$(MAKECMDGOALS)) %/:
-> +	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT) $@
->  
-> -all:
-> -	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT)
-> +.PHONY: all $(MAKECMDGOALS)
->  
->  Makefile:;
-> -
-> -\$(filter-out all Makefile,\$(MAKECMDGOALS)) %/:
-> -	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$@
->  EOF
-> Index: linux-2.6.22-rc4-mm2/Makefile
-> ===================================================================
-> --- linux-2.6.22-rc4-mm2.orig/Makefile	2007-06-12 11:35:20.559513250 +0200
-> +++ linux-2.6.22-rc4-mm2/Makefile	2007-06-12 11:51:10.438877000 +0200
-> @@ -156,5 +156,5 @@ export srctree objtree VPATH TOPDIR
->  # first, and if a usermode build is happening, the "ARCH=um" on the command
->  # line overrides the setting of ARCH below.  If a native build is happening,
-> -# then ARCH is assigned, getting whatever value it gets normally, and 
-> +# then ARCH is assigned, getting whatever value it gets normally, and
->  # SUBARCH is subsequently ignored.
->  
-> @@ -242,5 +242,5 @@ export KBUILD_CHECKSRC KBUILD_SRC KBUILD
->  #
->  # If $(quiet) is empty, the whole command will be printed.
-> -# If it is set to "quiet_", only the short version will be printed. 
-> +# If it is set to "quiet_", only the short version will be printed.
->  # If it is set to "silent_", nothing will be printed at all, since
->  # the variable $(silent_cmd_cc_o_c) doesn't exist.
-> @@ -352,11 +352,10 @@ scripts/basic/%: scripts_basic ;
->  
->  PHONY += outputmakefile
-> -# outputmakefile generates a Makefile in the output directory, if using a
-> -# separate output directory. This allows convenient use of make in the
-> -# output directory.
->  outputmakefile:
-> +# generate a Makefile in the output directory, if using a
-> +# separate output directory; allows convenient use of make there
->  ifneq ($(KBUILD_SRC),)
->  	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
-> -	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
-> +	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL) $(ARCH)
->  endif
->  
-> @@ -699,5 +698,5 @@ endef
->  cmd_ksym_ld = $(cmd_vmlinux__)
->  define rule_ksym_ld
-> -	: 
-> +	:
->  	+$(call cmd,vmlinux_version)
->  	$(call cmd,vmlinux__)
-> @@ -750,5 +749,5 @@ endif
->  	$(Q)rm -f .old_version
->  
-> -# The actual objects are generated when descending, 
-> +# The actual objects are generated when descending,
->  # make sure no implicit rule kicks in
->  $(sort $(vmlinux-init) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
-> @@ -1454,5 +1453,5 @@ endif
->  	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
->  
-> -# FIXME Should go into a make.lib or something 
-> +# FIXME Should go into a make.lib or something
->  # ===========================================================================
->  
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
