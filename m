@@ -1,78 +1,354 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757766AbXFLBKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbXFLBL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757766AbXFLBKa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 21:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756313AbXFLBJm
+	id S1757961AbXFLBL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 21:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757573AbXFLBLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 21:09:42 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57656 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756147AbXFLBJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 21:09:41 -0400
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 12 Jun 2007 11:09:35 +1000
-Message-Id: <1070612010935.25370@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Mike Accetta <maccetta@laurelnetworks.com>
-Cc: Neil Brown <neilb@suse.de>
-Cc: stable@kernel.org
-Subject: [PATCH 002 of 2] md: Fix bug in error handling during raid1 repair.
-References: <20070612110634.25171.patches@notabene>
+	Mon, 11 Jun 2007 21:11:03 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:34281 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757503AbXFLBLA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 21:11:00 -0400
+Message-Id: <466DF1D9.5000907@ds.jp.nec.com>
+Date: Tue, 12 Jun 2007 10:07:37 +0900
+From: IKEDA Munehiro <m-ikeda@ds.jp.nec.com>
+User-Agent: Mozilla Thunderbird 1.0.2 (Windows/20050317)
+X-Accept-Language: ja, en-us, en
+MIME-Version: 1.0
+To: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+CC: gregkh@suse.de, ms@citd.de, jesper.juhl@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
+References: <20070610162221.GA12830@suse.de>	<466C3B64.4070806@citd.de>	<20070611060759.GB914@suse.de> <20070612.095517.59666165.tshibata@ab.jp.nec.com>
+In-Reply-To: <20070612.095517.59666165.tshibata@ab.jp.nec.com>
+Content-Type: multipart/mixed;
+ boundary="------------090108010902000509010006"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------090108010902000509010006
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-From: Mike Accetta <maccetta@laurelnetworks.com>
+Tsugikazu Shibata wrote:
+> Here is a patch of Japanese translated HOWTO.
+> Thank you very much for lots of comment and suggestions.>all
+> Bellow is what I have done:
+> 
+> - Added Hiroyuki's comment with my own modifications as top notes.
+> - Character encoding is UTF-8
+> - The file is put in Documentation/ja_JP
+> - The patch is attached, not inlined because of MUA will sometimes
+>   force change the character encoding. Sorry.
+> 
+> I think We may need to discuss with JF team about much better JF
+> headers (written in Japanese) later.
 
-If raid1/repair (which reads all block and fixes any differences
-it finds) hits a read error, it doesn't reset the bio for writing
-before writing correct data back, so the read error isn't fixed,
-and the device probably gets a zero-length write which it might
-complain about.
+And next, this is a patch-form Japanese translation of 
+stable_api_nonsense.txt.
+Current temporary state is same as Tsugikazu Shibata's made.
 
-Signed-off-by: Neil Brown <neilb@suse.de>
-Cc: stable@kernel.org
+My former post was translation of 2.6.19 but this is of 2.6.22-rc4.
+I modified translation along with the change at 2.6.20, which is the
+latest version.
+(And corrected typo of "volatile".  Thanks Alistair!)
 
-### Diffstat output
- ./drivers/md/raid1.c |   21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
 
-diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
---- .prev/drivers/md/raid1.c	2007-06-12 10:48:57.000000000 +1000
-+++ ./drivers/md/raid1.c	2007-06-12 10:49:05.000000000 +1000
-@@ -1240,17 +1240,24 @@ static void sync_request_write(mddev_t *
- 			}
- 		r1_bio->read_disk = primary;
- 		for (i=0; i<mddev->raid_disks; i++)
--			if (r1_bio->bios[i]->bi_end_io == end_sync_read &&
--			    test_bit(BIO_UPTODATE, &r1_bio->bios[i]->bi_flags)) {
-+			if (r1_bio->bios[i]->bi_end_io == end_sync_read) {
- 				int j;
- 				int vcnt = r1_bio->sectors >> (PAGE_SHIFT- 9);
- 				struct bio *pbio = r1_bio->bios[primary];
- 				struct bio *sbio = r1_bio->bios[i];
--				for (j = vcnt; j-- ; )
--					if (memcmp(page_address(pbio->bi_io_vec[j].bv_page),
--						   page_address(sbio->bi_io_vec[j].bv_page),
--						   PAGE_SIZE))
--						break;
+-- 
+IKEDA, Munehiro
+
+
+--------------090108010902000509010006
+Content-Type: text/plain;
+ name="add-Japanese-translated-stable_api_nonsense.txt.patch"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline;
+ filename="add-Japanese-translated-stable_api_nonsense.txt.patch"
+
+>From 99e9f85036418b0f30825f4635bb224b592be57c Mon Sep 17 00:00:00 2001
+From: IKEDA, Munehiro <m-ikeda@ds.jp.nec.com>
+Date: Tue, 12 Jun 2007 09:46:04 +0900
+Subject: [PATCH] add Japanese translated stable_api_nonsense.txt
+
+This is first trial to merge translated documentations into the mainline.
+The directory where the file is should be discussed.
+---
+ Documentation/ja_JP/stable_api_nonsense.txt |  263 +++++++++++++++++++++++++++
+ 1 files changed, 263 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/ja_JP/stable_api_nonsense.txt b/Documentation/ja_JP/stable_api_nonsense.txt
+new file mode 100644
+index 0000000..0b130e8
+--- /dev/null
++++ b/Documentation/ja_JP/stable_api_nonsense.txt
+@@ -0,0 +1,263 @@
++NOTE:
++This is a Japanese translated version of
++"Documentation/stable_api_nonsense.txt".
++This one is maintained by
++IKEDA, Munehiro <m-ikeda@ds.jp.nec.com>
++and JF Project team <http://www.linux.or.jp/JF/>.
++If you find difference with original file or problem in translation,
++please contact the maintainer of this file or JF project.
 +
-+				if (test_bit(BIO_UPTODATE, &sbio->bi_flags)) {
-+					for (j = vcnt; j-- ; ) {
-+						struct page *p, *s;
-+						p = pbio->bi_io_vec[j].bv_page;
-+						s = sbio->bi_io_vec[j].bv_page;
-+						if (memcmp(page_address(p),
-+							   page_address(s),
-+							   PAGE_SIZE))
-+							break;
-+					}
-+				} else
-+					j = 0;
- 				if (j >= 0)
- 					mddev->resync_mismatches += r1_bio->sectors;
- 				if (j < 0 || test_bit(MD_RECOVERY_CHECK, &mddev->recovery)) {
++Please also note that purpose of this file is easier to read for non
++English natives and not to be intended to fork. So, if you have any
++comments or updates of this file, please try to update
++Original(English) file at first.
++
++==================================
++これは、
++linux-2.6.22-rc4/Documentation/stable_api_nonsense.txt の和訳
++です。
++翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
++翻訳日 ： 2007/06/11
++原著作者: Greg Kroah-Hartman < greg at kroah dot com >
++翻訳者 ： 池田 宗広 < m-ikeda at ds dot jp dot nec dot com >
++校正者 ： Masanori Kobayashi さん < zap03216 at nifty dot ne dot jp >
++          Seiji Kaneko さん < skaneko at a2 dot mbn dot or dot jp >
++==================================
++
++
++
++Linux カーネルのドライバインターフェース
++（あなたの質問すべてに対する回答とその他諸々）
++
++Greg Kroah-Hartman <greg at kroah dot com>
++
++
++この文書は、なぜ Linux ではバイナリカーネルインターフェースが定義
++されていないのか、またはなぜ不変のカーネルインターフェースを持たな
++いのか、ということを説明するために書かれた。ここでの話題は「カーネ
++ル内部の」インターフェースについてであり、ユーザー空間とのインター
++フェースではないことを理解してほしい。カーネルとユーザー空間とのイ
++ンターフェースとはアプリケーションプログラムが使用するものであり、
++つまりシステムコールのインターフェースがこれに当たる。これは今まで
++長きに渡り、かつ今後も「まさしく」不変である。私は確か 0.9 か何か
++より前のカーネルを使ってビルドした古いプログラムを持っているが、そ
++れは最新の 2.6 カーネルでもきちんと動作する。ユーザー空間とのイン
++ターフェースは、ユーザーとアプリケーションプログラマが不変性を信頼
++してよいものの一つである。
++
++
++要旨
++----
++
++あなたは不変のカーネルインターフェースが必要だと考えているかもしれ
++ないが、実際のところはそうではない。あなたは必要としているものが分
++かっていない。あなたが必要としているものは安定して動作するドライバ
++であり、それはドライバがメインのカーネルツリーに含まれる場合のみ得
++ることができる。ドライバがメインのカーネルツリーに含まれていると、
++他にも多くの良いことがある。それは、Linux をより強固で、安定な、成
++熟したオペレーティングシステムにすることができるということだ。これ
++こそ、そもそもあなたが Linux を使う理由のはずだ。
++
++
++はじめに
++--------
++
++カーネル内部のインターフェース変更を心配しなければならないドライバ
++を書きたいなどというのは、変わり者だけだ。この世界のほとんどの人は、
++そのようなドライバがどんなインターフェースを使っているかなど知らな
++いし、そんなドライバのことなど全く気にもかけていない。
++
++
++まず初めに、クローズソースとか、ソースコードの隠蔽とか、バイナリの
++みが配布される使い物にならない代物[訳注(1)]とか、実体はバイナリ
++コードでそれを読み込むためのラッパー部分のみソースコードが公開され
++ているとか、その他用語は何であれ GPL の下にソースコードがリリース
++されていないカーネルドライバに関する法的な問題について、私は「いか
++なる議論も」行うつもりがない。法的な疑問があるのならば、プログラマ
++である私ではなく、弁護士に相談して欲しい。ここでは単に、技術的な問
++題について述べることにする。（法的な問題を軽視しているわけではない。
++それらは実際に存在するし、あなたはそれをいつも気にかけておく必要が
++ある）
++
++訳注(1)
++「使い物にならない代物」の原文は "blob"
++
++
++さてここでは、バイナリカーネルインターフェースについてと、ソースレ
++ベルでのインターフェースの不変性について、という二つの話題を取り上
++げる。この二つは互いに依存する関係にあるが、まずはバイナリインター
++フェースについて議論を行いやっつけてしまおう。
++
++
++バイナリカーネルインターフェース
++--------------------------------
++
++もしソースレベルでのインターフェースが不変ならば、バイナリインター
++フェースも当然のように不変である、というのは正しいだろうか？正しく
++ない。Linux カーネルに関する以下の事実を考えてみてほしい。
++  - あなたが使用するＣコンパイラのバージョンによって、カーネル内部
++    の構造体の配置構造は異なったものになる。また、関数は異なった方
++    法でカーネルに含まれることになるかもしれない（例えばインライン
++    関数として扱われたり、扱われなかったりする）。個々の関数がどの
++    ようにコンパイルされるかはそれほど重要ではないが、構造体のパデ
++    ィングが異なるというのは非常に重要である。
++  - あなたがカーネルのビルドオプションをどのように設定するかによっ
++    て、カーネルには広い範囲で異なった事態が起こり得る。
++      - データ構造は異なるデータフィールドを持つかもしれない
++      - いくつかの関数は全く実装されていない状態になり得る
++        （例：SMP向けではないビルドでは、いくつかのロックは中身が
++          カラにコンパイルされる）
++      - カーネル内のメモリは、異なった方法で配置され得る。これはビ
++        ルドオプションに依存している。
++  - Linux は様々な異なるプロセッサアーキテクチャ上で動作する。
++    あるアーキテクチャ用のバイナリドライバを、他のアーキテクチャで
++    正常に動作させる方法はない。
++
++
++ある特定のカーネル設定を使用し、カーネルをビルドしたのと正確に同じ
++Ｃコンパイラを使用して単にカーネルモジュールをコンパイルするだけで
++も、あなたはこれらいくつもの問題に直面することになる。ある特定の 
++Linux ディストリビューションの、ある特定のリリースバージョン用にモ
++ジュールを提供しようと思っただけでも、これらの問題を引き起こすには
++十分である。にも関わらず Linux ディストリビューションの数と、サ
++ポートするディストリビューションのリリース数を掛け算し、それら一つ
++一つについてビルドを行ったとしたら、今度はリリースごとのビルドオプ
++ションの違いという悪夢にすぐさま悩まされることになる。また、ディス
++トリビューションの各リリースバージョンには、異なるハードウェア（プ
++ロセッサタイプや種々のオプション）に対応するため、何種類かのカーネ
++ルが含まれているということも理解して欲しい。従って、ある一つのリ
++リースバージョンだけのためにモジュールを作成する場合でも、あなたは
++何バージョンものモジュールを用意しなければならない。
++
++
++信じて欲しい。このような方法でサポートを続けようとするなら、あなた
++はいずれ正気を失うだろう。遠い昔、私はそれがいかに困難なことか、身
++をもって学んだのだ・・・
++
++
++不変のカーネルソースレベルインターフェース
++------------------------------------------
++
++メインカーネルツリーに含まれていない Linux カーネルドライバを継続
++してサポートしていこうとしている人たちとの議論においては、これは極
++めて「引火性の高い」話題である。[訳注(2)]
++
++訳注(2)
++「引火性の高い」の原文は "volatile"。
++volatile には「揮発性の」「爆発しやすい」という意味の他、「変わり
++やすい」「移り気な」という意味がある。
++「（この話題は）爆発的に激しい論争を巻き起こしかねない」ということ
++を、「（カーネルのソースレベルインターフェースは）移ろい行くもので
++ある」ということを連想させる "volatile" という単語で表現している。
++
++
++Linux カーネルの開発は継続的に速いペースで行われ、決して歩みを緩め
++ることがない。その中でカーネル開発者達は、現状のインターフェースに
++あるバグを見つけ、より良い方法を考え出す。彼らはやがて、現状のイン
++ターフェースがより正しく動作するように修正を行う。その過程で関数の
++名前は変更されるかもしれず、構造体は大きく、または小さくなるかもし
++れず、関数の引数は検討しなおされるかもしれない。そのような場合、引
++き続き全てが正常に動作するよう、カーネル内でこれらのインターフェー
++スを使用している個所も全て同時に修正される。
++
++
++具体的な例として、カーネル内の USB インターフェースを挙げる。USB 
++サブシステムはこれまでに少なくとも３回の書き直しが行われ、その結果
++インターフェースが変更された。これらの書き直しはいくつかの異なった
++問題を修正するために行われた。
++  - 同期的データストリームが非同期に変更された。これにより多数のド
++    ライバを単純化でき、全てのドライバのスループットが向上した。今
++    やほとんど全ての USB デバイスは、考えられる最高の速度で動作し
++    ている。
++  - USB ドライバが USB サブシステムのコアから行う、データパケット
++    用のメモリ確保方法が変更された。これに伴い、いくつもの文書化さ
++    れたデッドロック条件を回避するため、全ての USB ドライバはより
++    多くの情報を USB コアに提供しなければならないようになっている。
++
++
++このできごとは、数多く存在するクローズソースのオペレーティングシス
++テムとは全く対照的だ。それらは長期に渡り古い USB インターフェース
++をメンテナンスしなければならない。古いインターフェースが残ることで、
++新たな開発者が偶然古いインターフェースを使い、正しくない方法で開発
++を行ってしまう可能性が生じる。これによりシステムの安定性は危険にさ
++らされることになる。
++
++
++上に挙げたどちらの例においても、開発者達はその変更が重要かつ必要で
++あることに合意し、比較的楽にそれを実行した。もし Linux がソースレ
++ベルでインターフェースの不変性を保証しなければならないとしたら、新
++しいインターフェースを作ると同時に、古い、問題のある方を今後ともメ
++ンテナンスするという余計な仕事を USB の開発者にさせなければならな
++い。Linux の USB 開発者は、自分の時間を使って仕事をしている。よっ
++て、価値のない余計な仕事を報酬もなしに実行しろと言うことはできない。
++
++
++セキュリティ問題も、Linux にとっては非常に重要である。ひとたびセキ
++ュリティに関する問題が発見されれば、それは極めて短期間のうちに修正
++される。セキュリティ問題の発生を防ぐための修正は、カーネルの内部イ
++ンターフェースの変更を何度も引き起こしてきた。その際同時に、変更さ
++れたインターフェースを使用する全てのドライバもまた変更された。これ
++により問題が解消し、将来偶然に問題が再発してしまわないことが保証さ
++れる。もし内部インターフェースの変更が許されないとしたら、このよう
++にセキュリティ問題を修正し、将来再発しないことを保証することなど不
++可能なのだ。
++
++
++カーネルのインターフェースは時が経つにつれクリーンナップを受ける。
++誰も使っていないインターフェースは削除される。これにより、可能な限
++りカーネルが小さく保たれ、現役の全てのインターフェースが可能な限り
++テストされることを保証しているのだ。（使われていないインターフェー
++スの妥当性をテストすることは不可能と言っていいだろう）
++
++
++
++これから何をすべきか
++-----------------------
++
++では、もしメインのカーネルツリーに含まれない Linux カーネルドライ
++バがあったとして、あなたは、つまり開発者は何をするべきだろうか？全
++てのディストリビューションの全てのカーネルバージョン向けにバイナリ
++のドライバを供給することは悪夢であり、カーネルインターフェースの変
++更を追いかけ続けることもまた過酷な仕事だ。
++
++
++答えは簡単。そのドライバをメインのカーネルツリーに入れてしまえばよ
++い。（ここで言及しているのは、GPL に従って公開されるドライバのこと
++だということに注意してほしい。あなたのコードがそれに該当しないなら
++ば、さよなら。幸運を祈ります。ご自分で何とかしてください。Andrew 
++と Linus からのコメント＜Andrew と Linus のコメントへのリンクをこ
++こに置く＞をどうぞ）ドライバがメインツリーに入れば、カーネルのイン
++ターフェースが変更された場合、変更を行った開発者によってドライバも
++修正されることになるだろう。あなたはほとんど労力を払うことなしに、
++常にビルド可能できちんと動作するドライバを手に入れることができる。
++
++
++ドライバをメインのカーネルツリーに入れると、非常に好ましい以下の効
++果がある。
++  - ドライバの品質が向上する一方で、（元の開発者にとっての）メンテ
++    ナンスコストは下がる。
++  - あなたのドライバに他の開発者が機能を追加してくれる。
++  - 誰かがあなたのドライバにあるバグを見つけ、修正してくれる。
++  - 誰かがあなたのドライバにある改善点を見つけてくれる。
++  - 外部インターフェースが変更されドライバの更新が必要になった場合、
++    誰かがあなたの代わりに更新してくれる。
++  - ドライバを入れてくれとディストロに頼まなくても、そのドライバは
++    全ての Linux ディストリビューションに自動的に含まれてリリース
++    される。
++
++
++Linux では、他のどのオペレーティングシステムよりも数多くのデバイス
++が「そのまま」使用できるようになった。また Linux は、どのオペレー
++ティングシステムよりも数多くのプロセッサアーキテクチャ上でそれらの
++デバイスを使用することができるようにもなった。このように、Linux の
++開発モデルは実証されており、今後も間違いなく正しい方向へと進んでい
++くだろう。:)
++
++
++
++------
++
++この文書の初期の草稿に対し、Randy Dunlap, Andrew Morton, David 
++Brownell, Hanna Linder, Robert Love, Nishanth Aravamudan から査読
++と助言を頂きました。感謝申し上げます。
++
+-- 
+1.4.4.4
+
+
+--------------090108010902000509010006--
