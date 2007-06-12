@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757041AbXFLAJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbXFLAQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757041AbXFLAJh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 20:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXFLAJb
+	id S1756756AbXFLAQn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 20:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbXFLAQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 20:09:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49847 "EHLO mail.dvmed.net"
+	Mon, 11 Jun 2007 20:16:35 -0400
+Received: from mail.suse.de ([195.135.220.2]:55038 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751754AbXFLAJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 20:09:30 -0400
-Message-ID: <466DE438.70108@garzik.org>
-Date: Mon, 11 Jun 2007 20:09:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1751467AbXFLAQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 20:16:34 -0400
+From: Neil Brown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 12 Jun 2007 10:16:22 +1000
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: libata passthru: support PIO multi commands
-References: <200706112200.l5BM0qFn005767@hera.kernel.org> <20070611233917.4bd8c6d7@the-village.bc.nu>
-In-Reply-To: <20070611233917.4bd8c6d7@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Message-ID: <18029.58838.518919.415999@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 001 of 2] Fix read/truncate race.
+In-Reply-To: message from Andrew Morton on Thursday June 7
+References: <20070607114043.26967.patches@notabene>
+	<1070607014653.27304@suse.de>
+	<20070607181820.6b22bb29.akpm@linux-foundation.org>
+	<18024.50064.799102.305585@notabene.brown>
+	<20070607231042.97c7b68b.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> +	if (is_multi_taskfile(tf)) {
->> +		unsigned int multi_count = 1 << (cdb[1] >> 5);
->> +
->> +		/* compare the passed through multi_count
->> +		 * with the cached multi_count of libata
->> +		 */
->> +		if (multi_count != dev->multi_count)
->> +			ata_dev_printk(dev, KERN_WARNING,
->> +				       "invalid multi_count %u ignored\n",
->> +				       multi_count);
->> +	}
+On Thursday June 7, akpm@linux-foundation.org wrote:
+> On Fri, 8 Jun 2007 12:48:48 +1000 Neil Brown <neilb@suse.de> wrote:
 > 
-> What limits log spamming here ?
+> > The following patch will remove the extra seqlock except when we
+> > actually need it and remove the extra arithmetic - but I haven't
+> > tested it or reviewed it properly.  I can do that if you think it is
+> > the right direction.
+> 
+> Yes, the optimisation is valid and looks useful.
+> 
+> >  ./mm/filemap.c |   34 ++++++++++++++++++++++++++++------
+> 
+> It didn't apply - your tree seems different from mine.
 
-Intelligence of the user with privs?
+Odd.  I had no other changes to that file in my tree.  I'll wait until
+the next -mm(?).
+It's just as well really, the patch was buggy - didn't even compile
+and (as I said) totally untested.  I'll get you a tested patch after I
+can rebase.
 
+> 
+> > +		 *
+> > +		 * NOTE: This access of inode->i_size is not protected
+> > +		 *  and if there is a concurrent update on a 32bit machine,
+> > +		 *  it could return the wrong value.  This could only be a problem
+> > +		 *  if i_size has actually changed to a smaller value before the
+> > +		 *  page became uptodate, and at this point it still has a smaller
+> > +		 *  value, but due to a race while reading, it appears unchanged.
+> > +		 *  The chances of this happening are so small and the consequence
+> > +		 *  sufficiently minor, that the cost of the seqlock seems
+> > +		 *  not to be justified.
+> 
+> please consider incorporating scripts/checkpatch.pl into your patch
+> preparation toolchain.
 
-> Also shouldn't we error this
-> situation not proceed and hope that enough data was supplied not
-> to leave us stuck half way through a command having made a nasty
-> mess on disk ?
+Done... Any reason that it isn't executable (chmod +x)?
 
-Is that English?  Can you be more specific and more clear?
-
-	Jeff
-
-
+NeilBrown
