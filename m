@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbXFLRZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbXFLRZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbXFLRZK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 13:25:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbXFLRY5
+	id S1757285AbXFLRZv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 13:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbXFLRZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 13:24:57 -0400
-Received: from gate.in-addr.de ([212.8.193.158]:37775 "EHLO mx.in-addr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753396AbXFLRYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 13:24:55 -0400
-X-Greylist: delayed 1271 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jun 2007 13:24:55 EDT
-Date: Tue, 12 Jun 2007 19:03:11 +0200
-From: Lars Marowsky-Bree <lmb@suse.de>
-To: Pavel Machek <pavel@ucw.cz>, david@lang.hm
-Cc: Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070612170311.GA13854@marowsky-bree.de>
-References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de> <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <Pine.LNX.4.64.0706081757070.18969@asgard.lang.hm> <20070610083427.GA24808@elf.ucw.cz> <Pine.LNX.4.64.0706100201540.6675@asgard.lang.hm> <20070610210547.GC25138@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 12 Jun 2007 13:25:23 -0400
+Received: from mga03.intel.com ([143.182.124.21]:37971 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756196AbXFLRZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 13:25:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,412,1175497200"; 
+   d="scan'208";a="238310282"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Dave Jones <davej@redhat.com>
+Subject: Re: [RFC][AGPGART]intel-agp: save whole config space in suspend/resume
+Date: Tue, 12 Jun 2007 10:24:50 -0700
+User-Agent: KMail/1.9.6
+Cc: LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
+       Keith Packard <keithp@keithp.com>
+References: <20070612015459.GB28668@zhen-devel.sh.intel.com> <20070612033424.GA30200@zhen-devel.sh.intel.com> <20070612035914.GA23169@redhat.com>
+In-Reply-To: <20070612035914.GA23169@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070610210547.GC25138@elf.ucw.cz>
-X-Ctuhulu: HASTUR
-User-Agent: Mutt/1.5.9i
+Message-Id: <200706121024.50717.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007-06-10T23:05:47, Pavel Machek <pavel@ucw.cz> wrote:
+On Monday, June 11, 2007 8:59:14 Dave Jones wrote:
+> On Tue, Jun 12, 2007 at 11:34:25AM +0800, Wang Zhenyu wrote:
+>  > I understand. Before James reported his problem on i915, I have
+>  > thought the basic restore on that chip should already be enough,
+>  > but he proved I was wrong and I'm not sure if this also happens on
+>  > other i915 board with different BIOS.
+>  >
+>  > And with my patch it has already removed the restore cases for
+>  > 440BX like type, coz it's gmch_chip_id == 0 and
+>  > intel_private.pcidev is NULL, so it won't save extra space on
+>  > those chips.
+>
+> The 440BX was one example, for all we know there are similar ordering
+> issues with other chipsets.  We hit this problem with the code that
+> restores the first 64 bytes first of all. Then we found out we had
+> to restore them in reverse order to be safe.  We were able to do
+> this generically, because those bytes are standardised across
+> devices.
+>
+> The upper config space isn't standardised, so we have to obey the
+> per-device rules as to what order we read/write things.
+> Writing back an "enable" bit somewhere before we've written back
+> addresses in later registers for example may result in really
+> bizarre things happening.  These are the kind of bugs that aren't
+> obvious, and turn out to be "that weird reboot that happens
+> every 3rd tuesday" six months after we've merged the changes
+> and everyones forgotten all about the potential problems.
+>
+> The AGP code has had more than its fair share of really nasty
+> bugs like this to track down, so I'm strongly opposed to introducing
+> hacks that may trip us up later.
+>
+> Whilst I'm not a huge fan of the 815 patch in -mm as it stands,
+> I think it's a better direction to go in to have per-chipset
+> save/restore routines.
 
-> But you have that regex in _user_ space, in a place where policy
-> is loaded into kernel.
-> 
-> AA has regex parser in _kernel_ space, which is very wrong.
+I agree.  I think saving the registers explicitly rather than as a block 
+is the best long term direction.  That way we can carefully evaluate 
+which ones actually need to be saved/restored, and it what order.  
+Doing it as a block hides that and makes it seem chipset independent 
+when it really might not be...
 
-That regex parser only applies user defined policy. The logical
-connection between your two points doesn't exist.
-
-
-Regards,
-    Lars
-
--- 
-Teamlead Kernel, SuSE Labs, Research and Development
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
-"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
-
+Jesse
