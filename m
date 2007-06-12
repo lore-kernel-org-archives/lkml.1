@@ -1,81 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbXFLKRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbXFLKUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbXFLKRS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 06:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbXFLKRI
+	id S1754489AbXFLKUS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 06:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbXFLKUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 06:17:08 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:57757 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752106AbXFLKRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 06:17:06 -0400
-Date: Tue, 12 Jun 2007 12:16:56 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: kernel BUG at mm/slub.c:3689!
-Message-ID: <20070612121656.00cabc45@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <20070612105512.471ec7e6@dhcp-255-175.norway.atmel.com>
-References: <20070611161926.2a9f8efd@dhcp-255-175.norway.atmel.com>
-	<Pine.LNX.4.64.0706110946430.15910@schroedinger.engr.sgi.com>
-	<1defaf580706111011w641b26fbu68d6d34028f6e953@mail.gmail.com>
-	<Pine.LNX.4.64.0706111041160.17264@schroedinger.engr.sgi.com>
-	<1defaf580706111122n78ab46c3sda05cbd4ace97319@mail.gmail.com>
-	<Pine.LNX.4.64.0706111129270.18327@schroedinger.engr.sgi.com>
-	<1defaf580706111204v35b4dcc9j5dc68e722bd384b1@mail.gmail.com>
-	<Pine.LNX.4.64.0706111208580.19316@schroedinger.engr.sgi.com>
-	<1defaf580706111235p7da29d25xc33d221134f3f7a8@mail.gmail.com>
-	<Pine.LNX.4.64.0706111239230.19654@schroedinger.engr.sgi.com>
-	<1defaf580706111253q2a4910b1v4802436e32e94953@mail.gmail.com>
-	<Pine.LNX.4.64.0706112016030.25563@schroedinger.engr.sgi.com>
-	<20070612105512.471ec7e6@dhcp-255-175.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 06:20:07 -0400
+Received: from raven.upol.cz ([158.194.120.4]:61084 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751877AbXFLKUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 06:20:05 -0400
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       kbuild-devel@lists.sourceforge.net
+Subject: [patch] kbuild: remember ARCH in the object directory
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: emacs + quilt + jed (x86_64-pc-linux-glibc-debian)
+X-Mailer: slrn
+In-Reply-To: <20070611125903.GA3933@uranus.ravnborg.org>
+References: <200705090951.l499pa6G020397@shell0.pdx.osdl.net> <20070509204613.GA10336@uranus.ravnborg.org> <1178755780.7286.175.camel@localhost.localdomain> <E1HxjKu-0004G6-7d@flower> <20070611125903.GA3933@uranus.ravnborg.org>
+Date: Tue, 12 Jun 2007 12:31:56 +0200
+Message-Id: <E1Hy3fI-0001Tw-Fy@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007 10:55:12 +0200
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+[patch] kbuild: remember ARCH in the object directory
 
-> On Mon, 11 Jun 2007 20:16:31 -0700 (PDT)
-> Christoph Lameter <clameter@sgi.com> wrote:
-> 
-> > > and I can't do that over VPN. I'll test it first thing in the morning.
-> > 
-> > Here is a more general fix
-> 
-> Sorry, that didn't work either. One problem is that you're using
-> ARCH_KMALLOC_MIN_ALIGN instead of ARCH_KMALLOC_MINALIGN in slub_defs.h
-> to determine KMALLOC_MIN_SIZE. After fixing that, it fails with
-> undefined references to __kmalloc_size_too_large. It looks like ilog2()
-> is behaving strangely; I'll see if I can figure out what's going on.
+ - rephrase some related (misspelled) comments,
+ - remove all trailing whitespace in the top Makefile,
 
-Looks like gcc didn't recognize max(8, ARCH_KMALLOC_MINALIGN) as a
-constant expression, so __kmalloc_size_too_large() got referenced
-although it never got called as far as I can tell. Works like a charm
-after applying this patch on top of yours.
+ * remember ARCH in the output directory, thus making build of i386
+   on amd64 *actually* convenient,
 
-Tested with CONFIG_SLUB_DEBUG=n, CONFIG_SLUB_DEBUG=y and
-CONFIG_SLUB_DEBUG=y with slub_debug set.
+ - harmless refactoring of the Makefile generating.
 
+Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
+---
+-o--=O`C  /. .\
+ #oo'L O      o
+<___=E M    ^--
 
-diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index 7ef94d4..7fb785f 100644
---- a/include/linux/slub_def.h
-+++ b/include/linux/slub_def.h
-@@ -56,8 +56,8 @@ struct kmem_cache {
- /*
-  * Kmalloc subsystem.
-  */
--#ifdef ARCH_KMALLOC_MIN_ALIGN
--#define KMALLOC_MIN_SIZE max(8, ARCH_KMALLOC_MIN_ALIGN)
-+#if defined(ARCH_KMALLOC_MINALIGN) && (ARCH_KMALLOC_MINALIGN > 8)
-+#define KMALLOC_MIN_SIZE ARCH_KMALLOC_MINALIGN
- #else
- #define KMALLOC_MIN_SIZE 8
- #endif
+ Just lazy typing `make ARCH=i386` every time i want to check lguest.
+
+ Makefile           |   17 ++++++++---------
+ scripts/mkmakefile |   42 ++++++++++++++++++++++++------------------
+ 2 files changed, 32 insertions(+), 27 deletions(-)
+
+Index: linux-2.6.22-rc4-mm2/scripts/mkmakefile
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/scripts/mkmakefile	2007-06-12 11:21:27.755466250 +0200
++++ linux-2.6.22-rc4-mm2/scripts/mkmakefile	2007-06-12 12:04:13.675826250 +0200
+@@ -1,6 +1,6 @@
+-#!/bin/sh
++#!/bin/sh -e
+ # Generates a small Makefile used in the root of the output
+-# directory, to allow make to be started from there.
+-# The Makefile also allow for more convinient build of external modules
++# directory, to allow kernel build to be started from there.
++# External modules can't built with it as well.
+ 
+ # Usage
+@@ -9,28 +9,34 @@
+ # $3 - version
+ # $4 - patchlevel
++# $5 - ARCH
+ 
++set -e
+ 
+-test ! -r $2/Makefile -o -O $2/Makefile || exit 0
+ echo "  GEN     $2/Makefile"
++echo "#
++# Automatically generated by
++# $0
++#
++VERSION		= $3
++PATCHLEVEL	= $4
++
++KERNELSRC	= $1
++KERNELOUTPUT	= $2
++ARCH		= $5
++" >$2/Makefile
+ 
+-cat << EOF > $2/Makefile
+-# Automatically generated by $0: don't edit
++cat << "EOF" >> $2/Makefile
++MAKEFLAGS	+= -rR --no-print-directory
+ 
+-VERSION = $3
+-PATCHLEVEL = $4
++export ARCH
+ 
+-KERNELSRC    := $1
+-KERNELOUTPUT := $2
+-
+-MAKEFLAGS += --no-print-directory
++all:
++	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT)
+ 
+-.PHONY: all \$(MAKECMDGOALS)
++$(filter-out all Makefile,$(MAKECMDGOALS)) %/:
++	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT) $@
+ 
+-all:
+-	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT)
++.PHONY: all $(MAKECMDGOALS)
+ 
+ Makefile:;
+-
+-\$(filter-out all Makefile,\$(MAKECMDGOALS)) %/:
+-	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$@
+ EOF
+Index: linux-2.6.22-rc4-mm2/Makefile
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/Makefile	2007-06-12 11:35:20.559513250 +0200
++++ linux-2.6.22-rc4-mm2/Makefile	2007-06-12 11:51:10.438877000 +0200
+@@ -156,5 +156,5 @@ export srctree objtree VPATH TOPDIR
+ # first, and if a usermode build is happening, the "ARCH=um" on the command
+ # line overrides the setting of ARCH below.  If a native build is happening,
+-# then ARCH is assigned, getting whatever value it gets normally, and 
++# then ARCH is assigned, getting whatever value it gets normally, and
+ # SUBARCH is subsequently ignored.
+ 
+@@ -242,5 +242,5 @@ export KBUILD_CHECKSRC KBUILD_SRC KBUILD
+ #
+ # If $(quiet) is empty, the whole command will be printed.
+-# If it is set to "quiet_", only the short version will be printed. 
++# If it is set to "quiet_", only the short version will be printed.
+ # If it is set to "silent_", nothing will be printed at all, since
+ # the variable $(silent_cmd_cc_o_c) doesn't exist.
+@@ -352,11 +352,10 @@ scripts/basic/%: scripts_basic ;
+ 
+ PHONY += outputmakefile
+-# outputmakefile generates a Makefile in the output directory, if using a
+-# separate output directory. This allows convenient use of make in the
+-# output directory.
+ outputmakefile:
++# generate a Makefile in the output directory, if using a
++# separate output directory; allows convenient use of make there
+ ifneq ($(KBUILD_SRC),)
+ 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
+-	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
++	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL) $(ARCH)
+ endif
+ 
+@@ -699,5 +698,5 @@ endef
+ cmd_ksym_ld = $(cmd_vmlinux__)
+ define rule_ksym_ld
+-	: 
++	:
+ 	+$(call cmd,vmlinux_version)
+ 	$(call cmd,vmlinux__)
+@@ -750,5 +749,5 @@ endif
+ 	$(Q)rm -f .old_version
+ 
+-# The actual objects are generated when descending, 
++# The actual objects are generated when descending,
+ # make sure no implicit rule kicks in
+ $(sort $(vmlinux-init) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
+@@ -1454,5 +1453,5 @@ endif
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+ 
+-# FIXME Should go into a make.lib or something 
++# FIXME Should go into a make.lib or something
+ # ===========================================================================
+ 
