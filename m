@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbXFLAfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbXFLAfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbXFLAfe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 20:35:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXFLAf1
+	id S1755729AbXFLAfq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 20:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbXFLAfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 20:35:27 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40690 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752485AbXFLAf0 (ORCPT
+	Mon, 11 Jun 2007 20:35:36 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:40625 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757341AbXFLAff convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 20:35:26 -0400
-Date: Mon, 11 Jun 2007 17:35:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH 001 of 2] Fix read/truncate race.
-Message-Id: <20070611173504.862450d9.akpm@linux-foundation.org>
-In-Reply-To: <18029.58838.518919.415999@notabene.brown>
-References: <20070607114043.26967.patches@notabene>
-	<1070607014653.27304@suse.de>
-	<20070607181820.6b22bb29.akpm@linux-foundation.org>
-	<18024.50064.799102.305585@notabene.brown>
-	<20070607231042.97c7b68b.akpm@linux-foundation.org>
-	<18029.58838.518919.415999@notabene.brown>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jun 2007 20:35:35 -0400
+Message-ID: <11f674920706111735l7dec2136t32d40ee2ab4ccca4@mail.gmail.com>
+Date: Mon, 11 Jun 2007 17:35:34 -0700
+From: "Kevin Bowling" <lkml@kev009.com>
+To: "Kevin K" <k_krieser@sbcglobal.net>
+Subject: Re: ext2 on flash memory
+Cc: DervishD <lkml@dervishd.net>, Linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <191337B7-F4CC-4824-B669-48AE194BE141@sbcglobal.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20070611101319.GA14284@DervishD>
+	 <191337B7-F4CC-4824-B669-48AE194BE141@sbcglobal.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007 10:16:22 +1000 Neil Brown <neilb@suse.de> wrote:
+On 6/11/07, Kevin K <k_krieser@sbcglobal.net> wrote:
+>
+> On Jun 11, 2007, at 5:13 AM, DervishD wrote:
+>
+> >     Hi all :)
+> >
+> >     I was wondering: is there any reason not to use ext2 on an USB
+> > pendrive? Really my question is not only about USB pendrives, but any
+> > device whose storage is flash based. Let's assume that the device
+> > has a
+> > good quality flash memory with wear leveling and the like...
+> >
+> >     Thanks a lot in advance :)
+> >
+> >     Raúl Núñez de Arenas Coronado
+> >
+>
+>
+> My opinion is that, unless the flash is really cheap, or it is being
+> written to excessively, that it probably doesn't matter too much.
+> With the growth in size of flash, just how long do you think it will
+> continue to be used before you go to something larger?
+>
+> A 256MB flash of a few years ago has been supplanted in many cases by
+> today's 2-4gb memory.
+>
+> One suggestion with ext2 might be to mount it with the noatime
+> option, so it doesn't update the last access time for directories and
+> files.  Otherwise, you are doing a write even when you only plan to
+> read a file.
 
-> > please consider incorporating scripts/checkpatch.pl into your patch
-> > preparation toolchain.
-> 
-> Done... Any reason that it isn't executable (chmod +x)?
-
-It is executable now (Linus did a chmod).
-
-However I think it was wrong to do this.  Because lots of people will lose
-that X bit (say, people who download and use patch-2.6.22.gz).  But _some_
-people will have their X bit set, so they will go write scripts which
-assume X permissions, only to find that those scripts break on other
-people's systems.
-
-So to force the lowest-common-denominator, we should have left X unset.  Oh
-well.
-
+All of the posts fail to address the question here: what is the
+correct file system, or does one exist yet, for wear leveling flash
+storage.  JFFS2 and logfs are nice for MTD, but for better flash
+memories that are likely to be used in the future like solid state
+hard disks, what is the answer?
