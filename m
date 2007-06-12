@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbXFLDuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbXFLD71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757665AbXFLDuw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 23:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbXFLDuo
+	id S1756985AbXFLD71 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 23:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXFLD7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 23:50:44 -0400
-Received: from holomorphy.com ([66.93.40.71]:47959 "EHLO holomorphy.com"
+	Mon, 11 Jun 2007 23:59:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53508 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753130AbXFLDuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 23:50:44 -0400
-Date: Mon, 11 Jun 2007 20:51:39 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Adam Litke <agl@us.ibm.com>
-Cc: dean gaudet <dean@arctic.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, ak@suse.de, clameter@sgi.com
-Subject: Re: [shm][hugetlb] Fix get_policy for stacked shared memory files
-Message-ID: <20070612035139.GD6909@holomorphy.com>
-References: <Pine.LNX.4.64.0705152222550.14691@twinlark.arctic.org> <20070516061259.GZ19966@holomorphy.com> <Pine.LNX.4.64.0706092106220.10324@twinlark.arctic.org> <1181597696.22671.2.camel@localhost.localdomain>
+	id S1750933AbXFLD7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 23:59:18 -0400
+Date: Mon, 11 Jun 2007 23:59:14 -0400
+From: Dave Jones <davej@redhat.com>
+To: LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
+       Keith Packard <keithp@keithp.com>
+Subject: Re: [RFC][AGPGART]intel-agp: save whole config space in
+	suspend/resume
+Message-ID: <20070612035914.GA23169@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
+	Keith Packard <keithp@keithp.com>
+References: <20070612015459.GB28668@zhen-devel.sh.intel.com> <20070612022320.GA2125@redhat.com> <20070612033424.GA30200@zhen-devel.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1181597696.22671.2.camel@localhost.localdomain>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070612033424.GA30200@zhen-devel.sh.intel.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 04:34:54PM -0500, Adam Litke wrote:
-> Here's another breakage as a result of shared memory stacked files :(
-> The NUMA policy for a VMA is determined by checking the following (in
-> the order given):
-> 1) vma->vm_ops->get_policy() (if defined)
-> 2) vma->vm_policy (if defined)
-> 3) task->mempolicy (if defined)
-> 4) Fall back to default_policy
-> By switching to stacked files for shared memory, get_policy() is now
-> always set to shm_get_policy which is a wrapper function.  This
-> causes us to stop at step 1, which yields NULL for hugetlb instead of
-> task->mempolicy which was the previous (and correct) result.
-> This patch modifies the shm_get_policy() wrapper to maintain steps 1-3 for the
-> wrapped vm_ops.  Andi and Christoph, does this look right to you?
-> Signed-off-by: Adam Litke <agl@us.ibm.com>
+On Tue, Jun 12, 2007 at 11:34:25AM +0800, Wang Zhenyu wrote:
 
-Thanks for fielding this. The fix is certainly clear enough.
+ > I understand. Before James reported his problem on i915, I have thought
+ > the basic restore on that chip should already be enough, but he proved I was
+ > wrong and I'm not sure if this also happens on other i915 board with different
+ > BIOS. 
+ > 
+ > And with my patch it has already removed the restore cases for 440BX like type,
+ > coz it's gmch_chip_id == 0 and intel_private.pcidev is NULL, so it won't save
+ > extra space on those chips.
 
-Acked-by: William Irwin <bill.irwin@oracle.com>
+The 440BX was one example, for all we know there are similar ordering
+issues with other chipsets.  We hit this problem with the code that
+restores the first 64 bytes first of all. Then we found out we had
+to restore them in reverse order to be safe.  We were able to do
+this generically, because those bytes are standardised across devices.
 
+The upper config space isn't standardised, so we have to obey the
+per-device rules as to what order we read/write things.
+Writing back an "enable" bit somewhere before we've written back
+addresses in later registers for example may result in really
+bizarre things happening.  These are the kind of bugs that aren't
+obvious, and turn out to be "that weird reboot that happens
+every 3rd tuesday" six months after we've merged the changes
+and everyones forgotten all about the potential problems.
 
--- wli
+The AGP code has had more than its fair share of really nasty
+bugs like this to track down, so I'm strongly opposed to introducing
+hacks that may trip us up later.
+
+Whilst I'm not a huge fan of the 815 patch in -mm as it stands,
+I think it's a better direction to go in to have per-chipset
+save/restore routines.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
