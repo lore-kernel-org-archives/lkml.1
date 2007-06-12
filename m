@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbXFLAau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbXFLAfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbXFLAau (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 20:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbXFLAam
+	id S1757328AbXFLAfe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 20:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXFLAf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 20:30:42 -0400
-Received: from cb2.northrockquote.com ([64.251.14.146]:2768 "EHLO
-	dejavu.debianpt.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbXFLAal (ORCPT
+	Mon, 11 Jun 2007 20:35:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40690 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752485AbXFLAf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 20:30:41 -0400
-Message-ID: <466DE921.9030709@debianpt.org>
-Date: Tue, 12 Jun 2007 01:30:25 +0100
-From: Miguel Figueiredo <elmig@debianpt.org>
-Organization: DebianPT.org
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck@vds.kolivas.org
-Subject: call for more SD versus CFS comparisons (was: Re: [ck] Mainline plans)
-Content-Type: text/plain; charset=UTF-8
+	Mon, 11 Jun 2007 20:35:26 -0400
+Date: Mon, 11 Jun 2007 17:35:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 001 of 2] Fix read/truncate race.
+Message-Id: <20070611173504.862450d9.akpm@linux-foundation.org>
+In-Reply-To: <18029.58838.518919.415999@notabene.brown>
+References: <20070607114043.26967.patches@notabene>
+	<1070607014653.27304@suse.de>
+	<20070607181820.6b22bb29.akpm@linux-foundation.org>
+	<18024.50064.799102.305585@notabene.brown>
+	<20070607231042.97c7b68b.akpm@linux-foundation.org>
+	<18029.58838.518919.415999@notabene.brown>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Tue, 12 Jun 2007 10:16:22 +1000 Neil Brown <neilb@suse.de> wrote:
 
-some results based on massing_intr.c by Satoru, can be found on
-http://people.redhat.com/mingo/cfs-scheduler/tools/massive_intr.c
+> > please consider incorporating scripts/checkpatch.pl into your patch
+> > preparation toolchain.
+> 
+> Done... Any reason that it isn't executable (chmod +x)?
 
-Runned several times like:
-$ massing_intr 5 2 >> results-kernel-5.2
-$ massing_intr 300 300 >> results-kernel-300.300
+It is executable now (Linus did a chmod).
 
-To calculate average and standard deviation:
+However I think it was wrong to do this.  Because lots of people will lose
+that X bit (say, people who download and use patch-2.6.22.gz).  But _some_
+people will have their X bit set, so they will go write scripts which
+assume X permissions, only to find that those scripts break on other
+people's systems.
 
-$ original-awk -f awkscript results-file
-
-awkscript file included.
-(for debian users: apt-get install original-awk)
-
-Here's the data, values and facts:
-
-kernel                  run as  average stddev
-======                  ======  ======= ======
-2.6.22-rc4-ck1          5 2     34      0
-2.6.22-rc4-ck1          5 2     22      0
-2.6.22-rc4-ck1          5 2     24.6    0.219
-2.6.22-rc4-ck1          5 2     31.4    0.219
-2.6.22-rc4-ck1          5 2     40      0
-
-2.6.22-rc4-cfs-v16      5 2     36      0
-2.6.22-rc4-cfs-v16      5 2     30      0
-2.6.22-rc4-cfs-v16      5 2     27.6    0.219
-2.6.22-rc4-cfs-v16      5 2     29.6    0.219
-2.6.22-rc4-cfs-v16      5 2     42      0
-
-2.6.22-rc4-cfs-v16      300 300 126.427 0.289
-2.6.22-rc4-cfs-v16      300 300 125.35  0.275
-2.6.22-rc4-cfs-v16      300 300 127,797 0,028
-2.6.22-rc4-cfs-v16      300 300 125,367 0,028
-2.6.22-rc4-cfs-v16      300 300 125,213 0,024
-
-2.6.22-rc4-ck1          300 300 125.413 0,028
-2.6.22-rc4-ck1          300 300 125,34  0,027
-2.6.22-rc4-ck1          300 300 124,69  0,027
-2.6.22-rc4-ck1          300 300 125,093 0,017
-2.6.22-rc4-ck1          300 300 125,597 0,028
-
-* "run as" it's the parameters passed to the program massive_intr.
-
-All the files and data can be found on
-http://www.debianpt.org/~elmig/pool/kernel/20070611/
-
-Just one note, the first time this test was run:
--cfs-v16 i got this values: 44, 23, 19, 16, 42;
--2.6.21-debian: 29, 25, 22, 16, 32;
--ck1: 37 37 37 37 37
-
-The machine was a Sempron64 3.0 GHz.
-
-
-I know that other people, who read lkml, also tested the same way, it
-would be nice if they also post their data.
-
--- 
-
-Com os melhores cumprimentos/Best regards,
-
-Miguel Figueiredo
-http://www.DebianPT.org
+So to force the lowest-common-denominator, we should have left X unset.  Oh
+well.
 
