@@ -1,164 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbXFLXkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbXFLXkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbXFLXkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 19:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbXFLXju
+	id S1757222AbXFLXkv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 19:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbXFLXjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 19:39:50 -0400
-Received: from raven.upol.cz ([158.194.120.4]:41898 "EHLO raven.upol.cz"
+	Tue, 12 Jun 2007 19:39:51 -0400
+Received: from raven.upol.cz ([158.194.120.4]:41894 "EHLO raven.upol.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753857AbXFLXjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753407AbXFLXjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 Jun 2007 19:39:48 -0400
-Message-Id: <20070612234558.648949000@flower.upol.cz>
+Message-Id: <20070612234558.782193000@flower.upol.cz>
 References: <20070612233650.486224000@flower.upol.cz>
 Organization: Palacky University in Olomouc, experimental physics department.
 User-Agent: quilt + emacs + jed (x86_64-pc-linux-glibc-debian)
 X-Mailer: formail(procmail)
-Date: Wed, 13 Jun 2007 01:36:51 +0200
+Date: Wed, 13 Jun 2007 01:36:52 +0200
 From: Oleg Verych <olecom@flower.upol.cz>
 To: Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: LKML <linux-kernel@vger.kernel.org>, kbuild-devel@lists.sourceforge.net
-Subject: [patch 01/03] kbuild, asm-values: infrastructure
-Content-Disposition: inline; filename=kbuild-asm-values-infrastructure.patch
+Subject: [patch 02/03] kbuild, asm-values: successor of asm-offsets
+Content-Disposition: inline; filename=kbuild-asm-values-successor-of-asm-offsets.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	* header with widely used value definitions
-	* handle all asm-related things in one file (Makefile.asm)
-	* move some asm bits from Makefile.build there
-	  (rule %.s:%.c)
-	* add script to generate headers from assembles output
-	  (hopefully better output, MIPS testing/joining to all arch
-	   probably needed)
+	Some asm-offsets files define not only offsets, thus make it clear.
+	Legacy files are supported, but may be freely changed to new scheme.
 
 rfc-by: Oleg Verych
 ---
- See next patches, to know how to use it
+ If somebody agrees, of course.
 
- include/asm-generic/asm-values.h |    7 ++++
- scripts/Makefile.asm             |   26 ++++++++++++++++++
- scripts/Makefile.build           |    6 ----
- scripts/mkasm-values.sh          |   55 +++++++++++++++++++++++++++++++++++++
- 4 files changed, 88 insertions(+), 6 deletions(-)
+ Kbuild |   68 ++++++++++++++++++++-------------------------------------------
+ 1 file changed, 24 insertions(+), 44 deletions(-)
 
-Index: linux-2.6.22-rc4-mm2/scripts/Makefile.asm
+Index: linux-2.6.22-rc4-mm2/Kbuild
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22-rc4-mm2/scripts/Makefile.asm	2007-06-12 23:43:41.070624500 +0200
-@@ -0,0 +1,26 @@
-+#
-+# Help generate definitions needed by assembly language modules.
-+#
-+ifndef asm-values_h
-+    asm-values := $(shell test -e $(srctree)/$(src)/asm-values.c && echo ok)
-+    ifneq ($(asm-values),)
-+	asm-values_h := asm-values.h
-+	asm-values   := asm-values.s
-+    endif
-+endif
-+
-+always		+= $(asm-values_h)
-+targets		+= $(asm-values_h) $(asm-values)
-+mkasm-values	:= $(srctree)/scripts/mkasm-values.sh
-+
-+quiet_cmd_mkasm-values = GEN     $@
-+      cmd_mkasm-values = $(CONFIG_SHELL) $(mkasm-values) $< $@ $(2)
-+
-+quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
-+      cmd_cc_s_c = $(CC) $(c_flags) -fverbose-asm -S -o $@ $<
-+
-+$(obj)/asm-values.h: $(obj)/asm-values.s
-+	$(call cmd,mkasm-values,$(ASM_NS))
-+
-+$(obj)/%.s: $(src)/%.c FORCE
-+	$(call if_changed_dep,cc_s_c)
-Index: linux-2.6.22-rc4-mm2/scripts/Makefile.build
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/scripts/Makefile.build	2007-06-13 00:45:54.195930250 +0200
-+++ linux-2.6.22-rc4-mm2/scripts/Makefile.build	2007-06-12 22:10:31.481297000 +0200
-@@ -145,10 +145,4 @@ $(multi-objs-y:.o=.s)   : modname = $(mo
- $(multi-objs-y:.o=.lst) : modname = $(modname-multi)
+--- linux-2.6.22-rc4-mm2.orig/Kbuild	2007-06-13 01:25:27.696264750 +0200
++++ linux-2.6.22-rc4-mm2/Kbuild	2007-06-13 01:28:10.306427250 +0200
+@@ -1,60 +1,40 @@
+ #
+-# Kbuild for top-level directory of the kernel
+-# This file takes care of the following:
+-# 1) Generate asm-offsets.h
+-# 2) Check for missing system calls
+-
+-#####
+-# 1) Generate asm-offsets.h
++# Kbuild for top-level directory of the Linux
+ #
++# 1) Generate (if needed) asm-values.h (former asm-offsets) for ARCH
++# 2) Check for missing system calls
  
--quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
--cmd_cc_s_c       = $(CC) $(c_flags) -fverbose-asm -S -o $@ $<
+-offsets-file := include/asm-$(ARCH)/asm-offsets.h
++####
++# 1)
+ 
+-always  := $(offsets-file)
+-targets := $(offsets-file)
+-targets += arch/$(ARCH)/kernel/asm-offsets.s
+-clean-files := $(addprefix $(objtree)/,$(targets))
 -
--$(obj)/%.s: $(src)/%.c FORCE
--	$(call if_changed_dep,cc_s_c)
+-# Default sed regexp - multiline due to syntax constraints
+-define sed-y
+-	"/^->/{s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}"
+-endef
+-# Override default regexp for specific architectures
+-sed-$(CONFIG_MIPS) := "/^@@@/{s/^@@@//; s/ \#.*\$$//; p;}"
 -
- quiet_cmd_cc_i_c = CPP $(quiet_modtag) $@
- cmd_cc_i_c       = $(CPP) $(c_flags)   -o $@ $<
-Index: linux-2.6.22-rc4-mm2/scripts/mkasm-values.sh
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22-rc4-mm2/scripts/mkasm-values.sh	2007-06-12 21:49:05.096903000 +0200
-@@ -0,0 +1,55 @@
-+#!/bin/sh
+-quiet_cmd_offsets = GEN     $@
+-define cmd_offsets
+-	(set -e; \
+-	 echo "#ifndef __ASM_OFFSETS_H__"; \
+-	 echo "#define __ASM_OFFSETS_H__"; \
+-	 echo "/*"; \
+-	 echo " * DO NOT MODIFY."; \
+-	 echo " *"; \
+-	 echo " * This file was generated by Kbuild"; \
+-	 echo " *"; \
+-	 echo " */"; \
+-	 echo ""; \
+-	 sed -ne $(sed-y) $<; \
+-	 echo ""; \
+-	 echo "#endif" ) > $@
+-endef
++# legacy asm-offsets support (FIXME: convert all archs and remove this)
++old = $(shell test -e $(srctree)/arch/$(ARCH)/kernel/asm-offsets.c && echo yes)
++ifeq ($(old),yes)
++    asm-values	=asm-offsets
++else
++    asm-values	=asm-values
++endif
++asm-values_c	:= $(src)/arch/$(ARCH)/kernel/$(asm-values).c
++asm-values_h	:= $(obj)/include/asm-$(ARCH)/$(asm-values).h
++asm-values	:= $(obj)/arch/$(ARCH)/kernel/$(asm-values).s
++include $(srctree)/scripts/Makefile.asm
+ 
+-# We use internal kbuild rules to avoid the "is up to date" message from make
+-arch/$(ARCH)/kernel/asm-offsets.s: arch/$(ARCH)/kernel/asm-offsets.c FORCE
++$(asm-values): $(asm-values_c) FORCE
+ 	$(Q)mkdir -p $(dir $@)
+ 	$(call if_changed_dep,cc_s_c)
+ 
+-$(obj)/$(offsets-file): arch/$(ARCH)/kernel/asm-offsets.s Kbuild
++$(asm-values_h): $(asm-values) Kbuild
+ 	$(Q)mkdir -p $(dir $@)
+-	$(call cmd,offsets)
++	$(call cmd,mkasm-values,$(ARCH))
+ 
+-#####
+-# 2) Check for missing system calls
+-#
++####
++# 2)
+ 
+ quiet_cmd_syscalls = CALL    $<
+       cmd_syscalls = $(CONFIG_SHELL) $< $(CC) $(c_flags)
+ 
+-PHONY += missing-syscalls
+ missing-syscalls: scripts/checksyscalls.sh FORCE
+ 	$(call cmd,syscalls)
 +
-+# Input file "*.s", made by Kbuild from a "*.c" source, where values of
-+# interest are calculated, is processed in a suitable output header file.
-+#
-+# $1 - input filename;
-+# $2 - output filename;
-+# $3 - generate (private) file with given namespace (optional)
-+
-+set -e
-+
-+[ -z "$1" ] || [ -z "$2" ] && {
-+	echo "$0:
-+
-+Two parameters needed. Exiting.
-+"
-+	exit 1
-+}
-+
-+NS=`echo $3 | tr a-z A-Z`
-+case $NS in
-+	MIPS)
-+SED_SCRIPT='
-+/^@@@/{
-+s|^@@@||;
-+s| #.*$||;
-+p;
-+}'	;;
-+	*)
-+TAB="`printf '\t'`"
-+SED_SCRIPT="
-+/^->/{
-+s|^->||;
-+s|^\([^ ]*\) [\$#]*\([^ ]*\) \([^$TAB]*\).*|#define \1 \2$TAB/* \3 */|;
-+p;
-+}"	;;
-+esac
-+
-+NS=__ASM_VALUES_${NS:=H}__
-+
-+exec 1>$2
-+echo "\
-+#if !defined($NS)
-+#define $NS
-+
-+/*
-+ * $2
-+ * was generated from
-+ * $1
-+ */
-+"
-+sed -ne "$SED_SCRIPT" $1
-+
-+echo "
-+#endif"
-Index: linux-2.6.22-rc4-mm2/include/asm-generic/asm-values.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22-rc4-mm2/include/asm-generic/asm-values.h	2007-06-12 23:33:34.176696000 +0200
-@@ -0,0 +1,7 @@
-+#define DEFINE(sym, val) \
-+	asm volatile("\n->" #sym " %0 " #val : : "i" (val))
-+
-+#define BLANK() asm volatile("\n->" : : )
-+
-+#define OFFSET(sym, str, mem) \
-+	DEFINE(sym, offsetof(struct str, mem));
++PHONY += missing-syscalls
++.PHONY: $(PHONY)
 
 --
 
