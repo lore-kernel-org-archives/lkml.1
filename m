@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbXFLCdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbXFLCg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753397AbXFLCdk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 22:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXFLCda
+	id S1754200AbXFLCg1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 22:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbXFLCgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 22:33:30 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50846 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775AbXFLCd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 22:33:29 -0400
-Message-ID: <466E05F5.3090501@garzik.org>
-Date: Mon, 11 Jun 2007 22:33:25 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Mon, 11 Jun 2007 22:36:18 -0400
+Received: from mga05.intel.com ([192.55.52.89]:49003 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751196AbXFLCgQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 22:36:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
+   d="scan'208";a="255776806"
+Message-ID: <466E0642.5020506@linux.intel.com>
+Date: Mon, 11 Jun 2007 19:34:42 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
 To: Tejun Heo <htejun@gmail.com>
-CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
        james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [patch 0/3] AHCI Link Power Management
 References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com>
 In-Reply-To: <466DFDB5.9030901@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -41,17 +41,11 @@ Tejun Heo wrote:
 > 
 > I'm not sure about this.  We need better PM framework to support
 > powersaving in other controllers and some ahcis don't save much when
-> only link power management is used, they need to be turned off
+> only link power management is used, 
 
-A better PM framework would definitely be nice :)
-
-
-> completely && I don't think scsi sysfs is the right place to export this
-> interface.
-
-That's about the only place we have right now.
-
-	Jeff
-
-
-
+do you have data to support this? The data we have from this patch is 
+that it saves typically a Watt of power (depends on the machine of 
+course, but the range is 0.5W to 1.5W). If you want to also have an 
+even more agressive thing where you want to start disabling the entire 
+controller... I don't see how this is in conflict with saving power on 
+the link level by "just" enabling a hardware feature ....
