@@ -1,272 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbXFLUNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbXFLUPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756991AbXFLUNi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 16:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbXFLUNb
+	id S1757504AbXFLUPq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 16:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbXFLUPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 16:13:31 -0400
-Received: from web63511.mail.re1.yahoo.com ([69.147.97.66]:31311 "HELO
-	web63511.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753211AbXFLUNa (ORCPT
+	Tue, 12 Jun 2007 16:15:39 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:58877 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754066AbXFLUPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 16:13:30 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jun 2007 16:13:30 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=AGG5zHyCOQ1fpcm9W3oJHlvZyFcMkedeAoFlForPeLniTvYOR5jk2MUtfArZG9NxAZPEFSsf6lHo9bdrPjLZnadaqsxw4jJHesR9aXCO2/3gaWx0A8cH1zaCwTvIlrec5cHWQ9d3JzOYzQgI7MA31I1LYQz2JMWIVCmSgUK4Ix8=;
-X-YMail-OSG: N9ml7j8VM1lKNcXnu2FxrZmZAjckTXGE6rSc2dz1tcYbn2Nq9fJanKN_MZK_XA5UOhiPN1rqmuEjbycHlaWUuY08.5t_tWW.hNJ31T8F6oSDc0CHiQ3n1FM4rQGUCDnJvC5QEkgvs3xfxDM-
-Date: Tue, 12 Jun 2007 13:06:48 -0700 (PDT)
-From: Ioannis Barkas <risc4all@yahoo.com>
-Subject: [PATCH] gadget_serial.txt: Documentation clarifications and new windows driver!
-To: linux-kernel@vger.kernel.org
+	Tue, 12 Jun 2007 16:15:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=UW2hAuAXFRjMk7dbyD1jR3MeUoFY/NhE93GMWvikCb/ZIiCYuAJ43GWTGF3Ywzwgj50GsdufnshantI7QvWQTsjVE1xFxJqd4LUHIvABmlrCl147JmRZtqXxqQb902WSrd38yHjntOMVbLt4rOSxVApJ9VpL4Zf2M2vRqskq5ic=
+Message-ID: <929318d30706121315n3d2d20efp6fd3ff590cce894c@mail.gmail.com>
+Date: Tue, 12 Jun 2007 22:15:37 +0200
+From: "Giel de Nijs" <giel@caffeinetrip.com>
+Reply-To: giel@caffeinetrip.com
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Subject: Re: [PATCH] input: fix broken behaviour of Dell Latitude special keys
+Cc: linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
+       "Vojtech Pavlik" <vojtech@suse.cz>,
+       "Matthew Garrett" <mjg59@srcf.ucam.org>,
+       "Matt Domsch" <matt_domsch@dell.com>,
+       "Rezwanul Kabir" <rezwanul_kabir@dell.com>
+In-Reply-To: <200706120127.25581.dtor@insightbb.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <153167.52542.qm@web63511.mail.re1.yahoo.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <929318d30706101042q25418f9aif7c1a609fd792830@mail.gmail.com>
+	 <200706120127.25581.dtor@insightbb.com>
+X-Google-Sender-Auth: 835d210c44f432c2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes errors and supports multiple
-architectures.Corrected errors and warnings are:
+Hi Dmitry,
 
-Errors:
-(E22.1.1003) Section [SourceDisksNames] not defined. 
-(E22.1.1017) Primary revision number must be greater
-than 0. 
-(E22.1.1110) File "usbser.sys" is not listed in the
-[SourceDisksFiles]. 
+On 6/12/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
 
-Warnings:
-(W22.1.2111) [SourceDisksFiles] section not defined -
-full CopyFiles checking not done. 
-(W22.1.2034) No destination dir was defined for this
-section. Your driver is being
-copied to the DefaultDestDir location specified
-(10,System32\Drivers). 
+> Thank you for the patch. Is there any way I could see data coming from i8042
+> when you press on these special keys? If you could do:
+>
+> echo 1 > /sys/module/i8042/parameters/debug
+> tehn presses and released all these keys
+> echo 0 > /sys/module/i8042/parameters/debug
+>
+> and send me dmesg I woudl appreciate that.
 
+Here's the data from i8042 of, in order, Fn-F1, Fn-F3, Fn-F7, Fn-F8, Fn-Up,
+Fn-Down, and Fn-Left:
 
+drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2277118]
+drivers/input/serio/i8042.c: 0a <- i8042 (interrupt, 0, 1) [2277118]
+drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2277643]
+drivers/input/serio/i8042.c: 07 <- i8042 (interrupt, 0, 1) [2277643]
+drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2277987]
+drivers/input/serio/i8042.c: 0f <- i8042 (interrupt, 0, 1) [2277988]
+drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2278175]
+drivers/input/serio/i8042.c: 0b <- i8042 (interrupt, 0, 1) [2278175]
+drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2279806]
+drivers/input/serio/i8042.c: 06 <- i8042 (interrupt, 0, 1) [2279806]
+drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2279940]
+drivers/input/serio/i8042.c: 05 <- i8042 (interrupt, 0, 1) [2279940]
+drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2280101]
+drivers/input/serio/i8042.c: 13 <- i8042 (interrupt, 0, 1) [2280102]
 
+As you can see, no release events :).
 
-Hello we are Ioannis Barkas (risc4all@yahoo.com) and
-Nikos Barkas (doubl3nuts@yahoo.com).
+There's also Fn-End, Fn-PgUp, Fn-PgDown (all audio related) and the wireless
+switch at the side, those do generate release events. Also, the Fn
+combinations for num lock, scroll lock, sysrq and pause/break seem to act
+normal. There's also Fn-Esc, but that's an ACPI key.
 
+Hope this helps.
 
-There are some errors in
-linux-2.6.21/Documentation/usb/gadget_serial.txt.
-After fixing the errors, we thought to add support in
-it for newer ms OSes.
-
-We were ...surprised on the first place to see .inf
-files inside the Linux kernel!
-
-The original text file contains a windows information
-file which is not correct. 
-Moreover the .inf file in it has 4 errors and 2
-warnings while ours has one
-error(the .cat which is commented as the driver is not
-digitally signed) and no warning.
-We also modified a documentation section referring to
-windows 98 as the usbser.sys is not
-included in any driver**.cab as the text suggests in
-contrast to win Me where it is
-supplied. Furthermore, the original .inf was outdated
-for AMD64 and IA64 systems as it
-was limited to work on 32 bit architectures while our
-new one works in three architectures
-[supposing that ms supplies usbser.sys in IA64
-media-we do not have such media or system
-for verification].The driver is suitable for Windows
-98,Me,2000,XP,2003,Vista.
-
-    Cc: Al Borchers <alborchers@steinerpoint.com>
-
-There is the patch(we do not attach it as many people
-suggest not to do so) from diff -u:
-
---- /linux-2.6.21/Documentation/usb/gadget_serial.txt
-2007-04-26 04:08:32.000000000 +0300
-+++ /linux/Documentation/usb/gadget_serial.txt
-2007-06-12 13:20:12.000000000 +0300
-@@ -1,6 +1,6 @@
- 
--                 Linux Gadget Serial Driver v2.0
--                           11/20/2004
-+                 Linux Gadget Serial Driver v3.1
-+                           06/11/2007
- 
- 
- License and Disclaimer
-@@ -37,8 +37,8 @@
- This document assumes that you are familiar with
-Linux and
- Windows and know how to configure and build Linux
-kernels, run
- standard utilities, use minicom and HyperTerminal,
-and work with
--USB and serial devices.  It also assumes you
-configure the Linux
--gadget and usb drivers as modules.
-+USB and serial devices.  It also assumes that you can
-configure
-+the Linux gadget and usb drivers as modules.
- 
- 
- Overview
-@@ -100,7 +100,7 @@
- To use the gadget serial driver you must configure
-the Linux gadget
- side kernel for "Support for USB Gadgets", for a "USB
-Peripheral
- Controller" (for example, net2280), and for the
-"Serial Gadget"
--driver.  All this are listed under "USB Gadget
-Support" when
-+driver.  All these are listed under "USB Gadget
-Support" when
- configuring the kernel.  Then rebuild and install the
-kernel or
- modules.
- 
-@@ -137,25 +137,39 @@
- To use the Windows ACM driver you must have the files
-"gserial.inf"
- and "usbser.sys" together in a folder on the Windows
-machine.
- 
--The "gserial.inf" file is given here.
-+The "gserial.inf" file for windows
-98,Me,2000,XP,2003,Vista is given
-+below and has passed chkinf 2.5 tests.  It supports
-x86, AMD64, IA64
-+systems now!  It has 1 non important error about
-missing WHQL digital
-+signature catalog (.cat) file directive.  If anyone
-wants to pay ms
-+for digital signature, remove the ";" in front of the
-CatalogFile.
- 
- -------------------- CUT HERE --------------------
- [Version]
--Signature="$Windows NT$"
--Class=Ports
--ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318}
--Provider=%LINUX%
--DriverVer=08/17/2004,0.0.2.0
-+Signature    = "$Chicago$"
-+Class        = Ports
-+ClassGuid    = {4D36E978-E325-11CE-BFC1-08002BE10318}
-+Provider     = %TUX%
-+DriverVer    = 06/11/2007,3.1.0.0
-+;CatalogFile  = Gserial.cat
-+
- ; Copyright (C) 2004 Al Borchers
-(alborchers@steinerpoint.com)
-+; Copyright (C) 2007 Ioannis Barkas
-(risc4all@yahoo.com)
-+; Copyright (C) 2007 Nikos Barkas
-(doubl3nuts@yahoo.com)
- 
- [Manufacturer]
--%LINUX%=GSerialDeviceList
-+%TUX%=GSerialDeviceList, NTx86, NTamd64, NTia64
- 
- [GSerialDeviceList]
- %GSERIAL%=GSerialInstall, USB\VID_0525&PID_A4A7
- 
--[DestinationDirs]
--DefaultDestDir=10,System32\Drivers
-+[GSerialDeviceList.NTx86]
-+%GSERIAL%=GSerialInstall, USB\VID_0525&PID_A4A7
-+
-+[GSerialDeviceList.NTamd64]
-+%GSERIAL%=GSerialInstall, USB\VID_0525&PID_A4A7
-+
-+[GSerialDeviceList.NTia64]
-+%GSERIAL%=GSerialInstall, USB\VID_0525&PID_A4A7
- 
- [GSerialInstall]
- CopyFiles=GSerialCopyFiles
-@@ -164,6 +178,16 @@
- [GSerialCopyFiles]
- usbser.sys
- 
-+[SourceDisksFiles]
-+usbser.sys=1
-+
-+[SourceDisksNames]
-+1=%Linux_Gadget_Rocks%,,,
-+
-+[DestinationDirs]
-+DefaultDestDir           = 10
-+GSerialCopyFiles         = 12
-+
- [GSerialAddReg]
- HKR,,DevLoader,,*ntkern
- HKR,,NTMPDriver,,usbser.sys
-@@ -181,9 +205,10 @@
- LoadOrderGroup = Base
- 
- [Strings]
--LINUX = "Linux"
--GSERIAL = "Gadget Serial"
-+TUX                  = "Linux"
-+GSERIAL              = "Gadget Serial"
- GSERIAL_DISPLAY_NAME = "USB Gadget Serial Driver"
-+LINUX_GADGET_ROCKS   = "Linux USB Gadget Serial
-Driver"
- -------------------- CUT HERE --------------------
- 
- The "usbser.sys" file comes with various versions of
-Windows.
-@@ -191,8 +216,8 @@
- 
-   C:\WINDOWS\Driver Cache\i386\driver.cab
- 
--Or it can be found on the Windows 98SE CD in the
-"win98" folder
--in the "DRIVER11.CAB" through "DRIVER20.CAB" cab
-files.  You will
-+Or it can be found on the Windows Me CD in the
-"win9x" folder
-+in the "DRIVER5.CAB" through "DRIVER7.CAB" cab files.
- You will
- need the DOS "expand" program, the Cygwin
-"cabextract" program, or
- a similar program to unpack these cab files and
-extract "usbser.sys".
- 
-@@ -203,10 +228,11 @@
- 
- (Thanks to Nishant Kamat for pointing out this DOS
-command.)
- 
--When the gadget serial driver is loaded and the USB
-device connected
--to the Windows host with a USB cable, Windows should
-recognize the
--gadget serial device and ask for a driver.  Tell
-Windows to find the
--driver in the folder that contains "gserial.inf" and
-"usbser.sys".
-+When the gadget serial driver is loaded and the USB
-device is
-+connected to the Windows host with a USB cable,
-Windows should
-+recognize the gadget serial device and ask for a
-driver.  Tell
-+Windows to find the driver in the folder that
-contains "gserial.inf"
-+and "usbser.sys".
- 
- For example, on Windows XP, when the gadget serial
-device is first
- plugged in, the "Found New Hardware Wizard" starts
-up.  Select
-
-
- 
-____________________________________________________________________________________
-No need to miss a message. Get email on-the-go 
-with Yahoo! Mail for Mobile. Get started.
-http://mobile.yahoo.com/mail 
+Greetings,
+Giel
