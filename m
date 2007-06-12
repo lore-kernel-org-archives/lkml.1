@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbXFLGA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757748AbXFLGO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758535AbXFLGA5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 02:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbXFLGAu
+	id S1757748AbXFLGO0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 02:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbXFLGOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 02:00:50 -0400
-Received: from il.qumranet.com ([82.166.9.18]:39065 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752984AbXFLGAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 02:00:50 -0400
-Message-ID: <466E3671.2080103@qumranet.com>
-Date: Tue, 12 Jun 2007 09:00:17 +0300
-From: Avi Kivity <avi@qumranet.com>
+	Tue, 12 Jun 2007 02:14:18 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:52987 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751835AbXFLGOR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 02:14:17 -0400
+Message-ID: <466E39B4.1040400@zytor.com>
+Date: Mon, 11 Jun 2007 23:14:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: 2.6.22-rc4-mm2: kvm compile breakage with X86_CMPXCHG64=n
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <20070612000718.GS3588@stusta.de>
-In-Reply-To: <20070612000718.GS3588@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 12 Jun 2007 09:00:18 +0300 (IDT)
+To: Bruce Ashfield <bruce.ashfield@windriver.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Can we get rid of zImage this time?
+References: <466DE04C.4020303@zytor.com> <3bd6b93c0706111920p36d866a6m18915696fd386473@mail.gmail.com>
+In-Reply-To: <3bd6b93c0706111920p36d866a6m18915696fd386473@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
->   
->> ...
->> Changes since 2.6.22-rc4-mm1:
->> ...
->>  git-kvm.patch
->> ...
->>  git trees
->> ...
->>     
->
-> I'm getting the following compile error with CONFIG_X86_CMPXCHG64=n 
-> (with -Werror-implicit-function-declaration - otherwise it would be a 
-> link error):
->
-> <--  snip  -->
->
-> ...
->   CC [M]  drivers/kvm/mmu.o
-> /home/bunk/linux/kernel-2.6/linux-2.6.22-rc4-mm2/drivers/kvm/mmu.c: In function ‘set_shadow_pte’:
-> /home/bunk/linux/kernel-2.6/linux-2.6.22-rc4-mm2/drivers/kvm/mmu.c:199: error: implicit declaration of function ‘set_64bit’
-> make[3]: *** [drivers/kvm/mmu.o] Error 1
->
-> <--  snip  -->
->   
+Bruce Ashfield wrote:
+> 
+> These beasts are still alive and kicking. I boot a handful of
+> arm and ppc boards on a frequent basis that are zImage
+> only.  The kicker is I don't have the bootloader source for
+> most of them, so changing to a different image format is
+> tough at best.
+> 
 
-I've committed the following, which should disable kvm on i486 and below:
+Sorry, the zImage/bzImage distinction is x86 only.  Some other
+architectures call their output zImage, but it's a different format
+entirely.
 
-diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
-index 2f661e5..33fa28a 100644
---- a/drivers/kvm/Kconfig
-+++ b/drivers/kvm/Kconfig
-@@ -11,6 +11,7 @@ if VIRTUALIZATION
- config KVM
-        tristate "Kernel-based Virtual Machine (KVM) support"
-        depends on X86 && EXPERIMENTAL
-+       depends on X86_CMPXCHG64 || 64BIT
-        ---help---
-          Support hosting fully virtualized guest machines using hardware
-          virtualization extensions.  You will need a fairly recent
+So I was referring specifically to x86.
 
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+	-hpa
