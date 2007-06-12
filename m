@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbXFLNCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbXFLNGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327AbXFLNCA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 09:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbXFLNBw
+	id S1756779AbXFLNGt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 09:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXFLNGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 09:01:52 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:22393 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754839AbXFLNBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 09:01:51 -0400
-Message-ID: <466E993D.5080308@msgid.tls.msk.ru>
-Date: Tue, 12 Jun 2007 17:01:49 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Tue, 12 Jun 2007 09:06:40 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51232 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755528AbXFLNGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 09:06:38 -0400
+Date: Tue, 12 Jun 2007 15:06:30 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
+Message-ID: <20070612130630.GA11880@elf.ucw.cz>
+References: <20070514110607.549397248@suse.de> <200706041630.49316.agruen@suse.de> <20070609125839.GH27793@elf.ucw.cz> <200706091544.31971.agruen@suse.de>
 MIME-Version: 1.0
-To: Claas Langbehn <claas@rootdir.de>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: VIA C7 / VIA PC-1 (PC2500) anyone?
-References: <466E65A7.3000206@msgid.tls.msk.ru> <5699f8f00706120344h40fe6f88vb7601c9326bd589f@mail.gmail.com> <466E8A5B.4080205@msgid.tls.msk.ru> <466E976D.7060103@rootdir.de>
-In-Reply-To: <466E976D.7060103@rootdir.de>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706091544.31971.agruen@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Claas Langbehn wrote:
->> Hmm.  I wonder how to *enable* it in the first place.. ;)
->> e_powersaver.ko and acpi_cpufreq gives "No such device"
->>
-> cat /proc/cpuinfo and have a look at the flags. Does it support "eps"?
+Hi!
 
-I've looked at e_powersaver sources and noticied the second test in
-init function (after checking for CPU model) - it fails on this very
-test:
+> > > > How will kernel work with very long paths? I'd suspect some problems,
+> > > > if path is 1MB long and I attempt to print it in /proc
+> > > > somewhere.
+> > > 
+> > > Pathnames are only used for informational purposes in the kernel, except 
+> > > in AppArmor of course. /proc only uses pathnames in a few places, 
+> > > but /proc/mounts will silently fail and produce garbage entries. That's 
+> > > not ideal of course; we should fix that somehow.
+> > 
+> > > Note that this has nothing to do with the AppArmor discussion ...
+> > 
+> > This has everything to do with AA discussion.
+> 
+> How pathnames are used in /proc has *nothing* to do with AppAmor.
+> 
+> > You took unreliable, for-user-info kernel subsystem, and made security
+> > subsystem depend on it. Oops.
+> 
+> Wrong. I said that the kernel uses pathnames for informational purposes only, 
+> not that they are unreliable. Don't turn words around in my
 
-  if (!cpu_has(c, X86_FEATURE_EST))
-     return -ENODEV;
+Well, we know they are unreliable from other sources.
 
-(this is one of first things I did when turning the mobo on - tried
-various options including CPU frequency scaling, observed it doesn't
-work and tried to understand why, but didn't went much further here
-because of the SIGSEGV problem which is much more serious... ;)
+> The pathnames that d_path computes exactly reflect what the dcache knows. 
+> (This requires the d_path fixes that are included in the AppArmor series and 
+> have also been posted independently, and the reasons why these fixes are 
+> needed are well explained in the mails.) The resulting pathnames are anything 
+> but unreliable.
 
-/proc/cpuinfo does not have "eps" (nor "est") flags:
+Yes?
 
-processor       : 0
-vendor_id       : CentaurHauls
-cpu family      : 6
-model           : 10
-model name      : VIA Esther processor 1500MHz
-stepping        : 9
-cpu MHz         : 1496.321
-cache size      : 128 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge cmov pat clflush acpi mmx fxsr sse sse2 tm nx up pni rng rng_en ace ace_en ace2 ace2_en phe phe_en pmm pmm_en
-bogomips        : 3002.25
-clflush size    : 64
+Like... everything but AA works with very long paths?
 
-(most close is "sep" ;)
+Like... deleted files handling, where AA used to pick random name?
 
-> If not then e_powersaver is not possible. If cpufreq with acpi P-states
-> does not work either then your mainboard/CPU does not support
-> power saving.
-> You might get in contact with Rafal Bilinski who wrote e_powersaver.
-
-Yeah, good idea.. thanks! ;)
-
-/mjt
+Like... races during tree renames, where AA may use name file never
+ever had?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
