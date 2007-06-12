@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbXFLWwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXFLW46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbXFLWwR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 18:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbXFLWwK
+	id S1755407AbXFLW46 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 18:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbXFLW4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 18:52:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44700 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752691AbXFLWwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 18:52:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
-Date: Wed, 13 Jun 2007 00:58:42 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       asit.k.mallick@intel.com
-References: <m1tztt3yqy.fsf@ebiederm.dsl.xmission.com> <200706130016.09490.rjw@sisk.pl> <20070612222432.GC17143@linux-os.sc.intel.com>
-In-Reply-To: <20070612222432.GC17143@linux-os.sc.intel.com>
+	Tue, 12 Jun 2007 18:56:51 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33063 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753509AbXFLW4u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 18:56:50 -0400
+Date: Wed, 13 Jun 2007 00:57:01 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] #if 0
+	mm/backing-dev.c:congestion_wait_interruptible()
+Message-ID: <20070612225701.GY3588@stusta.de>
+References: <20070612110733.GU3588@stusta.de> <9a8748490706120540p29d00d3cg9d8a4def0d57b783@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200706130058.43227.rjw@sisk.pl>
+In-Reply-To: <9a8748490706120540p29d00d3cg9d8a4def0d57b783@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 13 June 2007 00:24, Siddha, Suresh B wrote:
-> On Wed, Jun 13, 2007 at 12:16:08AM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, 12 June 2007 23:56, Siddha, Suresh B wrote:
-> > > On Tue, Jun 12, 2007 at 10:52:09PM +0200, Rafael J. Wysocki wrote:
-> > > > On Tuesday, 12 June 2007 20:19, Eric W. Biederman wrote:
-> > > > > Because you are calling unfixably broken code.  That should be a decent
-> > > > > incentive to do something else won't it?
-> > > > 
-> > > > Can you please tell me _what_ else can be done?
-> > > > 
-> > > > > IOAPICs do not support what the code is doing here.  There is lots of
-> > > > > practical evidence including bad experiences and practical tests that
-> > > > > support this.
-> > > > 
-> > > > Well, AFAICS, Suresh has tried to debug one failing case recently without
-> > > > any consistent conclusions.  I don't know of any other test cases (links,
-> > > > please?).
-> > > 
-> > > Rafael, Darrick Wong's issue looks different and hence I was motivated to
-> > > look and fix if it was a SW issue. For now, I am not able to comprehend
-> > > what is happening on Darrick Wong's system. Need more help from Darrick
-> > > as he has the golden failing system.
-> > > 
-> > > Meanwhile I talked to our hardware folks about the irq migration in general.
-> > > 
-> > > One good news is that future versions of chipsets will have an Interrupt
-> > > Remapping feature(for more details please refer to
-> > > http://download.intel.com/technology/computing/vptech/Intel(r)_VT_for_Direct_IO.pdf)
-> > > where in we can reliably migrate the irq to someother cpu in the process
-> > > context.
-> > > 
-> > > And for the existing platforms, chipset folks don't see a reason why the
-> > > Eric's algorithm(specified below) should fail.
-> > > 
-> > > Eric's algorithm for level triggered(edge triggered should be easier than
-> > > level triggered):
-> > > - Mask the irq in process context.
-> > > - Poll RIRR until an ack of for the irq was not pending.
-> > > - Migrate the irq.
-> > > 
-> > > Eric had a problem of stuck remote IRR on E75xx chipset with this algorithm
-> > > and my next step is to reproduce this issue on this platform and understand
-> > > the behavior.
-> > 
-> > OK
-> > 
-> > In that case, do I understand correctly that we are going to implement the
-> > Eric's algorithm above for the CPU hotunplugging on x86 once you've figured
-> > out what's the E75xx issue?
-> 
-> That is the idea. Thanks.
+On Tue, Jun 12, 2007 at 02:40:06PM +0200, Jesper Juhl wrote:
+> On 12/06/07, Adrian Bunk <bunk@stusta.de> wrote:
+>> congestion_wait_interruptible() is no longer used.
+>>
+> Remind me again why it is that we add all these  #if 0  blocks instead
+> of simply removing the unused code?
+>
+> It's just creating a janitorial task to go and remove all the #if 0
+> bits at a later time, seems like pointless churn to me. If the code
+> needs to go, let's just get rid of it in one go instead of two.
 
-OK, thanks.
+The #if 0 also handles all "I want to use this code in 6 months" 
+comments that might come (and in some rare cases it even gets used 
+later).
 
-Eric, would you agree to follow this plan without making the entire CPU hotplug
-(on x86) depend on BROKEN?
+My primary intention is to remove dead code from bloating the kernel 
+image, and this way the probability of patch acceptance is higher.
 
-Rafael
+> Jesper Juhl
 
+cu
+Adrian
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
