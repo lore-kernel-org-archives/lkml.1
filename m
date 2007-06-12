@@ -1,88 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbXFLRwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbXFLRwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757186AbXFLRwP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 13:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXFLRwA
+	id S1757371AbXFLRwg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 13:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXFLRw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 13:52:00 -0400
-Received: from smtp3.versatel.nl ([62.58.50.90]:35200 "EHLO smtp3.versatel.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755280AbXFLRv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 13:51:59 -0400
-Message-ID: <466EE06B.9030202@hhs.nl>
-Date: Tue, 12 Jun 2007 20:05:31 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070414)
+	Tue, 12 Jun 2007 13:52:28 -0400
+Received: from ik-out-1112.google.com ([66.249.90.182]:49025 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755653AbXFLRw1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 13:52:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
+        b=afqdAIkdRcGMNc0MzfSJB348nIdG9XIv0bfEQZtmtNZpHt5wq66qpLwdHrDFn3UHgacVKlUNjKTDtJ0if1TuCix/RQymaJoJV1oc24GEoYBxQWd0xZ8unNhwCjwRvex87dQOufM9Nvds2kRVy0/3F65o5puXmFm1x5NoGByOpbY=
+Date: Tue, 12 Jun 2007 19:52:46 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [BUG] Oops with KVM-27
+Message-ID: <20070612175246.GA5864@dreamland.darkstar.lan>
+References: <20070603213432.GA3075@dreamland.darkstar.lan> <4663DCE9.3000107@qumranet.com> <20070604202248.GA18668@dreamland.darkstar.lan> <46647B3E.2090205@qumranet.com> <20070604212207.GA22365@dreamland.darkstar.lan> <46651069.5040003@qumranet.com> <68676e00706071216i4bd051c5hb1c114f3c13ab97f@mail.gmail.com> <466BED18.5040708@qumranet.com> <68676e00706101354n5fe7e1a9y12cb690cae2924e3@mail.gmail.com> <466CFD6D.2080201@qumranet.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Vojtech Pavlik <vojtech@suse.cz>, sbrabec@suse.cz
-Subject: PATCH: fix mismatch between usb-hid.c HUT find/search mapping and
- the HUT reference doc
-Content-Type: multipart/mixed;
- boundary="------------010702030509030902060601"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <466CFD6D.2080201@qumranet.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010702030509030902060601
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Il Mon, Jun 11, 2007 at 10:44:45AM +0300, Avi Kivity ha scritto: 
+> Luca wrote:
+> >>
+> >>I've managed to reproduce this on kvm-21 (it takes many boots for this
+> >>to happen, but it does eventually).
+> >
+> >Hum, any clue on the cause? 
+> 
+> From what I've seen, it's the new Linux clocksource code.
+> 
+> >Should I test older versions?
+> 
+> They're unlikely to be better.  Instead, it would be best to see what 
+> the guest is doing.
 
-Hi all,
+RCU is not working. Network initialization hangs because it happens to
+be the first RCU user.
+The guest is stuck waiting for RCU syncronization:
 
-As some of you might know from my earlier post/thread about atkbd and softraw, 
-I'm currently working on getting keyboards with internet/easy access keys to 
-work painlessly / plug and play.
+[    4.992207]  [<c04321c5>] synchronize_rcu+0x4e/0x80
+[    4.994379]  [<c0431db5>] wakeme_after_rcu+0x0/0x8
+[    4.996521]  [<c0599ad1>] synchronize_net+0x64/0x8c
+[    4.998678]  [<c05d70e0>] inet_register_protosw+0xef/0x151
+[    5.000984]  [<c072d79e>] inet_init+0x1cd/0x498
 
-In order to be able to better test / develop this I've bought 2 cheap such 
-keyboards today, one ps2 and one both usb and ps2 capable.
+wait_for_completion() in synchronize_rcu() calls schedule() and the
+completion is never signaled (wakeme_after_rcu is never called).
+The completion AFAICS would be signaled via rcu_process_callbacks(),
+which is called in tasklet context.
+Scheduler and completion are working fine since they're used in other
+part of the kernel without problems.
 
-When comparing usb vs ps2 / testing the keycodes generated for the easy access
-keys on my trust (microsoft compatible) keyboard. I noticed the search key
-generated the linux/input keycode for find when connected through USB. This 
-lead me to check the consumer page mappings in hid-input.c . And it turns out 
-the the mapping for ID 0x221 deviates from the HUT standard document:
-http://www.usb.org/developers/devclass_docs/Hut1_12.pdf
+To recap:
 
-Currently it is incorrectly mapped to find, whereas it should be mapped to
-search. I also added missing bindings for ID 0x21f, the real find and for
-0x222, goto.
+i686 F7 kernel: always works.
 
-Regards,
+i586 F7 kernel: sometime hangs due to RCU problems. When it does work
+it's because the LAPIC is disabled on boot:
 
-Hans
+Using local APIC timer interrupts.
+calibrating APIC timer ...
+... lapic delta = 25745109
+... PM timer delta = 0
+..... delta 25745109
+..... mult: 1105912110
+..... calibration result: 4119217
+..... CPU clock speed is 8794.0417 MHz.
+..... host bus clock speed is 4119.0217 MHz.
+... verify APIC timer
+... jiffies delta = 103
+APIC timer disabled due to verification failure.
 
---------------010702030509030902060601
-Content-Type: text/x-patch;
- name="usb-hid-hut.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="usb-hid-hut.patch"
+When it doesn't work LAPIC passes the test:
 
-When comparing usb vs ps2 / testing the keycodes generated for the easy access
-keys on my trust (microsoft compatible) keyboard. I noticed the search key
-generated the keycode for find when connected through USB. This lead me to
-check the consumer page mappings in hid-input.c . And it turns out the the
-mapping for ID 0x221 deviates from the HUT standard document:
-http://www.usb.org/developers/devclass_docs/Hut1_12.pdf
+[    1.304717] Using local APIC timer interrupts.
+[    1.304719] calibrating APIC timer ...
+[    1.718823] ... lapic delta = 25251444
+[    1.720582] ... PM timer delta = 0
+[    1.722219] ..... delta 25251444
+[    1.723827] ..... mult: 1084706136
+[    1.725470] ..... calibration result: 4040231
+[    1.727374] ..... CPU clock speed is 8625.0780 MHz.
+[    1.729396] ..... host bus clock speed is 4040.0231 MHz.
+[    1.731540] ... verify APIC timer
+[    2.158342] ... jiffies delta = 102
+[    2.160035] ... jiffies result ok
 
-Currently it is incorrectly mapped to find, whereas it should be mapped to
-search. I also added missing bindings for ID 0x21f, the real find and for
-0x222, goto.
+i586 F7 kernel, with 'nolapic': always works.
 
-Signed-off-by: Hans de Goede <j.w.r.degoede@hhs.nl>
---- linux-2.6.21.x86_64/drivers/hid/hid-input.c.hut	2007-06-12 19:26:58.000000000 +0200
-+++ linux-2.6.21.x86_64/drivers/hid/hid-input.c	2007-06-12 19:33:32.000000000 +0200
-@@ -598,7 +598,9 @@
- 				case 0x21b: map_key_clear(KEY_COPY);		break;
- 				case 0x21c: map_key_clear(KEY_CUT);		break;
- 				case 0x21d: map_key_clear(KEY_PASTE);		break;
--				case 0x221: map_key_clear(KEY_FIND);		break;
-+				case 0x21f: map_key_clear(KEY_FIND);		break;
-+				case 0x221: map_key_clear(KEY_SEARCH);		break;
-+				case 0x222: map_key_clear(KEY_GOTO);		break;
- 				case 0x223: map_key_clear(KEY_HOMEPAGE);	break;
- 				case 0x224: map_key_clear(KEY_BACK);		break;
- 				case 0x225: map_key_clear(KEY_FORWARD);		break;
-
---------------010702030509030902060601--
+Luca
+-- 
+Sbagliare è umano, ma per incasinare davvero le cose serve un computer.
