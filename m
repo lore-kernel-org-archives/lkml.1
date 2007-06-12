@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbXFLBgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbXFLBu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbXFLBgW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 21:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbXFLBgO
+	id S1757476AbXFLBu6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 21:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbXFLBuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 21:36:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40825 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754425AbXFLBgO (ORCPT
+	Mon, 11 Jun 2007 21:50:52 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47293 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755582AbXFLBuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 21:36:14 -0400
-Date: Mon, 11 Jun 2007 18:35:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool
- handling
-Message-Id: <20070611183555.fe763fe4.akpm@linux-foundation.org>
-In-Reply-To: <466DF290.2040503@linux.intel.com>
-References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
-	<200706090056.49279.ak@suse.de>
-	<Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
-	<200706091147.24705.ak@suse.de>
-	<20070611204442.GA4074@linux-os.sc.intel.com>
-	<20070611141449.bfbc4769.akpm@linux-foundation.org>
-	<20070611235208.GC25022@linux-os.sc.intel.com>
-	<20070611173001.e0355af3.akpm@linux-foundation.org>
-	<466DF290.2040503@linux.intel.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 Jun 2007 21:50:51 -0400
+Date: Tue, 12 Jun 2007 10:50:33 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: mm: memory/cpu hotplug section mismatch.
+Cc: Paul Mundt <lethal@linux-sh.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070611184046.GA6458@uranus.ravnborg.org>
+References: <20070611154428.GA27644@linux-sh.org> <20070611184046.GA6458@uranus.ravnborg.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070612102236.E8BA.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jun 2007 18:10:40 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
-
-> Andrew Morton wrote:
-> >> Where as resource pool is exactly opposite of mempool, where each 
-> >> time it looks for an object in the pool and if it exist then we 
-> >> return that object else we try to get the memory for OS while 
-> >> scheduling the work to grow the pool objects. In fact, the  work
-> >> is schedule to grow the pool when the low threshold point is hit.
 > > 
-> > I realise all that.  But I'd have thought that the mempool approach is
-> > actually better: use the page allocator and only deplete your reserve pool
-> > when the page allocator fails.
+> > If CONFIG_MEMORY_HOTPLUG=n __meminit == __init, and if
+> > CONFIG_HOTPLUG_CPU=n __cpuinit == __init. However, with one set and the
+> > other disabled, you end up with a reference between __init and a regular
+> > non-init function.
 > 
-> the problem with that is that if anything downstream from the iommu 
-> layer ALSO needs memory, we've now eaten up the last free page and 
-> things go splat.
+> My plan is to define dedicated sections for both __devinit and __meminit.
+> Then we can apply the checks no matter the definition of CONFIG_HOTPLUG*
 
-If that happens, we still have the mempool reserve to fall back to.
+I prefer defining "__nodeinit" for __cpuinit and __meminit case to
+__devinit.   __devinit is used many devices like I/O, and it is
+useful for many desktop users. But, cpu/memory hotpluggable box
+is very rare. And it should be in init section for many people.
 
-I don't see why it is better to consume the reserves before going to the
-page allocator instead of holding them, err, in reserve.
+This kind of issue is caused by initialization of pgdat/zone.
+I think __nodeinit is enough and desirable.
+
+Bye.
+
+-- 
+Yasunori Goto 
+
 
