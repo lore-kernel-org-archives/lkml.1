@@ -1,50 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757721AbXFLUhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbXFLUpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757721AbXFLUhG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 16:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbXFLUg4
+	id S1757685AbXFLUpw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 16:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbXFLUpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 16:36:56 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:2980 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753859AbXFLUg4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 16:36:56 -0400
-Date: Tue, 12 Jun 2007 22:36:55 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "R.F. Burns" <burnsrf@gmail.com>
-cc: Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
-Subject: Re: PC speaker
-In-Reply-To: <a800cda90706121325p18c85b00r7bc4b15b95517371@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706122235210.19578@fbirervta.pbzchgretzou.qr>
-References: <a800cda90706120545w2c6d0bb0vb77bd4d961415c5c@mail.gmail.com> 
- <75b66ecd0706120744g7cdb3392l6537b5c68c2d6b21@mail.gmail.com>
- <a800cda90706121325p18c85b00r7bc4b15b95517371@mail.gmail.com>
+	Tue, 12 Jun 2007 16:45:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44327 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756914AbXFLUpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 16:45:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+Date: Tue, 12 Jun 2007 22:52:09 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+References: <m1tztt3yqy.fsf@ebiederm.dsl.xmission.com> <20070607140102.GA9094@ucw.cz> <m1bqflox17.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1bqflox17.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706122252.10886.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday, 12 June 2007 20:19, Eric W. Biederman wrote:
+> Pavel Machek <pavel@ucw.cz> writes:
+> 
+> > Hi!
+> >
+> >> I just realized that except for doing the code review and noticing
+> >> that the current cpu hotplug code is fundamentally incompatible
+> >> with x86 I haven't done anything about it.  So here is my patch
+> >> to document what is wrong.
+> >> 
+> >> The current cpu hotplug code requires irqs to be migrated from a cpu
+> >> outside of irq context.  On x86 ioapics simply do not support this,
+> >> making the code unfixable without major redesign of the generic cpu
+> >> hotplug code.
+> >> 
+> >> So this patch makes CPU_HOTPLUG on x86 depend on CONFIG_BROKEN
+> >> and adds a WARN_ON so people that do enable it are not in doubt about
+> >> which part of the code is broken, even if it does work for them.
+> >
+> >
+> >> --- a/arch/i386/kernel/irq.c
+> >> +++ b/arch/i386/kernel/irq.c
+> >> @@ -312,6 +312,19 @@ void fixup_irqs(cpumask_t map)
+> >>  	unsigned int irq;
+> >>  	static int warned;
+> >>  
+> >> +	/* 
+> >> +	 * Function is so wrong at so many levels.
+> >> +	 * - We migrate irqs that are directed at the cpu we are
+> >> +	 *   removing.
+> >
+> > Is this about irq pinning?
+> 
+> Sorry. That should have been: We migrate irqs that are not directed at the
+> cpu we are removing.  (We are migrating irqs when it is unnecessary).
+> 
+> >> +	 * - We cannot safely migrate ioapic irqs on x86 except in
+> >> +	 *   side of irq context.
+> >
+> > 'inside'?
+> >
+> > Can you be more specific for this one?
+> 
+> Yes inside. 
+> 
+> An irq migration currently requires two instances of the irq firing to
+> complete.  Once on the source cpu once on the target cpu.
+> 
+> Migrating irqs while the irq is alive is a royal pain.
+> 
+> >> +	 * Since someone probably finds this useful just warn very
+> >> +	 * loudly until cpu hotplug is redesigned.
+> >> +	 */
+> >> +	WARN_ON(1);
+> >
+> > Ugh, no, this does not warn anyone. This will just make people ask me
+> > why they see stack trace while suspending... and we are not interested
+> > in the stack trace, anyway.
+> >
+> > printk(KERN_WARNING)?
+> 
+> 
+> Because you are calling unfixably broken code.  That should be a decent
+> incentive to do something else won't it?
 
-On Jun 12 2007 16:25, R.F. Burns wrote:
->
-> However, over the past several weeks, the students have found more
-> creative ways to abuse the PC speaker (outside of the OS.)  The Powers
-> that Be are asking that the PC speakers be disabled completely.  With
-> the small number of techs we have, it would be very impractical to go
-> around to all systems and remove the PC speaker from each and every
-> computer case.
+Can you please tell me _what_ else can be done?
 
-But you only have to do it once anyway.
+> IOAPICs do not support what the code is doing here.  There is lots of
+> practical evidence including bad experiences and practical tests that
+> support this.
 
-> So, the idea was raised about seeing if there was a way to blow the PC
-> speaker by loading a kernel module.  If so, a mass-deployment of a
-> kernel module overnight would take care of the PC speaker problem once
-> and for all.
+Well, AFAICS, Suresh has tried to debug one failing case recently without
+any consistent conclusions.  I don't know of any other test cases (links,
+please?).
+ 
+> I suspect the only reason you don't have problems is that the irqs are
+> already shut down at the source before we get to this code path.
 
-And once you need a speaker (BIOS beep codes come to mind), you don't have any.
+You are probably right, but OTOH I've tried the CPU hotplug via the sysfs
+interface for _many_ times and it has _never_ failed for me.
+
+> >> index 5ce9443..a61c4f2 100644
+> >> --- a/arch/x86_64/Kconfig
+> >> +++ b/arch/x86_64/Kconfig
+> >> @@ -429,7 +429,7 @@ config NR_CPUS
+> >>  
+> >>  config HOTPLUG_CPU
+> >>  	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
+> >> -	depends on SMP && HOTPLUG && EXPERIMENTAL
+> >> +	depends on SMP && HOTPLUG && EXPERIMENTAL && BROKEN
+> >>  	help
+> >
+> > Great, this will force everyone and their dog to enable broken, making
+> > broken useless. Please don't.
+> 
+> CONFIG_BROKEN is quite likely excessive but the code is totally and
+> unfixably broken.  So it still doesn't feel wrong to me.
+> 
+> Perhaps we should just disable swap suspend on SMP until we get a
+> design that can be implemented correctly on existing hardware.
+
+All kinds of suspend, not only hibernation.
+
+> I am not happy with people telling me that we must keep broken code because
+> people with brand new SMP laptops will scream otherwise.
+
+Sorry, but that's how it goes.
+
+We've been using that code for more then a year now and I'd expect someone
+to tell us that it's wrong a bit earlier.
+
+If you are telling us to drop it now, then _please_ advise what we can use
+instead, because we obviously need the functionality.
+
+> Since the fundamental problems in this code path don't appear to bite people
+> very frequently I don't mind waiting while an alternative solution is
+> debugged and tested, but there is no way it makes sense to keep this
+> code in service more for more than a kernel release or two.
+
+Greetings,
+Rafael
 
 
-
-	Jan
 -- 
+"Premature optimization is the root of all evil." - Donald Knuth
