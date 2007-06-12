@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXFLJzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbXFLKLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbXFLJzt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 05:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbXFLJzl
+	id S1753704AbXFLKLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 06:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXFLKLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 05:55:41 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:49366 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751751AbXFLJzl convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jun 2007 06:11:08 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47641 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751572AbXFLKLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 05:55:41 -0400
-Message-Id: <466E89EB.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Tue, 12 Jun 2007 11:56:27 +0200
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix improper .init-type section references
-References: <466E66AE.76E4.0078.0@novell.com>
- <a781481a0706120242o5bcabee1ke67c96d5a7dd6cb0@mail.gmail.com>
-In-Reply-To: <a781481a0706120242o5bcabee1ke67c96d5a7dd6cb0@mail.gmail.com>
+	Tue, 12 Jun 2007 06:11:07 -0400
+Date: Tue, 12 Jun 2007 11:16:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: libata passthru: support PIO multi commands
+Message-ID: <20070612111621.10074408@the-village.bc.nu>
+In-Reply-To: <466DE438.70108@garzik.org>
+References: <200706112200.l5BM0qFn005767@hera.kernel.org>
+	<20070611233917.4bd8c6d7@the-village.bc.nu>
+	<466DE438.70108@garzik.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> -static __init void kthreadd_setup(void)
->> +static noinline __init_refok void kthreadd_setup(void)
->>  {
->>         struct task_struct *tsk = current;
->
->This isn't ok. There isn't any __init function that is (safely) referenced
->by kthreadd_setup(), so we shouldn't really be marking it as such.
->Also, kthreadd_setup() is really only ever called at init time, so we'd
->want it to remain __init.
+> >> +		if (multi_count != dev->multi_count)
+> >> +			ata_dev_printk(dev, KERN_WARNING,
+> >> +				       "invalid multi_count %u ignored\n",
+> >> +				       multi_count);
+> >> +	}
+> > 
+> > What limits log spamming here ?
+> 
+> Intelligence of the user with privs?
 
-Oh, I see, I misunderstood the purpose of the tag - I assumed it would
-mark an __init function that is known to only be referenced from init-only
-code paths inside non-init functions (i.e. I didn't pay attention that the
-resulting section's name is .text.init.refok, not .init.text.refok).
+Not ever SG_IO call requires priviledges. Not all priviledged users are
+so perfect they never make a mistake.
 
-I have to admit I have some difficulty understanding when the tags
-are going to be useful the way they are implemented right now.
+> > Also shouldn't we error this
+> > situation not proceed and hope that enough data was supplied not
+> > to leave us stuck half way through a command having made a nasty
+> > mess on disk ?
+> 
+> Is that English?  Can you be more specific and more clear?
 
->I believe the correct fix to silence modpost here would be to mark its
->caller kthreadd() also as __init, because it too is used only at init time?
+Issue a multi count sized write. Acidentally collide with another program
+which mucks up the multiwrite count (for once it probably won't be HAL
+making a mess ;)) and send data. The state of the disk at the point a
+short multiwrite terminates is undefined, it may have written some of the
+sectors, it may have blanked them all (Optical media) etc. Far better
+just to error the invalid command - especially as in some cases without
+Mark's fixes for DRQ cleanup on error it may even hang in one direction.
 
-I don't think so - it is my understanding that this is the body of a thread
-that never dies.
-
-Jan
-
+Alan
