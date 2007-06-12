@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbXFLDSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbXFLDUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757759AbXFLDSi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 23:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXFLDS2
+	id S1757686AbXFLDUm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 23:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXFLDUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 23:18:28 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51143 "EHLO mail.dvmed.net"
+	Mon, 11 Jun 2007 23:20:36 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:36888 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752581AbXFLDS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 23:18:27 -0400
-Message-ID: <466E1080.4070504@garzik.org>
-Date: Mon, 11 Jun 2007 23:18:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1754891AbXFLDUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 23:20:35 -0400
+Date: Tue, 12 Jun 2007 12:19:12 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: mm: memory/cpu hotplug section mismatch.
+Message-ID: <20070612031912.GA1377@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Yasunori Goto <y-goto@jp.fujitsu.com>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org
+References: <20070611154428.GA27644@linux-sh.org> <20070611184046.GA6458@uranus.ravnborg.org> <20070612102236.E8BA.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Tejun Heo <htejun@gmail.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/3] AHCI Link Power Management
-References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E0F30.3000700@garzik.org> <466E0F28.3040701@linux.intel.com>
-In-Reply-To: <466E0F28.3040701@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070612102236.E8BA.Y-GOTO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Jeff Garzik wrote:
->> SATA standard defines lower power phy states.  So the same argument 
->> you're using for AHCI applies there too -- "just" enabling an existing 
->> hardware feature.
-
-> yes I'm not arguing against that. I was trying to find out (and 
-> suggest-unless-proven-otherwise) that the 2 are not exclusive or 
-> conflicting... in fact I assume both are wanted concurrently.
-
-Yes and no.  As I understand it, AHCI's capability is an automatic 
-version of what standard SATA phys provide manually.  In AHCI's case, 
-the hardware automatically manages the link power, possibly cycling it 
-hundreds of times per second.  In the standard case, software must 
-determine when a different power state is appropriate based on current 
-conditions, and update the phy appropriately.
-
-	Jeff
-
-
-
+On Tue, Jun 12, 2007 at 10:50:33AM +0900, Yasunori Goto wrote:
+> > > 
+> > > If CONFIG_MEMORY_HOTPLUG=n __meminit == __init, and if
+> > > CONFIG_HOTPLUG_CPU=n __cpuinit == __init. However, with one set and the
+> > > other disabled, you end up with a reference between __init and a regular
+> > > non-init function.
+> > 
+> > My plan is to define dedicated sections for both __devinit and __meminit.
+> > Then we can apply the checks no matter the definition of CONFIG_HOTPLUG*
+> 
+> I prefer defining "__nodeinit" for __cpuinit and __meminit case to
+> __devinit.   __devinit is used many devices like I/O, and it is
+> useful for many desktop users. But, cpu/memory hotpluggable box
+> is very rare. And it should be in init section for many people.
+> 
+> This kind of issue is caused by initialization of pgdat/zone.
+> I think __nodeinit is enough and desirable.
+> 
+A #define __nodeinit __devinit is probably reasonable for clarity
+purposes. But whatever we want to call it, the current __cpuinit for
+zone_batchsize() has to be changed, as it will be freed with the rest of
+the init code if CPU hotplug is disabled. If we want to do something
+cleaner in the long run, that's fine, but changing to __devinit now at
+least gets the semantics right for both the memory and cpu hotplug cases.
