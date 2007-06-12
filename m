@@ -1,104 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbXFLJjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbXFLJmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868AbXFLJjZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 05:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbXFLJjR
+	id S1753362AbXFLJmb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 05:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbXFLJmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 05:39:17 -0400
-Received: from gw-e.panasas.com ([65.194.124.178]:36779 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751228AbXFLJjQ (ORCPT
+	Tue, 12 Jun 2007 05:42:24 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:34809 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751200AbXFLJmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 05:39:16 -0400
-Message-ID: <466E69BE.405@vger.kernel.org>
-Date: Tue, 12 Jun 2007 12:39:10 +0300
-From: Linux-kernel <linux-kernel@vger.kernel.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 12 Jun 2007 05:42:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Lg8seuKvjU50kBw1Zn6ebY917b+47br8WWSmXH2h9pUJKNcoQR5SLHGgaJOg5N8dOEBpYxgpXjKWeletT/pEA3VixsmqeDC94ieWKas82ba7iCTW3TWSEL7hGmN0P690A7a1O5ioEDwcn8Gjf559QSzd6jn2eg4+Kg3F6mTWX5U=
+Message-ID: <a781481a0706120242o5bcabee1ke67c96d5a7dd6cb0@mail.gmail.com>
+Date: Tue, 12 Jun 2007 15:12:21 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [PATCH] fix improper .init-type section references
+Cc: linux-kernel@vger.kernel.org, "Sam Ravnborg" <sam@ravnborg.org>
+In-Reply-To: <466E66AE.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: VIA C7 / VIA PC-1 (PC2500) anyone?
-References: <466E65A7.3000206@msgid.tls.msk.ru>
-In-Reply-To: <466E65A7.3000206@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jun 2007 09:39:12.0261 (UTC) FILETIME=[8891B350:01C7ACD5]
+Content-Disposition: inline
+References: <466E66AE.76E4.0078.0@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev wrote:
-> I bought a VIA PC2500 board a few days ago - this
-> new series of their mobos,
-> 
-> This beast looks nice - after replacing their cooling
-> system (that had a small fan on it) with larger but
-> fanless, -- it becomes a almost real PC (1500MHz CPU),
-> equipped with quite nice crypto and multimedia abilities,
-> but with very low power consumption and very quiet.
-> 
-> But the thing is - it doesn't quite work.
-> 
-> It works generally - it boots, I can run my usual apps
-> etc.  But on a random (yet frequent) basis it segfaults
-> here and there.  For example:
-> 
-> $ man man
-> Reformatting man(1), please wait...
-> $ man man
-> Segmentation fault
-> $ man man
-> Segmentation fault
-> $ man man
-> Segmentation fault
-> $ man man
-> Segmentation fault
-> $ man man
-> Reformatting man(1), please wait...
-> $ _
-> 
-> (this is 100% idle machine, just booted).
-> 
-> (There are other - simple and comples - applications which
-> inhibits this problem.  For example, it 99% reliable segfaults
-> on compiling aic79xx_core.c file in kernel, while all the rest
-> (in my configuration anyway) compiles, at least after second
-> attempt).
-> 
-> It's definitely NOT memory issue - I tried several different
-> memory modules (and different combinations) - the same results;
-> I ran memtest86 for several days - no single error.
-> 
-> I've seen a thread here on LKML about C7 and C3 CPUs back in
-> March this year - tried with patch from Andi titled
-> "i386: Enable CX8/PGE CPUID bits early on VIA C3" - it didn't
-> change anything (this board does not lock up - not when booting
-> nor when doing something, -- just random applications are
-> crashing randomly, and the crash is always SIGSEGV; there's
-> _nothing_ in dmesg about that, too).
-> 
-> From all the above it seems like something's broke on the
-> motherboard (I've no idea what it can be however - because
-> memory testing - which also tests for CPU cache for exampe -
-> shows no errors; testing disk controller/disk using md5 does
-> not show errors either, except of occasional SIGSEGVs)..
-> 
-> However, being very curious about this, I tried installing
-> 'doze on this machine - winXP.  And that one went just fine
-> without any error so far -- i tried stress-testing it as far
-> as I can imagine, running various applications and workloads, --
-> no errors.
-> 
-> So I'm kinda.. stuck about what to do next.
-> 
-> Any.. idea, anyone? :)
-> 
-> Thanks!
-> 
-> /mjt
+Hi Jan,
 
-To me it looks like a wrong choice of gcc switches to user-mode programs. What
-distribution are you using? try compiling failing programs from source with
-conservative command line switches to gcc. See if things change.
+On 6/12/07, Jan Beulich <jbeulich@novell.com> wrote:
+> .. which modpost started warning about.
+>
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>
+>  kernel/kthread.c |    2 +-
+>  mm/page_alloc.c  |   18 +++++++++---------
+>  2 files changed, 10 insertions(+), 10 deletions(-)
+>
+> --- linux-2.6.22-rc4/kernel/kthread.c   2007-06-11 18:09:47.000000000 +0200
+> +++ 2.6.22-rc4-init-attribs/kernel/kthread.c    2007-06-11 09:10:42.000000000 +0200
+> @@ -215,7 +215,7 @@ int kthread_stop(struct task_struct *k)
+>  EXPORT_SYMBOL(kthread_stop);
+>
+>
+> -static __init void kthreadd_setup(void)
+> +static noinline __init_refok void kthreadd_setup(void)
+>  {
+>         struct task_struct *tsk = current;
 
-Boaz
+This isn't ok. There isn't any __init function that is (safely) referenced
+by kthreadd_setup(), so we shouldn't really be marking it as such.
+Also, kthreadd_setup() is really only ever called at init time, so we'd
+want it to remain __init.
 
+I believe the correct fix to silence modpost here would be to mark its
+caller kthreadd() also as __init, because it too is used only at init time?
+
+[ Cc:'ing Sam. ]
+
+> --- linux-2.6.22-rc4/mm/page_alloc.c    2007-06-11 18:09:49.000000000 +0200
+> +++ 2.6.22-rc4-init-attribs/mm/page_alloc.c     2007-06-11 09:10:42.000000000 +0200
+> @@ -126,13 +126,13 @@ static unsigned long __meminitdata dma_r
+>      #endif
+>    #endif
+>
+> -  struct node_active_region __meminitdata early_node_map[MAX_ACTIVE_REGIONS];
+> -  int __meminitdata nr_nodemap_entries;
+> -  unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
+> -  unsigned long __meminitdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
+> +  static struct node_active_region __meminitdata early_node_map[MAX_ACTIVE_REGIONS];
+> +  static int __meminitdata nr_nodemap_entries;
+> +  static unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
+> +  static unsigned long __meminitdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
+>  #ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
+> -  unsigned long __initdata node_boundary_start_pfn[MAX_NUMNODES];
+> -  unsigned long __initdata node_boundary_end_pfn[MAX_NUMNODES];
+> +  static unsigned long __meminitdata node_boundary_start_pfn[MAX_NUMNODES];
+> +  static unsigned long __meminitdata node_boundary_end_pfn[MAX_NUMNODES];
+
+Umm, can't really comment on mm/ code, but this could've been a
+separate patch ... (the simple non-static to static conversions, at least)
+
+Satyam
