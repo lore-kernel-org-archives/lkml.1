@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbXFLCSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbXFLCU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbXFLCSc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 22:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbXFLCSN
+	id S1758229AbXFLCU3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 22:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757202AbXFLCUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 22:18:13 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:37212 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756687AbXFLCSM (ORCPT
+	Mon, 11 Jun 2007 22:20:22 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:34410 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756687AbXFLCUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 22:18:12 -0400
-Message-ID: <466E0224.2090405@linux.vnet.ibm.com>
-Date: Tue, 12 Jun 2007 07:47:08 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Mon, 11 Jun 2007 22:20:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=BhlzwfNrxpLnifuAdzNBNW74pkrrI9nWJECdhgOZwPk2ffxwEmMk3wUF9huNNGEx1c07Sjwc1JwW+Iyr20oB8lST3+7OtpA/v3PD2ABsJaMdlsVm9JDo2Yk4TJP2LMny0C/bgyX56k9OdWTRaGjtpiKgcz3W8R4IbRCusyig8hY=
+Message-ID: <3bd6b93c0706111920p36d866a6m18915696fd386473@mail.gmail.com>
+Date: Mon, 11 Jun 2007 22:20:19 -0400
+From: "Bruce Ashfield" <bruce.ashfield@windriver.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Can we get rid of zImage this time?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <466DE04C.4020303@zytor.com>
 MIME-Version: 1.0
-To: vatsa@linux.vnet.ibm.com
-CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       wli@holomorphy.com, ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
-       efault@gmx.de, pwil3058@bigpond.net.au, kernel@kolivas.org,
-       linux-kernel@vger.kernel.org, dmitry.adamushko@gmail.com,
-       tingy@cs.umass.edu, tong.n.li@intel.com, containers@lists.osdl.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [ckrm-tech] [RFC][PATCH 2/6] task's cpu information needs to
- be always correct
-References: <20070611154724.GA32435@in.ibm.com> <20070611155212.GB2109@in.ibm.com>
-In-Reply-To: <20070611155212.GB2109@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466DE04C.4020303@zytor.com>
+X-Google-Sender-Auth: 516b177213f05a55
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
-> We rely very much on task_cpu(p) to be correct at all times, so that we
-> can correctly find the runqueue from which the task has to be removed or
-> added to.
-> 
-> There is however one place in the scheduler where this assumption of
-> task_cpu(p) being correct is broken. This patch fixes that piece of
-> code.
-> 
-> (Thanks to Balbir Singh for pointing this out to me)
-> 
-> Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> 
+On 6/11/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> I brought this up a few years ago, and had it shot down, because of a
+> few poorly substantiated claims of zImage-only machines; those claims
+> really need to be debugged since they might indicate A20-related failures.
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+These beasts are still alive and kicking. I boot a handful of
+arm and ppc boards on a frequent basis that are zImage
+only.  The kicker is I don't have the bootloader source for
+most of them, so changing to a different image format is
+tough at best.
 
-> ---
->  kernel/sched.c |    8 +++++---
->  1 files changed, 5 insertions(+), 3 deletions(-)
-> 
-> Index: current/kernel/sched.c
-> ===================================================================
-> --- current.orig/kernel/sched.c	2007-06-09 15:07:17.000000000 +0530
-> +++ current/kernel/sched.c	2007-06-09 15:07:32.000000000 +0530
-> @@ -4624,7 +4624,7 @@
->  static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
->  {
->  	struct rq *rq_dest, *rq_src;
-> -	int ret = 0;
-> +	int ret = 0, on_rq;
-> 
->  	if (unlikely(cpu_is_offline(dest_cpu)))
->  		return ret;
-> @@ -4640,9 +4640,11 @@
->  	if (!cpu_isset(dest_cpu, p->cpus_allowed))
->  		goto out;
-> 
-> -	set_task_cpu(p, dest_cpu);
-> -	if (p->se.on_rq) {
-> +	on_rq = p->se.on_rq;
-> +	if (on_rq)
->  		deactivate_task(rq_src, p, 0);
-> +	set_task_cpu(p, dest_cpu);
-> +	if (on_rq) {
->  		activate_task(rq_dest, p, 0);
->  		check_preempt_curr(rq_dest, p);
->  	}
+Not a vote one way or the other, just some observations
+from my day to day.
+
+Bruce
+
+
+>
+> Anyway...
+>
+> Can we please kill zImage?  In addition to be completely useless for
+> modern kernels, it causes unnecessary complexity in boot loaders.
+>
+>         -hpa
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+"Thou shalt not follow the NULL pointer, for chaos and madness await
+thee at its end"
