@@ -1,94 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbXFLKV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbXFLKd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbXFLKV5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 06:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbXFLKVu
+	id S1754549AbXFLKd4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 06:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbXFLKdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 06:21:50 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55061 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752083AbXFLKVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 06:21:49 -0400
-Date: Tue, 12 Jun 2007 15:56:22 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Cc: vatsa@linux.vnet.ibm.com, "Ingo Molnar" <mingo@elte.hu>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>, efault@gmx.de,
-       kernel@kolivas.org, containers@lists.osdl.org,
-       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
-       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
-       balbir@in.ibm.com
-Subject: Re: [RFC][PATCH 4/6] Fix (bad?) interactions between SCHED_RT and SCHED_NORMAL tasks
-Message-ID: <20070612102622.GA925@in.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070611154724.GA32435@in.ibm.com> <20070611155504.GD2109@in.ibm.com> <b647ffbd0706120203l2de530b9la51853b928d60b92@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 12 Jun 2007 06:33:49 -0400
+Received: from mail36.syd.optusnet.com.au ([211.29.133.76]:48775 "EHLO
+	mail36.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752476AbXFLKds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 06:33:48 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: ck@vds.kolivas.org
+Subject: Re: call for more SD versus CFS comparisons (was: Re: [ck]  Mainline plans)
+Date: Tue, 12 Jun 2007 20:33:32 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Tobias Gerschner <tobias.gerschner@gmail.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+References: <466DE921.9030709@debianpt.org> <20070612083620.GA10557@elte.hu> <20070612085730.GA17964@elte.hu>
+In-Reply-To: <20070612085730.GA17964@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <b647ffbd0706120203l2de530b9la51853b928d60b92@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200706122033.32883.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 11:03:36AM +0200, Dmitry Adamushko wrote:
-> I had an idea of per-sched-class 'load balance' calculator. So that
-> update_load() (as in your patch) would look smth like :
-> 
-> ...
-> struct sched_class *class = sched_class_highest;
-> unsigned long total = 0;
-> 
-> do {
->                total += class->update_load(..., now);
->                class = class->next;
->     } while (class);
-> ...
-> 
-> and e.g. update_load_fair() would become a fair_sched_class :: 
-> update_load().
-> 
-> That said, all the sched_classes would report a load created by their
-> entities (tasks) over the last sampling period. Ideally, the
-> calculation should not be merely based on the 'raw_weighted_load' but
-> rather done in a similar way to update_load_fair() as in v17.
+On Tuesday 12 June 2007 18:57, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> > * Tobias Gerschner <tobias.gerschner@gmail.com> wrote:
+> > > I did run massive_intr.c for 60 secs with increasing nproc (
+> > > 10,20,30,40,50,60) waiting for effects.
+> > >
+> > > Below a small table of the results
 
-I like this idea. It neatly segregates load calculation across classes.
-It effectively replaces what update_load() function I introduced in
-Patch #4.
+Nice results. Thanks for taking the time to post them!
 
-Btw what will update_load_rt() return?
-
-> > static void entity_tick(struct lrq *lrq, struct sched_entity *curr)
-> > {
-> >        struct sched_entity *next;
-> >        struct rq *rq = lrq_rq(lrq);
-> >        u64 now = __rq_clock(rq);
+> > >
+> > > 2.6.21.1-cfs-v16
+> > >
+> > > nproc ,  usability result
+> > >
+> > > 10 , serious frame drops , Firefox  hardly recognizes clicked links,
+> > > but still usable
+> > > 20 - 30, usability loss ( somehow under cfs firefox never finished
+> > > user requests like displaying web pages or opening new pages , no
+> > > feedback anymore, sudden changes on the desktop )
 > >
-> >+       /* replay load smoothening for all ticks we lost */
-> >+       while (time_after_eq64(now, lrq->last_tick)) {
-> >+               update_load_fair(lrq);
-> >+               lrq->last_tick += TICK_NSEC;
-> >+       }
-> 
-> I think, it won't work properly this way. The first call returns a
-> load for last TICK_NSEC and all the consequent ones report zero load
-> ('this_load = 0' internally).. 
+> > ouch! The expected load-testing result under CFS should be something
+> > like this:
+> >
+> >    http://bhhdoa.org.au/pipermail/ck/2007-June/007817.html
+>
+> i have just tried the same workload with cfs and with sd048 from -ck,
+> and cannot reproduce this. To make sure it's not some other change in
+> -ck, could you try the pure SD patches ontop of 2.6.21.1 too:
 
-mm ..
+I'm pleased you think the rest of my patches may help there but only the SD 
+patches affect scheduling unless you set a different scheduling policy or 
+there is a vm issue.
 
-        exec_delta64 = this_lrq->delta_exec_clock + 1;
-        this_lrq->delta_exec_clock = 0;
+List:
+ck2-version.patch
+2.6.21-sd-0.48.patch
+sched-sd-0.48-interactive_tunable.patch
+sched-range.patch
+sched-iso-5.4.patch
+track_mutexes-1.patch
+sched-idleprio-2.3.patch
+sched-limit_policy_changes.patch
+sched-ck-add-above-background-load-function.patch
+cfq-ioprio_inherit_rt_class.patch
+cfq-iso_idleprio_ionice.patch
+mm-swap_prefetch-35.patch 
+mm-convert_swappiness_to_mapped.patch 
+mm-lots_watermark.diff
+mm-kswapd_inherit_prio-1.patch 
+mm-prio_dependant_scan-2.patch
+mm-background_scan-2.patch
+mm-filesize_dependant_lru_cache_add.patch
+mm-idleprio_prio.patch
+kconfig-expose_vmsplit_option.patch
+hz-default_1000.patch 
+hz-no_default_250.patch 
+hz-raise_max-2.patch
+ck-desktop-tune.patch
+mm-swap-prefetch-35-38.patch
 
-So exec_delta64 (and fair_delta64) should be min 1 in successive calls. How can that lead to this_load = 0?
+apart from ck-desktop-tune.patch which is in total this:
+-int rr_interval __read_mostly = 8;
++int rr_interval __read_mostly = 6;
 
-The idea behind 'replay lost ticks' is to avoid load smoothening of
--every- lrq -every- tick. Lets say that there are ten lrqs
-(corresponding to ten different users). We load smoothen only the currently 
-active lrq (whose task is currently running). Other lrqs load get smoothened 
-as soon as they become active next time (thus catching up with all lost ticks).
+which is already a tunable that's part of SD.
 
+So unless there's a vm issue (which does not appear to be the case) I can't 
+see how any of these will change Tobias' extensive testing results.
+
+Thanks.
 
 -- 
-Regards,
-vatsa
+-ck
