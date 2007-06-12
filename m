@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbXFLIMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbXFLI0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbXFLIMQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 04:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXFLIMD
+	id S1754579AbXFLI0V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 04:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbXFLI0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 04:12:03 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44187 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752483AbXFLIL7 (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 04:11:59 -0400
-Date: Tue, 12 Jun 2007 18:11:28 +1000
-From: David Chinner <dgc@sgi.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: David Chinner <dgc@sgi.com>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070612081128.GS86004887@sgi.com>
-References: <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com> <20070510005926.GT85884050@sgi.com> <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com>
+	Tue, 12 Jun 2007 04:26:13 -0400
+Received: from www.osadl.org ([213.239.205.134]:60396 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751983AbXFLI0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 04:26:12 -0400
+Subject: Re: [stable] [PATCH] ACPI: Move timer broadcast and pmtimer access
+	before C3 arbiter shutdown
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>, Stable Team <stable@kernel.org>,
+       Len Brown <lenb@kernel.org>
+In-Reply-To: <20070612010735.GL3723@sequoia.sous-sol.org>
+References: <1181122673.4404.200.camel@chaos>
+	 <20070606183857.caa243d4.akpm@linux-foundation.org>
+	 <20070612010735.GL3723@sequoia.sous-sol.org>
+Content-Type: text/plain
+Date: Tue, 12 Jun 2007 10:26:07 +0200
+Message-Id: <1181636767.8176.199.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070612061652.GA6320@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 11:46:52AM +0530, Amit K. Arora wrote:
-> On Sat, May 12, 2007 at 06:01:57PM +1000, David Chinner wrote:
-> > Minimal definition to replace what applicaitons use on XFS and to
-> > support poasix_fallocate are the thre that have been mentioned so
-> > far (FA_ALLOCATE, FA_PREALLOCATE, FA_DEALLOCATE). I'll document them
-> > all in a man page...
+On Mon, 2007-06-11 at 18:07 -0700, Chris Wright wrote:
+> * Andrew Morton (akpm@linux-foundation.org) wrote:
+> > hm, this needs a bit of help to get it to work against Len's current tree.
 > 
-> Hi Dave,
-> 
-> Did you get time to write the above man page ? It will help to push
-> further patches in time (eg. for FA_PREALLOCATE mode).
+> Here's some help, compile tested only.  Udo/Thomas, was this found to
+> be root cause of a real bug?  I didn't want this to get lost if it's
+> still meant to be relevant for -stable.
 
-No, I didn't. Instead of working on new preallocation stuff, I've
-been spending all my time fixing bugs found by new and interesting
-(ab)uses of preallocation and hole punching.
+Chris,
 
-> The idea I had was to push the patch with bare minimum functionality
-> (FA_ALLOCATE and FA_DEALLOCATE modes) and parallely finalize on other
-> new mode(s) based on the man page you planned to provide.
+I fixed this against -mm already. I don't think that it is relevant for
+stable. The issue was found with Venkis hpet force enable patches on a
+ICH4 system. I doubt that any of those systems has hpet enabled in the
+BIOS. It should not affect later ICH chip sets. Venki, is this correct ?
 
-Push them. I'll just make XFS work with whatever is provided.
-Is there a test harness for the syscall yet?
+	tglx
 
-Cheers,
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
