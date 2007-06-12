@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758452AbXFLF6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbXFLGA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758452AbXFLF6A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 01:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbXFLF5y
+	id S1758535AbXFLGA5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 02:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbXFLGAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 01:57:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:34688 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754835AbXFLF5x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 01:57:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ZjvwTxwJLVuyiY0mKxbs4q/k0nKJBeAETnIbEk3ZA7UiJ0a9Lljoi13i0fU9x+OKNTAEzT45IZ2bi4dF4ZrVdSbgDC4yv/Qv1+AQQgEZTVcOL+kewvP9rnIeSqT9nVXJ5kBM1/IbZ6IYg2yTVPWmIcVxJfcajnY8kTwRjKLpF2E=
-Message-ID: <466E35C3.80809@gmail.com>
-Date: Tue, 12 Jun 2007 07:57:23 +0200
-From: Robert de Rooy <robert.de.rooy@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 12 Jun 2007 02:00:50 -0400
+Received: from il.qumranet.com ([82.166.9.18]:39065 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752984AbXFLGAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 02:00:50 -0400
+Message-ID: <466E3671.2080103@qumranet.com>
+Date: Tue, 12 Jun 2007 09:00:17 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Jiri Kosina <jikos@jikos.cz>, Greg KH <greg@kroah.com>,
-       Joel.Becker@oracle.com,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] ThinkPad T41 - Strange USB 2.0 behaviour
-References: <Pine.LNX.4.44L0.0706111722110.7362-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0706111722110.7362-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: 2.6.22-rc4-mm2: kvm compile breakage with X86_CMPXCHG64=n
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <20070612000718.GS3588@stusta.de>
+In-Reply-To: <20070612000718.GS3588@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Tue, 12 Jun 2007 09:00:18 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Tue, 12 Jun 2007, Robert de Rooy wrote:
->
+Adrian Bunk wrote:
+> On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
 >   
->> Yes that works.
->> I tried to plug and unplug the device repeatedly and each time it came 
->> up in full-speed mode.
+>> ...
+>> Changes since 2.6.22-rc4-mm1:
+>> ...
+>>  git-kvm.patch
+>> ...
+>>  git trees
+>> ...
 >>     
 >
-> Good!  I'm glad that "companion" attribute file has come in handy for 
-> someone.  :-)
+> I'm getting the following compile error with CONFIG_X86_CMPXCHG64=n 
+> (with -Werror-implicit-function-declaration - otherwise it would be a 
+> link error):
 >
-> Alan Stern
+> <--  snip  -->
+>
+> ...
+>   CC [M]  drivers/kvm/mmu.o
+> /home/bunk/linux/kernel-2.6/linux-2.6.22-rc4-mm2/drivers/kvm/mmu.c: In function ‘set_shadow_pte’:
+> /home/bunk/linux/kernel-2.6/linux-2.6.22-rc4-mm2/drivers/kvm/mmu.c:199: error: implicit declaration of function ‘set_64bit’
+> make[3]: *** [drivers/kvm/mmu.o] Error 1
+>
+> <--  snip  -->
 >   
 
-Any way of passing this as a boot parameter? Because I also encountered 
-this when trying to boot Linux from a USB CD-ROM drive. The BIOS part 
-worked fine, but the moment Linux loaded USB support it failed, due to 
-the same problem. This is also why I asked if this failure mode could be 
-handled automatically.
+I've committed the following, which should disable kvm on i486 and below:
+
+diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
+index 2f661e5..33fa28a 100644
+--- a/drivers/kvm/Kconfig
++++ b/drivers/kvm/Kconfig
+@@ -11,6 +11,7 @@ if VIRTUALIZATION
+ config KVM
+        tristate "Kernel-based Virtual Machine (KVM) support"
+        depends on X86 && EXPERIMENTAL
++       depends on X86_CMPXCHG64 || 64BIT
+        ---help---
+          Support hosting fully virtualized guest machines using hardware
+          virtualization extensions.  You will need a fairly recent
+
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
