@@ -1,102 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbXFLEgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbXFLEkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461AbXFLEgz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 00:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXFLEgr
+	id S1756104AbXFLEkt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 00:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXFLEkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 00:36:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:60933 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750933AbXFLEgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 00:36:46 -0400
-Subject: Re: [PATCH 5/9] readahead: on-demand readahead logic
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Pratt <slpratt@austin.ibm.com>,
-       Ram Pai <linuxram@us.ibm.com>
-In-Reply-To: <20070516224818.841068730@mail.ustc.edu.cn>
-References: <20070516224752.500812933@mail.ustc.edu.cn>
-	 <20070516224818.841068730@mail.ustc.edu.cn>
-Content-Type: text/plain
-Date: Tue, 12 Jun 2007 14:36:26 +1000
-Message-Id: <1181622986.6237.65.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 12 Jun 2007 00:40:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:15593 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbXFLEki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 00:40:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=UMKTYGIWgIII8xDHSttmmXjbWgHV/1z3m5g4nZVCjCcPhpJeyoTCibzFUOpdPZwhgrbNKNYuuNMLJauwme1a/KCsPsTrb5ctppDkkB+jHgtgNsRWXGH4SgkIbU3kXAw+jKNWvCGlJxFrgfb2QIrBVWh3468qUI1Ib93tjrBKovA=
+Message-ID: <466E23AF.9060002@gmail.com>
+Date: Tue, 12 Jun 2007 13:40:15 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 0/3] AHCI Link Power Management
+References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E1D51.9070007@gmail.com> <466E1EC6.90509@linux.intel.com>
+In-Reply-To: <466E1EC6.90509@linux.intel.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 06:47 +0800, Fengguang Wu wrote:
-> +static unsigned long
-> +ondemand_readahead(struct address_space *mapping,
-> +		   struct file_ra_state *ra, struct file *filp,
-> +		   struct page *page, pgoff_t offset,
-> +		   unsigned long req_size)
-> +{
-> +	unsigned long max;	/* max readahead pages */
-> +	pgoff_t ra_index;	/* readahead index */
-> +	unsigned long ra_size;	/* readahead size */
-> +	unsigned long la_size;	/* lookahead size */
-> +	int sequential;
-> +
-> +	max = ra->ra_pages;
-> +	sequential = (offset - ra->prev_index <= 1UL) || (req_size > max);
+Arjan van de Ven wrote:
+>>> The data we have from this patch is that it saves typically a Watt of
+>>> power (depends on the machine of course, but the range is 0.5W to
+>>> 1.5W). If you want to also have an even more agressive thing where
+>>> you want to start disabling the entire controller... I don't see how
+>>> this is in conflict with saving power on the link level by "just"
+>>> enabling a hardware feature ....
+>>
+>> Well, both implement about the same thing.  I prefer software
+>> implementation because it's more generic and ALPE/ASP seems too
+>> aggressive to me. 
+> 
+> Too aggressive in what way?
 
-Hi again!
+There are devices which lock up hard if PHY enters PS mode (only
+physical power removal can reset it) and I wouldn't be surprised if some
+devices aren't happy with PS being too aggressive.  Well, I actually
+expect to see such devices.  It's ATA after all.  This is unknown
+territory and that's why I was using 'seems ... to me'.
 
-This <= 1UL seems weird.  prev_index is end of last request, so I'd
-expect offset == prev_index + 1 for sequential reads?  Does offset ==
-ra->prev_index happen?  If not, this would be clearer as (offset ==
-ra->prev_index + 1).
+> There are tradeoffs on either side. Doing things in software is more
+> work for the cpu, and depending on the implementation, will consume more
+> power on the CPU side. (for example if you need regular timers that just
+> consumes the power you are saving back up). The hardware can obviously
+> switch very fast (because it's independent of any software), yet of
+> course the software has higher level knowledge about how idle the link
+> really is (like it knows if any files are open etc etc).
+> 
+> To be honest, I would be surprised if software could do significantly
+> better than hardware though; it seems a simple problem: Idle -> go to
+> low power, and estimating idle isn't all that hard on a link level...
+> there's not all THAT much the kernel can estimate better I suspect.
 
-(prev_index is not a great name either, but that's not your patch 8).
+I don't think the end result will vary in any significant way.  My
+biggest argument for sw implementation is it can be used for other
+controllers.
 
-> +	/*
-> +	 * Lookahead/readahead hit, assume sequential access.
-> +	 * Ramp up sizes, and push forward the readahead window.
-> +	 */
-> +	if (offset && (offset == ra->lookahead_index ||
-> +			offset == ra->readahead_index)) {
-> +		ra_index = ra->readahead_index;
-> +		ra_size = get_next_ra_size2(ra, max);
-> +		la_size = ra_size;
-> +		goto fill_ra;
-> +	}
+> This debate is very similar to the cpufreq debate from 4 years ago,
+> where there were 3 levels: do it in the CPU, do it in the kernel or do
+> it in userspace. All three are valid; whichever is best depends on the
+> exact hardware that you have...
+> (and you can argue that first everyone started in userspace, then the
+> hardware improved that made a kernelspace implementation better
+> (ondemand) and now Turbo Mode is more or less moving this to the
+> hardware... I wouldn't be surprised if the sata side will show a similar
+> trend)
 
-Will offset hit lookahead_index or readahead_index exactly?  Should this
-be checking the range from offset to offset + req_size?
+Currently, ahci is the only one which has controller-side automatic PS
+but some ATA devices (hdds) implement device initiated PS (DIPS).  The
+sw implementation supports SW HIPS and DIPS.  We can add HW HIPS support
+and hook ALPE/ASP support there but I don't think it would have benefits
+over SW implementation.
 
-> +	ra_index = offset;
-> +	ra_size = get_init_ra_size(req_size, max);
-> +	la_size = ra_size > req_size ? ra_size - req_size : ra_size;
+I think it's a bit different from cpufreq.  ATA is cheaper and more
+broken and much more diverse.
 
-So if we're doing a big sequential read, ra_size < req_size, so next
-time offset will be > ra->readahead_index and the "ramp up sizes" code
-won't get run?
+Thanks.
 
-> +	/*
-> +	 * Hit on a lookahead page without valid readahead state.
-> +	 * E.g. interleaved reads.
-> +	 * Not knowing its readahead pos/size, bet on the minimal possible one.
-> +	 */
-> +	if (page) {
-> +		ra_index++;
-> +		ra_size = min(4 * ra_size, max);
-> +	}
-
-If I understand correctly, it's expected to happen when we have multiple
-streams: we previously marked the lookahead page, but then the other
-stream changed the ra to somewhere else in the file.  We now change it
-back to our stream, but we've lost information so we make it up.
-
-This seems a little like two functions crammed into one.  Do you think
-page_cache_readahead_ondemand() should be split into
-"page_cache_readahead()" which doesn't take a page*, and
-"page_cache_check_readahead_page()" which is an inline which does the
-PageReadahead(page) check as well?
-
-Thanks,
-Rusty.
-
+-- 
+tejun
