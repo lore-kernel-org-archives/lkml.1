@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbXFLUKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbXFLUKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbXFLUKG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 16:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbXFLUJz
+	id S1757249AbXFLUKe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 16:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXFLUKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 16:09:55 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1108 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbXFLUJy (ORCPT
+	Tue, 12 Jun 2007 16:10:18 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:29725 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756812AbXFLUKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 16:09:54 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: PC speaker
-Date: Tue, 12 Jun 2007 13:08:53 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEHOEIAC.davids@webmaster.com>
+	Tue, 12 Jun 2007 16:10:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=D55vV7R1R0NpyH6B/rvVfpxCVC6ahVAvCx9dgQSUCnWpVBomR9pXVb3pjz9InPa8Pf2q7BvryqPs6CmZ8f4fUap75pwZnA8v6YY0GEHYnnZiotj9z20Xd9IT8YNGialp82zT7PV1P0LydJhcLttEWeYXckUM0trpsgZqwORtKlI=
+Message-ID: <d120d5000706121310o51086d38nd05916448b6f7403@mail.gmail.com>
+Date: Tue, 12 Jun 2007 16:10:08 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Paul Albrecht" <albrecht@rdi1.com>
+Subject: Re: [BUG] via c3/2.6.20 -- ps/2 keyboard doesn't work with console
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1181674936.2533.1.camel@albrecht.rdi1.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <20070612161951.69e54751@the-village.bc.nu>
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Tue, 12 Jun 2007 13:09:23 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Tue, 12 Jun 2007 13:09:24 -0700
+Content-Disposition: inline
+References: <1181236651.15435.1.camel@albrecht.rdi1.com>
+	 <d120d5000706111228g4ada3a8dxf8e31dc62cfab476@mail.gmail.com>
+	 <1181588095.2436.5.camel@albrecht.rdi1.com>
+	 <200706120114.48645.dtor@insightbb.com>
+	 <1181656946.3176.1.camel@albrecht.rdi1.com>
+	 <d120d5000706121150p56a581d3je6d9a886529b591@mail.gmail.com>
+	 <1181674936.2533.1.camel@albrecht.rdi1.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 6/12/07, Paul Albrecht <albrecht@rdi1.com> wrote:
+>
+> There must be some difference between the sources we're using because
+> when I try to patch 2.6.21.5 I get this for output:
+>
+> patch --dry-run -p1 < ../i8042-trust-pnp-more.patch
+> patching file drivers/input/serio/i8042-x86ia64io.h
+> Hunk #1 succeeded at 313 (offset -43 lines).
+>
 
-> > >I'd say impossible. Just disconnect it from the motherboard.
-> >
-> > The days when hardware *relied* on software (hence, where software
-> > could damage hardware) are over.
+Yes, I have bunch of changes in my tee that have not hit the mainline
+yet. The patch wasn't actually gererated off 2.6.21.5; I just verified
+that it spplies to it.
 
-> Nice theory but you can destroy or render useless a fair amount of PC
-> hardware via software, usually because the thing is *DESIGNED* that way
-> for convenience. (Flash update interfaces without jumpers, locking
-> interfaces for drives etc)
+> However, the patch succeeded so I retested without i8042.noaux and that
+> worked. Here's the dmesg output:
 
-Other great examples are hardware that allows you to control voltages, fan
-speeds, and operating frequencies. Sometimes you can overvoltage it directly
-and blow it immediately. Other times, you can increase the voltage and
-operating frequency and decrease the fan speed to the point where it stops
-spinning. This is possible on many modern graphics cards and CPUs.
+Ok, great! Now let's see if I can get some more testers to try it to
+make sure there are no regressions on other people's boxes.
 
-As far as burning out a speaker goes, if you can drop the frequency to zero
-(DC) and get continuous current through the speaker, that could burn it out.
-This makes several assumptions, many of which may not be true on modern PCs:
-
-1) It assumes the speaker is a conventional coil speaker, not a piezo
-element. (This is certainly true on some PCs, although it's increasingly
-false on newer PCs.)
-
-2) It assumes the speaker is DC driven. (I'm pretty sure this was true on
-the original IBM PC. Not sure about newer computers.)
-
-3) It assumes you can configure the circuitry that drives the speaker such
-that it will stay on. (No idea.)
-
-4) It assumes the current will be sufficient to burn out the speaker. (I
-know it will get very hot on older machines, whether it will burn out --
-might even depend on the exact speaker model.)
-
-On at least some older computers, you could burn out the hardware that drove
-the speaker this way. I think it was either the Pet or the Apple ][ (didn't
-work on all machines, depended on how much current the speaker drew and
-other odd factors). I witnessed an Apple ][e blow out an I/O chip when it
-crashed with an output (that was supposed to be pulsed) left in the on
-position.
-
-DS
-
-
+-- 
+Dmitry
