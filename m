@@ -1,124 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbXFLHEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbXFLHFC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759007AbXFLHEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 03:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbXFLHAm
+	id S1759451AbXFLHFC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 03:05:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbXFLHAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 12 Jun 2007 03:00:42 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:13577 "EHLO kernel.dk"
+Received: from brick.kernel.dk ([80.160.20.94]:13578 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752786AbXFLHAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 03:00:32 -0400
+	id S1753238AbXFLHAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 03:00:33 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
-Cc: Hugh Dickins <hugh@veritas.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 14/18] shmem: convert to using splice instead of sendfile()
-Date: Tue, 12 Jun 2007 08:58:10 +0200
-Message-Id: <11816314952101-git-send-email-jens.axboe@oracle.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 16/18] splice: completely document external interface with kerneldoc
+Date: Tue, 12 Jun 2007 08:58:12 +0200
+Message-Id: <11816314953416-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.1.174.gcd03
 In-Reply-To: <11816314942627-git-send-email-jens.axboe@oracle.com>
 References: <11816314942627-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hugh Dickins <hugh@veritas.com>
+Also add fs/splice.c as a kerneldoc target with a smaller blurb that
+should be expanded to better explain the overview of splice.
 
-Remove shmem_file_sendfile and resurrect shmem_readpage, as used by tmpfs
-to support loop and sendfile in 2.4 and 2.5.  Now tmpfs can support splice,
-loop and sendfile in the simplest way, using generic_file_splice_read and
-generic_file_splice_write (with the aid of shmem_prepare_write).
-
-We could make some efficiency tweaks later, if there's a real need;
-but this is stable and works well as is.
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- mm/shmem.c |   42 +++++++++++++++++-------------------------
- 1 files changed, 17 insertions(+), 25 deletions(-)
+ Documentation/DocBook/kernel-api.tmpl |   11 ++++
+ fs/splice.c                           |  101 +++++++++++++++++++++++++++------
+ 2 files changed, 94 insertions(+), 18 deletions(-)
 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index b6aae2b..0493e4d 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1100,9 +1100,9 @@ static int shmem_getpage(struct inode *inode, unsigned long idx,
- 	 * Normally, filepage is NULL on entry, and either found
- 	 * uptodate immediately, or allocated and zeroed, or read
- 	 * in under swappage, which is then assigned to filepage.
--	 * But shmem_prepare_write passes in a locked filepage,
--	 * which may be found not uptodate by other callers too,
--	 * and may need to be copied from the swappage read in.
-+	 * But shmem_readpage and shmem_prepare_write pass in a locked
-+	 * filepage, which may be found not uptodate by other callers
-+	 * too, and may need to be copied from the swappage read in.
- 	 */
- repeat:
- 	if (!filepage)
-@@ -1485,9 +1485,18 @@ static const struct inode_operations shmem_symlink_inode_operations;
- static const struct inode_operations shmem_symlink_inline_operations;
+diff --git a/Documentation/DocBook/kernel-api.tmpl b/Documentation/DocBook/kernel-api.tmpl
+index 38f88b6..8c5698a 100644
+--- a/Documentation/DocBook/kernel-api.tmpl
++++ b/Documentation/DocBook/kernel-api.tmpl
+@@ -643,4 +643,15 @@ X!Idrivers/video/console/fonts.c
+ !Edrivers/spi/spi.c
+   </chapter>
  
- /*
-- * Normally tmpfs makes no use of shmem_prepare_write, but it
-- * lets a tmpfs file be used read-write below the loop driver.
-+ * Normally tmpfs avoids the use of shmem_readpage and shmem_prepare_write;
-+ * but providing them allows a tmpfs file to be used for splice, sendfile, and
-+ * below the loop driver, in the generic fashion that many filesystems support.
-  */
-+static int shmem_readpage(struct file *file, struct page *page)
-+{
-+	struct inode *inode = page->mapping->host;
-+	int error = shmem_getpage(inode, page->index, &page, SGP_CACHE, NULL);
-+	unlock_page(page);
-+	return error;
-+}
++  <chapter id="splice">
++      <title>splice API</title>
++  <para>)
++	splice is a method for moving blocks of data around inside the
++	kernel, without continually transferring it between the kernel
++	and user space.
++  </para>
++!Iinclude/linux/splice.h
++!Ffs/splice.c
++  </chapter>
 +
- static int
- shmem_prepare_write(struct file *file, struct page *page, unsigned offset, unsigned to)
- {
-@@ -1711,25 +1720,6 @@ static ssize_t shmem_file_read(struct file *filp, char __user *buf, size_t count
- 	return desc.error;
- }
- 
--static ssize_t shmem_file_sendfile(struct file *in_file, loff_t *ppos,
--			 size_t count, read_actor_t actor, void *target)
--{
--	read_descriptor_t desc;
--
--	if (!count)
--		return 0;
--
--	desc.written = 0;
--	desc.count = count;
--	desc.arg.data = target;
--	desc.error = 0;
--
--	do_shmem_file_read(in_file, ppos, &desc, actor);
--	if (desc.written)
--		return desc.written;
--	return desc.error;
--}
--
- static int shmem_statfs(struct dentry *dentry, struct kstatfs *buf)
- {
- 	struct shmem_sb_info *sbinfo = SHMEM_SB(dentry->d_sb);
-@@ -2386,6 +2376,7 @@ static const struct address_space_operations shmem_aops = {
- 	.writepage	= shmem_writepage,
- 	.set_page_dirty	= __set_page_dirty_no_writeback,
- #ifdef CONFIG_TMPFS
-+	.readpage	= shmem_readpage,
- 	.prepare_write	= shmem_prepare_write,
- 	.commit_write	= simple_commit_write,
- #endif
-@@ -2399,7 +2390,8 @@ static const struct file_operations shmem_file_operations = {
- 	.read		= shmem_file_read,
- 	.write		= shmem_file_write,
- 	.fsync		= simple_sync_file,
--	.sendfile	= shmem_file_sendfile,
-+	.splice_read	= generic_file_splice_read,
-+	.splice_write	= generic_file_splice_write,
- #endif
+ </book>
+diff --git a/fs/splice.c b/fs/splice.c
+index ff62ac9..f24e367 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -153,9 +153,16 @@ static const struct pipe_buf_operations user_page_pipe_buf_ops = {
+ 	.get = generic_pipe_buf_get,
  };
  
+-/*
+- * Pipe output worker. This fills a pipe with the information contained
+- * from splice_pipe_desc().
++/**
++ * splice_to_pipe - fill passed data into a pipe
++ * @pipe:	pipe to fill
++ * @spd:	data to fill
++ *
++ * Description:
++ *    @spd contains a map of pages and len/offset tupples, a long with
++ *    the struct pipe_buf_operations associated with these pages. This
++ *    function will link that data to the pipe.
++ *
+  */
+ ssize_t splice_to_pipe(struct pipe_inode_info *pipe,
+ 		       struct splice_pipe_desc *spd)
+@@ -453,11 +460,16 @@ fill_it:
+ /**
+  * generic_file_splice_read - splice data from file to a pipe
+  * @in:		file to splice from
++ * @ppos:	position in @in
+  * @pipe:	pipe to splice to
+  * @len:	number of bytes to splice
+  * @flags:	splice modifier flags
+  *
+- * Will read pages from given file and fill them into a pipe.
++ * Description:
++ *    Will read pages from given file and fill them into a pipe. Can be
++ *    used as long as the address_space operations for the source implements
++ *    a readpage() hook.
++ *
+  */
+ ssize_t generic_file_splice_read(struct file *in, loff_t *ppos,
+ 				 struct pipe_inode_info *pipe, size_t len,
+@@ -646,10 +658,18 @@ out_ret:
+ 	return ret;
+ }
+ 
+-/*
+- * Pipe input worker. Most of this logic works like a regular pipe, the
+- * key here is the 'actor' worker passed in that actually moves the data
+- * to the wanted destination. See pipe_to_file/pipe_to_sendpage above.
++/**
++ * __splice_from_pipe - splice data from a pipe to given actor
++ * @pipe:	pipe to splice from
++ * @sd:		information to @actor
++ * @actor:	handler that splices the data
++ *
++ * Description:
++ *    This function does little more than loop over the pipe and call
++ *    @actor to do the actual moving of a single struct pipe_buffer to
++ *    the desired destination. See pipe_to_file, pipe_to_sendpage, or
++ *    pipe_to_user.
++ *
+  */
+ ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
+ 			   splice_actor *actor)
+@@ -742,6 +762,20 @@ ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
+ }
+ EXPORT_SYMBOL(__splice_from_pipe);
+ 
++/**
++ * splice_from_pipe - splice data from a pipe to a file
++ * @pipe:	pipe to splice from
++ * @out:	file to splice to
++ * @ppos:	position in @out
++ * @len:	how many bytes to splice
++ * @flags:	splice modifier flags
++ * @actor:	handler that splices the data
++ *
++ * Description:
++ *    See __splice_from_pipe. This function locks the input and output inodes,
++ *    otherwise it's identical to __splice_from_pipe().
++ *
++ */
+ ssize_t splice_from_pipe(struct pipe_inode_info *pipe, struct file *out,
+ 			 loff_t *ppos, size_t len, unsigned int flags,
+ 			 splice_actor *actor)
+@@ -773,12 +807,14 @@ ssize_t splice_from_pipe(struct pipe_inode_info *pipe, struct file *out,
+  * generic_file_splice_write_nolock - generic_file_splice_write without mutexes
+  * @pipe:	pipe info
+  * @out:	file to write to
++ * @ppos:	position in @out
+  * @len:	number of bytes to splice
+  * @flags:	splice modifier flags
+  *
+- * Will either move or copy pages (determined by @flags options) from
+- * the given pipe inode to the given file. The caller is responsible
+- * for acquiring i_mutex on both inodes.
++ * Description:
++ *    Will either move or copy pages (determined by @flags options) from
++ *    the given pipe inode to the given file. The caller is responsible
++ *    for acquiring i_mutex on both inodes.
+  *
+  */
+ ssize_t
+@@ -827,11 +863,13 @@ EXPORT_SYMBOL(generic_file_splice_write_nolock);
+  * generic_file_splice_write - splice data from a pipe to a file
+  * @pipe:	pipe info
+  * @out:	file to write to
++ * @ppos:	position in @out
+  * @len:	number of bytes to splice
+  * @flags:	splice modifier flags
+  *
+- * Will either move or copy pages (determined by @flags options) from
+- * the given pipe inode to the given file.
++ * Description:
++ *    Will either move or copy pages (determined by @flags options) from
++ *    the given pipe inode to the given file.
+  *
+  */
+ ssize_t
+@@ -879,13 +917,15 @@ EXPORT_SYMBOL(generic_file_splice_write);
+ 
+ /**
+  * generic_splice_sendpage - splice data from a pipe to a socket
+- * @inode:	pipe inode
++ * @pipe:	pipe to splice from
+  * @out:	socket to write to
++ * @ppos:	position in @out
+  * @len:	number of bytes to splice
+  * @flags:	splice modifier flags
+  *
+- * Will send @len bytes from the pipe to a network socket. No data copying
+- * is involved.
++ * Description:
++ *    Will send @len bytes from the pipe to a network socket. No data copying
++ *    is involved.
+  *
+  */
+ ssize_t generic_splice_sendpage(struct pipe_inode_info *pipe, struct file *out,
+@@ -939,8 +979,18 @@ static long do_splice_to(struct file *in, loff_t *ppos,
+ 	return in->f_op->splice_read(in, ppos, pipe, len, flags);
+ }
+ 
+-/*
+- * Splices from an input file to an actor, using a 'direct' pipe.
++/**
++ * splice_direct_to_actor - splices data directly between two non-pipes
++ * @in:		file to splice from
++ * @sd:		actor information on where to splice to
++ * @actor:	handles the data splicing
++ *
++ * Description:
++ *    This is a special case helper to splice directly between two
++ *    points, without requiring an explicit pipe. Internally an allocated
++ *    pipe is cached in the process, and reused during the life time of
++ *    that process.
++ *
+  */
+ ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
+ 			       splice_direct_actor *actor)
+@@ -1070,6 +1120,21 @@ static int direct_splice_actor(struct pipe_inode_info *pipe,
+ 	return do_splice_from(pipe, file, &sd->pos, sd->total_len, sd->flags);
+ }
+ 
++/**
++ * do_splice_direct - splices data directly between two files
++ * @in:		file to splice from
++ * @ppos:	input file offset
++ * @out:	file to splice to
++ * @len:	number of bytes to splice
++ * @flags:	splice modifier flags
++ *
++ * Description:
++ *    For use by do_sendfile(). splice can easily emulate sendfile, but
++ *    doing it in the application would incur an extra system call
++ *    (splice in + splice out, as compared to just sendfile()). So this helper
++ *    can splice directly through a process-private pipe.
++ *
++ */
+ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
+ 		      size_t len, unsigned int flags)
+ {
 -- 
 1.5.2.1.174.gcd03
 
