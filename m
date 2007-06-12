@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbXFLPTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbXFLPTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756989AbXFLPTM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 11:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbXFLPSr
+	id S1756851AbXFLPTe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXFLPTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 11:18:47 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:24318 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756715AbXFLPSq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 11:18:46 -0400
-Date: Tue, 12 Jun 2007 17:18:45 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: debian developer <debiandev@gmail.com>
-cc: Federico Paparoni <federico.paparoni@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux kernel 2.4 programming problem
-In-Reply-To: <f24d23310706120817m741b1cb4g9ac6f5469274f307@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706121718291.19578@fbirervta.pbzchgretzou.qr>
-References: <7f7732360706120654i34f34da8q6428e41bc5a76728@mail.gmail.com>
- <f24d23310706120817m741b1cb4g9ac6f5469274f307@mail.gmail.com>
+	Tue, 12 Jun 2007 11:19:21 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:52719 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755939AbXFLPTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 11:19:20 -0400
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: [PATCH 3/3] i386: During VM oom condition,
+	kill all threads in process group
+To: linuxppc-dev@ozlabs.org, anton@samba.org, linux-kernel@vger.kernel.org
+Cc: will_schmidt@vnet.ibm.com
+Date: Tue, 12 Jun 2007 10:19:13 -0500
+Message-ID: <20070612151912.2869.43167.stgit@farscape.rchland.ibm.com>
+In-Reply-To: <20070612151901.2869.59390.stgit@farscape.rchland.ibm.com>
+References: <20070612151901.2869.59390.stgit@farscape.rchland.ibm.com>
+User-Agent: StGIT/0.12
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jun 12 2007 20:47, debian developer wrote:
->
-> Please look into http://kernelnewbies.org
->
-> On 6/12/07, Federico Paparoni <federico.paparoni@gmail.com> wrote:
->> Hi all,
->> i'm trying to create a simple system call in a kernel 2.4 distribution.
->> I read guide/articles like this
->> http://irfanhabib.wordpress.com/2006/10/01/adding-a-system-call-linux-24x/
->>[...]
+During a VM oom condition, kill all threads in the process group.
 
-And don't top post.
+We have had complaints where a threaded application is left in a bad state
+after one of it's threads is killed when we hit a VM: out_of_memory
+condition.
+
+Killing just one of the process threads can leave the application in a
+bad state, whereas killing the entire process group would
+allow for the application to restart, or otherwise handled, and makes it very
+obvious that something has gone wrong.
+
+This change allows the entire process group to be taken down, rather than
+just the one thread.
+
+tested lightly on i386.
+
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+---
+
+ arch/i386/mm/fault.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
+index b8c4e25..a47e712 100644
+--- a/arch/i386/mm/fault.c
++++ b/arch/i386/mm/fault.c
+@@ -568,7 +568,7 @@ out_of_memory:
+ 	}
+ 	printk("VM: killing process %s\n", tsk->comm);
+ 	if (error_code & 4)
+-		do_exit(SIGKILL);
++		do_group_exit(SIGKILL);
+ 	goto no_context;
+ 
+ do_sigbus:
 
 
-	Jan
--- 
