@@ -1,317 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759115AbXFLHFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbXFLHFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759115AbXFLHFd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 03:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758320AbXFLHAn
+	id S1759490AbXFLHFv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 03:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbXFLHAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 03:00:43 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:13579 "EHLO kernel.dk"
+	Tue, 12 Jun 2007 03:00:44 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:13570 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753575AbXFLHAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753248AbXFLHAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 Jun 2007 03:00:33 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
-Cc: Carsten Otte <cotte@de.ibm.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 17/18] ext2 xip: replace sendfile with splice
-Date: Tue, 12 Jun 2007 08:58:13 +0200
-Message-Id: <11816314953549-git-send-email-jens.axboe@oracle.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 18/18] Remove remnants of sendfile()
+Date: Tue, 12 Jun 2007 08:58:14 +0200
+Message-Id: <11816314953322-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.1.174.gcd03
 In-Reply-To: <11816314942627-git-send-email-jens.axboe@oracle.com>
 References: <11816314942627-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Carsten Otte <cotte@de.ibm.com>
+There are now zero users of .sendfile() in the kernel, so kill
+it from the file_operations structure and in do_sendfile().
 
-This patch removes xip_file_sendfile, and replaces it with
-xip_file_splice_read. It passes the ltp testcase on a ext2 filesystem
-that is mounted -o xip,rw.
-I am not exactly happy with this patch, because it introduces waaaay too
-much code duplication from fs/splice.c. I want to dig into making
-generic_file_splice_read able to deal with xip files aswell. That would
-allow to do the same for splice write.
-If I cannot find a nicer solution, I'd vote for removing sendfile from
-filemap_xip without replacement: a xip filesystem is intended to be used
-for executables and libraries. This content is very rarely subject to
-splice.
-
-Signed-off-by: Carsten Otte <cotte@de.ibm.com>
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- fs/ext2/file.c     |    2 +-
- include/linux/fs.h |    4 +-
- mm/filemap_xip.c   |  206 ++++++++++++++++++++++++++++++++++++++++++++++++----
- 3 files changed, 192 insertions(+), 20 deletions(-)
+ fs/read_write.c    |   26 +++++++++++---------------
+ include/linux/fs.h |    3 +--
+ 2 files changed, 12 insertions(+), 17 deletions(-)
 
-diff --git a/fs/ext2/file.c b/fs/ext2/file.c
-index 072a190..5f4a17c 100644
---- a/fs/ext2/file.c
-+++ b/fs/ext2/file.c
-@@ -70,7 +70,7 @@ const struct file_operations ext2_xip_file_operations = {
- 	.open		= generic_file_open,
- 	.release	= ext2_release_file,
- 	.fsync		= ext2_sync_file,
--	.sendfile	= xip_file_sendfile,
-+	.splice_read	= xip_file_splice_read,
- };
- #endif
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 2527cf0..507ddff 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -724,8 +724,7 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+ 	in_inode = in_file->f_path.dentry->d_inode;
+ 	if (!in_inode)
+ 		goto fput_in;
+-	if (!in_file->f_op || (!in_file->f_op->sendfile &&
+-	    !in_file->f_op->splice_read))
++	if (!in_file->f_op || !in_file->f_op->splice_read)
+ 		goto fput_in;
+ 	retval = -ESPIPE;
+ 	if (!ppos)
+@@ -778,21 +777,18 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+ 		count = max - pos;
+ 	}
  
+-	if (in_file->f_op->splice_read) {
+-		fl = 0;
++	fl = 0;
+ #if 0
+-		/*
+-		 * We need to debate whether we can enable this or not. The
+-		 * man page documents EAGAIN return for the output at least,
+-		 * and the application is arguably buggy if it doesn't expect
+-		 * EAGAIN on a non-blocking file descriptor.
+-		 */
+-		if (in_file->f_flags & O_NONBLOCK)
+-			fl = SPLICE_F_NONBLOCK;
++	/*
++	 * We need to debate whether we can enable this or not. The
++	 * man page documents EAGAIN return for the output at least,
++	 * and the application is arguably buggy if it doesn't expect
++	 * EAGAIN on a non-blocking file descriptor.
++	 */
++	if (in_file->f_flags & O_NONBLOCK)
++		fl = SPLICE_F_NONBLOCK;
+ #endif
+-		retval = do_splice_direct(in_file, ppos, out_file, count, fl);
+-	} else
+-		retval = in_file->f_op->sendfile(in_file, ppos, count, file_send_actor, out_file);
++	retval = do_splice_direct(in_file, ppos, out_file, count, fl);
+ 
+ 	if (retval > 0) {
+ 		add_rchar(current, retval);
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 61ebf32..a5bf63e 100644
+index a5bf63e..5ef52bc 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1764,13 +1764,11 @@ extern int nonseekable_open(struct inode * inode, struct file * filp);
- #ifdef CONFIG_FS_XIP
- extern ssize_t xip_file_read(struct file *filp, char __user *buf, size_t len,
- 			     loff_t *ppos);
--extern ssize_t xip_file_sendfile(struct file *in_file, loff_t *ppos,
--				 size_t count, read_actor_t actor,
--				 void *target);
- extern int xip_file_mmap(struct file * file, struct vm_area_struct * vma);
- extern ssize_t xip_file_write(struct file *filp, const char __user *buf,
- 			      size_t len, loff_t *ppos);
- extern int xip_truncate_page(struct address_space *mapping, loff_t from);
-+extern ssize_t xip_file_splice_read(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
- #else
- static inline int xip_truncate_page(struct address_space *mapping, loff_t from)
- {
-diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
-index fa360e5..f1f3134 100644
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -14,6 +14,7 @@
- #include <linux/uio.h>
- #include <linux/rmap.h>
- #include <linux/sched.h>
-+#include <linux/splice.h>
- #include <asm/tlbflush.h>
- #include "filemap.h"
- 
-@@ -92,7 +93,11 @@ do_xip_mapping_read(struct address_space *mapping,
- 		if (unlikely(IS_ERR(page))) {
- 			if (PTR_ERR(page) == -ENODATA) {
- 				/* sparse */
--				page = ZERO_PAGE(0);
-+				page = xip_sparse_page();
-+				if (!page) {
-+					desc->error = -ENOMEM;
-+					goto out;
-+				}
- 			} else {
- 				desc->error = PTR_ERR(page);
- 				goto out;
-@@ -159,27 +164,196 @@ xip_file_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
- }
- EXPORT_SYMBOL_GPL(xip_file_read);
- 
--ssize_t
--xip_file_sendfile(struct file *in_file, loff_t *ppos,
--	     size_t count, read_actor_t actor, void *target)
-+static int xip_pipe_buf_steal(struct pipe_inode_info *pipe,
-+				   struct pipe_buffer *buf)
- {
--	read_descriptor_t desc;
-+	return 1;
-+}
- 
--	if (!count)
-+static void xip_pipe_buf_release(struct pipe_inode_info *pipe,
-+					struct pipe_buffer *buf)
-+{
-+	page_cache_release(buf->page);
-+}
-+
-+static const struct pipe_buf_operations xip_pipe_buf_ops = {
-+	.can_merge = 0,
-+	.pin = generic_pipe_buf_pin,
-+	.get = generic_pipe_buf_get,
-+	.map = generic_pipe_buf_map,
-+	.unmap = generic_pipe_buf_unmap,
-+	.release = xip_pipe_buf_release,
-+	.steal = xip_pipe_buf_steal,
-+};
-+
-+static int
-+__xip_file_splice_read(struct file *in, loff_t *ppos,
-+			   struct pipe_inode_info *pipe, size_t len,
-+			   unsigned int flags)
-+{
-+	struct address_space *mapping = in->f_mapping;
-+	unsigned int loff, nr_pages;
-+	struct page *pages[PIPE_BUFFERS];
-+	struct partial_page partial[PIPE_BUFFERS];
-+	struct page *page;
-+	pgoff_t index, end_index;
-+	loff_t isize;
-+	size_t total_len;
-+	int error, page_nr;
-+	struct splice_pipe_desc spd = {
-+		.pages = pages,
-+		.partial = partial,
-+		.flags = flags,
-+		.ops = &xip_pipe_buf_ops,
-+	};
-+
-+	index = *ppos >> PAGE_CACHE_SHIFT;
-+	loff = *ppos & ~PAGE_CACHE_MASK;
-+	nr_pages = (len + loff + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+
-+	if (nr_pages > PIPE_BUFFERS)
-+		nr_pages = PIPE_BUFFERS;
-+
-+	error = 0;
-+	total_len = 0;
-+
-+	spd.nr_pages = 0;
-+	while (spd.nr_pages < nr_pages) {
-+		page = mapping->a_ops->get_xip_page(mapping,
-+			index*(PAGE_SIZE/512), 0);
-+		if (!page) {
-+			error = -EIO;
-+			break;
-+		}
-+		if (unlikely(IS_ERR(page))) {
-+			if (PTR_ERR(page) == -ENODATA) {
-+				/* sparse */
-+				page = xip_sparse_page();
-+				if (!page) {
-+					error = -ENOMEM;
-+					break;
-+				}
-+			} else {
-+				error = PTR_ERR(page);
-+				break;
-+			}
-+		}
-+		page_cache_get(page);
-+		pages[spd.nr_pages++] = page;
-+		index++;
-+	}
-+
-+	/*
-+	 * Now loop over the map and fill in the partial map
-+	 */
-+	index = *ppos >> PAGE_CACHE_SHIFT;
-+	nr_pages = spd.nr_pages;
-+	spd.nr_pages = 0;
-+	for (page_nr = 0; page_nr < nr_pages; page_nr++) {
-+		unsigned int this_len;
-+
-+		if (!len)
-+			break;
-+
-+		/*
-+		 * this_len is the max we'll use from this page
-+		 */
-+		this_len = min_t(unsigned long, len, PAGE_CACHE_SIZE - loff);
-+		page = pages[page_nr];
-+		isize = i_size_read(mapping->host);
-+		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-+		if (unlikely(!isize || index > end_index))
-+			break;
-+
-+		/*
-+		 * if this is the last page, see if we need to shrink
-+		 * the length and stop
-+		 */
-+		if (end_index == index) {
-+			unsigned int plen;
-+
-+			/*
-+			 * max good bytes in this page
-+			 */
-+			plen = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
-+			if (plen <= loff)
-+				break;
-+
-+			/*
-+			 * force quit after adding this page
-+			 */
-+			this_len = min(this_len, plen - loff);
-+			len = this_len;
-+		}
-+
-+		partial[page_nr].offset = loff;
-+		partial[page_nr].len = this_len;
-+		len -= this_len;
-+		loff = 0;
-+		spd.nr_pages++;
-+		index++;
-+	}
-+
-+	if (spd.nr_pages)
-+		return splice_to_pipe(pipe, &spd);
-+
-+	return error;
-+}
-+
-+/**
-+ * xip_file_splice_read - splice data from file to a pipe
-+ * @in:		file to splice from
-+ * @pipe:	pipe to splice to
-+ * @len:	number of bytes to splice
-+ * @flags:	splice modifier flags
-+ *
-+ * derived from generic_file_splice_read in fs/splice_read.c
-+ */
-+ssize_t xip_file_splice_read(struct file *in, loff_t *ppos,
-+				 struct pipe_inode_info *pipe, size_t len,
-+				 unsigned int flags)
-+{
-+	ssize_t spliced;
-+	int ret;
-+	loff_t isize, left;
-+
-+	BUG_ON(!in->f_mapping->a_ops->get_xip_page);
-+
-+	isize = i_size_read(in->f_mapping->host);
-+	if (unlikely(*ppos >= isize))
- 		return 0;
- 
--	desc.written = 0;
--	desc.count = count;
--	desc.arg.data = target;
--	desc.error = 0;
-+	left = isize - *ppos;
-+	if (unlikely(left < len))
-+		len = left;
- 
--	do_xip_mapping_read(in_file->f_mapping, &in_file->f_ra, in_file,
--			    ppos, &desc, actor);
--	if (desc.written)
--		return desc.written;
--	return desc.error;
-+	ret = 0;
-+	spliced = 0;
-+	while (len) {
-+		ret = __xip_file_splice_read(in, ppos, pipe, len, flags);
-+
-+		if (ret < 0)
-+			break;
-+		else if (!ret) {
-+			if (spliced)
-+				break;
-+			if (flags & SPLICE_F_NONBLOCK) {
-+				ret = -EAGAIN;
-+				break;
-+			}
-+		}
-+
-+		*ppos += ret;
-+		len -= ret;
-+		spliced += ret;
-+	}
-+
-+	if (spliced)
-+		return spliced;
-+
-+	return ret;
- }
--EXPORT_SYMBOL_GPL(xip_file_sendfile);
-+EXPORT_SYMBOL(xip_file_splice_read);
+@@ -1054,7 +1054,7 @@ struct block_device_operations {
+ };
  
  /*
-  * __xip_unmap is invoked from xip_unmap and
+- * "descriptor" for what we're up to with a read for sendfile().
++ * "descriptor" for what we're up to with a read.
+  * This allows us to use the same read code yet
+  * have multiple different users of the data that
+  * we read from a file.
+@@ -1105,7 +1105,6 @@ struct file_operations {
+ 	int (*aio_fsync) (struct kiocb *, int datasync);
+ 	int (*fasync) (int, struct file *, int);
+ 	int (*lock) (struct file *, int, struct file_lock *);
+-	ssize_t (*sendfile) (struct file *, loff_t *, size_t, read_actor_t, void *);
+ 	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
+ 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
+ 	int (*check_flags)(int);
 -- 
 1.5.2.1.174.gcd03
 
