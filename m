@@ -1,204 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756994AbXFLRuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbXFLRwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756994AbXFLRuv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 13:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXFLRuk
+	id S1757186AbXFLRwP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 13:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXFLRwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 13:50:40 -0400
-Received: from mga02.intel.com ([134.134.136.20]:32679 "EHLO mga02.intel.com"
+	Tue, 12 Jun 2007 13:52:00 -0400
+Received: from smtp3.versatel.nl ([62.58.50.90]:35200 "EHLO smtp3.versatel.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755280AbXFLRuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 13:50:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,412,1175497200"; 
-   d="scan'208";a="253583642"
-Date: Tue, 12 Jun 2007 10:47:12 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       htejun@gmail.com
-Subject: Re: [patch 2b/3] Expose Power Management Policy option to users
-Message-Id: <20070612104712.59a71529.kristen.c.accardi@intel.com>
-In-Reply-To: <466DA9DD.8080004@garzik.org>
-References: <20070611184146.448266229@intel.com>
-	<20070611114820.5290a903.kristen.c.accardi@intel.com>
-	<466DA9DD.8080004@garzik.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755280AbXFLRv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 13:51:59 -0400
+Message-ID: <466EE06B.9030202@hhs.nl>
+Date: Tue, 12 Jun 2007 20:05:31 +0200
+From: Hans de Goede <j.w.r.degoede@hhs.nl>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070414)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Vojtech Pavlik <vojtech@suse.cz>, sbrabec@suse.cz
+Subject: PATCH: fix mismatch between usb-hid.c HUT find/search mapping and
+ the HUT reference doc
+Content-Type: multipart/mixed;
+ boundary="------------010702030509030902060601"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable link power management for ata drivers
+This is a multi-part message in MIME format.
+--------------010702030509030902060601
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-libata drivers can define a function (enable_pm) that will
-perform hardware specific actions to enable whatever power
-management policy the user set up from the scsi sysfs 
-interface if the driver supports it.  This power management 
-policy will be activated after all disks have been 
-enumerated and intialized.
+Hi all,
 
-Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Index: 2.6-git/drivers/ata/libata-scsi.c
-===================================================================
---- 2.6-git.orig/drivers/ata/libata-scsi.c
-+++ 2.6-git/drivers/ata/libata-scsi.c
-@@ -2890,6 +2890,51 @@ void ata_scsi_simulate(struct ata_device
- 	}
- }
- 
-+int ata_scsi_set_link_pm_policy(struct Scsi_Host *shost,
-+		enum scsi_host_link_pm policy)
-+{
-+	struct ata_port *ap = ata_shost_to_port(shost);
-+	int rc = -EINVAL;
-+	int i;
-+
-+	/*
-+ 	 * make sure no broken devices are on this port,
-+ 	 * and that all devices support interface power
-+ 	 * management
-+ 	 */
-+	for (i = 0; i < ATA_MAX_DEVICES; i++) {
-+		struct ata_device *dev = &ap->device[i];
-+
-+		/* only check drives which exist */
-+		if (!ata_dev_enabled(dev))
-+			continue;
-+
-+		/*
-+ 		 * do we need to handle the case where we've hotplugged
-+ 		 * a broken drive (since hotplug and ALPM are mutually
-+ 		 * exclusive) ?
-+ 		 *
-+ 		 * If so, if we detect a broken drive on a port with
-+ 		 * alpm already enabled, then we should reset the policy
-+ 		 * to off for the entire port.
-+ 		 */
-+		if ((dev->horkage & ATA_HORKAGE_ALPM) ||
-+			!(dev->flags & ATA_DFLAG_IPM)) {
-+			ata_dev_printk(dev, KERN_ERR,
-+				"Unable to set Link PM policy\n");
-+			ap->pm_policy = SHOST_MAX_PERFORMANCE;
-+		}
-+	}
-+
-+	if (ap->ops->enable_pm)
-+		rc = ap->ops->enable_pm(ap, policy);
-+
-+	if (!rc)
-+		shost->shost_link_pm_policy = ap->pm_policy;
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(ata_scsi_set_link_pm_policy);
-+
- int ata_scsi_add_hosts(struct ata_host *host, struct scsi_host_template *sht)
- {
- 	int i, rc;
-@@ -2912,7 +2957,7 @@ int ata_scsi_add_hosts(struct ata_host *
- 		shost->max_lun = 1;
- 		shost->max_channel = 1;
- 		shost->max_cmd_len = 16;
--
-+		shost->shost_link_pm_policy = ap->pm_policy;
- 		rc = scsi_add_host(ap->scsi_host, ap->host->dev);
- 		if (rc)
- 			goto err_add;
-Index: 2.6-git/include/linux/libata.h
-===================================================================
---- 2.6-git.orig/include/linux/libata.h
-+++ 2.6-git/include/linux/libata.h
-@@ -136,6 +136,7 @@ enum {
- 	ATA_DFLAG_CDB_INTR	= (1 << 2), /* device asserts INTRQ when ready for CDB */
- 	ATA_DFLAG_NCQ		= (1 << 3), /* device supports NCQ */
- 	ATA_DFLAG_FLUSH_EXT	= (1 << 4), /* do FLUSH_EXT instead of FLUSH */
-+	ATA_DFLAG_IPM		= (1 << 6), /* device supports interface PM */
- 	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
- 
- 	ATA_DFLAG_PIO		= (1 << 8), /* device limited to PIO mode */
-@@ -300,6 +301,7 @@ enum {
- 	ATA_HORKAGE_NONCQ	= (1 << 2),	/* Don't use NCQ */
- 	ATA_HORKAGE_MAX_SEC_128	= (1 << 3),	/* Limit max sects to 128 */
- 	ATA_HORKAGE_DMA_RW_ONLY	= (1 << 4),	/* ATAPI DMA for RW only */
-+	ATA_HORKAGE_ALPM	= (1 << 5), 	/* ALPM problems */
- };
- 
- enum hsm_task_states {
-@@ -548,6 +550,7 @@ struct ata_port {
- 
- 	pm_message_t		pm_mesg;
- 	int			*pm_result;
-+	enum scsi_host_link_pm	pm_policy;
- 
- 	void			*private_data;
- 
-@@ -607,7 +610,7 @@ struct ata_port_operations {
- 
- 	int (*port_suspend) (struct ata_port *ap, pm_message_t mesg);
- 	int (*port_resume) (struct ata_port *ap);
--
-+	int (*enable_pm) (struct ata_port *ap, enum scsi_host_link_pm policy);
- 	int (*port_start) (struct ata_port *ap);
- 	void (*port_stop) (struct ata_port *ap);
- 
-@@ -812,7 +815,7 @@ extern int ata_cable_40wire(struct ata_p
- extern int ata_cable_80wire(struct ata_port *ap);
- extern int ata_cable_sata(struct ata_port *ap);
- extern int ata_cable_unknown(struct ata_port *ap);
--
-+extern int ata_scsi_set_link_pm_policy(struct Scsi_Host *shost, enum scsi_host_link_pm);
- /*
-  * Timing helpers
-  */
-Index: 2.6-git/drivers/ata/libata-core.c
-===================================================================
---- 2.6-git.orig/drivers/ata/libata-core.c
-+++ 2.6-git/drivers/ata/libata-core.c
-@@ -2019,6 +2019,9 @@ int ata_dev_configure(struct ata_device 
- 	if (dev->flags & ATA_DFLAG_LBA48)
- 		dev->max_sectors = ATA_MAX_SECTORS_LBA48;
- 
-+	if (ata_id_has_hipm(dev->id))
-+		dev->flags |= ATA_DFLAG_IPM;
-+
- 	if (dev->horkage & ATA_HORKAGE_DIAGNOSTIC) {
- 		/* Let the user know. We don't want to disallow opens for
- 		   rescue purposes, or in case the vendor is just a blithering
-@@ -2048,6 +2051,13 @@ int ata_dev_configure(struct ata_device 
- 	if (ata_device_blacklisted(dev) & ATA_HORKAGE_DMA_RW_ONLY)
- 		dev->horkage |= ATA_HORKAGE_DMA_RW_ONLY;
- 
-+	if (ata_device_blacklisted(dev) & ATA_HORKAGE_ALPM) {
-+		dev->horkage |= ATA_HORKAGE_ALPM;
-+
-+		/* reset link pm_policy for this port to no pm */
-+		ap->pm_policy = SHOST_MAX_PERFORMANCE;
-+	}
-+
- 	if (ap->ops->dev_config)
- 		ap->ops->dev_config(dev);
- 
-@@ -6394,6 +6404,8 @@ int ata_host_register(struct ata_host *h
- 		struct ata_port *ap = host->ports[i];
- 
- 		ata_scsi_scan_host(ap);
-+		ata_scsi_set_link_pm_policy(ap->scsi_host,
-+				ap->pm_policy);
- 	}
- 
- 	return 0;
-Index: 2.6-git/include/linux/ata.h
-===================================================================
---- 2.6-git.orig/include/linux/ata.h
-+++ 2.6-git/include/linux/ata.h
-@@ -320,6 +320,8 @@ struct ata_taskfile {
- 	  ((u64) (id)[(n) + 0]) )
- 
- #define ata_id_cdb_intr(id)	(((id)[0] & 0x60) == 0x20)
-+#define ata_id_has_hipm(id)	((id)[76] & (1 << 9))
-+#define ata_id_has_dipm(id)	((id)[78] & (1 << 3))
- 
- static inline unsigned int ata_id_major_version(const u16 *id)
- {
+As some of you might know from my earlier post/thread about atkbd and softraw, 
+I'm currently working on getting keyboards with internet/easy access keys to 
+work painlessly / plug and play.
+
+In order to be able to better test / develop this I've bought 2 cheap such 
+keyboards today, one ps2 and one both usb and ps2 capable.
+
+When comparing usb vs ps2 / testing the keycodes generated for the easy access
+keys on my trust (microsoft compatible) keyboard. I noticed the search key
+generated the linux/input keycode for find when connected through USB. This 
+lead me to check the consumer page mappings in hid-input.c . And it turns out 
+the the mapping for ID 0x221 deviates from the HUT standard document:
+http://www.usb.org/developers/devclass_docs/Hut1_12.pdf
+
+Currently it is incorrectly mapped to find, whereas it should be mapped to
+search. I also added missing bindings for ID 0x21f, the real find and for
+0x222, goto.
+
+Regards,
+
+Hans
+
+--------------010702030509030902060601
+Content-Type: text/x-patch;
+ name="usb-hid-hut.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="usb-hid-hut.patch"
+
+When comparing usb vs ps2 / testing the keycodes generated for the easy access
+keys on my trust (microsoft compatible) keyboard. I noticed the search key
+generated the keycode for find when connected through USB. This lead me to
+check the consumer page mappings in hid-input.c . And it turns out the the
+mapping for ID 0x221 deviates from the HUT standard document:
+http://www.usb.org/developers/devclass_docs/Hut1_12.pdf
+
+Currently it is incorrectly mapped to find, whereas it should be mapped to
+search. I also added missing bindings for ID 0x21f, the real find and for
+0x222, goto.
+
+Signed-off-by: Hans de Goede <j.w.r.degoede@hhs.nl>
+--- linux-2.6.21.x86_64/drivers/hid/hid-input.c.hut	2007-06-12 19:26:58.000000000 +0200
++++ linux-2.6.21.x86_64/drivers/hid/hid-input.c	2007-06-12 19:33:32.000000000 +0200
+@@ -598,7 +598,9 @@
+ 				case 0x21b: map_key_clear(KEY_COPY);		break;
+ 				case 0x21c: map_key_clear(KEY_CUT);		break;
+ 				case 0x21d: map_key_clear(KEY_PASTE);		break;
+-				case 0x221: map_key_clear(KEY_FIND);		break;
++				case 0x21f: map_key_clear(KEY_FIND);		break;
++				case 0x221: map_key_clear(KEY_SEARCH);		break;
++				case 0x222: map_key_clear(KEY_GOTO);		break;
+ 				case 0x223: map_key_clear(KEY_HOMEPAGE);	break;
+ 				case 0x224: map_key_clear(KEY_BACK);		break;
+ 				case 0x225: map_key_clear(KEY_FORWARD);		break;
+
+--------------010702030509030902060601--
