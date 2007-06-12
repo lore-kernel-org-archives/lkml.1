@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbXFLAfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbXFLAjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbXFLAfq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 20:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbXFLAfg
+	id S1756694AbXFLAjO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 20:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbXFLAjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 20:35:36 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:40625 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757341AbXFLAff convert rfc822-to-8bit (ORCPT
+	Mon, 11 Jun 2007 20:39:00 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56751 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753774AbXFLAi7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 20:35:35 -0400
-Message-ID: <11f674920706111735l7dec2136t32d40ee2ab4ccca4@mail.gmail.com>
-Date: Mon, 11 Jun 2007 17:35:34 -0700
-From: "Kevin Bowling" <lkml@kev009.com>
-To: "Kevin K" <k_krieser@sbcglobal.net>
-Subject: Re: ext2 on flash memory
-Cc: DervishD <lkml@dervishd.net>, Linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <191337B7-F4CC-4824-B669-48AE194BE141@sbcglobal.net>
+	Mon, 11 Jun 2007 20:38:59 -0400
+Date: Mon, 11 Jun 2007 17:38:58 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
+       davem@davemloft.net
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+In-Reply-To: <20070611235208.GC25022@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0706111737230.24389@schroedinger.engr.sgi.com>
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
+ <200706090056.49279.ak@suse.de> <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
+ <200706091147.24705.ak@suse.de> <20070611204442.GA4074@linux-os.sc.intel.com>
+ <20070611141449.bfbc4769.akpm@linux-foundation.org>
+ <20070611235208.GC25022@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20070611101319.GA14284@DervishD>
-	 <191337B7-F4CC-4824-B669-48AE194BE141@sbcglobal.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/11/07, Kevin K <k_krieser@sbcglobal.net> wrote:
->
-> On Jun 11, 2007, at 5:13 AM, DervishD wrote:
->
-> >     Hi all :)
-> >
-> >     I was wondering: is there any reason not to use ext2 on an USB
-> > pendrive? Really my question is not only about USB pendrives, but any
-> > device whose storage is flash based. Let's assume that the device
-> > has a
-> > good quality flash memory with wear leveling and the like...
-> >
-> >     Thanks a lot in advance :)
-> >
-> >     Raúl Núñez de Arenas Coronado
-> >
->
->
-> My opinion is that, unless the flash is really cheap, or it is being
-> written to excessively, that it probably doesn't matter too much.
-> With the growth in size of flash, just how long do you think it will
-> continue to be used before you go to something larger?
->
-> A 256MB flash of a few years ago has been supplanted in many cases by
-> today's 2-4gb memory.
->
-> One suggestion with ext2 might be to mount it with the noatime
-> option, so it doesn't update the last access time for directories and
-> files.  Otherwise, you are doing a write even when you only plan to
-> read a file.
+On Mon, 11 Jun 2007, Keshavamurthy, Anil S wrote:
 
-All of the posts fail to address the question here: what is the
-correct file system, or does one exist yet, for wear leveling flash
-storage.  JFFS2 and logfs are nice for MTD, but for better flash
-memories that are likely to be used in the future like solid state
-hard disks, what is the answer?
+> slab allocators don;t reserve the memory, in other words this memory 
+> can be consumed by VM under memory pressure which we don;t want in
+> IOMMU case.
+
+So mempools....
+
+> Nope,they both are exactly opposite. 
+> mempool with GFP_ATOMIC, first tries to get memory from OS and
+> if that fails, it looks for the object in the pool and returns.
+
+How does the difference matter? In both cases you get the memory you want.
+
+> Where as resource pool is exactly opposite of mempool, where each 
+> time it looks for an object in the pool and if it exist then we 
+> return that object else we try to get the memory for OS while 
+> scheduling the work to grow the pool objects. In fact, the  work
+> is schedule to grow the pool when the low threshold point is hit.
+
+Grow the mempool when the low level point is hit? Or equip mempools with 
+the functionality that you want?
