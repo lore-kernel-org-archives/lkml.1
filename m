@@ -1,139 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbXFLBzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbXFLB5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757993AbXFLBzt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 21:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757103AbXFLBzl
+	id S1758066AbXFLB5b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 21:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757103AbXFLB5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 21:55:41 -0400
-Received: from mga01.intel.com ([192.55.52.88]:7780 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756981AbXFLBzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 21:55:40 -0400
+	Mon, 11 Jun 2007 21:57:23 -0400
+Received: from mga07.intel.com ([143.182.124.22]:2045 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756912AbXFLB5X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 21:57:23 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
-   d="scan'208";a="255767013"
-Date: Tue, 12 Jun 2007 09:54:59 +0800
-From: Wang Zhenyu <zhenyu.z.wang@intel.com>
-To: Dave Jones <davej@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
-       Keith Packard <keithp@keithp.com>
-Subject: [RFC][AGPGART]intel-agp: save whole config space in suspend/resume
-Message-ID: <20070612015459.GB28668@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
-	Keith Packard <keithp@keithp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
-X-Mailer: mutt
-X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
+   d="scan'208";a="238050201"
+Message-ID: <466DFD22.5080303@linux.intel.com>
+Date: Mon, 11 Jun 2007 18:55:46 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com>	<200706090056.49279.ak@suse.de>	<Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>	<200706091147.24705.ak@suse.de>	<20070611204442.GA4074@linux-os.sc.intel.com>	<20070611141449.bfbc4769.akpm@linux-foundation.org>	<20070611235208.GC25022@linux-os.sc.intel.com>	<20070611173001.e0355af3.akpm@linux-foundation.org>	<466DF290.2040503@linux.intel.com> <20070611183555.fe763fe4.akpm@linux-foundation.org>
+In-Reply-To: <20070611183555.fe763fe4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Mon, 11 Jun 2007 18:10:40 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
+> 
+>> Andrew Morton wrote:
+>>>> Where as resource pool is exactly opposite of mempool, where each 
+>>>> time it looks for an object in the pool and if it exist then we 
+>>>> return that object else we try to get the memory for OS while 
+>>>> scheduling the work to grow the pool objects. In fact, the  work
+>>>> is schedule to grow the pool when the low threshold point is hit.
+>>> I realise all that.  But I'd have thought that the mempool approach is
+>>> actually better: use the page allocator and only deplete your reserve pool
+>>> when the page allocator fails.
+>> the problem with that is that if anything downstream from the iommu 
+>> layer ALSO needs memory, we've now eaten up the last free page and 
+>> things go splat.
+> 
+> If that happens, we still have the mempool reserve to fall back to.
 
-Dave,
-
-It looks that config space save/restore for intel-agp still has problem
-that might affect some chip models. Andreas Mohr's work on his i815 suspend/resume
-support showed that we need to save extra bits in config space on this old chip type. 
-His patch is in -mm tree, http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/broken-out/working-3d-dri-intel-agpko-resume-for-i815-chip.patch
-
-And recently James Bottomley also reported that save/restore whole 256 bytes config 
-space for gfx device can fix his s3 issue on Fujitsu P7120 i915. 
-http://lists.freedesktop.org/archives/xorg/2007-June/025346.html
-
-So here's my suggested patch for save whole 256 bytes config space for intel-agp,
-which could fix these issues. I tested it on my 965GM, that s3 works fine with X. 
-
-This patch bases on latest kernel git and my intel-agp patch set on agpgart.git tip.
-http://git.kernel.org/?p=linux/kernel/git/davej/agpgart.git;a=summary
-
-
-Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
----
- drivers/char/agp/intel-agp.c |   44 +++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 43 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index d383168..bc18241 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -110,6 +110,7 @@ static struct _intel_private {
- 	 * popup and for the GTT.
- 	 */
- 	int gtt_entries;			/* i830+ */
-+	u32 extra_saved_config[48];	/* suspend/resume */
- } intel_private;
- 
- static int intel_i810_fetch_size(void)
-@@ -1974,9 +1975,33 @@ static void __devexit agp_intel_remove(struct pci_dev *pdev)
- }
- 
- #ifdef CONFIG_PM
-+static int agp_intel_suspend (struct pci_dev *pdev, pm_message_t state)
-+{
-+	int i;
-+
-+	pci_save_state(pdev);
-+
-+	if (intel_private.pcidev) {
-+		pci_save_state(intel_private.pcidev);
-+
-+		for (i = 0; i < 48; i++)
-+			pci_read_config_dword(intel_private.pcidev, i*4+64,
-+				&intel_private.extra_saved_config[i]);
-+
-+		pci_set_power_state(intel_private.pcidev,
-+			pci_choose_state(intel_private.pcidev, state));
-+	}
-+
-+	pci_set_power_state(pdev, pci_choose_state(pdev, state));
-+
-+	return 0;
-+}
-+
- static int agp_intel_resume(struct pci_dev *pdev)
- {
- 	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
-+	int i = 0;
-+	u32 val;
- 
- 	pci_restore_state(pdev);
- 
-@@ -1984,8 +2009,24 @@ static int agp_intel_resume(struct pci_dev *pdev)
- 	 * as host bridge (00:00) resumes before graphics device (02:00),
- 	 * then our access to its pci space can work right.
- 	 */
--	if (intel_private.pcidev)
-+	if (intel_private.pcidev) {
-+		pci_set_power_state(intel_private.pcidev, PCI_D0);
- 		pci_restore_state(intel_private.pcidev);
-+		for (i = 0; i < 48; i++) {
-+			pci_read_config_dword(intel_private.pcidev, i*4+64,
-+						&val);
-+			if (val != intel_private.extra_saved_config[i]) {
-+				printk(KERN_DEBUG "intel-agp: Writing back"
-+					"config space at offset %x"
-+					" (was %x, writing %x)\n",
-+					i*4+64, val,
-+					intel_private.extra_saved_config[i]);
-+				pci_write_config_dword(intel_private.pcidev,
-+					i*4+64,
-+					intel_private.extra_saved_config[i]);
-+			}
-+		}
-+	}
- 
- 	if (bridge->driver == &intel_generic_driver)
- 		intel_configure();
-@@ -2062,6 +2103,7 @@ static struct pci_driver agp_intel_pci_driver = {
- 	.probe		= agp_intel_probe,
- 	.remove		= __devexit_p(agp_intel_remove),
- #ifdef CONFIG_PM
-+	.suspend	= agp_intel_suspend,
- 	.resume		= agp_intel_resume,
- #endif
- };
--- 
-1.4.4.4
+we do, except that we just ate the memory the downstream code would 
+use and get ... so THAT can't get any.
