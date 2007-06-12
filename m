@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXFLO6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbXFLPDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbXFLO6P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 10:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbXFLO57
+	id S1755247AbXFLPDP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbXFLPDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 10:57:59 -0400
-Received: from host-66-43-248-10 ([67.55.143.10]:42282 "EHLO albrecht.rdi1.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753426AbXFLO57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 10:57:59 -0400
-Subject: Re: [BUG] via c3/2.6.20 -- ps/2 keyboard doesn't work with console
-From: Paul Albrecht <albrecht@rdi1.com>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <200706120114.48645.dtor@insightbb.com>
-References: <1181236651.15435.1.camel@albrecht.rdi1.com>
-	 <d120d5000706111228g4ada3a8dxf8e31dc62cfab476@mail.gmail.com>
-	 <1181588095.2436.5.camel@albrecht.rdi1.com>
-	 <200706120114.48645.dtor@insightbb.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 12 Jun 2007 10:02:26 -0400
-Message-Id: <1181656946.3176.1.camel@albrecht.rdi1.com>
+	Tue, 12 Jun 2007 11:03:01 -0400
+Received: from tayrelbas01.tay.hp.com ([161.114.80.244]:45812 "EHLO
+	tayrelbas01.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbXFLPDB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 11:03:01 -0400
+Date: Tue, 12 Jun 2007 08:02:46 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: oprofile-list@lists.sourceforge.net
+Cc: wcohen@redhat.com, ak@suse.de, perfmon@napali.hpl.hp.com,
+       linux-kernel@vger.kernel.org, levon@movementarian.org
+Subject: OProfile issues
+Message-ID: <20070612150246.GJ32163@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
 Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-12 at 01:14 -0400, Dmitry Torokhov wrote: 
-> On Monday 11 June 2007 14:54, Paul Albrecht wrote:
-> > 
-> > Is i8042.noaux a workaround or a fix?
-> > 
-> 
-> Just a workaround. Do you have a PS/2 mouse you could test with? If so could
-> you check if both keybioard and mouse work with mouse plugged in and without
-> i8042.noaux.
-> 
+Hello,
 
-The system I'm using has only one ps/2 interface so I can't test with
-them both plugged in at the same time.
+I am working on perfmon2 to allow Oprofile and perfmon2 to co-exist
+as suggested by Andi Kleen. I looked at the Oprofile init/shutdown
+code and I am puzzled by several things which you might be able to
+explain for me. I am looking at 2.6.22-rc3.
 
-> Also cxould you please try the patch below (again with mouse if you have one
-> and without).
-> 
+Here are the issues:
 
-I tried applying your patch to 2.6.21.5 and it failed. Here's the
-output:
+ * model->fill_in_addresses is called once for all CPUs
+   on X86, it does more than just filling in the addresses,
+   it also coordinates with the NMI watchdog by reserving
+   registers via the reserve_*nmi() interface.
 
-patch --dry-run -p1 < ../i8042.patch
-patching file drivers/input/serio/i8042-x86ia64io.h
-Hunk #1 FAILED at 356.
-Hunk #2 FAILED at 404.
-2 out of 2 hunks FAILED -- saving rejects to file
-drivers/input/serio/i8042-x86ia64io.h.rej
+   The problem is that the release of the registers is done
+   in model->shutdown() which happens to be executed on every
+   CPU. So you end up releasing the registers too many times.
+   This is *not* harmless once you start sharing the PMU with
+   other subsystems given the way the allocator is designed.
 
+ * allocate_msrs() allocates two tables per CPU. One for the
+   counters, the other for the eventsel registers. But then
+   nmi_setup() copies the cpu_msrs[0] into cpu_msrs[] of all
+   other cpus. This operation overrides the cpu_msrs[].counters
+   and cpu_msrs[].controls pointers for all CPUs but CPU0.
+   But free_msrs() will free the same tables multiple times. This
+   causes a kernel dump when you enable certain kernel debugging
+   features. The fix is to copy the content of the counters and
+   controls array, not the pointers.
 
+ * the fill_in_addresses() callback for X86 invokes the NMI watchdog
+   reserve_*_nmi() register allocation routines. This is done regardless
+   of whether the NMI watchdog is active. When the NMI watchdog is not
+   active, the allocator will satisfy the allocation for the first MSR
+   of each type (counter or control), but then it will reject any
+   request for the others. You end up working with a single
+   counter/control register.
 
-Paul Albrecht
+Are those known bugs?
 
+-- 
+-Stephane
