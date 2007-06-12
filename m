@@ -1,166 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbXFLKUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbXFLKUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbXFLKUS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 06:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbXFLKUH
+	id S1754830AbXFLKUi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 06:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbXFLKUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 06:20:07 -0400
-Received: from raven.upol.cz ([158.194.120.4]:61084 "EHLO raven.upol.cz"
+	Tue, 12 Jun 2007 06:20:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42835 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751877AbXFLKUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 06:20:05 -0400
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
-       kbuild-devel@lists.sourceforge.net
-Subject: [patch] kbuild: remember ARCH in the object directory
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: emacs + quilt + jed (x86_64-pc-linux-glibc-debian)
-X-Mailer: slrn
-In-Reply-To: <20070611125903.GA3933@uranus.ravnborg.org>
-References: <200705090951.l499pa6G020397@shell0.pdx.osdl.net> <20070509204613.GA10336@uranus.ravnborg.org> <1178755780.7286.175.camel@localhost.localdomain> <E1HxjKu-0004G6-7d@flower> <20070611125903.GA3933@uranus.ravnborg.org>
-Date: Tue, 12 Jun 2007 12:31:56 +0200
-Message-Id: <E1Hy3fI-0001Tw-Fy@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	id S1752106AbXFLKU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 06:20:29 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [shm][hugetlb] Fix get_policy for stacked shared memory files
+Date: Tue, 12 Jun 2007 12:20:11 +0200
+User-Agent: KMail/1.9.6
+Cc: Adam Litke <agl@us.ibm.com>, dean gaudet <dean@arctic.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, clameter@sgi.com
+References: <Pine.LNX.4.64.0705152222550.14691@twinlark.arctic.org> <1181597696.22671.2.camel@localhost.localdomain> <20070611213020.b3d91757.akpm@linux-foundation.org>
+In-Reply-To: <20070611213020.b3d91757.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706121220.11332.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[patch] kbuild: remember ARCH in the object directory
 
- - rephrase some related (misspelled) comments,
- - remove all trailing whitespace in the top Makefile,
+> Can we just double-check the refcounting please?
+> 
+> > index 4fefbad..8d2672d 100644
+> > --- a/ipc/shm.c
+> > +++ b/ipc/shm.c
+> > @@ -254,8 +254,10 @@ struct mempolicy *shm_get_policy(struct vm_area_struct *vma, unsigned long addr)
+> >  
+> >  	if (sfd->vm_ops->get_policy)
+> >  		pol = sfd->vm_ops->get_policy(vma, addr);
+> 
+> afacit this takes a ref on the underlying policy
+> 
+> > -	else
+> > +	else if (vma->vm_policy)
+> >  		pol = vma->vm_policy;
+> > +	else
+> > +		pol = current->mempolicy;
+> 
+> but these two do not.
+> 
+> >  	return pol;
+> >  }
+> >  #endif
+> 
+> Is is all correct?
 
- * remember ARCH in the output directory, thus making build of i386
-   on amd64 *actually* convenient,
+No it looks broken.
 
- - harmless refactoring of the Makefile generating.
-
-Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
----
--o--=O`C  /. .\
- #oo'L O      o
-<___=E M    ^--
-
- Just lazy typing `make ARCH=i386` every time i want to check lguest.
-
- Makefile           |   17 ++++++++---------
- scripts/mkmakefile |   42 ++++++++++++++++++++++++------------------
- 2 files changed, 32 insertions(+), 27 deletions(-)
-
-Index: linux-2.6.22-rc4-mm2/scripts/mkmakefile
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/scripts/mkmakefile	2007-06-12 11:21:27.755466250 +0200
-+++ linux-2.6.22-rc4-mm2/scripts/mkmakefile	2007-06-12 12:04:13.675826250 +0200
-@@ -1,6 +1,6 @@
--#!/bin/sh
-+#!/bin/sh -e
- # Generates a small Makefile used in the root of the output
--# directory, to allow make to be started from there.
--# The Makefile also allow for more convinient build of external modules
-+# directory, to allow kernel build to be started from there.
-+# External modules can't built with it as well.
- 
- # Usage
-@@ -9,28 +9,34 @@
- # $3 - version
- # $4 - patchlevel
-+# $5 - ARCH
- 
-+set -e
- 
--test ! -r $2/Makefile -o -O $2/Makefile || exit 0
- echo "  GEN     $2/Makefile"
-+echo "#
-+# Automatically generated by
-+# $0
-+#
-+VERSION		= $3
-+PATCHLEVEL	= $4
-+
-+KERNELSRC	= $1
-+KERNELOUTPUT	= $2
-+ARCH		= $5
-+" >$2/Makefile
- 
--cat << EOF > $2/Makefile
--# Automatically generated by $0: don't edit
-+cat << "EOF" >> $2/Makefile
-+MAKEFLAGS	+= -rR --no-print-directory
- 
--VERSION = $3
--PATCHLEVEL = $4
-+export ARCH
- 
--KERNELSRC    := $1
--KERNELOUTPUT := $2
--
--MAKEFLAGS += --no-print-directory
-+all:
-+	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT)
- 
--.PHONY: all \$(MAKECMDGOALS)
-+$(filter-out all Makefile,$(MAKECMDGOALS)) %/:
-+	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT) $@
- 
--all:
--	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT)
-+.PHONY: all $(MAKECMDGOALS)
- 
- Makefile:;
--
--\$(filter-out all Makefile,\$(MAKECMDGOALS)) %/:
--	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$@
- EOF
-Index: linux-2.6.22-rc4-mm2/Makefile
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/Makefile	2007-06-12 11:35:20.559513250 +0200
-+++ linux-2.6.22-rc4-mm2/Makefile	2007-06-12 11:51:10.438877000 +0200
-@@ -156,5 +156,5 @@ export srctree objtree VPATH TOPDIR
- # first, and if a usermode build is happening, the "ARCH=um" on the command
- # line overrides the setting of ARCH below.  If a native build is happening,
--# then ARCH is assigned, getting whatever value it gets normally, and 
-+# then ARCH is assigned, getting whatever value it gets normally, and
- # SUBARCH is subsequently ignored.
- 
-@@ -242,5 +242,5 @@ export KBUILD_CHECKSRC KBUILD_SRC KBUILD
- #
- # If $(quiet) is empty, the whole command will be printed.
--# If it is set to "quiet_", only the short version will be printed. 
-+# If it is set to "quiet_", only the short version will be printed.
- # If it is set to "silent_", nothing will be printed at all, since
- # the variable $(silent_cmd_cc_o_c) doesn't exist.
-@@ -352,11 +352,10 @@ scripts/basic/%: scripts_basic ;
- 
- PHONY += outputmakefile
--# outputmakefile generates a Makefile in the output directory, if using a
--# separate output directory. This allows convenient use of make in the
--# output directory.
- outputmakefile:
-+# generate a Makefile in the output directory, if using a
-+# separate output directory; allows convenient use of make there
- ifneq ($(KBUILD_SRC),)
- 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
--	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
-+	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL) $(ARCH)
- endif
- 
-@@ -699,5 +698,5 @@ endef
- cmd_ksym_ld = $(cmd_vmlinux__)
- define rule_ksym_ld
--	: 
-+	:
- 	+$(call cmd,vmlinux_version)
- 	$(call cmd,vmlinux__)
-@@ -750,5 +749,5 @@ endif
- 	$(Q)rm -f .old_version
- 
--# The actual objects are generated when descending, 
-+# The actual objects are generated when descending,
- # make sure no implicit rule kicks in
- $(sort $(vmlinux-init) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
-@@ -1454,5 +1453,5 @@ endif
- 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
- 
--# FIXME Should go into a make.lib or something 
-+# FIXME Should go into a make.lib or something
- # ===========================================================================
- 
+-Andi
