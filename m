@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbXFLOo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbXFLOu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbXFLOo5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 10:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXFLOou
+	id S1754716AbXFLOu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 10:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXFLOuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 10:44:50 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:46732 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbXFLOot (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 10:44:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=l8X6WlEpVf0IKU+XoOO104y0fjnZBKqmS5OKFAmaQclMOdv4eMlV6CjEWC7XUsg/E3+8osvCehPmeWvz2CUBg5CTSWXYiFe0uWBriMuoRO9Z1GWLv1oRJPa5EZQeA/fLUnfNh14eSfBateMqCk/IEhM+3THiwEnW6py7PmrSHkM=
-Message-ID: <75b66ecd0706120744g7cdb3392l6537b5c68c2d6b21@mail.gmail.com>
-Date: Tue, 12 Jun 2007 10:44:47 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "R.F. Burns" <burnsrf@gmail.com>
-Subject: Re: PC speaker
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <a800cda90706120545w2c6d0bb0vb77bd4d961415c5c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 10:50:19 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2852 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752137AbXFLOuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 10:50:18 -0400
+Date: Tue, 12 Jun 2007 14:50:08 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Message-ID: <20070612145007.GA5986@ucw.cz>
+References: <200706071530.51552.jesse.barnes@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a800cda90706120545w2c6d0bb0vb77bd4d961415c5c@mail.gmail.com>
-X-Google-Sender-Auth: fa5a5c22a5b2cbf9
+In-Reply-To: <200706071530.51552.jesse.barnes@intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/12/07, R.F. Burns <burnsrf@gmail.com> wrote:
-> Is it possible to write a kernel module which, when loaded, will blow the PC
-> speaker?
+Hi!
 
-LOL.  May I ask what your use case is?
+> On some machines, buggy BIOSes don't properly setup WB MTRRs to
+> cover all available RAM, meaning the last few megs (or even gigs)
+> of memory will be marked uncached.  Since Linux tends to allocate
+> from high memory addresses first, this causes the machine to be
+> unusably slow as soon as the kernel starts really using memory
+> (i.e. right around init time).
 
-Lee
+> +	if ((highest_addr >> PAGE_SHIFT) != end_pfn) {
+> +		printk(KERN_WARNING "***************\n");
+> +		printk(KERN_WARNING "**** WARNING: likely BIOS bug\n");
+> +		printk(KERN_WARNING "**** MTRRs don't cover all of "
+> +		       "memory, trimmed %ld pages\n", end_pfn -
+> +		       (highest_addr >> PAGE_SHIFT));
+> +		printk(KERN_WARNING "***************\n");
+> +		end_pfn = highest_addr >> PAGE_SHIFT;
+
+Missing 4K of memory is not worth 4K of junk in syslog per boot. Can
+you drop the stars and stop shouting?
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
