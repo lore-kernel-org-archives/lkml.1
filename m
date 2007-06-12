@@ -1,40 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbXFLJOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752979AbXFLJV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752201AbXFLJOm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 05:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbXFLJOf
+	id S1752979AbXFLJV4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 05:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbXFLJVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 05:14:35 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:45914 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbXFLJOe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 05:14:34 -0400
-Date: Tue, 12 Jun 2007 10:14:27 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       andi@rhlx01.fht-esslingen.de, Keith Packard <keithp@keithp.com>
-Message-ID: <20070612091427.GB9719@srcf.ucam.org>
-References: <20070612015459.GB28668@zhen-devel.sh.intel.com>
+	Tue, 12 Jun 2007 05:21:49 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:21549 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751260AbXFLJVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 05:21:48 -0400
+Message-ID: <466E65A7.3000206@msgid.tls.msk.ru>
+Date: Tue, 12 Jun 2007 13:21:43 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070612015459.GB28668@zhen-devel.sh.intel.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [RFC][AGPGART]intel-agp: save whole config space in suspend/resume
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: VIA C7 / VIA PC-1 (PC2500) anyone?
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 09:54:59AM +0800, Wang Zhenyu wrote:
+I bought a VIA PC2500 board a few days ago - this
+new series of their mobos,
 
-> +		for (i = 0; i < 48; i++) {
+This beast looks nice - after replacing their cooling
+system (that had a small fan on it) with larger but
+fanless, -- it becomes a almost real PC (1500MHz CPU),
+equipped with quite nice crypto and multimedia abilities,
+but with very low power consumption and very quiet.
 
-You seem to be writing the base address after the aperture size? That 
-won't work. As Dave says, there are ordering contraints.
+But the thing is - it doesn't quite work.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+It works generally - it boots, I can run my usual apps
+etc.  But on a random (yet frequent) basis it segfaults
+here and there.  For example:
+
+$ man man
+Reformatting man(1), please wait...
+$ man man
+Segmentation fault
+$ man man
+Segmentation fault
+$ man man
+Segmentation fault
+$ man man
+Segmentation fault
+$ man man
+Reformatting man(1), please wait...
+$ _
+
+(this is 100% idle machine, just booted).
+
+(There are other - simple and comples - applications which
+inhibits this problem.  For example, it 99% reliable segfaults
+on compiling aic79xx_core.c file in kernel, while all the rest
+(in my configuration anyway) compiles, at least after second
+attempt).
+
+It's definitely NOT memory issue - I tried several different
+memory modules (and different combinations) - the same results;
+I ran memtest86 for several days - no single error.
+
+I've seen a thread here on LKML about C7 and C3 CPUs back in
+March this year - tried with patch from Andi titled
+"i386: Enable CX8/PGE CPUID bits early on VIA C3" - it didn't
+change anything (this board does not lock up - not when booting
+nor when doing something, -- just random applications are
+crashing randomly, and the crash is always SIGSEGV; there's
+_nothing_ in dmesg about that, too).
+
+>From all the above it seems like something's broke on the
+motherboard (I've no idea what it can be however - because
+memory testing - which also tests for CPU cache for exampe -
+shows no errors; testing disk controller/disk using md5 does
+not show errors either, except of occasional SIGSEGVs)..
+
+However, being very curious about this, I tried installing
+'doze on this machine - winXP.  And that one went just fine
+without any error so far -- i tried stress-testing it as far
+as I can imagine, running various applications and workloads, --
+no errors.
+
+So I'm kinda.. stuck about what to do next.
+
+Any.. idea, anyone? :)
+
+Thanks!
+
+/mjt
