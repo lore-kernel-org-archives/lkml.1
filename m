@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbXFLPTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXFLPUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757352AbXFLPTw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 11:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbXFLPT0
+	id S1757397AbXFLPUS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbXFLPT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 11:19:26 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:46815 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757128AbXFLPTZ (ORCPT
+	Tue, 12 Jun 2007 11:19:27 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:55094 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757132AbXFLPTZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 Jun 2007 11:19:25 -0400
 From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: [PATCH 2/3] x86_64: During VM oom condition,
+Subject: [PATCH 1/3] powerpc: during VM oom condition,
 	kill all threads in process group
 To: linuxppc-dev@ozlabs.org, anton@samba.org, linux-kernel@vger.kernel.org
 Cc: will_schmidt@vnet.ibm.com
-Date: Tue, 12 Jun 2007 10:19:07 -0500
-Message-ID: <20070612151907.2869.47551.stgit@farscape.rchland.ibm.com>
-In-Reply-To: <20070612151901.2869.59390.stgit@farscape.rchland.ibm.com>
-References: <20070612151901.2869.59390.stgit@farscape.rchland.ibm.com>
+Date: Tue, 12 Jun 2007 10:19:01 -0500
+Message-ID: <20070612151901.2869.59390.stgit@farscape.rchland.ibm.com>
 User-Agent: StGIT/0.12
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -41,23 +39,25 @@ very obvious that something has gone wrong.
 This change allows the entire process group to be taken down, rather than
 just the one thread.
 
+lightly tested on powerpc
+
 Signed-off-by: Will <will_schmidt@vnet.ibm.com>
 ---
 
- arch/x86_64/mm/fault.c |    2 +-
+ arch/powerpc/mm/fault.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86_64/mm/fault.c b/arch/x86_64/mm/fault.c
-index 6ada723..328d504 100644
---- a/arch/x86_64/mm/fault.c
-+++ b/arch/x86_64/mm/fault.c
-@@ -563,7 +563,7 @@ out_of_memory:
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 03aeb3a..de1dcee 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -393,7 +393,7 @@ out_of_memory:
  	}
- 	printk("VM: killing process %s\n", tsk->comm);
- 	if (error_code & 4)
+ 	printk("VM: killing process %s\n", current->comm);
+ 	if (user_mode(regs))
 -		do_exit(SIGKILL);
 +		do_group_exit(SIGKILL);
- 	goto no_context;
+ 	return SIGKILL;
  
  do_sigbus:
 
