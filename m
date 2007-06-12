@@ -1,46 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbXFLVY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbXFLVZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873AbXFLVY2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 17:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbXFLVYU
+	id S1753395AbXFLVZx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 17:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbXFLVZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 17:24:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33702 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbXFLVYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 17:24:20 -0400
-Date: Tue, 12 Jun 2007 17:24:03 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Dike <jdike@addtoit.com>, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 1/2] UML - Remove PAGE_SIZE from libc code
-Message-ID: <20070612212403.GD15041@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jeff Dike <jdike@addtoit.com>, LKML <linux-kernel@vger.kernel.org>,
-	uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-References: <20070612164806.GA7517@c2.user-mode-linux.org> <20070612140544.40123d0c.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070612140544.40123d0c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Tue, 12 Jun 2007 17:25:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55348 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751912AbXFLVZn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 17:25:43 -0400
+Date: Tue, 12 Jun 2007 14:25:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: raid5: coding style cleanup / refactor
+Message-Id: <20070612142532.b45ee9bf.akpm@linux-foundation.org>
+In-Reply-To: <1181670063.12913.5.camel@dwillia2-linux.ch.intel.com>
+References: <1181670063.12913.5.camel@dwillia2-linux.ch.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 02:05:44PM -0700, Andrew Morton wrote:
- > On Tue, 12 Jun 2007 12:48:06 -0400
- > Jeff Dike <jdike@addtoit.com> wrote:
- > 
- > > Distros seem to be removing PAGE_SIZE from asm/page.h
- > 
- > They do?  That seems like a strange thing to do.  I wonder why, and I
- > wonder why such a change isn't needed in the mainline tree.
+On Tue, 12 Jun 2007 10:41:03 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
 
->From userland includes, yes.  User apps should be using getpagesize()
+> Most of the raid5 code predates git so the coding style violations have
+> been present for a long time.  However, now that major new patches are
+> arriving, checkpatch.pl complains about these old violations.  Instead of
+> attempting to justify the warnings as "this is what raid5 used to do", this
+> patch brings the code in line with the current style.
+> 
+> Note that this is more than a simple reformatting.  The majority of the
+> 80-column violations were in the handle_stripe5 and handle_stripe6
+> routines.  By introducing the 'stripe_head_state' and 'r6_state' objects
+> large portions of the logic could be moved to sub-routines, reclaiming a
+> column's worth of indentation.
+> 
+> 'stripe_head_state' consumes all of the automatic variables that previously
+> stood alone in handle_stripe.  'r6_state' contains the handle_stripe6
+> specific variables like p_failed and q_failed.  
+> 
+> One of the nice side effects of the 'stripe_head_state' change is that it
+> allows for further reductions in code duplication between raid5 and raid6
+> (note: unfortunately the other 80-column violations hide the code
+> duplication-removal effect in the diffstat).  The following new routines
+> are shared between raid5 and raid6:
+> 
+> 	handle_completed_write_requests
+> 	handle_requests_to_failed_array
+> 	handle_stripe_expansion
+> 
+> Trivia:
+> * PRINTK and RAID5_DEBUG is replaced with pr_debug
+> * struct field comments moved to the top (kernel-doc format)
 
-	Dave
+Unfortunately these cleanups get into a huge fight with your very own
+git-md-accel.patch:
 
--- 
-http://www.codemonkey.org.uk
+patching file drivers/md/raid5.c
+Hunk #1 succeeded at 58 (offset 1 line).
+Hunk #2 succeeded at 78 (offset 1 line).
+Hunk #3 succeeded at 91 (offset 1 line).
+Hunk #4 FAILED at 127.
+Hunk #5 succeeded at 157 (offset 2 lines).
+Hunk #6 succeeded at 167 (offset 2 lines).
+Hunk #7 succeeded at 211 (offset 2 lines).
+Hunk #8 succeeded at 224 (offset 2 lines).
+Hunk #9 succeeded at 235 with fuzz 1 (offset 3 lines).
+Hunk #10 succeeded at 263 (offset 3 lines).
+Hunk #11 succeeded at 304 (offset 3 lines).
+Hunk #12 succeeded at 943 (offset 578 lines).
+Hunk #13 succeeded at 995 (offset 578 lines).
+Hunk #14 succeeded at 1015 (offset 578 lines).
+Hunk #15 succeeded at 1124 (offset 578 lines).
+Hunk #16 succeeded at 1136 (offset 578 lines).
+Hunk #17 succeeded at 1155 (offset 578 lines).
+Hunk #18 succeeded at 1206 (offset 578 lines).
+Hunk #19 succeeded at 1251 (offset 578 lines).
+Hunk #20 succeeded at 1269 (offset 578 lines).
+Hunk #21 succeeded at 1278 (offset 578 lines).
+Hunk #22 FAILED at 1524.
+Hunk #23 FAILED at 1555.
+Hunk #24 succeeded at 1541 (offset 547 lines).
+Hunk #25 succeeded at 1989 with fuzz 2 (offset 978 lines).
+Hunk #26 FAILED at 2009.
+Hunk #27 FAILED at 2056.
+Hunk #28 FAILED at 2064.
+Hunk #29 FAILED at 2084.
+Hunk #30 FAILED at 2094.
+Hunk #31 FAILED at 2135.
+Hunk #32 FAILED at 2182.
+Hunk #33 FAILED at 2193.
+Hunk #34 FAILED at 2215.
+Hunk #35 FAILED at 2225.
+Hunk #36 FAILED at 2242.
+Hunk #37 FAILED at 2278.
+Hunk #38 succeeded at 3381 with fuzz 1 (offset 2026 lines).
+Hunk #39 FAILED at 4002.
+Hunk #40 FAILED at 4016.
+Hunk #41 FAILED at 4054.
+Hunk #42 FAILED at 4216.
+Hunk #43 FAILED at 4235.
+Hunk #44 FAILED at 4253.
+Hunk #45 FAILED at 4282.
+Hunk #46 FAILED at 4309.
+Hunk #47 FAILED at 4330.
+Hunk #48 FAILED at 4358.
+Hunk #49 FAILED at 4400.
+Hunk #50 FAILED at 4419.
+Hunk #51 FAILED at 4427.
+Hunk #52 FAILED at 4482.
+Hunk #53 FAILED at 4501.
+Hunk #54 FAILED at 4534.
+Hunk #55 FAILED at 4564.
+Hunk #56 FAILED at 4619.
+Hunk #57 FAILED at 4663.
+Hunk #58 succeeded at 3377 (offset 648 lines).
+Hunk #59 succeeded at 3415 (offset 648 lines).
+Hunk #60 succeeded at 3503 (offset 648 lines).
+Hunk #61 succeeded at 3538 (offset 648 lines).
+Hunk #62 succeeded at 3580 (offset 648 lines).
+Hunk #63 succeeded at 3617 (offset 648 lines).
+Hunk #64 succeeded at 3814 (offset 648 lines).
+Hunk #65 succeeded at 3865 (offset 648 lines).
+Hunk #66 succeeded at 3918 (offset 648 lines).
+Hunk #67 succeeded at 3972 (offset 650 lines).
+Hunk #68 succeeded at 4032 (offset 650 lines).
+Hunk #69 succeeded at 4123 (offset 650 lines).
+Hunk #70 succeeded at 4157 (offset 650 lines).
+Hunk #71 succeeded at 4197 (offset 650 lines).
+Hunk #72 succeeded at 4228 (offset 650 lines).
+Hunk #73 succeeded at 4340 (offset 650 lines).
+Hunk #74 succeeded at 4375 (offset 650 lines).
+Hunk #75 succeeded at 4514 (offset 650 lines).
+Hunk #76 succeeded at 4549 (offset 650 lines).
+Hunk #77 succeeded at 4633 (offset 650 lines).
+Hunk #78 succeeded at 4652 (offset 650 lines).
+Hunk #79 succeeded at 4670 (offset 650 lines).
+Hunk #80 succeeded at 4699 (offset 650 lines).
+34 out of 80 hunks FAILED -- saving rejects to file drivers/md/raid5.c.rej
+patching file include/linux/raid/raid5.h
+Hunk #2 FAILED at 118.
+Hunk #3 FAILED at 192.
+Hunk #4 succeeded at 302 (offset 57 lines).
+Hunk #5 succeeded at 335 (offset 57 lines).
+Hunk #6 succeeded at 370 (offset 57 lines).
+2 out of 6 hunks FAILED -- saving rejects to file include/linux/raid/raid5.h.rej
+
+I assume that you're prepared to repair all that damage to your tree, but
+it seems a bit masochistic?
+
