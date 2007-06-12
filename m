@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbXFLXWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbXFLXXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbXFLXWm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 19:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbXFLXWe
+	id S1756223AbXFLXXP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 19:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbXFLXXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 19:22:34 -0400
-Received: from ns.suse.de ([195.135.220.2]:48685 "EHLO mx1.suse.de"
+	Tue, 12 Jun 2007 19:23:00 -0400
+Received: from ns.suse.de ([195.135.220.2]:48706 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754074AbXFLXWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 19:22:33 -0400
-Date: Tue, 12 Jun 2007 16:21:59 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, htejun@gmail.com, sandeen@sandeen.net
-Subject: [GIT PATCH] sysfs fixes for 2.6.22-rc4
-Message-ID: <20070612232159.GA12971@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	id S1753696AbXFLXW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 19:22:59 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 2/3] sysfs: fix condition check in sysfs_drop_dentry()
+Date: Tue, 12 Jun 2007 16:22:45 -0700
+Message-Id: <11816905694164-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.2.1
+In-Reply-To: <11816905661989-git-send-email-gregkh@suse.de>
+References: <20070612232159.GA12971@suse.de>
+ <11816905661989-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some sysfs fixes for 2.6.22-rc4
+From: Tejun Heo <htejun@gmail.com>
 
-They are based on a set of patches from Tejun that have been in the -mm
-tree for a while and fix a nasty sysfs problem that people have been
-hitting in the real world (Google has hit this a lot and spent a lot of
-time and effort in tracking this down, I'd really like to say thanks for
-the help here.)
+The condition check doesn't make much sense as it basically always
+succeeds.  This causes NULL dereferencing on certain cases.  It seems
+that parentheses are put in the wrong place.  Fix it.
 
-Tejun and Eric have backported a small set of patches that fix this for
-your current tree, with the larger, more intrusive patches queued up for
-after 2.6.22 is out.
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ fs/sysfs/inode.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Tejun and I have beat on these patches a lot and have not found any
-problems.  I know it's late in the series for them, but under the
-circumstances, it seems reasonable.
-
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
-
-Patches will be sent as a follow-on to this message to lkml for people
-to see.
-
-thanks,
-
-greg k-h
-
-
- fs/sysfs/dir.c   |   38 +++++++++++++++++++++++++++++++-------
- fs/sysfs/inode.c |   21 +++++++++++++++++++--
- fs/sysfs/mount.c |    1 +
- fs/sysfs/sysfs.h |    2 ++
- 4 files changed, 53 insertions(+), 9 deletions(-)
-
----------------
-
-Eric Sandeen (1):
-      sysfs: store sysfs inode nrs in s_ino to avoid readdir oopses
-
-Tejun Heo (2):
-      sysfs: fix condition check in sysfs_drop_dentry()
-      sysfs: fix race condition around sd->s_dentry, take#2
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 082e2d4..38bbe07 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -252,7 +252,7 @@ void sysfs_drop_dentry(struct sysfs_dirent * sd, struct dentry * parent)
+ 	if (dentry) {
+ 		spin_lock(&dcache_lock);
+ 		spin_lock(&dentry->d_lock);
+-		if (!(d_unhashed(dentry) && dentry->d_inode)) {
++		if (!d_unhashed(dentry) && dentry->d_inode) {
+ 			inode = dentry->d_inode;
+ 			spin_lock(&inode->i_lock);
+ 			__iget(inode);
+-- 
+1.5.2.1
 
