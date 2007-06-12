@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbXFLVcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751912AbXFLVdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbXFLVcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 17:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXFLVci
+	id S1751912AbXFLVdE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 17:33:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbXFLVcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 17:32:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:15010 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751265AbXFLVch (ORCPT
+	Tue, 12 Jun 2007 17:32:46 -0400
+Received: from mga02.intel.com ([134.134.136.20]:54092 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754687AbXFLVco convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 17:32:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Z+9WD0HYRQhpxaCStrCE4wUwH9xgt4DjAJ+4RJTpC8sG4LwrxdGn43++foIwSO+Nb34y1jPI5Lm1tl5oJP+OvpfBL6IOGYgTImr7eIyEzWa/+Q5525UHDRClpzvh+heyGea1gzDxOLagd9K1941PqaF/i6wyIVEEUOViGE9Mu/4=
-Message-ID: <32209efe0706121432w705bfe51yb45f4fd08544267b@mail.gmail.com>
-Date: Tue, 12 Jun 2007 14:32:35 -0700
-From: "Natalie Protasevich" <protasnb@gmail.com>
-To: linux-kernel@vger.kernel.org, rdreier@cisco.com
-Subject: Re: FW: CONFIG_X86_ES7000=y, CONFIG_X86_GENERICARCH=n, CONFIG_ACPI=y build broken
-Cc: akpm@linux-foundation.org, vgoyal@in.ibm.com
-In-Reply-To: <19D0D50E9B1D0A40A9F0323DBFA04ACC023B0EB7@USRV-EXCH4.na.uis.unisys.com>
+	Tue, 12 Jun 2007 17:32:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,413,1175497200"; 
+   d="scan'208";a="253678817"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19D0D50E9B1D0A40A9F0323DBFA04ACC023B0EB7@USRV-EXCH4.na.uis.unisys.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: raid5: coding style cleanup / refactor
+Date: Tue, 12 Jun 2007 14:32:42 -0700
+Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5201FDE2CB@azsmsx413.amr.corp.intel.com>
+In-Reply-To: <20070612142532.b45ee9bf.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: raid5: coding style cleanup / refactor
+Thread-Index: AcetOD3vh1TqWcUhRliAIhNXk9MKlQAADZDQ
+From: "Williams, Dan J" <dan.j.williams@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "NeilBrown" <neilb@suse.de>, <linux-kernel@vger.kernel.org>,
+       <linux-raid@vger.kernel.org>
+X-OriginalArrivalTime: 12 Jun 2007 21:32:43.0149 (UTC) FILETIME=[35D8CBD0:01C7AD39]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> From: Roland Dreier [mailto:rdreier@cisco.com]
-> Sent: Tuesday, June 12, 2007 1:14 PM
-> To: linux-kernel@vger.kernel.org; Protasevich, Natalie; Vivek Goyal
-> Cc: akpm@linux-foundation.org
-> Subject: CONFIG_X86_ES7000=y, CONFIG_X86_GENERICARCH=n, CONFIG_ACPI=y
-> build broken
->
-> (sending to Vivek since he seems to be one of the last people to touch
-> this code)
->
-> For some strange reason I found myself compiling a kernel with
-> CONFIG_X86_ES7000 and CONFIG_ACPI set and CONFIG_X86_GENERICARCH not
-> set.  It died with
->
->     arch/i386/kernel/built-in.o: In function `acpi_parse_madt':
->     boot.c:(.init.text+0x68b7): undefined reference to
-> `acpi_madt_oem_check'
->     arch/i386/kernel/built-in.o: In function `get_smp_config':
->     (.init.text+0x9f98): undefined reference to `mps_oem_check'
->     arch/i386/kernel/built-in.o: In function `connect_bsp_APIC':
->     (.init.text+0xa340): undefined reference to `enable_apic_mode'
->     arch/i386/kernel/built-in.o: In function `connect_bsp_APIC':
->     (.init.text+0xa370): undefined reference to `enable_apic_mode'
->
-> this seems to be because eg acpi_madt_oem_check() and mps_oem_check()
-> are defined in arch/i386/mach-generic/es7000.c, but arch/i386/Makefile
-> only goes into mach-generic if CONFIG_X86_GENERICARCH is set.
-> I didn't track down why enable_apic_mode is broken yet.
->
-> No patch because I don't understand how this subarch stuff is supposed
-> to build :(
->
->  - R.
->
+> From: Andrew Morton [mailto:akpm@linux-foundation.org]
+> Unfortunately these cleanups get into a huge fight with your very own
+> git-md-accel.patch:
+> 
+Yes, you missed the note that said:
 
-Roland,
-I can't reproduce the problem, with the git tree I just pulled. Can
-you please provide the config file?
-Thanks,
---Natalie
+	Note, I have not rebased git-md-accel yet.  While that is
+happening I
+	wanted to have this patch out for review.
+
+> I assume that you're prepared to repair all that damage to your tree,
+but
+> it seems a bit masochistic?
+
+It's either this or have an inconsistent coding style throughout
+raid5.c.  I figure it is worth it to have reduced code duplication
+between raid5 and raid6, and it makes it easier to add new cache
+features going forward.  I have a few more cleanups to add for a rev2 of
+this patch, but I will hold that off until the rebase is done.
+
+Dan
