@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbXFLWVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbXFLW2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbXFLWVx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 18:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbXFLWVq
+	id S1754466AbXFLW2j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 18:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXFLW2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 18:21:46 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:57947 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750798AbXFLWVp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 18:21:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JmWyof/g+0pwTJuFLahT0LdwtKzXBH9UV0/gtd9sUikc7oBhkYWJs95aA2NxR3sFWD/752bN83CWgD4JvzIZFjuUttALFOexR/N3aINdATRGNH5Y7oUXccF0yhyB4aycmrgeTHYbYMiGuSCOrJrGgdQ2VejKlK1VctpmLG7hvzQ=
-Message-ID: <9a8748490706121521q1192b9dbp6b2adff087fc01d@mail.gmail.com>
-Date: Wed, 13 Jun 2007 00:21:43 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: dedekind@infradead.org
-Subject: Re: [PATCH] fix memory leak in UBI scanning unit
-Cc: linux-kernel@vger.kernel.org, dedekind@linutronix.de
-In-Reply-To: <1178784573.3734.5.camel@sauron>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 18:28:30 -0400
+Received: from mga03.intel.com ([143.182.124.21]:28681 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750747AbXFLW2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 18:28:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,413,1175497200"; 
+   d="scan'208";a="238428395"
+Date: Tue, 12 Jun 2007 15:24:32 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       asit.k.mallick@intel.com
+Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+Message-ID: <20070612222432.GC17143@linux-os.sc.intel.com>
+References: <m1tztt3yqy.fsf@ebiederm.dsl.xmission.com> <200706122252.10886.rjw@sisk.pl> <20070612215659.GB17143@linux-os.sc.intel.com> <200706130016.09490.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200705100026.12639.jesper.juhl@gmail.com>
-	 <1178784573.3734.5.camel@sauron>
+In-Reply-To: <200706130016.09490.rjw@sisk.pl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/05/07, Artem Bityutskiy <dedekind@infradead.org> wrote:
-> On Thu, 2007-05-10 at 00:26 +0200, Jesper Juhl wrote:
-> > In drivers/mtd/ubi/scan.c::paranoid_check_si() there's a memory leak.
-> > If the call
-> >       err = ubi_io_is_bad(ubi, pnum);
-> > returns <0, then we'll return with out freeing (and thus leak) buf.
-> > This patch eliminates the memory leak by freeing buf before returning.
-> >
-> > Problem spotted by the Coverity checker.
->
-> It was already reported and fixed in our git tree. But thanks anyway.
->
-Any idea when you'll be merging with Linus?
-I just checked mainline git and the bug is still there :-(
+On Wed, Jun 13, 2007 at 12:16:08AM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, 12 June 2007 23:56, Siddha, Suresh B wrote:
+> > On Tue, Jun 12, 2007 at 10:52:09PM +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday, 12 June 2007 20:19, Eric W. Biederman wrote:
+> > > > Because you are calling unfixably broken code.  That should be a decent
+> > > > incentive to do something else won't it?
+> > > 
+> > > Can you please tell me _what_ else can be done?
+> > > 
+> > > > IOAPICs do not support what the code is doing here.  There is lots of
+> > > > practical evidence including bad experiences and practical tests that
+> > > > support this.
+> > > 
+> > > Well, AFAICS, Suresh has tried to debug one failing case recently without
+> > > any consistent conclusions.  I don't know of any other test cases (links,
+> > > please?).
+> > 
+> > Rafael, Darrick Wong's issue looks different and hence I was motivated to
+> > look and fix if it was a SW issue. For now, I am not able to comprehend
+> > what is happening on Darrick Wong's system. Need more help from Darrick
+> > as he has the golden failing system.
+> > 
+> > Meanwhile I talked to our hardware folks about the irq migration in general.
+> > 
+> > One good news is that future versions of chipsets will have an Interrupt
+> > Remapping feature(for more details please refer to
+> > http://download.intel.com/technology/computing/vptech/Intel(r)_VT_for_Direct_IO.pdf)
+> > where in we can reliably migrate the irq to someother cpu in the process
+> > context.
+> > 
+> > And for the existing platforms, chipset folks don't see a reason why the
+> > Eric's algorithm(specified below) should fail.
+> > 
+> > Eric's algorithm for level triggered(edge triggered should be easier than
+> > level triggered):
+> > - Mask the irq in process context.
+> > - Poll RIRR until an ack of for the irq was not pending.
+> > - Migrate the irq.
+> > 
+> > Eric had a problem of stuck remote IRR on E75xx chipset with this algorithm
+> > and my next step is to reproduce this issue on this platform and understand
+> > the behavior.
+> 
+> OK
+> 
+> In that case, do I understand correctly that we are going to implement the
+> Eric's algorithm above for the CPU hotunplugging on x86 once you've figured
+> out what's the E75xx issue?
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+That is the idea. Thanks.
