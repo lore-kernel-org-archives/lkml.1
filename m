@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbXFLMw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbXFLMyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757259AbXFLMw1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 08:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756954AbXFLMwP
+	id S1757058AbXFLMyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 08:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbXFLMyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 08:52:15 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:50388 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756861AbXFLMwO (ORCPT
+	Tue, 12 Jun 2007 08:54:09 -0400
+Received: from mga01.intel.com ([192.55.52.88]:51471 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755404AbXFLMyI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 08:52:14 -0400
-Date: Tue, 12 Jun 2007 13:52:12 +0100
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] make cmdline_parse_kernelcore() static
-Message-ID: <20070612125212.GB26113@skynet.ie>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <20070612110742.GV3588@stusta.de>
+	Tue, 12 Jun 2007 08:54:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,411,1175497200"; 
+   d="scan'208";a="255929370"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070612110742.GV3588@stusta.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [stable] [PATCH] ACPI: Move timer broadcast and pmtimer accessbefore C3 arbiter shutdown
+Date: Tue, 12 Jun 2007 05:54:04 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F50101D9F3@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <1181636767.8176.199.camel@chaos>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [stable] [PATCH] ACPI: Move timer broadcast and pmtimer accessbefore C3 arbiter shutdown
+Thread-Index: Acesy1XBzlyadCMqTJG+/1zK2V+MjQAJSWUw
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Chris Wright" <chrisw@sous-sol.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, "Andi Kleen" <ak@suse.de>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       "Dave Jones" <davej@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Stable Team" <stable@kernel.org>, "Len Brown" <lenb@kernel.org>
+X-OriginalArrivalTime: 12 Jun 2007 12:54:05.0656 (UTC) FILETIME=[C2602D80:01C7ACF0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (12/06/07 13:07), Adrian Bunk didst pronounce:
-> cmdline_parse_kernelcore() can become static.
-> 
+ 
 
-Agreed. I would consider this a fix to handle-kernelcore=-generic.patch
+>-----Original Message-----
+>From: Thomas Gleixner [mailto:tglx@linutronix.de] 
+>Sent: Tuesday, June 12, 2007 1:26 AM
+>To: Chris Wright
+>Cc: Andrew Morton; LKML; Andi Kleen; Udo A. Steinberg; 
+>Pallipadi, Venkatesh; Dave Jones; Ingo Molnar; Arjan van de 
+>Ven; Stable Team; Len Brown
+>Subject: Re: [stable] [PATCH] ACPI: Move timer broadcast and 
+>pmtimer accessbefore C3 arbiter shutdown
+>
+>On Mon, 2007-06-11 at 18:07 -0700, Chris Wright wrote:
+>> * Andrew Morton (akpm@linux-foundation.org) wrote:
+>> > hm, this needs a bit of help to get it to work against 
+>Len's current tree.
+>> 
+>> Here's some help, compile tested only.  Udo/Thomas, was this found to
+>> be root cause of a real bug?  I didn't want this to get lost if it's
+>> still meant to be relevant for -stable.
+>
+>Chris,
+>
+>I fixed this against -mm already. I don't think that it is relevant for
+>stable. The issue was found with Venkis hpet force enable patches on a
+>ICH4 system. I doubt that any of those systems has hpet enabled in the
+>BIOS. It should not affect later ICH chip sets. Venki, is this 
+>correct ?
+>
 
-Thanks Adrian
+Yes. This issue is only when HPET timer is used on ICH4. And by default 
+HPET is not enabled on those chipsets. So, we don't need this patch
+for stable.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie> 
-
-> ---
-> --- linux-2.6.22-rc4-mm2/mm/page_alloc.c.old	2007-06-12 02:10:56.000000000 +0200
-> +++ linux-2.6.22-rc4-mm2/mm/page_alloc.c	2007-06-12 02:11:08.000000000 +0200
-> @@ -3879,7 +3879,7 @@
->   * kernelcore=size sets the amount of memory for use for allocations that
->   * cannot be reclaimed or migrated.
->   */
-> -int __init cmdline_parse_kernelcore(char *p)
-> +static int __init cmdline_parse_kernelcore(char *p)
->  {
->  	unsigned long long coremem;
->  	if (!p)
-
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks,
+Venki
