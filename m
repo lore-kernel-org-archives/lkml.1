@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbXFLB7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbXFLB75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbXFLB7g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 21:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757469AbXFLB71
+	id S1757731AbXFLB75 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 21:59:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757580AbXFLB7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 21:59:27 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:18492 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757452AbXFLB70 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 21:59:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=UEhyUXBI2qqvCDX5LMI8tvxO63r3ut3cffpyvQLhW36XT5cg34c4muvBZxcA/WzGDDak2D3NKUCEgYChOY2rrdSctXcDSWntO2E8kgCPjKa7NtQx1Jn6wbCiyU8FUM3MinFTBLVYIlSUq3jGNa6//TkXslpreySWAjxjLDmXhZQ=
-Message-ID: <466DFDB5.9030901@gmail.com>
-Date: Tue, 12 Jun 2007 10:58:13 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 11 Jun 2007 21:59:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50658 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757469AbXFLB7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 21:59:44 -0400
+Message-ID: <466DFE09.3020408@garzik.org>
+Date: Mon, 11 Jun 2007 21:59:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: jeff@garzik.org, james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+To: =?ISO-8859-1?Q?Dagfinn_Ilmari_Manns=E5ker?= <ilmari@ilmari.org>
+CC: Arjan van de Ven <arjan@linux.intel.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com
-Subject: Re: [patch 0/3] AHCI Link Power Management
-References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com>
-In-Reply-To: <20070611114600.7fca1c24.kristen.c.accardi@intel.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       htejun@gmail.com
+Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI
+ controllers.
+References: <20070611184146.448266229@intel.com>	<20070611114839.907bcae2.kristen.c.accardi@intel.com>	<20070612011148.GA9808@khazad-dum.debian.net>	<466DF3E9.30303@linux.intel.com> <d8jr6oikkcz.fsf@nygaard.ping.uio.no>
+In-Reply-To: <d8jr6oikkcz.fsf@nygaard.ping.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> Hi,
-> This series of patches enables Aggressive Link Power Management for AHCI 
-> devices, as documented in the AHCI spec.  On my laptop (a Lenovo X60), this
-> saves me a full watt of power.  On other systems, reported power savings
-> range from .5-1.5 Watts.  It has been tested by the kind folks at #powertop
-> with similar results.  Please give it a try and let me know what you think.
+Dagfinn Ilmari Mannsåker wrote:
+> Arjan van de Ven <arjan@linux.intel.com> writes:
+> 
+>> Henrique de Moraes Holschuh wrote:
+>>> On Mon, 11 Jun 2007, Kristen Carlson Accardi wrote:
+>>>> Setting		Effect
+>>>> ----------------------------------------------------------
+>>>> min_power	ALPM is enabled, and link set to enter 		lowest
+>>>> power state (SLUMBER) when idle
+>>>> 		Hot plug not allowed.
+>>>>
+>>>> max_performance	ALPM is disabled, Hot Plug is allowed
+>>>>
+>>>> medium_power	ALPM is enabled, and link set to enter
+>>>> 		second lowest power state (PARTIAL) when
+>>>> 		idle.  Hot plug not allowed.
+>>> Just some food for thought:
+>>> If you split it into a enable/disable (0/1) attribute, and a level
+>>> attribute
+>> on/off doesn't really make sense if the question is "do you favor power
+>> or do you favor performance".......
+> 
+> How about just making it a numeric scale with 0 meaning no power saving
+> and then some fixed number of levels (e.g 0-9)?
 
-I'm not sure about this.  We need better PM framework to support
-powersaving in other controllers and some ahcis don't save much when
-only link power management is used, they need to be turned off
-completely && I don't think scsi sysfs is the right place to export this
-interface.
+The original proposal seems far more intuitive than these alternatives.
 
--- 
-tejun
+	Jeff
+
+
+
