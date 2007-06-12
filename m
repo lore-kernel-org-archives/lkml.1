@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbXFLMSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbXFLMTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbXFLMSh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 08:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbXFLMS1
+	id S1756192AbXFLMTr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 08:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbXFLMTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 08:18:27 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:42564 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754531AbXFLMSZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 08:18:25 -0400
-X-Sasl-enc: dFU/f+q27TSqHTPTkywKBbHeotYF8pwkICVDJpxcWUWU 1181650704
-Date: Tue, 12 Jun 2007 09:18:19 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Jeff Garzik <jeff@garzik.org>,
-       Dagfinn Ilmari =?iso-8859-1?Q?Manns=E5ker?= <ilmari@ilmari.org>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       htejun@gmail.com
-Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI controllers.
-Message-ID: <20070612121819.GA20408@khazad-dum.debian.net>
-References: <20070611184146.448266229@intel.com> <20070611114839.907bcae2.kristen.c.accardi@intel.com> <20070612011148.GA9808@khazad-dum.debian.net> <466DF3E9.30303@linux.intel.com> <d8jr6oikkcz.fsf@nygaard.ping.uio.no> <466DFE09.3020408@garzik.org> <20070612035928.GB9808@khazad-dum.debian.net> <466E1A32.90306@linux.intel.com> <20070612090940.GA9719@srcf.ucam.org>
+	Tue, 12 Jun 2007 08:19:39 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:21436 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754097AbXFLMTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 08:19:38 -0400
+Message-ID: <466E8F58.9010502@msgid.tls.msk.ru>
+Date: Tue, 12 Jun 2007 16:19:36 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070612090940.GA9719@srcf.ucam.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: VIA C7 / VIA PC-1 (PC2500) anyone?
+References: <466E65A7.3000206@msgid.tls.msk.ru> <466E69BE.405@vger.kernel.org>
+In-Reply-To: <466E69BE.405@vger.kernel.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007, Matthew Garrett wrote:
-> On Mon, Jun 11, 2007 at 08:59:46PM -0700, Arjan van de Ven wrote:
-> > that's a temporary shortcoming; even with these power savings you can 
-> > do hotplug as long as you're willing to poll for it at a reasonable 
-> > interval and are willing to wait the time between polls for a hotplug 
-> > to take effect..
-> 
-> On laptops, I suspect that we'll probably get an ACPI interrupt even if 
-> the AHCI hotplug pathway can't manage.
+Linux-kernel wrote:
+[]
+> To me it looks like a wrong choice of gcc switches to user-mode programs. What
+> distribution are you using? try compiling failing programs from source with
+> conservative command line switches to gcc. See if things change.
 
-As long as we don't crash the drive or AHCI controller because we hotplugged
-it in a way it didn't like (like trying to hotplug a ICH5R would cause).
+Wrong choice of gcc switches tends to produce binaries wich are either works
+or does not.  Here, it sometimes works and sometimes does not.  Also, if
+it was wrong options, programs usually tends to fail with something like
+SIGILL (Illegal Instruction), not SIGSEGV.
 
-It is not like 1Hz would not be fast enough for laptop bays and docks, so
-the polling frequency would not be a problem.  I still prefer when levels
-and on/off are kept separate, but if it won't stand in the way of hotplug, I
-certainly don't care enough to bother.
+The system is running Debian Etch (4.0), with everything compiled for plain
+i386 (default gcc -O2 without any fancy optimizations).
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I tried installing libc6-i686 package (cmov-enabled glibc) - unlike with
+VIA C3 (which indeed does not have this instruction), it worked on C7, but
+installing libc6-i686 didn't change SIGSEGVs at all.
+
+I just tried to recompile man(1) command (the one that gave SIGSEGVs most
+often).  The resulting binary fails MUCH less often, but still sometimes
+fails.
+
+Note that this is real i686 CPU.  At least according to kernel - when one
+chooses C7 CPU in kernel config, kernel uses -march=i686 switch - the only
+CPU-specific switch it is.  The difference between i686 and C7 in kernel
+config is cache shift value.
+
+Thanks.
+
+/mjt
