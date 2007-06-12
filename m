@@ -1,117 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbXFLSnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbXFLSoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757692AbXFLSnw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 14:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXFLSno
+	id S1757987AbXFLSoN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 14:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756905AbXFLSn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 14:43:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44808 "EHLO
+	Tue, 12 Jun 2007 14:43:58 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55272 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756277AbXFLSnn (ORCPT
+	by vger.kernel.org with ESMTP id S1756947AbXFLSn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 14:43:43 -0400
-Date: Tue, 12 Jun 2007 11:43:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: splice: move balance_dirty_pages_ratelimited() outside of    
- splice actor
-Message-Id: <20070612114322.dfb4e90c.akpm@linux-foundation.org>
-In-Reply-To: <20070612181540.GP18832@kernel.dk>
-References: <20070611163433.dbc541ec.akpm@linux-foundation.org>
-	<20070612063510.GO18832@kernel.dk>
-	<20070612112059.GY18832@kernel.dk>
-	<20070612113101.GZ18832@kernel.dk>
-	<1181649983.7348.309.camel@twins>
-	<20070612121047.GB18832@kernel.dk>
-	<1181650572.7348.312.camel@twins>
-	<20070612124449.GD18832@kernel.dk>
-	<20070612094615.9e5557e5.akpm@linux-foundation.org>
-	<20070612173202.GO18832@kernel.dk>
-	<20070612181540.GP18832@kernel.dk>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 14:43:57 -0400
+Date: Tue, 12 Jun 2007 11:43:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Greaves <david@dgreaves.com>
+cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on
+ raid6)
+In-Reply-To: <4669A965.20403@dgreaves.com>
+Message-ID: <alpine.LFD.0.98.0706121123550.14121@woody.linux-foundation.org>
+References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>
+ <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
+ <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>
+ <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>
+ <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com>
+ <46680F5E.6070806@dgreaves.com> <20070607222813.GG85884050@sgi.com>
+ <4669A965.20403@dgreaves.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007 20:15:41 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> On Tue, Jun 12 2007, Jens Axboe wrote:
-> > On Tue, Jun 12 2007, Andrew Morton wrote:
-> > > On Tue, 12 Jun 2007 14:44:50 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > > splice
-> > > 
-> > > btw, I'm staring in profound mystification at this:
-> > > 
-> > > int generic_pipe_buf_steal(struct pipe_inode_info *pipe,
-> > > 			   struct pipe_buffer *buf)
-> > > {
-> > > 	struct page *page = buf->page;
-> > > 
-> > > 	if (page_count(page) == 1) {
-> > > 		lock_page(page);
-> > > 		return 0;
-> > > 	}
-> > > 
-> > > 	return 1;
-> > > }
-> > > 
-> > > 
-> > > afacit that `if page_count(page)' test could be replaced by
-> > > `if today_is_tuesday()'.  But then I don't have the foggiest idea
-> > > what it's trying to do.
-> > > 
-> > > It would be nice to get some comments in and around here.
-> > > 
-> > > Also, I was trying to work out the role and responsibility of the ->pin
-> > > callback, and gave up.
-> > > 
-> > > There isn't a lot of point in explaining this over email - one should be
-> > > able to gain an understanding of these things by reading the code.  I think
-> > > the best way of tackling this would be to comprehensively document
-> > > pipe_buf_operations and pipe_inode_info, please...
-> > 
-> > OK so I wont explain it in detail here, I'll write up a good set of
-> > comments tonight.
+
+On Fri, 8 Jun 2007, David Greaves wrote:
 > 
-> I'll merge this into the #splice branch.
+> positive: I can now get sysrq-t :)
 
-Great, thanks.
+Ok, so color me confused, and maybe I have missed some of the emails or 
+skimmed over them too fast (there's been too many of them ;), but
 
-> +/**
-> + * generic_pipe_buf_steal - attempt to take ownership of a @pipe_buffer
-> + * @pipe:	the pipe that the buffer belongs to
-> + * @buf:	the buffer to attempt to steal
-> + *
-> + * Description:
-> + *	This function attempts to steal the @struct page attached to
-> + *	@buf. If successful, this function returns 0 and returns with
-> + *	the page locked. The caller may then reuse the page for whatever
-> + *	he wishes, the typical use is insertion into a different file
-> + *	page cache.
-> + */
->  int generic_pipe_buf_steal(struct pipe_inode_info *pipe,
->  			   struct pipe_buffer *buf)
->  {
->  	struct page *page = buf->page;
->  
-> +	/*
-> +	 * A reference of one is golden, that means that the owner of this
-> +	 * page is the only one holding a reference to it. lock the page
-> +	 * and return OK.
-> +	 */
->  	if (page_count(page) == 1) {
->  		lock_page(page);
->  		return 0;
+ - I haven't actually seen any traces for this (netconsole apparently 
+   doesn't work for you, and I'm not surprised: it never really worked 
+   well for me over suspend/resume either, but I think I saw a mention of 
+   serial console?)
 
-I still don't get this code.  I guess I should have asked for pipe_buffer
-docs too ;)
+ - You apparently bisected it down to the range
 
-What sorts of pages can find themselves inside a pipe_buffer, and which of
-these types of pages is the above test detecting?
+	0a3fd051c7036ef71b58863f8e5da7c3dabd9d3f <- works
+	1d30c33d8d07868199560b24f10ed6280e78a89c <- breaks
 
+   but some of the intermediates in that range didn't compile. Correct?
 
+Can you try to bisect down a bit more, despite the compile error? Just do
+
+	git bisect start
+	git bisect good 0a3fd051c7036ef71b58863f8e5da7c3dabd9d3f
+	git bisect bad 1d30c33d8d07868199560b24f10ed6280e78a89c
+
+and it should pick 
+
+	f4d6d004: libata: ignore EH scheduling during initialization
+
+for you to test. It will apparently break on the fact that "sata_via.c" 
+wants "ata_scsi_device_resume/suspend" for the initialization of the
+resume/suspend things in the scsi_host_template, but you should just 
+remove those lines, and the compile hopefully completes cleanly after 
+that.
+
+IOW, it *should* be easy enough to pinpoint this from 9 changes down to 
+just one.
+
+Jeff added to the Cc, since he may not have noticed that one of the most 
+long-running issues is apparently sata-related.
+
+(Jeff: David Greaves _also_ had issues with -rc4 due to the SETFXSR 
+change, but that should hopefully be resolved and is presumably an 
+independent bug. Apart from the fact that "sata_via.c" seems problematic)
+
+		Linus
