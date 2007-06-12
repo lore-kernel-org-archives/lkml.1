@@ -1,116 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbXFLSvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbXFLSx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757667AbXFLSvP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 14:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757243AbXFLSut
+	id S1757961AbXFLSx0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 14:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbXFLSxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 14:50:49 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:21793 "EHLO kernel.dk"
+	Tue, 12 Jun 2007 14:53:17 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:47635 "EHLO atlrel6.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757308AbXFLSur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 14:50:47 -0400
-Date: Tue, 12 Jun 2007 20:48:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: splice: move balance_dirty_pages_ratelimited() outside of      splice actor
-Message-ID: <20070612184826.GS18832@kernel.dk>
-References: <20070612112059.GY18832@kernel.dk> <20070612113101.GZ18832@kernel.dk> <1181649983.7348.309.camel@twins> <20070612121047.GB18832@kernel.dk> <1181650572.7348.312.camel@twins> <20070612124449.GD18832@kernel.dk> <20070612094615.9e5557e5.akpm@linux-foundation.org> <20070612173202.GO18832@kernel.dk> <20070612181540.GP18832@kernel.dk> <20070612114322.dfb4e90c.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1756516AbXFLSxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 14:53:16 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andi Drebes <lists-receive@programmierforen.de>
+Subject: Re: [KJ] [PATCH] drivers/acpi: sizeof/sizeof array size calculations replaced with ARRAY_SIZE
+Date: Tue, 12 Jun 2007 12:53:07 -0600
+User-Agent: KMail/1.9.6
+Cc: Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
+       Len Brown <lenb@kernel.org>, kernel-janitors@lists.osdl.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200705261239.27485.lists-receive@programmierforen.de> <200706101544.35463.bjorn.helgaas@hp.com> <200706122041.06252.lists-receive@programmierforen.de>
+In-Reply-To: <200706122041.06252.lists-receive@programmierforen.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070612114322.dfb4e90c.akpm@linux-foundation.org>
+Message-Id: <200706121253.07395.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12 2007, Andrew Morton wrote:
-> On Tue, 12 Jun 2007 20:15:41 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+On Tuesday 12 June 2007 12:41:05 pm Andi Drebes wrote:
+> First off: sorry for my late answer.
 > 
-> > On Tue, Jun 12 2007, Jens Axboe wrote:
-> > > On Tue, Jun 12 2007, Andrew Morton wrote:
-> > > > On Tue, 12 Jun 2007 14:44:50 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > > 
-> > > > > splice
-> > > > 
-> > > > btw, I'm staring in profound mystification at this:
-> > > > 
-> > > > int generic_pipe_buf_steal(struct pipe_inode_info *pipe,
-> > > > 			   struct pipe_buffer *buf)
-> > > > {
-> > > > 	struct page *page = buf->page;
-> > > > 
-> > > > 	if (page_count(page) == 1) {
-> > > > 		lock_page(page);
-> > > > 		return 0;
-> > > > 	}
-> > > > 
-> > > > 	return 1;
-> > > > }
-> > > > 
-> > > > 
-> > > > afacit that `if page_count(page)' test could be replaced by
-> > > > `if today_is_tuesday()'.  But then I don't have the foggiest idea
-> > > > what it's trying to do.
-> > > > 
-> > > > It would be nice to get some comments in and around here.
-> > > > 
-> > > > Also, I was trying to work out the role and responsibility of the ->pin
-> > > > callback, and gave up.
-> > > > 
-> > > > There isn't a lot of point in explaining this over email - one should be
-> > > > able to gain an understanding of these things by reading the code.  I think
-> > > > the best way of tackling this would be to comprehensively document
-> > > > pipe_buf_operations and pipe_inode_info, please...
-> > > 
-> > > OK so I wont explain it in detail here, I'll write up a good set of
-> > > comments tonight.
-> > 
-> > I'll merge this into the #splice branch.
+> > I agree the ACPI CA is a nuisance.  But in this case, we're making
+> > a mountain out of a molehill.  I suspect that if somebody spent the
+> > 15 minutes to make the ARRAY_SIZE patch work in both the Linux ACPI CA
+> > and the generic Intel one and license it appropriately, Len would
+> > happily apply the patch.
+> I hope I got everything right. Here's what I understood so far:
 > 
-> Great, thanks.
+> The ACPI Subsystem in the kernel is derived from intel sources. I searched
+> the web for information about that and finally found
 > 
-> > +/**
-> > + * generic_pipe_buf_steal - attempt to take ownership of a @pipe_buffer
-> > + * @pipe:	the pipe that the buffer belongs to
-> > + * @buf:	the buffer to attempt to steal
-> > + *
-> > + * Description:
-> > + *	This function attempts to steal the @struct page attached to
-> > + *	@buf. If successful, this function returns 0 and returns with
-> > + *	the page locked. The caller may then reuse the page for whatever
-> > + *	he wishes, the typical use is insertion into a different file
-> > + *	page cache.
-> > + */
-> >  int generic_pipe_buf_steal(struct pipe_inode_info *pipe,
-> >  			   struct pipe_buffer *buf)
-> >  {
-> >  	struct page *page = buf->page;
-> >  
-> > +	/*
-> > +	 * A reference of one is golden, that means that the owner of this
-> > +	 * page is the only one holding a reference to it. lock the page
-> > +	 * and return OK.
-> > +	 */
-> >  	if (page_count(page) == 1) {
-> >  		lock_page(page);
-> >  		return 0;
+> http://www.intel.com/technology/iapc/acpi/downloads.htm
 > 
-> I still don't get this code.  I guess I should have asked for pipe_buffer
-> docs too ;)
+> Is that the right one? So what I would have to do in order to
+> "make the ARRAY_SIZE patch work in both the Linux ACPI CA
+> and the generic Intel one" is to modify those sources aswell,
+> send a patch to Intel and another one back to the
+> lkml.
 
-I just love commenting stuff, so I'll treat you to a pipe_buffer
-commentary as well :-)
+You found the right one.  The ACPI CA in Linux is really the same
+as the one from Intel.  Len integrates the Intel one into Linux
+periodically.  He uses scripts or something to format it so it looks
+more like Linux.
 
-> What sorts of pages can find themselves inside a pipe_buffer, and which of
-> these types of pages is the above test detecting?
+I think Len sometimes takes patches against the "Linux-ized" ACPI CA.
+He probably has to apply those by hand to the Intel one, which is
+the real "upstream" in this case.  So it might be a bit easier for
+him if you generated a diff against the Intel version.  Then it
+would show up in Linux, too, in the fullness of time.
 
-Any type of page, really. But for generic_pipe_buf_steal(), it's a page
-allocated through alloc_page(). The ops must match the buf contents
-(hence it's placed in the pipe_buffer, not the pipe itself). So if you
-shoving different pages in there, then your steal function (and others)
-must reflect that.
+In any event, you want to end up with one patch, not two.
 
--- 
-Jens Axboe
+You probably would have to add something like:
 
+  #ifndef ARRAY_SIZE
+  #define ARRAY_SIZE(x) ...
+  #endif
+
+somewhere in the ACPI CA header files.  That way it will work in
+non-Linux OSes as well.
+
+Bjorn
