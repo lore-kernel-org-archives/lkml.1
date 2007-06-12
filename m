@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbXFLCab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbXFLCdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753435AbXFLCab (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 22:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbXFLCaX
+	id S1753397AbXFLCdk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 22:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXFLCda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 22:30:23 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:44345 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751135AbXFLCaW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 22:30:22 -0400
-Message-ID: <466E0502.7000906@linux.vnet.ibm.com>
-Date: Tue, 12 Jun 2007 07:59:22 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Mon, 11 Jun 2007 22:33:30 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50846 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbXFLCd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 22:33:29 -0400
+Message-ID: <466E05F5.3090501@garzik.org>
+Date: Mon, 11 Jun 2007 22:33:25 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: vatsa@linux.vnet.ibm.com
-CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       efault@gmx.de, kernel@kolivas.org, containers@lists.osdl.org,
-       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
-       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
-       dmitry.adamushko@gmail.com, balbir@in.ibm.com
-Subject: Re: [RFC][PATCH 3/6] core changes in CFS
-References: <20070611154724.GA32435@in.ibm.com> <20070611155345.GC2109@in.ibm.com>
-In-Reply-To: <20070611155345.GC2109@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Tejun Heo <htejun@gmail.com>
+CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com
+Subject: Re: [patch 0/3] AHCI Link Power Management
+References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com>
+In-Reply-To: <466DFDB5.9030901@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
-> +#define entity_is_task(se)	1
-
-Could you add some comments as to what this means? Should be it boolean instead
-(true)
-
-
->  /*
-> - * Enqueue a task into the rb-tree:
-> + * Enqueue a entity into the rb-tree:
-
-Enqueue an entity
-
-> -static void limit_wait_runtime(struct rq *rq, struct task_struct *p)
-> +static void limit_wait_runtime(struct lrq *lrq, struct sched_entity *p)
-
-p is a general convention for tasks in the code, could we use something
-different -- may be "e"?
-
+Tejun Heo wrote:
+> Kristen Carlson Accardi wrote:
+>> Hi,
+>> This series of patches enables Aggressive Link Power Management for AHCI 
+>> devices, as documented in the AHCI spec.  On my laptop (a Lenovo X60), this
+>> saves me a full watt of power.  On other systems, reported power savings
+>> range from .5-1.5 Watts.  It has been tested by the kind folks at #powertop
+>> with similar results.  Please give it a try and let me know what you think.
 > 
->  static s64 div64_s(s64 divident, unsigned long divisor)
-> @@ -183,49 +219,51 @@
->   * Update the current task's runtime statistics. Skip current tasks that
->   * are not in our scheduling class.
->   */
-> -static inline void update_curr(struct rq *rq, u64 now)
-> +static inline void update_curr(struct lrq *lrq, u64 now)
->  {
-> -	unsigned long load = rq->lrq.raw_weighted_load;
-> +	unsigned long load = lrq->raw_weighted_load;
->  	u64 delta_exec, delta_fair, delta_mine;
-> -	struct task_struct *curr = rq->curr;
-> +	struct sched_entity *curr = lrq_curr(lrq);
+> I'm not sure about this.  We need better PM framework to support
+> powersaving in other controllers and some ahcis don't save much when
+> only link power management is used, they need to be turned off
 
-How about curr_entity?
-
-> +	struct rq *rq = lrq_rq(lrq);
-> +	struct task_struct *curtask = rq->curr;
-> 
-> -	if (curr->sched_class != &fair_sched_class || curr == rq->idle || !load)
-> +	if (!curr || curtask == rq->idle || !load)
-
-Can !curr ever be true? shoudn't we look into the sched_class of the task
-that the entity belongs to?
+A better PM framework would definitely be nice :)
 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> completely && I don't think scsi sysfs is the right place to export this
+> interface.
+
+That's about the only place we have right now.
+
+	Jeff
+
+
+
