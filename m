@@ -1,48 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbXFLQTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbXFLQY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359AbXFLQTU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 12:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXFLQTG
+	id S1754917AbXFLQY1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 12:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbXFLQYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 12:19:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:56204 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbXFLQTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 12:19:04 -0400
-Message-ID: <466EC771.3040509@garzik.org>
-Date: Tue, 12 Jun 2007 12:18:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Tue, 12 Jun 2007 12:24:20 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:41987 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752438AbXFLQYT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 12:24:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:x-gpg-fingerprint:x-gpg-key:user-agent;
+        b=NKEdB0c8+UcmTpLZsKG3oqgN4ybf7uW0Pgpk1EDBmNwfwB/RRot/fFiGh+d5vr8FXxBuvXDv3opwB3IXe7xzb1vXLnaUJ0tlH5mHpExkSz8IoHOxzY64g+SVwjEB3oQRgHKqWb5OO1+JrlgqeNaSZqVtUga7sos6MQJkGul8TWk=
+Date: Tue, 12 Jun 2007 11:24:13 -0500
+From: Nelson Castillo <nelsoneci@gmail.com>
+To: Stelian Pop <stelian@popies.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 1/1] support for user-space buffers in kfifo
+Message-ID: <20070612162413.GB12369@emqbit.com>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       =?ISO-8859-1?Q?Dagfinn_Ilmari_Manns=E5ker?= <ilmari@ilmari.org>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       htejun@gmail.com
-Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI
- controllers.
-References: <d8jr6oikkcz.fsf@nygaard.ping.uio.no> <466DFE09.3020408@garzik.org> <20070612035928.GB9808@khazad-dum.debian.net> <466E1A32.90306@linux.intel.com> <20070612090940.GA9719@srcf.ucam.org> <20070612121819.GA20408@khazad-dum.debian.net> <20070612135010.GA12601@srcf.ucam.org> <20070612141714.GB20408@khazad-dum.debian.net> <20070612153828.GA13888@srcf.ucam.org> <466EBFF0.70100@garzik.org> <20070612155824.GB14044@srcf.ucam.org>
-In-Reply-To: <20070612155824.GB14044@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="f2QGlHpHGjS2mn6Y"
+Content-Disposition: inline
+X-GPG-Fingerprint: 58DC 33B3 A518 C0DB 1ED1  926D D913 5E8A C74A CF0B
+X-GPG-Key: http://www.geocities.com/arhuaco/public-key.txt
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> Excluding the corner case of an Expresscard SATA controller (where I 
-> suspect you'd want different policy), I doubt there are any cases where 
-> you have a laptop with hotplug capabilities without it being implemented 
-> as an ACPI bay.
 
-Cardbus card.
+--f2QGlHpHGjS2mn6Y
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	Jeff
+On 6/12/07, Stelian Pop <stelian@popies.net> wrote:
+(cut)
+> accessing userspace memory with a spinlock taken (moreover an
+> irqsave()
+> one) is bad bad bad.
 
+Hi Stelian.
 
+I'm sending the new patch without kfifo_put_user and kfifo_get_user.
 
+Regards,
+Nelson.-
+
+Signed-off-by: Nelson Castillo <nelson@emqbit.com>
+---
+diff --git a/include/linux/kfifo.h b/include/linux/kfifo.h
+index 404f446..5c4c416 100644
+--- a/include/linux/kfifo.h
++++ b/include/linux/kfifo.h
+@@ -41,8 +41,13 @@ extern struct kfifo *kfifo_alloc(unsigned int size, gfp_=
+t gfp_mask,
+ extern void kfifo_free(struct kfifo *fifo);
+ extern unsigned int __kfifo_put(struct kfifo *fifo,
+ 				unsigned char *buffer, unsigned int len);
++extern int __kfifo_put_user(struct kfifo *fifo,
++			    const unsigned char __user *buffer,
++			    unsigned int len);
+ extern unsigned int __kfifo_get(struct kfifo *fifo,
+ 				unsigned char *buffer, unsigned int len);
++extern int __kfifo_get_user(struct kfifo *fifo,  unsigned char __user *buf=
+fer,
++			    unsigned int len);
+=20
+ /**
+  * __kfifo_reset - removes the entire FIFO contents, no locking version
+diff --git a/kernel/kfifo.c b/kernel/kfifo.c
+index cee4191..41438ec 100644
+--- a/kernel/kfifo.c
++++ b/kernel/kfifo.c
+@@ -23,6 +23,7 @@
+ #include <linux/module.h>
+ #include <linux/slab.h>
+ #include <linux/err.h>
++#include <asm/uaccess.h>
+ #include <linux/kfifo.h>
+=20
+ /**
+@@ -150,6 +151,61 @@ unsigned int __kfifo_put(struct kfifo *fifo,
+ EXPORT_SYMBOL(__kfifo_put);
+=20
+ /**
++ * __kfifo_put_user - puts some data into the FIFO, from userspace
++ *		      We don't have a locking version because copy_from_user
++ *		      might sleep and you must not sleep holding a spinlock.
++ *
++ * @fifo: the fifo to be used.
++ * @buffer: the user space data to be added.
++ * @len: the length of the data to be added.
++ *
++ * This function copies at most @len bytes from the @buffer into
++ * the FIFO depending on the free space, and returns the number of
++ * bytes copied.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++int __kfifo_put_user(struct kfifo *fifo, const unsigned char __user *buffe=
+r,
++	        unsigned int len)
++{
++	unsigned int l;
++
++	len =3D min(len, fifo->size - fifo->in + fifo->out);
++
++	/*
++	 * Ensure that we sample the fifo->out index -before- we
++	 * start putting bytes into the kfifo.
++	 */
++
++	smp_mb();
++
++	/* first put the data starting from fifo->in to buffer end */
++	l =3D min(len, fifo->size - (fifo->in & (fifo->size - 1)));
++
++	if(copy_from_user(fifo->buffer + (fifo->in & (fifo->size - 1)),
++			  buffer, l))
++		return  -EFAULT;
++
++
++	/* then put the rest (if any) at the beginning of the buffer */
++	if (copy_from_user(fifo->buffer, buffer + l, len - l))
++		return  -EFAULT;
++
++	/*
++	 * Ensure that we add the bytes to the kfifo -before-
++	 * we update the fifo->in index.
++	 */
++
++	smp_wmb();
++
++	fifo->in +=3D len;
++
++	return (int)len;
++}
++EXPORT_SYMBOL(__kfifo_put_user);
++
++/**
+  * __kfifo_get - gets some data from the FIFO, no locking version
+  * @fifo: the fifo to be used.
+  * @buffer: where the data must be copied.
+@@ -194,3 +250,56 @@ unsigned int __kfifo_get(struct kfifo *fifo,
+ 	return len;
+ }
+ EXPORT_SYMBOL(__kfifo_get);
++
++/**
++ * __kfifo_get_user - gets some data from the FIFO to userspace
++ *		      We don't have a locking version because copy_to_user
++ *		      might sleep and you must not sleep holding a spinlock.
++ * @fifo: the fifo to be used.
++ * @buffer: user space buffer where the data must be copied.
++ * @len: the size of the destination buffer.
++ *
++ * This function copies at most @len bytes from the FIFO into the
++ * @buffer and returns the number of copied bytes.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++
++int __kfifo_get_user(struct kfifo *fifo,
++			 unsigned char __user *buffer, unsigned int len)
++{
++	unsigned int l;
++
++	len =3D min(len, fifo->in - fifo->out);
++
++	/*
++	 * Ensure that we sample the fifo->in index -before- we
++	 * start removing bytes from the kfifo.
++	 */
++
++	smp_rmb();
++
++	/* first get the data from fifo->out until the end of the buffer */
++	l =3D min(len, fifo->size - (fifo->out & (fifo->size - 1)));
++
++	if (copy_to_user(buffer, fifo->buffer + (fifo->out & (fifo->size - 1)), l=
+))
++		return -EFAULT;
++
++	/* then get the rest (if any) from the beginning of the buffer */
++	if (copy_to_user(buffer + l, fifo->buffer, len - l))
++		return -EFAULT;
++
++	/*
++	 * Ensure that we remove the bytes from the kfifo -before-
++	 * we update the fifo->out index.
++	 */
++
++	smp_mb();
++
++	fifo->out +=3D len;
++
++	return (int)len;
++}
++EXPORT_SYMBOL(__kfifo_get_user);
++
+
+--=20
+
+http://arhuaco.org
+http://emQbit.com
+
+--f2QGlHpHGjS2mn6Y
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGbsit2RNeisdKzwsRAswiAJsGx09tF7f//thK13cIQ9CeV6dSggCfSl/F
+qG+czdjGAsyS5DRGBjqdNBE=
+=shdD
+-----END PGP SIGNATURE-----
+
+--f2QGlHpHGjS2mn6Y--
