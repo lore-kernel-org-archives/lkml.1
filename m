@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbXFLCg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbXFLCnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200AbXFLCg1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 22:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbXFLCgS
+	id S1754589AbXFLCnu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 22:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbXFLCnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 22:36:18 -0400
-Received: from mga05.intel.com ([192.55.52.89]:49003 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751196AbXFLCgQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 22:36:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
-   d="scan'208";a="255776806"
-Message-ID: <466E0642.5020506@linux.intel.com>
-Date: Mon, 11 Jun 2007 19:34:42 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
+	Mon, 11 Jun 2007 22:43:39 -0400
+Received: from ping.uio.no ([129.240.78.2]:40169 "EHLO ping.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751127AbXFLCni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 22:43:38 -0400
+X-Greylist: delayed 2901 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jun 2007 22:43:38 EDT
+From: ilmari@ilmari.org (Dagfinn Ilmari =?utf-8?Q?Manns=C3=A5ker?=)
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
        james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/3] AHCI Link Power Management
-References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com>
-In-Reply-To: <466DFDB5.9030901@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       htejun@gmail.com
+Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI controllers.
+Organization: Program-, Informasjons- og Nettverksteknologisk Gruppe, UiO
+References: <20070611184146.448266229@intel.com>
+	<20070611114839.907bcae2.kristen.c.accardi@intel.com>
+	<20070612011148.GA9808@khazad-dum.debian.net>
+	<466DF3E9.30303@linux.intel.com>
+Mail-Copies-To: nobody
+Date: Tue, 12 Jun 2007 02:54:52 +0100
+In-Reply-To: <466DF3E9.30303@linux.intel.com> (Arjan van de Ven's message of
+	"Mon, 11 Jun 2007 18:16:25 -0700")
+Message-ID: <d8jr6oikkcz.fsf@nygaard.ping.uio.no>
+User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Exiscan-Spam-Score: -7.8 (-------)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Kristen Carlson Accardi wrote:
->> Hi,
->> This series of patches enables Aggressive Link Power Management for AHCI 
->> devices, as documented in the AHCI spec.  On my laptop (a Lenovo X60), this
->> saves me a full watt of power.  On other systems, reported power savings
->> range from .5-1.5 Watts.  It has been tested by the kind folks at #powertop
->> with similar results.  Please give it a try and let me know what you think.
-> 
-> I'm not sure about this.  We need better PM framework to support
-> powersaving in other controllers and some ahcis don't save much when
-> only link power management is used, 
+Arjan van de Ven <arjan@linux.intel.com> writes:
 
-do you have data to support this? The data we have from this patch is 
-that it saves typically a Watt of power (depends on the machine of 
-course, but the range is 0.5W to 1.5W). If you want to also have an 
-even more agressive thing where you want to start disabling the entire 
-controller... I don't see how this is in conflict with saving power on 
-the link level by "just" enabling a hardware feature ....
+> Henrique de Moraes Holschuh wrote:
+>> On Mon, 11 Jun 2007, Kristen Carlson Accardi wrote:
+>>> Setting		Effect
+>>> ----------------------------------------------------------
+>>> min_power	ALPM is enabled, and link set to enter 		lowest
+>>> power state (SLUMBER) when idle
+>>> 		Hot plug not allowed.
+>>>
+>>> max_performance	ALPM is disabled, Hot Plug is allowed
+>>>
+>>> medium_power	ALPM is enabled, and link set to enter
+>>> 		second lowest power state (PARTIAL) when
+>>> 		idle.  Hot plug not allowed.
+>> Just some food for thought:
+>> If you split it into a enable/disable (0/1) attribute, and a level
+>> attribute
+>
+> on/off doesn't really make sense if the question is "do you favor power
+> or do you favor performance".......
+
+How about just making it a numeric scale with 0 meaning no power saving
+and then some fixed number of levels (e.g 0-9)?
+
+-- 
+ilmari
+"A disappointingly low fraction of the human race is,
+ at any given time, on fire." - Stig Sandbeck Mathisen
