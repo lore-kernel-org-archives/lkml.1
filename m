@@ -1,93 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbXFLBI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbXFLBJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757359AbXFLBI6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 21:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXFLBIv
+	id S1757370AbXFLBJs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 21:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbXFLBJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 21:08:51 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:34234 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775AbXFLBIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 21:08:50 -0400
-Date: Mon, 11 Jun 2007 18:07:35 -0700
-From: Chris Wright <chrisw@sous-sol.org>
+	Mon, 11 Jun 2007 21:09:36 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57598 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbXFLBJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 21:09:35 -0400
+From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>, Stable Team <stable@kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [stable] [PATCH] ACPI: Move timer broadcast and pmtimer access
-	before C3 arbiter shutdown
-Message-ID: <20070612010735.GL3723@sequoia.sous-sol.org>
-References: <1181122673.4404.200.camel@chaos> <20070606183857.caa243d4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070606183857.caa243d4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Date: Tue, 12 Jun 2007 11:09:29 +1000
+Message-Id: <1070612010929.25355@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Neil Brown <neilb@suse.de>
+Cc: stable@kernel.org
+Subject: [PATCH 001 of 2] md: Fix two raid10 bugs.
+References: <20070612110634.25171.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> hm, this needs a bit of help to get it to work against Len's current tree.
 
-Here's some help, compile tested only.  Udo/Thomas, was this found to
-be root cause of a real bug?  I didn't want this to get lost if it's
-still meant to be relevant for -stable.
+1/ When resyncing a degraded raid10 which has more than 2 copies of each block,
+  garbage can get synced on top of good data.
 
-thanks,
--chris
---
+2/ We round the wrong way in part of the device size calculation, which
+  can cause confusion.
 
-Subject: ACPI: Move timer broadcast and pmtimer access before C3 arbiter shutdown
+Signed-off-by: Neil Brown <neilb@suse.de>
+Cc: stable@kernel.org
 
-From: Udo A. Steinberg <us15@os.inf.tu-dresden.de>
+### Diffstat output
+ ./drivers/md/raid10.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-The chip set doc for IHC4 says:
-
-1.In general, software should not attempt any non-posted accesses during
-arbiter disable except to the ICH4's power management registers. This
-implies that interrupt handlers for any unmasked hardware interrupts and
-SMI/NMI should check ARB_DIS status before reading from ICH devices.
-
-So it's not a good idea to access ICH devices after arbiter shut down. 
-
-Signed-off-by: Udo A. Steinberg <us15@os.inf.tu-dresden.de>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-[chrisw: rebase against Len's changes in -mm]
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-
----
-
- drivers/acpi/processor_idle.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 2c6a3cb..15db3e8 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -978,6 +978,11 @@ static int acpi_idle_enter_c3(struct cpuidle_device *dev,
- 		return 0;
- 	}
- 
-+	/* Get start time (ticks) */
-+	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	acpi_state_timer_broadcast(pr, cx, 1);
-+	acpi_idle_do_entry(cx);
+diff .prev/drivers/md/raid10.c ./drivers/md/raid10.c
+--- .prev/drivers/md/raid10.c	2007-06-12 10:19:04.000000000 +1000
++++ ./drivers/md/raid10.c	2007-06-12 10:20:31.000000000 +1000
+@@ -1866,6 +1866,7 @@ static sector_t sync_request(mddev_t *md
+ 			int d = r10_bio->devs[i].devnum;
+ 			bio = r10_bio->devs[i].bio;
+ 			bio->bi_end_io = NULL;
++			clear_bit(BIO_UPTODATE, &bio->bi_flags);
+ 			if (conf->mirrors[d].rdev == NULL ||
+ 			    test_bit(Faulty, &conf->mirrors[d].rdev->flags))
+ 				continue;
+@@ -2036,6 +2037,11 @@ static int run(mddev_t *mddev)
+ 	/* 'size' is now the number of chunks in the array */
+ 	/* calculate "used chunks per device" in 'stride' */
+ 	stride = size * conf->copies;
 +
- 	/* disable bus master */
- 	if (pr->flags.bm_check) {
- 		spin_lock(&c3_lock);
-@@ -995,10 +1000,6 @@ static int acpi_idle_enter_c3(struct cpuidle_device *dev,
- 		ACPI_FLUSH_CPU_CACHE();
- 	}
++	/* We need to round up when dividing by raid_disks to
++	 * get the stride size.
++	 */
++	stride += conf->raid_disks - 1;
+ 	sector_div(stride, conf->raid_disks);
+ 	mddev->size = stride  << (conf->chunk_shift-1);
  
--	/* Get start time (ticks) */
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
--	acpi_state_timer_broadcast(pr, cx, 1);
--	acpi_idle_do_entry(cx);
- 	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 
- 	if (pr->flags.bm_check) {
