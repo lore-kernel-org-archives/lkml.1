@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbXFLAHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757041AbXFLAJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbXFLAHS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 20:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbXFLAHI
+	id S1757041AbXFLAJh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 20:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbXFLAJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 20:07:08 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60197 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751467AbXFLAHH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 20:07:07 -0400
-Date: Tue, 12 Jun 2007 02:07:18 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, avi@qumranet.com
-Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: 2.6.22-rc4-mm2: kvm compile breakage with X86_CMPXCHG64=n
-Message-ID: <20070612000718.GS3588@stusta.de>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
+	Mon, 11 Jun 2007 20:09:31 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49847 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751754AbXFLAJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 20:09:30 -0400
+Message-ID: <466DE438.70108@garzik.org>
+Date: Mon, 11 Jun 2007 20:09:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: libata passthru: support PIO multi commands
+References: <200706112200.l5BM0qFn005767@hera.kernel.org> <20070611233917.4bd8c6d7@the-village.bc.nu>
+In-Reply-To: <20070611233917.4bd8c6d7@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.22-rc4-mm1:
->...
->  git-kvm.patch
->...
->  git trees
->...
+Alan Cox wrote:
+>> +	if (is_multi_taskfile(tf)) {
+>> +		unsigned int multi_count = 1 << (cdb[1] >> 5);
+>> +
+>> +		/* compare the passed through multi_count
+>> +		 * with the cached multi_count of libata
+>> +		 */
+>> +		if (multi_count != dev->multi_count)
+>> +			ata_dev_printk(dev, KERN_WARNING,
+>> +				       "invalid multi_count %u ignored\n",
+>> +				       multi_count);
+>> +	}
+> 
+> What limits log spamming here ?
 
-I'm getting the following compile error with CONFIG_X86_CMPXCHG64=n 
-(with -Werror-implicit-function-declaration - otherwise it would be a 
-link error):
+Intelligence of the user with privs?
 
-<--  snip  -->
 
-...
-  CC [M]  drivers/kvm/mmu.o
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc4-mm2/drivers/kvm/mmu.c: In function ‘set_shadow_pte’:
-/home/bunk/linux/kernel-2.6/linux-2.6.22-rc4-mm2/drivers/kvm/mmu.c:199: error: implicit declaration of function ‘set_64bit’
-make[3]: *** [drivers/kvm/mmu.o] Error 1
+> Also shouldn't we error this
+> situation not proceed and hope that enough data was supplied not
+> to leave us stuck half way through a command having made a nasty
+> mess on disk ?
 
-<--  snip  -->
+Is that English?  Can you be more specific and more clear?
 
-cu
-Adrian
+	Jeff
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
