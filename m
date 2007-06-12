@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbXFLEVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbXFLEan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755293AbXFLEVJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 00:21:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXFLEUy
+	id S1752821AbXFLEan (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 00:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbXFLEaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 00:20:54 -0400
-Received: from mga05.intel.com ([192.55.52.89]:2662 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750809AbXFLEUw (ORCPT
+	Tue, 12 Jun 2007 00:30:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55797 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750933AbXFLEae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 00:20:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,410,1175497200"; 
-   d="scan'208";a="255799299"
-Message-ID: <466E1EC6.90509@linux.intel.com>
-Date: Mon, 11 Jun 2007 21:19:18 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
-       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 0/3] AHCI Link Power Management
-References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E1D51.9070007@gmail.com>
-In-Reply-To: <466E1D51.9070007@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 12 Jun 2007 00:30:34 -0400
+Date: Mon, 11 Jun 2007 21:30:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adam Litke <agl@us.ibm.com>
+Cc: dean gaudet <dean@arctic.org>, William Lee Irwin III <wli@holomorphy.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, ak@suse.de, clameter@sgi.com
+Subject: Re: [shm][hugetlb] Fix get_policy for stacked shared memory files
+Message-Id: <20070611213020.b3d91757.akpm@linux-foundation.org>
+In-Reply-To: <1181597696.22671.2.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0705152222550.14691@twinlark.arctic.org>
+	<20070516061259.GZ19966@holomorphy.com>
+	<Pine.LNX.4.64.0706092106220.10324@twinlark.arctic.org>
+	<1181597696.22671.2.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
->> do you have data to support this?
+On Mon, 11 Jun 2007 16:34:54 -0500 Adam Litke <agl@us.ibm.com> wrote:
+
+> Here's another breakage as a result of shared memory stacked files :(
 > 
-> Yeah, it was some Lenovo notebook.  Pavel is more familiar with the
-> hardware.  Pavel, what was the notebook which didn't save much power
-> with standard SATA power save but needed port to be completely turned off?
-
-Pavel, if you have time, could you measure this with Kristen's patch?
-
+> The NUMA policy for a VMA is determined by checking the following (in the order
+> given):
 > 
->> The data we have from this patch is that it saves typically a Watt of
->> power (depends on the machine of course, but the range is 0.5W to
->> 1.5W). If you want to also have an even more agressive thing where
->> you want to start disabling the entire controller... I don't see how
->> this is in conflict with saving power on the link level by "just"
->> enabling a hardware feature ....
+> 1) vma->vm_ops->get_policy() (if defined)
+> 2) vma->vm_policy (if defined)
+> 3) task->mempolicy (if defined)
+> 4) Fall back to default_policy
 > 
-> Well, both implement about the same thing.  I prefer software
-> implementation because it's more generic and ALPE/ASP seems too
-> aggressive to me. 
+> By switching to stacked files for shared memory, get_policy() is now always set
+> to shm_get_policy which is a wrapper function.  This causes us to stop at step
+> 1, which yields NULL for hugetlb instead of task->mempolicy which was the
+> previous (and correct) result.
+> 
+> This patch modifies the shm_get_policy() wrapper to maintain steps 1-3 for the
+> wrapped vm_ops.  Andi and Christoph, does this look right to you?
+> 
 
-Too aggressive in what way?
+Can we just double-check the refcounting please?
 
-There are tradeoffs on either side. Doing things in software is more 
-work for the cpu, and depending on the implementation, will consume 
-more power on the CPU side. (for example if you need regular timers 
-that just consumes the power you are saving back up). The hardware can 
-obviously switch very fast (because it's independent of any software), 
-yet of course the software has higher level knowledge about how idle 
-the link really is (like it knows if any files are open etc etc).
+> index 4fefbad..8d2672d 100644
+> --- a/ipc/shm.c
+> +++ b/ipc/shm.c
+> @@ -254,8 +254,10 @@ struct mempolicy *shm_get_policy(struct vm_area_struct *vma, unsigned long addr)
+>  
+>  	if (sfd->vm_ops->get_policy)
+>  		pol = sfd->vm_ops->get_policy(vma, addr);
 
-To be honest, I would be surprised if software could do significantly 
-better than hardware though; it seems a simple problem: Idle -> go to 
-low power, and estimating idle isn't all that hard on a link level... 
-there's not all THAT much the kernel can estimate better I suspect.
+afacit this takes a ref on the underlying policy
 
+> -	else
+> +	else if (vma->vm_policy)
+>  		pol = vma->vm_policy;
+> +	else
+> +		pol = current->mempolicy;
 
-This debate is very similar to the cpufreq debate from 4 years ago, 
-where there were 3 levels: do it in the CPU, do it in the kernel or do 
-it in userspace. All three are valid; whichever is best depends on the 
-exact hardware that you have...
-(and you can argue that first everyone started in userspace, then the 
-hardware improved that made a kernelspace implementation better 
-(ondemand) and now Turbo Mode is more or less moving this to the 
-hardware... I wouldn't be surprised if the sata side will show a 
-similar trend)
+but these two do not.
+
+>  	return pol;
+>  }
+>  #endif
+
+Is is all correct?
