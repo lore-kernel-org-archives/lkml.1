@@ -1,138 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXFLBzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbXFLBzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757847AbXFLBzI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 21:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757159AbXFLByv
+	id S1757993AbXFLBzt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 21:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757103AbXFLBzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 21:54:51 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:44943 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756915AbXFLBys (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 21:54:48 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type;
-  b=mxYVULvoCsvd+xStM1hfDpTiB4pv/tRYi/p75uN4lrHgPE8+4P5/Z0oeyN8s20+cogYkCbYg53NGKtGOICi3E4xD0wnJrpWeu7sayIsoqFTklJkKhbkyrkjdl6GFEgd2NtfTaJ/FDJBLUg3rmTlR6yrxIfg9yF4ZMXi1TXvc+QU=  ;
-X-YMail-OSG: d5IZaTkVM1macCim6oY5CKLCyZxFPLEVdak9Y4PZNhaHGiQjrL0csQJh0DOWHLvQQ574PhedLA--
-Message-ID: <466DFCE2.8070504@yahoo.com.au>
-Date: Tue, 12 Jun 2007 11:54:42 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [BUG] fs/buffer.c:1821 in 2.6.22-rc4-mm2
-References: <20070610155714.GA21592@alice> <20070611005529.422d1678.akpm@linux-foundation.org>
-In-Reply-To: <20070611005529.422d1678.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------090307080900080602090300"
+	Mon, 11 Jun 2007 21:55:41 -0400
+Received: from mga01.intel.com ([192.55.52.88]:7780 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756981AbXFLBzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 21:55:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
+   d="scan'208";a="255767013"
+Date: Tue, 12 Jun 2007 09:54:59 +0800
+From: Wang Zhenyu <zhenyu.z.wang@intel.com>
+To: Dave Jones <davej@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
+       Keith Packard <keithp@keithp.com>
+Subject: [RFC][AGPGART]intel-agp: save whole config space in suspend/resume
+Message-ID: <20070612015459.GB28668@zhen-devel.sh.intel.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
+	Keith Packard <keithp@keithp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090307080900080602090300
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Andrew Morton wrote:
-> On Sun, 10 Jun 2007 17:57:14 +0200 Eric Sesterhenn / Snakebyte <snakebyte@gmx.de> wrote:
-> 
-> 
->>hi,
->>
->>i got the following BUG while running the syscalls.sh
->>from ltp-full-20070531 on an ext3 partition, it is easily reproducible
->>for me
->>
->>[  476.338068] ------------[ cut here ]------------
->>[  476.338223] kernel BUG at fs/buffer.c:1821!
->>[  476.338324] invalid opcode: 0000 [#1]
->>[  476.338423] PREEMPT 
->>[  476.338665] Modules linked in:
->>[  476.338833] CPU:    0
->>[  476.338836] EIP:    0060:[<c01a1914>]    Not tainted VLI
->>[  476.338840] EFLAGS: 00010202   (2.6.22-rc4-mm2 #1)
->>[  476.339206] EIP is at __block_prepare_write+0x64/0x410
->>[  476.339311] eax: 00000001   ebx: c136fbb8   ecx: c07faf28   edx:
->>00000001
->>[  476.339417] esi: c1dc9040   edi: c32d2dfc   ebp: c3733db8   esp:
->>c3733d50
->>[  476.339584] ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
->>[  476.339690] Process vmsplice01 (pid: 7680, ti=c3733000 task=c351ed60
->>task.ti=c3733000)
->>[  476.339796] Stack: c3733d70 c0143e76 c1a0eab0 00000046 00000000
->>c2509d64 00000cd8 c136fbb8 
->>[  476.340675]        c32d2dfc 00000296 c02313b6 c1086088 00000050
->>c02313b6 c1dc9040 c2509d50 
->>[  476.341491]        c1dc9054 c3733dc4 c02313e9 c3733dbc c015728d
->>c32d2f0c 00000000 c136fbb8 
->>[  476.342371] Call Trace:
->>[  476.342565]  [<c01a1d83>] block_write_begin+0x83/0xf0
->>[  476.342804]  [<c0207778>] ext3_write_begin+0xc8/0x1c0
->>[  476.342987]  [<c01595bf>] pagecache_write_begin+0x4f/0x150
->>[  476.343243]  [<c019db3b>] pipe_to_file+0x9b/0x170
->>[  476.343418]  [<c019d4b0>] __splice_from_pipe+0x70/0x260
->>[  476.343654]  [<c019d6e8>] splice_from_pipe+0x48/0x70
->>[  476.343828]  [<c019d9f8>] generic_file_splice_write+0x88/0x130
->>[  476.344066]  [<c019d267>] do_splice_from+0xb7/0xc0
->>[  476.344240]  [<c019ea51>] sys_splice+0x1a1/0x230
->>[  476.344474]  [<c01043be>] sysenter_past_esp+0x5f/0x99
->>[  476.344656]  [<ffffe410>] 0xffffe410
->>[  476.344882]  =======================
->>[  476.344984] INFO: lockdep is turned off.
->>[  476.345084] Code: 00 0f 97 c2 e8 ee 2f 22 00 85 c0 74 04 0f 0b eb fe
->>31 d2 b8 28 af 7f c0 81 7d 08 00 10 00 00 0f 97 c2 e8 d0 2f 22 00 85 c0
->>74 04 <0f> 0b eb fe 8b 55 08 39 55 b0 0f 97 c0 0f b6 d0 b8 0c af 7f c0 
->>[  476.350365] EIP: [<c01a1914>] __block_prepare_write+0x64/0x410 SS:ESP
->>0068:c3733d50
-> 
-> 
-> Yep, vmsplice01 is not supported on -mm kernels ;)
-> 
-> Nick has a protofix but I don't think it's been tested yet.
+Dave,
 
-Yeah, sorry I didn't catch that after you merged :P
-This should be the correct bugfix attached -- it is just a typo.
+It looks that config space save/restore for intel-agp still has problem
+that might affect some chip models. Andreas Mohr's work on his i815 suspend/resume
+support showed that we need to save extra bits in config space on this old chip type. 
+His patch is in -mm tree, http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/broken-out/working-3d-dri-intel-agpko-resume-for-i815-chip.patch
 
+And recently James Bottomley also reported that save/restore whole 256 bytes config 
+space for gfx device can fix his s3 issue on Fujitsu P7120 i915. 
+http://lists.freedesktop.org/archives/xorg/2007-June/025346.html
+
+So here's my suggested patch for save whole 256 bytes config space for intel-agp,
+which could fix these issues. I tested it on my 965GM, that s3 works fine with X. 
+
+This patch bases on latest kernel git and my intel-agp patch set on agpgart.git tip.
+http://git.kernel.org/?p=linux/kernel/git/davej/agpgart.git;a=summary
+
+
+Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
+---
+ drivers/char/agp/intel-agp.c |   44 +++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 43 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index d383168..bc18241 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -110,6 +110,7 @@ static struct _intel_private {
+ 	 * popup and for the GTT.
+ 	 */
+ 	int gtt_entries;			/* i830+ */
++	u32 extra_saved_config[48];	/* suspend/resume */
+ } intel_private;
+ 
+ static int intel_i810_fetch_size(void)
+@@ -1974,9 +1975,33 @@ static void __devexit agp_intel_remove(struct pci_dev *pdev)
+ }
+ 
+ #ifdef CONFIG_PM
++static int agp_intel_suspend (struct pci_dev *pdev, pm_message_t state)
++{
++	int i;
++
++	pci_save_state(pdev);
++
++	if (intel_private.pcidev) {
++		pci_save_state(intel_private.pcidev);
++
++		for (i = 0; i < 48; i++)
++			pci_read_config_dword(intel_private.pcidev, i*4+64,
++				&intel_private.extra_saved_config[i]);
++
++		pci_set_power_state(intel_private.pcidev,
++			pci_choose_state(intel_private.pcidev, state));
++	}
++
++	pci_set_power_state(pdev, pci_choose_state(pdev, state));
++
++	return 0;
++}
++
+ static int agp_intel_resume(struct pci_dev *pdev)
+ {
+ 	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
++	int i = 0;
++	u32 val;
+ 
+ 	pci_restore_state(pdev);
+ 
+@@ -1984,8 +2009,24 @@ static int agp_intel_resume(struct pci_dev *pdev)
+ 	 * as host bridge (00:00) resumes before graphics device (02:00),
+ 	 * then our access to its pci space can work right.
+ 	 */
+-	if (intel_private.pcidev)
++	if (intel_private.pcidev) {
++		pci_set_power_state(intel_private.pcidev, PCI_D0);
+ 		pci_restore_state(intel_private.pcidev);
++		for (i = 0; i < 48; i++) {
++			pci_read_config_dword(intel_private.pcidev, i*4+64,
++						&val);
++			if (val != intel_private.extra_saved_config[i]) {
++				printk(KERN_DEBUG "intel-agp: Writing back"
++					"config space at offset %x"
++					" (was %x, writing %x)\n",
++					i*4+64, val,
++					intel_private.extra_saved_config[i]);
++				pci_write_config_dword(intel_private.pcidev,
++					i*4+64,
++					intel_private.extra_saved_config[i]);
++			}
++		}
++	}
+ 
+ 	if (bridge->driver == &intel_generic_driver)
+ 		intel_configure();
+@@ -2062,6 +2103,7 @@ static struct pci_driver agp_intel_pci_driver = {
+ 	.probe		= agp_intel_probe,
+ 	.remove		= __devexit_p(agp_intel_remove),
+ #ifdef CONFIG_PM
++	.suspend	= agp_intel_suspend,
+ 	.resume		= agp_intel_resume,
+ #endif
+ };
 -- 
-SUSE Labs, Novell Inc.
-
---------------090307080900080602090300
-Content-Type: text/plain;
- name="fs-new-write-aops-fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fs-new-write-aops-fix.patch"
-
-Index: linux-2.6/fs/splice.c
-===================================================================
---- linux-2.6.orig/fs/splice.c
-+++ linux-2.6/fs/splice.c
-@@ -570,7 +570,7 @@ static int pipe_to_file(struct pipe_inod
- 	if (this_len + offset > PAGE_CACHE_SIZE)
- 		this_len = PAGE_CACHE_SIZE - offset;
- 
--	ret = pagecache_write_begin(file, mapping, sd->pos, sd->len,
-+	ret = pagecache_write_begin(file, mapping, sd->pos, this_len,
- 				AOP_FLAG_UNINTERRUPTIBLE, &page, &fsdata);
- 	if (unlikely(ret))
- 		goto out;
-@@ -583,11 +583,12 @@ static int pipe_to_file(struct pipe_inod
- 		char *dst = kmap_atomic(page, KM_USER1);
- 
- 		memcpy(dst + offset, src + buf->offset, this_len);
-+		flush_dcache_page(page);
- 		kunmap_atomic(dst, KM_USER1);
- 		buf->ops->unmap(pipe, buf, src);
- 	}
- 
--	ret = pagecache_write_end(file, mapping, sd->pos, sd->len, sd->len, page, fsdata);
-+	ret = pagecache_write_end(file, mapping, sd->pos, this_len, this_len, page, fsdata);
- 
- out:
- 
-
---------------090307080900080602090300--
+1.4.4.4
