@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbXFLSlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbXFLSmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757199AbXFLSlp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 14:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbXFLSlh
+	id S1756958AbXFLSmI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 14:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbXFLSly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 14:41:37 -0400
-Received: from server001.webpack.hosteurope.de ([80.237.130.9]:43664 "EHLO
-	server001.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756335AbXFLSlg (ORCPT
+	Tue, 12 Jun 2007 14:41:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37866 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756696AbXFLSlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 14:41:36 -0400
-From: Andi Drebes <lists-receive@programmierforen.de>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [KJ] [PATCH] drivers/acpi: sizeof/sizeof array size calculations replaced with ARRAY_SIZE
-Date: Tue, 12 Jun 2007 20:41:05 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
-       Len Brown <lenb@kernel.org>, kernel-janitors@lists.osdl.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200705261239.27485.lists-receive@programmierforen.de> <20070610105712.GA4695@ucw.cz> <200706101544.35463.bjorn.helgaas@hp.com>
-In-Reply-To: <200706101544.35463.bjorn.helgaas@hp.com>
+	Tue, 12 Jun 2007 14:41:53 -0400
+Date: Tue, 12 Jun 2007 11:41:10 -0700
+From: Greg KH <greg@kroah.com>
+To: debian developer <debiandev@gmail.com>
+Cc: "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070612184110.GB7980@kroah.com>
+References: <466A3EC6.6030706@netone.net.tr> <18026.16739.228277.938421@notabene.brown> <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr> <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <466BCBBC.90305@netone.net.tr> <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com> <20070610160531.GA12179@kroah.com> <f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706122041.06252.lists-receive@programmierforen.de>
-X-bounce-key: webpack.hosteurope.de;lists-receive@programmierforen.de;1181673696;e080f81a;
+In-Reply-To: <f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First off: sorry for my late answer.
+On Tue, Jun 12, 2007 at 11:37:11PM +0530, debian developer wrote:
+>  On 6/10/07, Greg KH <greg@kroah.com> wrote:
+> > On Sun, Jun 10, 2007 at 04:25:55PM +0530, debian developer wrote:
+> > >  On 6/10/07, david@lang.hm <david@lang.hm> wrote:
+> > > > On Sun, 10 Jun 2007, Tarkan Erimer wrote:
+> > > >
+> > > > >> >  And maybe another questions should be : How long a copyright 
+> > owner
+> > > > can
+> > > > >> >  hold the copyright, if died or lost for sometime ? if died, the
+> > > > >> >  copyright still should be valid or not ? If lost, what the law 
+> > orders
+> > > > at
+> > > > >> >  this point for copyright holding ?
+> > > > >>
+> > > > >>  I believe that in the US it's life + 90 years.
+> > > > >>
+> > > > >>  David Lang
+> > > > > Hmm... Really,it is damn too much time to wait! It's really better 
+> > idea
+> > > > to
+> > > > > replace the code of this person as said before instead of waiting 
+> > such
+> > > > 90+
+> > > > > years!
+> > > >
+> > > > exactly, however as others are pointing out, there are a lot of active
+> > > > developers who do not agree with some of the key points of the GPLv3
+> > > > (including Linus), so until you convince them that the GPLv3 is better 
+> > it
+> > >
+> > >  Last heard, Linus was quite impressed with the toned down version of
+> > >  the final draft of GPLv3. I think Linus, and other major developers
+> > >  should make their stand on this issue clear so that the kernel
+> > >  community can discuss the future steps.
+> >
+> > "future steps"?  Hah.
+> >
+> > My code is going to stay GPLv2 as the v3 license is horrible for kernel
+> > code for all of the reasons I have said in the past, plus a few more
+> > (what, I can make an "industrial" product but not a commercial one?
+> 
+>      ^^^^^^^^^^^^^
+>  What exactly in GPLv3 forbids you from making a commercial product?
 
-> I agree the ACPI CA is a nuisance.  But in this case, we're making
-> a mountain out of a molehill.  I suspect that if somebody spent the
-> 15 minutes to make the ARRAY_SIZE patch work in both the Linux ACPI CA
-> and the generic Intel one and license it appropriately, Len would
-> happily apply the patch.
-I hope I got everything right. Here's what I understood so far:
+Nothing "forbids" me, it's just the artifical distinstion of the two is,
+in my opinion, stupid and foolish.  You are trying to define use-cases
+to justify their notion that you must give up the hardware keys for one
+type of device, yet not for another.
 
-The ACPI Subsystem in the kernel is derived from intel sources. I searched
-the web for information about that and finally found
+Even the people that feel that v2 says you need to give up the keys
+think this is dumb.  But we've been through all of that before (see
+previous long thread about v3 and why the kernel developers hate it, it
+all still applys to the final draft.)
 
-http://www.intel.com/technology/iapc/acpi/downloads.htm
-
-Is that the right one? So what I would have to do in order to
-"make the ARRAY_SIZE patch work in both the Linux ACPI CA
-and the generic Intel one" is to modify those sources aswell,
-send a patch to Intel and another one back to the
-lkml.
-
-Is that right? Or am I totally wrong?
-
-	Cheers,
-		Andi
+greg k-h
