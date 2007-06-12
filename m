@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbXFLD71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXFLD7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbXFLD71 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 23:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXFLD7T
+	id S1758278AbXFLD7r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 23:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbXFLD7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 23:59:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53508 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750933AbXFLD7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 23:59:18 -0400
-Date: Mon, 11 Jun 2007 23:59:14 -0400
-From: Dave Jones <davej@redhat.com>
-To: LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
-       Keith Packard <keithp@keithp.com>
-Subject: Re: [RFC][AGPGART]intel-agp: save whole config space in
-	suspend/resume
-Message-ID: <20070612035914.GA23169@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
-	Keith Packard <keithp@keithp.com>
-References: <20070612015459.GB28668@zhen-devel.sh.intel.com> <20070612022320.GA2125@redhat.com> <20070612033424.GA30200@zhen-devel.sh.intel.com>
+	Mon, 11 Jun 2007 23:59:37 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:55866 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756589AbXFLD7f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 23:59:35 -0400
+X-Sasl-enc: dR+M6EGb32mjTcwEy76+yaT+1Z6QDUe1Y03dK2YtVgdM 1181620773
+Date: Tue, 12 Jun 2007 00:59:28 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Dagfinn Ilmari =?iso-8859-1?Q?Manns=E5ker?= <ilmari@ilmari.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       htejun@gmail.com
+Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI controllers.
+Message-ID: <20070612035928.GB9808@khazad-dum.debian.net>
+References: <20070611184146.448266229@intel.com> <20070611114839.907bcae2.kristen.c.accardi@intel.com> <20070612011148.GA9808@khazad-dum.debian.net> <466DF3E9.30303@linux.intel.com> <d8jr6oikkcz.fsf@nygaard.ping.uio.no> <466DFE09.3020408@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070612033424.GA30200@zhen-devel.sh.intel.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <466DFE09.3020408@garzik.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 11:34:25AM +0800, Wang Zhenyu wrote:
+On Mon, 11 Jun 2007, Jeff Garzik wrote:
+> >>on/off doesn't really make sense if the question is "do you favor power
+> >>or do you favor performance".......
 
- > I understand. Before James reported his problem on i915, I have thought
- > the basic restore on that chip should already be enough, but he proved I was
- > wrong and I'm not sure if this also happens on other i915 board with different
- > BIOS. 
- > 
- > And with my patch it has already removed the restore cases for 440BX like type,
- > coz it's gmch_chip_id == 0 and intel_private.pcidev is NULL, so it won't save
- > extra space on those chips.
+Actually, it does if you think of it as "do you need hotplug right now or
+not?".
 
-The 440BX was one example, for all we know there are similar ordering
-issues with other chipsets.  We hit this problem with the code that
-restores the first 64 bytes first of all. Then we found out we had
-to restore them in reverse order to be safe.  We were able to do
-this generically, because those bytes are standardised across devices.
+> >How about just making it a numeric scale with 0 meaning no power saving
+> >and then some fixed number of levels (e.g 0-9)?
+> 
+> The original proposal seems far more intuitive than these alternatives.
 
-The upper config space isn't standardised, so we have to obey the
-per-device rules as to what order we read/write things.
-Writing back an "enable" bit somewhere before we've written back
-addresses in later registers for example may result in really
-bizarre things happening.  These are the kind of bugs that aren't
-obvious, and turn out to be "that weird reboot that happens
-every 3rd tuesday" six months after we've merged the changes
-and everyones forgotten all about the potential problems.
+There is nothing intuitive about the text or the levels.  All cases need
+proper documentation.  I'd never expect link powersaving to kill hotplug,
+unless I read the AHCI docs.
 
-The AGP code has had more than its fair share of really nasty
-bugs like this to track down, so I'm strongly opposed to introducing
-hacks that may trip us up later.
-
-Whilst I'm not a huge fan of the 815 patch in -mm as it stands,
-I think it's a better direction to go in to have per-chipset
-save/restore routines.
-
-	Dave
+And enable/disable ain't intuitive either :(  But enable/disable is useful
+to get stuff like SATA bay hotplug, dock/undock and other stuff that needs
+hotplug to be working right, unless we can make that automatic so that power
+saving is always disabled in all situations we'd need hotplug to be working?
 
 -- 
-http://www.codemonkey.org.uk
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
