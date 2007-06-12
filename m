@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbXFLRe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbXFLRhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756068AbXFLRe3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 13:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbXFLReX
+	id S1756306AbXFLRhg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 13:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXFLRhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 13:34:23 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:1350 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752997AbXFLReW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 13:34:22 -0400
-Date: Tue, 12 Jun 2007 19:32:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: splice: move balance_dirty_pages_ratelimited() outside of     splice actor
-Message-ID: <20070612173202.GO18832@kernel.dk>
-References: <200706112159.l5BLxF5x004043@hera.kernel.org> <20070611163433.dbc541ec.akpm@linux-foundation.org> <20070612063510.GO18832@kernel.dk> <20070612112059.GY18832@kernel.dk> <20070612113101.GZ18832@kernel.dk> <1181649983.7348.309.camel@twins> <20070612121047.GB18832@kernel.dk> <1181650572.7348.312.camel@twins> <20070612124449.GD18832@kernel.dk> <20070612094615.9e5557e5.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070612094615.9e5557e5.akpm@linux-foundation.org>
+	Tue, 12 Jun 2007 13:37:31 -0400
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:4229 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbXFLRha (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 13:37:30 -0400
+From: Martin Steigerwald <Martin@lichtvoll.de>
+To: ck@vds.kolivas.org
+Subject: Re: [ck] Re: kernel scedular
+Date: Tue, 12 Jun 2007 19:37:16 +0200
+User-Agent: KMail/1.9.7
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>
+References: <466B45D3.3020104@gmail.com> <alpine.LFD.0.98.0706091731020.20321@woody.linux-foundation.org> <200706121925.02286.Martin@lichtvoll.de> (sfid-20070612_193516_343943_A6F83CC6)
+In-Reply-To: <200706121925.02286.Martin@lichtvoll.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2994258.lBIW3UGPIS";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706121937.16959.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12 2007, Andrew Morton wrote:
-> On Tue, 12 Jun 2007 14:44:50 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > splice
-> 
-> btw, I'm staring in profound mystification at this:
-> 
-> int generic_pipe_buf_steal(struct pipe_inode_info *pipe,
-> 			   struct pipe_buffer *buf)
-> {
-> 	struct page *page = buf->page;
-> 
-> 	if (page_count(page) == 1) {
-> 		lock_page(page);
-> 		return 0;
-> 	}
-> 
-> 	return 1;
-> }
-> 
-> 
-> afacit that `if page_count(page)' test could be replaced by
-> `if today_is_tuesday()'.  But then I don't have the foggiest idea
-> what it's trying to do.
-> 
-> It would be nice to get some comments in and around here.
-> 
-> Also, I was trying to work out the role and responsibility of the ->pin
-> callback, and gave up.
-> 
-> There isn't a lot of point in explaining this over email - one should be
-> able to gain an understanding of these things by reading the code.  I think
-> the best way of tackling this would be to comprehensively document
-> pipe_buf_operations and pipe_inode_info, please...
+--nextPart2994258.lBIW3UGPIS
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-OK so I wont explain it in detail here, I'll write up a good set of
-comments tonight.
+Am Dienstag 12 Juni 2007 schrieb Martin Steigerwald:
 
--- 
-Jens Axboe
+> At least in my subjective testing I can't tell any difference anymore,
+> so it boils down to design criteria, code size, ability to maintain...
 
+And of course as needed further - preferably at least somewhat=20
+comparable - test scenarios and benchmarks with realistic workloads. Some=20
+thoughts about this:
+
+http://bhhdoa.org.au/pipermail/ck/2007-June/007879.html
+
+Regards,
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+
+--nextPart2994258.lBIW3UGPIS
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGbtnMmRvqrKWZhMcRAmgfAJ43zRgCMnUzffN9W61CyRfxbTh+5gCfWbFY
+Cxc6msIkdnE+qVNevqSEr5o=
+=oK/g
+-----END PGP SIGNATURE-----
+
+--nextPart2994258.lBIW3UGPIS--
