@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbXFLUfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757721AbXFLUhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757512AbXFLUfJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 16:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbXFLUe6
+	id S1757721AbXFLUhG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 16:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbXFLUg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 16:34:58 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:2978 "EHLO
+	Tue, 12 Jun 2007 16:36:56 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:2980 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754123AbXFLUe5 (ORCPT
+	with ESMTP id S1753859AbXFLUg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 16:34:57 -0400
-Date: Tue, 12 Jun 2007 22:34:56 +0200 (CEST)
+	Tue, 12 Jun 2007 16:36:56 -0400
+Date: Tue, 12 Jun 2007 22:36:55 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: David Schwartz <davids@webmaster.com>
-cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: PC speaker
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEHOEIAC.davids@webmaster.com>
-Message-ID: <Pine.LNX.4.64.0706122223350.19578@fbirervta.pbzchgretzou.qr>
-References: <MDEHLPKNGKAHNMBLJOLKKEHOEIAC.davids@webmaster.com>
+To: "R.F. Burns" <burnsrf@gmail.com>
+cc: Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
+Subject: Re: PC speaker
+In-Reply-To: <a800cda90706121325p18c85b00r7bc4b15b95517371@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706122235210.19578@fbirervta.pbzchgretzou.qr>
+References: <a800cda90706120545w2c6d0bb0vb77bd4d961415c5c@mail.gmail.com> 
+ <75b66ecd0706120744g7cdb3392l6537b5c68c2d6b21@mail.gmail.com>
+ <a800cda90706121325p18c85b00r7bc4b15b95517371@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jun 12 2007 13:08, David Schwartz wrote:
+On Jun 12 2007 16:25, R.F. Burns wrote:
 >
->As far as burning out a speaker goes, if you can drop the frequency to zero
->(DC) and get continuous current through the speaker, that could burn it out.
->This makes several assumptions, many of which may not be true on modern PCs:
->
->1) It assumes the speaker is a conventional coil speaker, not a piezo
->element. (This is certainly true on some PCs, although it's increasingly
->false on newer PCs.)
->
->2) It assumes the speaker is DC driven. (I'm pretty sure this was true on
->the original IBM PC. Not sure about newer computers.)
+> However, over the past several weeks, the students have found more
+> creative ways to abuse the PC speaker (outside of the OS.)  The Powers
+> that Be are asking that the PC speakers be disabled completely.  With
+> the small number of techs we have, it would be very impractical to go
+> around to all systems and remove the PC speaker from each and every
+> computer case.
 
-Most likely. AC is hardly any good inside a computer :)
+But you only have to do it once anyway.
 
->3) It assumes you can configure the circuitry that drives the speaker such
->that it will stay on. (No idea.)
+> So, the idea was raised about seeing if there was a way to blow the PC
+> speaker by loading a kernel module.  If so, a mass-deployment of a
+> kernel module overnight would take care of the PC speaker problem once
+> and for all.
 
-A crystal will drive the frequency, which can be set with outb(0x42).
-Whether the crystal's oscillating signal is connected to the speaker
-can be controlled with outb(0x61) IIRC [or just see
-drivers/input/misc/pcspkr.c].
+And once you need a speaker (BIOS beep codes come to mind), you don't have any.
 
->4) It assumes the current will be sufficient to burn out the speaker. (I
->know it will get very hot on older machines, whether it will burn out --
->might even depend on the exact speaker model.)
-
-Since you can set the x86's crystals frequency from 1193182 to 18 Hz
-(PIT_TICK_RATE / 1 to PIT_TICK_RATE / 65535) [*], you can never really
-bust it. But even then, what would a speaker do it was constanly given
-+5V? (I _suppose_ the other level is 0V, not -5V -- makes for easy 
-design.) That's IMO just like a sound file with volume(x) = 1, nothing 
-spectacular if you ask me.
-
-[*] The line "if (value > 20 && value < 32767) in pcspkr.c looks a bit bogus.
-
-
->On at least some older computers, you could burn out the hardware that
->drove the speaker this way. I think it was either the Pet or the Apple
->][ (didn't work on all machines, depended on how much current the
->speaker drew and other odd factors). I witnessed an Apple ][e blow out
->an I/O chip when it crashed with an output (that was supposed to be
->pulsed) left in the on position.
 
 
 	Jan
