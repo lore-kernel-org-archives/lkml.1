@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbXFLOJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbXFLOJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbXFLOJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 10:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXFLOJU
+	id S1754773AbXFLOJo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 10:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXFLOJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 10:09:20 -0400
-Received: from stinky.trash.net ([213.144.137.162]:37019 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbXFLOJS (ORCPT
+	Tue, 12 Jun 2007 10:09:34 -0400
+Received: from hu-out-0506.google.com ([72.14.214.239]:30356 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754822AbXFLOJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 10:09:18 -0400
-Message-ID: <466EA861.2070509@trash.net>
-Date: Tue, 12 Jun 2007 16:06:25 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Tue, 12 Jun 2007 10:09:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HiGcZgsiTAa2E0iyFGsVs7msHXmdep3aMB2uavxtdj+/ozF7kfid5UsYFh+0WXZCiAJyz31P0BXn+teABpO7n9TC18Q3bNtv1HI25FiNC9dwd9Ei4SVqk2VEWA5ohUIq7gAkWvvbMEYOnbYTE3Hi7E+5nwJMlCLXYLmBHkahZUA=
+Message-ID: <a781481a0706120709v5a2d1147m9d372a8056aeba6d@mail.gmail.com>
+Date: Tue, 12 Jun 2007 19:39:30 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [PATCH] x86: fix improper .init-type section references
+Cc: "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Sam Ravnborg" <sam@ravnborg.org>, "Andi Kleen" <ak@suse.de>,
+       linux-kernel@vger.kernel.org, patches@x86-64.org
+In-Reply-To: <466EC08A.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: cannot set IP for ethernet
-References: <200706121441.13561.oliver@neukum.org>
-In-Reply-To: <200706121441.13561.oliver@neukum.org>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: multipart/mixed;
- boundary="------------020208040209090108060507"
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466E6BDF.76E4.0078.0@novell.com>
+	 <a781481a0706120414g385ccfe8j82b5b18d96d064f2@mail.gmail.com>
+	 <a781481a0706120509k89c331ela81f57ad0f0e29eb@mail.gmail.com>
+	 <466EB12B.76E4.0078.0@novell.com>
+	 <a781481a0706120632p54ad83d0ka0a07a9fd9b276b4@mail.gmail.com>
+	 <466EC08A.76E4.0078.0@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020208040209090108060507
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+On 6/12/07, Jan Beulich <jbeulich@novell.com> wrote:
+> >> And from a purely theoretical
+> >> perspective I don't think such references should be considered bad -
+> >> .exit.* should be discarded together with .init.* if unloading is
+> >> impossible (built-in or configured off), not before module/kernel
+> >> initialization.
+> >
+> >Hmm, but that's not how things are, presently. __exit marked
+> >functions are simply not linked into the kernel (when that module
+> >is being built-in) at all -- this "discard" happens at _build time_
+> >(to save on kernel image size).
+>
+> Not really, at least not for i386 and x86-64 - see their vmlinux.lds.S files.
 
-Oliver Neukum wrote:
-> with 2.6.22-rc4-git2 I am getting errors when setting IP for ethernet
-> interfaces:
-> 
-> ioctl(4, SIOCSIFADDR, 0x7fff94931600)   = -1 ENOBUFS (No buffer space available)
-> 
-> The error is independant of the interface. It happens to all interfaces.
-> There's nothing in the syslog.
-> 
-> valisk:/home/oliver # uname -a
-> Linux valisk 2.6.22-rc4-git2-default #3 SMP Tue Jun 12 13:27:54 CEST 2007 x86_64 x86_64 x86_64 GNU/Linux
-
-
-This can happen if the initial inetdev allocation when the netdevice is
-registered fails. I think it would make sense to try to allocate again
-when adding addresses in that case, otherwise there is no way of
-recovery other than unregistering and registering the device again.
-
-
---------------020208040209090108060507
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
-
-diff --git a/net/ipv4/devinet.c b/net/ipv4/devinet.c
-index abf6352..dc77e91 100644
---- a/net/ipv4/devinet.c
-+++ b/net/ipv4/devinet.c
-@@ -401,8 +401,11 @@ static int inet_set_ifa(struct net_device *dev, struct in_ifaddr *ifa)
- 	ASSERT_RTNL();
- 
- 	if (!in_dev) {
--		inet_free_ifa(ifa);
--		return -ENOBUFS;
-+		in_dev = inetdev_init(dev);
-+		if (!in_dev) {
-+			inet_free_ifa(ifa);
-+			return -ENOBUFS;
-+		}
- 	}
- 	ipv4_devconf_setall(in_dev);
- 	if (ifa->ifa_dev != in_dev) {
-@@ -514,8 +517,11 @@ static struct in_ifaddr *rtm_to_ifaddr(struct nlmsghdr *nlh)
- 
- 	in_dev = __in_dev_get_rtnl(dev);
- 	if (in_dev == NULL) {
--		err = -ENOBUFS;
--		goto errout;
-+		in_dev = inetdev_init(dev);
-+		if (!in_dev) {
-+			err = -ENOBUFS;
-+			goto errout;
-+		}
- 	}
- 
- 	ipv4_devconf_setall(in_dev);
-
---------------020208040209090108060507--
+For those archs, yes, you're right that modpost should be
+special-casing (based on arch) before complaining for
+.init -> .exit references.
