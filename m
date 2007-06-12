@@ -1,58 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbXFLMTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756449AbXFLMU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbXFLMTr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 08:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbXFLMTj
+	id S1756449AbXFLMU2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 08:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbXFLMUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 08:19:39 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:21436 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754097AbXFLMTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 08:19:38 -0400
-Message-ID: <466E8F58.9010502@msgid.tls.msk.ru>
-Date: Tue, 12 Jun 2007 16:19:36 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Tue, 12 Jun 2007 08:20:18 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:35200 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754810AbXFLMUQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 08:20:16 -0400
+Message-ID: <466E8F5E.7040105@fr.ibm.com>
+Date: Tue, 12 Jun 2007 14:19:42 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: VIA C7 / VIA PC-1 (PC2500) anyone?
-References: <466E65A7.3000206@msgid.tls.msk.ru> <466E69BE.405@vger.kernel.org>
-In-Reply-To: <466E69BE.405@vger.kernel.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=4F9CF57E
+To: Badari Pulavarty <pbadari@us.ibm.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: PATCH -mm] fix create_new_namespaces() return value
+References: <466D5830.9010200@fr.ibm.com> <466D76DC.7020900@us.ibm.com>
+In-Reply-To: <466D76DC.7020900@us.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux-kernel wrote:
-[]
-> To me it looks like a wrong choice of gcc switches to user-mode programs. What
-> distribution are you using? try compiling failing programs from source with
-> conservative command line switches to gcc. See if things change.
+Badari Pulavarty wrote:
+> 
+> 
+> Cedric Le Goater wrote:
+> 
+>> The following patch modifies create_new_namespaces() to also use the
+>> errors returned by the copy_*_ns routines and not to systematically
+>> return ENOMEM.
+>>
+> 
+> In my initial version, I did same. It doesn't work :(
+> 
+> copy_*_ns() routines doesn't return any errors. All they return is NULL
+> in case of a
+> failure + with the exception of copy_mnt_ns, there are no other failure
+> cases.
+> So, there is no way to find out why the copy_*_ns() routines failed from
+> create_new_namespaces().
+> If you really really want to do this, change all copy_*_ns() routines to
+> returns meaningful
+> errors instead of NULL.
 
-Wrong choice of gcc switches tends to produce binaries wich are either works
-or does not.  Here, it sometimes works and sometimes does not.  Also, if
-it was wrong options, programs usually tends to fail with something like
-SIGILL (Illegal Instruction), not SIGSEGV.
+Here's a second try to apply on top of -mm branch,
 
-The system is running Debian Etch (4.0), with everything compiled for plain
-i386 (default gcc -O2 without any fancy optimizations).
+Thanks for the review Badari.
 
-I tried installing libc6-i686 package (cmov-enabled glibc) - unlike with
-VIA C3 (which indeed does not have this instruction), it worked on C7, but
-installing libc6-i686 didn't change SIGSEGVs at all.
+C. 
 
-I just tried to recompile man(1) command (the one that gave SIGSEGVs most
-often).  The resulting binary fails MUCH less often, but still sometimes
-fails.
 
-Note that this is real i686 CPU.  At least according to kernel - when one
-chooses C7 CPU in kernel config, kernel uses -march=i686 switch - the only
-CPU-specific switch it is.  The difference between i686 and C7 in kernel
-config is cache shift value.
+The following patch modifies create_new_namespaces() to also use the 
+errors returned by the copy_*_ns routines and not to systematically 
+return ENOMEM.
 
-Thanks.
+Changes since [try #1]:
+        - fixed return values of clone_*_ns() routines
+ 
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Serge E. Hallyn <serue@us.ibm.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Pavel Emelianov <xemul@openvz.org>
+Cc: Herbert Poetzl <herbert@13thfloor.at>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/namespace.c          |    4 ++--
+ kernel/nsproxy.c        |   23 +++++++++++++++++------
+ kernel/user_namespace.c |    6 +++---
+ kernel/utsname.c        |   10 ++++++----
+ 4 files changed, 28 insertions(+), 15 deletions(-)
 
-/mjt
+Index: 2.6.22-rc4-mm2/kernel/nsproxy.c
+===================================================================
+--- 2.6.22-rc4-mm2.orig/kernel/nsproxy.c
++++ 2.6.22-rc4-mm2/kernel/nsproxy.c
+@@ -58,30 +58,41 @@ static struct nsproxy *create_new_namesp
+ 			struct fs_struct *new_fs)
+ {
+ 	struct nsproxy *new_nsp;
++	int err;
+ 
+ 	new_nsp = clone_nsproxy(tsk->nsproxy);
+ 	if (!new_nsp)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	new_nsp->mnt_ns = copy_mnt_ns(flags, tsk->nsproxy->mnt_ns, new_fs);
+-	if (IS_ERR(new_nsp->mnt_ns))
++	if (IS_ERR(new_nsp->mnt_ns)) {
++		err = PTR_ERR(new_nsp->mnt_ns);
+ 		goto out_ns;
++	}
+ 
+ 	new_nsp->uts_ns = copy_utsname(flags, tsk->nsproxy->uts_ns);
+-	if (IS_ERR(new_nsp->uts_ns))
++	if (IS_ERR(new_nsp->uts_ns)) {
++		err = PTR_ERR(new_nsp->uts_ns);
+ 		goto out_uts;
++	}
+ 
+ 	new_nsp->ipc_ns = copy_ipcs(flags, tsk->nsproxy->ipc_ns);
+-	if (IS_ERR(new_nsp->ipc_ns))
++	if (IS_ERR(new_nsp->ipc_ns)) {
++		err = PTR_ERR(new_nsp->ipc_ns);
+ 		goto out_ipc;
++	}
+ 
+ 	new_nsp->pid_ns = copy_pid_ns(flags, tsk->nsproxy->pid_ns);
+-	if (IS_ERR(new_nsp->pid_ns))
++	if (IS_ERR(new_nsp->pid_ns)) {
++		err = PTR_ERR(new_nsp->pid_ns);
+ 		goto out_pid;
++	}
+ 
+ 	new_nsp->user_ns = copy_user_ns(flags, tsk->nsproxy->user_ns);
+-	if (IS_ERR(new_nsp->user_ns))
++	if (IS_ERR(new_nsp->user_ns)) {
++		err = PTR_ERR(new_nsp->user_ns);
+ 		goto out_user;
++	}
+ 
+ 	return new_nsp;
+ 
+@@ -99,7 +110,7 @@ out_uts:
+ 		put_mnt_ns(new_nsp->mnt_ns);
+ out_ns:
+ 	kfree(new_nsp);
+-	return ERR_PTR(-ENOMEM);
++	return ERR_PTR(err);
+ }
+ 
+ /*
+Index: 2.6.22-rc4-mm2/fs/namespace.c
+===================================================================
+--- 2.6.22-rc4-mm2.orig/fs/namespace.c
++++ 2.6.22-rc4-mm2/fs/namespace.c
+@@ -1599,7 +1599,7 @@ static struct mnt_namespace *dup_mnt_ns(
+ 
+ 	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
+ 	if (!new_ns)
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	atomic_set(&new_ns->count, 1);
+ 	INIT_LIST_HEAD(&new_ns->list);
+@@ -1613,7 +1613,7 @@ static struct mnt_namespace *dup_mnt_ns(
+ 	if (IS_ERR(new_ns->root)) {
+ 		up_write(&namespace_sem);
+ 		kfree(new_ns);
+-		return NULL;
++		return ERR_PTR(-ENOMEM);;
+ 	}
+ 	spin_lock(&vfsmount_lock);
+ 	list_add_tail(&new_ns->list, &new_ns->root->mnt_list);
+Index: 2.6.22-rc4-mm2/kernel/user_namespace.c
+===================================================================
+--- 2.6.22-rc4-mm2.orig/kernel/user_namespace.c
++++ 2.6.22-rc4-mm2/kernel/user_namespace.c
+@@ -34,7 +34,7 @@ static struct user_namespace *clone_user
+ 
+ 	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
+ 	if (!ns)
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	kref_init(&ns->kref);
+ 
+@@ -45,7 +45,7 @@ static struct user_namespace *clone_user
+ 	ns->root_user = alloc_uid(ns, 0);
+ 	if (!ns->root_user) {
+ 		kfree(ns);
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 	}
+ 
+ 	/* Reset current->user with a new one */
+@@ -53,7 +53,7 @@ static struct user_namespace *clone_user
+ 	if (!new_user) {
+ 		free_uid(ns->root_user);
+ 		kfree(ns);
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 	}
+ 
+ 	switch_uid(new_user);
+Index: 2.6.22-rc4-mm2/kernel/utsname.c
+===================================================================
+--- 2.6.22-rc4-mm2.orig/kernel/utsname.c
++++ 2.6.22-rc4-mm2/kernel/utsname.c
+@@ -13,6 +13,7 @@
+ #include <linux/uts.h>
+ #include <linux/utsname.h>
+ #include <linux/version.h>
++#include <linux/err.h>
+ 
+ /*
+  * Clone a new ns copying an original utsname, setting refcount to 1
+@@ -24,10 +25,11 @@ static struct uts_namespace *clone_uts_n
+ 	struct uts_namespace *ns;
+ 
+ 	ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
+-	if (ns) {
+-		memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
+-		kref_init(&ns->kref);
+-	}
++	if (!ns)
++		return ERR_PTR(-ENOMEM);
++
++	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
++	kref_init(&ns->kref);
+ 	return ns;
+ }
+ 
