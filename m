@@ -1,41 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756447AbXFLPOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbXFLPQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756447AbXFLPOz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 11:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbXFLPOq
+	id S1756215AbXFLPQW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbXFLPQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 11:14:46 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:3486 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753856AbXFLPOp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 11:14:45 -0400
-Date: Tue, 12 Jun 2007 17:14:44 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Oliver Neukum <oliver@neukum.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: cannot set IP for ethernet
-In-Reply-To: <200706121613.47718.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.64.0706121714290.19578@fbirervta.pbzchgretzou.qr>
-References: <200706121441.13561.oliver@neukum.org>
- <Pine.LNX.4.64.0706121531040.19578@fbirervta.pbzchgretzou.qr>
- <200706121613.47718.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Jun 2007 11:16:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58071 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752137AbXFLPQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 11:16:14 -0400
+Subject: Re: ext3fs: umount+sync not enough to guarantee metadata-on-disk
+From: "Stephen C. Tweedie" <sct@redhat.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Mark Lord <lkml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Stephen Tweedie <sct@redhat.com>
+In-Reply-To: <20070610182746.GA4272@ucw.cz>
+References: <46680BB8.50404@rtr.ca>
+	 <20070607084142.42583639.akpm@linux-foundation.org>
+	 <46682BE7.6080802@rtr.ca>  <20070610182746.GA4272@ucw.cz>
+Content-Type: text/plain
+Organization: Red Hat UK Ltd, Amberley Place, 107-111 Peascod Street,
+	Windsor, Berkshire, SL4 1TE, United Kingdom. Registered in England and
+	Wales under Company Registration No. 03798903
+Date: Tue, 12 Jun 2007 16:15:58 +0100
+Message-Id: <1181661358.18067.28.camel@sisko.scot.redhat.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.0.2.el4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Jun 12 2007 16:13, Oliver Neukum wrote:
->> On Jun 12 2007 14:41, Oliver Neukum wrote:
->> >
->> >with 2.6.22-rc4-git2 I am getting errors when setting IP for ethernet
->> >interfaces:
->> >
->> >ioctl(4, SIOCSIFADDR, 0x7fff94931600)   = -1 ENOBUFS (No buffer space available)
+On Sun, 2007-06-10 at 18:27 +0000, Pavel Machek wrote:
 
-Do you run VPN or some sort?
+> > Once a f/s is read-only, there should be NO writing to 
+> > it.  Right?
+> 
+> Linux happily writes to filesystems mounted read-only. It will replay
+> journal on them.
+
+Only at mount time, not on unmount; and it does check whether the
+underlying device is truly readonly or not first (assuming
+bdev_read_only() is working on the device in question.)
+
+--Stephen
 
 
-	Jan
--- 
