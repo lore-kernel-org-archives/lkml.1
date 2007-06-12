@@ -1,138 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbXFLPER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbXFLPJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbXFLPER (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 11:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbXFLPEG
+	id S1755199AbXFLPJv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbXFLPJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 11:04:06 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:51820 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751777AbXFLPEE (ORCPT
+	Tue, 12 Jun 2007 11:09:44 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:22447 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbXFLPJn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 11:04:04 -0400
-Date: Tue, 12 Jun 2007 08:04:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>, kbuild-devel@lists.sourceforge.net
-Subject: Re: [patch] kbuild: remember ARCH in the object directory
-Message-Id: <20070612080422.988d0da8.randy.dunlap@oracle.com>
-In-Reply-To: <E1Hy3fI-0001Tw-Fy@flower>
-References: <200705090951.l499pa6G020397@shell0.pdx.osdl.net>
-	<20070509204613.GA10336@uranus.ravnborg.org>
-	<1178755780.7286.175.camel@localhost.localdomain>
-	<E1HxjKu-0004G6-7d@flower>
-	<20070611125903.GA3933@uranus.ravnborg.org>
-	<E1Hy3fI-0001Tw-Fy@flower>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 12 Jun 2007 11:09:43 -0400
+Date: Tue, 12 Jun 2007 17:09:42 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "R.F. Burns" <burnsrf@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: PC speaker
+In-Reply-To: <Pine.LNX.4.64.0706121556510.19578@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0706121709160.19578@fbirervta.pbzchgretzou.qr>
+References: <a800cda90706120545w2c6d0bb0vb77bd4d961415c5c@mail.gmail.com> 
+ <Pine.LNX.4.64.0706121531220.19578@fbirervta.pbzchgretzou.qr>
+ <a800cda90706120654x1c112d95l360c240d7075a774@mail.gmail.com>
+ <Pine.LNX.4.64.0706121556510.19578@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007 12:31:56 +0200 Oleg Verych wrote:
 
-> [patch] kbuild: remember ARCH in the object directory
-> 
->  - rephrase some related (misspelled) comments,
->  - remove all trailing whitespace in the top Makefile,
-> 
->  * remember ARCH in the output directory, thus making build of i386
->    on amd64 *actually* convenient,
-> 
->  - harmless refactoring of the Makefile generating.
-> 
-> Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
-> ---
-> 
->  Just lazy typing `make ARCH=i386` every time i want to check lguest.
+On Jun 12 2007 15:57, Jan Engelhardt wrote:
+>On Jun 12 2007 09:54, R.F. Burns wrote:
+>> On 6/12/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>>> On Jun 12 2007 08:45, R.F. Burns wrote:
+>
+>>> > Is it possible to write a kernel module which, when loaded, will blow the
+>>> > PC
+>>> > speaker?
+>>>
+>>> Define blow.
+>>> (As in "damage"?)
+>>
+>> Yes.  As in, blow it out/damage it so that it is no longer usable.
+>
+>I'd say impossible. Just disconnect it from the motherboard.
 
-Hi Oleg,
-
-So does this only work when O= is used?
-
-I had tried to modify Makefile(s) to use the include/asm symlink
-if it exists, so that 'make ARCH=i386' is not needed after the
-symlink is created, but I never got that to work.
-
-Thanks, this is useful in any case (not yet tested though).
+The days when hardware *relied* on software (hence, where software
+could damage hardware) are over.
 
 
->  Makefile           |   17 ++++++++---------
->  scripts/mkmakefile |   42 ++++++++++++++++++++++++------------------
->  2 files changed, 32 insertions(+), 27 deletions(-)
-> 
-> Index: linux-2.6.22-rc4-mm2/scripts/mkmakefile
-> ===================================================================
-> --- linux-2.6.22-rc4-mm2.orig/scripts/mkmakefile	2007-06-12 11:21:27.755466250 +0200
-> +++ linux-2.6.22-rc4-mm2/scripts/mkmakefile	2007-06-12 12:04:13.675826250 +0200
-> @@ -1,6 +1,6 @@
-> -#!/bin/sh
-> +#!/bin/sh -e
->  # Generates a small Makefile used in the root of the output
-> -# directory, to allow make to be started from there.
-> -# The Makefile also allow for more convinient build of external modules
-> +# directory, to allow kernel build to be started from there.
-> +# External modules can't built with it as well.
->  
->  # Usage
-> @@ -9,28 +9,34 @@
->  # $3 - version
->  # $4 - patchlevel
-> +# $5 - ARCH
->  
-> +set -e
->  
-> -test ! -r $2/Makefile -o -O $2/Makefile || exit 0
->  echo "  GEN     $2/Makefile"
-> +echo "#
-> +# Automatically generated by
-> +# $0
-> +#
-> +VERSION		= $3
-> +PATCHLEVEL	= $4
-> +
-> +KERNELSRC	= $1
-> +KERNELOUTPUT	= $2
-> +ARCH		= $5
-> +" >$2/Makefile
->  
-> -cat << EOF > $2/Makefile
-> -# Automatically generated by $0: don't edit
-> +cat << "EOF" >> $2/Makefile
-> +MAKEFLAGS	+= -rR --no-print-directory
->  
-> -VERSION = $3
-> -PATCHLEVEL = $4
-> +export ARCH
->  
-> -KERNELSRC    := $1
-> -KERNELOUTPUT := $2
-> -
-> -MAKEFLAGS += --no-print-directory
-> +all:
-> +	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT)
->  
-> -.PHONY: all \$(MAKECMDGOALS)
-> +$(filter-out all Makefile,$(MAKECMDGOALS)) %/:
-> +	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT) $@
->  
-> -all:
-> -	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT)
-> +.PHONY: all $(MAKECMDGOALS)
->  
->  Makefile:;
-> -
-> -\$(filter-out all Makefile,\$(MAKECMDGOALS)) %/:
-> -	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$@
->  EOF
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+	Jan
+-- 
