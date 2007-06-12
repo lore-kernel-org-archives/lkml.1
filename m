@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbXFLSAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbXFLSEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757421AbXFLSAW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 14:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbXFLSAK
+	id S1756989AbXFLSEI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 14:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbXFLSD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 14:00:10 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:52856 "EHLO mail.ukfsn.org"
+	Tue, 12 Jun 2007 14:03:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40296 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754816AbXFLSAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 14:00:08 -0400
-Message-ID: <466EDF24.2000806@dgreaves.com>
-Date: Tue, 12 Jun 2007 19:00:04 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+	id S1755324AbXFLSD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 14:03:56 -0400
+Date: Tue, 12 Jun 2007 14:03:48 -0400
+From: Dave Jones <davej@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Allow softlockup to be runtime disabled.
+Message-ID: <20070612180348.GB30839@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070612031354.GA18471@redhat.com> <1181648985.7348.305.camel@twins>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com> <20070610184348.GA4417@ucw.cz>
-In-Reply-To: <20070610184348.GA4417@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181648985.7348.305.camel@twins>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
->> cu:~# mount -oremount,ro /huge
->> cu:~# /usr/net/bin/hibernate
->> [this works and resumes]
->>
->> cu:~# mount -oremount,rw /huge
->> cu:~# /usr/net/bin/hibernate
->> [this works and resumes too !]
->>
->> cu:~# touch /huge/tst
->> cu:~# /usr/net/bin/hibernate
->> [but this doesn't even hibernate]
-> 
-> This is very probably separate problem... and you should have enough
-> data in dmesg to do something with it.
+On Tue, Jun 12, 2007 at 01:49:45PM +0200, Peter Zijlstra wrote:
+ > On Mon, 2007-06-11 at 23:13 -0400, Dave Jones wrote:
+ > > It's useful sometimes to disable the softlockup checker at boottime.
+ > > Especially if it triggers during a distro install.
+ > 
+ > Should we not rather fix these occurrences?
 
-What makes you say it's a different problem - it's hanging at the same point 
-visually - it's just that one is pre suspend, one is post suspend.
+We do, but we can't easily fix the kernel that ends up on
+install media.  It's easier to tell a user
+"boot with nosoftlockup, then update your kernel after its installed"
+than it is to guide them through reconstructing an ISO with
+an updated kernel.
 
-It all feels very related to me - the behaviour all hinges around the same patch 
-too.
+	Dave
 
-I'll take a look in dmesg though...
-
-David
-
-PS, looks like some mail holdups somewhere...
-Received: from spitz.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
-	by mail.ukfsn.org (Postfix) with ESMTP id A9125E6AE9
-	for <david@dgreaves.com>; Tue, 12 Jun 2007 15:41:23 +0100 (BST)
-Received: by spitz.ucw.cz (Postfix, from userid 0)
-	id E05FC279F2; Sun, 10 Jun 2007 18:43:48 +0000 (UTC)
-Date: Sun, 10 Jun 2007 18:43:48 +0000
+-- 
+http://www.codemonkey.org.uk
