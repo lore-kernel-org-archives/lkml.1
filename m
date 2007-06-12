@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbXFLWJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbXFLWKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756610AbXFLWJv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 18:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbXFLWJJ
+	id S1756258AbXFLWKZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 18:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbXFLWJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 18:09:09 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:49051 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755565AbXFLWJE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 18:09:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=fL+yMDqhc1LzhA/UfNWDrqToLeWAwuGu5F6F5DAzLSlycAQQSouGUC2ryAMTaRk1JNdRZliZrZYgXzZjDBVFKKp5tcahbEuAeDSGfvF5zDYJ001YUgziczj9lZ0JnVXfV0ClO895GDm9o5OuVzj5g68YMeWRToHQDk+RMLbmM7A=
-Message-ID: <e9c3a7c20706121509x43dda6f6uc3b4d70a01c0c891@mail.gmail.com>
-Date: Tue, 12 Jun 2007 15:09:03 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: raid5: coding style cleanup / refactor
-Cc: NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E5201FDE2CB@azsmsx413.amr.corp.intel.com>
+	Tue, 12 Jun 2007 18:09:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44586 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756017AbXFLWJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 18:09:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+Date: Wed, 13 Jun 2007 00:16:08 +0200
+User-Agent: KMail/1.9.5
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, asit.k.mallick@intel.com
+References: <m1tztt3yqy.fsf@ebiederm.dsl.xmission.com> <200706122252.10886.rjw@sisk.pl> <20070612215659.GB17143@linux-os.sc.intel.com>
+In-Reply-To: <20070612215659.GB17143@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070612142532.b45ee9bf.akpm@linux-foundation.org>
-	 <0C7297FA1D2D244A9C7F6959C0BF1E5201FDE2CB@azsmsx413.amr.corp.intel.com>
-X-Google-Sender-Auth: b45cd39ce7acaa34
+Message-Id: <200706130016.09490.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I assume that you're prepared to repair all that damage to your tree, but
-> > it seems a bit masochistic?
->
-> It's either this or have an inconsistent coding style throughout
-> raid5.c.  I figure it is worth it to have reduced code duplication
-> between raid5 and raid6, and it makes it easier to add new cache
-> features going forward.  I have a few more cleanups to add for a rev2 of
-> this patch, but I will hold that off until the rebase is done.
->
+On Tuesday, 12 June 2007 23:56, Siddha, Suresh B wrote:
+> On Tue, Jun 12, 2007 at 10:52:09PM +0200, Rafael J. Wysocki wrote:
+> > On Tuesday, 12 June 2007 20:19, Eric W. Biederman wrote:
+> > > Because you are calling unfixably broken code.  That should be a decent
+> > > incentive to do something else won't it?
+> > 
+> > Can you please tell me _what_ else can be done?
+> > 
+> > > IOAPICs do not support what the code is doing here.  There is lots of
+> > > practical evidence including bad experiences and practical tests that
+> > > support this.
+> > 
+> > Well, AFAICS, Suresh has tried to debug one failing case recently without
+> > any consistent conclusions.  I don't know of any other test cases (links,
+> > please?).
+> 
+> Rafael, Darrick Wong's issue looks different and hence I was motivated to
+> look and fix if it was a SW issue. For now, I am not able to comprehend
+> what is happening on Darrick Wong's system. Need more help from Darrick
+> as he has the golden failing system.
+> 
+> Meanwhile I talked to our hardware folks about the irq migration in general.
+> 
+> One good news is that future versions of chipsets will have an Interrupt
+> Remapping feature(for more details please refer to
+> http://download.intel.com/technology/computing/vptech/Intel(r)_VT_for_Direct_IO.pdf)
+> where in we can reliably migrate the irq to someother cpu in the process
+> context.
+> 
+> And for the existing platforms, chipset folks don't see a reason why the
+> Eric's algorithm(specified below) should fail.
+> 
+> Eric's algorithm for level triggered(edge triggered should be easier than
+> level triggered):
+> - Mask the irq in process context.
+> - Poll RIRR until an ack of for the irq was not pending.
+> - Migrate the irq.
+> 
+> Eric had a problem of stuck remote IRR on E75xx chipset with this algorithm
+> and my next step is to reproduce this issue on this platform and understand
+> the behavior.
 
-In other words, it seemed like a good idea at the time, but I am open
-to suggestions.
+OK
+
+In that case, do I understand correctly that we are going to implement the
+Eric's algorithm above for the CPU hotunplugging on x86 once you've figured
+out what's the E75xx issue?
+
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
