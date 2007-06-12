@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXFLWMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbXFLWRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbXFLWMg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 18:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXFLWM3
+	id S1755446AbXFLWRr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 18:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXFLWRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 18:12:29 -0400
-Received: from sd291.sivit.org ([194.146.225.122]:1234 "EHLO sd291.sivit.org"
+	Tue, 12 Jun 2007 18:17:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50094 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbXFLWM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 18:12:28 -0400
-Subject: Re: [RFC][PATCH 1/1] support for user-space buffers in kfifo
-From: Stelian Pop <stelian@popies.net>
-To: Nelson Castillo <nelsoneci@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070612162413.GB12369@emqbit.com>
-References: <20070612162413.GB12369@emqbit.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Wed, 13 Jun 2007 00:12:26 +0200
-Message-Id: <1181686346.7991.3.camel@voyager.dsnet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8bit
+	id S1750798AbXFLWRi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 18:17:38 -0400
+Date: Tue, 12 Jun 2007 18:16:29 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, avi@qumranet.com,
+       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: Re: 2.6.22-rc4-mm2: kvm compile breakage with X86_CMPXCHG64=n
+Message-ID: <20070612221629.GA24252@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Adrian Bunk <bunk@stusta.de>, avi@qumranet.com,
+	linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <20070612000718.GS3588@stusta.de> <20070612032224.GA19293@redhat.com> <20070612150357.1685c622.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070612150357.1685c622.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le mardi 12 juin 2007 à 11:24 -0500, Nelson Castillo a écrit :
-> On 6/12/07, Stelian Pop <stelian@popies.net> wrote:
-> (cut)
-> > accessing userspace memory with a spinlock taken (moreover an
-> > irqsave()
-> > one) is bad bad bad.
-> 
-> Hi Stelian.
-> 
-> I'm sending the new patch without kfifo_put_user and kfifo_get_user.
+On Tue, Jun 12, 2007 at 03:03:57PM -0700, Andrew Morton wrote:
+ > On Mon, 11 Jun 2007 23:22:24 -0400
+ > Dave Jones <davej@redhat.com> wrote:
+ > 
+ > > Add -Werror-implicit-function-declaration
+ > > This makes builds fail sooner if something is implicitly defined instead
+ > > of having to wait half an hour for it to fail at the linking stage.
+ > > 
+ > > Signed-off-by: Dave Jones <davej@redhat.com>
+ > > 
+ > > --- linux-2.6/Makefile~	2007-06-04 16:46:24.000000000 -0400
+ > > +++ linux-2.6/Makefile	2007-06-04 16:46:53.000000000 -0400
+ > > @@ -313,7 +313,8 @@ LINUXINCLUDE    := -Iinclude \
+ > >  CPPFLAGS        := -D__KERNEL__ $(LINUXINCLUDE)
+ > >  
+ > >  CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+ > > -                   -fno-strict-aliasing -fno-common
+ > > +		   -fno-strict-aliasing -fno-common \
+ > > +		   -Werror-implicit-function-declaration
+ > >  AFLAGS          := -D__ASSEMBLY__
+ > >  
+ > >  # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+ > 
+ > This causes the i386 allmodconfig build to fail:
 
-Ok, I have a few formatting/documentation comments:
+Seems to be doing its job rather effectively.
 
-> + * This function copies at most @len bytes from the @buffer into
-> + * the FIFO depending on the free space, and returns the number of
-> + * bytes copied.
+ > include/linux/uaccess.h: In function 'pagefault_disable':
+ > include/linux/uaccess.h:23: error: implicit declaration of function '__memory_barrier'
+ > 
+ > I didn't look to see why...
 
-... or -EFAULT if copy_from_user fails
+include/linux/compiler.h ..
 
-> + *
-> + * Note that with only one concurrent reader and one concurrent
-> + * writer, you don't need extra locking to use these functions.
-> + */
-> +int __kfifo_put_user(struct kfifo *fifo, const unsigned char __user *buffer,
-> +	        unsigned int len)
+/* Optimization barrier */
+#ifndef barrier
+# define barrier() __memory_barrier()
+#endif
 
-spacing ?
+We shouldn't be hitting this, because barrier should be getting defined
+in the compiler specific headers above..
 
-> +	if(copy_from_user(fifo->buffer + (fifo->in & (fifo->size - 1)),
-> +			  buffer, l))
+#if __GNUC__ >= 4
+# include <linux/compiler-gcc4.h>
+#elif __GNUC__ == 3 && __GNUC_MINOR__ >= 2
+# include <linux/compiler-gcc3.h>
+#else
+# error Sorry, your compiler is too old/not recognized.
+#endif
 
-leave a space after the if please
+both of those include linux/compiler-gcc.h, which defines barrier.
+How strange.  What compiler version is this?
 
-> + * This function copies at most @len bytes from the FIFO into the
-> + * @buffer and returns the number of copied bytes.
+	Dave
 
-or -EFAULT
-
-> + *
-> + * Note that with only one concurrent reader and one concurrent
-> + * writer, you don't need extra locking to use these functions.
-> + */
-> +
-> +int __kfifo_get_user(struct kfifo *fifo,
-> +			 unsigned char __user *buffer, unsigned int len)
-
-spacing.
-
-Other than that I'm ok with this patch.
-
-Thanks,
-
-Stelian.
 -- 
-Stelian Pop <stelian@popies.net>
-
+http://www.codemonkey.org.uk
