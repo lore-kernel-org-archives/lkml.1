@@ -1,84 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbXFLWKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXFLWMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756258AbXFLWKZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 18:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbXFLWJW
+	id S1756214AbXFLWMg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 18:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXFLWM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 18:09:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44586 "EHLO ogre.sisk.pl"
+	Tue, 12 Jun 2007 18:12:29 -0400
+Received: from sd291.sivit.org ([194.146.225.122]:1234 "EHLO sd291.sivit.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756017AbXFLWJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 18:09:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
-Date: Wed, 13 Jun 2007 00:16:08 +0200
-User-Agent: KMail/1.9.5
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, asit.k.mallick@intel.com
-References: <m1tztt3yqy.fsf@ebiederm.dsl.xmission.com> <200706122252.10886.rjw@sisk.pl> <20070612215659.GB17143@linux-os.sc.intel.com>
-In-Reply-To: <20070612215659.GB17143@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706130016.09490.rjw@sisk.pl>
+	id S1750747AbXFLWM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 18:12:28 -0400
+Subject: Re: [RFC][PATCH 1/1] support for user-space buffers in kfifo
+From: Stelian Pop <stelian@popies.net>
+To: Nelson Castillo <nelsoneci@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070612162413.GB12369@emqbit.com>
+References: <20070612162413.GB12369@emqbit.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Wed, 13 Jun 2007 00:12:26 +0200
+Message-Id: <1181686346.7991.3.camel@voyager.dsnet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 12 June 2007 23:56, Siddha, Suresh B wrote:
-> On Tue, Jun 12, 2007 at 10:52:09PM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, 12 June 2007 20:19, Eric W. Biederman wrote:
-> > > Because you are calling unfixably broken code.  That should be a decent
-> > > incentive to do something else won't it?
-> > 
-> > Can you please tell me _what_ else can be done?
-> > 
-> > > IOAPICs do not support what the code is doing here.  There is lots of
-> > > practical evidence including bad experiences and practical tests that
-> > > support this.
-> > 
-> > Well, AFAICS, Suresh has tried to debug one failing case recently without
-> > any consistent conclusions.  I don't know of any other test cases (links,
-> > please?).
+Le mardi 12 juin 2007 à 11:24 -0500, Nelson Castillo a écrit :
+> On 6/12/07, Stelian Pop <stelian@popies.net> wrote:
+> (cut)
+> > accessing userspace memory with a spinlock taken (moreover an
+> > irqsave()
+> > one) is bad bad bad.
 > 
-> Rafael, Darrick Wong's issue looks different and hence I was motivated to
-> look and fix if it was a SW issue. For now, I am not able to comprehend
-> what is happening on Darrick Wong's system. Need more help from Darrick
-> as he has the golden failing system.
+> Hi Stelian.
 > 
-> Meanwhile I talked to our hardware folks about the irq migration in general.
-> 
-> One good news is that future versions of chipsets will have an Interrupt
-> Remapping feature(for more details please refer to
-> http://download.intel.com/technology/computing/vptech/Intel(r)_VT_for_Direct_IO.pdf)
-> where in we can reliably migrate the irq to someother cpu in the process
-> context.
-> 
-> And for the existing platforms, chipset folks don't see a reason why the
-> Eric's algorithm(specified below) should fail.
-> 
-> Eric's algorithm for level triggered(edge triggered should be easier than
-> level triggered):
-> - Mask the irq in process context.
-> - Poll RIRR until an ack of for the irq was not pending.
-> - Migrate the irq.
-> 
-> Eric had a problem of stuck remote IRR on E75xx chipset with this algorithm
-> and my next step is to reproduce this issue on this platform and understand
-> the behavior.
+> I'm sending the new patch without kfifo_put_user and kfifo_get_user.
 
-OK
+Ok, I have a few formatting/documentation comments:
 
-In that case, do I understand correctly that we are going to implement the
-Eric's algorithm above for the CPU hotunplugging on x86 once you've figured
-out what's the E75xx issue?
+> + * This function copies at most @len bytes from the @buffer into
+> + * the FIFO depending on the free space, and returns the number of
+> + * bytes copied.
 
-Rafael
+... or -EFAULT if copy_from_user fails
 
+> + *
+> + * Note that with only one concurrent reader and one concurrent
+> + * writer, you don't need extra locking to use these functions.
+> + */
+> +int __kfifo_put_user(struct kfifo *fifo, const unsigned char __user *buffer,
+> +	        unsigned int len)
 
+spacing ?
+
+> +	if(copy_from_user(fifo->buffer + (fifo->in & (fifo->size - 1)),
+> +			  buffer, l))
+
+leave a space after the if please
+
+> + * This function copies at most @len bytes from the FIFO into the
+> + * @buffer and returns the number of copied bytes.
+
+or -EFAULT
+
+> + *
+> + * Note that with only one concurrent reader and one concurrent
+> + * writer, you don't need extra locking to use these functions.
+> + */
+> +
+> +int __kfifo_get_user(struct kfifo *fifo,
+> +			 unsigned char __user *buffer, unsigned int len)
+
+spacing.
+
+Other than that I'm ok with this patch.
+
+Thanks,
+
+Stelian.
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Stelian Pop <stelian@popies.net>
+
