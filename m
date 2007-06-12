@@ -1,112 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757698AbXFLFkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbXFLFmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757698AbXFLFkq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 01:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbXFLFkh
+	id S1758188AbXFLFmV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 01:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbXFLFmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 01:40:37 -0400
-Received: from spock.bluecherry.net ([66.138.159.248]:2377 "EHLO
-	spock.bluecherry.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbXFLFkg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 01:40:36 -0400
-Date: Tue, 12 Jun 2007 01:40:31 -0400
-From: "Zephaniah E. Hull" <warp@aehallh.com>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Input: Support for a less exclusive grab.
-Message-ID: <20070612054031.GY6362@aehallh.com>
-Mail-Followup-To: Dmitry Torokhov <dtor@insightbb.com>,
-	linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-References: <20070609084800.GR6362@aehallh.com> <200706120120.00494.dtor@insightbb.com> <20070612052316.GX6362@aehallh.com> <200706120135.06428.dtor@insightbb.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Cbvl/UgeRTPlujdB"
+	Tue, 12 Jun 2007 01:42:13 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:58006 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751967AbXFLFmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 01:42:12 -0400
+Date: Tue, 12 Jun 2007 11:20:24 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de,
+       kernel@kolivas.org, containers@lists.osdl.org,
+       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
+       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       dmitry.adamushko@gmail.com, balbir@in.ibm.com,
+       Kirill Korotaev <dev@sw.ru>
+Subject: Re: [RFC][PATCH 0/6] Add group fairness to CFS - v1
+Message-ID: <20070612055024.GA26957@in.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070611154724.GA32435@in.ibm.com> <20070611193735.GA22152@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200706120135.06428.dtor@insightbb.com>
-X-Notice-1: Unsolicited Commercial Email (Aka SPAM) to ANY systems under
-X-Notice-2: our control constitutes a $US500 Administrative Fee, payable
-X-Notice-3: immediately.  By sending us mail, you hereby acknowledge that
-X-Notice-4: policy and agree to the fee.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070611193735.GA22152@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---Cbvl/UgeRTPlujdB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Tue, Jun 12, 2007 at 01:35:05AM -0400, Dmitry Torokhov wrote:
-> On Tuesday 12 June 2007 01:23, Zephaniah E. Hull wrote:
-> > On Tue, Jun 12, 2007 at 01:19:59AM -0400, Dmitry Torokhov wrote:
-> > > 
-> > > Like I said I would love if xf86-input-evdev did not grab the
-> > > device at all.
-> > 
-> > We have to disable the legacy input handlers somehow, not doing so
-> > simply isn't an option.
+On Mon, Jun 11, 2007 at 09:37:35PM +0200, Ingo Molnar wrote:
+> > Patches 1-3 introduce the essential changes in CFS core to support 
+> > this concept. They rework existing code w/o any (intended!) change in 
+> > functionality.
 > 
-> I do not follow. If user's xorg.conf does not use /dev/input/mice and
-> does not use "kbd" driver then grabbing is not required, is it? Now,
-> as far as I understand, lack of hotplug support in X is the main
-> obstacle for removing "mouse" and "kbd" drivers, correct?
+> i currently have these 3 patches applied to the CFS queue and it's 
+> looking pretty good so far! If it continues to be problem-free i'll 
+> release them as part of -v17, just to check that they truly have no bad 
+> side-effects (they shouldnt). Then #4 can go into -v18.
 
-Sadly, not quite.
+ok. I am also most concerned about not upsetting current performance of
+CFS when CONFIG_FAIR_GROUP_SCHED is turned off. Staging these patches in
+incremental versions of CFS is a good idea to test that.
 
-The problem is that if the user is not using the mouse and kbd drivers
-at all, but is instead using xf86-input-evdev, and no grabbing is done,
-then all key presses end up going to the console.
+> i've attached my current -v17 tree - it should apply mostly cleanly 
+> ontop of the -mm queue (with a minor number of fixups). Could you 
+> refactor the remaining 3 patches ontop of this base? There's some 
+> rejects in the last 3 patches due to the update_load_fair() change.
 
-Consider the effects of this when using things like alt-f1 or ctrl-c in
-a program in X.
+sure, i will rework them on this -v17 snapshot.
 
-We have to keep the console itself from getting the events in question,
-which means either unbinding the kbd interface, or some other sort of
-grab, otherwise xf86-input-evdev is completely unusable for keyboards.
-
-Grab support was my initial approach to the problem, in hindsight it
-wasn't the right one, but it worked, and it's still needed for the
-multi-seat people.
->  
-> > > 
-> > > But rfkill-input is not a legacy handler. My objection is that with your
-> > > solution you still will rob handlers such rfkill-input of events.
-> > 
-> > Urgh.
-> > 
-> > So, any thoughts on how to identify legacy input handlers in the input
-> > system?
+> > Patch 4 fixes some bad interaction between SCHED_RT and SCHED_NORMAL
+> > tasks in current CFS.
 > 
-> I guess keyboard and mousedev will have to be flagged as such in kernel.
+> btw., the plan here is to turn off 'bit 0' in sched_features: i.e. to 
+> use the precise statistics to calculate lrq->cpu_load[], not the 
+> timer-irq-sampled imprecise statistics. Dmitry has fixed a couple of 
+> bugs in it that made it not work too well in previous CFS versions, but 
+> now we are ready to turn it on for -v17. (indeed in my tree it's already 
+> turned on - i.e. sched_features defaults to '14')
 
-Ugly, but it works.
+On Mon, Jun 11, 2007 at 09:39:31PM +0200, Ingo Molnar wrote:
+> i mean bit 6, value 64. I flipped around its meaning in -v17-rc4, so the
+> new precise stats code there is now default-enabled - making SMP
+> load-balancing more accurate.
+
+I must be missing something here. AFAICS, cpu_load calculation still is
+timer-interrupt driven in the -v17 snapshot you sent me. Besides, there
+is no change in default value of bit 6 b/n v16 and v17:
+
+-unsigned int sysctl_sched_features __read_mostly = 1 | 2 | 4 | 8 | 0 | 0;
++unsigned int sysctl_sched_features __read_mostly = 0 | 2 | 4 | 8 | 0 | 0;
+
+So where's this precise stats based calculation of cpu_load?
+
+Anyway, do you agree that splitting the cpu_load/nr_running fields so that:
+
+rq->nr_running 	   	  = total count of -all- tasks in runqueue
+rq->raw_weighted_load	  = total weight of -all- tasks in runqueue
+rq->lrq.nr_running 	  = total count of SCHED_NORMAL/BATCH tasks in runqueue
+rq->lrq.raw_weighted_load = total weight of SCHED_NORMAL/BATCH tasks in runqueue
+
+is a good thing to avoid SCHED_RT<->SCHED_NORMAL/BATCH mixup (as accomplished 
+in Patch #4)?
+
+If you don't agree, then I will make this split dependent on
+CONFIG_FAIR_GROUP_SCHED 
+
+> > Patch 5 introduces basic changes in CFS core to support group 
+> > fairness.
+> >
+> > Patch 6 hooks up scheduler with container patches in mm (as an 
+> > interface for task-grouping functionality).
+
+Just to be clear, by container patches, I am referring to "process" container
+patches from Paul Menage [1]. They aren't necessarily tied to
+"virtualization-related" container support in -mm tree, although I
+believe that "virtualization-related" container patches will make use of the 
+same "process-related" container patches for their task-grouping requirements. 
+Phew ..we need better names!
+
+> ok. Kirill, how do you like Srivatsa's current approach? Would be nice 
+> to kill two birds with the same stone, if possible :-)
+
+One thing the current patches don't support is the notion of virtual
+cpus (which Kirill and other "virtualization-related" container folks would 
+perhaps want). IMHO, the current patches can still be usefull for
+containers to load balance between those virtual cpus (as and when it is 
+introduced).
+
+> you'll get the best hackbench results by using SCHED_BATCH:
 > 
-> -- 
-> Dmitry
-> 
+>    chrt -b 0 ./hackbench 10
+
+thanks for this tip. Will try out and let you know how it fares for me.
+
+> or indeed increasing the runtime_limit would work too.
+
+
+References:
+
+1.  https://lists.linux-foundation.org/pipermail/containers/2007-May/005261.html
 
 -- 
-	  1024D/E65A7801 Zephaniah E. Hull <warp@aehallh.com>
-	   92ED 94E4 B1E6 3624 226D  5727 4453 008B E65A 7801
-	    CCs of replies from mailing lists are requested.
-
-"Microsoft is a cross between the Borg and the Ferengi.  Unfortunately,
-they use Borg to do their marketing and Ferengi to do their
-programming."
-  -- Simon Slavin in asr
-
---Cbvl/UgeRTPlujdB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGbjHORFMAi+ZaeAERApTsAJ0brF1W1vIjQfIrZS12VzdBIlqwnQCgn6y6
-vzw/YFSeER/CseCWH6lNEvw=
-=zMIY
------END PGP SIGNATURE-----
-
---Cbvl/UgeRTPlujdB--
+Regards,
+vatsa
