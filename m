@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbXFLXgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbXFLXik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbXFLXgX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 19:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbXFLXgR
+	id S1755752AbXFLXik (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 19:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbXFLXia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 19:36:17 -0400
-Received: from neon.samage.net ([85.17.153.66]:34935 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754349AbXFLXgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 19:36:16 -0400
-Message-ID: <52481.81.207.0.53.1181691356.squirrel@secure.samage.net>
-In-Reply-To: <200706120142.13173.dtor@insightbb.com>
-References: <20070604112426.GA2707@elf.ucw.cz>
-    <d120d5000706041046j1da16c6el350d9da1d74d508b@mail.gmail.com>
-    <20070604205701.GD2711@elf.ucw.cz>
-    <200706120142.13173.dtor@insightbb.com>
-Date: Wed, 13 Jun 2007 01:35:56 +0200 (CEST)
-Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Cc: "Pavel Machek" <pavel@ucw.cz>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Andi Kleen" <ak@suse.de>, "Jiri Kosina" <jikos@jikos.cz>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.8
+	Tue, 12 Jun 2007 19:38:30 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33115 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752377AbXFLXia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 19:38:30 -0400
+Date: Wed, 13 Jun 2007 01:38:42 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: fix placement of inline keyword.
+Message-ID: <20070612233842.GJ3588@stusta.de>
+References: <20070612233035.GA24146@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 63767ed6f001c63471f2cde26909bd9c
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070612233035.GA24146@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, June 12, 2007 07:42, Dmitry Torokhov wrote:
-> For what it worth I finally tried that setleds loop on my laptop. I am
-> not getting any lost keypresses/releases. But then I don't have EC
-> (or at least it is not exported via ACPI). This is an old Dell notebook.
+On Tue, Jun 12, 2007 at 07:30:35PM -0400, Dave Jones wrote:
 
-Well, as I said before, I've the "stuck key"/repeated output too (as well
-as a warping PS/2 mouse), but no blinking led problem, so I believe the
-two things are totally unrelated.
+> gcc gets whiney about the placement of 'inline' at some warning levels.
+>...
 
-Greetings,
+Since most of them are in C files, can you remove these when you are at it?
+ 
+> --- linux-2.6.20.noarch/arch/ia64/sn/pci/pcibr/pcibr_ate.c~	2007-04-04 19:34:50.000000000 -0400
+> +++ linux-2.6.20.noarch/arch/ia64/sn/pci/pcibr/pcibr_ate.c	2007-04-04 19:34:56.000000000 -0400
+> @@ -138,7 +138,7 @@ static inline u64 __iomem *pcibr_ate_add
+>  /*
+>   * Update the ate.
+>   */
+> -void inline
+> +inline void
+>  ate_write(struct pcibus_info *pcibus_info, int ate_index, int count,
+>  	  volatile u64 ate)
+>  {
+>...
 
-Indan
+And some are even non-static inline functions...
 
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
