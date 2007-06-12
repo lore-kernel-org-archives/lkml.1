@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbXFLPpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbXFLPq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbXFLPpp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 11:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757080AbXFLPpf
+	id S1757288AbXFLPq6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbXFLPqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 11:45:35 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:17559 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757007AbXFLPpd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 11:45:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=L+LK8R8SnONdvbInxRZQaSokyR1ygp8V5OXIiHEjfV9bxDGl8TwCsQm/jGhXUNDz7RUha1mu5Sf+obIF1iL6lvh6VGmTAydww7Qg3D4N601AEvHpPjN+KbN3TC81UQxmhw29MjwohslvJBF51/jk30FE7IAo8WnCelbH184BcOI=
-Message-ID: <466EBF91.8060508@gmail.com>
-Date: Wed, 13 Jun 2007 00:45:21 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Arjan van de Ven <arjan@linux.intel.com>, Jeff Garzik <jeff@garzik.org>,
-       =?ISO-8859-1?Q?Dagfinn_Ilmari_Manns=E5?= =?ISO-8859-1?Q?ker?= 
-	<ilmari@ilmari.org>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Tue, 12 Jun 2007 11:46:47 -0400
+Received: from mga09.intel.com ([134.134.136.24]:33737 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752128AbXFLPqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 11:46:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,412,1175497200"; 
+   d="scan'208";a="95815396"
+Date: Tue, 12 Jun 2007 08:43:19 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Tejun Heo <htejun@gmail.com>,
        james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI
- controllers.
-References: <20070612011148.GA9808@khazad-dum.debian.net> <466DF3E9.30303@linux.intel.com> <d8jr6oikkcz.fsf@nygaard.ping.uio.no> <466DFE09.3020408@garzik.org> <20070612035928.GB9808@khazad-dum.debian.net> <466E1A32.90306@linux.intel.com> <20070612090940.GA9719@srcf.ucam.org> <20070612121819.GA20408@khazad-dum.debian.net> <20070612135010.GA12601@srcf.ucam.org> <20070612141714.GB20408@khazad-dum.debian.net> <20070612153828.GA13888@srcf.ucam.org>
-In-Reply-To: <20070612153828.GA13888@srcf.ucam.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 0/3] AHCI Link Power Management
+Message-Id: <20070612084319.b2e69248.kristen.c.accardi@intel.com>
+In-Reply-To: <466E2460.3050703@garzik.org>
+References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com>
+	<466DFDB5.9030901@gmail.com>
+	<466E0642.5020506@linux.intel.com>
+	<466E1D51.9070007@gmail.com>
+	<466E1EC6.90509@linux.intel.com>
+	<466E2460.3050703@garzik.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> On Tue, Jun 12, 2007 at 11:17:14AM -0300, Henrique de Moraes Holschuh wrote:
->> On Tue, 12 Jun 2007, Matthew Garrett wrote:
->>> Laptop bays are designed to deal with hotplugging PATA - I don't think 
->>> this is too much of an issue :)
->> The new SATA ones use the SATA hardware hotplug ;-)   Just like the pci-e
->> cards use usb2.0 and pci-e hotplug...
+On Tue, 12 Jun 2007 00:43:12 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> We will do AHCI link PM -- presuming that I can be convinced that it 
+> does not repeatedly park the hard drive heads, or something similarly 
+> annoying on PATA<->SATA bridges and similar setups.
 > 
-> Yes, but they'll also send an ACPI interrupt even if the SATA host 
-> controller doesn't - it's part of the spec for bays.
+> IF it works as advertised -- a big if considering all the AHCI silicon 
+> implementations out there -- we definitely want to use it.
+> 
+> 	Jeff
+> 
 
-Does the spec mandate that the ACPI interrupt shouldn't depend on SATA
-phy status?  I don't think vendors are likely to implement separate
-mechanism when SATA phy status can do the job fine.
-
--- 
-tejun
+I understand that this is a concern of yours based on some experience you
+had with earlier controllers.  In general, this behavior would be considered
+incorrect - link power management should not translate to disk parking, even
+on PATA->SATA brigdes, and if it does, then that's completely broken.  That 
+said, I would believe you if you said broken hardware exists, and when you 
+get specific examples of it, you can add it to the blacklist for this feature.
