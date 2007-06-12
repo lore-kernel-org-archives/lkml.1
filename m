@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbXFLWEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbXFLWJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbXFLWEf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 18:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXFLWE1
+	id S1755006AbXFLWJB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 18:09:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbXFLWIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 18:04:27 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56726 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752703AbXFLWE1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 18:04:27 -0400
-Date: Tue, 12 Jun 2007 15:03:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Adrian Bunk <bunk@stusta.de>, avi@qumranet.com,
-       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: Re: 2.6.22-rc4-mm2: kvm compile breakage with X86_CMPXCHG64=n
-Message-Id: <20070612150357.1685c622.akpm@linux-foundation.org>
-In-Reply-To: <20070612032224.GA19293@redhat.com>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-	<20070612000718.GS3588@stusta.de>
-	<20070612032224.GA19293@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 18:08:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47541 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750798AbXFLWIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 18:08:52 -0400
+Date: Tue, 12 Jun 2007 18:08:39 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Michael Tokarev <mjt@tls.msk.ru>, Claas Langbehn <claas@rootdir.de>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: VIA C7 / VIA PC-1 (PC2500) anyone?
+Message-ID: <20070612220839.GA23098@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	Michael Tokarev <mjt@tls.msk.ru>, Claas Langbehn <claas@rootdir.de>,
+	Linux-kernel <linux-kernel@vger.kernel.org>
+References: <466E65A7.3000206@msgid.tls.msk.ru> <5699f8f00706120344h40fe6f88vb7601c9326bd589f@mail.gmail.com> <466E8A5B.4080205@msgid.tls.msk.ru> <466E976D.7060103@rootdir.de> <466E993D.5080308@msgid.tls.msk.ru> <Pine.LNX.4.64.0706122359080.19578@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706122359080.19578@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jun 2007 23:22:24 -0400
-Dave Jones <davej@redhat.com> wrote:
+On Tue, Jun 12, 2007 at 11:59:36PM +0200, Jan Engelhardt wrote:
+ > 
+ > On Jun 12 2007 17:01, Michael Tokarev wrote:
+ > >
+ > >Claas Langbehn wrote:
+ > >>> Hmm.  I wonder how to *enable* it in the first place.. ;)
+ > >>> e_powersaver.ko and acpi_cpufreq gives "No such device"
+ > >>>
+ > >> cat /proc/cpuinfo and have a look at the flags. Does it support "eps"?
+ > >
+ > >I've looked at e_powersaver sources and noticied the second test in
+ > >init function (after checking for CPU model) - it fails on this very
+ > >test:
+ > 
+ > Actually you may want to try longhaul.ko
 
-> Add -Werror-implicit-function-declaration
-> This makes builds fail sooner if something is implicitly defined instead
-> of having to wait half an hour for it to fail at the linking stage.
-> 
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> 
-> --- linux-2.6/Makefile~	2007-06-04 16:46:24.000000000 -0400
-> +++ linux-2.6/Makefile	2007-06-04 16:46:53.000000000 -0400
-> @@ -313,7 +313,8 @@ LINUXINCLUDE    := -Iinclude \
->  CPPFLAGS        := -D__KERNEL__ $(LINUXINCLUDE)
->  
->  CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-> -                   -fno-strict-aliasing -fno-common
-> +		   -fno-strict-aliasing -fno-common \
-> +		   -Werror-implicit-function-declaration
->  AFLAGS          := -D__ASSEMBLY__
->  
->  # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+No, he doesn't.   Esther doesn't have longhaul.
+The lack of EST in the feature flags is probably something
+being disabled in the BIOS (or a crap BIOS).
 
-This causes the i386 allmodconfig build to fail:
+	Dave
 
-include/linux/uaccess.h: In function 'pagefault_disable':
-include/linux/uaccess.h:23: error: implicit declaration of function '__memory_barrier'
-
-I didn't look to see why...
+-- 
+http://www.codemonkey.org.uk
