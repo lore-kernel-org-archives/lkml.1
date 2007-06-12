@@ -1,131 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbXFLFO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbXFLFUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756762AbXFLFO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 01:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbXFLFOw
+	id S1756591AbXFLFUP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 01:20:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbXFLFUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 01:14:52 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:9570 "EHLO
-	asav05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbXFLFOv (ORCPT
+	Tue, 12 Jun 2007 01:20:04 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:19662 "EHLO
+	asav13.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591AbXFLFUC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 01:14:51 -0400
+	Tue, 12 Jun 2007 01:20:02 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmYmAKzIbUZKhRO4UGdsb2JhbACHM4gMAQEbDQYRAQ
+X-IronPort-Anti-Spam-Result: AmYmAH7JbUZKhRO4UGdsb2JhbACHM4gMAQEbDQYRAQ
 From: Dmitry Torokhov <dtor@insightbb.com>
-To: Paul Albrecht <albrecht@rdi1.com>
-Subject: Re: [BUG] via c3/2.6.20 -- ps/2 keyboard doesn't work with console
-Date: Tue, 12 Jun 2007 01:14:48 -0400
+To: "Zephaniah E. Hull" <warp@aehallh.com>
+Subject: Re: [PATCH] Input: Support for a less exclusive grab.
+Date: Tue, 12 Jun 2007 01:19:59 -0400
 User-Agent: KMail/1.9.3
-Cc: lkml <linux-kernel@vger.kernel.org>
-References: <1181236651.15435.1.camel@albrecht.rdi1.com> <d120d5000706111228g4ada3a8dxf8e31dc62cfab476@mail.gmail.com> <1181588095.2436.5.camel@albrecht.rdi1.com>
-In-Reply-To: <1181588095.2436.5.camel@albrecht.rdi1.com>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+References: <20070609084800.GR6362@aehallh.com> <200706120107.13655.dtor@insightbb.com> <20070612051210.GW6362@aehallh.com>
+In-Reply-To: <20070612051210.GW6362@aehallh.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200706120114.48645.dtor@insightbb.com>
+Message-Id: <200706120120.00494.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 June 2007 14:54, Paul Albrecht wrote:
+On Tuesday 12 June 2007 01:12, Zephaniah E. Hull wrote:
+> On Tue, Jun 12, 2007 at 01:07:13AM -0400, Dmitry Torokhov wrote:
+> > Hi Zephaniah,
+> > 
+> > On Saturday 09 June 2007 04:48, Zephaniah E. Hull wrote:
+> > > EVIOCGRAB is nice and very useful, however over time I've gotten
+> > > multiple requests to make it possible for applications to get events
+> > > straight from the event device while xf86-input-evdev is getting events
+> > > from the same device.
+> > > 
+> > > Here is the least invasive patch I could think of, it changes the
+> > > behavior of EVIOCGRAB in some cases, specificly behavior is identical if
+> > > the argument is 0 or 1, however if the argument is true and != 1, then
+> > > it does a 'non exclusive grab', a better name might be handy.
+> > > 
+> > > What this does is allow the events to go to everything that's using
+> > > evdev to get events, but grabs it from anything else.  About as close to
+> > > what people want as I can get, and fairly non-invasive.
+> > 
+> > Unfortunately this also robs non-legacy input handlers (such as
+> > rfkill-input) of input events. Does xf86-input-evdev really needs to
+> > grab devices exclusively? I guess we can't abandon the standard
+> > keyboard driver until X supports hotplugging. How close is it to
+> > support devices coming and going?
 > 
-> Is i8042.noaux a workaround or a fix?
+> Er, to explain.
+> 
+> The current EVIOCGRAB does an exclusive grab that prohibits rfkill-input
+> and friends from working.
 > 
 
-Just a workaround. Do you have a PS/2 mouse you could test with? If so could
-you check if both keybioard and mouse work with mouse plugged in and without
-i8042.noaux.
+I understand that.
 
-Also cxould you please try the patch below (again with mouse if you have one
-and without).
+> As it is the only way to disable the legacy input handlers,
+> xf86-input-evdev has been using it since we added it.
+>
 
-Thanks a lot!
+Like I said I would love if xf86-input-evdev did not grab the
+device at all.
+ 
+> The patch is to let us cause only things that use /dev/input/event<n> to
+> get events, thus, a non-exclusive grab.
+> 
+> This basicly disables the legacy input handlers, and it's the least
+> invasive patch I could think of.
+> 
+
+But rfkill-input is not a legacy handler. My objection is that with your
+solution you still will rob handlers such rfkill-input of events.
+
+> Going for a separate ioctl would also work, but in some ways it would
+> make supporting it more of a pain.
+> 
+> I don't care _that_ much either way, as long as we can get a way to
+> disable the legacy events while allowing other things to get the events
+> too.
+> 
+> Zephaniah E. Hull.
+> >  
+> > If we can't remain as is until X hotplug is ready then I'd rather had
+> > a separate ioctl that disables legacy input handlers (keyboard, mousedev)
+> > for a given input device.
+> > 
+> > -- 
+> > Dmitry
+> > 
+> 
 
 -- 
 Dmitry
-
-Input: i8042 - give more trust PNP data on i386
-
-On some boxes that don't have PS/2 mice connected at startup BIOS
-completely disables AUX port and attempts to access it result in
-hosed keyboard. Historically we do not trust ACPI/PNP data on
-i386 and try to poke AUX port even if we did not find an active
-PNP node for it. However in cases when BIOS writers got KBD port
-properly described we can assume that they did the right thing
-for AUX port as well.
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
- drivers/input/serio/i8042-x86ia64io.h |   36 +++++++++++++++++++++++++++-------
- 1 file changed, 29 insertions(+), 7 deletions(-)
-
-Index: linux/drivers/input/serio/i8042-x86ia64io.h
-===================================================================
---- linux.orig/drivers/input/serio/i8042-x86ia64io.h
-+++ linux/drivers/input/serio/i8042-x86ia64io.h
-@@ -356,6 +356,7 @@ static void i8042_pnp_exit(void)
- static int __init i8042_pnp_init(void)
- {
- 	char kbd_irq_str[4] = { 0 }, aux_irq_str[4] = { 0 };
-+	int pnp_data_busted = 0;
- 	int err;
- 
- 	if (i8042_nopnp) {
-@@ -403,27 +404,48 @@ static int __init i8042_pnp_init(void)
- #endif
- 
- 	if (((i8042_pnp_data_reg & ~0xf) == (i8042_data_reg & ~0xf) &&
--	      i8042_pnp_data_reg != i8042_data_reg) || !i8042_pnp_data_reg) {
--		printk(KERN_WARNING "PNP: PS/2 controller has invalid data port %#x; using default %#x\n",
-+	      i8042_pnp_data_reg != i8042_data_reg) ||
-+	    !i8042_pnp_data_reg) {
-+		printk(KERN_WARNING
-+			"PNP: PS/2 controller has invalid data port %#x; "
-+			"using default %#x\n",
- 			i8042_pnp_data_reg, i8042_data_reg);
- 		i8042_pnp_data_reg = i8042_data_reg;
-+		pnp_data_busted = 1;
- 	}
- 
- 	if (((i8042_pnp_command_reg & ~0xf) == (i8042_command_reg & ~0xf) &&
--	      i8042_pnp_command_reg != i8042_command_reg) || !i8042_pnp_command_reg) {
--		printk(KERN_WARNING "PNP: PS/2 controller has invalid command port %#x; using default %#x\n",
-+	      i8042_pnp_command_reg != i8042_command_reg) ||
-+	    !i8042_pnp_command_reg) {
-+		printk(KERN_WARNING
-+			"PNP: PS/2 controller has invalid command port %#x; "
-+			"using default %#x\n",
- 			i8042_pnp_command_reg, i8042_command_reg);
- 		i8042_pnp_command_reg = i8042_command_reg;
-+		pnp_data_busted = 1;
- 	}
- 
- 	if (!i8042_nokbd && !i8042_pnp_kbd_irq) {
--		printk(KERN_WARNING "PNP: PS/2 controller doesn't have KBD irq; using default %d\n", i8042_kbd_irq);
-+		printk(KERN_WARNING
-+			"PNP: PS/2 controller doesn't have KBD irq; "
-+			"using default %d\n", i8042_kbd_irq);
- 		i8042_pnp_kbd_irq = i8042_kbd_irq;
-+		pnp_data_busted = 1;
- 	}
- 
- 	if (!i8042_noaux && !i8042_pnp_aux_irq) {
--		printk(KERN_WARNING "PNP: PS/2 controller doesn't have AUX irq; using default %d\n", i8042_aux_irq);
--		i8042_pnp_aux_irq = i8042_aux_irq;
-+		if (!pnp_data_busted && i8042_pnp_kbd_irq) {
-+			printk(KERN_WARNING
-+				"PNP: PS/2 appears to have AUX port disabled, "
-+				"if this is incorrect please boot with "
-+				"i8042.nopnp\n");
-+			i8042_noaux = 1;
-+		} else {
-+			printk(KERN_WARNING
-+				"PNP: PS/2 controller doesn't have AUX irq; "
-+				"using default %d\n", i8042_aux_irq);
-+			i8042_pnp_aux_irq = i8042_aux_irq;
-+		}
- 	}
- 
- 	i8042_data_reg = i8042_pnp_data_reg;
