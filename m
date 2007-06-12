@@ -1,94 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbXFLQDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbXFLQMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757152AbXFLQDP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 12:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbXFLQDA
+	id S1755572AbXFLQMM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 12:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXFLQMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 12:03:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57427 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754664AbXFLQDA (ORCPT
+	Tue, 12 Jun 2007 12:12:00 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:36410 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbXFLQL7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 12:03:00 -0400
-Date: Tue, 12 Jun 2007 09:02:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: splice: move balance_dirty_pages_ratelimited() outside of   
- splice actor
-Message-Id: <20070612090230.19ab939c.akpm@linux-foundation.org>
-In-Reply-To: <20070612124449.GD18832@kernel.dk>
-References: <200706112159.l5BLxF5x004043@hera.kernel.org>
-	<20070611163433.dbc541ec.akpm@linux-foundation.org>
-	<20070612063510.GO18832@kernel.dk>
-	<20070612112059.GY18832@kernel.dk>
-	<20070612113101.GZ18832@kernel.dk>
-	<1181649983.7348.309.camel@twins>
-	<20070612121047.GB18832@kernel.dk>
-	<1181650572.7348.312.camel@twins>
-	<20070612124449.GD18832@kernel.dk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 12 Jun 2007 12:11:59 -0400
+Date: Tue, 12 Jun 2007 09:12:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, kbuild-devel@lists.sourceforge.net
+Subject: Re: [patch] kbuild: remember ARCH in the object directory
+Message-Id: <20070612091209.760b5225.randy.dunlap@oracle.com>
+In-Reply-To: <E1Hy3fI-0001Tw-Fy@flower>
+References: <200705090951.l499pa6G020397@shell0.pdx.osdl.net>
+	<20070509204613.GA10336@uranus.ravnborg.org>
+	<1178755780.7286.175.camel@localhost.localdomain>
+	<E1HxjKu-0004G6-7d@flower>
+	<20070611125903.GA3933@uranus.ravnborg.org>
+	<E1Hy3fI-0001Tw-Fy@flower>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007 14:44:50 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+On Tue, 12 Jun 2007 12:31:56 +0200 Oleg Verych wrote:
 
-> On Tue, Jun 12 2007, Peter Zijlstra wrote:
-> > On Tue, 2007-06-12 at 14:10 +0200, Jens Axboe wrote:
-> > > On Tue, Jun 12 2007, Peter Zijlstra wrote:
-> > > > On Tue, 2007-06-12 at 13:31 +0200, Jens Axboe wrote:
-> > > > 
-> > > > > Would you prefer this change, then? I'd prefer keeping the current code,
-> > > > > unless it's absolutely critical that we call
-> > > > > balance_dirty_pages_ratelimited() for each and every page instead of eg
-> > > > > every 16 pages here.
-> > > > 
-> > > > For that we should call:
-> > > >   balance_dirty_pages_ratelimited_nr(mapping, nr);
-> > > > 
-> > > > Which is ok, for small nr.
-> > > 
-> > > OK, then this should be better:
-
-yup, the patch looks fine, thanks.
-
-It will in practice be OK calling balance_dirty_pages() once per 16 pages
-but one should try to be a good little kernel citizen and do the right
-thing, I guess.
-
-> > > diff --git a/fs/splice.c b/fs/splice.c
-> > > index 25ec9c8..ed40967 100644
-> > > --- a/fs/splice.c
-> > > +++ b/fs/splice.c
-> > > @@ -844,6 +883,9 @@ generic_file_splice_write_nolock(struct pipe_inode_info *pipe, struct file *out,
-> > >  	sd.file = out;
-> > >  	ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
-> > >  	if (ret > 0) {
-> > > +		unsigned long nr_pages;
-> > > +
-> > > +		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-> > 
-> > perhaps?
-> > 	nr_pages = DIV_ROUND_UP(ret, PAGE_CACHE_SIZE); 
-> > 
-> > not sure how horrid that turns out to be; you never know with gcc.
+> [patch] kbuild: remember ARCH in the object directory
 > 
-> Well, I think such macros are horribly ugly and that the original code
-> is MUCH easier to read.
+>  - rephrase some related (misspelled) comments,
+>  - remove all trailing whitespace in the top Makefile,
+> 
+>  * remember ARCH in the output directory, thus making build of i386
+>    on amd64 *actually* convenient,
+> 
+>  - harmless refactoring of the Makefile generating.
+> 
+> Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
+> ---
+> 
+>  Just lazy typing `make ARCH=i386` every time i want to check lguest.
+> 
+>  Makefile           |   17 ++++++++---------
+>  scripts/mkmakefile |   42 ++++++++++++++++++++++++------------------
+>  2 files changed, 32 insertions(+), 27 deletions(-)
 
-I think the macros are pretty foul too (perhaps we should migrate it to
-"div_round_up()").
+I did:
 
-But we should migrate to them.  Because once one has learned what a
-particular helper like this does, the code becomes more readable, more
-understandable and easier to verify correct behaviour.  Whereas the
-open-coded arithmetic is _always_ suspect and always needs to be checked
-each time one's eye passes over it.
+# build a linux-2.6.22-rc4-git4 kernel source tree & cd into it
+# mkdir BLD
+$ make ARCH=i386 O=BLD defconfig
+$ make -j4 O=BLD all >BLD/bld.out 2>&1
 
-And then there's the ongoing pitter-patter of "convert to DIV_ROUND_UP"
-patches in my inbox ;)
+and it cried to me:
 
-It's not, however, our biggest problem.
+  GEN     /scsi/linsrc/linux-2.6.22-rc4-git4/BLD/Makefile
+scripts/kconfig/conf -s arch/x86_64/Kconfig
+#... many config warning lines
+*
+* Restart config...
+*
+*
+* Processor type and features
+*
+Subarchitecture Type
+> 1. PC-compatible (X86_PC)
+  2. Support for ScaleMP vSMP (X86_VSMP) (NEW)
+choice[1-2]: aborted!
+
+Console input/output is redirected. Run 'make oldconfig' to update configuration.
+
+make[3]: *** [silentoldconfig] Error 1
+make[2]: *** [silentoldconfig] Error 2
+make[1]: *** [include/config/auto.conf] Error 2
+make: *** [all] Error 2
+
+
+I.e., see the line above that says:
+scripts/kconfig/conf -s arch/x86_64/Kconfig
+
+It defaulted to ARCH=x86_64 even though BLD/Makefile contained:
+
+ARCH		= i386
+
+
+What did I do wrong??
+
+
+> Index: linux-2.6.22-rc4-mm2/scripts/mkmakefile
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/scripts/mkmakefile	2007-06-12 11:21:27.755466250 +0200
+> +++ linux-2.6.22-rc4-mm2/scripts/mkmakefile	2007-06-12 12:04:13.675826250 +0200
+> @@ -1,6 +1,6 @@
+> -#!/bin/sh
+> +#!/bin/sh -e
+>  # Generates a small Makefile used in the root of the output
+> -# directory, to allow make to be started from there.
+> -# The Makefile also allow for more convinient build of external modules
+> +# directory, to allow kernel build to be started from there.
+> +# External modules can't built with it as well.
+>  
+>  # Usage
+> @@ -9,28 +9,34 @@
+>  # $3 - version
+>  # $4 - patchlevel
+> +# $5 - ARCH
+>  
+> +set -e
+>  
+> -test ! -r $2/Makefile -o -O $2/Makefile || exit 0
+>  echo "  GEN     $2/Makefile"
+> +echo "#
+> +# Automatically generated by
+> +# $0
+> +#
+> +VERSION		= $3
+> +PATCHLEVEL	= $4
+> +
+> +KERNELSRC	= $1
+> +KERNELOUTPUT	= $2
+> +ARCH		= $5
+> +" >$2/Makefile
+>  
+> -cat << EOF > $2/Makefile
+> -# Automatically generated by $0: don't edit
+> +cat << "EOF" >> $2/Makefile
+> +MAKEFLAGS	+= -rR --no-print-directory
+>  
+> -VERSION = $3
+> -PATCHLEVEL = $4
+> +export ARCH
+>  
+> -KERNELSRC    := $1
+> -KERNELOUTPUT := $2
+> -
+> -MAKEFLAGS += --no-print-directory
+> +all:
+> +	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT)
+>  
+> -.PHONY: all \$(MAKECMDGOALS)
+> +$(filter-out all Makefile,$(MAKECMDGOALS)) %/:
+> +	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT) $@
+>  
+> -all:
+> -	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT)
+> +.PHONY: all $(MAKECMDGOALS)
+>  
+>  Makefile:;
+> -
+> -\$(filter-out all Makefile,\$(MAKECMDGOALS)) %/:
+> -	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$@
+>  EOF
+> Index: linux-2.6.22-rc4-mm2/Makefile
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/Makefile	2007-06-12 11:35:20.559513250 +0200
+> +++ linux-2.6.22-rc4-mm2/Makefile	2007-06-12 11:51:10.438877000 +0200
+> @@ -156,5 +156,5 @@ export srctree objtree VPATH TOPDIR
+>  # first, and if a usermode build is happening, the "ARCH=um" on the command
+>  # line overrides the setting of ARCH below.  If a native build is happening,
+> -# then ARCH is assigned, getting whatever value it gets normally, and 
+> +# then ARCH is assigned, getting whatever value it gets normally, and
+>  # SUBARCH is subsequently ignored.
+>  
+> @@ -242,5 +242,5 @@ export KBUILD_CHECKSRC KBUILD_SRC KBUILD
+>  #
+>  # If $(quiet) is empty, the whole command will be printed.
+> -# If it is set to "quiet_", only the short version will be printed. 
+> +# If it is set to "quiet_", only the short version will be printed.
+>  # If it is set to "silent_", nothing will be printed at all, since
+>  # the variable $(silent_cmd_cc_o_c) doesn't exist.
+> @@ -352,11 +352,10 @@ scripts/basic/%: scripts_basic ;
+>  
+>  PHONY += outputmakefile
+> -# outputmakefile generates a Makefile in the output directory, if using a
+> -# separate output directory. This allows convenient use of make in the
+> -# output directory.
+>  outputmakefile:
+> +# generate a Makefile in the output directory, if using a
+> +# separate output directory; allows convenient use of make there
+>  ifneq ($(KBUILD_SRC),)
+>  	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
+> -	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
+> +	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL) $(ARCH)
+>  endif
+>  
+> @@ -699,5 +698,5 @@ endef
+>  cmd_ksym_ld = $(cmd_vmlinux__)
+>  define rule_ksym_ld
+> -	: 
+> +	:
+>  	+$(call cmd,vmlinux_version)
+>  	$(call cmd,vmlinux__)
+> @@ -750,5 +749,5 @@ endif
+>  	$(Q)rm -f .old_version
+>  
+> -# The actual objects are generated when descending, 
+> +# The actual objects are generated when descending,
+>  # make sure no implicit rule kicks in
+>  $(sort $(vmlinux-init) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
+> @@ -1454,5 +1453,5 @@ endif
+>  	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+>  
+> -# FIXME Should go into a make.lib or something 
+> +# FIXME Should go into a make.lib or something
+>  # ===========================================================================
+>  
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
