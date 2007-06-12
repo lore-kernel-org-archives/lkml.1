@@ -1,96 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbXFLTBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbXFLTH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757282AbXFLTBE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 15:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXFLTAw
+	id S1752750AbXFLTH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 15:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXFLTHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 15:00:52 -0400
-Received: from smtp111.sbc.mail.mud.yahoo.com ([68.142.198.210]:23653 "HELO
-	smtp111.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750768AbXFLTAv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 15:00:51 -0400
-X-YMail-OSG: PGTDEjwVM1nSAnxWP0LItqiXG.16oHFCBvF1eec64mytLszttwx96T7kYZmMoagIxcccpNkKjppHhL7kEc1lBGUwVz20nlp3C8A5TXtv.2LBl3ulZfg-
-Date: Tue, 12 Jun 2007 14:00:47 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Karl MacMillan <kmacmill@redhat.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Andreas Gruenbacher <agruen@suse.de>, Pavel Machek <pavel@ucw.cz>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
-Message-ID: <20070612190047.GA31041@vino.hallyn.com>
-References: <20070514110607.549397248@suse.de> <200706110110.35553.agruen@suse.de> <1181572416.8805.73.camel@moss-spartans.epoch.ncsc.mil> <200706111755.33162.agruen@suse.de> <20070611190222.GB18276@sergelap.austin.ibm.com> <1181653234.17547.89.camel@moss-spartans.epoch.ncsc.mil> <20070612153431.GB14397@sergelap.austin.ibm.com> <1181625438.18618.9.camel@localhost.localdomain>
+	Tue, 12 Jun 2007 15:07:21 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58138 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751323AbXFLTHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 15:07:20 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18xeZJeffgxkUNAE48m8WLfAjpWSCY5RSRy35eGFw
+	a5rQC5QYugHyNJ
+Date: Tue, 12 Jun 2007 21:07:30 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
+       perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
+       levon@movementarian.org
+Subject: Re: OProfile issues
+Message-ID: <20070612190730.GA6978@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Stephane Eranian <eranian@hpl.hp.com>,
+	oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
+	perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
+	levon@movementarian.org
+References: <20070612150246.GJ32163@frankl.hpl.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1181625438.18618.9.camel@localhost.localdomain>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070612150246.GJ32163@frankl.hpl.hp.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Karl MacMillan (kmacmill@redhat.com):
-> On Tue, 2007-06-12 at 10:34 -0500, Serge E. Hallyn wrote:
-> > Quoting Stephen Smalley (sds@tycho.nsa.gov):
+On 2007.06.12 08:02:46 -0700, Stephane Eranian wrote:
+> Hello,
 > 
-> [...]
+> I am working on perfmon2 to allow Oprofile and perfmon2 to co-exist
+> as suggested by Andi Kleen. I looked at the Oprofile init/shutdown
+> code and I am puzzled by several things which you might be able to
+> explain for me. I am looking at 2.6.22-rc3.
 > 
-> > > 
-> > > If we added support for named type transitions to SELinux, as proposed
-> > > earlier by Kyle Moffett during this discussion, wouldn't that address
-> > > that issue without needing a DTE-like approach?  The concept is to add
-> > 
-> > Haven't read his message, but based on what you laid out here sure, that
-> > sounds good.  It still, like my dte approach, might have some trouble
-> > with the wildcard/regex rules AA allows.  And while it might perfectly
-> > reproduce my original DTE behavior, I don't think it does what AA wants
-> > on bind mounts.  (Whether what AA wants for bind mounts makes sense I'm
-> > still not convinced, especially with user mounts coming soon (or already
-> > here?), but I'm staying out of that discussion for now)
-> > 
-> > > the last component name as a further input to the labeling decision for
-> > > new files, in addition to the existing use of the creating process'
-> > > label, the parent directory label, and the kind of file.  Then, you
-> > > could have something like:
-> > > type_transition <domain> var_log_hosts_t:file "messages" messages_t;
-> > > 
-> > > The last component name is already available, so that doesn't require
-> > > any changes to LSM, and it would be a straightforward extension of
-> > > SELinux to support the above - it doesn't change the model at all, just
-> > > adds a further input to the new file labeling logic.
-> > 
-> > And eliminates the need for restorecond?
-> > 
+> Here are the issues:
 > 
-> Unlikely in the short term - restorecond is also used to reset contexts
-> on critical files in /etc that might loose the context because tools
-> used to update them are not correctly preserving contexts
-> (e.g., /etc/mtab, etc/resolv.conf).
+>  * model->fill_in_addresses is called once for all CPUs
+>    on X86, it does more than just filling in the addresses,
+>    it also coordinates with the NMI watchdog by reserving
+>    registers via the reserve_*nmi() interface.
+> 
+>    The problem is that the release of the registers is done
+>    in model->shutdown() which happens to be executed on every
+>    CPU. So you end up releasing the registers too many times.
+>    This is *not* harmless once you start sharing the PMU with
+>    other subsystems given the way the allocator is designed.
 
-Confused - why wouldn't the new type_transition rule extension handle
-that?
+Hm, currently it should be ok to move the call to model->shutdown() into
+nmi_shutdown(), but you might want to instead set addr to 0 when the
+register is released to still allow for per cpu actions in shutdown().
 
-thanks,
--serge
+>  * allocate_msrs() allocates two tables per CPU. One for the
+>    counters, the other for the eventsel registers. But then
+>    nmi_setup() copies the cpu_msrs[0] into cpu_msrs[] of all
+>    other cpus. This operation overrides the cpu_msrs[].counters
+>    and cpu_msrs[].controls pointers for all CPUs but CPU0.
+>    But free_msrs() will free the same tables multiple times. This
+>    causes a kernel dump when you enable certain kernel debugging
+>    features. The fix is to copy the content of the counters and
+>    controls array, not the pointers.
 
-> Actually - this whole notion restorecond as a critical component of
-> SELinux because of a "new file problem" is pretty overblown. The default
-> config file ships with:
-> 
-> /etc/resolv.conf
-> /etc/samba/secrets.tdb
-> /etc/mtab
-> /var/run/utmp
-> /var/log/wtmp
-> ~/public_html
-> ~/.mozilla/plugins/libflashplayer.so
-> 
-> So the only things that would be helped by type_transition rules with a 
-> name component would be public_html and libflashplayer.so.
-> 
-> Karl
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+This was fixed in commit 0939c17c7bcf1.
+
+>  * the fill_in_addresses() callback for X86 invokes the NMI watchdog
+>    reserve_*_nmi() register allocation routines. This is done regardless
+>    of whether the NMI watchdog is active. When the NMI watchdog is not
+>    active, the allocator will satisfy the allocation for the first MSR
+>    of each type (counter or control), but then it will reject any
+>    request for the others. You end up working with a single
+>    counter/control register.
+
+Hm, ouch. I'll try to move the reservation parts into a separate system.
+
+Björn
