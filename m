@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbXFLDOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbXFLDOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbXFLDOJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 23:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXFLDN5
+	id S1757938AbXFLDOa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 23:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXFLDOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 23:13:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43784 "EHLO mx1.redhat.com"
+	Mon, 11 Jun 2007 23:14:17 -0400
+Received: from mga09.intel.com ([134.134.136.24]:24348 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751696AbXFLDN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 23:13:56 -0400
-Date: Mon, 11 Jun 2007 23:13:54 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Allow softlockup to be runtime disabled.
-Message-ID: <20070612031354.GA18471@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	id S1757682AbXFLDOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 23:14:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
+   d="scan'208";a="95635817"
+Message-ID: <466E0F28.3040701@linux.intel.com>
+Date: Mon, 11 Jun 2007 20:12:40 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Jeff Garzik <jeff@garzik.org>
+CC: Tejun Heo <htejun@gmail.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/3] AHCI Link Power Management
+References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E0F30.3000700@garzik.org>
+In-Reply-To: <466E0F30.3000700@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's useful sometimes to disable the softlockup checker at boottime.
-Especially if it triggers during a distro install.
-
-Signed-off-by: Dave Jones <davej@redhat.com>
-
---- linux-2.6/init/main.c~	2006-03-05 00:45:51.000000000 -0500
-+++ linux-2.6/init/main.c	2006-03-05 00:49:41.000000000 -0500
-@@ -732,6 +732,15 @@ static void __init do_basic_setup(void)
- 	do_initcalls();
- }
- 
-+static int __initdata nosoftlockup;
-+
-+static int __init nosoftlockup_setup(char *str)
-+{
-+	nosoftlockup = 1;
-+	return 1;
-+}
-+__setup("nosoftlockup", nosoftlockup_setup);
-+
- static void __init do_pre_smp_initcalls(void)
- {
- 	extern int spawn_ksoftirqd(void);
-@@ -649,7 +657,8 @@ static void do_pre_smp_initcalls(void)
- 	migration_init();
- #endif
- 	spawn_ksoftirqd();
--	spawn_softlockup_task();
-+	if (!nosoftlockup)
-+		spawn_softlockup_task();
- }
- 
- static void run_init_process(char *init_filename)
-
--- 
-http://www.codemonkey.org.uk
+Jeff Garzik wrote:
+> Arjan van de Ven wrote:
+>> Tejun Heo wrote:
+>>> Kristen Carlson Accardi wrote:
+>>>> Hi,
+>>>> This series of patches enables Aggressive Link Power Management for 
+>>>> AHCI devices, as documented in the AHCI spec.  On my laptop (a 
+>>>> Lenovo X60), this
+>>>> saves me a full watt of power.  On other systems, reported power 
+>>>> savings
+>>>> range from .5-1.5 Watts.  It has been tested by the kind folks at 
+>>>> #powertop
+>>>> with similar results.  Please give it a try and let me know what you 
+>>>> think.
+>>>
+>>> I'm not sure about this.  We need better PM framework to support
+>>> powersaving in other controllers and some ahcis don't save much when
+>>> only link power management is used, 
+>>
+>> do you have data to support this? The data we have from this patch is 
+>> that it saves typically a Watt of power (depends on the machine of 
+>> course, but the range is 0.5W to 1.5W). If you want to also have an 
+>> even more agressive thing where you want to start disabling the entire 
+>> controller... I don't see how this is in conflict with saving power on 
+>> the link level by "just" enabling a hardware feature ....
+> 
+> SATA standard defines lower power phy states.  So the same argument 
+> you're using for AHCI applies there too -- "just" enabling an existing 
+> hardware feature.
+> 
+yes I'm not arguing against that. I was trying to find out (and 
+suggest-unless-proven-otherwise) that the 2 are not exclusive or 
+conflicting... in fact I assume both are wanted concurrently.
