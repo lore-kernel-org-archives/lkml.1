@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbXFLIJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbXFLIMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbXFLIJB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 04:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbXFLIIq
+	id S1755529AbXFLIMQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 04:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXFLIMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 04:08:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60581
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752351AbXFLIIo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 04:08:44 -0400
-Date: Tue, 12 Jun 2007 01:08:55 -0700 (PDT)
-Message-Id: <20070612.010855.51301101.davem@davemloft.net>
-To: ysato@users.sourceforge.jp
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] CONFIG_INET depend on CONFIG_SYSCTL
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m2sl8xfwq8.wl%ysato@users.sourceforge.jp>
-References: <m2sl8xfwq8.wl%ysato@users.sourceforge.jp>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 12 Jun 2007 04:12:03 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44187 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752483AbXFLIL7 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 04:11:59 -0400
+Date: Tue, 12 Jun 2007 18:11:28 +1000
+From: David Chinner <dgc@sgi.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: David Chinner <dgc@sgi.com>, Suparna Bhattacharya <suparna@in.ibm.com>,
+       torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070612081128.GS86004887@sgi.com>
+References: <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com> <20070510005926.GT85884050@sgi.com> <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070612061652.GA6320@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yoshinori Sato <ysato@users.sourceforge.jp>
-Date: Tue, 12 Jun 2007 16:38:55 +0900
-
-> It cannot build with CONFIG_SYSCTL=n and CONFIG_INET=y.
-> In case of CONFIG_INET=y it should become CONFIG_SYSCTL=y. 
+On Tue, Jun 12, 2007 at 11:46:52AM +0530, Amit K. Arora wrote:
+> On Sat, May 12, 2007 at 06:01:57PM +1000, David Chinner wrote:
+> > Minimal definition to replace what applicaitons use on XFS and to
+> > support poasix_fallocate are the thre that have been mentioned so
+> > far (FA_ALLOCATE, FA_PREALLOCATE, FA_DEALLOCATE). I'll document them
+> > all in a man page...
 > 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Hi Dave,
+> 
+> Did you get time to write the above man page ? It will help to push
+> further patches in time (eg. for FA_PREALLOCATE mode).
 
-1) Please post networking patches to netdev@vger.kernel.org
-   which has been added to the CC:
+No, I didn't. Instead of working on new preallocation stuff, I've
+been spending all my time fixing bugs found by new and interesting
+(ab)uses of preallocation and hole punching.
 
-2) It is much better to add the appropriate CONFIG_SYSCTL
-   ifdefs to the INET code than to force it on for everyone.
+> The idea I had was to push the patch with bare minimum functionality
+> (FA_ALLOCATE and FA_DEALLOCATE modes) and parallely finalize on other
+> new mode(s) based on the man page you planned to provide.
+
+Push them. I'll just make XFS work with whatever is provided.
+Is there a test harness for the syscall yet?
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
