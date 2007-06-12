@@ -1,98 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbXFLDbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbXFLDfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757744AbXFLDbU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 23:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbXFLDbN
+	id S1757624AbXFLDfU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 23:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbXFLDfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 23:31:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:43280 "EHLO ozlabs.org"
+	Mon, 11 Jun 2007 23:35:07 -0400
+Received: from mga01.intel.com ([192.55.52.88]:59828 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752694AbXFLDbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 23:31:12 -0400
-Subject: Re: [PATCH 4/9] readahead: data structure and routines
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Pratt <slpratt@austin.ibm.com>,
-       Ram Pai <linuxram@us.ibm.com>
-In-Reply-To: <20070516224818.683288460@mail.ustc.edu.cn>
-References: <20070516224752.500812933@mail.ustc.edu.cn>
-	 <20070516224818.683288460@mail.ustc.edu.cn>
-Content-Type: text/plain
-Date: Tue, 12 Jun 2007 13:30:50 +1000
-Message-Id: <1181619050.6237.23.camel@localhost.localdomain>
+	id S1752756AbXFLDfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jun 2007 23:35:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
+   d="scan'208";a="255789181"
+Date: Tue, 12 Jun 2007 11:34:25 +0800
+From: Wang Zhenyu <zhenyu.z.wang@intel.com>
+To: Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       andi@rhlx01.fht-esslingen.de, Keith Packard <keithp@keithp.com>
+Subject: Re: [RFC][AGPGART]intel-agp: save whole config space in suspend/resume
+Message-ID: <20070612033424.GA30200@zhen-devel.sh.intel.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	LKML <linux-kernel@vger.kernel.org>, andi@rhlx01.fht-esslingen.de,
+	Keith Packard <keithp@keithp.com>
+References: <20070612015459.GB28668@zhen-devel.sh.intel.com> <20070612022320.GA2125@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070612022320.GA2125@redhat.com>
+User-Agent: Mutt/1.4.2.1i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 06:47 +0800, Fengguang Wu wrote: 
-> /*
->   * Track a single file's readahead state
-> + *
-> + *  ================#============|==================#==================|
-> + *                  ^            ^                  ^                  ^
-> + *  file_ra_state.la_index    .ra_index   .lookahead_index   .readahead_index
->   */
->  struct file_ra_state {
->  	unsigned long start;		/* Current window */
-> @@ -711,6 +715,12 @@ struct file_ra_state {
->  	unsigned long prev_index;	/* Cache last read() position */
->  	unsigned long ahead_start;	/* Ahead window */
->  	unsigned long ahead_size;
-> +
-> +	pgoff_t la_index;               /* enqueue time */
-> +	pgoff_t ra_index;               /* begin offset */
-> +	pgoff_t lookahead_index;        /* time to do next readahead */
-> +	pgoff_t readahead_index;        /* end offset */
-> +
+On 2007.06.11 22:23:21 +0000, Dave Jones wrote:
+> 
+> I'd feel much safer if we only did this on chipsets where we know we 
+> have to do it.   Doing this for *every* Intel chipset ever made _will_
+> bite us.  There are some early chipsets (440BX era iirc) that would just
+> hang the box when you tried to read from various write-only registers.
+> 
+> But even on the chipsets where we _do_ need to save/restore something in
+> the upper part of the config space, surely it'd be a lot safer
+> to just save/restore what we need to rather than risk all sorts
+> of mayhem by writing to bits that may trigger hardware events.
+> 
 
-Hi Fengguang,
+I understand. Before James reported his problem on i915, I have thought
+the basic restore on that chip should already be enough, but he proved I was
+wrong and I'm not sure if this also happens on other i915 board with different
+BIOS. 
 
-I found these variables a little confusing.  la_index is the last offset
-passed to ondemand_readahead, so perhaps "last_request_start" is a
-better name?  The comment "enqueue time" seems strange, too.
-
-ra_index seems ok, although "readahead_start" might be better.  Perhaps
-readahead_index should be expressed as readahead_size, which is how it
-seems to be used.  Perhaps "lookahead_index" is best expressed as a
-buffer at the end of the readahead zone (readahead_min?).
-
-ie:
-	pgoff_t last_request_start;     /* start of req which triggered readahead */
-	pgoff_t readahead_start;        /* Where readahead started */
-	pgoff_t readahead_size;         /* PAGE_CACHE_SIZE units of readahead */
-	pgoff_t readahead_min;          /* readahead_size left before we recalc */
-
-This gets rid of many of the accessors, I think, and avoids introducing
-a new term to understand (lookahead).
-
-> +/*
-> + * Where is the old read-ahead and look-ahead?
-> + */
-> +static inline void ra_set_index(struct file_ra_state *ra,
-> +				pgoff_t la_index, pgoff_t ra_index)
-> +{
-> +	ra->la_index = la_index;
-> +	ra->ra_index = ra_index;
-> +}
-> +
-> +/*
-> + * Where is the new read-ahead and look-ahead?
-> + */
-> +static inline void ra_set_size(struct file_ra_state *ra,
-> +				unsigned long ra_size, unsigned long la_size)
-> +{
-> +	ra->readahead_index = ra->ra_index + ra_size;
-> +	ra->lookahead_index = ra->ra_index + ra_size - la_size;
-> +}
-
-These are only called in one place, so I think it's clearer to do this
-there directly.  But I see you exported ra_submit, too, even though it's
-only used in the same file.  Are there plans for other users?
-
-Thanks,
-Rusty.
-
+And with my patch it has already removed the restore cases for 440BX like type,
+coz it's gmch_chip_id == 0 and intel_private.pcidev is NULL, so it won't save
+extra space on those chips.
