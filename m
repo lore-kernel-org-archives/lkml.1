@@ -1,84 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbXFLNph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbXFLNrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757186AbXFLNph (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 09:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbXFLNpa
+	id S1757439AbXFLNrS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 09:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbXFLNrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 09:45:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:2758 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754091AbXFLNpa (ORCPT
+	Tue, 12 Jun 2007 09:47:11 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:11875 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756144AbXFLNrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 09:45:30 -0400
+	Tue, 12 Jun 2007 09:47:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZyVs3bm3KtY5Q0nMo0NjNYWWbcMNqhnJzaegtwskcJ394dg68Ms4sSTPIpW+uRofPtH2vWk7V1HLGiMrDKd1FWkZuzt9YIbs86X1hLZBmjFfmStMApGEfpRriYWm2LInkYp0lrvFphATxJv5/Mq1hJN4VBNYG96issgTcCYC57U=
-Message-ID: <d120d5000706120645w48f784cdt22c6c0a707166325@mail.gmail.com>
-Date: Tue, 12 Jun 2007 09:45:29 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Renato Golin" <rengolin@gmail.com>
-Subject: Re: joydev.c and saitek cyborg evo force
-Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com>
+        b=d7iyP1I+Dl8r6PTImjhGIJkPnLszVwNec8wL4V9Sr0f14wN8CaqCT2yBWzpxoVN/SD+5j7Dfsyz9at6QYvYFNwr7PqxIaDhYgXtJLAFO7Q6LaNGKlCIQima6ENHdKTaz2geEm/DePv37RT7jjr6e3Sjwq6N1eCHjc1a5CRsnboQ=
+Message-ID: <f24d23310706120647n4e125964i3885bd5c340b8903@mail.gmail.com>
+Date: Tue, 12 Jun 2007 19:17:07 +0530
+From: "debian developer" <debiandev@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 1/4] lockdep: variuos fixes
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070612121916.533503225@chello.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
-	 <d9b9d95f0706011116j59fff917x9a86aac377f88937@mail.gmail.com>
-	 <Pine.LNX.4.64.0706031139570.5177@jikos.suse.cz>
-	 <d9b9d95f0706041506l257819a7pbcb8b8efc2eec049@mail.gmail.com>
-	 <Pine.LNX.4.64.0706050008160.5177@jikos.suse.cz>
-	 <d9b9d95f0706041546h4eef0b4eo2e191968be13d59a@mail.gmail.com>
-	 <Pine.LNX.4.64.0706121436070.10204@jikos.suse.cz>
-	 <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com>
-	 <d120d5000706120613o7a328e59v3cba37f0ced88e77@mail.gmail.com>
-	 <d9b9d95f0706120631l20e6f91duaa110e72a0e955a6@mail.gmail.com>
+References: <20070612121351.448814658@chello.nl>
+	 <20070612121916.533503225@chello.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/12/07, Renato Golin <rengolin@gmail.com> wrote:
-> On 12/06/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > We need to find out why you see [-127, 127] range, because if joydev
-> > would see [0, 4096] range it would perform automatic correction and
-> > map values like this:
-> >
-> > c0: 2048, c1: 2048, c2: 262144, c3: 262144
->
-> Hi Dmitry,
->
-> That's the values I got *after* calibration. Before, because the
-> correction is set to a small signed value, it corrects wrongly and
-> report a random mix of signed and unsigned values when moving in one
-> direction...
->
+What exactly is being copyright'ed here?
 
-Yes, if correction was calculated for [127; 127] range and the device
-would feed [0; 4096] it would of course produce wrong results.
-
-
+On 6/12/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>  - update the copyright notices
+>  - use the default hash function
+>  - fix a thinko in a BUILD_BUG_ON
+>  - add a WARN_ON to spot inconsitent naming
+>  - fix a termination issue in /proc/lock_stat
 >
-> > Which is fine as far as I can see. What utility did you use that
-> > reported [-127; 127] range?
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Acked-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/linux/lockdep.h |    3 ++-
+>  kernel/lockdep.c        |   20 +++++++++++---------
+>  kernel/lockdep_proc.c   |    6 +++++-
+>  3 files changed, 18 insertions(+), 11 deletions(-)
 >
-> At joydev_connect, the last parameter "input_dev" reports me that
-> range (dev->absmax[i] and dev->absmin[i]). When I turned on HID_DEBUG
-> it reported [0, 4096] for both axis 0 and 1, which is correct so it
-> must be between HID and joydev.
+> Index: linux-2.6/kernel/lockdep.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/lockdep.c
+> +++ linux-2.6/kernel/lockdep.c
+> @@ -5,7 +5,8 @@
+>   *
+>   * Started by Ingo Molnar:
+>   *
+> - *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+> + *  Copyright (C) 2006,2007 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+> + *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
+>   *
+>   * this code maps all the lock dependencies as they occur in a live kernel
+>   * and will warn about the following classes of locking bugs:
+> @@ -37,6 +38,7 @@
+>  #include <linux/debug_locks.h>
+>  #include <linux/irqflags.h>
+>  #include <linux/utsname.h>
+> +#include <linux/hash.h>
 >
-
-Any change you could locate and run "evtest" utility and post its results?
-
-> My point is that the auto-calibration could automagically solve all
-> range problems in all devices by zeroing the range and adapting the
-> ranges afterwards. If it can affect other devices as well as
-> joysticks, the calibration could happen in HID instead of joydev.
+>  #include <asm/sections.h>
 >
-
-We do not want to fix only joydev as it leaves other nput handlers
-(for example access through evdev) still broken. That's why I want to
-figure out where [0;4096] is being changed to [-127; 127].
-
--- 
-Dmitry
+> @@ -238,8 +240,7 @@ LIST_HEAD(all_lock_classes);
+>   */
+>  #define CLASSHASH_BITS         (MAX_LOCKDEP_KEYS_BITS - 1)
+>  #define CLASSHASH_SIZE         (1UL << CLASSHASH_BITS)
+> -#define CLASSHASH_MASK         (CLASSHASH_SIZE - 1)
+> -#define __classhashfn(key)     ((((unsigned long)key >> CLASSHASH_BITS) + (unsigned long)key) & CLASSHASH_MASK)
+> +#define __classhashfn(key)     hash_long((unsigned long)key, CLASSHASH_BITS)
+>  #define classhashentry(key)    (classhash_table + __classhashfn((key)))
+>
+>  static struct list_head classhash_table[CLASSHASH_SIZE];
+> @@ -250,9 +251,7 @@ static struct list_head classhash_table[
+>   */
+>  #define CHAINHASH_BITS         (MAX_LOCKDEP_CHAINS_BITS-1)
+>  #define CHAINHASH_SIZE         (1UL << CHAINHASH_BITS)
+> -#define CHAINHASH_MASK         (CHAINHASH_SIZE - 1)
+> -#define __chainhashfn(chain) \
+> -               (((chain >> CHAINHASH_BITS) + chain) & CHAINHASH_MASK)
+> +#define __chainhashfn(chain)   hash_long(chain, CHAINHASH_BITS)
+>  #define chainhashentry(chain)  (chainhash_table + __chainhashfn((chain)))
+>
+>  static struct list_head chainhash_table[CHAINHASH_SIZE];
+> @@ -680,7 +679,7 @@ look_up_lock_class(struct lockdep_map *l
+>          * (or spin_lock_init()) call - which acts as the key. For static
+>          * locks we use the lock object itself as the key.
+>          */
+> -       BUILD_BUG_ON(sizeof(struct lock_class_key) > sizeof(struct lock_class));
+> +       BUILD_BUG_ON(sizeof(struct lock_class_key) > sizeof(struct lockdep_map));
+>
+>         key = lock->key->subkeys + subclass;
+>
+> @@ -690,9 +689,12 @@ look_up_lock_class(struct lockdep_map *l
+>          * We can walk the hash lockfree, because the hash only
+>          * grows, and we are careful when adding entries to the end:
+>          */
+> -       list_for_each_entry(class, hash_head, hash_entry)
+> -               if (class->key == key)
+> +       list_for_each_entry(class, hash_head, hash_entry) {
+> +               if (class->key == key) {
+> +                       WARN_ON_ONCE(class->name != lock->name);
+>                         return class;
+> +               }
+> +       }
+>
+>         return NULL;
+>  }
+> Index: linux-2.6/include/linux/lockdep.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/lockdep.h
+> +++ linux-2.6/include/linux/lockdep.h
+> @@ -1,7 +1,8 @@
+>  /*
+>   * Runtime locking correctness validator
+>   *
+> - *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+> + *  Copyright (C) 2006,2007 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+> + *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
+>   *
+>   * see Documentation/lockdep-design.txt for more details.
+>   */
+> Index: linux-2.6/kernel/lockdep_proc.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/lockdep_proc.c
+> +++ linux-2.6/kernel/lockdep_proc.c
+> @@ -5,7 +5,8 @@
+>   *
+>   * Started by Ingo Molnar:
+>   *
+> - *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+> + *  Copyright (C) 2006,2007 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
+> + *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
+>   *
+>   * Code for /proc/lockdep and /proc/lockdep_stats:
+>   *
+> @@ -498,6 +499,9 @@ static void *ls_start(struct seq_file *m
+>         if (data->iter == data->stats)
+>                 seq_header(m);
+>
+> +       if (data->iter == data->iter_end)
+> +               data->iter = NULL;
+> +
+>         return data->iter;
+>  }
+>
+>
+> --
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
