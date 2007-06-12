@@ -1,80 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbXFLUPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbXFLUR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbXFLUPq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 16:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbXFLUPj
+	id S1757594AbXFLUR1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 16:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbXFLURT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 16:15:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:58877 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754066AbXFLUPi (ORCPT
+	Tue, 12 Jun 2007 16:17:19 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:60500 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754177AbXFLURS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 16:15:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=UW2hAuAXFRjMk7dbyD1jR3MeUoFY/NhE93GMWvikCb/ZIiCYuAJ43GWTGF3Ywzwgj50GsdufnshantI7QvWQTsjVE1xFxJqd4LUHIvABmlrCl147JmRZtqXxqQb902WSrd38yHjntOMVbLt4rOSxVApJ9VpL4Zf2M2vRqskq5ic=
-Message-ID: <929318d30706121315n3d2d20efp6fd3ff590cce894c@mail.gmail.com>
-Date: Tue, 12 Jun 2007 22:15:37 +0200
-From: "Giel de Nijs" <giel@caffeinetrip.com>
-Reply-To: giel@caffeinetrip.com
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: [PATCH] input: fix broken behaviour of Dell Latitude special keys
-Cc: linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz,
-       "Vojtech Pavlik" <vojtech@suse.cz>,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>,
-       "Matt Domsch" <matt_domsch@dell.com>,
-       "Rezwanul Kabir" <rezwanul_kabir@dell.com>
-In-Reply-To: <200706120127.25581.dtor@insightbb.com>
+	Tue, 12 Jun 2007 16:17:18 -0400
+Date: Tue, 12 Jun 2007 16:14:39 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+Message-ID: <20070612201439.GI28279@think.oraclecorp.com>
+References: <20070612161029.GB28279@think.oraclecorp.com> <170fa0d20706121253v62d13f70p3694eeab1852092a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <929318d30706101042q25418f9aif7c1a609fd792830@mail.gmail.com>
-	 <200706120127.25581.dtor@insightbb.com>
-X-Google-Sender-Auth: 835d210c44f432c2
+In-Reply-To: <170fa0d20706121253v62d13f70p3694eeab1852092a@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+On Tue, Jun 12, 2007 at 03:53:03PM -0400, Mike Snitzer wrote:
+> On 6/12/07, Chris Mason <chris.mason@oracle.com> wrote:
+> >Hello everyone,
+> >
+> >After the last FS summit, I started working on a new filesystem that
+> >maintains checksums of all file data and metadata.  Many thanks to Zach
+> >Brown for his ideas, and to Dave Chinner for his help on
+> >benchmarking analysis.
+> 
+> Chris,
+> 
+> Given the substantial work that you've already put into btrfs and the
+> direction you're Todo list details; it feels as though Btrfs will
+> quickly provide the features that only Sun's ZFS provides.
+> 
+> Looking at your Btrfs benchmark and design pages it is clear that
+> you're motivation is a filesystem that addresses modern concerns
+> (performance that doesn't degrade over time, online fsck, fast offline
+> fsck, data/metadata checksums, unlimited snapshots, efficient remote
+> mirroring, etc).  There is still much "Todo" but you've made very
+> impressive progress for the first announcement!
+> 
+> I have some management oriented questions/comments.
+> 
+> 1)
+> Regarding the direction of Btrfs as it relates to integration with DM.
+> The allocation policies, the ease of configuring DM-based
+> striping/mirroring, management of large pools of storage all seems to
+> indicate that Btrfs will manage the physical spindles internally.
+> This is very ZFS-ish (ZFS pools) so I'd like to understand where you
+> see Btrfs going in this area.
 
-On 6/12/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
+There's quite a lot of hand waving in that section.  What I'd like to do
+is work closely with the LVM/DM/MD maintainers and come up with
+something that leverages what linux already does.  I don't want to
+rewrite LVM into the FS, but I do want to make better use of info about
+the underlying storage.
 
-> Thank you for the patch. Is there any way I could see data coming from i8042
-> when you press on these special keys? If you could do:
->
-> echo 1 > /sys/module/i8042/parameters/debug
-> tehn presses and released all these keys
-> echo 0 > /sys/module/i8042/parameters/debug
->
-> and send me dmesg I woudl appreciate that.
+> 
+> Your initial benchmarks were all done ontop of a single disk with an
+> LVM stack yet your roadmap/todo and design speaks to a tighter
+> integration of the volume management features.  So long term is
+> traditional LVM/MD functionality to be pulled directly into Btrfs?
+> 
+> 2)
+> The Btrfs notion of subvolumes and snapshots is very elegant and
+> provides for a fluid management of the filesystem system data.  It
+> feels as though each subvolume/snapshot is just folded into the parent
+> Btrfs volumes' namespace.  Was there any particular reason you elected
+> to do this?  I can see that it lends itself to allowing snapshots of
+> snapshots.  If you could elaborate I'd appreciate it.
+> 
+Yes, I wanted snapshots to be writable and resnapshottable.  It also
+lowers the complexity to keep each snapshot as a subvolume/tree.
 
-Here's the data from i8042 of, in order, Fn-F1, Fn-F3, Fn-F7, Fn-F8, Fn-Up,
-Fn-Down, and Fn-Left:
+subvolumes are only slightly more expensive than a directory.  So, even
+though a subvolume is a large grained unit for a snapshot, you can get
+around this by just making more subvolumes.
 
-drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2277118]
-drivers/input/serio/i8042.c: 0a <- i8042 (interrupt, 0, 1) [2277118]
-drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2277643]
-drivers/input/serio/i8042.c: 07 <- i8042 (interrupt, 0, 1) [2277643]
-drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2277987]
-drivers/input/serio/i8042.c: 0f <- i8042 (interrupt, 0, 1) [2277988]
-drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2278175]
-drivers/input/serio/i8042.c: 0b <- i8042 (interrupt, 0, 1) [2278175]
-drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2279806]
-drivers/input/serio/i8042.c: 06 <- i8042 (interrupt, 0, 1) [2279806]
-drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2279940]
-drivers/input/serio/i8042.c: 05 <- i8042 (interrupt, 0, 1) [2279940]
-drivers/input/serio/i8042.c: e0 <- i8042 (interrupt, 0, 1) [2280101]
-drivers/input/serio/i8042.c: 13 <- i8042 (interrupt, 0, 1) [2280102]
+> In practice subvolumes and/or snapshots appear to be implicitly
+> mounted upon creation (refcount of parent is incremented).  Is this
+> correct?  For snapshots, this runs counter to mapping the snapshots'
+> data into the namespace of the origin Btrfs (e.g. with a .snapshot
+> dir, but this is only useful for read-only snaps).  Having snapshot
+> namespaces in terms of monolithic subvolumes puts a less intuitive
+> face on N Btrfs snapshots.  The history of a given file/dir feels to
+> be lost with this model.
 
-As you can see, no release events :).
+That's somewhat true, the disk format does have enough information to
+show you that history, but cleanly expressing it to the user is a
+daunting task.
 
-There's also Fn-End, Fn-PgUp, Fn-PgDown (all audio related) and the wireless
-switch at the side, those do generate release events. Also, the Fn
-combinations for num lock, scroll lock, sysrq and pause/break seem to act
-normal. There's also Fn-Esc, but that's an ACPI key.
+> 
+> Aside from folding snapshot history into the origin's namespace... It
+> could be possible to have a mount.btrfs that allows subvolumes and/or
+> snapshot volumes to be mounted as unique roots?  I'd imagine a bind
+> mount _could_ provide this too?  Anyway, I'm just interested in
+> understanding the vision for managing the potentially complex nature
+> of a Btrfs namespace.
 
-Hope this helps.
+One option is to put the real btrfs root into some directory in
+(/sys/fs/btrfs/$device?) and then use tools in userland to mount -o bind
+outside of that.  I wanted to wait to get fancy until I had a better
+idea of how people would use the feature.
+> 
+> Thanks for doing all this work; I think the Linux community got a much
+> needed shot in the arm with this Btrfs announcement.
+> 
 
-Greetings,
-Giel
+Thanks for the comments.
+
+-chris
