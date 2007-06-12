@@ -1,33 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbXFLNI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbXFLNNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758199AbXFLNI6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 09:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757943AbXFLNIb
+	id S1757222AbXFLNNS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 09:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbXFLNNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 09:08:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:25539 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757927AbXFLNI3 (ORCPT
+	Tue, 12 Jun 2007 09:13:09 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:52819 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755540AbXFLNNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 09:08:29 -0400
+	Tue, 12 Jun 2007 09:13:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NEjI1h3czQhIfn6tAyvK/6izJrSt/BR8dNg/8dCoxdh+DhW0a0Q35jykrcXolPjPcsmvbInpTzmgHThbXm3822wQQbqORE5Q307UPUYhRWwKqx252/UQqVazFHgdg7AlUr7HZAyi9VgxamFwxzJFHBRsxPJP9/nzboK4L3LWSCk=
-Message-ID: <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com>
-Date: Tue, 12 Jun 2007 14:08:27 +0100
-From: "Renato Golin" <rengolin@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
+        b=m4aN8uDYqGNyGN5+8R4WgF1LKg8U2nn/KrWZZyEnzIgGCBcrxB7AQkGiIjXY//t35idu+WSru/z5Xe0ESNW7WvrufdjNPS6DCprhw7/nI2Q2vgj2+vOk+0P6Th9S7llYhQaoJf8FpUTrCpKyTsFMe7IEdLmeQYLqgK03TIgwEmk=
+Message-ID: <d120d5000706120613o7a328e59v3cba37f0ced88e77@mail.gmail.com>
+Date: Tue, 12 Jun 2007 09:13:06 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Renato Golin" <rengolin@gmail.com>
 Subject: Re: joydev.c and saitek cyborg evo force
-Cc: linux-kernel@vger.kernel.org,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-In-Reply-To: <Pine.LNX.4.64.0706121436070.10204@jikos.suse.cz>
+Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-kernel@vger.kernel.org
+In-Reply-To: <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
-	 <d9b9d95f0705301526i66e99ef3v6c35165aa1a5f5c6@mail.gmail.com>
 	 <d120d5000705311253n67d4247eh194e6f4457a0b4c@mail.gmail.com>
 	 <Pine.LNX.4.64.0705312220250.5177@jikos.suse.cz>
 	 <d9b9d95f0706011116j59fff917x9a86aac377f88937@mail.gmail.com>
@@ -36,56 +34,54 @@ References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
 	 <Pine.LNX.4.64.0706050008160.5177@jikos.suse.cz>
 	 <d9b9d95f0706041546h4eef0b4eo2e191968be13d59a@mail.gmail.com>
 	 <Pine.LNX.4.64.0706121436070.10204@jikos.suse.cz>
+	 <d9b9d95f0706120608g979b89oc79dbc277d19862b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/06/07, Jiri Kosina <jkosina@suse.cz> wrote:
-> the thing is that the aim of this quirk is to normalize the values that
-> are being reported by bogus devices, so we don't really want to trust the
-> values they provide here, do we?
+Hi Renato,
 
-Hi Jiri,
+On 6/12/07, Renato Golin <rengolin@gmail.com> wrote:
+> On 12/06/07, Jiri Kosina <jkosina@suse.cz> wrote:
+> > the thing is that the aim of this quirk is to normalize the values that
+> > are being reported by bogus devices, so we don't really want to trust the
+> > values they provide here, do we?
+>
+> Hi Jiri,
+>
+> I don't know about the other joysticks, but Saitek did reported [0,
+> 4096] which is the right answer, but between HID and Joydev it was
+> converted to [-127, 127]. I thought that the quirk was about that.
+>
 
-I don't know about the other joysticks, but Saitek did reported [0,
-4096] which is the right answer, but between HID and Joydev it was
-converted to [-127, 127]. I thought that the quirk was about that.
+We need to find out why you see [-127, 127] range, because if joydev
+would see [0, 4096] range it would perform automatic correction and
+map values like this:
 
-But seeing the quirk code it seems that if the range doesn't match it
-forces [0, 256] (not trusting anything the device sends) and that's
-not really needed for Saitek.
+c0: 2048, c1: 2048, c2: 262144, c3: 262144
+0 -> -32768
+204 -> -29504
+408 -> -26240
+612 -> -22976
+816 -> -19712
+1020 -> -16448
+1224 -> -13184
+1428 -> -9920
+1632 -> -6656
+1836 -> -3392
+2040 -> -128
+2244 -> 3136
+2448 -> 6400
+2652 -> 9664
+2856 -> 12928
+3060 -> 16192
+3264 -> 19456
+3468 -> 22720
+3672 -> 25984
+3876 -> 29248
+4080 -> 32512
 
-I'm not at all sure how the other devices behave and I do understand
-the difficulty in testing every single one.
+Which is fine as far as I can see. What utility did you use that
+reported [-127; 127] range?
 
-My opinion is that we shouldn't fall back to a hard-coded range for
-all types of errors and rely on user calibration. Normally, game users
-tend to dislike having to quit the game and recalibrate the joystick
-to restart the game again (I do, at least). Furthermore, dealing with
-every single type of error is impossible unless you have all devices
-available for a recursive test every time something change, which is
-not true.
-
-Therefore, my view is that the only neat solution to all that is to
-report the range as [0, 0] and auto-calibrate afterwards, while the
-device is in use and reporting the real range. I found out that, not
-all times the range goes to 4096, most of the time it stays as far as
-4038, and setting the final range to that value (with
-auto-calibration) is even more precise than the reported by the
-device.
-
-The drawback is the few calculations done during the first movements
-of the joystick (function call and four small formulas) and the two
-"IF (a > b)" for every axis event afterwards.
-
-As this is my first kernel mode code I'm not sure how would that
-schedule with other kernel processes (normally I rely on kernel's
-scheduling process) but for a user-land program (real-time games
-included) I wouldn't say it's too much overhead.
-
-Let me know if I got it all backwards... ;)
-
-cheers,
---renato
-
-Reclaim your digital rights, eliminate DRM, learn more at
-http://www.defectivebydesign.org/what_is_drm
+-- 
+Dmitry
