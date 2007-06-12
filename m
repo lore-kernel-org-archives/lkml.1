@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbXFLPRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbXFLPS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbXFLPRV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 11:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbXFLPRM
+	id S1756642AbXFLPS2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXFLPST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 11:17:12 -0400
-Received: from ik-out-1112.google.com ([66.249.90.178]:4188 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681AbXFLPRL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 11:17:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gwhzirpd0GjdQg1I4GFh1O4rJQY3KTl3JhsciQXvL+N8atwk5jZaS/Y9lTRGdswZiLqDVi21HKaWEbhuKmSN+X9Vwhm0vaCW0troNkg9d7k87MUk2QLc9cZa7pyIs8bNsjL63tz5iF445PlDQ9HQoR0/l5uG/o5SWhyc7oseGxQ=
-Message-ID: <f24d23310706120817m741b1cb4g9ac6f5469274f307@mail.gmail.com>
-Date: Tue, 12 Jun 2007 20:47:09 +0530
-From: "debian developer" <debiandev@gmail.com>
-To: "Federico Paparoni" <federico.paparoni@gmail.com>
-Subject: Re: Linux kernel 2.4 programming problem
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <7f7732360706120654i34f34da8q6428e41bc5a76728@mail.gmail.com>
+	Tue, 12 Jun 2007 11:18:19 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55543 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751990AbXFLPSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 11:18:18 -0400
+Message-ID: <466EB937.6050807@garzik.org>
+Date: Tue, 12 Jun 2007 11:18:15 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Albert Lee <albertcc@tw.ibm.com>
+Subject: Re: libata passthru: support PIO multi commands
+References: <200706112200.l5BM0qFn005767@hera.kernel.org>	<20070611233917.4bd8c6d7@the-village.bc.nu>	<466DE438.70108@garzik.org> <20070612111621.10074408@the-village.bc.nu>
+In-Reply-To: <20070612111621.10074408@the-village.bc.nu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <7f7732360706120654i34f34da8q6428e41bc5a76728@mail.gmail.com>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please look into http://kernelnewbies.org
+Alan Cox wrote:
+>>>> +		if (multi_count != dev->multi_count)
+>>>> +			ata_dev_printk(dev, KERN_WARNING,
+>>>> +				       "invalid multi_count %u ignored\n",
+>>>> +				       multi_count);
+>>>> +	}
+>>> What limits log spamming here ?
+>> Intelligence of the user with privs?
+> 
+> Not ever SG_IO call requires priviledges.
 
-On 6/12/07, Federico Paparoni <federico.paparoni@gmail.com> wrote:
-> Hi all,
-> i'm trying to create a simple system call in a kernel 2.4 distribution.
-> I read guide/articles like this
->
-> http://irfanhabib.wordpress.com/2006/10/01/adding-a-system-call-linux-24x/
->
-> All the articles say the same things, but the implementation of my new
-> system call doesn't work.
-> I create a new entry in arch/i386/kernel/entry.S
-> I create a new entry in include/asm/unistd.h
-> I create a new function with the asmlinkage prefix in a source file
-> already defined (in ipc/sem.c for example)
->
-> When i create my user program, it doesn't work. Firstly when i try to
-> compile i receive a problem like this
->
-> : undefined reference to 'errno'
->
-> Then I include errno.h (also if i don't understand this step) and the
-> compilation works, but the syscall neverworks, because the call always
-> return -1.
->
-> Any help?
-> Any tutorial FOR DUMMY MAN that someone already used?
->
-> Cheers
->
-> Federico
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+All calls relevant to this thread require CAP_SYS_RAWIO.
+
+
+> Issue a multi count sized write. Acidentally collide with another program
+> which mucks up the multiwrite count (for once it probably won't be HAL
+> making a mess ;)) and send data. The state of the disk at the point a
+> short multiwrite terminates is undefined, it may have written some of the
+> sectors, it may have blanked them all (Optical media) etc. Far better
+> just to error the invalid command - especially as in some cases without
+> Mark's fixes for DRQ cleanup on error it may even hang in one direction.
+
+ata_scsi_pass_thru() is not executed at ioctl submission time (block 
+queue submission time), but rather immediately before it is issued to 
+the drive.  At that point you know the bus is idle, all other commands 
+have finished executing, and dev->multi_count is fresh not stale.  The 
+code path goes from ata_scsi_pass_thru() to ata_qc_issue() without 
+releasing the spinlock, even.
+
+But the last point is true -- we should error rather than just warn 
+there, AFAICS.
+
+	Jeff
+
+
