@@ -1,104 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbXFLKd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbXFLKfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754549AbXFLKd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 06:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbXFLKdt
+	id S1754830AbXFLKfd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 06:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbXFLKf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 06:33:49 -0400
-Received: from mail36.syd.optusnet.com.au ([211.29.133.76]:48775 "EHLO
-	mail36.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752476AbXFLKds (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 06:33:48 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: ck@vds.kolivas.org
-Subject: Re: call for more SD versus CFS comparisons (was: Re: [ck]  Mainline plans)
-Date: Tue, 12 Jun 2007 20:33:32 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Tobias Gerschner <tobias.gerschner@gmail.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <466DE921.9030709@debianpt.org> <20070612083620.GA10557@elte.hu> <20070612085730.GA17964@elte.hu>
-In-Reply-To: <20070612085730.GA17964@elte.hu>
+	Tue, 12 Jun 2007 06:35:26 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:59499 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752501AbXFLKfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 06:35:25 -0400
+Message-ID: <381644514.12057@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Tue, 12 Jun 2007 18:35:18 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Steven Pratt <slpratt@austin.ibm.com>,
+       Ram Pai <linuxram@us.ibm.com>
+Subject: Re: [PATCH 5/9] readahead: on-demand readahead logic
+Message-ID: <20070612103518.GA9624@mail.ustc.edu.cn>
+Mail-Followup-To: Rusty Russell <rusty@rustcorp.com.au>,
+	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	Andi Kleen <andi@firstfloor.org>,
+	Jens Axboe <jens.axboe@oracle.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+	Steven Pratt <slpratt@austin.ibm.com>,
+	Ram Pai <linuxram@us.ibm.com>
+References: <20070516224752.500812933@mail.ustc.edu.cn> <20070516224818.841068730@mail.ustc.edu.cn> <1181622986.6237.65.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706122033.32883.kernel@kolivas.org>
+In-Reply-To: <1181622986.6237.65.camel@localhost.localdomain>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 June 2007 18:57, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> > * Tobias Gerschner <tobias.gerschner@gmail.com> wrote:
-> > > I did run massive_intr.c for 60 secs with increasing nproc (
-> > > 10,20,30,40,50,60) waiting for effects.
-> > >
-> > > Below a small table of the results
+Hi Rusty,
 
-Nice results. Thanks for taking the time to post them!
-
-> > >
-> > > 2.6.21.1-cfs-v16
-> > >
-> > > nproc ,  usability result
-> > >
-> > > 10 , serious frame drops , Firefox  hardly recognizes clicked links,
-> > > but still usable
-> > > 20 - 30, usability loss ( somehow under cfs firefox never finished
-> > > user requests like displaying web pages or opening new pages , no
-> > > feedback anymore, sudden changes on the desktop )
-> >
-> > ouch! The expected load-testing result under CFS should be something
-> > like this:
-> >
-> >    http://bhhdoa.org.au/pipermail/ck/2007-June/007817.html
+On Tue, Jun 12, 2007 at 02:36:26PM +1000, Rusty Russell wrote:
+> On Thu, 2007-05-17 at 06:47 +0800, Fengguang Wu wrote:
+> > +static unsigned long
+> > +ondemand_readahead(struct address_space *mapping,
+> > +		   struct file_ra_state *ra, struct file *filp,
+> > +		   struct page *page, pgoff_t offset,
+> > +		   unsigned long req_size)
+> > +{
+> > +	unsigned long max;	/* max readahead pages */
+> > +	pgoff_t ra_index;	/* readahead index */
+> > +	unsigned long ra_size;	/* readahead size */
+> > +	unsigned long la_size;	/* lookahead size */
+> > +	int sequential;
+> > +
+> > +	max = ra->ra_pages;
+> > +	sequential = (offset - ra->prev_index <= 1UL) || (req_size > max);
 >
-> i have just tried the same workload with cfs and with sd048 from -ck,
-> and cannot reproduce this. To make sure it's not some other change in
-> -ck, could you try the pure SD patches ontop of 2.6.21.1 too:
+> This <= 1UL seems weird.  prev_index is end of last request, so I'd
+> expect offset == prev_index + 1 for sequential reads?  Does offset ==
+> ra->prev_index happen?  If not, this would be clearer as (offset ==
+> ra->prev_index + 1).
 
-I'm pleased you think the rest of my patches may help there but only the SD 
-patches affect scheduling unless you set a different scheduling policy or 
-there is a vm issue.
+It's possible to have (offset == ra->prev_index) when someone is doing
+1K reads or 10K reads, which do not always align to page boundaries.
 
-List:
-ck2-version.patch
-2.6.21-sd-0.48.patch
-sched-sd-0.48-interactive_tunable.patch
-sched-range.patch
-sched-iso-5.4.patch
-track_mutexes-1.patch
-sched-idleprio-2.3.patch
-sched-limit_policy_changes.patch
-sched-ck-add-above-background-load-function.patch
-cfq-ioprio_inherit_rt_class.patch
-cfq-iso_idleprio_ionice.patch
-mm-swap_prefetch-35.patch 
-mm-convert_swappiness_to_mapped.patch 
-mm-lots_watermark.diff
-mm-kswapd_inherit_prio-1.patch 
-mm-prio_dependant_scan-2.patch
-mm-background_scan-2.patch
-mm-filesize_dependant_lru_cache_add.patch
-mm-idleprio_prio.patch
-kconfig-expose_vmsplit_option.patch
-hz-default_1000.patch 
-hz-no_default_250.patch 
-hz-raise_max-2.patch
-ck-desktop-tune.patch
-mm-swap-prefetch-35-38.patch
+> (prev_index is not a great name either, but that's not your patch 8).
 
-apart from ck-desktop-tune.patch which is in total this:
--int rr_interval __read_mostly = 8;
-+int rr_interval __read_mostly = 6;
+It was just renamed from `prev_page', hehe.
 
-which is already a tunable that's part of SD.
+> > +	/*
+> > +	 * Lookahead/readahead hit, assume sequential access.
+> > +	 * Ramp up sizes, and push forward the readahead window.
+> > +	 */
+> > +	if (offset && (offset == ra->lookahead_index ||
+> > +			offset == ra->readahead_index)) {
+> > +		ra_index = ra->readahead_index;
+> > +		ra_size = get_next_ra_size2(ra, max);
+> > +		la_size = ra_size;
+> > +		goto fill_ra;
+> > +	}
+>
+> Will offset hit lookahead_index or readahead_index exactly?  Should this
+> be checking the range from offset to offset + req_size?
 
-So unless there's a vm issue (which does not appear to be the case) I can't 
-see how any of these will change Tobias' extensive testing results.
+Yes, normally lookahead_index will be hit(1). But in case readahead is
+canceled because of IO congestion at that time, readahead_index will
+be hit later(2).
 
-Thanks.
+The readahead code is called on two possible conditions:
+(1) page != NULL and PageReadahead(page)
+It will be an asynchronous readahead.
+In this case, (offset == ra->lookahead_index) indicates sequential
+reads that have been associated with a valid readahead window.
 
--- 
--ck
+(2) page == NULL
+It will be a synchronous readahead.
+In this case, (offset == ra->readahead_index) indicates sequential
+reads that has just consumed all of the readahead pages.
+
+> > +	ra_index = offset;
+> > +	ra_size = get_init_ra_size(req_size, max);
+> > +	la_size = ra_size > req_size ? ra_size - req_size : ra_size;
+>
+> So if we're doing a big sequential read, ra_size < req_size, so next
+> time offset will be > ra->readahead_index and the "ramp up sizes" code
+> won't get run?
+
+For big reads, (ra_size = max) and (max < req_size), la_size will be
+equal to ra_size, or max. So after this readahead invocation submits
+max pages of I/O and returns to do_generic_mapping_read(), it will
+*immediately* be called again because of lookahead hit:
+
+                if (!page) {
+                        page_cache_readahead_ondemand(mapping,
+                                        &ra, filp, page,
+                                        index, last_index - index);
+                        page = find_get_page(mapping, index);
+                        if (unlikely(page == NULL))
+                                goto no_cached_page;
+                }
+lookahead hit:  if (PageReadahead(page)) {
+                        page_cache_readahead_ondemand(mapping,
+                                        &ra, filp, page,
+                                        index, last_index - index);
+                }
+
+Then it will submit another max pages of readahead I/O, whether or not
+the size ramp up code will be executed: either the remaining request
+size is still > max and get_init_ra_size() is called, or the remaining
+request size is <= max and get_next_ra_size() is called, in both cases
+they will return max.  This behavior is inherited from the current
+readahead, and makes sense.
+
+> > +	/*
+> > +	 * Hit on a lookahead page without valid readahead state.
+> > +	 * E.g. interleaved reads.
+> > +	 * Not knowing its readahead pos/size, bet on the minimal possible one.
+> > +	 */
+> > +	if (page) {
+> > +		ra_index++;
+> > +		ra_size = min(4 * ra_size, max);
+> > +	}
+>
+> If I understand correctly, it's expected to happen when we have multiple
+> streams: we previously marked the lookahead page, but then the other
+> stream changed the ra to somewhere else in the file.  We now change it
+> back to our stream, but we've lost information so we make it up.
+
+Yeah, exactly!
+
+> This seems a little like two functions crammed into one.  Do you think
+> page_cache_readahead_ondemand() should be split into
+> "page_cache_readahead()" which doesn't take a page*, and
+> "page_cache_check_readahead_page()" which is an inline which does the
+> PageReadahead(page) check as well?
+
+page_cache_check_readahead_page(..., page) is a good idea.
+But which part of the code should we put to page_cache_readahead()
+that does not take a page param?
+
+Thank you,
+Fengguang
+
