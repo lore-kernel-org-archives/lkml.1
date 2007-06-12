@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbXFLBau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbXFLBgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbXFLBau (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 21:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbXFLBam
+	id S1757552AbXFLBgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 21:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbXFLBgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 21:30:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58374 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755715AbXFLBam (ORCPT
+	Mon, 11 Jun 2007 21:36:14 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40825 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754425AbXFLBgO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 21:30:42 -0400
-Date: Mon, 11 Jun 2007 18:30:41 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
+	Mon, 11 Jun 2007 21:36:14 -0400
+Date: Mon, 11 Jun 2007 18:35:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
        ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool
+ handling
+Message-Id: <20070611183555.fe763fe4.akpm@linux-foundation.org>
 In-Reply-To: <466DF290.2040503@linux.intel.com>
-Message-ID: <Pine.LNX.4.64.0706111828360.24808@schroedinger.engr.sgi.com>
 References: <20070606185658.138237000@askeshav-devel.jf.intel.com>
- <200706090056.49279.ak@suse.de> <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
- <200706091147.24705.ak@suse.de> <20070611204442.GA4074@linux-os.sc.intel.com>
- <20070611141449.bfbc4769.akpm@linux-foundation.org>
- <20070611235208.GC25022@linux-os.sc.intel.com> <20070611173001.e0355af3.akpm@linux-foundation.org>
- <466DF290.2040503@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	<200706090056.49279.ak@suse.de>
+	<Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>
+	<200706091147.24705.ak@suse.de>
+	<20070611204442.GA4074@linux-os.sc.intel.com>
+	<20070611141449.bfbc4769.akpm@linux-foundation.org>
+	<20070611235208.GC25022@linux-os.sc.intel.com>
+	<20070611173001.e0355af3.akpm@linux-foundation.org>
+	<466DF290.2040503@linux.intel.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jun 2007, Arjan van de Ven wrote:
+On Mon, 11 Jun 2007 18:10:40 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
 
-> the problem with that is that if anything downstream from the iommu layer ALSO
-> needs memory, we've now eaten up the last free page and things go splat.
+> Andrew Morton wrote:
+> >> Where as resource pool is exactly opposite of mempool, where each 
+> >> time it looks for an object in the pool and if it exist then we 
+> >> return that object else we try to get the memory for OS while 
+> >> scheduling the work to grow the pool objects. In fact, the  work
+> >> is schedule to grow the pool when the low threshold point is hit.
+> > 
+> > I realise all that.  But I'd have thought that the mempool approach is
+> > actually better: use the page allocator and only deplete your reserve pool
+> > when the page allocator fails.
+> 
+> the problem with that is that if anything downstream from the iommu 
+> layer ALSO needs memory, we've now eaten up the last free page and 
+> things go splat.
 
-Hmmm... We need something like a reservation system right? Higher levels 
-in a atomic context could register their future needs. Then we can avoid 
-overallocating in the iommu layer.
+If that happens, we still have the mempool reserve to fall back to.
+
+I don't see why it is better to consume the reserves before going to the
+page allocator instead of holding them, err, in reserve.
 
