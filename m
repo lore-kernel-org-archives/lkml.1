@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbXFLRhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbXFLRje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756306AbXFLRhg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 13:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXFLRhb
+	id S1756505AbXFLRje (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 13:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbXFLRj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 13:37:31 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:4229 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbXFLRha (ORCPT
+	Tue, 12 Jun 2007 13:39:28 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:19653 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbXFLRj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 13:37:30 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: kernel scedular
-Date: Tue, 12 Jun 2007 19:37:16 +0200
-User-Agent: KMail/1.9.7
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <466B45D3.3020104@gmail.com> <alpine.LFD.0.98.0706091731020.20321@woody.linux-foundation.org> <200706121925.02286.Martin@lichtvoll.de> (sfid-20070612_193516_343943_A6F83CC6)
-In-Reply-To: <200706121925.02286.Martin@lichtvoll.de>
+	Tue, 12 Jun 2007 13:39:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:openpgp:content-type:content-transfer-encoding;
+        b=D/dg0sW0/Vy0Xg4gwkx+CMevm+HumqEEHchHaVSyvnJqIk39poaDaxXmc0jNFkoSH/RxgU1vPzltObKXC22aOeYF5ORDNa9Z6CcZpIyGMCB92aNI5ZcvXwb5QbuXl545pFsequMpNtixPB7Ikk9jfVLxFRP9W91i1qg0UKwuyG0=
+Message-ID: <466EDA48.7060708@gmail.com>
+Date: Tue, 12 Jun 2007 23:09:20 +0530
+From: jimmy bahuleyan <knight.camelot@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2994258.lBIW3UGPIS";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Lee Revell <rlrevell@joe-job.com>
+CC: "R.F. Burns" <burnsrf@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: PC speaker
+References: <a800cda90706120545w2c6d0bb0vb77bd4d961415c5c@mail.gmail.com> <75b66ecd0706120744g7cdb3392l6537b5c68c2d6b21@mail.gmail.com>
+In-Reply-To: <75b66ecd0706120744g7cdb3392l6537b5c68c2d6b21@mail.gmail.com>
+X-Enigmail-Version: 0.95.1
+OpenPGP: url=subkeys.pgp.net
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706121937.16959.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2994258.lBIW3UGPIS
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Lee Revell wrote:
+> On 6/12/07, R.F. Burns <burnsrf@gmail.com> wrote:
+>> Is it possible to write a kernel module which, when loaded, will blow
+>> the PC
+>> speaker?
+> 
+> LOL.  May I ask what your use case is?
+> 
+or isn't it mis-use case :)
 
-Am Dienstag 12 Juni 2007 schrieb Martin Steigerwald:
+> Lee
 
-> At least in my subjective testing I can't tell any difference anymore,
-> so it boils down to design criteria, code size, ability to maintain...
-
-And of course as needed further - preferably at least somewhat=20
-comparable - test scenarios and benchmarks with realistic workloads. Some=20
-thoughts about this:
-
-http://bhhdoa.org.au/pipermail/ck/2007-June/007879.html
-
-Regards,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart2994258.lBIW3UGPIS
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGbtnMmRvqrKWZhMcRAmgfAJ43zRgCMnUzffN9W61CyRfxbTh+5gCfWbFY
-Cxc6msIkdnE+qVNevqSEr5o=
-=oK/g
------END PGP SIGNATURE-----
-
---nextPart2994258.lBIW3UGPIS--
+-jb
+-- 
+Tact is the art of making a point without making an enemy.
