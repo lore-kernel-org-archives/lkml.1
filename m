@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbXFLI0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbXFLIgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbXFLI0V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 04:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbXFLI0N
+	id S1754881AbXFLIgo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 04:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbXFLIgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 04:26:13 -0400
-Received: from www.osadl.org ([213.239.205.134]:60396 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751983AbXFLI0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 04:26:12 -0400
-Subject: Re: [stable] [PATCH] ACPI: Move timer broadcast and pmtimer access
-	before C3 arbiter shutdown
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>, Stable Team <stable@kernel.org>,
-       Len Brown <lenb@kernel.org>
-In-Reply-To: <20070612010735.GL3723@sequoia.sous-sol.org>
-References: <1181122673.4404.200.camel@chaos>
-	 <20070606183857.caa243d4.akpm@linux-foundation.org>
-	 <20070612010735.GL3723@sequoia.sous-sol.org>
-Content-Type: text/plain
-Date: Tue, 12 Jun 2007 10:26:07 +0200
-Message-Id: <1181636767.8176.199.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 04:36:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40323 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbXFLIge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 04:36:34 -0400
+Date: Tue, 12 Jun 2007 10:36:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tobias Gerschner <tobias.gerschner@gmail.com>
+Cc: Miguel Figueiredo <elmig@debianpt.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck@vds.kolivas.org
+Subject: Re: call for more SD versus CFS comparisons (was: Re: [ck]
+	Mainline plans)
+Message-ID: <20070612083620.GA10557@elte.hu>
+References: <466DE921.9030709@debianpt.org> <ea7e82ce0706120039n675a361emc214b2ecca964b75@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ea7e82ce0706120039n675a361emc214b2ecca964b75@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-11 at 18:07 -0700, Chris Wright wrote:
-> * Andrew Morton (akpm@linux-foundation.org) wrote:
-> > hm, this needs a bit of help to get it to work against Len's current tree.
+
+* Tobias Gerschner <tobias.gerschner@gmail.com> wrote:
+
+> I did run massive_intr.c for 60 secs with increasing nproc ( 
+> 10,20,30,40,50,60) waiting for effects.
 > 
-> Here's some help, compile tested only.  Udo/Thomas, was this found to
-> be root cause of a real bug?  I didn't want this to get lost if it's
-> still meant to be relevant for -stable.
+> Below a small table of the results
+> 
+> 2.6.21.1-cfs-v16
+> 
+> nproc ,  usability result
+> 
+> 10 , serious frame drops , Firefox  hardly recognizes clicked links,
+> but still usable
+> 20 - 30, usability loss ( somehow under cfs firefox never finished 
+> user requests like displaying web pages or opening new pages , no 
+> feedback anymore, sudden changes on the desktop )
 
-Chris,
+ouch! The expected load-testing result under CFS should be something 
+like this:
 
-I fixed this against -mm already. I don't think that it is relevant for
-stable. The issue was found with Venkis hpet force enable patches on a
-ICH4 system. I doubt that any of those systems has hpet enabled in the
-BIOS. It should not affect later ICH chip sets. Venki, is this correct ?
+   http://bhhdoa.org.au/pipermail/ck/2007-June/007817.html
 
-	tglx
+could you send me the output of /proc/sched_debug? (while say a 
+"massive_intr 20" is running?)
 
+Roughly what hardware do you have? (could you send me your lspci -v 
+output and dmesg output?)
 
+	Ingo
