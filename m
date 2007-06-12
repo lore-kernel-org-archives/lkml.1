@@ -1,82 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbXFLKLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbXFLKRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754494AbXFLKLq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 06:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbXFLKLh
+	id S1754151AbXFLKRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 06:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbXFLKRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 06:11:37 -0400
-Received: from smtp4.netcabo.pt ([212.113.174.31]:38368 "EHLO
-	exch01smtp12.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752003AbXFLKLf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 06:11:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah5FAJsNbkZZmGIhQWdsb2JhbACHM4gOAQEBPQ
-Message-ID: <35572.194.65.103.1.1181643050.squirrel@www.rncbc.org>
-In-Reply-To: <1181603306.8176.183.camel@chaos>
-References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org> 
-    <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu> 
-    <46574DE4.2080900@rncbc.org> <1180195709.4264.7.camel@chaos> 
-    <4658A4F4.1080204@rncbc.org>  <46660369.2070104@rncbc.org> 
-    <1181317625.4404.332.camel@chaos> 
-    <59605.213.13.107.141.1181326897.squirrel@www.rncbc.org> 
-    <1181328636.4404.335.camel@chaos>  <466DA42A.6010600@rncbc.org> 
-    <1181591122.8176.159.camel@chaos> 
-    <1181591733.11539.217.camel@imap.mvista.com> 
-    <466DB581.8050306@rncbc.org>  <1181596473.8176.162.camel@chaos> 
-    <466DBDC2.8030509@rncbc.org>  <1181598178.8176.180.camel@chaos> 
-    <1181601280.11539.219.camel@imap.mvista.com>
-    <1181603306.8176.183.camel@chaos>
-Date: Tue, 12 Jun 2007 11:10:50 +0100 (WEST)
-Subject: Re: 2.6.21-rt2..8 troubles
-From: "Rui Nuno Capela" <rncbc@rncbc.org>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Cc: "Daniel Walker" <dwalker@mvista.com>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-User-Agent: SquirrelMail/1.5.1
-MIME-Version: 1.0
+	Tue, 12 Jun 2007 06:17:08 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:57757 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752106AbXFLKRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 06:17:06 -0400
+Date: Tue, 12 Jun 2007 12:16:56 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: kernel BUG at mm/slub.c:3689!
+Message-ID: <20070612121656.00cabc45@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <20070612105512.471ec7e6@dhcp-255-175.norway.atmel.com>
+References: <20070611161926.2a9f8efd@dhcp-255-175.norway.atmel.com>
+	<Pine.LNX.4.64.0706110946430.15910@schroedinger.engr.sgi.com>
+	<1defaf580706111011w641b26fbu68d6d34028f6e953@mail.gmail.com>
+	<Pine.LNX.4.64.0706111041160.17264@schroedinger.engr.sgi.com>
+	<1defaf580706111122n78ab46c3sda05cbd4ace97319@mail.gmail.com>
+	<Pine.LNX.4.64.0706111129270.18327@schroedinger.engr.sgi.com>
+	<1defaf580706111204v35b4dcc9j5dc68e722bd384b1@mail.gmail.com>
+	<Pine.LNX.4.64.0706111208580.19316@schroedinger.engr.sgi.com>
+	<1defaf580706111235p7da29d25xc33d221134f3f7a8@mail.gmail.com>
+	<Pine.LNX.4.64.0706111239230.19654@schroedinger.engr.sgi.com>
+	<1defaf580706111253q2a4910b1v4802436e32e94953@mail.gmail.com>
+	<Pine.LNX.4.64.0706112016030.25563@schroedinger.engr.sgi.com>
+	<20070612105512.471ec7e6@dhcp-255-175.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-OriginalArrivalTime: 12 Jun 2007 10:11:33.0306 (UTC) FILETIME=[0D85A9A0:01C7ACDA]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Jun 2007 10:55:12 +0200
+Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-On Tue, June 12, 2007 00:08, Thomas Gleixner wrote:
-> On Mon, 2007-06-11 at 15:34 -0700, Daniel Walker wrote:
->
->> On Mon, 2007-06-11 at 23:42 +0200, Thomas Gleixner wrote:
->>
->>> On Mon, 2007-06-11 at 22:25 +0100, Rui Nuno Capela wrote:
->>>
->>>> Nope. It's a Fujitsu-Siemens Amilo Si 1520 -- Intel Core2 Duo
->>>> T7200@2.0Ghz.
->>>>
->>>
->>> Yeah, there are Dell ones which have similar or worse symptoms.
->>>
->>>
->>>> Works great with 2.6.21-rt1, and 2.6.22-rc4-hrt5, but that you
->>>> already know :)
->>>
->>> Ok. I go back and figure out which differences we have between
->>> 2.6.21-rt>8 and the -hrt queue.
->>>
->>
->> Are you sure it's strictly and HRT issue? I didn't see a
->> !CONFIG_HIGH_RES_TIMERS test ..
->>
->
-> The main difference between -rt1 and -rt2 was the update of -hrt, which
-> not only affects CONFIG_HIGH_RES_TIMERS. There are enough
-> CONFIG_HIGH_RES_TIMERS=n related changes to clock events and friends as
-> well.
->
+> On Mon, 11 Jun 2007 20:16:31 -0700 (PDT)
+> Christoph Lameter <clameter@sgi.com> wrote:
+> 
+> > > and I can't do that over VPN. I'll test it first thing in the morning.
+> > 
+> > Here is a more general fix
+> 
+> Sorry, that didn't work either. One problem is that you're using
+> ARCH_KMALLOC_MIN_ALIGN instead of ARCH_KMALLOC_MINALIGN in slub_defs.h
+> to determine KMALLOC_MIN_SIZE. After fixing that, it fails with
+> undefined references to __kmalloc_size_too_large. It looks like ilog2()
+> is behaving strangely; I'll see if I can figure out what's going on.
 
-In deed, FWIW and IIRC, I can confirm that the show-stopper problem was
-still present when tried with CONFIG_HIGH_RES_TIMERS not set (=N).
+Looks like gcc didn't recognize max(8, ARCH_KMALLOC_MINALIGN) as a
+constant expression, so __kmalloc_size_too_large() got referenced
+although it never got called as far as I can tell. Works like a charm
+after applying this patch on top of yours.
 
-Bye now.
--- 
-rncbc aka Rui Nuno Capela
-rncbc@rncbc.org
+Tested with CONFIG_SLUB_DEBUG=n, CONFIG_SLUB_DEBUG=y and
+CONFIG_SLUB_DEBUG=y with slub_debug set.
+
+
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index 7ef94d4..7fb785f 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -56,8 +56,8 @@ struct kmem_cache {
+ /*
+  * Kmalloc subsystem.
+  */
+-#ifdef ARCH_KMALLOC_MIN_ALIGN
+-#define KMALLOC_MIN_SIZE max(8, ARCH_KMALLOC_MIN_ALIGN)
++#if defined(ARCH_KMALLOC_MINALIGN) && (ARCH_KMALLOC_MINALIGN > 8)
++#define KMALLOC_MIN_SIZE ARCH_KMALLOC_MINALIGN
+ #else
+ #define KMALLOC_MIN_SIZE 8
+ #endif
