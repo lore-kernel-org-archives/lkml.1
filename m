@@ -1,223 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756449AbXFLMU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbXFLMXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756449AbXFLMU2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 08:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbXFLMUS
+	id S1756212AbXFLMXr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 08:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXFLMXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 08:20:18 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:35200 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754810AbXFLMUQ (ORCPT
+	Tue, 12 Jun 2007 08:23:40 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:25034 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752472AbXFLMXj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 08:20:16 -0400
-Message-ID: <466E8F5E.7040105@fr.ibm.com>
-Date: Tue, 12 Jun 2007 14:19:42 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Tue, 12 Jun 2007 08:23:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UPJVMwqmONJRF2PtdcspLTWnfxZ1RuxWypEGhloDzFu1N3s5mai81XPCXRxC+t40f2huCXuDgwNc/Y4JXnjym5ZMRKnOpPn+lOSMlCsg3wlsD6BxUALHuAoZbE4JpuzKnnYyplZE7NcZQElAsYLj4NkN9xSbbWrfxLdIteXh4uM=
+Message-ID: <b647ffbd0706120523s2253f6f6sd33d3f16c7428f18@mail.gmail.com>
+Date: Tue, 12 Jun 2007 14:23:38 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [RFC][PATCH 4/6] Fix (bad?) interactions between SCHED_RT and SCHED_NORMAL tasks
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       efault@gmx.de, kernel@kolivas.org, containers@lists.osdl.org,
+       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
+       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       balbir@in.ibm.com
+In-Reply-To: <20070612102622.GA925@in.ibm.com>
 MIME-Version: 1.0
-To: Badari Pulavarty <pbadari@us.ibm.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: PATCH -mm] fix create_new_namespaces() return value
-References: <466D5830.9010200@fr.ibm.com> <466D76DC.7020900@us.ibm.com>
-In-Reply-To: <466D76DC.7020900@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070611154724.GA32435@in.ibm.com>
+	 <20070611155504.GD2109@in.ibm.com>
+	 <b647ffbd0706120203l2de530b9la51853b928d60b92@mail.gmail.com>
+	 <20070612102622.GA925@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari Pulavarty wrote:
-> 
-> 
-> Cedric Le Goater wrote:
-> 
->> The following patch modifies create_new_namespaces() to also use the
->> errors returned by the copy_*_ns routines and not to systematically
->> return ENOMEM.
->>
-> 
-> In my initial version, I did same. It doesn't work :(
-> 
-> copy_*_ns() routines doesn't return any errors. All they return is NULL
-> in case of a
-> failure + with the exception of copy_mnt_ns, there are no other failure
-> cases.
-> So, there is no way to find out why the copy_*_ns() routines failed from
-> create_new_namespaces().
-> If you really really want to do this, change all copy_*_ns() routines to
-> returns meaningful
-> errors instead of NULL.
+On 12/06/07, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> On Tue, Jun 12, 2007 at 11:03:36AM +0200, Dmitry Adamushko wrote:
+> > I had an idea of per-sched-class 'load balance' calculator. So that
+> > update_load() (as in your patch) would look smth like :
+> >
+> > ...
+> > struct sched_class *class = sched_class_highest;
+> > unsigned long total = 0;
+> >
+> > do {
+> >                total += class->update_load(..., now);
+> >                class = class->next;
+> >     } while (class);
+> > ...
+> >
+> > and e.g. update_load_fair() would become a fair_sched_class ::
+> > update_load().
+> >
+> > That said, all the sched_classes would report a load created by their
+> > entities (tasks) over the last sampling period. Ideally, the
+> > calculation should not be merely based on the 'raw_weighted_load' but
+> > rather done in a similar way to update_load_fair() as in v17.
+>
+> I like this idea. It neatly segregates load calculation across classes.
+> It effectively replaces what update_load() function I introduced in
+> Patch #4.
 
-Here's a second try to apply on top of -mm branch,
+Good.
 
-Thanks for the review Badari.
+(a minor disclaimer :)
+We discussed it a bit with Ingo and I don't remember who first
+expressed this idea in written words (although I seem to remember, I
+did have it in mind before -- it's not rocket science after all :)
 
-C. 
+>
+> Btw what will update_load_rt() return?
+
+Well, as a _temporary_ stub - just return the 'raw_weighted_load'
+contributed by the RT tasks..
+Ideally, we'd like a similar approach to the update_fair_load() --
+i.e. we need the run-time history of rt_sched_class's (like of any
+other class) tasks over the last sampling period, so e.g. we do
+account periodic RT tasks which happen to escape accounting through
+'raw_weghted_load' due to the fact that they are not active at the
+moment of timer interrupts (when 'raw_weighted_load' snapshots are
+taken).
+
+>
+> > > static void entity_tick(struct lrq *lrq, struct sched_entity *curr)
+> > > {
+> > >        struct sched_entity *next;
+> > >        struct rq *rq = lrq_rq(lrq);
+> > >        u64 now = __rq_clock(rq);
+> > >
+> > >+       /* replay load smoothening for all ticks we lost */
+> > >+       while (time_after_eq64(now, lrq->last_tick)) {
+> > >+               update_load_fair(lrq);
+> > >+               lrq->last_tick += TICK_NSEC;
+> > >+       }
+> >
+> > I think, it won't work properly this way. The first call returns a
+> > load for last TICK_NSEC and all the consequent ones report zero load
+> > ('this_load = 0' internally)..
+>
+> mm ..
+>
+>         exec_delta64 = this_lrq->delta_exec_clock + 1;
+>         this_lrq->delta_exec_clock = 0;
+>
+> So exec_delta64 (and fair_delta64) should be min 1 in successive calls. How can that lead to this_load = 0?
+
+just substitute {exec,fair}_delta == 1 in the following code:
+
+        tmp64 = SCHED_LOAD_SCALE * exec_delta64;
+        do_div(tmp64, fair_delta);
+        tmp64 *= exec_delta64;
+        do_div(tmp64, TICK_NSEC);
+        this_load = (unsigned long)tmp64;
+
+we'd get
+
+        tmp64 = 1024 * 1;
+        tmp64 =/ 1;
+        tmp64 *= 1;
+        tmp64 /= 1000000;
+
+as a result, this_load = 1024/1000000; which is 0 (no floating point calc.).
+
+> The idea behind 'replay lost ticks' is to avoid load smoothening of
+> -every- lrq -every- tick. Lets say that there are ten lrqs
+> (corresponding to ten different users). We load smoothen only the currently
+> active lrq (whose task is currently running).
+
+The raw idea behind update_load_fair() is that it evaluates the
+run-time history between 2 consequent calls to it (which is now at
+timer freq. --- that's a sapling period). So if you call
+update_fair_load() in a loop, the sampling period is actually an
+interval between 2 consequent calls. IOW, you can't say "3 ticks were
+lost" so at first evaluate the load for the first tick, then the
+second one, etc. ...
+
+Anyway, I'm missing the details regarding the way you are going to do
+per-group 'load balancing' so refrain from further commenting so
+far... it's just that the current implementation of update_load_fair()
+is unlikely to work as you expect in your 'replay lost ticks' loop :-)
+
+> Other lrqs load get smoothened
+> as soon as they become active next time (thus catching up with all lost ticks).
+
+Ok, let's say user1 tasks were highly active till T1 moment of time..
+cpu_load[] of user's lrq
+has accumulated this load.
+now user's tasks were not active for an interval of dT.. so you don't
+update its cpu_load[] in the mean time? Let's say 'load balancing'
+takes place at the moment T2 = T1 + dT
+
+Are you going to do any 'load balancing' between users? Based on what?
+If it's user's lrq :: cpu_load[] .. then it _still_ shows the load at
+the moment of T1 while we are at the moment T2 (and user1 was not
+active during dT)..
 
 
-The following patch modifies create_new_namespaces() to also use the 
-errors returned by the copy_*_ns routines and not to systematically 
-return ENOMEM.
+>
+> --
+> Regards,
+> vatsa
+>
 
-Changes since [try #1]:
-        - fixed return values of clone_*_ns() routines
- 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Serge E. Hallyn <serue@us.ibm.com>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Pavel Emelianov <xemul@openvz.org>
-Cc: Herbert Poetzl <herbert@13thfloor.at>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/namespace.c          |    4 ++--
- kernel/nsproxy.c        |   23 +++++++++++++++++------
- kernel/user_namespace.c |    6 +++---
- kernel/utsname.c        |   10 ++++++----
- 4 files changed, 28 insertions(+), 15 deletions(-)
-
-Index: 2.6.22-rc4-mm2/kernel/nsproxy.c
-===================================================================
---- 2.6.22-rc4-mm2.orig/kernel/nsproxy.c
-+++ 2.6.22-rc4-mm2/kernel/nsproxy.c
-@@ -58,30 +58,41 @@ static struct nsproxy *create_new_namesp
- 			struct fs_struct *new_fs)
- {
- 	struct nsproxy *new_nsp;
-+	int err;
- 
- 	new_nsp = clone_nsproxy(tsk->nsproxy);
- 	if (!new_nsp)
- 		return ERR_PTR(-ENOMEM);
- 
- 	new_nsp->mnt_ns = copy_mnt_ns(flags, tsk->nsproxy->mnt_ns, new_fs);
--	if (IS_ERR(new_nsp->mnt_ns))
-+	if (IS_ERR(new_nsp->mnt_ns)) {
-+		err = PTR_ERR(new_nsp->mnt_ns);
- 		goto out_ns;
-+	}
- 
- 	new_nsp->uts_ns = copy_utsname(flags, tsk->nsproxy->uts_ns);
--	if (IS_ERR(new_nsp->uts_ns))
-+	if (IS_ERR(new_nsp->uts_ns)) {
-+		err = PTR_ERR(new_nsp->uts_ns);
- 		goto out_uts;
-+	}
- 
- 	new_nsp->ipc_ns = copy_ipcs(flags, tsk->nsproxy->ipc_ns);
--	if (IS_ERR(new_nsp->ipc_ns))
-+	if (IS_ERR(new_nsp->ipc_ns)) {
-+		err = PTR_ERR(new_nsp->ipc_ns);
- 		goto out_ipc;
-+	}
- 
- 	new_nsp->pid_ns = copy_pid_ns(flags, tsk->nsproxy->pid_ns);
--	if (IS_ERR(new_nsp->pid_ns))
-+	if (IS_ERR(new_nsp->pid_ns)) {
-+		err = PTR_ERR(new_nsp->pid_ns);
- 		goto out_pid;
-+	}
- 
- 	new_nsp->user_ns = copy_user_ns(flags, tsk->nsproxy->user_ns);
--	if (IS_ERR(new_nsp->user_ns))
-+	if (IS_ERR(new_nsp->user_ns)) {
-+		err = PTR_ERR(new_nsp->user_ns);
- 		goto out_user;
-+	}
- 
- 	return new_nsp;
- 
-@@ -99,7 +110,7 @@ out_uts:
- 		put_mnt_ns(new_nsp->mnt_ns);
- out_ns:
- 	kfree(new_nsp);
--	return ERR_PTR(-ENOMEM);
-+	return ERR_PTR(err);
- }
- 
- /*
-Index: 2.6.22-rc4-mm2/fs/namespace.c
-===================================================================
---- 2.6.22-rc4-mm2.orig/fs/namespace.c
-+++ 2.6.22-rc4-mm2/fs/namespace.c
-@@ -1599,7 +1599,7 @@ static struct mnt_namespace *dup_mnt_ns(
- 
- 	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
- 	if (!new_ns)
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 
- 	atomic_set(&new_ns->count, 1);
- 	INIT_LIST_HEAD(&new_ns->list);
-@@ -1613,7 +1613,7 @@ static struct mnt_namespace *dup_mnt_ns(
- 	if (IS_ERR(new_ns->root)) {
- 		up_write(&namespace_sem);
- 		kfree(new_ns);
--		return NULL;
-+		return ERR_PTR(-ENOMEM);;
- 	}
- 	spin_lock(&vfsmount_lock);
- 	list_add_tail(&new_ns->list, &new_ns->root->mnt_list);
-Index: 2.6.22-rc4-mm2/kernel/user_namespace.c
-===================================================================
---- 2.6.22-rc4-mm2.orig/kernel/user_namespace.c
-+++ 2.6.22-rc4-mm2/kernel/user_namespace.c
-@@ -34,7 +34,7 @@ static struct user_namespace *clone_user
- 
- 	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
- 	if (!ns)
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 
- 	kref_init(&ns->kref);
- 
-@@ -45,7 +45,7 @@ static struct user_namespace *clone_user
- 	ns->root_user = alloc_uid(ns, 0);
- 	if (!ns->root_user) {
- 		kfree(ns);
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 	}
- 
- 	/* Reset current->user with a new one */
-@@ -53,7 +53,7 @@ static struct user_namespace *clone_user
- 	if (!new_user) {
- 		free_uid(ns->root_user);
- 		kfree(ns);
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 	}
- 
- 	switch_uid(new_user);
-Index: 2.6.22-rc4-mm2/kernel/utsname.c
-===================================================================
---- 2.6.22-rc4-mm2.orig/kernel/utsname.c
-+++ 2.6.22-rc4-mm2/kernel/utsname.c
-@@ -13,6 +13,7 @@
- #include <linux/uts.h>
- #include <linux/utsname.h>
- #include <linux/version.h>
-+#include <linux/err.h>
- 
- /*
-  * Clone a new ns copying an original utsname, setting refcount to 1
-@@ -24,10 +25,11 @@ static struct uts_namespace *clone_uts_n
- 	struct uts_namespace *ns;
- 
- 	ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
--	if (ns) {
--		memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
--		kref_init(&ns->kref);
--	}
-+	if (!ns)
-+		return ERR_PTR(-ENOMEM);
-+
-+	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
-+	kref_init(&ns->kref);
- 	return ns;
- }
- 
+-- 
+Best regards,
+Dmitry Adamushko
