@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbXFLN1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbXFLN3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756761AbXFLN1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 09:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbXFLN1a
+	id S1757113AbXFLN3v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 09:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbXFLN3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 09:27:30 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:51394 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754618AbXFLN13 (ORCPT
+	Tue, 12 Jun 2007 09:29:44 -0400
+Received: from host.infinivid.com ([64.119.179.76]:33397 "EHLO
+	host.infinivid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754828AbXFLN3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 09:27:29 -0400
-Date: Tue, 12 Jun 2007 09:26:52 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] UML: fix missing non-blocking I/O, now DEBUG_SHIRQ works
-Message-ID: <20070612132652.GA5267@c2.user-mode-linux.org>
-References: <1181512917.3157.8.camel@localhost> <20070611173154.GA6889@c2.user-mode-linux.org> <466DA50C.5050301@aladin.ro> <20070611211604.GA8859@c2.user-mode-linux.org> <466DCF1D.9050508@aladin.ro> <20070612004804.GA9871@c2.user-mode-linux.org> <466E32C5.70105@aladin.ro>
+	Tue, 12 Jun 2007 09:29:43 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jun 2007 09:29:43 EDT
+Subject: allocation failed: out of vmalloc space - use vmalloc=<size> to
+	increase size.
+From: Jon Dufresne <jon.dufresne@infinitevideocorporation.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 12 Jun 2007 09:22:43 -0400
+Message-Id: <1181654569.8164.14.camel@microwave.infinitevideocorporation.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <466E32C5.70105@aladin.ro>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 08:44:37AM +0300, Eduard-Gabriel Munteanu wrote:
-> Okay, I don't have an x86_64, sparc64 or something similar, as my 
-> computer is an x86, so I can't contradict this. If everything is fine on 
-> such arches, no fix is needed when nothing's broken... though I still 
-> think it's kind of ugly (though it's somehow ingenious as a hack) :)
+I am writing a linux kernel driver for a custom pci device. I am
+developing against the stock fedora 6 kernel on an x86. This device has
+512 MB of IO memory reserved by BAR 3. Whenever I try to ioremap this
+space I get the error:
 
-Yeah, I would agree with that.
+allocation failed: out of vmalloc space - use vmalloc=<size> to increase
+size.
 
-> Do you want me to resubmit the patch without these changes? I'll be back 
-> in a few hours (got to go now) and trim this out from the patch if 
-> that's necessary.
+I think I understand why this is happening. I obviously don't have
+enough vmalloc space to map such a large chunk of memory. I have been
+using Corbet's et el's "Linux Device Drivers", Love's "Linux Kernel
+Development", and many websites as a guide in this development process
+but have yet to come across information that will help me.
 
-I have it in my tree now, without that set of changes.  If you want to
-make the change yourself, send me a new patch, and I'll use it.
-Otherwise, I'll stick with what I have now.
+I'm curious if there is a way around this issue. Or a better way of
+handling it so that I can properly map the entire io memory space.
 
-				Jeff
 
--- 
-Work email - jdike at linux dot intel dot com
+Thanks for any help,
+Jon
+
