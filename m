@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758080AbXFLBMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbXFLBMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758080AbXFLBMX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 21:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757894AbXFLBL7
+	id S1758180AbXFLBMi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 21:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757740AbXFLBMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 21:11:59 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:45899 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757735AbXFLBL5 (ORCPT
+	Mon, 11 Jun 2007 21:12:16 -0400
+Received: from mga05.intel.com ([192.55.52.89]:37416 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757686AbXFLBMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 21:11:57 -0400
-X-Sasl-enc: URNlmI2NLa2cOTS+NLStz0OVOk39EVnL2kugrTuBBJHA 1181610715
-Date: Mon, 11 Jun 2007 22:11:48 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: jeff@garzik.org, james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       htejun@gmail.com, arjan@linux.intel.com
-Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI controllers.
-Message-ID: <20070612011148.GA9808@khazad-dum.debian.net>
-References: <20070611184146.448266229@intel.com> <20070611114839.907bcae2.kristen.c.accardi@intel.com>
+	Mon, 11 Jun 2007 21:12:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,409,1175497200"; 
+   d="scan'208";a="255756860"
+Message-ID: <466DF290.2040503@linux.intel.com>
+Date: Mon, 11 Jun 2007 18:10:40 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070611114839.907bcae2.kristen.c.accardi@intel.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
+Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
+References: <20070606185658.138237000@askeshav-devel.jf.intel.com>	<200706090056.49279.ak@suse.de>	<Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com>	<200706091147.24705.ak@suse.de>	<20070611204442.GA4074@linux-os.sc.intel.com>	<20070611141449.bfbc4769.akpm@linux-foundation.org>	<20070611235208.GC25022@linux-os.sc.intel.com> <20070611173001.e0355af3.akpm@linux-foundation.org>
+In-Reply-To: <20070611173001.e0355af3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jun 2007, Kristen Carlson Accardi wrote:
-> Setting		Effect
-> ----------------------------------------------------------
-> min_power	ALPM is enabled, and link set to enter 
-> 		lowest power state (SLUMBER) when idle
-> 		Hot plug not allowed.
+Andrew Morton wrote:
+>> Where as resource pool is exactly opposite of mempool, where each 
+>> time it looks for an object in the pool and if it exist then we 
+>> return that object else we try to get the memory for OS while 
+>> scheduling the work to grow the pool objects. In fact, the  work
+>> is schedule to grow the pool when the low threshold point is hit.
 > 
-> max_performance	ALPM is disabled, Hot Plug is allowed
-> 
-> medium_power	ALPM is enabled, and link set to enter
-> 		second lowest power state (PARTIAL) when
-> 		idle.  Hot plug not allowed.
+> I realise all that.  But I'd have thought that the mempool approach is
+> actually better: use the page allocator and only deplete your reserve pool
+> when the page allocator fails.
 
-Just some food for thought:
+the problem with that is that if anything downstream from the iommu 
+layer ALSO needs memory, we've now eaten up the last free page and 
+things go splat.
 
-If you split it into a enable/disable (0/1) attribute, and a level attribute
-(some sort of integer scale, or "min", "medium", "max" if you must use
-strings.  You could use four levels to mimic the PCI device power state, for
-example), it might make its usage more generic, and easier from userspace,
-as it decouples the need to turn it on/off from the need to know which level
-the user wants it set to when you turn it on.
+in terms of deadlock avoidance... I wonder if we need something 
+similar to the swap token; once a process dips into the emergency 
+pool, it becomes the only one that gets to use this pool, so that it's 
+entire chain of allocations will succeed, rather than each process 
+only getting halfway through...
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+But yeah it's minute details and you can argue either way is the right 
+approach.
+
+You can even argue for the old highmem.c approach; go into half the 
+pool before going to the VM, then to kmalloc() and if that fails dip 
+into the second half of the pool.
