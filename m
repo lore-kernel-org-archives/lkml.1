@@ -1,133 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXFLGWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbXFLG2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbXFLGWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 02:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbXFLGWN
+	id S1758374AbXFLG2G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 02:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbXFLG1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 02:22:13 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47778 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbXFLGWN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 02:22:13 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Adam Litke <agl@us.ibm.com>
-Cc: dean gaudet <dean@arctic.org>, William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org, ak@suse.de, clameter@sgi.com
-Subject: Re: [shm][hugetlb] Fix get_policy for stacked shared memory files
-References: <Pine.LNX.4.64.0705152222550.14691@twinlark.arctic.org>
-	<20070516061259.GZ19966@holomorphy.com>
-	<Pine.LNX.4.64.0706092106220.10324@twinlark.arctic.org>
-	<1181597696.22671.2.camel@localhost.localdomain>
-Date: Tue, 12 Jun 2007 00:20:52 -0600
-In-Reply-To: <1181597696.22671.2.camel@localhost.localdomain> (Adam Litke's
-	message of "Mon, 11 Jun 2007 16:34:54 -0500")
-Message-ID: <m1odjlpubf.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 12 Jun 2007 02:27:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55243 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754753AbXFLG1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 02:27:54 -0400
+Date: Tue, 12 Jun 2007 08:26:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de, kernel@kolivas.org,
+       containers@lists.osdl.org, ckrm-tech@lists.sourceforge.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       pwil3058@bigpond.net.au, tingy@cs.umass.edu, tong.n.li@intel.com,
+       wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       dmitry.adamushko@gmail.com, balbir@in.ibm.com,
+       Kirill Korotaev <dev@sw.ru>
+Subject: Re: [RFC][PATCH 0/6] Add group fairness to CFS - v1
+Message-ID: <20070612062612.GA19637@elte.hu>
+References: <20070611154724.GA32435@in.ibm.com> <20070611193735.GA22152@elte.hu> <20070612055024.GA26957@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070612055024.GA26957@in.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adam Litke <agl@us.ibm.com> writes:
 
-> Here's another breakage as a result of shared memory stacked files :(
->
-> The NUMA policy for a VMA is determined by checking the following (in the order
-> given):
->
-> 1) vma->vm_ops->get_policy() (if defined)
-> 2) vma->vm_policy (if defined)
-> 3) task->mempolicy (if defined)
-> 4) Fall back to default_policy
->
-> By switching to stacked files for shared memory, get_policy() is now always set
-> to shm_get_policy which is a wrapper function.  This causes us to stop at step
-> 1, which yields NULL for hugetlb instead of task->mempolicy which was the
-> previous (and correct) result.
->
-> This patch modifies the shm_get_policy() wrapper to maintain steps 1-3 for the
-> wrapped vm_ops.  Andi and Christoph, does this look right to you?
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
 
-I'm confused.
-
-I agree that the behavior you describe is correct.
-However I only see two code paths were get_policy is called and
-both of them take a NULL result and change it to task->mempolicy:
-
->From mm/mempolicy.c
-
-> long do_get_mempolicy(int *policy, nodemask_t *nmask,
-> 			unsigned long addr, unsigned long flags)
-> {
-> 	int err;
-> 	struct mm_struct *mm = current->mm;
-> 	struct vm_area_struct *vma = NULL;
-> 	struct mempolicy *pol = current->mempolicy;
+> On Mon, Jun 11, 2007 at 09:39:31PM +0200, Ingo Molnar wrote:
+> > i mean bit 6, value 64. I flipped around its meaning in -v17-rc4, so the
+> > new precise stats code there is now default-enabled - making SMP
+> > load-balancing more accurate.
 > 
-> 	cpuset_update_task_memory_state();
-> 	if (flags & ~(unsigned long)(MPOL_F_NODE|MPOL_F_ADDR))
-> 		return -EINVAL;
-> 	if (flags & MPOL_F_ADDR) {
-> 		down_read(&mm->mmap_sem);
-> 		vma = find_vma_intersection(mm, addr, addr+1);
-> 		if (!vma) {
-> 			up_read(&mm->mmap_sem);
-> 			return -EFAULT;
-> 		}
-> 		if (vma->vm_ops && vma->vm_ops->get_policy)
-> 			pol = vma->vm_ops->get_policy(vma, addr);
-> 		else
-> 			pol = vma->vm_policy;
-> 	} else if (addr)
-> 		return -EINVAL;
+> I must be missing something here. AFAICS, cpu_load calculation still 
+> is timer-interrupt driven in the -v17 snapshot you sent me. Besides, 
+> there is no change in default value of bit 6 b/n v16 and v17:
 > 
-> 	if (!pol)
-> 		pol = &default_policy;
-
-
-
-> /* Return effective policy for a VMA */
-> static struct mempolicy * get_vma_policy(struct task_struct *task,
-> 		struct vm_area_struct *vma, unsigned long addr)
-> {
-> 	struct mempolicy *pol = task->mempolicy;
+> -unsigned int sysctl_sched_features __read_mostly = 1 | 2 | 4 | 8 | 0 | 0;
+> +unsigned int sysctl_sched_features __read_mostly = 0 | 2 | 4 | 8 | 0 | 0;
 > 
-> 	if (vma) {
-> 		if (vma->vm_ops && vma->vm_ops->get_policy)
-> 			pol = vma->vm_ops->get_policy(vma, addr);
-> 		else if (vma->vm_policy &&
-> 				vma->vm_policy->policy != MPOL_DEFAULT)
-> 			pol = vma->vm_policy;
-> 	}
-> 	if (!pol)
-> 		pol = &default_policy;
-> 	return pol;
-> }
+> So where's this precise stats based calculation of cpu_load?
 
+but there's a change in the interpretation of bit 6:
 
-Does this perhaps need to be:
-> Signed-off-by: Adam Litke <agl@us.ibm.com>
->
-> diff --git a/ipc/shm.c b/ipc/shm.c
-> index 4fefbad..8d2672d 100644
-> --- a/ipc/shm.c
-> +++ b/ipc/shm.c
-> @@ -254,8 +254,10 @@ struct mempolicy *shm_get_policy(struct vm_area_struct
-> *vma, unsigned long addr)
+-       if (!(sysctl_sched_features & 64)) {
+-               this_load = this_rq->raw_weighted_load;
++       if (sysctl_sched_features & 64) {
++               this_load = this_rq->lrq.raw_weighted_load;
 
-+	pol = NULL;
->  
->  	if (sfd->vm_ops->get_policy)
->  		pol = sfd->vm_ops->get_policy(vma, addr);
-> -	else
-> +	else if (vma->vm_policy && vma->vm_policy->policy != MPOL_DEFAULT)
->  		pol = vma->vm_policy;
->  	return pol;
->  }
->  #endif
+the update of the cpu_load[] value is timer interrupt driven, but the 
+_value_ that is sampled is not. Previously we used ->raw_weighted_load 
+(at whatever value it happened to be at the moment the timer irq hit the 
+system), now we basically use a load derived from the fair-time passed 
+since the last scheduler tick. (Mathematically it's close to an integral 
+of load done over that period) So it takes all scheduling activities and 
+all load values into account to calculate the average, not just the 
+value that was sampled by the scheduler tick.
 
-Sorry I'm just a little dense at the moment.
+this, besides being more precise (it for example correctly samples 
+short-lived, timer-interrupt-driven workloads too, which were largely 
+'invisible' to the previous load calculation method), also enables us to 
+make the scheduler tick hrtimer based in the (near) future. (in essence 
+making the scheduler tick-less even when there are tasks running)
 
-Eric
+> Anyway, do you agree that splitting the cpu_load/nr_running fields so 
+> that:
+> 
+> rq->nr_running 	   	  = total count of -all- tasks in runqueue
+> rq->raw_weighted_load	  = total weight of -all- tasks in runqueue
+> rq->lrq.nr_running 	  = total count of SCHED_NORMAL/BATCH tasks in runqueue
+> rq->lrq.raw_weighted_load = total weight of SCHED_NORMAL/BATCH tasks in runqueue
+> 
+> is a good thing to avoid SCHED_RT<->SCHED_NORMAL/BATCH mixup (as 
+> accomplished in Patch #4)?
 
+yes, i agree in general, even though this causes some small overhead. 
+This also has another advantage: the inter-policy isolation and load 
+balancing is similar to what fair group scheduling does, so even 'plain' 
+Linux will use the majority of the framework.
+
+> If you don't agree, then I will make this split dependent on 
+> CONFIG_FAIR_GROUP_SCHED
+
+no, i'd rather avoid that #ifdeffery.
+
+> > > Patch 6 hooks up scheduler with container patches in mm (as an 
+> > > interface for task-grouping functionality).
+> 
+> Just to be clear, by container patches, I am referring to "process" 
+> container patches from Paul Menage [1]. They aren't necessarily tied 
+> to "virtualization-related" container support in -mm tree, although I 
+> believe that "virtualization-related" container patches will make use 
+> of the same "process-related" container patches for their 
+> task-grouping requirements. Phew ..we need better names!
+
+i'd still like to hear back from Kirill & co whether this framework is 
+flexible enough for their work (OpenVZ, etc.) too.
+
+	Ingo
