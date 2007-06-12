@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbXFLDgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbXFLDoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbXFLDgZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jun 2007 23:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbXFLDgS
+	id S1756849AbXFLDoy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jun 2007 23:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbXFLDop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jun 2007 23:36:18 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:59427 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752756AbXFLDgS (ORCPT
+	Mon, 11 Jun 2007 23:44:45 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:55678 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXFLDop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jun 2007 23:36:18 -0400
-Date: Mon, 11 Jun 2007 20:36:17 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Adam Litke <agl@us.ibm.com>
-cc: William Lee Irwin III <wli@holomorphy.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, ak@suse.de, clameter@sgi.com
-Subject: Re: [shm][hugetlb] Fix get_policy for stacked shared memory files
-In-Reply-To: <1181597696.22671.2.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0706112035260.15086@twinlark.arctic.org>
-References: <Pine.LNX.4.64.0705152222550.14691@twinlark.arctic.org> 
- <20070516061259.GZ19966@holomorphy.com>  <Pine.LNX.4.64.0706092106220.10324@twinlark.arctic.org>
- <1181597696.22671.2.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 11 Jun 2007 23:44:45 -0400
+Date: Tue, 12 Jun 2007 09:22:45 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: vatsa@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, wli@holomorphy.com,
+       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, efault@gmx.de,
+       pwil3058@bigpond.net.au, kernel@kolivas.org,
+       linux-kernel@vger.kernel.org, dmitry.adamushko@gmail.com,
+       tingy@cs.umass.edu, tong.n.li@intel.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [ckrm-tech] [RFC][PATCH 1/6] Introduce struct sched_entity and struct lrq
+Message-ID: <20070612035245.GA3942@in.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070611154724.GA32435@in.ibm.com> <20070611155046.GA2109@in.ibm.com> <466E01DF.6080500@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466E01DF.6080500@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jun 2007, Adam Litke wrote:
+On Tue, Jun 12, 2007 at 07:45:59AM +0530, Balbir Singh wrote:
+> > +/* CFS-related fields in a runqueue */
+> > +struct lrq {
+> > +	unsigned long raw_weighted_load;
+> > +	#define CPU_LOAD_IDX_MAX 5
+> > +	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
+> > +	unsigned long nr_load_updates;
+> > +
+> > +	u64 fair_clock, delta_fair_clock;
+> > +	u64 exec_clock, delta_exec_clock;
+> > +	s64 wait_runtime;
+> > +	unsigned long wait_runtime_overruns, wait_runtime_underruns;
+> > +
+> > +	struct rb_root tasks_timeline;
+> > +	struct rb_node *rb_leftmost;
+> > +	struct rb_node *rb_load_balance_curr;
+> > +};
+> > +
+> 
+> Shouldn't the rq->lock move into lrq?
 
-> Here's another breakage as a result of shared memory stacked files :(
-> 
-> The NUMA policy for a VMA is determined by checking the following (in the order
-> given):
-> 
-> 1) vma->vm_ops->get_policy() (if defined)
-> 2) vma->vm_policy (if defined)
-> 3) task->mempolicy (if defined)
-> 4) Fall back to default_policy
-> 
-> By switching to stacked files for shared memory, get_policy() is now always set
-> to shm_get_policy which is a wrapper function.  This causes us to stop at step
-> 1, which yields NULL for hugetlb instead of task->mempolicy which was the
-> previous (and correct) result.
-> 
-> This patch modifies the shm_get_policy() wrapper to maintain steps 1-3 for the
-> wrapped vm_ops.  Andi and Christoph, does this look right to you?
+Right now, the per-cpu rq lock protects all (local) runqueues attached with the 
+cpu. At some point, for scalability reasons, we may want to split that to
+be per-cpu per-local runqueue (as you point out). I will put that in my todo
+list of things to consider. Thanks for the review!
 
-thanks for the patch -- seems to do the trick for me.  it seems like it 
-would be a candidate for stable series as well.
-
--dean
+-- 
+Regards,
+vatsa
