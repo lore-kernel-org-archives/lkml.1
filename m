@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbXFLHbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbXFLHcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbXFLHbT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 03:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXFLHbN
+	id S1755404AbXFLHcR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 03:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbXFLHcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 03:31:13 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:52850 "EHLO
+	Tue, 12 Jun 2007 03:32:07 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:52933 "EHLO
 	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751439AbXFLHbM convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751527AbXFLHcE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 03:31:12 -0400
-Message-Id: <466E680F.76E4.0078.0@novell.com>
+	Tue, 12 Jun 2007 03:32:04 -0400
+Message-Id: <466E6842.76E4.0078.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Tue, 12 Jun 2007 09:31:59 +0200
+Date: Tue, 12 Jun 2007 09:32:50 +0200
 From: "Jan Beulich" <jbeulich@novell.com>
 To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] adjust nosmp handling
+Subject: [PATCH] kill vmalloc_earlyreserve
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -23,95 +23,49 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Especially when !CONFIG_HOTPLUG_CPU, avoid needlessy allocating
-resources for CPUs that can never become available.
+This symbol got orphaned quite a while ago.
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
- init/main.c |   42 +++++++++++++++++++++++++++---------------
- 1 files changed, 27 insertions(+), 15 deletions(-)
+ include/asm-i386/pgtable.h |    2 +-
+ include/linux/mm.h         |    1 -
+ mm/memory.c                |    2 --
+ 3 files changed, 1 insertion(+), 4 deletions(-)
 
---- linux-2.6.22-rc4/init/main.c	2007-06-11 18:10:51.000000000 +0200
-+++ 2.6.22-rc4-nosmp/init/main.c	2007-06-11 09:10:42.000000000 +0200
-@@ -132,20 +132,9 @@ static char *static_command_line;
- static char *execute_command;
- static char *ramdisk_execute_command;
+--- linux-2.6.22-rc4/include/asm-i386/pgtable.h	2007-06-11 18:10:43.000000000 +0200
++++ 2.6.22-rc4-vmalloc_earlyreserve/include/asm-i386/pgtable.h	2007-06-01 17:45:08.000000000 +0200
+@@ -79,7 +79,7 @@ void paging_init(void);
+  * area for the same reason. ;)
+  */
+ #define VMALLOC_OFFSET	(8*1024*1024)
+-#define VMALLOC_START	(((unsigned long) high_memory + vmalloc_earlyreserve + \
++#define VMALLOC_START	(((unsigned long) high_memory + \
+ 			2*VMALLOC_OFFSET-1) & ~(VMALLOC_OFFSET-1))
+ #ifdef CONFIG_HIGHMEM
+ # define VMALLOC_END	(PKMAP_BASE-2*PAGE_SIZE)
+--- linux-2.6.22-rc4/include/linux/mm.h	2007-06-11 18:10:49.000000000 +0200
++++ 2.6.22-rc4-vmalloc_earlyreserve/include/linux/mm.h	2007-06-04 09:52:46.000000000 +0200
+@@ -27,7 +27,6 @@ extern unsigned long max_mapnr;
  
-+#ifdef CONFIG_SMP
- /* Setup configured maximum number of CPUs to activate */
--static unsigned int max_cpus = NR_CPUS;
--
--/*
-- * If set, this is an indication to the drivers that reset the underlying
-- * device before going ahead with the initialization otherwise driver might
-- * rely on the BIOS and skip the reset operation.
-- *
-- * This is useful if kernel is booting in an unreliable environment.
-- * For ex. kdump situaiton where previous kernel has crashed, BIOS has been
-- * skipped and devices will be in unknown state.
-- */
--unsigned int reset_devices;
--EXPORT_SYMBOL(reset_devices);
-+static unsigned int __initdata max_cpus = NR_CPUS;
+ extern unsigned long num_physpages;
+ extern void * high_memory;
+-extern unsigned long vmalloc_earlyreserve;
+ extern int page_cluster;
  
- /*
-  * Setup routine for controlling SMP activation
-@@ -160,10 +149,10 @@ EXPORT_SYMBOL(reset_devices);
- static int __init nosmp(char *str)
- {
- 	max_cpus = 0;
--	return 1;
-+	return 0;
- }
+ #ifdef CONFIG_SYSCTL
+--- linux-2.6.22-rc4/mm/memory.c	2007-06-11 18:10:51.000000000 +0200
++++ 2.6.22-rc4-vmalloc_earlyreserve/mm/memory.c	2007-06-01 17:45:08.000000000 +0200
+@@ -78,11 +78,9 @@ unsigned long num_physpages;
+  * and ZONE_HIGHMEM.
+  */
+ void * high_memory;
+-unsigned long vmalloc_earlyreserve;
  
--__setup("nosmp", nosmp);
-+early_param("nosmp", nosmp);
+ EXPORT_SYMBOL(num_physpages);
+ EXPORT_SYMBOL(high_memory);
+-EXPORT_SYMBOL(vmalloc_earlyreserve);
  
- static int __init maxcpus(char *str)
- {
-@@ -172,6 +161,21 @@ static int __init maxcpus(char *str)
- }
- 
- __setup("maxcpus=", maxcpus);
-+#else
-+#define max_cpus NR_CPUS
-+#endif
-+
-+/*
-+ * If set, this is an indication to the drivers that reset the underlying
-+ * device before going ahead with the initialization otherwise driver might
-+ * rely on the BIOS and skip the reset operation.
-+ *
-+ * This is useful if kernel is booting in an unreliable environment.
-+ * For ex. kdump situaiton where previous kernel has crashed, BIOS has been
-+ * skipped and devices will be in unknown state.
-+ */
-+unsigned int reset_devices;
-+EXPORT_SYMBOL(reset_devices);
- 
- static int __init set_reset_devices(char *str)
- {
-@@ -385,6 +389,10 @@ static void __init smp_init(void)
- {
- 	unsigned int cpu;
- 
-+#ifndef CONFIG_HOTPLUG_CPU
-+	cpu_possible_map = cpu_present_map;
-+#endif
-+
- 	/* FIXME: This should be done in userspace --RR */
- 	for_each_present_cpu(cpu) {
- 		if (num_online_cpus() >= max_cpus)
-@@ -525,6 +533,10 @@ asmlinkage void __init start_kernel(void
- 	setup_arch(&command_line);
- 	setup_command_line(command_line);
- 	unwind_setup();
-+#ifndef CONFIG_HOTPLUG_CPU
-+	if (max_cpus < 2)
-+		cpu_possible_map = cpu_online_map;
-+#endif
- 	setup_per_cpu_areas();
- 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+ int randomize_va_space __read_mostly = 1;
  
 
 
