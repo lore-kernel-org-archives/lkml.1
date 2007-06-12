@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbXFLPhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbXFLPi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756635AbXFLPhP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 11:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbXFLPhF
+	id S1756792AbXFLPi5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbXFLPis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 11:37:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43300 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754083AbXFLPhE (ORCPT
+	Tue, 12 Jun 2007 11:38:48 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:58790 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754406AbXFLPiq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 11:37:04 -0400
-Date: Tue, 12 Jun 2007 16:37:01 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, hch@infradead.org
-Subject: Re: [PATCH] page table handling cleanup
-Message-ID: <20070612153701.GA25038@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-	andi@firstfloor.org
-References: <466E66F6.76E4.0078.0@novell.com>
-Mime-Version: 1.0
+	Tue, 12 Jun 2007 11:38:46 -0400
+Date: Tue, 12 Jun 2007 16:38:28 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Jeff Garzik <jeff@garzik.org>,
+       Dagfinn Ilmari =?iso-8859-1?Q?Manns=E5ker?= <ilmari@ilmari.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       htejun@gmail.com
+Message-ID: <20070612153828.GA13888@srcf.ucam.org>
+References: <20070612011148.GA9808@khazad-dum.debian.net> <466DF3E9.30303@linux.intel.com> <d8jr6oikkcz.fsf@nygaard.ping.uio.no> <466DFE09.3020408@garzik.org> <20070612035928.GB9808@khazad-dum.debian.net> <466E1A32.90306@linux.intel.com> <20070612090940.GA9719@srcf.ucam.org> <20070612121819.GA20408@khazad-dum.debian.net> <20070612135010.GA12601@srcf.ucam.org> <20070612141714.GB20408@khazad-dum.debian.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <466E66F6.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20070612141714.GB20408@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI controllers.
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 09:27:18AM +0200, Jan Beulich wrote:
-> Kill pte_rdprotect(), pte_exprotect(), pte_mkread(), pte_mkexec(), pte_read(),
-> pte_exec(), and pte_user() except where arch-specific code is making use of
-> them.
+On Tue, Jun 12, 2007 at 11:17:14AM -0300, Henrique de Moraes Holschuh wrote:
+> On Tue, 12 Jun 2007, Matthew Garrett wrote:
+> > Laptop bays are designed to deal with hotplugging PATA - I don't think 
+> > this is too much of an issue :)
+> 
+> The new SATA ones use the SATA hardware hotplug ;-)   Just like the pci-e
+> cards use usb2.0 and pci-e hotplug...
 
-Looks good.
+Yes, but they'll also send an ACPI interrupt even if the SATA host 
+controller doesn't - it's part of the spec for bays.
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
