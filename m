@@ -1,69 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbXFLENa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbXFLEOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752010AbXFLENa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 00:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbXFLENV
+	id S1752744AbXFLEOb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 00:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbXFLEOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 00:13:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:25428 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750731AbXFLENT (ORCPT
+	Tue, 12 Jun 2007 00:14:23 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:58140 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbXFLEOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 00:13:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=LaLt+ok9Ia4E6qn8nvdAR1fSIcEa5AhvSIAyF48GBZEyJAbI9cImhiEJif+GUXa0GvHhKGQhNtpJIkE65MlOJ0oH5f6i6YhETodpYtQILYgF6+PiYq4pYR10rc6rVKMWHDre+ICgiC+rjrmUVZwK/6fYjCd/tIwlDBFTdG1ZoXs=
-Message-ID: <466E1D51.9070007@gmail.com>
-Date: Tue, 12 Jun 2007 13:13:05 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
-       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 0/3] AHCI Link Power Management
-References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com>
-In-Reply-To: <466E0642.5020506@linux.intel.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 00:14:22 -0400
+Date: Tue, 12 Jun 2007 09:52:47 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: vatsa@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de,
+       kernel@kolivas.org, containers@lists.osdl.org,
+       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
+       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       dmitry.adamushko@gmail.com, balbir@in.ibm.com
+Subject: Re: [RFC][PATCH 3/6] core changes in CFS
+Message-ID: <20070612042247.GB3942@in.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070611154724.GA32435@in.ibm.com> <20070611155345.GC2109@in.ibm.com> <466E0502.7000906@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466E0502.7000906@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
->> I'm not sure about this.  We need better PM framework to support 
->> powersaving in other controllers and some ahcis don't save much
->> when only link power management is used,
+On Tue, Jun 12, 2007 at 07:59:22AM +0530, Balbir Singh wrote:
+> > +#define entity_is_task(se)	1
 > 
-> do you have data to support this?
+> Could you add some comments as to what this means?
 
-Yeah, it was some Lenovo notebook.  Pavel is more familiar with the
-hardware.  Pavel, what was the notebook which didn't save much power
-with standard SATA power save but needed port to be completely turned off?
+sure. Basically this macro tests whether a given schedulable entity is
+task or not. Other possible schedulable entities could be process, user,
+container etc. These various entities form a hierarchy with task being
+at the bottom of the hierarchy.
 
-> The data we have from this patch is that it saves typically a Watt of
-> power (depends on the machine of course, but the range is 0.5W to
-> 1.5W). If you want to also have an even more agressive thing where
-> you want to start disabling the entire controller... I don't see how
-> this is in conflict with saving power on the link level by "just"
-> enabling a hardware feature ....
+> Should be it boolean instead (true)
 
-Well, both implement about the same thing.  I prefer software
-implementation because it's more generic and ALPE/ASP seems too
-aggressive to me.  Here are reasons why sw implementation wasn't merged.
+I don't have a good opinion on this. Would it make sparse friendly?
 
-1. It didn't have proper interface with userland.  This was mainly
-because of missing ATA sysfs nodes.  I'm not sure whether adding this to
-scsi node is a good idea.
+> > + * Enqueue a entity into the rb-tree:
+> 
+> Enqueue an entity
 
-2. It was focused on SATA link PS and couldn't cover the Lenovo case.
+yes
 
-I think we need something at the block layer.
+> 
+> > -static void limit_wait_runtime(struct rq *rq, struct task_struct *p)
+> > +static void limit_wait_runtime(struct lrq *lrq, struct sched_entity *p)
+> 
+> p is a general convention for tasks in the code, could we use something
+> different -- may be "e"?
 
-Thanks.
+'se' perhaps as is used elsewhere. I avoided making that change so that
+people will see less diff o/p in the patch :) I agree though a better
+name is needed.
+
+> >  static s64 div64_s(s64 divident, unsigned long divisor)
+> > @@ -183,49 +219,51 @@
+> >   * Update the current task's runtime statistics. Skip current tasks that
+> >   * are not in our scheduling class.
+> >   */
+> > -static inline void update_curr(struct rq *rq, u64 now)
+> > +static inline void update_curr(struct lrq *lrq, u64 now)
+> >  {
+> > -	unsigned long load = rq->lrq.raw_weighted_load;
+> > +	unsigned long load = lrq->raw_weighted_load;
+> >  	u64 delta_exec, delta_fair, delta_mine;
+> > -	struct task_struct *curr = rq->curr;
+> > +	struct sched_entity *curr = lrq_curr(lrq);
+> 
+> How about curr_entity?
+
+I prefer its current name, but will consider your suggestion in next
+iteration.
+
+> > +	struct rq *rq = lrq_rq(lrq);
+> > +	struct task_struct *curtask = rq->curr;
+> > 
+> > -	if (curr->sched_class != &fair_sched_class || curr == rq->idle || !load)
+> > +	if (!curr || curtask == rq->idle || !load)
+> 
+> Can !curr ever be true? shoudn't we look into the sched_class of the task
+> that the entity belongs to?
+
+Couple of cases that we need to consider here:
+
+CONFIG_FAIR_GROUP_SCHED disabled:
+
+	lrq_curr() essentially returns NULL if currently running task
+	doesnt belong to fair_sched_class, else it returns &rq->curr->se
+	So the check for fair_sched_class is taken care in that
+	function.
+
+CONFIG_FAIR_GROUP_SCHED enabled:
+
+	lrq_curr() returns lrq->curr. I introduced ->curr field in lrq
+	to optimize on not having to update lrq's fair_clock
+	(update_curr upon enqueue/dequeue task) if it was not currently 
+	"active".
+
+	Lets say that there are two groups 'vatsa' and 'guest'
+	with their own lrqs on each cpu. If CPU0 is currently running a
+	task from group 'vatsa', then lrq_vatsa->curr will point to
+	the currently running task, while lrq_guest->curr will be 
+	NULL. While the task from 'vatsa' is running, if we were to
+	enqueue/dequeue task from group 'guest', we need not 
+	update lrq_guest's fair_clock (as it is not active currently).
+	This optimization in update_curr is made possible by maintaining
+	a 'curr' field in lrq.
+
+Hope this answers your question.
 
 -- 
-tejun
+Regards,
+vatsa
