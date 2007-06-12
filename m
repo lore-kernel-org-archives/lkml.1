@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbXFLTH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbXFLTJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752750AbXFLTH2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 15:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXFLTHV
+	id S1753245AbXFLTJm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 15:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXFLTJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 15:07:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58138 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751323AbXFLTHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 15:07:20 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18xeZJeffgxkUNAE48m8WLfAjpWSCY5RSRy35eGFw
-	a5rQC5QYugHyNJ
-Date: Tue, 12 Jun 2007 21:07:30 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
-       perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
-       levon@movementarian.org
-Subject: Re: OProfile issues
-Message-ID: <20070612190730.GA6978@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Stephane Eranian <eranian@hpl.hp.com>,
-	oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
-	perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
-	levon@movementarian.org
-References: <20070612150246.GJ32163@frankl.hpl.hp.com>
+	Tue, 12 Jun 2007 15:09:34 -0400
+Received: from h151.mvista.com ([63.81.120.155]:38505 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750778AbXFLTJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 15:09:33 -0400
+Message-ID: <466EEFD6.9030001@ru.mvista.com>
+Date: Tue, 12 Jun 2007 23:11:18 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070612150246.GJ32163@frankl.hpl.hp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
+References: <20070221011922.GA1777@freefall.freebsd.org> <200702210244.53514.bzolnier@gmail.com> <3063A690-4E3D-4A6E-A7DC-3E624121FBB8@freebsd.org> <200702210342.20775.bzolnier@gmail.com>
+In-Reply-To: <200702210342.20775.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.12 08:02:46 -0700, Stephane Eranian wrote:
-> Hello,
-> 
-> I am working on perfmon2 to allow Oprofile and perfmon2 to co-exist
-> as suggested by Andi Kleen. I looked at the Oprofile init/shutdown
-> code and I am puzzled by several things which you might be able to
-> explain for me. I am looking at 2.6.22-rc3.
-> 
-> Here are the issues:
-> 
->  * model->fill_in_addresses is called once for all CPUs
->    on X86, it does more than just filling in the addresses,
->    it also coordinates with the NMI watchdog by reserving
->    registers via the reserve_*nmi() interface.
-> 
->    The problem is that the release of the registers is done
->    in model->shutdown() which happens to be executed on every
->    CPU. So you end up releasing the registers too many times.
->    This is *not* harmless once you start sharing the PMU with
->    other subsystems given the way the allocator is designed.
+Bartlomiej Zolnierkiewicz wrote:
+>>On Feb 20, 2007, at 5:44 PM, Bartlomiej Zolnierkiewicz wrote:
 
-Hm, currently it should be ok to move the call to model->shutdown() into
-nmi_shutdown(), but you might want to instead set addr to 0 when the
-register is released to still allow for per cpu actions in shutdown().
+>>>On Wednesday 21 February 2007 02:19, Suleiman Souhlal wrote:
 
->  * allocate_msrs() allocates two tables per CPU. One for the
->    counters, the other for the eventsel registers. But then
->    nmi_setup() copies the cpu_msrs[0] into cpu_msrs[] of all
->    other cpus. This operation overrides the cpu_msrs[].counters
->    and cpu_msrs[].controls pointers for all CPUs but CPU0.
->    But free_msrs() will free the same tables multiple times. This
->    causes a kernel dump when you enable certain kernel debugging
->    features. The fix is to copy the content of the counters and
->    controls array, not the pointers.
+>>>>It can be changed via /proc/ide/hd?/settings.
 
-This was fixed in commit 0939c17c7bcf1.
+>>>Why do we need to change IDE DMA timeout dynamically?
 
->  * the fill_in_addresses() callback for X86 invokes the NMI watchdog
->    reserve_*_nmi() register allocation routines. This is done regardless
->    of whether the NMI watchdog is active. When the NMI watchdog is not
->    active, the allocator will satisfy the allocation for the first MSR
->    of each type (counter or control), but then it will reject any
->    request for the others. You end up working with a single
->    counter/control register.
+>>I've used it to test error recovery (for example).
 
-Hm, ouch. I'll try to move the reservation parts into a separate system.
+> Seems quite useable for developers but I would prefer not to
+> expose it in production kernels for end users.
 
-Björn
+    It seems that I have counter example of a customer asking if this timeout 
+can be done configurable. :-)
+    BTW, why the timeout is so damn long? 2*WAIT_CMD is 20 secs, and if DMA is 
+not complete or interrupt pending, it may wait 10 more secs...
+
+> Thanks,
+> Bart
+
+MBR, Sergei
