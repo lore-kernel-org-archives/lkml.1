@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXFLWD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbXFLWEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbXFLWD0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 18:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbXFLWDU
+	id S1755843AbXFLWEf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 18:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXFLWE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 18:03:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44555 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750798AbXFLWDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 18:03:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: 2.6.22-rc4-mm2: GPF during suspend to RAM on HPC nx6325
-Date: Wed, 13 Jun 2007 00:09:50 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200706110102.52946.rjw@sisk.pl> <466CF71B.2000907@gmail.com> <200706122355.26223.rjw@sisk.pl>
-In-Reply-To: <200706122355.26223.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Tue, 12 Jun 2007 18:04:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56726 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752703AbXFLWE1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 18:04:27 -0400
+Date: Tue, 12 Jun 2007 15:03:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Adrian Bunk <bunk@stusta.de>, avi@qumranet.com,
+       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: Re: 2.6.22-rc4-mm2: kvm compile breakage with X86_CMPXCHG64=n
+Message-Id: <20070612150357.1685c622.akpm@linux-foundation.org>
+In-Reply-To: <20070612032224.GA19293@redhat.com>
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
+	<20070612000718.GS3588@stusta.de>
+	<20070612032224.GA19293@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706130009.51278.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 12 June 2007 23:55, Rafael J. Wysocki wrote:
-> On Monday, 11 June 2007 09:17, Tejun Heo wrote:
-> > Hello, Rafael.
-> > 
-> > Rafael J. Wysocki wrote:
-> > > gregkh-driver-sysfs-use-singly-linked-list-for-sysfs_dirent-tree.patch breaks
-> > > suspend to RAM on HPC nx6325 (x86_64).
-> > > 
-> > > With this patch applied I get a general protection fault in mutex_lock+0x15
-> > > (kernel/mutex.c:91), called by sysfs_hash_and_remove() (fs/sysfs/inode.c:298),
-> > > called by threshold_cpu_callback(), called from _cpu_down().
-> > 
-> > I'm not sure whether this is bug in sysfs or in sysfs handling code in
-> > mce_amd and I can't test mce_amd here.  Can you please apply the
-> > attached patch and post the resulting dmesg including oops?
-> 
-> I've applied the patch, but the oops is a kernel panic, so I can't generate a
-> dmesg including it. ;-)
-> 
-> Here's the dmesg output from a fresh boot (runlevel 2):
-> 
-> http://www.sisk.pl/kernel/debug/2.6.22-rc4-mm2/dmesg.log
-> 
-> Here's a picture of the oops taken after a failed attempt to suspend:
-> 
-> http://www.sisk.pl/kernel/debug/2.6.22-rc4-mm2/during_suspend.jpg
-> 
-> Here's a picture of the oops taken after a failed attempt to offline CPU1
-> using 'echo 1 > /sys/devices/system/cpu/cpu1/online':
-> 
-> http://www.sisk.pl/kernel/debug/2.6.22-rc4-mm2/after_offlining_cpu1.jpg
-> 
-> [Sorry for the quality of pictures, I couldn't get anything better.]
+On Mon, 11 Jun 2007 23:22:24 -0400
+Dave Jones <davej@redhat.com> wrote:
 
-More information:
+> Add -Werror-implicit-function-declaration
+> This makes builds fail sooner if something is implicitly defined instead
+> of having to wait half an hour for it to fail at the linking stage.
+> 
+> Signed-off-by: Dave Jones <davej@redhat.com>
+> 
+> --- linux-2.6/Makefile~	2007-06-04 16:46:24.000000000 -0400
+> +++ linux-2.6/Makefile	2007-06-04 16:46:53.000000000 -0400
+> @@ -313,7 +313,8 @@ LINUXINCLUDE    := -Iinclude \
+>  CPPFLAGS        := -D__KERNEL__ $(LINUXINCLUDE)
+>  
+>  CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+> -                   -fno-strict-aliasing -fno-common
+> +		   -fno-strict-aliasing -fno-common \
+> +		   -Werror-implicit-function-declaration
+>  AFLAGS          := -D__ASSEMBLY__
+>  
+>  # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 
-With the debug patch applied the oops is a NULL pointer dereference
-at sysfs_hash_and_remove+0x16, which according to gdb is
+This causes the i386 allmodconfig build to fail:
 
-(gdb) l *sysfs_hash_and_remove+0x16
-0xffffffff802d4bff is in sysfs_hash_and_remove (/home/rafael/src/mm/linux-2.6.22-rc4-mm2/fs/sysfs/inode.c:294).
-289             int found = 0;
-290
-291             if (!dir)
-292                     return -ENOENT;
-293
-294             if (dir->d_inode == NULL)
-295                     /* no inode means this hasn't been made visible yet */
-296                     return -ENOENT;
-297
-298             mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
+include/linux/uaccess.h: In function 'pagefault_disable':
+include/linux/uaccess.h:23: error: implicit declaration of function '__memory_barrier'
 
-That doesn't make much sense to me, but it's 100% reproducible.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+I didn't look to see why...
