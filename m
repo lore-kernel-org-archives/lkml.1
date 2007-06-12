@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbXFLMQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbXFLMSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbXFLMQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 08:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXFLMQQ
+	id S1755988AbXFLMSh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 08:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbXFLMS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 08:16:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52892 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbXFLMQQ (ORCPT
+	Tue, 12 Jun 2007 08:18:27 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:42564 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754531AbXFLMSZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 08:16:16 -0400
-Subject: Re: splice: move balance_dirty_pages_ratelimited() outside of  
-	splice actor
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070612121047.GB18832@kernel.dk>
-References: <200706112159.l5BLxF5x004043@hera.kernel.org>
-	 <20070611163433.dbc541ec.akpm@linux-foundation.org>
-	 <20070612063510.GO18832@kernel.dk> <20070612112059.GY18832@kernel.dk>
-	 <20070612113101.GZ18832@kernel.dk> <1181649983.7348.309.camel@twins>
-	 <20070612121047.GB18832@kernel.dk>
-Content-Type: text/plain
-Date: Tue, 12 Jun 2007 14:16:12 +0200
-Message-Id: <1181650572.7348.312.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 08:18:25 -0400
+X-Sasl-enc: dFU/f+q27TSqHTPTkywKBbHeotYF8pwkICVDJpxcWUWU 1181650704
+Date: Tue, 12 Jun 2007 09:18:19 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Jeff Garzik <jeff@garzik.org>,
+       Dagfinn Ilmari =?iso-8859-1?Q?Manns=E5ker?= <ilmari@ilmari.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       htejun@gmail.com
+Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI controllers.
+Message-ID: <20070612121819.GA20408@khazad-dum.debian.net>
+References: <20070611184146.448266229@intel.com> <20070611114839.907bcae2.kristen.c.accardi@intel.com> <20070612011148.GA9808@khazad-dum.debian.net> <466DF3E9.30303@linux.intel.com> <d8jr6oikkcz.fsf@nygaard.ping.uio.no> <466DFE09.3020408@garzik.org> <20070612035928.GB9808@khazad-dum.debian.net> <466E1A32.90306@linux.intel.com> <20070612090940.GA9719@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070612090940.GA9719@srcf.ucam.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-12 at 14:10 +0200, Jens Axboe wrote:
-> On Tue, Jun 12 2007, Peter Zijlstra wrote:
-> > On Tue, 2007-06-12 at 13:31 +0200, Jens Axboe wrote:
-> > 
-> > > Would you prefer this change, then? I'd prefer keeping the current code,
-> > > unless it's absolutely critical that we call
-> > > balance_dirty_pages_ratelimited() for each and every page instead of eg
-> > > every 16 pages here.
-> > 
-> > For that we should call:
-> >   balance_dirty_pages_ratelimited_nr(mapping, nr);
-> > 
-> > Which is ok, for small nr.
+On Tue, 12 Jun 2007, Matthew Garrett wrote:
+> On Mon, Jun 11, 2007 at 08:59:46PM -0700, Arjan van de Ven wrote:
+> > that's a temporary shortcoming; even with these power savings you can 
+> > do hotplug as long as you're willing to poll for it at a reasonable 
+> > interval and are willing to wait the time between polls for a hotplug 
+> > to take effect..
 > 
-> OK, then this should be better:
-> 
-> diff --git a/fs/splice.c b/fs/splice.c
-> index 25ec9c8..ed40967 100644
-> --- a/fs/splice.c
-> +++ b/fs/splice.c
-> @@ -844,6 +883,9 @@ generic_file_splice_write_nolock(struct pipe_inode_info *pipe, struct file *out,
->  	sd.file = out;
->  	ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
->  	if (ret > 0) {
-> +		unsigned long nr_pages;
-> +
-> +		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+> On laptops, I suspect that we'll probably get an ACPI interrupt even if 
+> the AHCI hotplug pathway can't manage.
 
-perhaps?
-	nr_pages = DIV_ROUND_UP(ret, PAGE_CACHE_SIZE); 
+As long as we don't crash the drive or AHCI controller because we hotplugged
+it in a way it didn't like (like trying to hotplug a ICH5R would cause).
 
-not sure how horrid that turns out to be; you never know with gcc.
+It is not like 1Hz would not be fast enough for laptop bays and docks, so
+the polling frequency would not be a problem.  I still prefer when levels
+and on/off are kept separate, but if it won't stand in the way of hotplug, I
+certainly don't care enough to bother.
 
-Otherwise, looks good.
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
