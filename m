@@ -1,43 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbXFLSml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbXFLSnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbXFLSml (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 14:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbXFLSl4
+	id S1757692AbXFLSnw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 14:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXFLSno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 14:41:56 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:44886 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756526AbXFLSlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 14:41:55 -0400
-Date: Tue, 12 Jun 2007 11:37:47 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
-       perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
-       levon@movementarian.org
-Subject: Re: OProfile issues
-Message-ID: <20070612183747.GF3457@sequoia.sous-sol.org>
-References: <20070612150246.GJ32163@frankl.hpl.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070612150246.GJ32163@frankl.hpl.hp.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Tue, 12 Jun 2007 14:43:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44808 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756277AbXFLSnn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 14:43:43 -0400
+Date: Tue, 12 Jun 2007 11:43:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: splice: move balance_dirty_pages_ratelimited() outside of    
+ splice actor
+Message-Id: <20070612114322.dfb4e90c.akpm@linux-foundation.org>
+In-Reply-To: <20070612181540.GP18832@kernel.dk>
+References: <20070611163433.dbc541ec.akpm@linux-foundation.org>
+	<20070612063510.GO18832@kernel.dk>
+	<20070612112059.GY18832@kernel.dk>
+	<20070612113101.GZ18832@kernel.dk>
+	<1181649983.7348.309.camel@twins>
+	<20070612121047.GB18832@kernel.dk>
+	<1181650572.7348.312.camel@twins>
+	<20070612124449.GD18832@kernel.dk>
+	<20070612094615.9e5557e5.akpm@linux-foundation.org>
+	<20070612173202.GO18832@kernel.dk>
+	<20070612181540.GP18832@kernel.dk>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Stephane Eranian (eranian@hpl.hp.com) wrote:
->  * allocate_msrs() allocates two tables per CPU. One for the
->    counters, the other for the eventsel registers. But then
->    nmi_setup() copies the cpu_msrs[0] into cpu_msrs[] of all
->    other cpus. This operation overrides the cpu_msrs[].counters
->    and cpu_msrs[].controls pointers for all CPUs but CPU0.
->    But free_msrs() will free the same tables multiple times. This
->    causes a kernel dump when you enable certain kernel debugging
->    features. The fix is to copy the content of the counters and
->    controls array, not the pointers.
+On Tue, 12 Jun 2007 20:15:41 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-This is fixed in 2.6.22-rc4 in commit 0939c17c7bcf1c838bea4445b80a6966809a438f
+> On Tue, Jun 12 2007, Jens Axboe wrote:
+> > On Tue, Jun 12 2007, Andrew Morton wrote:
+> > > On Tue, 12 Jun 2007 14:44:50 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > splice
+> > > 
+> > > btw, I'm staring in profound mystification at this:
+> > > 
+> > > int generic_pipe_buf_steal(struct pipe_inode_info *pipe,
+> > > 			   struct pipe_buffer *buf)
+> > > {
+> > > 	struct page *page = buf->page;
+> > > 
+> > > 	if (page_count(page) == 1) {
+> > > 		lock_page(page);
+> > > 		return 0;
+> > > 	}
+> > > 
+> > > 	return 1;
+> > > }
+> > > 
+> > > 
+> > > afacit that `if page_count(page)' test could be replaced by
+> > > `if today_is_tuesday()'.  But then I don't have the foggiest idea
+> > > what it's trying to do.
+> > > 
+> > > It would be nice to get some comments in and around here.
+> > > 
+> > > Also, I was trying to work out the role and responsibility of the ->pin
+> > > callback, and gave up.
+> > > 
+> > > There isn't a lot of point in explaining this over email - one should be
+> > > able to gain an understanding of these things by reading the code.  I think
+> > > the best way of tackling this would be to comprehensively document
+> > > pipe_buf_operations and pipe_inode_info, please...
+> > 
+> > OK so I wont explain it in detail here, I'll write up a good set of
+> > comments tonight.
+> 
+> I'll merge this into the #splice branch.
 
-thanks,
--chris
+Great, thanks.
+
+> +/**
+> + * generic_pipe_buf_steal - attempt to take ownership of a @pipe_buffer
+> + * @pipe:	the pipe that the buffer belongs to
+> + * @buf:	the buffer to attempt to steal
+> + *
+> + * Description:
+> + *	This function attempts to steal the @struct page attached to
+> + *	@buf. If successful, this function returns 0 and returns with
+> + *	the page locked. The caller may then reuse the page for whatever
+> + *	he wishes, the typical use is insertion into a different file
+> + *	page cache.
+> + */
+>  int generic_pipe_buf_steal(struct pipe_inode_info *pipe,
+>  			   struct pipe_buffer *buf)
+>  {
+>  	struct page *page = buf->page;
+>  
+> +	/*
+> +	 * A reference of one is golden, that means that the owner of this
+> +	 * page is the only one holding a reference to it. lock the page
+> +	 * and return OK.
+> +	 */
+>  	if (page_count(page) == 1) {
+>  		lock_page(page);
+>  		return 0;
+
+I still don't get this code.  I guess I should have asked for pipe_buffer
+docs too ;)
+
+What sorts of pages can find themselves inside a pipe_buffer, and which of
+these types of pages is the above test detecting?
+
+
