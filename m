@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbXFLHxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbXFLHxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757376AbXFLHxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 03:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbXFLHxL
+	id S1757828AbXFLHxb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 03:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbXFLHxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 03:53:11 -0400
-Received: from bill.weihenstephan.org ([82.135.35.21]:52477 "EHLO
-	bill.weihenstephan.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753739AbXFLHxK (ORCPT
+	Tue, 12 Jun 2007 03:53:21 -0400
+Received: from fed1rmpop106.cox.net ([68.230.241.10]:48616 "EHLO
+	fed1rmpop106.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757400AbXFLHxT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 03:53:10 -0400
-From: Juergen Beisert <juergen127@kreuzholzen.de>
-Organization: Privat
-To: linux-kernel@vger.kernel.org
-Subject: Re: ext2 on flash memory
-Date: Tue, 12 Jun 2007 09:53:03 +0200
-User-Agent: KMail/1.9.4
-Cc: "Kevin Bowling" <lkml@kev009.com>
-References: <20070611101319.GA14284@DervishD> <191337B7-F4CC-4824-B669-48AE194BE141@sbcglobal.net> <11f674920706111735l7dec2136t32d40ee2ab4ccca4@mail.gmail.com>
-In-Reply-To: <11f674920706111735l7dec2136t32d40ee2ab4ccca4@mail.gmail.com>
+	Tue, 12 Jun 2007 03:53:19 -0400
+X-Greylist: delayed 519 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jun 2007 03:53:19 EDT
+From: Junio C Hamano <gitster@pobox.com>
+To: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+Cc: ms@citd.de, jesper.juhl@gmail.com, linux-kernel@vger.kernel.org,
+       m-ikeda@ds.jp.nec.com
+Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
+References: <20070610162221.GA12830@suse.de> <466C3B64.4070806@citd.de>
+	<20070611060759.GB914@suse.de>
+	<20070612.095517.59666165.tshibata@ab.jp.nec.com>
+cc: gregkh@suse.de
+Date: Tue, 12 Jun 2007 00:44:38 -0700
+In-Reply-To: <20070612.095517.59666165.tshibata@ab.jp.nec.com> (Tsugikazu
+	Shibata's message of "Tue, 12 Jun 2007 09:55:17 +0900 (JST)")
+Message-ID: <7vtztdk461.fsf@assigned-by-dhcp.pobox.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706120953.03735.juergen127@kreuzholzen.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 June 2007 02:35, Kevin Bowling wrote:
-> All of the posts fail to address the question here: what is the
-> correct file system, or does one exist yet, for wear leveling flash
-> storage.
-> JFFS2 and logfs are nice for MTD, but for better flash 
-> memories that are likely to be used in the future like solid state
-> hard disks, what is the answer?
+Tsugikazu Shibata <tshibata@ab.jp.nec.com> writes:
 
-As long the device itself does the wear leveling, there could no specific 
-answer here!
-On MTD its the job of the filesystem to do the wear leveling because it works 
-on the bare flash. But memory sticks, CFs and so on emulate a block device. I 
-don't know a device where you could switch off its internal wear leveling 
-mechanism. So it makes no sense to find the best filesystem for such a case. 
-There is no best one.
+> On Sun, 10 Jun 2007 23:07:59 -0700, gregkh wrote:
+> ...
+>> So, Tsugikazu, care to resend this file as a patch that I can apply to
+>> the Documentation directory of the kernel tree?  I think it would be
+>> good to have there.
+>
+> Here is a patch of Japanese translated HOWTO.
+> Thank you very much for lots of comment and suggestions.>all
+> Bellow is what I have done:
+>
+> - Added Hiroyuki's comment with my own modifications as top notes.
+> - Character encoding is UTF-8
 
-Its the same discussion about protecting essential data on CF by using more 
-than one partition. A first partition for read only (system), a second one 
-also for writing (data). And everyone hopes in the case of a crash the read 
-only partition survives. But CFs internal wear leveling does not know 
-partitions and continuous to use *all* blocks on the CF for its job.
+Oops?  I still see iso-2022-jp...
 
-Juergen
+> Content-Type: Text/Plain; charset=iso-2022-jp
+> Content-Transfer-Encoding: 7bit
+> Content-Disposition: inline; filename="add-japanese-howto.patch"
+
+
