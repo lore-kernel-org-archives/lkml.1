@@ -1,411 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbXFLFus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbXFLF44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758024AbXFLFus (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 01:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbXFLFuj
+	id S1758061AbXFLF44 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 01:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbXFLF4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 01:50:39 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:39097 "EHLO
-	asav06.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751967AbXFLFui (ORCPT
+	Tue, 12 Jun 2007 01:56:48 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:23587 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbXFLF4s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 01:50:38 -0400
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [stable] [PATCH] INPUT: Sanitize PIT locking in pcspkr
-Date: Tue, 12 Jun 2007 01:50:34 -0400
-User-Agent: KMail/1.9.3
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Greg KH <greg@kroah.com>,
-       Andi Kleen <ak@suse.de>, Ralf Baechle <ralf@linux-mips.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, Stable Team <stable@kernel.org>,
-       Richard Henderson <rth@twiddle.net>
-References: <1179408962.3764.72.camel@chaos> <20070612002747.GJ3723@sequoia.sous-sol.org>
-In-Reply-To: <20070612002747.GJ3723@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 12260
-Message-Id: <200706120150.36442.dtor@insightbb.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 01:56:48 -0400
+Date: Mon, 11 Jun 2007 23:55:47 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: sata_nv adma issues
+In-reply-to: <fa.FTA/czKnA9MrTZ9ueGrcQfRm9qs@ifi.uio.no>
+To: Charles Shannon Hendrix <shannon@widomaker.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <466E3563.1030900@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.FTA/czKnA9MrTZ9ueGrcQfRm9qs@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 June 2007 20:27, Chris Wright wrote:
-> * Thomas Gleixner (tglx@linutronix.de) wrote:
-> > The PC-speaker code has a quite creative method to serialize access to
-> > the PIT: It uses a local lock.
-> > 
-> > On i386 and x86_64 the access to the PIT is serialized by a lock in the
-> > architecture code. The separate locking in the PC-speaker code ignores
-> > the global lock and creates a nasty race between the PC-speaker and the
-> > PIT clock source / events code on SMP machines.
-> > 
-> > Use the global i8253_lock instead of the local i8253_beep_lock, when
-> > compiled for i386/x86_64.
+Charles Shannon Hendrix wrote:
 > 
-> Seems this one got lost?
->
+> My system has issues running adma mode with sata_nv.  I have an nforce4 
+> motherboard.
+> 
+> What is the current status of this problem?
 
-Yep... Here is the patch I'd like to get in 2.6.22 but as it touches
-couple of arches I can't test on I am a bit hesitant to push it
-through my tree. Thomas OKed it but nobody else responded.
- 
+You'll have to be a bit more specific than that. A few problems have 
+arisen in the past, but currently I don't think there is anything known 
+outstanding other than one hotplug issue which currently is lacking in 
+information to debug.
+
+> 
+> Is there any information I can provide to help debug it?
+> 
+> I gave up trying various fixes about 6 months ago, and put 
+> "sata_nv.adma=0" on the kernel command line in LILO, and that fixed the 
+> problem.
+> 
+> However, recently I changed distributions and went back to 2.6.20 
+> (kubuntu 7.04).
+> 
+> This kernel says that sata_nv.adma=0 is an invalid kernel option.
+> 
+> I'm pretty puzzled by that, because it is supposed to disable adma mode 
+> in the sata_nv driver.
+> 
+> /proc/cmdline says:
+> 
+> root=<hash> ro sata_nv.adma=0 quiet splash
+> 
+> ..so it seems I did give the parameter properly.
+> 
+> Any ideas appreciated.
+
+If sata_nv is built modular, then you may need to put:
+
+options sata_nv adma=0
+
+in /etc/modprobe.conf instead.
+
+However I should point out that adma=0 is a poor workaround, it would be 
+better to find the real cause of the problem.
+
+> 
+> Is there a better way to deal with this?
+> 
+> Also, one more: does it hurt to wait until the sata_nv driver fails a 
+> few times (at which point it stops bitching) and use the machine?  Once it
+> fails about 6 times, I no longer have any issues, and speed is still 
+> good enough to use until a real fix can be had.
+
+Please post the dmesg output from when this happens. If it starts 
+working after the kernel disables NCQ, then it might mean that your 
+drive has some problems with NCQ..
+
 -- 
-Dmitry
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Input: pcspkr - use proper lock
-
-On i386 and x86_64 the access to the PIT is serialized by a lock
-in the architecture code. The separate locking in the PC-speaker
-code ignores the global lock and creates a nasty race between the
-PC-speaker and the PIT clock source/events code on SMP machines.
-
-To fix this we architecture code attaches proper lock to the
-pcspkr platform device and the driver uses it instead of it's
-own private lock.
-
-Noticed by Thomas Gleixner <tglx@linutronix.de>
-
-Also resore uevent generation for pcspkr devices so that the
-driver can be loaded automatically by udev.
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- arch/i386/kernel/pcspeaker.c       |   20 -------------------
- arch/alpha/kernel/setup.c          |    9 +++++++-
- arch/i386/kernel/Makefile          |    1 
- arch/i386/kernel/i8253.c           |   23 ++++++++++++++++++++++
- arch/mips/kernel/i8253.c           |    9 +++++++-
- arch/powerpc/kernel/setup-common.c |    9 +++++++-
- arch/x86_64/kernel/Makefile        |    2 -
- arch/x86_64/kernel/time.c          |   38 +++++++++++++++++++++++++++++--------
- drivers/input/misc/pcspkr.c        |   10 +++++----
- 9 files changed, 83 insertions(+), 38 deletions(-)
-
-Index: work/arch/alpha/kernel/setup.c
-===================================================================
---- work.orig/arch/alpha/kernel/setup.c
-+++ work/arch/alpha/kernel/setup.c
-@@ -1491,6 +1491,8 @@ alpha_panic_event(struct notifier_block 
-         return NOTIFY_DONE;
- }
- 
-+static DEFINE_SPINLOCK(i8253_lock);
-+
- static __init int add_pcspkr(void)
- {
- 	struct platform_device *pd;
-@@ -1500,9 +1502,14 @@ static __init int add_pcspkr(void)
- 	if (!pd)
- 		return -ENOMEM;
- 
-+	pd->dev.platform_data = &i8253_lock;
-+	pd->dev.uevent_suppress = 0;
-+
- 	ret = platform_device_add(pd);
--	if (ret)
-+	if (ret) {
-+		pd->dev.platform_data = NULL;	/* so we don't try to free it */
- 		platform_device_put(pd);
-+	}
- 
- 	return ret;
- }
-Index: work/arch/mips/kernel/i8253.c
-===================================================================
---- work.orig/arch/mips/kernel/i8253.c
-+++ work/arch/mips/kernel/i8253.c
-@@ -10,6 +10,8 @@
- 
- #include <linux/platform_device.h>
- 
-+static DEFINE_SPINLOCK(i8253_lock);
-+
- static __init int add_pcspkr(void)
- {
- 	struct platform_device *pd;
-@@ -19,9 +21,14 @@ static __init int add_pcspkr(void)
- 	if (!pd)
- 		return -ENOMEM;
- 
-+	pd->dev.platform_data = &i8253_lock;
-+	pd->dev.uevent_suppress = 0;
-+
- 	ret = platform_device_add(pd);
--	if (ret)
-+	if (ret) {
-+		pd->dev.platform_data = NULL;	/* so we don't try to free it */
- 		platform_device_put(pd);
-+	}
- 
- 	return ret;
- }
-Index: work/arch/x86_64/kernel/time.c
-===================================================================
---- work.orig/arch/x86_64/kernel/time.c
-+++ work/arch/x86_64/kernel/time.c
-@@ -23,6 +23,7 @@
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/sysdev.h>
-+#include <linux/platform_device.h>
- #include <linux/bcd.h>
- #include <linux/notifier.h>
- #include <linux/cpu.h>
-@@ -185,7 +186,7 @@ void main_timer_handler(void)
- 		set_rtc_mmss(xtime.tv_sec);
- 		rtc_update = xtime.tv_sec + 660;
- 	}
-- 
-+
- 	write_sequnlock(&xtime_lock);
- }
- 
-@@ -226,7 +227,7 @@ static unsigned long get_cmos_time(void)
- 	/*
- 	 * We know that x86-64 always uses BCD format, no need to check the
- 	 * config register.
-- 	 */
-+	 */
- 
- 	BCD_TO_BIN(sec);
- 	BCD_TO_BIN(min);
-@@ -239,11 +240,11 @@ static unsigned long get_cmos_time(void)
- 		BCD_TO_BIN(century);
- 		year += century * 100;
- 		printk(KERN_INFO "Extended CMOS year: %d\n", century * 100);
--	} else { 
-+	} else {
- 		/*
- 		 * x86-64 systems only exists since 2002.
- 		 * This will work up to Dec 31, 2100
--	 	 */
-+		 */
- 		year += 2000;
- 	}
- 
-@@ -321,7 +322,7 @@ static unsigned int __init pit_calibrate
- 	end = get_cycles_sync();
- 
- 	spin_unlock_irqrestore(&i8253_lock, flags);
--	
-+
- 	return (end - start) / 50;
- }
- 
-@@ -366,7 +367,7 @@ static struct irqaction irq0 = {
- 	.handler	= timer_interrupt,
- 	.flags		= IRQF_DISABLED | IRQF_IRQPOLL,
- 	.mask		= CPU_MASK_NONE,
--	.name 		= "timer"
-+	.name		= "timer"
- };
- 
- void __init time_init(void)
-@@ -384,7 +385,7 @@ void __init time_init(void)
- 
- 	if (hpet_use_timer) {
- 		/* set tick_nsec to use the proper rate for HPET */
--	  	tick_nsec = TICK_NSEC_HPET;
-+		tick_nsec = TICK_NSEC_HPET;
- 		tsc_khz = hpet_calibrate_tsc();
- 		timename = "HPET";
- 	} else {
-@@ -485,5 +486,26 @@ static int time_init_device(void)
- 		error = sysdev_register(&device_timer);
- 	return error;
- }
--
- device_initcall(time_init_device);
-+
-+static __init int add_pcspkr(void)
-+{
-+	struct platform_device *pd;
-+	int ret;
-+
-+	pd = platform_device_alloc("pcspkr", -1);
-+	if (!pd)
-+		return -ENOMEM;
-+
-+	pd->dev.platform_data = &i8253_lock;
-+	pd->dev.uevent_suppress = 0;
-+
-+	ret = platform_device_add(pd);
-+	if (ret) {
-+		pd->dev.platform_data = NULL;	/* so we don't try to free it */
-+		platform_device_put(pd);
-+	}
-+
-+	return ret;
-+}
-+device_initcall(add_pcspkr);
-Index: work/arch/i386/kernel/i8253.c
-===================================================================
---- work.orig/arch/i386/kernel/i8253.c
-+++ work/arch/i386/kernel/i8253.c
-@@ -6,6 +6,7 @@
- #include <linux/spinlock.h>
- #include <linux/jiffies.h>
- #include <linux/sysdev.h>
-+#include <linux/platform_device.h>
- #include <linux/module.h>
- #include <linux/init.h>
- 
-@@ -204,3 +205,25 @@ static int __init init_pit_clocksource(v
- 	return clocksource_register(&clocksource_pit);
- }
- arch_initcall(init_pit_clocksource);
-+
-+static __init int add_pcspkr(void)
-+{
-+	struct platform_device *pd;
-+	int ret;
-+
-+	pd = platform_device_alloc("pcspkr", -1);
-+	if (!pd)
-+		return -ENOMEM;
-+
-+	pd->dev.platform_data = &i8253_lock;
-+	pd->dev.uevent_suppress = 0;
-+
-+	ret = platform_device_add(pd);
-+	if (ret) {
-+		pd->dev.platform_data = NULL;	/* so we don't try to free it */
-+		platform_device_put(pd);
-+	}
-+
-+	return ret;
-+}
-+device_initcall(add_pcspkr);
-Index: work/arch/x86_64/kernel/Makefile
-===================================================================
---- work.orig/arch/x86_64/kernel/Makefile
-+++ work/arch/x86_64/kernel/Makefile
-@@ -44,7 +44,6 @@ obj-$(CONFIG_PCI)		+= early-quirks.o
- 
- obj-y				+= topology.o
- obj-y				+= intel_cacheinfo.o
--obj-y				+= pcspeaker.o
- 
- CFLAGS_vsyscall.o		:= $(PROFILING) -g0
- 
-@@ -59,5 +58,4 @@ quirks-y			+= ../../i386/kernel/quirks.o
- i8237-y				+= ../../i386/kernel/i8237.o
- msr-$(subst m,y,$(CONFIG_X86_MSR))  += ../../i386/kernel/msr.o
- alternative-y			+= ../../i386/kernel/alternative.o
--pcspeaker-y			+= ../../i386/kernel/pcspeaker.o
- perfctr-watchdog-y		+= ../../i386/kernel/cpu/perfctr-watchdog.o
-Index: work/arch/i386/kernel/Makefile
-===================================================================
---- work.orig/arch/i386/kernel/Makefile
-+++ work/arch/i386/kernel/Makefile
-@@ -43,7 +43,6 @@ obj-$(CONFIG_K8_NB)		+= k8.o
- 
- obj-$(CONFIG_VMI)		+= vmi.o vmiclock.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt.o
--obj-y				+= pcspeaker.o
- 
- obj-$(CONFIG_SCx200)		+= scx200.o
- 
-Index: work/arch/i386/kernel/pcspeaker.c
-===================================================================
---- work.orig/arch/i386/kernel/pcspeaker.c
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#include <linux/platform_device.h>
--#include <linux/errno.h>
--#include <linux/init.h>
--
--static __init int add_pcspkr(void)
--{
--	struct platform_device *pd;
--	int ret;
--
--	pd = platform_device_alloc("pcspkr", -1);
--	if (!pd)
--		return -ENOMEM;
--
--	ret = platform_device_add(pd);
--	if (ret)
--		platform_device_put(pd);
--
--	return ret;
--}
--device_initcall(add_pcspkr);
-Index: work/drivers/input/misc/pcspkr.c
-===================================================================
---- work.orig/drivers/input/misc/pcspkr.c
-+++ work/drivers/input/misc/pcspkr.c
-@@ -24,10 +24,10 @@ MODULE_AUTHOR("Vojtech Pavlik <vojtech@u
- MODULE_DESCRIPTION("PC Speaker beeper driver");
- MODULE_LICENSE("GPL");
- 
--static DEFINE_SPINLOCK(i8253_beep_lock);
--
- static int pcspkr_event(struct input_dev *dev, unsigned int type, unsigned int code, int value)
- {
-+	struct platform_device *pdev = input_get_drvdata(dev);
-+	spinlock_t *i8253_lock = pdev->dev.platform_data;
- 	unsigned int count = 0;
- 	unsigned long flags;
- 
-@@ -43,7 +43,7 @@ static int pcspkr_event(struct input_dev
- 	if (value > 20 && value < 32767)
- 		count = PIT_TICK_RATE / value;
- 
--	spin_lock_irqsave(&i8253_beep_lock, flags);
-+	spin_lock_irqsave(i8253_lock, flags);
- 
- 	if (count) {
- 		/* enable counter 2 */
-@@ -58,7 +58,7 @@ static int pcspkr_event(struct input_dev
- 		outb(inb_p(0x61) & 0xFC, 0x61);
- 	}
- 
--	spin_unlock_irqrestore(&i8253_beep_lock, flags);
-+	spin_unlock_irqrestore(i8253_lock, flags);
- 
- 	return 0;
- }
-@@ -84,6 +84,8 @@ static int __devinit pcspkr_probe(struct
- 	pcspkr_dev->sndbit[0] = BIT(SND_BELL) | BIT(SND_TONE);
- 	pcspkr_dev->event = pcspkr_event;
- 
-+	input_set_drvdata(pcspkr_dev, dev);
-+
- 	err = input_register_device(pcspkr_dev);
- 	if (err) {
- 		input_free_device(pcspkr_dev);
-Index: work/arch/powerpc/kernel/setup-common.c
-===================================================================
---- work.orig/arch/powerpc/kernel/setup-common.c
-+++ work/arch/powerpc/kernel/setup-common.c
-@@ -424,6 +424,8 @@ void __init smp_setup_cpu_maps(void)
- }
- #endif /* CONFIG_SMP */
- 
-+static DEFINE_SPINLOCK(i8253_lock);
-+
- static __init int add_pcspkr(void)
- {
- 	struct device_node *np;
-@@ -439,9 +441,14 @@ static __init int add_pcspkr(void)
- 	if (!pd)
- 		return -ENOMEM;
- 
-+	pd->dev.platform_data = &i8253_lock;
-+	pd->dev.uevent_suppress = 0;
-+
- 	ret = platform_device_add(pd);
--	if (ret)
-+	if (ret) {
-+		pd->dev.platform_data = NULL;	/* so we don't try to free it */
- 		platform_device_put(pd);
-+	}
- 
- 	return ret;
- }
