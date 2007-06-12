@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbXFLPOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756447AbXFLPOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbXFLPOh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 11:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbXFLPOa
+	id S1756447AbXFLPOz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 11:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbXFLPOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 11:14:30 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50252 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752128AbXFLPO3 (ORCPT
+	Tue, 12 Jun 2007 11:14:46 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:3486 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753856AbXFLPOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 11:14:29 -0400
-Date: Tue, 12 Jun 2007 16:19:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: "R.F. Burns" <burnsrf@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: PC speaker
-Message-ID: <20070612161951.69e54751@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0706121709160.19578@fbirervta.pbzchgretzou.qr>
-References: <a800cda90706120545w2c6d0bb0vb77bd4d961415c5c@mail.gmail.com>
-	<Pine.LNX.4.64.0706121531220.19578@fbirervta.pbzchgretzou.qr>
-	<a800cda90706120654x1c112d95l360c240d7075a774@mail.gmail.com>
-	<Pine.LNX.4.64.0706121556510.19578@fbirervta.pbzchgretzou.qr>
-	<Pine.LNX.4.64.0706121709160.19578@fbirervta.pbzchgretzou.qr>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 11:14:45 -0400
+Date: Tue, 12 Jun 2007 17:14:44 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Oliver Neukum <oliver@neukum.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: cannot set IP for ethernet
+In-Reply-To: <200706121613.47718.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.64.0706121714290.19578@fbirervta.pbzchgretzou.qr>
+References: <200706121441.13561.oliver@neukum.org>
+ <Pine.LNX.4.64.0706121531040.19578@fbirervta.pbzchgretzou.qr>
+ <200706121613.47718.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >I'd say impossible. Just disconnect it from the motherboard.
-> 
-> The days when hardware *relied* on software (hence, where software
-> could damage hardware) are over.
 
-Nice theory but you can destroy or render useless a fair amount of PC
-hardware via software, usually because the thing is *DESIGNED* that way
-for convenience. (Flash update interfaces without jumpers, locking
-interfaces for drives etc)
+On Jun 12 2007 16:13, Oliver Neukum wrote:
+>> On Jun 12 2007 14:41, Oliver Neukum wrote:
+>> >
+>> >with 2.6.22-rc4-git2 I am getting errors when setting IP for ethernet
+>> >interfaces:
+>> >
+>> >ioctl(4, SIOCSIFADDR, 0x7fff94931600)   = -1 ENOBUFS (No buffer space available)
+
+Do you run VPN or some sort?
+
+
+	Jan
+-- 
