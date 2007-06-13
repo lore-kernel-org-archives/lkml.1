@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbXFMUgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbXFMUjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757577AbXFMUgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 16:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbXFMUgb
+	id S1757233AbXFMUjk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 16:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbXFMUjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 16:36:31 -0400
-Received: from ns2.suse.de ([195.135.220.15]:59021 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753736AbXFMUg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 16:36:29 -0400
-Date: Wed, 13 Jun 2007 13:37:37 -0700
-From: Greg KH <gregkh@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthias Schniedermeyer <ms@citd.de>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       linux-kernel@vger.kernel.org, m-ikeda@ds.jp.nec.com
-Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
-Message-ID: <20070613203737.GB5708@suse.de>
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <466C3B64.4070806@citd.de> <20070611060759.GB914@suse.de> <20070613141818.GF5986@ucw.cz>
+	Wed, 13 Jun 2007 16:39:32 -0400
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:18053 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752607AbXFMUjb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 16:39:31 -0400
+X-IronPort-AV: i="4.16,417,1175497200"; 
+   d="scan'208"; a="2977408:sNHT21309240"
+To: vgoyal@in.ibm.com
+Cc: linux-kernel@vger.kernel.org,
+       "Natalie.Protasevich@unisys.com" <Natalie.Protasevich@unisys.com>,
+       akpm@linux-foundation.org
+Subject: Re: CONFIG_X86_ES7000=y, CONFIG_X86_GENERICARCH=n, CONFIG_ACPI=y build broken
+X-Message-Flag: Warning: May contain useful information
+References: <adad5017zpt.fsf@cisco.com> <20070613173741.GA23618@in.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 13 Jun 2007 13:39:29 -0700
+In-Reply-To: <20070613173741.GA23618@in.ibm.com> (Vivek Goyal's message of "Wed, 13 Jun 2007 23:07:41 +0530")
+Message-ID: <adamyz34mim.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070613141818.GF5986@ucw.cz>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+X-OriginalArrivalTime: 13 Jun 2007 20:39:29.0554 (UTC) FILETIME=[F0BA9F20:01C7ADFA]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 02:18:18PM +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > Yes, but this file, and the stable-api-nonsense.txt files are there to
-> > help people understand both the kernel's philosophy, as well as
-> > encourage them to help contribute.
-> > 
-> > That is totally different from internationalizing the internal kernel
-> > messages (which, btw, some people are working on...)  That I would not
-> > agree to as it's just too hard to keep up with and would be pointless in
-> > a way.
-> > 
-> > So I really do want to see a translated copy of the HOWTO,
-> > stable-api-nonsense.txt, and possibly a few other files in the main
-> > kernel tree (SubmittingPatches, CodingStyle, and SubmittingDrivers might
-> > all be good canidates for this.)  These files change relativly
-> > infrequently (the HOWTO file has had only 7 changes in 1 and 1/2 years,
-> > and they were very minor ones) and should be easy for the translators to
-> > keep up with.
-> 
-> But what is the point of having them in tree?
+ > Can you please try the attached patch? I have compiled it with CONFIG_ES7000=y
+ > and CONFIG_X86_GENERICARCH=n. But don't have any ES7000 machine to test it.
 
-Wider exposure.  It will greatly increase the "google-juice" of it and
-helps out when pointing people at the needed information.
+I actually don't have anything remotely like ES7000 iether.  I just
+found the problem while tracking down another randconfig failure.
 
-> Plus, I'm not even sure if we have enough space. There are lots of
-> languages.
+ > Subarch build procedure is not straightforward and this patch adds to the
+ > misery. Please suggest if there is a better way of handling things.
 
-"space"?  Since when are we running out of space?  The kernel is "only"
-growing at 10% a year and is a mere 8.1 million lines or so.  We have
-plenty of space on the mirrors to take up :)
+ > +/*
+ > + * This file also gets compiled if CONFIG_X86_GENERICARCH is set. Generic
+ > + * arch already has got following function definitions (asm-generic/es7000.c)
+ > + * hence no need to define these for that case.
+ > + */
+ > +#ifndef CONFIG_X86_GENERICARCH
 
-thanks,
+Seems it would be cleaner to figure out some way to build es7000.c for
+if CONFIG_X86_ES7000 is set?  Or just move them here all the time?
 
-greg k-h
+ > --- linux-2.6.22-rc4-git4/include/asm-i386/mach-es7000/mach_mpparse.h~i386-es7000-build-breakage-fix	2007-06-13 22:52:14.000000000 +0530
+ > +++ linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_mpparse.h	2007-06-13 22:52:14.000000000 +0530
+ > @@ -18,6 +18,12 @@ extern int parse_unisys_oem (char *oempt
+ >  extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
+ >  extern void setup_unisys(void);
+ >  
+ > +#ifndef CONFIG_X86_GENERICARCH
+ > +extern int acpi_madt_oem_check(char *oem_id, char *oem_table_id);
+ > +extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
+ > +				char *productid);
+ > +#endif
+
+It seems that this #ifndef is not needed -- even if there is another
+declaration of these functions that is visible, the signatures should
+match so it should be OK.
+
+ - R.
