@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbXFMRH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbXFMRJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759439AbXFMRH2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 13:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758457AbXFMRHU
+	id S1759500AbXFMRJn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 13:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757659AbXFMRJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 13:07:20 -0400
-Received: from hu-out-0506.google.com ([72.14.214.231]:47957 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758319AbXFMRHS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 13:07:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ccfWRCwi+vzAeNd3R2pqAN+jXZyqUd6+lJnEi7d1bJqMF4nqKkjXBcoho7TBvkSxVd96F12kt7AaC8+hdtxU2uEzDMkoM4jgmC34P06WY2VMIT3FZ9cfY1DZ7fSTbDzx7B2yjL0BRzH4rH8ZRsT3UiT/j266NT6upK5XGkwW7vU=
-Date: Wed, 13 Jun 2007 21:16:28 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: holzheu <holzheu@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, akpm@osdl.org,
-       gregkh@suse.de, mtk-manpages@gmx.net, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-Message-ID: <20070613171628.GA5721@martell.zuzino.mipt.ru>
-References: <1181747217.29512.9.camel@localhost.localdomain>
+	Wed, 13 Jun 2007 13:09:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37686 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756931AbXFMRJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 13:09:33 -0400
+Message-ID: <467024C9.5010300@garzik.org>
+Date: Wed, 13 Jun 2007 13:09:29 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181747217.29512.9.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Kyuma Ohta <whatisthis@jcom.home.ne.jp>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org, leewkb@yahoo.com,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [patch 1/6] 8139too: force media setting cleanup
+References: <200705232134.l4NLYcm2000578@shell0.pdx.osdl.net>	 <46560567.5060708@garzik.org> <1181739176.23954.23.camel@melchior>
+In-Reply-To: <1181739176.23954.23.camel@melchior>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 05:06:57PM +0200, holzheu wrote:
-> -CHECK		= sparse
-> -
-> -CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ -Wbitwise $(CF)
-> +CHECK		= scripts/kmsg-doc check
-> +CHECKFLAGS	=
+Kyuma Ohta wrote:
+> Hi,
+> I was testing 2.6.22-rc4 from yesterday,
+> but communication speed  of 8139 side is very slower 
+> than 2.6.21.* (less than 10kbytes/sec at  
+> 100MBPS,FULL-DUPLEX).
+> I was not test from 2.6.22-rc ,yesterday I started to test 2.6.22-rc.
+> 
+> So, I *must* set HALF-DUPLEX to 8139 side below:
+> ethtool -s ethx speed 100 duplex half autoneg on 
+> *x is number of 8139 assigned from udev.
+> 
+> So,Pls.apply this patch to upstream,and I test this too.
 
-Ick. Don't touch those checking kernel with sparse.
+Your use of ethtool clearly demonstrates the lack of need for this patch.
+
+	Jeff
+
+
+
 
