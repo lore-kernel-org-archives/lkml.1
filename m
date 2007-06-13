@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759608AbXFMT2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759924AbXFMT20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759608AbXFMT2N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 15:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbXFMT1b
+	id S1759924AbXFMT20 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 15:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbXFMT1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 15:27:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:61081 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752563AbXFMT12 (ORCPT
+	Wed, 13 Jun 2007 15:27:32 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:18033 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752568AbXFMT13 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 15:27:28 -0400
+	Wed, 13 Jun 2007 15:27:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=k35UZJSzlg7x7MI+YgjlvPASVFM8evMhVFyZpgCYZyZ3gBPF2YVjQjaeLe7JTWO/wjIhaeCCqw6PmCJe9sp6y2CN8YJY8ysxOm9yiLFikF/FBOY4qdZj/n/hzbgEiJsgvD853NtfMeQ1o2q0LKsQ5gqtnO4RQjDh5GdaNOcVXg0=
+        b=fX2dVxS9iobth6sFkrnbEWILCDxvVD6QSu52OlJgJLwN9+6XzGN2aYXnTDq6RvGnyq4zH1JbdlNKVpjEOxfF4XqIWPX2reo+tDlXret2ffBPDKQo6ZUP6M5m949G9O3DArgvFDQSfNwoD3awslKdcTKQ2D2FVxQjcmuM+TqdWhI=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 01/11] sysfs: make sysfs_drop_dentry() access inodes using ilookup()
+Subject: [PATCH 04/11] sysfs: implement sysfs_find_dirent() and sysfs_get_dirent()
 In-Reply-To: <1181762840495-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
-Date: Thu, 14 Jun 2007 04:27:21 +0900
-Message-Id: <11817628414141-git-send-email-htejun@gmail.com>
+Date: Thu, 14 Jun 2007 04:27:22 +0900
+Message-Id: <11817628422159-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,117 +31,145 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs_drop_dentry() used to go through sd->s_dentry and
-sd->s_parent->s_dentry to access the inodes.  This is incorrect
-because inode can be cached without dentry.
-
-This patch makes sysfs_drop_dentry() access inodes using ilookup() on
-sd->s_ino.  This is both correct and simpler.
+Implement sysfs_find_dirent() and sysfs_get_dirent().
+sysfs_dirent_exist() is replaced by sysfs_find_dirent().  These will
+be used to make directory entries reclamiable.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
- fs/sysfs/inode.c |   63 ++++++++++++++++++++++++------------------------------
- 1 files changed, 28 insertions(+), 35 deletions(-)
+ fs/sysfs/dir.c     |   61 +++++++++++++++++++++++++++++++++++++--------------
+ fs/sysfs/file.c    |    2 +-
+ fs/sysfs/symlink.c |    2 +-
+ fs/sysfs/sysfs.h   |    5 +++-
+ 4 files changed, 50 insertions(+), 20 deletions(-)
 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index ee31bf3..63daa06 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -219,9 +219,9 @@ void sysfs_instantiate(struct dentry *dentry, struct inode *inode)
-  */
- void sysfs_drop_dentry(struct sysfs_dirent *sd)
- {
--	struct dentry *dentry = NULL, *parent = NULL;
--	struct inode *dir;
-+	struct dentry *dentry = NULL;
- 	struct timespec curtime;
-+	struct inode *inode;
- 
- 	/* We're not holding a reference to ->s_dentry dentry but the
- 	 * field will stay valid as long as sysfs_lock is held.
-@@ -229,19 +229,9 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
- 	spin_lock(&sysfs_lock);
- 	spin_lock(&dcache_lock);
- 
-+	/* drop dentry if it's there and dput() didn't kill it yet */
- 	if (sd->s_dentry && sd->s_dentry->d_inode) {
--		/* get dentry if it's there and dput() didn't kill it yet */
- 		dentry = dget_locked(sd->s_dentry);
--		parent = dentry->d_parent;
--	} else if (sd->s_parent->s_dentry->d_inode) {
--		/* We need to update the parent even if dentry for the
--		 * victim itself doesn't exist.
--		 */
--		parent = dget_locked(sd->s_parent->s_dentry);
--	}
--
--	/* drop */
--	if (dentry) {
- 		spin_lock(&dentry->d_lock);
- 		__d_drop(dentry);
- 		spin_unlock(&dentry->d_lock);
-@@ -250,36 +240,39 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
- 	spin_unlock(&dcache_lock);
- 	spin_unlock(&sysfs_lock);
- 
--	/* nothing to do if the parent isn't in dcache */
--	if (!parent)
--		return;
-+	dput(dentry);
-+	/* XXX: unpin if directory, this will go away soon */
-+	if (sd->s_type & SYSFS_DIR)
-+		dput(dentry);
- 
- 	/* adjust nlink and update timestamp */
--	dir = parent->d_inode;
--	mutex_lock(&dir->i_mutex);
--
- 	curtime = CURRENT_TIME;
- 
--	dir->i_ctime = dir->i_mtime = curtime;
-+	inode = ilookup(sysfs_sb, sd->s_ino);
-+	if (inode) {
-+		mutex_lock(&inode->i_mutex);
- 
--	if (dentry) {
--		dentry->d_inode->i_ctime = curtime;
--		drop_nlink(dentry->d_inode);
--		if (sd->s_type & SYSFS_DIR) {
--			drop_nlink(dentry->d_inode);
--			drop_nlink(dir);
--			/* XXX: unpin if directory, this will go away soon */
--			dput(dentry);
--		}
-+		inode->i_ctime = curtime;
-+		drop_nlink(inode);
-+		if (sd->s_type & SYSFS_DIR)
-+			drop_nlink(inode);
-+
-+		mutex_unlock(&inode->i_mutex);
-+		iput(inode);
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index f2ea006..4762a9a 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -317,28 +317,55 @@ void sysfs_attach_dirent(struct sysfs_dirent *sd,
  	}
- 
--	mutex_unlock(&dir->i_mutex);
-+	/* adjust nlink and udpate timestamp of the parent */
-+	inode = ilookup(sysfs_sb, sd->s_parent->s_ino);
-+	if (inode) {
-+		mutex_lock(&inode->i_mutex);
- 
--	/* bye bye */
--	if (dentry)
--		dput(dentry);
--	else
--		dput(parent);
-+		inode->i_ctime = inode->i_mtime = curtime;
-+		if (sd->s_type & SYSFS_DIR)
-+			drop_nlink(inode);
-+
-+		mutex_unlock(&inode->i_mutex);
-+		iput(inode);
-+	}
  }
  
- int sysfs_hash_and_remove(struct dentry * dir, const char * name)
+-/*
++/**
++ *	sysfs_find_dirent - find sysfs_dirent with the given name
++ *	@parent_sd: sysfs_dirent to search under
++ *	@name: name to look for
+  *
+- * Return -EEXIST if there is already a sysfs element with the same name for
+- * the same parent.
++ *	Look for sysfs_dirent with name @name under @parent_sd.
+  *
+- * called with parent inode's i_mutex held
++ *	LOCKING:
++ *	mutex_lock(parent->i_mutex)
++ *
++ *	RETURNS:
++ *	Pointer to sysfs_dirent if found, NULL if not.
+  */
+-int sysfs_dirent_exist(struct sysfs_dirent *parent_sd,
+-			  const unsigned char *new)
++struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
++				       const unsigned char *name)
+ {
+-	struct sysfs_dirent * sd;
++	struct sysfs_dirent *sd;
+ 
+-	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
+-		if (sysfs_type(sd)) {
+-			if (strcmp(sd->s_name, new))
+-				continue;
+-			else
+-				return -EEXIST;
+-		}
+-	}
++	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling)
++		if (sysfs_type(sd) && !strcmp(sd->s_name, name))
++			return sd;
++	return NULL;
++}
+ 
+-	return 0;
++/**
++ *	sysfs_get_dirent - find and get sysfs_dirent with the given name
++ *	@parent_sd: sysfs_dirent to search under
++ *	@name: name to look for
++ *
++ *	Look for sysfs_dirent with name @name under @parent_sd and get
++ *	it if found.
++ *
++ *	LOCKING:
++ *	Kernel thread context (may sleep)
++ *
++ *	RETURNS:
++ *	Pointer to sysfs_dirent if found, NULL if not.
++ */
++struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
++				      const unsigned char *name)
++{
++	struct sysfs_dirent *sd;
++
++	mutex_lock(&parent_sd->s_dentry->d_inode->i_mutex);
++	sd = sysfs_find_dirent(parent_sd, name);
++	sysfs_get(sd);
++	mutex_unlock(&parent_sd->s_dentry->d_inode->i_mutex);
++
++	return sd;
+ }
+ 
+ static int create_dir(struct kobject *kobj, struct dentry *parent,
+@@ -382,7 +409,7 @@ static int create_dir(struct kobject *kobj, struct dentry *parent,
+ 
+ 	/* link in */
+ 	error = -EEXIST;
+-	if (sysfs_dirent_exist(parent->d_fsdata, name))
++	if (sysfs_find_dirent(parent->d_fsdata, name))
+ 		goto out_iput;
+ 
+ 	sysfs_instantiate(dentry, inode);
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index a84b734..e448b88 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -421,7 +421,7 @@ int sysfs_add_file(struct dentry * dir, const struct attribute * attr, int type)
+ 
+ 	mutex_lock(&dir->d_inode->i_mutex);
+ 
+-	if (sysfs_dirent_exist(parent_sd, attr->name)) {
++	if (sysfs_find_dirent(parent_sd, attr->name)) {
+ 		error = -EEXIST;
+ 		goto out_unlock;
+ 	}
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index ff605d3..45b62e2 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -95,7 +95,7 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
+ 		return -ENOENT;
+ 
+ 	mutex_lock(&dentry->d_inode->i_mutex);
+-	if (!sysfs_dirent_exist(dentry->d_fsdata, name))
++	if (!sysfs_find_dirent(dentry->d_fsdata, name))
+ 		error = sysfs_add_link(parent_sd, name, target_sd);
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ 
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 06b5085..f1629b4 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -59,7 +59,10 @@ extern struct inode * sysfs_get_inode(struct sysfs_dirent *sd);
+ extern void sysfs_instantiate(struct dentry *dentry, struct inode *inode);
+ 
+ extern void release_sysfs_dirent(struct sysfs_dirent * sd);
+-extern int sysfs_dirent_exist(struct sysfs_dirent *, const unsigned char *);
++extern struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
++					      const unsigned char *name);
++extern struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
++					     const unsigned char *name);
+ extern struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode,
+ 					     int type);
+ extern void sysfs_attach_dirent(struct sysfs_dirent *sd,
 -- 
 1.5.0.3
 
