@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbXFMUu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbXFMUxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757795AbXFMUu4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 16:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbXFMUut
+	id S1757162AbXFMUxw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 16:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbXFMUxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 16:50:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:48726 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754665AbXFMUus convert rfc822-to-8bit (ORCPT
+	Wed, 13 Jun 2007 16:53:45 -0400
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:46857 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754066AbXFMUxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 16:50:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=t/IAX0S4t1AMJYwpnk3P9XgJ5YeK9fCxdf3p8MnWlQ7udpAOzQsLWDgGJklh69ZNIjMisxxvNl4BbIOxTH835wPJZbNUJ5DCDm6/ztU0OU+BApOQibbVxZojV85fHeKaA6bGQK+cABdEZXqIlKdl5o76kXyyXxhghjITHgTwMCc=
-Message-ID: <6bffcb0e0706131350p4a267fb9ycbc59059956ba896@mail.gmail.com>
-Date: Wed, 13 Jun 2007 22:50:43 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "=?ISO-8859-1?Q?Bj=F6rn_Steinbrink?=" <B.Steinbrink@gmx.de>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "Dan Aloni" <da-x@monatomic.org>,
-       "Chad Tindel" <ctindel@users.sourceforge.net>,
-       "Jay Vosburgh" <fubar@us.ibm.com>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       sparclinux@vger.kernel.org, "David Miller" <davem@davemloft.net>,
-       "Mikael Pettersson" <mikpe@it.uu.se>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Pavel Machek" <pavel@ucw.cz>, linux-usb-devel@lists.sourceforge.net,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Alex Riesen" <raa.lkml@gmail.com>, "Andi Kleen" <ak@suse.de>,
-       discuss@x86-64.org, "Ioan Ionita" <opslynx@gmail.com>
-Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
-In-Reply-To: <20070613202155.GA11073@atjola.homenet>
+	Wed, 13 Jun 2007 16:53:44 -0400
+X-IronPort-AV: i="4.16,417,1175497200"; 
+   d="scan'208"; a="2981763:sNHT29798052"
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: whole bunch o' new IB warnings
+X-Message-Flag: Warning: May contain useful information
+References: <4670568A.7030809@garzik.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 13 Jun 2007 13:53:41 -0700
+In-Reply-To: <4670568A.7030809@garzik.org> (Jeff Garzik's message of "Wed, 13 Jun 2007 16:41:46 -0400")
+Message-ID: <adaejkf4luy.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
-	 <20070613202155.GA11073@atjola.homenet>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 13 Jun 2007 20:53:42.0339 (UTC) FILETIME=[ED074930:01C7ADFC]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/06/07, Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
-> On 2007.06.13 21:57:56 +0200, Michal Piotrowski wrote:
-> > TTY
-> >
-> > Subject    : OOPS (NULL pointer dereference) in v2.6.22-rc3
-> > References : http://lkml.org/lkml/2007/6/1/389
-> >             http://bugzilla.kernel.org/show_bug.cgi?id=8473
-> >             http://bugzilla.kernel.org/show_bug.cgi?id=8574
-> > Submitter  : Alex Riesen <raa.lkml@gmail.com>
-> > Status     : problem is being debugged
->
-> Patch available at: http://lkml.org/lkml/2007/6/8/490
+ > Current git tree on x86-64 (make allmodconfig) wants fixing for 2.6.22:
+ > 
+ > drivers/infiniband/hw/mlx4/qp.c: In function ‘set_rq_size’:
+ > drivers/infiniband/hw/mlx4/qp.c:210: warning: comparison of distinct
+ > pointer types lacks a cast
 
-Thanks for letting me know.
+Thanks, you're right.  You have to admit, it's pretty amusing how many
+times roundup_pow_of_two() expands its argument (via ilog2)...
 
-Regards,
-Michal
+Anyway, I have this queued up to fix it.  I'll ask Linus to pull shortly.
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+commit 42c059ea2b0aac5f961253ba81c1b464d181a600
+Author: Roland Dreier <rolandd@cisco.com>
+Date:   Tue Jun 12 10:52:02 2007 -0700
+
+    IB/mlx4: Fix warning in rounding up queue sizes
+    
+    Doing max(1, foo) where foo is u32 generates a warning, because 1 is a
+    signed constant.  Fix this by using 1U instead.
+    
+    Signed-off-by: Roland Dreier <rolandd@cisco.com>
+
+diff --git a/drivers/infiniband/hw/mlx4/qp.c b/drivers/infiniband/hw/mlx4/qp.c
+index 5c6d054..4c15fa3 100644
+--- a/drivers/infiniband/hw/mlx4/qp.c
++++ b/drivers/infiniband/hw/mlx4/qp.c
+@@ -207,8 +207,8 @@ static int set_rq_size(struct mlx4_ib_dev *dev, struct ib_qp_cap *cap,
+ 		if (is_user && (!cap->max_recv_wr || !cap->max_recv_sge))
+ 			return -EINVAL;
+ 
+-		qp->rq.max	 = roundup_pow_of_two(max(1, cap->max_recv_wr));
+-		qp->rq.max_gs	 = roundup_pow_of_two(max(1, cap->max_recv_sge));
++		qp->rq.max	 = roundup_pow_of_two(max(1U, cap->max_recv_wr));
++		qp->rq.max_gs	 = roundup_pow_of_two(max(1U, cap->max_recv_sge));
+ 		qp->rq.wqe_shift = ilog2(qp->rq.max_gs * sizeof (struct mlx4_wqe_data_seg));
+ 	}
+ 
