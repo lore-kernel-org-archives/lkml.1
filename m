@@ -1,40 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbXFMLRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbXFMLRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbXFMLRS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 07:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757891AbXFMLQ5
+	id S1758004AbXFMLRe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 07:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758063AbXFMLRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 07:16:57 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:58764 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757861AbXFMLQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 07:16:56 -0400
-Date: Wed, 13 Jun 2007 13:15:02 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org, khali@linux-fr.org
-Subject: Re: [PATCH] i2c-gpio: Add support for new-style clients
-Message-ID: <20070613131502.6329b80c@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <20070613.004316.128619812.anemo@mba.ocn.ne.jp>
-References: <20070613.004316.128619812.anemo@mba.ocn.ne.jp>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Jun 2007 07:17:18 -0400
+Received: from stinky.trash.net ([213.144.137.162]:60930 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758054AbXFMLRQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 07:17:16 -0400
+Message-ID: <466FD17A.8040900@trash.net>
+Date: Wed, 13 Jun 2007 13:14:02 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: cannot set IP for ethernet
+References: <200706121441.13561.oliver@neukum.org> <466EA861.2070509@trash.net> <200706131039.32011.oliver@neukum.org>
+In-Reply-To: <200706131039.32011.oliver@neukum.org>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jun 2007 00:43:16 +0900 (JST)
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-
-> Use i2c_bit_add_numbered_bus() if device id specified, so that the
-> i2c-gpio adapter works well with new-style pre-declared devices.
+Oliver Neukum wrote:
+> Am Dienstag, 12. Juni 2007 schrieb Patrick McHardy:
 > 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+>>Oliver Neukum wrote:
+>>
+>>>with 2.6.22-rc4-git2 I am getting errors when setting IP for ethernet
+>>>interfaces:
+>>>
+>>>ioctl(4, SIOCSIFADDR, 0x7fff94931600)   = -1 ENOBUFS (No buffer space available)
+>>>
+>>>The error is independant of the interface. It happens to all interfaces.
+>>>There's nothing in the syslog.
+>>>
+>>>valisk:/home/oliver # uname -a
+>>>Linux valisk 2.6.22-rc4-git2-default #3 SMP Tue Jun 12 13:27:54 CEST 2007 x86_64 x86_64 x86_64 GNU/Linux
+>>
+>>
+>>This can happen if the initial inetdev allocation when the netdevice is
+>>registered fails. I think it would make sense to try to allocate again
+>>when adding addresses in that case, otherwise there is no way of
+>>recovery other than unregistering and registering the device again.
+> 
+> 
+> With your patch the problem has gone away. Is there a way to especially
+> stress the system in that regard?
 
-Makes sense to me. I haven't got any test setup with multiple i2c
-busses, but using the platform_device id seems like the obvious way to
-number the busses from a board developer's point of view.
 
-Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Its a failed allocation at NETDEV_REGISTER time. I guess you could
+keep unloading + reloading the driver module to try to reproduce it.
