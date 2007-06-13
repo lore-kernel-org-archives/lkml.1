@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbXFMSlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759681AbXFMSnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759532AbXFMSlS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 14:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759340AbXFMSks
+	id S1759681AbXFMSnR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 14:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbXFMSnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 14:40:48 -0400
-Received: from rtr.ca ([64.26.128.89]:3338 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754934AbXFMSkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 14:40:46 -0400
-Message-ID: <46703A2D.6000207@rtr.ca>
-Date: Wed, 13 Jun 2007 14:40:45 -0400
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 13 Jun 2007 14:43:10 -0400
+Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:36906 "EHLO
+	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbXFMSnJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 14:43:09 -0400
+X-Greylist: delayed 1991 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 14:43:08 EDT
+Date: Wed, 13 Jun 2007 14:09:53 -0400
+To: Bernd Paysan <bernd.paysan@gmx.de>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070613180953.GA18512@delft.aura.cs.cmu.edu>
+Mail-Followup-To: Bernd Paysan <bernd.paysan@gmx.de>,
+	Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+References: <466A3EC6.6030706@netone.net.tr> <200706131402.11396.bernd.paysan@gmx.de> <m33b0w80dg.fsf@maximus.localdomain> <200706131624.37211.bernd.paysan@gmx.de>
 MIME-Version: 1.0
-To: albertl@mail.com
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: libata passthru: support PIO multi commands
-References: <200706112200.l5BM0qFn005767@hera.kernel.org>	<20070611233917.4bd8c6d7@the-village.bc.nu>	<466DE438.70108@garzik.org>	<20070612111621.10074408@the-village.bc.nu>	<466EB937.6050807@garzik.org> <20070612170519.5f427a70@the-village.bc.nu> <466F5D11.7000404@tw.ibm.com>
-In-Reply-To: <466F5D11.7000404@tw.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706131624.37211.bernd.paysan@gmx.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Jan Harkes <jaharkes@cs.cmu.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Albert Lee wrote:
-> ..
-> It looks like the ATA passthru commands contain more information than
-> what libata needs to execute a command.
-> 
-> e.g. protocol number:
->      libata could possibly infer the protocol from the command opcode.
-> 
-> e.g. multi_count:
->      libata caches dev->multi_count. Passing multi_count along with
->      each passthru command looks useless for libata.     
-> 
-> e.g. t_dir:
->      libata could possible infer the direction from the command opcode
->      or from the protocol number (e.g. 4: PIO_IN / 5: PIO_OUT).
+On Wed, Jun 13, 2007 at 04:24:36PM +0200, Bernd Paysan wrote:
+> There's no point of discussing that the Linux kernel *as a whole* (as 
+> compilation) currently is under GPLv2 only, since it sais so, and a few 
+> files also explicitely say so. The whole combination is GPLv2 only, but 
+> most parts aren't.
 
-I wonder if the *intent* of the specification was that the low-level driver
-should perform whatever setup is necessary to issue the command as given.
+You claim that any source files without a notices are 'any version of
+the GPL'. But I read the license and you are totally wrong about that.
 
-So if the command specifies a multcount of 8, then the LLD should issue the
-appropriate initialization commands to use a multcount of 8, and then issue
-the given R/W MULT command, and then perhaps reset the multcount back to
-what it was normally (beforehand) ?
+The GPL applies to "the Program" which in this case is the Linux kernel
+as a whole and it in fact does indicate a specific version. All code
+submitted and included in this program has has been submitted with the
+understanding that the work as a whole is specifically licensed as
+GPLv2. Some authors have granted additional rights, such as dual BSD/GPL
+or GPLv2 and later and explicitly added such a notice.
 
-Ditto for the others.
+All other code is simply copyrighted, and the only available license is
+the GPLv2. Take for example fs/inode.c. Notice how it doesn't have GPL
+boilerplate, but it is clearly indicating that it is copyrighted. So
+taking that file by itself out of the context of the kernel and then
+distributing it would clearly be a copyright violation. The only one
+reason you can distribute that code is because of the GPLv2 that covers
+the Linux kernel (i.e. "the Program").
 
-I am *not* proposing that we actually do it this way,
-but rather just suggesting a possible rationale.
+> > > So my conclusion is: If you, as contributor to the Linux kernel, want
+> > > to make clear that your work really is GPLv2 only, you have to do that
+> > > yourself, you have to add a notice like above to files where you
+> > > exclusively own copyright.
 
-What does the SAT spec say?  Any further hints as to the intent?
+The kernel is explicitly licensed as GPLv2, any contributions (source
+files/parts of the work) that wish to grant additional rights have to
+specify so explicitly, and not the other way around however much you'd
+like that.
 
-Cheers
+> patches as the mainline kernel), I'm free to choose under which conditions 
+> I redistribute it, given that it's compatible with the conditions the 
+> original authors have chosen. Most of them have said nothing (other than 
+> implicitely that it's ok for them to put it under GPL, as they haven't 
+> opposed to inclusion into the Linux kernel), some have said GPLv2 or later, 
+
+Reread section 9 and consider that "the Program" is the Linux kernel,
+which does explicitly state a version and does not include the "and any
+later" option. Any source that does not explicitly specify additional
+rights is GPLv2.
+
+Jan
+
