@@ -1,95 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758332AbXFMMER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbXFMMHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758332AbXFMMER (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 08:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757661AbXFMMED
+	id S1758239AbXFMMHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 08:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757624AbXFMMHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 08:04:03 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:54898 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757352AbXFMMEB (ORCPT
+	Wed, 13 Jun 2007 08:07:34 -0400
+Received: from calisto.ae.poznan.pl ([150.254.37.3]:35919 "EHLO
+	calisto.ae.poznan.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757253AbXFMMHd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 08:04:01 -0400
-Date: Wed, 13 Jun 2007 08:00:37 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, snitzer@gmail.com
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-Message-ID: <20070613120037.GA28279@think.oraclecorp.com>
-References: <787b0d920706122245j3a2ff7e8ja611ecf41cc67a4c@mail.gmail.com>
+	Wed, 13 Jun 2007 08:07:33 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 08:07:33 EDT
+Message-ID: <466FDC76.6020207@dns.toxicfilms.tv>
+Date: Wed, 13 Jun 2007 14:00:54 +0200
+From: Maciej Soltysiak <solt2@dns.toxicfilms.tv>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <787b0d920706122245j3a2ff7e8ja611ecf41cc67a4c@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.21.14 NFS related oops
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 01:45:28AM -0400, Albert Cahalan wrote:
-> Neat! It's great to see somebody else waking up to the idea that
-> storage media is NOT to be trusted.
-> 
-> Judging by the design paper, it looks like your structs have some
-> alignment problems.
+Hi,
 
-Actual defs are all packed, but I may still shuffle around the structs
-to optimize alignment.  The keys are fixed, although I may make the u32
-in the middle smaller.
+If anyone is interested I got this OOPS while running a torrent 
+(btdownloadcurses)
+application writing directly to a NAS mounted via nfs3.
 
-> 
-> The usual wishlist:
-> 
-> * inode-to-pathnames mapping
+The client machine is 2.6.21.14 and it is mounted with options:
+wsize=8192,rsize=8192,hard,intr,tcp
 
-This one I'll code, it will help with inode link count verification.  I
-want to be able to detect at run time that an inode with a link count of
-zero is still actually in a directory. So there will be back pointers
-from the inode to the directory.
+After that, the application hung and i am unable to cd into the mounted 
+nfs directory
+nor unmount it (busy), nor kill the app (kill -9 fails, process in D state)
 
-Also, the incremental backup code will be able to walk the btree to find
-inodes that have changed, and the backpointers will help make a list of
-file names that need to be rsync'd or whatever.
+Best regards,
+Maciej
 
-> * a subvolume that is a single file (disk image, database, etc.)
-
-subvolumes can be made that have a single file in them, but they have to
-be directories right now.  Doing otherwise would complicate mounts and
-other management tools (inside the btree, it doesn't really matter).
-
-> * directory indexes to better support Wine and Samba
-> * secure delete via destruction of per-file or per-block random crypto keys
-
-I'd rather keep secure delete as a userland problem (or a layered FS
-problem).  When you take backups and other copies of the file into
-account, it's a bigger problem than btrfs wants to tackle right now.
-
-> * fast (seekless) access to normal-sized SE Linux data
-
-acls and xattrs will adjacent to the inode in the tree.  Most of the
-time it'll be seekless.
-
-> * atomic creation of copy-on-write directory trees
-
-Do you mean something more fine grained than the current snapshotting
-system?
-
-> * immutable bits like UFS has
-
-I'll do the ext2 chattr calls.
-
-> * hole punch ability
-
-Hole punching isn't harder or easier in btrfs than most other
-filesystems that support holes.  It's largely a VM issue.
-
-> * insert/delete ability (add/remove a chunk in the middle of a file)
-
-The disk format makes this O(extent records past the chunk).  It's
-possible to code but it would not be optimized.
-
--chris
+BUG: unable to handle kernel paging request at virtual address 5018f248
+ printing eip:
+f0a93c94
+*pde = 00000000
+Oops: 0002 [#1]
+Modules linked in: binfmt_misc sit nfs lockd nfs_acl sunrpc w83627ehf 
+i2c_isa i2c_viapro i2c_core via_agp agpgart rtc
+CPU:    0
+EIP:    0060:[<f0a93c94>]    Not tainted VLI
+EFLAGS: 00010206   (2.6.20.14-cks1 #15)
+EIP is at rpcauth_checkverf+0x34/0x70 [sunrpc]
+eax: d2f4447c   ebx: c655d584   ecx: 00000000   edx: f0aa9f60
+esi: e91ea640   edi: d2f44474   ebp: ede2f228   esp: e64b5eec
+ds: 007b   es: 007b   ss: 0068
+Process rpciod/0 (pid: 1005, ti=e64b4000 task=efe95a90 task.ti=e64b4000)
+Stack: 00000286 ede2f8a0 ede2f8a0 00000286 c655d584 121d0da3 00000820 
+f0a8d7fd
+       f0a93d60 f08bae07 00000286 c655d5cc 00000286 00000286 f08c0520 
+c655d584
+       00000000 c655d5ec f0a93260 f0a9306f efe95a90 ee2d5740 e092ffb0 
+c034e11c
+Call Trace:
+ [<f0a8d7fd>] call_decode+0x27d/0x5e0 [sunrpc]
+ [<f0a93d60>] rpcauth_unbindcred+0x20/0x60 [sunrpc]
+ [<f08bae07>] nfs_readpage_result_full+0xf7/0x120 [nfs]
+ [<f08c0520>] nfs3_xdr_readres+0x0/0x160 [nfs]
+ [<f0a93260>] rpc_async_schedule+0x0/0x10 [sunrpc]
+ [<f0a9306f>] __rpc_execute+0x5f/0x250 [sunrpc]
+ [<c034e11c>] schedule+0x21c/0x450
+ [<c01283aa>] run_workqueue+0x7a/0x110
+ [<c0128a07>] worker_thread+0x137/0x160
+ [<c01176b0>] default_wake_function+0x0/0x10
+ [<c01288d0>] worker_thread+0x0/0x160
+ [<c012b329>] kthread+0xa9/0xe0
+ [<c012b280>] kthread+0x0/0xe0
+ [<c0103a97>] kernel_thread_helper+0x7/0x10
+ =======================
+Code: 10 89 5c 24 10 89 c3 89 7c 24 18 89 d7 89 74 24 14 8b 70 28 75 1a 8b
+4e 08 89 fa 89 d8 ff 51 18 8b 5c 24 10 83 74 24 14 8b 7c 24 <18> 83 c4 1c c3
+89 74 24 0c 8b 40 10 8b 40 24 8b 40 10 8b 40 08 EIP: [<f0a93c94>]
+rpcauth_checkverf+0x34/0x70 [sunrpc] SS:ESP 0068:e64b5eec
 
