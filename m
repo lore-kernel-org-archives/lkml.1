@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759074AbXFMNkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbXFMNm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759074AbXFMNkn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 09:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbXFMNiQ
+	id S1758835AbXFMNm3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 09:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbXFMNmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 09:38:16 -0400
-Received: from gsimpson.gotadsl.co.uk ([84.12.90.178]:50873 "EHLO localhost"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758450AbXFMNiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 09:38:15 -0400
-Message-Id: <20070613131200.369210477@localhost>
-References: <20070613130953.983863758@localhost>
-Date: Wed, 13 Jun 2007 14:09:59 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: [patch 6/6] SM501 MFD driver updates
-Content-Disposition: inline; filename=simtec-drivers-mfd-sm501-idcheck.patch
+	Wed, 13 Jun 2007 09:42:20 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:34240 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752903AbXFMNmT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 09:42:19 -0400
+Message-ID: <466FF154.7030905@aitel.hist.no>
+Date: Wed, 13 Jun 2007 15:29:56 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: John Sigler <linux.kernel@free.fr>
+CC: Andrea Arcangeli <andrea@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: Runaway process and oom-killer
+References: <466FAF99.3070708@free.fr> <20070613090837.GD7443@v2.random> <466FB6E8.8020606@free.fr>
+In-Reply-To: <466FB6E8.8020606@free.fr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SM501: Check SM501 ID register on initialisation
+John Sigler wrote:
+> Andrea Arcangeli wrote:
+>
+>> On Wed, Jun 13, 2007 at 10:49:29AM +0200, John Sigler wrote:
+>>
+>>> Question 2: how can I tell which process or kernel thread was 
+>>> hogging most of the RAM when the oom-killer kicked in?
+>>
+>> Theoretically the one that was killed first but not for sure in
+>> current mainline hence see below.
+>
+> If I read the logs correctly, oom-killer is "invoked" three times 
+> before it effectively kills a process. Then oom-killer kills myapp, 
+> syslogd, and boa, in that order. Why didn't oom-killer kill anything 
+> the first three times?
+My guess:
+Something needs memory but finds there is none to be had
+oom-killer is invoked and targets myapp.
+myapp takes some time to die. Particularly, the memory it uses
+isn't freed up instantly. In the meantime something else
+needs memory and find none. (Another packet received?)
+The oom-killer is invoked again, this time it targets syslogd.
 
-When binding the driver, check the ID register for a valid
-identity, in case the SM501 is not functioning correctly.
+And so on.  The kernel do many things in parallel, running out
+of memory in a multitasking system therefore is a complicated business.
+Especially when process killing takes some time.
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+Note that you can turn off memory overcommit, your leaky app
+should then get a memory allocation error instead of
+triggering the oom-killer.
 
-Index: linux-2.6.21-quilt8/drivers/mfd/sm501.c
-===================================================================
---- linux-2.6.21-quilt8.orig/drivers/mfd/sm501.c	2007-06-13 11:33:55.000000000 +0100
-+++ linux-2.6.21-quilt8/drivers/mfd/sm501.c	2007-06-13 12:59:31.000000000 +0100
-@@ -883,6 +883,7 @@ static int sm501_init_dev(struct sm501_d
- {
- 	resource_size_t mem_avail;
- 	unsigned long dramctrl;
-+	unsigned long devid;
- 	int ret;
- 
- 	mutex_init(&sm->clock_lock);
-@@ -890,13 +891,18 @@ static int sm501_init_dev(struct sm501_d
- 
- 	INIT_LIST_HEAD(&sm->devices);
- 
--	dramctrl = readl(sm->regs + SM501_DRAM_CONTROL);
-+	devid = readl(sm->regs + SM501_DEVICEID);
- 
-+	if ((devid & SM501_DEVICEID_IDMASK) != SM501_DEVICEID_SM501) {
-+		dev_err(sm->dev, "incorrect device id %08lx\n", devid);
-+		return -EINVAL;
-+	}
-+
-+	dramctrl = readl(sm->regs + SM501_DRAM_CONTROL);
- 	mem_avail = sm501_mem_local[(dramctrl >> 13) & 0x7];
- 
--	dev_info(sm->dev, "SM501 At %p: Version %08x, %ld Mb, IRQ %d\n",
--		 sm->regs, readl(sm->regs + SM501_DEVICEID),
--		 (unsigned long)mem_avail >> 20, sm->irq);
-+	dev_info(sm->dev, "SM501 At %p: Version %08lx, %ld Mb, IRQ %d\n",
-+		 sm->regs, devid, (unsigned long)mem_avail >> 20, sm->irq);
- 
- 	sm501_dump_gate(sm);
- 
-Index: linux-2.6.21-quilt8/include/linux/sm501-regs.h
-===================================================================
---- linux-2.6.21-quilt8.orig/include/linux/sm501-regs.h	2007-06-13 11:33:55.000000000 +0100
-+++ linux-2.6.21-quilt8/include/linux/sm501-regs.h	2007-06-13 11:33:56.000000000 +0100
-@@ -109,6 +109,9 @@
- #define SM501_DEVICEID			(0x000060)
- /* 0x050100A0 */
- 
-+#define SM501_DEVICEID_SM501		(0x05010000)
-+#define SM501_DEVICEID_IDMASK		(0xffff0000)
-+
- #define SM501_PLLCLOCK_COUNT		(0x000064)
- #define SM501_MISC_TIMING		(0x000068)
- #define SM501_CURRENT_SDRAM_CLOCK	(0x00006C)
+Helge Hafting
 
---
