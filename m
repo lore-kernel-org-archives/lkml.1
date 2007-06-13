@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbXFMVWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbXFMVXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbXFMVWU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 17:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbXFMVWL
+	id S1755591AbXFMVXW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 17:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXFMVXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 17:22:11 -0400
-Received: from server001.webpack.hosteurope.de ([80.237.130.9]:42655 "EHLO
-	server001.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751448AbXFMVWK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 17:22:10 -0400
-From: Andi Drebes <lists-receive@programmierforen.de>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [KJ] [PATCH] drivers/acpi: sizeof/sizeof array size calculations replaced with ARRAY_SIZE
-Date: Wed, 13 Jun 2007 23:21:38 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
-       Len Brown <lenb@kernel.org>, kernel-janitors@lists.osdl.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200705261239.27485.lists-receive@programmierforen.de> <200706122041.06252.lists-receive@programmierforen.de> <200706121253.07395.bjorn.helgaas@hp.com>
-In-Reply-To: <200706121253.07395.bjorn.helgaas@hp.com>
+	Wed, 13 Jun 2007 17:23:15 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40012 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbXFMVXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 17:23:14 -0400
+Message-ID: <4670602F.9000908@pobox.com>
+Date: Wed, 13 Jun 2007 17:22:55 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Greaves <david@dgreaves.com>, David Chinner <dgc@sgi.com>,
+       Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com> <20070607222813.GG85884050@sgi.com> <4669A965.20403@dgreaves.com> <alpine.LFD.0.98.0706121123550.14121@woody.linux-foundation.org> <466FD214.9070603@dgreaves.com> <alpine.LFD.0.98.0706131344550.14121@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706131344550.14121@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706132321.39440.lists-receive@programmierforen.de>
-X-bounce-key: webpack.hosteurope.de;lists-receive@programmierforen.de;1181769730;b939f309;
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<snip>
-> You found the right one.  The ACPI CA in Linux is really the same
-> as the one from Intel.  Len integrates the Intel one into Linux
-> periodically.  He uses scripts or something to format it so it looks
-> more like Linux.
-Ok. That's what I thought so far.
+Linus Torvalds wrote:
+> Ok, good. So the bug is apparently in the generic SCSI layer start/stop
+> handling. I'm not entirely surprised, most people would never have 
+> triggered it (I _think_ it's disabled by default for all devices, and that 
+> the libata-scsi.c change was literally the first thing to ever enable it 
+> by default for anything!)
 
-> I think Len sometimes takes patches against the "Linux-ized" ACPI CA.
-> He probably has to apply those by hand to the Intel one, which is
-> the real "upstream" in this case.  So it might be a bit easier for
-> him if you generated a diff against the Intel version. 
-OK. I will do this in the next time.
 
-> In any event, you want to end up with one patch, not two.
-Ok. I thought of two patches because I didn't know how strong
-the sources from the  ACPI CA are modified.
+I haven't looked at this yet, but wanted to confirm your assessment 
+here:  libata was indeed the first (and still only?) user of this code path.
 
-> You probably would have to add something like:
-> 
->   #ifndef ARRAY_SIZE
->   #define ARRAY_SIZE(x) ...
->   #endif
-> 
-> somewhere in the ACPI CA header files.  That way it will work in
-> non-Linux OSes as well.
+Since some SCSI devices may not be owned by the host computer, in the 
+power management sense, we don't want to turn that on for all SCSI 
+devices.  Otherwise you wind up powering off a device in another building :)
 
-Thanks so far,
-	Andi
+This is basically the libata suspend/resume path, even though bits touch 
+generic SCSI.
+
+	Jeff
+
+
