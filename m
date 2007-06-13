@@ -1,185 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbXFMKc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbXFMKib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758345AbXFMKc2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 06:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbXFMKcU
+	id S1757931AbXFMKib (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 06:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbXFMKiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 06:32:20 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:57855 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756872AbXFMKcS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 06:32:18 -0400
-Message-ID: <466FC79F.7090805@bx.jp.nec.com>
-Date: Wed, 13 Jun 2007 19:31:59 +0900
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 13 Jun 2007 06:38:23 -0400
+Received: from styx.suse.cz ([82.119.242.94]:32843 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756705AbXFMKiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 06:38:23 -0400
+Date: Wed, 13 Jun 2007 12:38:06 +0200
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Hans de Goede <j.w.r.degoede@hhs.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stanislav Brabec <sbrabec@suse.cz>
+Subject: Re: Proposal: change keycode for scancode e0 32 from 150 to 172
+Message-ID: <20070613103806.GF19888@suse.cz>
+References: <466F1462.5090008@hhs.nl> <466F1E5C.5090002@zytor.com>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [RFC][PATCH -mm take5 7/7] update documentation
-References: <466FC455.5060001@bx.jp.nec.com>
-In-Reply-To: <466FC455.5060001@bx.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466F1E5C.5090002@zytor.com>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+On Tue, Jun 12, 2007 at 03:29:48PM -0700, H. Peter Anvin wrote:
+> I just tested this using Microsoft Natural Keyboard Pro, which is a
+> dual-mode (USB-PS/2) keyboard.
+> 
+> This key is labelled Web/Home and has a picture of a house on the keycap.
+> 
+> In PS/2 mode it reports E0 32 which gets converted to keycode 150.
+> In USB mode it reports E0 02 which gets converted to keycode 172.
+> 
+> I don't know if it's the keyboard itself that's being inconsistent, or
+> if it is the table in usbkbd.c that's broken (in which case it should be
+> fixed to be consistent with the keyboard in PS/2 mode.)
 
-update Documentation/networking/netconsole.txt
- - how to use sysfs for dynamic configurability
- - how to use ioctl for dynamic configurability
+USB keyboards don't send scancodes, what you see is smoke and mirrors.
 
-Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
----
-Index: mm/Documentation/networking/netconsole.txt
-===================================================================
---- mm.orig/Documentation/networking/netconsole.txt
-+++ mm/Documentation/networking/netconsole.txt
-@@ -4,6 +4,9 @@ started by Ingo Molnar <mingo@redhat.com
- 
- Please send bug reports to Matt Mackall <mpm@selenic.com>
- 
-+1. Description
-+--------------
-+
- This module logs kernel printk messages over UDP allowing debugging of
- problem where disk logging fails and serial consoles are impractical.
- 
-@@ -13,6 +16,21 @@ the specified interface as soon as possi
- capture of early kernel panics, it does capture most of the boot
- process.
- 
-+This module equips the runtime configurability that can changes
-+values(src/tgt IP address and port, tgt MAC address) by using sysfs
-+and can add/remove logging agent by using ioctls.
-+
-+In order to use the runtime configurability, you have to enable
-+CONFIG_NETCONSOLE_DYNCON. If you don't use one, you don't have to enable
-+CONFIG_NETCONSOLE_DYNCON. By disabling this option, The kernel module
-+size is smaller than the module enabled CONFIG_NETCONSOLE_DYNCON.
-+
-+2. Configuration
-+----------------
-+
-+2.1 Module Parameter(sender side)
-+---------------------------------
-+
- It takes a string configuration parameter "netconsole" in the
- following format:
- 
-@@ -34,12 +52,21 @@ Examples:
- 
-  insmod netconsole netconsole=@/,@10.0.0.2/
- 
-+Or it also takes a semi-colon separated configuration parameter.
-+In the case, you can send kerenl messages to multiple logging agents.
-+
-+ netconsole=<target1>;<target2>;<target3>
-+
-+ each target is the above configuration parameter.
-+
-+Examples:
-+
-+ netconsole="@/,6666@10.0.0.2/;@/,6666@10.0.0.3/"
-+
- Built-in netconsole starts immediately after the TCP stack is
- initialized and attempts to bring up the supplied dev at the supplied
- address.
- 
--The remote host can run either 'netcat -u -l -p <port>' or syslogd.
--
- WARNING: the default target ethernet setting uses the broadcast
- ethernet address to send packets, which can cause increased load on
- other systems on the same ethernet segment.
-@@ -55,3 +82,83 @@ from IRQ contexts as well, and does not 
- sending packets. Due to these unique needs, configuration cannot
- be more automatic, and some fundamental limitations will remain:
- only IP networks, UDP packets and ethernet devices are supported.
-+
-+2.2 Receiver side
-+-----------------
-+
-+The remote host can run either 'netcat -u -l -p <port>' or syslogd.
-+
-+3 Dynamic Configurability
-+-------------------------
-+
-+You can make use of the dynamic configurability if
-+CONFIG_NETCONSOLE_DYNCON is enabled. The operations are the following.
-+
-+3.1 /sys/class/misc/netconsole
-+
-+This entry, "netconsole", has the following attributes related to
-+netconsole. You can change configuration of netconsole(writable
-+attributes such as IP address, port number and so on) and check
-+current configuration of netconsole.
-+
-+-+- /sys/class/misc/
-+ |-+- netconsole/
-+   |-+- port1/
-+   | |--- enabled      [rw-r--r--] 0:disable 1:enable
-+   | |--- id           [r--r--r--] unique port id
-+   | |--- local_ip     [rw-r--r--] source IP to use
-+   | |--- local_mac    [r--r--r--] source MAC address
-+   | |--- local_port   [rw-r--r--] source port number for UDP packets
-+   | |--- net:<netdev> [r--r--r--] symlink to net_dev: eth0,eth1,...
-+   | |--- remote_ip    [rw-r--r--] port number for logging agent
-+   | |--- remote_mac   [rw-r--r--] MAC address for logging agent
-+   | +--- remote_port  [rw-r--r--] IP address for logging agent
-+   |--- port2/
-+   |--- port3/
-+   ...
-+
-+If "enabled" attribute of certain port is '1', this port is used
-+and the configurations of this port are uable to change.
-+
-+If "enabled" attribute of certain port is '0', this port isn't used
-+and the configurations of this port are able to change.
-+
-+3.2 ioctls
-+
-+1. create device file
-+
-+First of all, we would like you to check the entry, "/proc/devices",
-+in procfs because of creating device file for netconsole.
-+If you can find the entry, "netcon" and that major number, create
-+the device file using mknod command.
-+
-+2. send commands using ioctl system call
-+
-+You can send the following ioctl commands to the above device file.
-+
-+- NETCONSOLE_ADD_TARGET ioctl adds netconsole target
-+
-+In the case of module parameter,
-+
-+  netconsole=6665@10.0.0.1/eth0,6666@10.0.0.2/12:34:56:78:9a:bc
-+
-+In the case of ioclt command,
-+
-+  struct netconsole_request req = {
-+          .netdev_name = "eth0",
-+          .local_ip = inet_addr("10.0.0.1"),
-+          .local_port = 6665,
-+          .remote_ip = inet_addr("10.0.0.2"),
-+          .remote_port = 6666,
-+          .remote_mac = {0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc},
-+  };
-+  ioctl(fd, NETCON_ADD_TARGET, &req)
-+
-+The above patterns mean the same thing.
-+
-+- NETCONSOLE_REMOVE_TARGET ioctl removes netconsole target.
-+
-+  ioctl(fd, NETCON_REMOVE_TARGET, &id)
-+
-+The above "id" is port number in /sys/class/misc/netconsole.
-+For example, The "id" is 1 for /sys/class/misc/netconsole/port1.
+Yes, the atkbd.c and hid-input.c mappings are inconsistent. We probably
+want to fix atkbd.c (scancode->keycode mapping), and maybe also
+char/keyboard.c (keycode->synth scancode mapping).
+
+> > The logo on the key is a homepage logo, the text below is www/homepage.
+> > So what to send? I believe that for consistency with the usb codes send
+> > it should be KEY_HOMEPAGE, but thats based on a sample of 1 usb
+> > keyboard. Input on what other usb keyboards send for the key with the
+> > homepage iocn is very much welcome.
+> 
+> You seem to be of the opinion that "usb behaviour is correct", but don't
+> give any motivation why usb should take precedence.  Offhand, I would
+> expect there to be fewer translation layers for PS/2 and would therefore
+> assume PS/2 is more inherently correct.
+
+KEY_HOMEPAGE seems to better fit the description of how the key looks.
+Microsoft calls it "WWW Home", and it's supposed to be e0 32. 
 
 -- 
-
-
+Vojtech Pavlik
+Director SuSE Labs
