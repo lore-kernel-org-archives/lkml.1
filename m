@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbXFMALa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbXFMAVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbXFMALa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 20:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbXFMALW
+	id S1755860AbXFMAVw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 20:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbXFMAVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 20:11:22 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:37683 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbXFMALV (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 20:11:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DJWINpYVIoNbM9KmzFTSATq/h9j1ouj4itWRx+whYVsTZgce4MTypCikX8Zk1j7v6j5u5uzBCBN+iwoAarvZ+T45H4dMgPNCDkCmyJBxvEPx1trcCi+KjegGUGi/eMZtACxbpaehzDyUMZZyI9v0s/JH55jWW2aIZaFtr7F9yJY=
-Message-ID: <6934efce0706121711m738bd9abqa02350ccc7eabf9f@mail.gmail.com>
-Date: Tue, 12 Jun 2007 17:11:20 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: carsteno@de.ibm.com
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       richard.griffiths@windriver.com,
-       "Richard Griffiths" <res07ml0@verizon.net>,
-       Linux-kernel@vger.kernel.org
-In-Reply-To: <46641472.3080802@de.ibm.com>
+	Tue, 12 Jun 2007 20:21:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50348 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754428AbXFMAVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 20:21:43 -0400
+Date: Tue, 12 Jun 2007 20:21:15 -0400
+From: Dave Jones <davej@redhat.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Fix empty macros in acpi.
+Message-ID: <20070613002115.GA28778@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Al Viro <viro@ftp.linux.org.uk>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070612233309.GA24251@redhat.com> <20070613000029.GK21478@ftp.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1179871779.24163.11.camel@localhost.localdomain>
-	 <20070522154905.1d7e8a2e.akpm@linux-foundation.org>
-	 <4653F264.1030807@de.ibm.com> <465BB5BA.3050900@yahoo.com.au>
-	 <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com>
-	 <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com>
+In-Reply-To: <20070613000029.GK21478@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Nick Piggin wrote:
-> > The question is, why is that not enough (I haven't looked at these
-> > patches enough to work out if there is anything more they provide).
-> I think, it just takes trying things out. From reading the code, I
-> think this should work well for the filemap_xip code with no struct page.
-> Also, we need eliminate nopage() to get rid of the struct page.
-> Unfortunately I don't find time to try this out for now, and on 390 we
-> can live with struct page for the time being. In contrast to the
-> embedded platforms, the mem_mep array gets swapped out to disk by our
-> hypervisor.
+On Wed, Jun 13, 2007 at 01:00:29AM +0100, Al Viro wrote:
+ > On Tue, Jun 12, 2007 at 07:33:09PM -0400, Dave Jones wrote:
+ > > +#define DBG(x...) do { } while(0)
+ > 
+ > Eh...  Please, stop it - if you want a function-call-like no-op returning void,
+ > use ((void)0).  At least that way one can say DBG(....),foo(), etc.
 
-Can you help me understand the comment about nopage()?  Do you mean
-set xip_file_vm_ops.nopage to NULL?
+They both end up compiled to nothing anyway, so I'm not bothered
+either way..   I'm not sure I follow why the syntax of that last part
+is a good thing.  It looks like something we'd want to avoid rather
+than promote?
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
