@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbXFMW4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbXFMWzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758356AbXFMW4F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 18:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbXFMWzy
+	id S1758078AbXFMWzH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 18:55:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbXFMWyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 18:55:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48609 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754589AbXFMWzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 18:55:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH -mm 0/7] PM: Remove unused and unnecessary features from suspend and resume core
-Date: Thu, 14 Jun 2007 01:02:31 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <200706131551.51336.rjw@sisk.pl> <20070613215946.GA26206@kroah.com>
-In-Reply-To: <20070613215946.GA26206@kroah.com>
+	Wed, 13 Jun 2007 18:54:54 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:37291 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757521AbXFMWyw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 18:54:52 -0400
+Date: Wed, 13 Jun 2007 18:54:48 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: Toshiharu Harada <haradats@gmail.com>
+cc: Rik van Riel <riel@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Toshiharu Harada <haradats@nttdata.co.jp>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [RFC] TOMOYO Linux
+In-Reply-To: <9d732d950706131525n667587e6t59e94c5cee951c6d@mail.gmail.com>
+Message-ID: <Line.LNX.4.64.0706131835040.13360@localhost.localdomain>
+References: <466FA71C.1020309@nttdata.co.jp>  <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
+  <9d732d950706130722g12a22604p223381a8e281a4a1@mail.gmail.com> 
+ <46704D49.8010308@redhat.com>  <9d732d950706131435s636b852di98026aed1d9a6ac6@mail.gmail.com>
+  <467064B9.1080005@redhat.com> <9d732d950706131525n667587e6t59e94c5cee951c6d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706140102.31871.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 13 June 2007 23:59, Greg KH wrote:
-> On Wed, Jun 13, 2007 at 03:51:48PM +0200, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > The following series of patches removes some unused and unnecessary features
-> > from the suspend and resume core code.
-> 
-> These are the same as you sent out the other day, right?
+On Thu, 14 Jun 2007, Toshiharu Harada wrote:
 
-Almost.
+> TOMOYO Linux has a mode called "learning"
+> in addition to "permissive" and "enforce". You can easily
+> get the TOMOYO Linux policy with learning mode that
+> SELinux does not have.
 
-The "PM: Remove pm_parent from struct dev_pm_info" (1/7) has been updated.
+Blindly generating security policy through observation of the system is 
+potentially dangerous for many reasons.
 
-The "PM: Remove prev_state from struct dev_pm_info" patch (5/7) has been
-rediffed against 2.6.22-rc4-mm2 (to synchronize with the USB changes in there).
+See
+<http://securityblog.org/brindle/2006/03/25/security-anti-pattern-status-quo-encapsulation/>
 
-The others are the same.
+Note that while SELinux does also have a similar capability with the 
+audit2allow tool, it should be considered an expert tool, the output of 
+which needs to be understood before use (as noted in its man page).
 
-> If so, I'll put them in my tree, trying to catch up on my queue right
-> now.
+> In addition, access control mode of
+> TOMOYO Linux can be managed for every difference domain.
 
-OK
+We have considered per-domain enforcing mode a couple of times in the 
+past, but figured that it could be implemented via policy alone (e.g. run 
+the task in a domain where all accesses are allowed and logged); and it 
+would also be of limited usefulness because of the aforementioned problems 
+with learning mode security policy.
 
-Greetings,
-Rafael
 
-
+- James
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+James Morris
+<jmorris@namei.org>
