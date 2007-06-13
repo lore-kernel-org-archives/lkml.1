@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbXFMLmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbXFMLm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbXFMLmo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 07:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbXFMLmd
+	id S1758095AbXFMLm7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 07:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbXFMLmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 07:42:33 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60713 "EHLO amd.ucw.cz"
+	Wed, 13 Jun 2007 07:42:40 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60714 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757232AbXFMLmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 07:42:32 -0400
-Date: Wed, 13 Jun 2007 13:07:18 +0200
+	id S1757411AbXFMLmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 07:42:38 -0400
+Date: Wed, 13 Jun 2007 13:33:45 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: James Ketrenos <jketreno@linux.intel.com>
 Cc: kernel list <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
        Zhu Yi <yi.zhu@intel.com>
 Subject: Re: ipw3945 driver in recent -mm kernels
-Message-ID: <20070613110718.GA1800@elf.ucw.cz>
+Message-ID: <20070613113345.GA1811@elf.ucw.cz>
 References: <20070609192703.GA6410@elf.ucw.cz> <20070609215712.GA13678@elf.ucw.cz> <466DA14D.6080309@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,149 +28,413 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-BTW could we get some more reasonable path? Currently wifi drivers are
-in
-
-drivers/net/wireless/mac80211/iwlwifi
-
-...ouch. drivers/mac80211/iwlwifi would be better...
-
-> > I still do not see the wlan led. It seems to scan okay, but I can't
-> > seem to connect, and I get this in logs:
-> > 
-> > Jun  9 23:53:21 amd kernel: wlan0: deauthenticated
-> > Jun  9 23:53:21 amd kernel: wlan0: RX deauthentication from
-> > 00:11:2f:0e:95:a0 (reason=4)
+> > Jun  9 23:54:12 amd kernel: iwl3945: Microcode SW error detected.
+> > Restarting 0x82000000.
+> > Jun  9 23:54:12 amd kernel: iwl3945: Error Reply type 0x0000003A cmd
+> > REPLY_RXON_ASSOC (0x11) seq 0x0447 ser 0x00000000
+> > Jun  9 23:54:12 amd kernel: iwl3945: Error setting RXON_ASSOC
+> > configuration (-5).
+> > Jun  9 23:54:13 amd kernel: iwl3945: Error sending REPLY_RXON: time
+> > out after 500ms.
 > 
-> >From Table 19 in the IEEE 802.11 spec lists reason 4 a 
-> 'disassociation due to inactivity'  Odd that it would happen during
->  association.  Were you able to associate at all before you
-> started seeing the problem?
+> Loading the module with debug=0x40000 will turn on the the uCode event 
+> log dumping which may help in isolating the uCode reset problem.  Can
+> you load the module with the module parameter debug=0x40000 and send us 
+> the resulting syslog output when the error is tripped?
 
-No, I could not get any connection.
+Hmmm... it did not reproduce at first ifconfig down/up, but then I got
+it. I hope it helps...
 
+								Pavel
 
-> > Jun  9 23:53:21 amd last message repeated 2 times
-> > Jun  9 23:53:22 amd kernel: wlan0: authenticate with AP
-> > 00:11:2f:0e:95:a0
-...
-> 
-> This may be related to mac80211's link activity detection
-> at times immediately following an association/reassociation.
-> 
-> I've seen similar behavior here; a temporary work around I am using is 
-> to disable the 'lost link detection' in mac80211.  
-
-Trying with that patch:
-
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-insmod iwl3945.ko
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-killall klogd
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-iwlist wlan0 scan
-Warning: Driver for device wlan0 has been compiled with version 22
-of Wireless Extension, while this program supports up to version 17.
-Some things may be broken...
-
-wlan0     Interface doesn't support scanning : Network is down
-
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-ifconfig wlan0 up
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-iwlist wlan0 scan
-Warning: Driver for device wlan0 has been compiled with version 22
-of Wireless Extension, while this program supports up to version 17.
-Some things may be broken...
-
-wlan0     Scan completed :
-          Cell 01 - Address: 00:11:2F:0E:95:A0
-                    ESSID:"pavel"
-                    Mode:Master
-                    Channel:1
-                    Frequency:2.412 GHz
-                    Quality=88/100  Signal level=-45 dBm
-                    Encryption key:off
-                    Bit Rate:1 Mb/s
-                    Bit Rate:2 Mb/s
-                    Bit Rate:5.5 Mb/s
-                    Bit Rate:11 Mb/s
-                    Bit Rate:6 Mb/s
-                    Bit Rate:9 Mb/s
-                    Bit Rate:12 Mb/s
-                    Bit Rate:18 Mb/s
-                    Bit Rate:24 Mb/s
-                    Bit Rate:36 Mb/s
-                    Bit Rate:48 Mb/s
-                    Bit Rate:54 Mb/s
-                    Extra:tsf=000001d9866dbe25
-
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-iwconfig wlan0 essid pavel
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
+coda_read_super: No pseudo device
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sda2, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux, 0.0.21kd
+iwl3945: Copyright(c) 2003-2007 Intel Corporation
+ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 17 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:03:00.0 to 64
+iwl3945: Detected Intel PRO/Wireless 3945ABG Network Connection
+iwl3945: Channel 12 [2.4GHz] is Tx only -- skipping.
+iwl3945: Channel 13 [2.4GHz] is Tx only -- skipping.
+iwl3945: Channel 14 [2.4GHz] is Tx only -- skipping.
+iwl3945: Channel 183 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 184 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 185 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 187 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 188 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 189 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 192 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 196 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 7 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 8 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 11 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 12 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 16 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 34 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 38 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 42 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 46 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 100 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 104 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 108 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 112 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 116 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 120 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 124 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 128 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 132 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 136 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 140 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 145 [5.2GHz] is Tx only -- skipping.
+iwl3945: Tunable channels: 11 802.11bg, 13 802.11a channels
+wmaster0: Selected rate control algorithm 'simple'
+iwl3945: ipw going down 
+ACPI: PCI interrupt for device 0000:03:00.0 disabled
+iwl3945: Unknown parameter `root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#'
+iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux, 0.0.21kd
+iwl3945: Copyright(c) 2003-2007 Intel Corporation
+ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 17 (level, low) -> IRQ 16
+PCI: Setting latency timer of device 0000:03:00.0 to 64
+iwl3945: Detected Intel PRO/Wireless 3945ABG Network Connection
+iwl3945: Channel 12 [2.4GHz] is Tx only -- skipping.
+iwl3945: Channel 13 [2.4GHz] is Tx only -- skipping.
+iwl3945: Channel 14 [2.4GHz] is Tx only -- skipping.
+iwl3945: Channel 183 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 184 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 185 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 187 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 188 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 189 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 192 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 196 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 7 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 8 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 11 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 12 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 16 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 34 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 38 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 42 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 46 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 100 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 104 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 108 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 112 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 116 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 120 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 124 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 128 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 132 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 136 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 140 [5.2GHz] is Tx only -- skipping.
+iwl3945: Channel 145 [5.2GHz] is Tx only -- skipping.
+iwl3945: Tunable channels: 11 802.11bg, 13 802.11a channels
+wmaster0: Selected rate control algorithm 'simple'
 iwl3945: REPLY_ADD_STA failed
-
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-ifconfig eth0 down
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-iwconfig
-eth0      no wireless extensions.
-
-lo        no wireless extensions.
-
-irlan0    no wireless extensions.
-
-wmaster0  no wireless extensions.
-
-Warning: Driver for device wlan0 has been compiled with version 22
-of Wireless Extension, while this program supports up to version 17.
-Some things may be broken...
-
-wlan0     IEEE 802.11g  ESSID:"pavel"
-          Mode:Managed  Frequency:2.412 GHz  Access Point:
-00:11:2F:0E:95:A0
-          Bit Rate=11 Mb/s
-          Retry min limit:7   RTS thr:off   Fragment thr=2346 B
-          Encryption key:off
-          Link Quality=77/100  Signal level=-40 dBm
-          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
-          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
-
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-ifconfig wlan0 10.0.0.6 up
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi# ping
-10.0.0.3
-PING 10.0.0.3 (10.0.0.3): 56 data bytes
-
-
-(no link here).
-
-Aha, so I pressed ^c and  attempted to kick it into life, and got some errors:
-
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-ifconfig wlan0 down
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
-ifconfig wlan0 up
+wlan0: Initial auth_alg=0
+wlan0: authenticate with AP 00:11:2f:0e:95:a0
+wlan0: RX authentication from 00:11:2f:0e:95:a0 (alg=0 transaction=2 status=0)
+wlan0: authenticated
+wlan0: associate with AP 00:11:2f:0e:95:a0
+wlan0: RX AssocResp from 00:11:2f:0e:95:a0 (capab=0x401 status=0 aid=2)
+wlan0: associated
+iwl3945: REPLY_ADD_STA failed
 iwl3945: Microcode SW error detected.  Restarting 0x82000000.
-iwl3945: Error Reply type 0x0000003A cmd REPLY_RXON_ASSOC (0x11) seq
-0x0430 ser 0x00000000
+iwl3945: Start IPW Error Log Dump:
+iwl3945: Status: 0x0C000170, Config: 00000000 count: 1
+iwl3945: Desc       Time       asrtPC     const      ilink1     nmiPC      Line
+iwl3945: SYSASSERT (#5) 0x000006F9 0x0000089A 0x000085A6 0x00000304 0x00000000 58
+iwl3945: Start IPW Event Log Dump: display count 256, wraps 551
+iwl3945: 0000000256	0x0000013a	1786
+iwl3945: 0000000000	0x000001f5	3878511440
+iwl3945: 0000000793	0x000001f8	3878511442
+iwl3945: 0000001017	0x000001f7	3878511446
+iwl3945: 3878511446	0x000001f7	3878511447
+iwl3945: 0000000473	0x000001f7	3878511448
+iwl3945: 1342278826	0x000001f7	3878511448
+iwl3945: 3878511444	0x000001f7	3878511449
+iwl3945: 0000000473	0x000001f7	3878511450
+iwl3945: 1342278828	0x000001f4	3878511450
+iwl3945: 1342278820	0x00000277	3878511453
+iwl3945: 0000000000	0x00000276	3878511478
+iwl3945: 1358954896	0x00000276	3878511490
+iwl3945: 1375829112	0x0000006a	3878511491
+iwl3945: 0000000217	0x0000012d	3878524510
+iwl3945: 0000000000	0x00000130	3878524511
+iwl3945: 0000000000	0x0000006a	3878524685
+iwl3945: 0000000217	0x0000012d	3878530572
+iwl3945: 0000000000	0x00000161	3878530574
+iwl3945: 0000020836	0x00000160	3878530649
+iwl3945: 0000000000	0x0000006a	3878530657
+iwl3945: 0000000217	0x0000012d	3878530672
+iwl3945: 0000000000	0x00000161	3878530674
+iwl3945: 0000020837	0x00000160	3878530746
+iwl3945: 0000000000	0x0000006a	3878530755
+iwl3945: 0000000217	0x0000012d	3878531504
+iwl3945: 0000000000	0x00000161	3878531505
+iwl3945: 0000020838	0x0000006a	3878531630
+iwl3945: 0000000217	0x0000012d	3878535506
+iwl3945: 0000000000	0x00000161	3878535507
+iwl3945: 0000020839	0x0000006a	3878535690
+iwl3945: 0000000217	0x0000012d	3878537170
+iwl3945: 0000000000	0x00000161	3878537172
+iwl3945: 0000020840	0x0000006a	3878537359
+iwl3945: 0000000217	0x0000012d	3878538891
+iwl3945: 0000000000	0x0000015e	3878538892
+iwl3945: 0000032768	0x0000006a	3878538902
+iwl3945: 0000000217	0x0000012d	3878538919
+iwl3945: 0000000000	0x0000015e	3878538921
+iwl3945: 0000032768	0x0000006a	3878538930
+iwl3945: 0000000217	0x0000012d	3878542545
+iwl3945: 0000000000	0x00000161	3878542547
+iwl3945: 0000020841	0x0000006a	3878542735
+iwl3945: 0000000217	0x0000012d	3878543416
+iwl3945: 0000000000	0x00000161	3878543418
+iwl3945: 0000020842	0x00000160	3878543507
+iwl3945: 0000000000	0x0000006a	3878543516
+iwl3945: 0000000217	0x0000012d	3878543567
+iwl3945: 0000000000	0x00000161	3878543569
+iwl3945: 0000020843	0x0000006a	3878543743
+iwl3945: 0000000217	0x0000012d	3878544256
+iwl3945: 0000000000	0x0000015e	3878544257
+iwl3945: 0000032768	0x0000006a	3878544267
+iwl3945: 0000000217	0x0000012d	3878544279
+iwl3945: 0000000000	0x00000161	3878544281
+iwl3945: 0000020844	0x0000006a	3878544446
+iwl3945: 0000000217	0x0000012d	3878545973
+iwl3945: 0000000000	0x00000161	3878545975
+iwl3945: 0000020845	0x00000160	3878546049
+iwl3945: 0000000000	0x0000006a	3878546058
+iwl3945: 0000000217	0x0000012d	3878546071
+iwl3945: 0000000000	0x00000161	3878546073
+iwl3945: 0000020846	0x00000160	3878546147
+iwl3945: 0000000000	0x0000006a	3878546156
+iwl3945: 0000000217	0x0000012d	3878547599
+iwl3945: 0000000000	0x00000161	3878547600
+iwl3945: 0000020847	0x00000160	3878547676
+iwl3945: 0000000000	0x0000006a	3878547685
+iwl3945: 0000000217	0x0000012d	3878550978
+iwl3945: 0000000000	0x00000161	3878550979
+iwl3945: 0000020848	0x0000006a	3878551149
+iwl3945: 0000000217	0x0000012d	3878552037
+iwl3945: 0000000000	0x00000161	3878552039
+iwl3945: 0000020849	0x0000006a	3878552177
+iwl3945: 0000000217	0x0000012d	3878560674
+iwl3945: 0000000000	0x0000015e	3878560676
+iwl3945: 0000032768	0x0000006a	3878560686
+iwl3945: 0000000217	0x0000012d	3878560935
+iwl3945: 0000000000	0x0000012f	3878560937
+iwl3945: 0000008372	0x0000006a	3878561098
+iwl3945: 0000000217	0x0000012d	3878561346
+iwl3945: 0000000000	0x00000130	3878561348
+iwl3945: 0000000000	0x0000006a	3878561553
+iwl3945: 0000000217	0x0000012d	3878563815
+iwl3945: 0000000000	0x00000161	3878563817
+iwl3945: 0000020850	0x0000006a	3878563947
+iwl3945: 0000000217	0x0000012e	3878566666
+iwl3945: 0000000000	0x0000015e	3878566668
+iwl3945: 0000032768	0x0000006a	3878566675
+iwl3945: 0000000217	0x0000012d	3878567427
+iwl3945: 0000000000	0x00000161	3878567429
+iwl3945: 0000020851	0x0000006a	3878567550
+iwl3945: 0000000217	0x0000012d	3878569098
+iwl3945: 0000000000	0x00000161	3878569099
+iwl3945: 0000020852	0x0000006a	3878569278
+iwl3945: 0000000217	0x0000012d	3878570547
+iwl3945: 0000000000	0x00000161	3878570549
+iwl3945: 0000020853	0x0000006a	3878570731
+iwl3945: 0000000217	0x0000012d	3878571031
+iwl3945: 0000000000	0x00000161	3878571033
+iwl3945: 0000020854	0x0000006a	3878571176
+iwl3945: 0000000217	0x0000012e	3878571645
+iwl3945: 0000000000	0x0000015e	3878571646
+iwl3945: 0000032768	0x0000006a	3878571655
+iwl3945: 0000000217	0x0000012d	3878573432
+iwl3945: 0000000000	0x00000161	3878573434
+iwl3945: 0000020855	0x0000006a	3878573622
+iwl3945: 0000000217	0x0000012e	3878573886
+iwl3945: 0000000000	0x00000161	3878573888
+iwl3945: 0000000669	0x0000006a	3878573928
+iwl3945: 0000000217	0x0000012d	3878573965
+iwl3945: 0000000000	0x00000161	3878573967
+iwl3945: 0000020856	0x00000160	3878574042
+iwl3945: 0000000000	0x0000006a	3878574051
+iwl3945: 0000000217	0x0000012d	3878575211
+iwl3945: 0000000000	0x0000015e	3878575212
+iwl3945: 0000032768	0x0000006a	3878575222
+iwl3945: 0000000217	0x0000012d	3878575617
+iwl3945: 0000000000	0x00000161	3878575619
+iwl3945: 0000020857	0x00000160	3878575693
+iwl3945: 0000000000	0x0000006a	3878575701
+iwl3945: 0000000217	0x0000012d	3878576740
+iwl3945: 0000000000	0x00000130	3878576742
+iwl3945: 0000000000	0x0000006a	3878576949
+iwl3945: 0000000217	0x0000012d	3878577309
+iwl3945: 0000000000	0x00000130	3878577311
+iwl3945: 0000000000	0x0000006a	3878577516
+iwl3945: 0000000217	0x0000012d	3878577754
+iwl3945: 0000000000	0x00000161	3878577756
+iwl3945: 0000020858	0x00000160	3878577834
+iwl3945: 0000000000	0x0000006a	3878577843
+iwl3945: 0000000217	0x0000012d	3878577857
+iwl3945: 0000000000	0x00000161	3878577859
+iwl3945: 0000020859	0x00000160	3878577932
+iwl3945: 0000000000	0x0000006a	3878577941
+iwl3945: 0000000217	0x0000012d	3878578169
+iwl3945: 0000000000	0x00000161	3878578171
+iwl3945: 0000020860	0x0000006a	3878578362
+iwl3945: 0000000217	0x0000012d	3878578637
+iwl3945: 0000000000	0x00000130	3878578639
+iwl3945: 0000000000	0x0000006a	3878578846
+iwl3945: 0000000217	0x0000012d	3878580772
+iwl3945: 0000000000	0x00000161	3878580774
+iwl3945: 0000020861	0x0000006a	3878580935
+iwl3945: 0000000217	0x0000012d	3878590145
+iwl3945: 0000000000	0x00000130	3878590147
+iwl3945: 0000000000	0x0000006a	3878590491
+iwl3945: 0000000217	0x0000012d	3878605079
+iwl3945: 0000000000	0x00000161	3878605081
+iwl3945: 0000020862	0x00000160	3878605156
+iwl3945: 0000000000	0x0000006a	3878605165
+iwl3945: 0000000217	0x0000012d	3878605176
+iwl3945: 0000000000	0x0000015e	3878605178
+iwl3945: 0000032768	0x0000006a	3878605187
+iwl3945: 0000000217	0x0000012d	3878605211
+iwl3945: 0000000000	0x0000015e	3878605213
+iwl3945: 0000032768	0x0000006a	3878605223
+iwl3945: 0000000217	0x0000012d	3878605993
+iwl3945: 0000000000	0x00000161	3878605995
+iwl3945: 0000020863	0x00000160	3878606073
+iwl3945: 0000000000	0x0000006a	3878606081
+iwl3945: 0000000217	0x0000012d	3878607463
+iwl3945: 0000000000	0x0000015e	3878607464
+iwl3945: 0000032768	0x0000006a	3878607474
+iwl3945: 0000000217	0x0000012d	3878607487
+iwl3945: 0000000000	0x0000015e	3878607488
+iwl3945: 0000032768	0x0000006a	3878607498
+iwl3945: 0000000217	0x0000012d	3878607549
+iwl3945: 0000000000	0x00000161	3878607551
+iwl3945: 0000020864	0x00000160	3878607629
+iwl3945: 0000000000	0x0000006a	3878607638
+iwl3945: 0000000217	0x0000012d	3878612472
+iwl3945: 0000000000	0x00000130	3878612474
+iwl3945: 0000000000	0x0000006a	3878612676
+iwl3945: 0000000217	0x0000012d	3878613003
+iwl3945: 0000000000	0x00000139	3878613005
+iwl3945: 0000000128	0x000001f5	3878613359
+iwl3945: 0000000509	0x000001f6	3878613361
+iwl3945: 0000000000	0x00000136	3878613693
+iwl3945: 0000000195	0x0000013a	3878613840
+iwl3945: 0000000000	0x000001f5	3878613840
+iwl3945: 0000000793	0x000001f8	3878613842
+iwl3945: 0000001017	0x000001f7	3878613845
+iwl3945: 3878613845	0x000001f7	3878613846
+iwl3945: 0000000473	0x000001f7	3878613847
+iwl3945: 1359056043	0x000001f7	3878613847
+iwl3945: 3878613844	0x000001f7	3878613848
+iwl3945: 0000000473	0x000001f7	3878613849
+iwl3945: 1359056044	0x000001f4	3878613849
+iwl3945: 1359056037	0x0000006a	3878613852
+iwl3945: 0000000217	0x0000012d	3878614281
+iwl3945: 0000000000	0x00000161	3878614282
+iwl3945: 0000020865	0x00000160	3878614371
+iwl3945: 0000000000	0x0000006a	3878614380
+iwl3945: 0000000217	0x0000012d	3878616091
+iwl3945: 0000000000	0x00000161	3878616093
+iwl3945: 0000020866	0x0000006a	3878616270
+iwl3945: 0000000217	0x0000012d	3878618153
+iwl3945: 0000000000	0x00000161	3878618154
+iwl3945: 0000000047	0x00000160	8394228
+iwl3945: 0000000000	0x0000006a	3878618238
+iwl3945: 0000000217	0x0000012d	3878618465
+iwl3945: 0000000000	0x00000161	3878618467
+iwl3945: 0000020868	0x0000006a	3878618621
+iwl3945: 0000000217	0x0000012d	3878618876
+iwl3945: 0000000000	0x00000130	3878618878
+iwl3945: 0000000000	0x0000006a	3878619079
+iwl3945: 0000000217	0x0000012d	3878621035
+iwl3945: 0000000000	0x00000161	3878621037
+iwl3945: 0000020869	0x0000006a	3878621213
+iwl3945: 0000000217	0x0000012d	3878621495
+iwl3945: 0000000000	0x00000161	3878621496
+iwl3945: 0000020870	0x0000006a	3878621657
+iwl3945: 0000000217	0x0000012d	3878625823
+iwl3945: 0000000000	0x0000012f	3878625825
+iwl3945: 0000000212	0x00000165	3878625990
+iwl3945: 0000003807	0x0000006a	3878625993
+iwl3945: 0000000217	0x0000012d	3878628592
+iwl3945: 0000000000	0x00000161	3878628594
+iwl3945: 0000020871	0x00000160	3878628669
+iwl3945: 0000000000	0x0000006a	3878628678
+iwl3945: 0000000217	0x0000012d	3878628686
+iwl3945: 0000000000	0x00000161	3878628688
+iwl3945: 0000020872	0x00000160	3878628758
+iwl3945: 0000000000	0x0000006a	3878628767
+iwl3945: 0000000217	0x0000012d	3878629227
+iwl3945: 0000000000	0x00000161	3878629229
+iwl3945: 0000020873	0x0000006a	3878629413
+iwl3945: 0000000217	0x0000012d	3878630398
+iwl3945: 0000000000	0x00000130	3878630399
+iwl3945: 0000000000	0x0000006a	3878630577
+iwl3945: 0000000217	0x0000012d	3878631142
+iwl3945: 0000000000	0x00000161	3878631143
+iwl3945: 0000020874	0x00000160	3878631217
+iwl3945: 0000000000	0x0000006a	3878631226
+iwl3945: 0000000217	0x0000012e	3878632745
+iwl3945: 0000000000	0x0000015e	3878632747
+iwl3945: 0000032768	0x0000006a	3878632755
+iwl3945: 0000000217	0x0000012d	3878635706
+iwl3945: 0000000000	0x00000161	3878635708
+iwl3945: 0000020875	0x0000006a	3878635899
+iwl3945: 0000000217	0x0000012d	3878636159
+iwl3945: 0000000000	0x00000161	3878636161
+iwl3945: 0000020876	0x0000006a	3878636344
+iwl3945: 0000000217	0x0000012e	3878636514
+iwl3945: 0000000000	0x0000015e	3878636516
+iwl3945: 0000032768	0x00000191	3878636524
+iwl3945: 0072548368	0x00000067	3878637180
+iwl3945: 0000000158	0x00000191	0039
+iwl3945: 0072614039	0x000001c3	0132
+iwl3945: 0000000001	0x000001c3	0134
+iwl3945: 0000000001	0x00000191	0154
+iwl3945: 0072679448	0x00000191	0238
+iwl3945: 0072745031	0x00000191	0326
+iwl3945: 0072810567	0x00000191	0398
+iwl3945: 0072876049	0x0000007d	1783
+iwl3945: I iwl_irq_handle_error Restarting adapter due to uCode error.
 iwl3945: Error setting RXON_ASSOC configuration (-5).
+iwl3945: Error Reply type 0x0000003A cmd REPLY_RXON_ASSOC (0x11) seq 0x0458 ser 0x00000000
 iwl3945: Error sending REPLY_RXON: time out after 500ms.
 iwl3945: Error setting new configuration (-110).
 iwl3945: Error sending REPLY_ADD_STA: time out after 500ms.
-iwl3945: ipw going down
-root@amd:/data/l/linux-mm/drivers/net/wireless/mac80211/iwlwifi#
+iwl3945: ipw going down 
 iwl3945: Can't stop Rx DMA.
 iwl3945: Grabbing access while already held at line 825.
 iwl3945: Microcode SW error detected.  Restarting 0x82000000.
-iwl3945: Error Reply type 0x000004EB cmd REPLY_TX_PWR_TABLE_CMD (0x97)
-seq 0x0402 ser 0x00000000
-iwl3945: ipw going down
+iwl3945: Start IPW Error Log Dump:
+iwl3945: Status: 0x0C000170, Config: 00000000 count: 1
+iwl3945: Desc       Time       asrtPC     const      ilink1     nmiPC      Line
+iwl3945: SYSASSERT (#5) 0x0002204A 0x0000089A 0x00001796 0x00000300 0x00000000 1259
+iwl3945: Start IPW Event Log Dump: display count 10, wraps 0
+iwl3945: 0000000047	0x00000075	8394228
+iwl3945: 0000000213	0x00000076	0000
+iwl3945: 0000000190	0x0000028b	0000
+iwl3945: 0000000000	0x000001c6	0130
+iwl3945: 4294967149	0x000001d8	0151
+iwl3945: 0000000000	0x00000068	0152
+iwl3945: 0000000197	0x00000191	0173
+iwl3945: 0067108983	0x00000191	139135
+iwl3945: 0067174555	0x00000191	139232
+iwl3945: 0067240087	0x0000007d	139337
+iwl3945: I iwl_irq_handle_error Restarting adapter due to uCode error.
+iwl3945: Error Reply type 0x000004EB cmd REPLY_TX_PWR_TABLE_CMD (0x97) seq 0x0402 ser 0x00000000
+iwl3945: ipw going down 
 iwl3945: Can't stop Rx DMA.
 iwl3945: Grabbing access while already held at line 825.
 
-...I'll turn on the microcode debug now.
-										Pavel
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
