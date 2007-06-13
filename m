@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbXFMIrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbXFMItX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbXFMIrP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 04:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbXFMIrC
+	id S1757186AbXFMItX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 04:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbXFMItQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 04:47:02 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:20417 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753057AbXFMIrA (ORCPT
+	Wed, 13 Jun 2007 04:49:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58832 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755199AbXFMItP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 04:47:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Qu/ypxoO8SEokc6lvOhPuqXmCZjPEhQ1GkIGeFM3UMLRcGF/d7ANTzIJ/V8xpBKbCOW8Cn4qzURpvCexRwafcpuoyaPjA4MSguB44iyN8Qrx0ylcc3i/TpKjfrTqR90FUnKsLEhczfFNleLj/+JTqf4zsXaYM+dFYdoFCiLG1nw=
-Message-ID: <466FAF01.20009@gmail.com>
-Date: Wed, 13 Jun 2007 10:46:57 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mdharm-usb@one-eyed-alien.net,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: WARNING: at drivers/usb/core/urb.c:293 usb_submit_urb() [Was:
- 2.6.22-rc4-mm2]
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <466FABDD.1050807@gmail.com>
-In-Reply-To: <466FABDD.1050807@gmail.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 13 Jun 2007 04:49:15 -0400
+Subject: Re: [PATCH 1/18] splice: abstract out actor data
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070612162215.GM18832@kernel.dk>
+References: <11816314942627-git-send-email-jens.axboe@oracle.com>
+	 <11816314942637-git-send-email-jens.axboe@oracle.com>
+	 <20070612173150.80f6f7e3.dada1@cosmosbay.com>
+	 <20070612162215.GM18832@kernel.dk>
+Content-Type: text/plain
+Date: Wed, 13 Jun 2007 10:48:51 +0200
+Message-Id: <1181724531.7348.338.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby napsal(a):
-> Andrew Morton napsal(a):
->> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
+On Tue, 2007-06-12 at 18:22 +0200, Jens Axboe wrote:
+> On Tue, Jun 12 2007, Eric Dumazet wrote:
+> > On Tue, 12 Jun 2007 08:57:57 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > 
+> > > +	struct splice_desc sd = {
+> > > +		.total_len = len,
+> > > +		.flags = flags,
+> > > +		.pos = *ppos,
+> > > +	};
+> > > +
+> > > +	sd.file = out;
+> > 
+> > minor remark, why sd.file is setup differently than other fields ?
+> > 
+> > (this several times on this patch)
+> 
+> yeah, it's inside an anonymous union, and apparently gcc doesn't like it
+> being initialized that way.
 
-> after plugging my camera in, I get this:
-[...]
-> USB Mass Storage support registered.
-> WARNING: at /home/l/latest/xxx/drivers/usb/core/urb.c:293 usb_submit_urb()
-[...]
-> Are you aware of such problems? Any other info needed?
+The one time I had such a situation something along the lines of:
 
-Aha, you are, going to try http://lkml.org/lkml/2007/6/7/197
+struct splice_desc sd = {
+	.total_len = len,
+	.flags = flags,
+	.pos = *ppos,
+	{ .file = out },
+};
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+worked.
+
