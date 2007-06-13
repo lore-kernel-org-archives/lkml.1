@@ -1,80 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753007AbXFMBRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXFMB2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753007AbXFMBRu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 21:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbXFMBRn
+	id S1753180AbXFMB2F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 21:28:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbXFMB1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 21:17:43 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:53274 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751211AbXFMBRm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 21:17:42 -0400
-Subject: Re: beeping patch for debugging acpi sleep
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       Christian Leber <christian@leber.de>,
-       kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <200706121411.56016.rjw@sisk.pl>
-References: <20070518213701.GA810@core>
-	 <20070611120034.f6d972de.akpm@linux-foundation.org>
-	 <1181601771.5064.2.camel@nigel.suspend2.net>
-	 <200706121411.56016.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3oYyC4yF43QGs2VzvXo4"
-Date: Wed, 13 Jun 2007 11:17:39 +1000
-Message-Id: <1181697460.4910.7.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 12 Jun 2007 21:27:54 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:41463 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751389AbXFMB1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 21:27:53 -0400
+Date: Tue, 12 Jun 2007 18:27:46 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dinakar Guniguntala <dino@in.ibm.com>
+Subject: Re: v2.6.21.4-rt11
+Message-ID: <20070613012746.GH8544@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070609210507.GA29194@elte.hu> <20070611011954.GG27982@linux.vnet.ibm.com> <20070611073634.GB32446@elte.hu> <20070611144401.GA9102@linux.vnet.ibm.com> <20070611153855.GA21136@elte.hu> <20070611155527.GD9102@linux.vnet.ibm.com> <20070611171806.GH9102@linux.vnet.ibm.com> <20070611204427.GK9102@linux.vnet.ibm.com> <20070611221803.GL9102@linux.vnet.ibm.com> <20070612213758.GA6173@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070612213758.GA6173@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 12, 2007 at 11:37:58PM +0200, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > Not a biggie for me, since I can easily do the taskset commands to 
+> > force the processes to spread out, but I am worried that casual users 
+> > of rcutorture won't know to do this -- thus not really torturing RCU. 
+> > It would not be hard to modify rcutorture to affinity the tasks so as 
+> > to spread them, but this seems a bit ugly.
+> 
+> does it get any better if you renice them from +19 to 0? (and then back 
+> to +19?)
 
---=-3oYyC4yF43QGs2VzvXo4
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Interesting!
 
-Hi.
+That did spread them evenly across two CPUs, but not across all four.
 
-On Tue, 2007-06-12 at 14:11 +0200, Rafael J. Wysocki wrote:
-> Hi,
->=20
-> On Tuesday, 12 June 2007 00:42, Nigel Cunningham wrote:
-> > Hi.
-> >=20
-> > Wouldn't it be much more useful if it was unconditionally compiled in
-> > and controlled instead by a sysfs entry? That way it will be far more
-> > useful to $user who doesn't know or want to know how to compile and
-> > install a kernel, but wants to do what they can to get provide helpful
-> > debugging info and perhaps even get it going.
->=20
-> I like this idea.
->=20
-> > Yes, Pavel, I'll supply a patch if you (plural) agree.
->=20
-> I agree.  :-)
+I took a look at CFS, which seems to operate in terms of milliseconds.
+Since the rcu_torture_reader() code enters the scheduler on each
+interation, it would not give CFS millisecond-scale bursts of CPU
+consumption, perhaps not allowing it to do reasonable load balancing.
 
-Ok. I'll take Pavel's silence as agreement too. I'll be a little slow
-(as usual, nowadays!), but will try to get it done next week. I think I
-can in clear conscience do it on Redhat time if I don't manage it
-beforehand.
+So I inserted the following code at the beginning of rcu_torture_reader():
 
-Regards,
+	set_user_nice(current, 19);
+	set_user_nice(current, 0);
+	for (idx = 0; idx < 1000; idx++) {
+		udelay(10);
+	}
+	set_user_nice(current, 19);
 
-Nigel
+This worked much better:
 
---=-3oYyC4yF43QGs2VzvXo4
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND           
+18600 root      39  19     0    0    0 R   50  0.0   0:09.57 rcu_torture_rea    
+18599 root      39  19     0    0    0 R   50  0.0   0:09.56 rcu_torture_rea    
+18598 root      39  19     0    0    0 R   49  0.0   0:10.33 rcu_torture_rea    
+18602 root      39  19     0    0    0 R   49  0.0   0:10.34 rcu_torture_rea    
+18596 root      39  19     0    0    0 R   47  0.0   0:09.48 rcu_torture_rea    
+18601 root      39  19     0    0    0 R   46  0.0   0:09.56 rcu_torture_rea    
+18595 root      39  19     0    0    0 R   45  0.0   0:09.23 rcu_torture_rea    
+18597 root      39  19     0    0    0 R   44  0.0   0:10.92 rcu_torture_rea    
+18590 root      39  19     0    0    0 R   10  0.0   0:02.23 rcu_torture_wri    
+18591 root      39  19     0    0    0 D    2  0.0   0:00.34 rcu_torture_fak    
+18592 root      39  19     0    0    0 D    2  0.0   0:00.35 rcu_torture_fak    
+18593 root      39  19     0    0    0 D    2  0.0   0:00.35 rcu_torture_fak    
+18594 root      39  19     0    0    0 D    2  0.0   0:00.33 rcu_torture_fak    
+18603 root      15  -5     0    0    0 S    1  0.0   0:00.06 rcu_torture_sta    
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+(The first eight tasks are readers, while the last six tasks are update
+and statistics threads that don't consume so much CPU, so the above is
+pretty close to optimal.)
 
-iD8DBQBGb0WzN0y+n1M3mo0RAviBAKDcyGwi47tquQEljKq7NJl9VadOJQCdGVRj
-Sq3DFI6+C+/w4+2BUND96Vk=
-=+Cux
------END PGP SIGNATURE-----
+I stopped and restarted rcutorture several times, and it spread nicely
+each time, at least aside from the time that makewhatis decided to fire
+up just as I started rcutorture.
 
---=-3oYyC4yF43QGs2VzvXo4--
+But this is admittedly a -very- crude hack.
 
+One approach would be to make them all spin until a few milliseconds
+after the last one was created.  I would like to spread the readers
+separately from the other tasks, which could be done by taking a two-stage
+approach, spreading the writer and fakewriter tasks first, then spreading
+the readers.  This seems a bit nicer, and I will play with it a bit.
+
+In the meantime, thoughts on more-maintainable ways of making this work?
+
+						Thanx, Paul
