@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759909AbXFMSXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759878AbXFMSaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759909AbXFMSXg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 14:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760119AbXFMSXS
+	id S1759878AbXFMSaa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 14:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbXFMSaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 14:23:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38567 "EHLO mx1.redhat.com"
+	Wed, 13 Jun 2007 14:30:21 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53884 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760101AbXFMSXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 14:23:17 -0400
-Date: Wed, 13 Jun 2007 14:22:40 -0400
-From: Dave Jones <davej@redhat.com>
-To: Wang Zhenyu <zhen78@gmail.com>
-Cc: Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Wang Zhenyu <zhenyu.z.wang@intel.com>, Eric Anholt <eric@anholt.net>
-Subject: Re: I815 suddenly unkown to agpgart?
-Message-ID: <20070613182240.GA3726@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Wang Zhenyu <zhen78@gmail.com>, Meelis Roos <mroos@linux.ee>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Wang Zhenyu <zhenyu.z.wang@intel.com>,
-	Eric Anholt <eric@anholt.net>
-References: <Pine.SOC.4.64.0706131804180.2614@math> <20070613160152.GC3875@redhat.com> <20070613161513.GE3875@redhat.com> <20070613180039.GA4508@localhost.localdomain>
+	id S1758657AbXFMSaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 14:30:20 -0400
+Date: Wed, 13 Jun 2007 11:32:00 -0700
+From: Greg KH <gregkh@suse.de>
+To: holzheu <holzheu@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, akpm@osdl.org,
+       mtk-manpages@gmx.net, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+Message-ID: <20070613183200.GA16588@suse.de>
+References: <1181747217.29512.9.camel@localhost.localdomain> <20070613175147.GB14355@suse.de> <1181758680.26375.25.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070613180039.GA4508@localhost.localdomain>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <1181758680.26375.25.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 02:00:39AM +0800, Wang Zhenyu wrote:
- > On 2007.06.13 12:15:13 +0000, Dave Jones wrote:
- > >  >     [AGPGART] intel_agp: use table for device probe
- > >  >     
- > > Oh, we have this check in find_gmch ..
- > > 
- > >         if (gmch_device && PCI_FUNC(gmch_device->devfn) != 0) {
- > >                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- > > 
- > > Which isn't going to work, as Meelis has a gmch on device0, slot0, devfn1.
- > > Meelis, does it start working again if you change that to just
- > > 
- > > 	if (gmch_Device) {
- > 
- > No, the problem for i815 is that it has a config with no integrated gfx.
- > Sorry I missed it. Meelis, pls test with this patch, which adds a table 
- > item for this, and fixes wrong driver order within origin i815 driver with IGD.
+On Wed, Jun 13, 2007 at 08:18:00PM +0200, holzheu wrote:
+> Hi Greg,
+> 
+> > Ick, why are you ignoring what we have already with dev_printk() and
+> > friends?  We are just finally getting developers to use that, I think it
+> > will be almost impossible to get people to change to something else,
+> > especially one that isn't even as "correct" as what dev_printk() offers
+> > you today, will be quite hard.
+> >
+> > So, why not use what we already have and work off of it?
+> 
+> dev_printk() and friends are great, since they already define something
+> like KMSG_COMPONENT: The driver name.
 
-Oops :)
-I'll merge this, and get it to Linus today.
-Don't forget to add a Signed-off-by: for future patches.
+They provide way more than that, they also provide the explicit device
+that is being discussed, as well as other things depending on the
+device.
+
+So if you are going to do this, please use the already-in-place macros
+to hook into, don't try to get the driver authors to pick up something
+new and different, as it's going to be _very_ difficult, trust me...
 
 thanks,
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+greg k-h
