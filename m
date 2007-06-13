@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbXFMStx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbXFMSwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755722AbXFMStx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 14:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXFMSto
+	id S1758114AbXFMSwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 14:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbXFMSwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 14:49:44 -0400
-Received: from mga01.intel.com ([192.55.52.88]:43902 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754073AbXFMStn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 14:49:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,417,1175497200"; 
-   d="scan'208";a="256495709"
-Message-ID: <46703C44.1000204@intel.com>
-Date: Wed, 13 Jun 2007 11:49:40 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	Wed, 13 Jun 2007 14:52:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:50886 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbXFMSwJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 14:52:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iKTKUqMv0vb3b+Wyj3b9FSjGWgUrayjbyC6SSGHLyuZyQg8U8L7aPsxxlXNJ+bWm/slGQJRebkAIK2hrYjaRSema1ZFLe6Zusq4ovUFJK8VuIcLXyoxtslw6jGszttpkF/gqoP7ICvJRVZbdLMgoKllKXmtdG9ENNfB4hUBvRTI=
+Message-ID: <9c21eeae0706131152y64b02e6fs4d120fcc3a5343fe@mail.gmail.com>
+Date: Wed, 13 Jun 2007 11:52:08 -0700
+From: "David Brown" <dmlb2000@gmail.com>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Subject: Re: [kvm-devel] kvm + IOMMU
+Cc: kvm-devel@lists.sourceforge.net,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1181759552.16287.23.camel@ghaskins-t60p.haskins.net>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: holzheu <holzheu@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, akpm@osdl.org, mtk-manpages@gmx.net,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-References: <1181747217.29512.9.camel@localhost.localdomain> <20070613175147.GB14355@suse.de> <1181758680.26375.25.camel@localhost.localdomain> <20070613183200.GA16588@suse.de>
-In-Reply-To: <20070613183200.GA16588@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Jun 2007 18:49:41.0711 (UTC) FILETIME=[9A118DF0:01C7ADEB]
+Content-Disposition: inline
+References: <9c21eeae0706131027i21d97e16k7aedf54134c727b8@mail.gmail.com>
+	 <1181759552.16287.23.camel@ghaskins-t60p.haskins.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Jun 13, 2007 at 08:18:00PM +0200, holzheu wrote:
->> Hi Greg,
->>
->>> Ick, why are you ignoring what we have already with dev_printk() and
->>> friends?  We are just finally getting developers to use that, I think it
->>> will be almost impossible to get people to change to something else,
->>> especially one that isn't even as "correct" as what dev_printk() offers
->>> you today, will be quite hard.
->>>
->>> So, why not use what we already have and work off of it?
->> dev_printk() and friends are great, since they already define something
->> like KMSG_COMPONENT: The driver name.
-> 
-> They provide way more than that, they also provide the explicit device
-> that is being discussed, as well as other things depending on the
-> device.
-> 
-> So if you are going to do this, please use the already-in-place macros
-> to hook into, don't try to get the driver authors to pick up something
-> new and different, as it's going to be _very_ difficult, trust me...
+> Hi David,
+>   I am not an expert here, but I don't believe it would work without
+> changes to KVM.  My understanding is that you use an IOMMU in this
+> fashion if you want to direct-map a device into a guest for devices that
+> do not have a local IOMMU-like functionality built in already.  For
+> instance, perhaps you want to assign an off-the-shelf ethernet NIC to a
+> guest.  The IOMMU would serve to translate between GPA and system based
+> DMA addresses.  However, the hypervisor would really need to be involved
+> in the setup of this mapping on the IOMMU in the first place.
 
-absolutely... I'm currently trying to convince everyone to get a generic 
-netdevice-centric printk macro (dev_printk does not print the interface name, 
-which the netdevice can't store locally since it can change) in and even that is 
-a pain :)
+Okay its understandable that the initial setup of the mapping between
+virtual and actual would be done by some OS (most-likely host).
+However isn't the actual mapping when the guest starts and requests
+devices supposed to be handled by hardware? I would think performance
+wouldn't scale very well if the host OS had to maintain mappings and
+translate addresses every time a guest requests access to a mapped
+device.
 
-Auke
+> KVM (currently) virtualizes/emulates all components in the logical
+> "system" presented to the guest.  It doesn't yet support the notion of
+> direct-mapping a physical component.  I doubt you will have to wait too
+> long for someone to add this feature, however :)  It's just not there
+> today (to my knowledge, anyway)
+
+That's good to hear. :)
+
+> But to answer your question, when configured up like this the IO
+> subsystem in question should perform pretty close to native (at least in
+> theory).
+
+Hopefully you mean that the hardware is handling the mapping so that
+the host OS won't have to take the burden of mapping a bunch of
+addresses all the time.
+
+Thanks,
+- David Brown
