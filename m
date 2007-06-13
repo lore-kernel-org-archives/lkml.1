@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbXFMXF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbXFMXIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569AbXFMXF6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 19:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbXFMXFu
+	id S1757471AbXFMXIu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 19:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbXFMXIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 19:05:50 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60840 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278AbXFMXFt (ORCPT
+	Wed, 13 Jun 2007 19:08:43 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54643 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753502AbXFMXIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 19:05:49 -0400
-Subject: Re: +
-	fs-introduce-write_begin-write_end-and-perform_write-aops.patch added to
-	-mm tree
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: lkml <linux-kernel@vger.kernel.org>, mark.fasheh@oracle.com,
-       ext4 <linux-ext4@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com
-In-Reply-To: <20070613114356.GD17547@wotan.suse.de>
-References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net>
-	 <20070613134005.GA13815@localhost.sw.ru>
-	 <20070613114356.GD17547@wotan.suse.de>
-Content-Type: text/plain
-Date: Wed, 13 Jun 2007 16:07:01 -0700
-Message-Id: <1181776021.21924.87.camel@dyn9047017100.beaverton.ibm.com>
+	Wed, 13 Jun 2007 19:08:43 -0400
+Date: Wed, 13 Jun 2007 16:08:40 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: menage@google.com, akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
+       haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+       cpw@sgi.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       mbligh@google.com, rohitseth@google.com, devel@openvz.org
+Subject: Re: [PATCH 1/2] containers: implement subsys->post_clone()
+Message-Id: <20070613160840.022bec6a.pj@sgi.com>
+In-Reply-To: <20070613225656.GA989@sergelap.austin.ibm.com>
+References: <20070613225656.GA989@sergelap.austin.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 13:43 +0200, Nick Piggin wrote:
-..
->  
-> > 5) ext3_write_end:
-> > 	Before  write_begin/write_end patch set we have folowing locking
-> > 	order:
-> > 		stop_journal(handle);
-> > 		unlock_page(page);
-> > 	But now order is oposite:
-> > 		unlock_page(page);
-> > 		stop_journal(handle);
-> > 	Can we got any race condition now? I'm not sure is it actual problem,
-> > 	may be somebody cant describe this.
-> 
-> Can we just change it to the original order? That would seem to be
-> safest unless one of the ext3 devs explicitly acks it.
+> Only the cpuset_post_clone() is currently implemented.  If any
+> sibling containers have exclusive cpus or mems, then the cpus
+> and mems are not filled in for the new container, meaning that
+> unshare/clone(CLONE_NEWNS) will be denied.  However so long as
+> no siblings have exclusive cpus or mems, the new container's
+> cpus and mems are inherited from the parent container.
 
-It would be nice to go back to original order, but its not that
-simple with current structure of the code. With Nick's patches
-unlock_page() happens in generic_write_end(). journal_stop() 
-needs to happen after generic_write_end(). :(
+I'm ok with this part.
 
-Mingming, can you take a look at the current & proposed order ?
-I ran into bunch of races when I tried to change the order for
-->writepages() support earlier :(
+Acked-by: Paul Jackson <pj@sgi.com>
 
-Thanks,
-Badari
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
