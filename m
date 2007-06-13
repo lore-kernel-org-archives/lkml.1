@@ -1,47 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757165AbXFMWcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbXFMWgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757165AbXFMWcf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 18:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbXFMWc1
+	id S1757759AbXFMWgf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 18:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbXFMWgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 18:32:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37611 "EHLO mx1.redhat.com"
+	Wed, 13 Jun 2007 18:36:25 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52014 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754368AbXFMWc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 18:32:27 -0400
-To: Bernd Paysan <bernd.paysan@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr> <20070612184110.GB7980@kroah.com>
-	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706131402.11396.bernd.paysan@gmx.de>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Wed, 13 Jun 2007 19:31:47 -0300
-In-Reply-To: <200706131402.11396.bernd.paysan@gmx.de> (Bernd Paysan's message of "Wed\, 13 Jun 2007 14\:02\:10 +0200")
-Message-ID: <orsl8vlc4s.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755484AbXFMWgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 18:36:24 -0400
+Subject: Re: [BUG] ptraced process waiting on syscall may return kernel
+	internal errnos
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+In-Reply-To: <20070613151530.GA232@tv-sign.ru>
+References: <87hcplvdkl.wl%takeuchi_satoru@jp.fujitsu.com>
+	 <20070606105900.DE5E94D0592@magilla.localdomain>
+	 <20070613151530.GA232@tv-sign.ru>
+Content-Type: text/plain
+Date: Thu, 14 Jun 2007 08:36:00 +1000
+Message-Id: <1181774160.14818.333.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 13, 2007, Bernd Paysan <bernd.paysan@gmx.de> wrote:
+On Wed, 2007-06-13 at 19:15 +0400, Oleg Nesterov wrote:
+> 
+> This breaks cancel_freezing(). Somehow we should clear TIF_SIGPENDING
+> for kernel threads. Otherwise we may have subtle failures if
+> try_to_freeze_tasks() fails.
 
-> What I don't understand about the GPLv3 with keys is why that depends on the 
-> use case. As user of commercial devices like company routers, firewalls and 
-> such, which often are Linux based, I don't want them sealed by the vendor, 
-> as well. An explicit statement is even worse than an implicit one (as in 
-> the GPLv2, which has been tested in a German court by Harald Welte - 
-> Siemens had to turn in the keys).
+The freezer is crap... news at 11. Maybe a quick hack would be to let it
+clear sigpending if tsk->mm == NULL but that's ugly. Note that there's
+anything pretty about the freezer anyway...
 
-My personal guess as to the reasoning behind this decision is that
-consumer devices are the ones that require most attention, mainly
-because the home users are the ones with least (individual) power to
-demand respect for their freedoms.
+> Also, whith this change do_sigaction()->recalc_sigpending_and_wake()
+> doesn't make sense any longer, yes?
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Well.. why was it _and_wake() in the first place anyway ? Or do I miss
+something ? Why would we need to wake a thread for which we are removing
+signals ?
+
+What about something like:
+
+			do {
+				rm_from_queue_full(&mask, &t->pending);
+-				recalc_sigpending_and_wake(t);
+				t = next_thread(t);
+			} while (t != current);
++			recalc_sigpending();
+
+> > @@ -385,7 +391,8 @@ int dequeue_signal(struct task_struct *t
+> >                       }
+> >               }
+> >       }
+> > -     recalc_sigpending_tsk(tsk);
+> > +     if (likely(tsk == current))
+> > +             recalc_sigpending();
+> 
+> In theory, flush_signals(t) needs a similar change. However, it is
+> always
+> called with t == current. Perhaps it makes sense to make it
+> flush_signals(void) ?
+
+Agreed.
+
+> Do you see any valid usage of flush_signals(t) when t != current ?
+> 
+> (Actually, imho the same is true for dequeue_signal(). Except for
+> signalfd.c
+>  dequeue_signal() should operate on current. Perhaps it would be a bit
+> cleaner
+>  to have dequeue_signal_tsk(tsk) and dequeue_signal(void), the latter
+> does
+>  recalc_sigpending).
+
+That's been part of the discussion so far ... so yes, maybe. I also
+think dequeue_signal_tsk would then only dequeue shared signals... But
+then, that means signalfd would have to do a if (tsk == current) to
+know which one to call...
+
+So at the end of the day, easier to test it inside dequeue_signal().
+
+Ben.
+
+
