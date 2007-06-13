@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbXFMOo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbXFMOsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758867AbXFMOo5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 10:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbXFMOot
+	id S1758735AbXFMOsy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 10:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757939AbXFMOsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 10:44:49 -0400
-Received: from keil-draco.com ([216.193.185.50]:50480 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756772AbXFMOot (ORCPT
+	Wed, 13 Jun 2007 10:48:47 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:6192 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756060AbXFMOsq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 10:44:49 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: "Simon Arlott" <simon@fire.lp0.eu>
-Subject: Re: Patch related with Fork Bobmbing Attack
-Date: Wed, 13 Jun 2007 10:44:41 -0400
-User-Agent: KMail/1.9.6
-Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Roland Dreier" <rdreier@cisco.com>,
-       "Anand Jahagirdar" <anandjigar@gmail.com>, linux-kernel@vger.kernel.org,
-       security@kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       akpm@digeo.com, "Jens Axboe" <jens.axboe@oracle.com>,
-       "Jiri Kosina" <jikos@jikos.cz>
-References: <25ae38200706120949vaeb8e0ascd182ef2f709d0fc@mail.gmail.com> <Pine.LNX.4.64.0706121931390.19578@fbirervta.pbzchgretzou.qr> <38425.simon.1181734449@5ec7c279.invalid>
-In-Reply-To: <38425.simon.1181734449@5ec7c279.invalid>
+	Wed, 13 Jun 2007 10:48:46 -0400
+Date: Wed, 13 Jun 2007 15:48:16 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Dmitriy Monakhov <dmonakhov@sw.ru>
+cc: linux-kernel@vger.kernel.org, npiggin@suse.de, mark.fasheh@oracle.com,
+       linux-ext4@vger.kernel.org
+Subject: Re: [patch] new aop loop fix
+In-Reply-To: <20070613172939.GE13815@localhost.sw.ru>
+Message-ID: <Pine.LNX.4.64.0706131543380.10580@blonde.wat.veritas.com>
+References: <20070613134631.GB13815@localhost.sw.ru>
+ <Pine.LNX.4.64.0706131426070.4539@blonde.wat.veritas.com>
+ <20070613172939.GE13815@localhost.sw.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706131044.42338.dhazelton@enter.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbGludXgtZXh0NEB2Z2VyLmtlcm5lbC5vcmcAZG1vbmFraG92QHN3LnJ1AG5waWdnaW5Ac3VzZS5kZQBtYXJrLmZhc2hlaEBvcmFjbGUuY29tAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 June 2007 07:34:09 Simon Arlott wrote:
-> On Tue, June 12, 2007 18:32, Jan Engelhardt wrote:
-> > On Jun 12 2007 10:04, Roland Dreier wrote:
-> >> > +	/*
-> >> > +         * following code does not allow Non Root User to cross its
-> >> > process +         * limit. it alerts administrator about fork bombing
-> >> > attack and prevents +         * it.
-> >> > +         */
-> >> >  	if (atomic_read(&p->user->processes) >=
-> >> > p->signal->rlim[RLIMIT_NPROC].rlim_cur) if (!capable(CAP_SYS_ADMIN) &&
-> >> > !capable(CAP_SYS_RESOURCE) && -				p->user != &root_user)
-> >> > -
-> >> > +				p->user != &root_user) {
-> >> > +			if (printk_ratelimit())
-> >> > +                                printk(KERN_CRIT"User with uid %d is
-> >> > crossing its process
-> >>
-> >> limit\n",p->user->uid);
-> >>
-> >> >  			goto bad_fork_free;
-> >> > +		}
->
-> Why does this need to be KERN_CRIT? You can't assume that every time a
-> process limit is reached that it's a fork bomb.
+On Wed, 13 Jun 2007, Dmitriy Monakhov wrote:
+> Btw: Nick's patches broke  LO_CRYPT_XOR mode,
 
+It would help him if you could describe how.
 
-I think the reasoning here is to alert the administrator(s) to the possibility 
-that somebody has just tried a fork-bomb. A better test, IMHO, would be to 
-check how fast the processes are being spawned and whether a large percentage 
-share the same parent. (Those two taken together would better spot most 
-fork-bombs, including the very simple types that are just a simple one-liner)
+> but it is ok because
+> this feature was absolete and not used by anyone, am i right here?
 
-DRH
+I know nothing of this; but so long as its code remains in the driver,
+I'd say we should be supporting it rather than breaking it.
 
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Hugh
