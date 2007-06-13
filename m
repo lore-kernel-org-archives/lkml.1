@@ -1,82 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbXFMDSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbXFMDY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbXFMDSl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 23:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXFMDSd
+	id S1755958AbXFMDY4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 23:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXFMDYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 23:18:33 -0400
-Received: from hu-out-0506.google.com ([72.14.214.226]:33658 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753172AbXFMDSc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 23:18:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Zk46yhq53IxelnYXN+iwOQCoDKqsRIxavIpHvU8+97taf0KicGwI0yiTCASSs/SneOqJd1KuNxFSJlWsU1QnjFYlAdqpmhYEZOwjUSKpHR1lUVjgem3yKVTxFAsWU7pqdbic6abXp3HeTeoNlZmIlGUURVx0RpmrKuk1CMOr2CY=
-Message-ID: <a781481a0706122018i6273cd17y61cd95e269b5c7c9@mail.gmail.com>
-Date: Wed, 13 Jun 2007 08:48:29 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [PATCH] x86: fix improper .init-type section references
-Cc: "Jan Beulich" <jbeulich@novell.com>,
-       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org,
-       patches@x86-64.org
-In-Reply-To: <20070612180002.GC15329@uranus.ravnborg.org>
+	Tue, 12 Jun 2007 23:24:48 -0400
+Received: from sandeen.net ([209.173.210.139]:22423 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753172AbXFMDYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 23:24:47 -0400
+Message-ID: <466F6380.2010800@sandeen.net>
+Date: Tue, 12 Jun 2007 22:24:48 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Greg KH <gregkh@suse.de>
+CC: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, htejun@gmail.com
+Subject: Re: [GIT PATCH] sysfs fixes for 2.6.22-rc4
+References: <20070612232159.GA12971@suse.de>
+In-Reply-To: <20070612232159.GA12971@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466E6BDF.76E4.0078.0@novell.com>
-	 <a781481a0706120414g385ccfe8j82b5b18d96d064f2@mail.gmail.com>
-	 <a781481a0706120509k89c331ela81f57ad0f0e29eb@mail.gmail.com>
-	 <466EB12B.76E4.0078.0@novell.com>
-	 <a781481a0706120632p54ad83d0ka0a07a9fd9b276b4@mail.gmail.com>
-	 <466EC08A.76E4.0078.0@novell.com>
-	 <a781481a0706120709v5a2d1147m9d372a8056aeba6d@mail.gmail.com>
-	 <20070612180002.GC15329@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+Greg KH wrote:
 
-On 6/12/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Tue, Jun 12, 2007 at 07:39:30PM +0530, Satyam Sharma wrote:
-> > On 6/12/07, Jan Beulich <jbeulich@novell.com> wrote:
-> > >>> And from a purely theoretical
-> > >>> perspective I don't think such references should be considered bad -
-> > >>> .exit.* should be discarded together with .init.* if unloading is
-> > >>> impossible (built-in or configured off), not before module/kernel
-> > >>> initialization.
-> > >>
-> > >>Hmm, but that's not how things are, presently. __exit marked
-> > >>functions are simply not linked into the kernel (when that module
-> > >>is being built-in) at all -- this "discard" happens at _build time_
-> > >>(to save on kernel image size).
-> > >
-> > >Not really, at least not for i386 and x86-64 - see their vmlinux.lds.S
-> > >files.
-> >
-> > For those archs, yes, you're right that modpost should be
-> > special-casing (based on arch) before complaining for
-> > .init -> .exit references.
-> No.
-> References from __init to __exit is wrong independent on architecture.
-[...]
-> So for the latter we will have an oops where we for the first have a build
-> time failure.
+> Eric Sandeen (1):
+>       sysfs: store sysfs inode nrs in s_ino to avoid readdir oopses
 
-Is that (oops possibility on i386) really true? (.exit.{text, data}) is also
-between __init_begin and __init_end and hence will be discarded
-_along_ with (not before) .init.{text, data} during run-time I think,
-which means .init -> .exit reference modpost warnings (on said
-archs) are truly bogus ...
+To be fair, Tejun wrote that one too, I just backported & tried to
+simplify it a bit for -stable.  :)
 
-> powerpc discards them at buildtime, i386 at runtime.
+> Tejun Heo (2):
+>       sysfs: fix condition check in sysfs_drop_dentry()
+>       sysfs: fix race condition around sd->s_dentry, take#2
+> 
 
-Yup, we were only discussing possibility that modpost not complain
-about .init -> .exit references that will never go oops (because the arch
-guarantees that).
+Glad to see these are making their way out, we've had people hit these
+bugs too.  And they beat on this basic patchset quite a lot, with good
+results.
 
-Satyam
+Thanks!
+
+-Eric
