@@ -1,134 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbXFMOHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbXFMOJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758083AbXFMOHi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 10:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbXFMOHa
+	id S1758430AbXFMOJR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 10:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbXFMOJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 10:07:30 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:42468 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751761AbXFMOH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 10:07:29 -0400
-Subject: Re: [RFC] TOMOYO Linux
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Toshiharu Harada <haradats@nttdata.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-In-Reply-To: <466FA71C.1020309@nttdata.co.jp>
-References: <466FA71C.1020309@nttdata.co.jp>
+	Wed, 13 Jun 2007 10:09:05 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:35635 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbXFMOJD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 10:09:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=gR/pWG6TFyF6CS5dionMDyKwMGVb2hVlUM+wHFUxJmorOHgQzVMkp6yGK4VnP8h8uIf8tHKSYreec6vit6Wg2MT1JZvxj64o7waeZlEGwr44JSTM5vucjxnH+gnXnL33kGOsdcM7o5ShuTVB6mc1b+aHigKRhXbosIZFEZTupgg=
+Subject: Re: USB remote control missing keycodes
+From: Islam Amer <pharon@gmail.com>
+Reply-To: pharon@gmail.com
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0706111656340.23280@twin.jikos.cz>
+References: <20070611101319.GA14284@DervishD>  <466D2DF7.9020709@aladin.ro>
+	 <1181563063.19258.11.camel@iamer-laptop>
+	 <Pine.LNX.4.64.0706111656340.23280@twin.jikos.cz>
 Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 13 Jun 2007 10:07:15 -0400
-Message-Id: <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
+Date: Wed, 13 Jun 2007 17:08:54 +0300
+Message-Id: <1181743734.6163.1.camel@iamer-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 17:13 +0900, Toshiharu Harada wrote:
-> Hello,
+On Mon, 2007-06-11 at 17:02 +0200, Jiri Kosina wrote:
+> On Mon, 11 Jun 2007, Islam Amer wrote:
 > 
-> A couple of years ago, we tried to build a tool to generate
-> SELinux policy (*1). To do that, we had to gather the access
-> requests information. So we researched a profiling method and
-> got to the idea of having a process to store its invocation
-> history information (or ancestors).
+> > I have a remote control device, with an IR transciever that plugs into a 
+> > USB port and registers as an input device. All the buttons on the remote 
+> > work fine except for the back , text , and three grey buttons at the 
+> > top.
 > 
-> Here are examples:
-> /bin/bash process invoked from mingetty: /sbin/mingetty /bin/bash
-> /bin/bash process invoked from sshd: /usr/sbin/sshd /bin/bash
-> /bin/bash process invoked from /bin/bash which was invoked from sshd: /usr/sbin/sshd /bin/bash /bin/bash
+> Could you please recompile your kernel with CONFIG_HID_DEBUG (2.6.21-rc1 
+> or any newer) and send me the output both from the time you connect the 
+> device in the USB port, and also when you press the non-functional keys?
+> 
+> Thanks,
+> 
 
-Why can't you do this via SELinux domain transitions?  That lets you do
-it by equivalence class rather than per-binary, and let's you just
-encode the security-relevant parts of the "invocation history" aka call
-chain.  For example, the above could be expressed in SELinux policy
-already as:
-	domain_auto_trans(getty_t, shell_exec_t, local_shell_t)
-	domain_auto_trans(sshd_t, shell_exec_t, remote_shell_t)
-	domain_auto_trans(remote_shell_t, shell_exec_t, remote_subshell_t)
-or whatever you like.  But you don't have to keep extending it
-indefinitely when you don't need to distinguish in policy, so you might
-choose to entirely omit the last one, and just have it stay in
-remote_shell_t.
+Sorry for the late reply, here's the output I got with 2.6.21.4 and
+CONFIG_HID_DEBUG ..
 
-> It seemed to us that this clarification would be familiar to
-> users/administrators and could be used for various purposes.
-> We did implement this by making use of the Linux's traditional
-> fork & exec mechanisms, and built a pathname-based MAC using
-> this implementation. We named the result as "TOMOYO Linux"
-> and made it open source at SourceForge.jp (*2).
-> 
-> TOMOYO Linux kernel keeps track of process invocation and
-> distinguishes every different process invocation history as a "domain".
-> TOMOYO Linux can accumulate the accesses requests for each domain.
-> 
-> TOMOYO Linux has a utility called "ccstree". It prints the invocation
-> history for each process in addition to the output of "pstree" command:
-> 
-> [root@tomoyo ~]# ccstree
-> init (1) <kernel> /sbin/init
->    +- udevd (388) <kernel> /sbin/udevd
->    ...
->    +- automount (1970) <kernel> /etc/rc.d/init.d/autofs /usr/sbin/automount
->    +- acpid (1993) <kernel> /etc/rc.d/init.d/acpid /bin/bash /usr/sbin/acpid
->    +- cupsd (2008) <kernel> /etc/rc.d/init.d/cups /bin/bash /usr/sbin/cupsd
->    +- sshd (2026) <kernel> /usr/sbin/sshd
->    +- sshd (2269) <kernel> /usr/sbin/sshd
->      +- bash (2271) <kernel> /usr/sbin/sshd /bin/bash
->        +- ccstree (15125) <kernel> /usr/sbin/sshd /bin/bash /root/ccstools/ccstree
-> 
->    (symbol, "<kernel>" indicates a virtual base.)
-> 
-> We had a presentation and a tutorial session of TOMOYO Linux
-> version 1.4 at the ELC2007 (*3). Version 1.4.1 is the latest and
-> has a rich set of MAC functions for files, networking, and
-> capabilities and so on. For historical reasons, it is not using
-> LSM or auditd. We decided to share this idea with the Linux community
-> and totally rewrote the code. The result was TOMOYO Linux 2.0,
-> which is now using LSM and auditd. To make discussion smooth,
-> we cut off MAC functions other than for files.
-> 
-> We are posting this message because we believe that this process
-> invocation history idea might be a useful addition to Linux.
-> Please take some time to see what this small piece of software can do
-> with your own eyes. Your feedback will be greatly appreciated.
-> 
-> If some of you are interested in TOMOYO Linux as a method for
-> access control, please be advised to try full-featured version 1.4.1 (*4).
-> It is quite easy to install and maintain TOMOYO Linux, but it should
-> not be considered as a replacement of SELinux.
-> 
-> All right, that's almost everything. Please visit the following
-> URL for the code and documents:
->    http://tomoyo.sourceforge.jp/wiki-e/
-> If you want to see the code first, then:
->    http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/security/tomoyo/?v=linux-2.6.21.3-tomoyo-2.0
-> 
-> We will have a TOMOYO Linux BOF session at the OLS2007 (*5).
-> Please come along and let's talk.
-> 
-> Thank you.
-> 
-> Toshiharu Harada (project manager)
-> Tetsuo Handa (main architect, version 1 author)
-> Kentaro Takeda (version 2.0 author)
-> NTT DATA CORPORATION
-> http://www.nttdata.co.jp/en/index.html
-> 
-> *1) http://sourceforge.jp/projects/tomoyo/document/nsf2003-en.pdf
-> *2) http://tomoyo.sourceforge.jp/
-> *3) http://www.celinux.org/elc2007/
->      http://tree.celinuxforum.org/CelfPubWiki/ELC2007Presentations
-> *4) http://tomoyo.sourceforge.jp/en/1.4.1/
-> *5) http://www.linuxsymposium.org/2007/
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-Stephen Smalley
-National Security Agency
+[  706.108243] usb 1-3: new low speed USB device using ohci_hcd and
+address 2
+[  706.321518] PM: Adding info for usb:1-3
+[  706.321616] PM: Adding info for No Bus:usbdev1.2_ep00
+[  706.321642] usb 1-3: configuration #1 chosen from 1 choice
+[  706.324518] PM: Adding info for usb:1-3:1.0
+[  706.337449] drivers/usb/input/hid-core.c: report descriptor (size
+246, read 246) =  15 00 25 01 05 01 09 80 a1 01 85 01 19 81 29 83 75 01
+95 03 81 02 75 05 95 01 81 01 c0 05 0c 09 01 a1 01 85 04 19 00 2a f5 00
+0a 09 02 0a 30 02 0a 2d 02 0a 2e 02 0a 24 02 15 00 26 f9 00 75 08 95 01
+81 00 c0 05 01 09 02 a1 01 85 03 09 01 a1 00 05 09 19 01 29 03 15 00 25
+01 75 01 95 03 81 02 75 05 95 01 81 01 05 01 09 30 09 31 15 81 25 7f 75
+08 95 02 81 06 09 38 95 01 81 06 c0 c0 05 01 09 06 a1 01 85 02 05 07 19
+e0 29 e7 15 00 25 01 75 01 95 08 81 02 19 00 2a ff 00 15 00 26 ff 00 75
+08 95 03 81 00 05 08 25 01 19 01 29 05 75 01 95 05 91 02 75 03 95 01 91
+01 c0 06 bc ff 09 88 a1 01 85 05 19 00 29 f0 15 00 26 f0 00 75 08 95 01
+81 00 c0 06 80 ff 09 00 a1 01 85 06 75 08 95 04 15 00 26 ff 00 09 01 b1
+82 09 01 81 82 95 07 09 02 91 82 c0
+
+vol+ ( works )
+
+[  764.661651] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  764.661659] drivers/hid/hid-core.c: report 4 (size 4) =  e9 00 00 00
+[  764.661667] hid-debug: input Consumer.0000 = 0
+[  764.661675] hid-debug: input Consumer.00e9 = 1
+[  764.669634] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  764.669642] drivers/hid/hid-core.c: report 6 (size 4) =  01 90 00 00
+[  764.669653] hid-debug: input ff80.0001 = 1
+[  764.669685] hid-debug: input ff80.0001 = 144
+[  764.669694] hid-debug: input ff80.0001 = 0
+[  764.669701] hid-debug: input ff80.0001 = 0
+[  764.781267] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  764.781275] drivers/hid/hid-core.c: report 4 (size 4) =  00 00 00 00
+[  764.781284] hid-debug: input Consumer.00e9 = 0
+[  764.781306] hid-debug: input Consumer.0000 = 1
+
+vol- ( works )
+
+[  991.475577] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  991.475583] drivers/hid/hid-core.c: report 4 (size 4) =  ea 00 00 00
+[  991.475592] hid-debug: input Consumer.0000 = 0
+[  991.475600] hid-debug: input Consumer.00ea = 1
+[  991.483553] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  991.483561] drivers/hid/hid-core.c: report 6 (size 4) =  01 91 00 00
+[  991.483572] hid-debug: input ff80.0001 = 1
+[  991.483588] hid-debug: input ff80.0001 = 145
+[  991.483605] hid-debug: input ff80.0001 = 0
+[  991.483613] hid-debug: input ff80.0001 = 0
+[  991.595188] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  991.595196] drivers/hid/hid-core.c: report 4 (size 4) =  00 00 00 00
+[  991.595204] hid-debug: input Consumer.00ea = 0
+[  991.595225] hid-debug: input Consumer.0000 = 1
+
+
+
+back ( not working )
+
+[  829.897373] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  829.897380] drivers/hid/hid-core.c: report 4 (size 4) =  fa 00 00 00
+[  829.897389] hid-debug: input Consumer.0000 = 0
+[  829.905338] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  829.905343] drivers/hid/hid-core.c: report 6 (size 4) =  01 23 00 00
+[  829.905350] hid-debug: input ff80.0001 = 1
+[  829.905360] hid-debug: input ff80.0001 = 35
+[  829.905373] hid-debug: input ff80.0001 = 0
+[  829.905383] hid-debug: input ff80.0001 = 0
+[  830.001028] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  830.001033] drivers/hid/hid-core.c: report 6 (size 4) =  01 23 00 00
+[  830.001039] hid-debug: input ff80.0001 = 1
+[  830.001047] hid-debug: input ff80.0001 = 35
+[  830.001053] hid-debug: input ff80.0001 = 0
+[  830.001058] hid-debug: input ff80.0001 = 0
+[  830.128620] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  830.128626] drivers/hid/hid-core.c: report 4 (size 4) =  00 00 00 00
+[  830.128633] hid-debug: input Consumer.0000 = 1
+
+txt ( not working )
+
+[  900.156751] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  900.156762] drivers/hid/hid-core.c: report 5 (size 4) =  5a 00 00 00
+[  900.156771] hid-debug: input ffbc.0000 = 0
+[  900.156781] hid-debug: input ffbc.005a = 1
+[  900.164708] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  900.164713] drivers/hid/hid-core.c: report 6 (size 4) =  01 aa 00 00
+[  900.164725] hid-debug: input ff80.0001 = 1
+[  900.164734] hid-debug: input ff80.0001 = 170
+[  900.164748] hid-debug: input ff80.0001 = 0
+[  900.164755] hid-debug: input ff80.0001 = 0
+[  900.276344] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  900.276349] drivers/hid/hid-core.c: report 5 (size 4) =  00 00 00 00
+[  900.276355] hid-debug: input ffbc.005a = 0
+[  900.276362] hid-debug: input ffbc.0000 = 1
+
+Thank you :)
 
