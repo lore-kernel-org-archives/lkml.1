@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbXFMA2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbXFMBMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbXFMA2G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 20:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXFMA1y
+	id S1752611AbXFMBMs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 21:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbXFMBMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 20:27:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:46850 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754735AbXFMA1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 20:27:53 -0400
-Subject: Re: [PATCH 4/9] readahead: data structure and routines
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Pratt <slpratt@austin.ibm.com>,
-       Ram Pai <linuxram@us.ibm.com>
-In-Reply-To: <20070612120706.GB9624@mail.ustc.edu.cn>
-References: <20070516224752.500812933@mail.ustc.edu.cn>
-	 <20070516224818.683288460@mail.ustc.edu.cn>
-	 <1181619050.6237.23.camel@localhost.localdomain>
-	 <20070612120706.GB9624@mail.ustc.edu.cn>
-Content-Type: text/plain
-Date: Wed, 13 Jun 2007 10:27:19 +1000
-Message-Id: <1181694439.6237.94.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jun 2007 21:12:39 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36499 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbXFMBMj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 21:12:39 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+References: <200706061229.24486.jesse.barnes@intel.com>
+Date: Tue, 12 Jun 2007 19:11:21 -0600
+In-Reply-To: <200706061229.24486.jesse.barnes@intel.com> (Jesse Barnes's
+	message of "Wed, 6 Jun 2007 12:29:23 -0700")
+Message-ID: <m14plcpsjq.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-12 at 20:07 +0800, Fengguang Wu wrote:
-> Hi Rusty,
+Jesse Barnes <jesse.barnes@intel.com> writes:
 
-Hi Fengguang,
+> On some machines, buggy BIOSes don't properly setup WB MTRRs to
+> cover all available RAM, meaning the last few megs (or even gigs)
+> of memory will be marked uncached.  Since Linux tends to allocate
+> from high memory addresses first, this causes the machine to be
+> unusably slow as soon as the kernel starts really using memory
+> (i.e. right around init time).
+>
+> This patch works around the problem by scanning the MTRRs at
+> boot and figuring out whether the current end_pfn value (setup
+> by early e820 code) goes beyond the highest WB MTRR range, and
+> if so, trimming it to match.  A fairly obnoxious KERN_WARNING
+> is printed too, letting the user know that not all of their
+> memory is available due to a likely BIOS bug.
 
-> or preferably:
-> 
-> 	pgoff_t start;                 /* where readahead started */
->         unsigned long size;            /* # of readahead pages */
-> 	unsigned long async_size;      /* do asynchronous readahead when there are only # of pages ahead */
-> 
-> 	unsigned long async_size_old;  /* TODO: this one is not needed for now */
-> 
-> Any opinions? Thanks.
+A quick update.  This patch is horribly incorrect on a socket F 
+opteron/Athlon 64 with memory above 4GB.
 
-These names and comments are really nice.  I think the code will become
-more readable after this, too.
+In particular those cpus are capable of mapping all of memory
+above 4GB as write back without using a single MTRR.
 
-Did you want me to try to make this patch, or did you want to do it?
+So examining MTRRs is insufficient.
 
-Thanks,
-Rusty.
-
-
+Eric
