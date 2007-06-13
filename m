@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbXFMXCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbXFMXCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758949AbXFMXCS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 19:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbXFMXCE
+	id S1759476AbXFMXCb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 19:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757569AbXFMXCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 19:02:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45299 "EHLO mx1.redhat.com"
+	Wed, 13 Jun 2007 19:02:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48637 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755736AbXFMXCC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 19:02:02 -0400
+	id S1756358AbXFMXCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 19:02:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stefan Seyfried <seife@suse.de>
+Subject: Re: [PATCH, 2nd try] make disable_console_suspend runtime configurable
+Date: Thu, 14 Jun 2007 01:09:04 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Frank Seidel <fseidel@suse.de>, akpm@linux-foundation.org,
+       nigel@nigel.suspend2.net
+References: <20070613200303.GB11437@suse.de> <20070613220800.GD2611@elf.ucw.cz> <20070613222308.GA17266@suse.de>
+In-Reply-To: <20070613222308.GA17266@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@tv-sign.ru>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Subject: Re: [BUG] ptraced process waiting on syscall may return kernel
-	internal errnos
-In-Reply-To: Benjamin Herrenschmidt's message of  Thursday, 14 June 2007 08:36:00 +1000 <1181774160.14818.333.camel@localhost.localdomain>
-X-Zippy-Says: Yow!  Legally-imposed CULTURE-reduction is CABBAGE-BRAINED!
-Message-Id: <20070613230153.7B3034D059F@magilla.localdomain>
-Date: Wed, 13 Jun 2007 16:01:53 -0700 (PDT)
+Content-Disposition: inline
+Message-Id: <200706140109.04866.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The freezer is crap... news at 11. Maybe a quick hack would be to let it
-> clear sigpending if tsk->mm == NULL but that's ugly. Note that there's
-> anything pretty about the freezer anyway...
-
-I think it might be made not too unreasonable by adding a TASK_FROZEN state.
-But I am still persuaded by my "hide in the corner" plan.
-
-> Well.. why was it _and_wake() in the first place anyway ? Or do I miss
-> something ? Why would we need to wake a thread for which we are removing
-> signals ?
-
-The bug was about a case where recalc_sigpending_tsk would set
-TIF_SIGPENDING when it hadn't been set before (wants_signal).  It has
-nothing to do with the rm_from_queue_full being done there.  It's just a
-violation of the necessary rule that when you set TIF_SIGPENDING on another
-thread you better call signal_wake_up on it.
-
-> What about something like:
+On Thursday, 14 June 2007 00:23, Stefan Seyfried wrote:
+> On Thu, Jun 14, 2007 at 12:08:00AM +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > I hate having to recompile the kernel, just to be able to debug suspend.
+> > > Remove CONFIG_DISABLE_CONSOLE_SUSPEND, replace it by a tunable in
+> > > /sys/power/disable_console_suspend.
+> > 
+> > > Signed-off-by: Stefan Seyfried <seife@suse.de>
+> > > Signed-off-by: Frank Seidel <fseidel@suse.de>
+> > 
+> > I wonder if there's a better name?
 > 
-> 			do {
-> 				rm_from_queue_full(&mask, &t->pending);
-> -				recalc_sigpending_and_wake(t);
-> 				t = next_thread(t);
-> 			} while (t != current);
-> +			recalc_sigpending();
+> Suggest one.
+> 
+> > Or maybe this should not be /sys configurable, but just have value for
+> > each console "this console can work while suspended"?
+> > 
+> > (serial can, vesafb can, netconsole can't)?
+> 
+> Go ahead, submit a patch. It won't be that trivial. And i wonder
+> if it is actually worth the hassle. This is a debugging facility.
+> 
+> > Exporting "crash-me" option to user does not seem that cool to me.
+> 
+> We have "echo c > /proc/sysrq-trigger" also.
+> This is a debugging option, and forcing users to recompile the kernel just
+> to debug suspend problems (not resume problems, the "it does not even go to
+> sleep" stuff is where this matters most) is IMO a bad idea.
+> 
+> We can also make this a boot parameter, i don't care, but i want to disable
+> console suspend without recompiling the kernel.
 
-There is no need for the +, just the -.  The calling thread is the one
-where know there is certainly no perturbation of behavior due to leaving
-TIF_SIGPENDING set rather than clearing it.  It's just going to exit the
-syscall and deal with signal state properly on the way out either way.
-Doing recalc_sigpending is an unnecessary optimization of the corner case.
+It's a bit similar to the pm_trace thing.
 
-> So at the end of the day, easier to test it inside dequeue_signal().
+As long as there is a sane default (ie. the consoles are disabled), I don't see
+a big problem with that.
 
-Before completely revamping the whole set of entrypoints to be saner all
-around, yes.
+Moreover, distributions will probably want to have a switch so that they can
+tell the user "please do 'echo 1 > ...' and retest" and if they start to add
+such things by themselves that wouldn't be nice.
+
+Greetings,
+Rafael
 
 
-Thanks,
-Roland
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
