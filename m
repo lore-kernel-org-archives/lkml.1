@@ -1,110 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbXFMIRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbXFMISp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbXFMIRQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 04:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbXFMIRG
+	id S1757375AbXFMISp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 04:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbXFMISi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 04:17:06 -0400
-Received: from queue04-winn.ispmail.ntl.com ([81.103.221.58]:65482 "EHLO
-	queue04-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752009AbXFMIRE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 04:17:04 -0400
-X-Greylist: delayed 899 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 04:17:04 EDT
-Subject: DRI/AGP on AMD64 based machine
-From: Alex Bennee <kernel-hacker@bennee.com>
-Reply-To: kernel-hacker@bennee.com
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 13 Jun 2007 09:02:15 +0100
-Message-Id: <1181721735.4418.10.camel@malory>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 04:18:38 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53803 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752997AbXFMISi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 04:18:38 -0400
+Date: Wed, 13 Jun 2007 10:18:25 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Indan Zupancic <indan@nul.nu>
+Cc: Dmitry Torokhov <dtor@insightbb.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Andi Kleen <ak@suse.de>,
+       Jiri Kosina <jikos@jikos.cz>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
+Message-ID: <20070613081825.GF13747@elf.ucw.cz>
+References: <20070604112426.GA2707@elf.ucw.cz> <d120d5000706041046j1da16c6el350d9da1d74d508b@mail.gmail.com> <20070604205701.GD2711@elf.ucw.cz> <200706120142.13173.dtor@insightbb.com> <52481.81.207.0.53.1181691356.squirrel@secure.samage.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <52481.81.207.0.53.1181691356.squirrel@secure.samage.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi!
 
-For a while now I've been meaning to get DRI running with my rv350
-graphics card on my AMD64 machine. However I don't seem to be able to
-get the right config-fu in the kernel to enable all the components.
+> > For what it worth I finally tried that setleds loop on my laptop. I am
+> > not getting any lost keypresses/releases. But then I don't have EC
+> > (or at least it is not exported via ACPI). This is an old Dell notebook.
+> 
+> Well, as I said before, I've the "stuck key"/repeated output too (as well
+> as a warping PS/2 mouse), but no blinking led problem, so I believe the
+> two things are totally unrelated.
 
-For my sins I've been following the Gentoo Howto Wiki
-(http://gentoo-wiki.com/HOWTO_DRI_with_ATi_Open-Source_Drivers)
-
-A lot of the AGP stuff in the Kernel seems to be locked to 32 bit
-kernels. The instructions seem to imply there is an am64-agp module
-(which looks as though it builds in the tree but doesn't install) and
-possibly an nvidea-agp module. I'm a little confused as I have both AMD
-and NVidia chipsets on my machine:
-
-malory agp # lspci             
-00:00.0 Host bridge: nVidia Corporation nForce3 250Gb Host Bridge (rev
-a1)
-00:01.0 ISA bridge: nVidia Corporation nForce3 250Gb LPC Bridge (rev a2)
-00:01.1 SMBus: nVidia Corporation nForce 250Gb PCI System Management
-(rev a1)
-00:02.0 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
-00:02.1 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
-00:02.2 USB Controller: nVidia Corporation nForce3 EHCI USB 2.0
-Controller (rev a2)
-00:05.0 Bridge: nVidia Corporation CK8S Ethernet Controller (rev a2)
-00:06.0 Multimedia audio controller: nVidia Corporation nForce3 250Gb
-AC'97 Audio Controller (rev a1)
-00:08.0 IDE interface: nVidia Corporation CK8S Parallel ATA Controller
-(v2.5) (rev a2)
-00:0a.0 IDE interface: nVidia Corporation CK8S Serial ATA Controller
-(v2.5) (rev a2)
-00:0b.0 PCI bridge: nVidia Corporation nForce3 250Gb AGP Host to PCI
-Bridge (rev a2)
-00:0e.0 PCI bridge: nVidia Corporation nForce3 250Gb PCI-to-PCI Bridge
-(rev a2)
-00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
-HyperTransport Technology Configuration
-00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
-Address Map
-00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
-DRAM Controller
-00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
-Miscellaneous Control
-01:00.0 VGA compatible controller: ATI Technologies Inc RV350 AS [Radeon
-9550]
-01:00.1 Display controller: ATI Technologies Inc RV350 AS [Radeon 9550]
-(Secondary)
-02:06.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394 Host
-Controller (rev 80)
-02:0a.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
-RTL-8139/8139C/8139C+ (rev 10)
-
-Any clues on the correct AGP config options to switch on gratefully
-received. My current .config looks like:
-
-08:56 alex@malory [linux-2.6-stable.git] >grep "AGP" .config
-CONFIG_AGP=y
-CONFIG_AGP_AMD64=y
-CONFIG_AGP_INTEL=m
-# CONFIG_AGP_SIS is not set
-CONFIG_AGP_VIA=m
-
-08:59 alex@malory [linux-2.6-stable.git] >grep "DRM" .config
-CONFIG_DRM=m
-# CONFIG_DRM_TDFX is not set
-# CONFIG_DRM_R128 is not set
-CONFIG_DRM_RADEON=m
-# CONFIG_DRM_I810 is not set
-# CONFIG_DRM_I830 is not set
-# CONFIG_DRM_I915 is not set
-CONFIG_DRM_MGA=m
-# CONFIG_DRM_SIS is not set
-# CONFIG_DRM_VIA is not set
-# CONFIG_DRM_SAVAGE is not set
-
-Regards,
-
-
---
-Alex, homepage: http://www.bennee.com/~alex/
-Television has brought back murder into the home -- where it belongs. --
-Alfred Hitchcock
-
+Well, after turning off CONFIG_BLINK, my problems went away, and with
+a fast-blink done from userspace, I can make them way worse. They
+_are_ related here.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
