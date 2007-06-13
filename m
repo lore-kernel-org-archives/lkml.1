@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbXFMJFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbXFMJIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757418AbXFMJFH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 05:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbXFMJEz
+	id S1757455AbXFMJIq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 05:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbXFMJIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 05:04:55 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56148 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752012AbXFMJEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 05:04:53 -0400
-Date: Wed, 13 Jun 2007 11:04:30 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
-       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 0/3] AHCI Link Power Management
-Message-ID: <20070613090430.GK13747@elf.ucw.cz>
-References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E1D51.9070007@gmail.com>
+	Wed, 13 Jun 2007 05:08:40 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56467 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755082AbXFMJIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 05:08:40 -0400
+Date: Wed, 13 Jun 2007 11:08:37 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: John Sigler <linux.kernel@free.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Runaway process and oom-killer
+Message-ID: <20070613090837.GD7443@v2.random>
+References: <466FAF99.3070708@free.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <466E1D51.9070007@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <466FAF99.3070708@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, Jun 13, 2007 at 10:49:29AM +0200, John Sigler wrote:
+> Question 1: why isn't this output picked up by klogd and sent to the 
+> appropriate file (kern.log in my case)?
 
-> >> I'm not sure about this.  We need better PM framework to support 
-> >> powersaving in other controllers and some ahcis don't save much
-> >> when only link power management is used,
-> > 
-> > do you have data to support this?
-> 
-> Yeah, it was some Lenovo notebook.  Pavel is more familiar with the
-> hardware.  Pavel, what was the notebook which didn't save much power
-> with standard SATA power save but needed port to be completely turned off?
+I guess not a question for lkml, most distros uses syslog-ng anyway.
 
-Thinkpad x60. Some one Kristen probably used while developing the
-patch :-).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Question 2: how can I tell which process or kernel thread was hogging 
+> most of the RAM when the oom-killer kicked in?
+
+Theoretically the one that was killed first but not for sure in
+current mainline hence see below.
+
+> Question 3: if myapp was hogging the RAM, then why did oom-killer snipe 
+> other processes (syslogd and boa) after it killed myapp?
+
+Please try again after applying this monolith (proper submission was
+on linux-mm but the monolith is easier to apply for tests like this):
+
+   http://www.kernel.org/pub/linux/kernel/people/andrea/patches/v2.6/2.6.22-rc4/oom-fixes-1
