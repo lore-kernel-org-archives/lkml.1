@@ -1,71 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbXFMHHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbXFMH0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbXFMHHh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 03:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbXFMHH3
+	id S1756771AbXFMH0t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 03:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbXFMH0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 03:07:29 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:49919 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754306AbXFMHH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 03:07:28 -0400
-Message-ID: <381718439.10870@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 13 Jun 2007 15:07:25 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Pratt <slpratt@austin.ibm.com>,
-       Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH 5/9] readahead: on-demand readahead logic
-Message-ID: <20070613070724.GA6146@mail.ustc.edu.cn>
-Mail-Followup-To: Rusty Russell <rusty@rustcorp.com.au>,
-	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	Andi Kleen <andi@firstfloor.org>,
-	Jens Axboe <jens.axboe@oracle.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-	Steven Pratt <slpratt@austin.ibm.com>,
-	Ram Pai <linuxram@us.ibm.com>
-References: <20070516224752.500812933@mail.ustc.edu.cn> <20070516224818.841068730@mail.ustc.edu.cn> <1181622986.6237.65.camel@localhost.localdomain> <20070612103518.GA9624@mail.ustc.edu.cn> <1181698833.6237.113.camel@localhost.localdomain> <20070613040044.GB6494@mail.ustc.edu.cn> <1181713875.6237.134.camel@localhost.localdomain>
+	Wed, 13 Jun 2007 03:26:42 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:56555 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755843AbXFMH0l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 03:26:41 -0400
+Date: Wed, 13 Jun 2007 09:26:30 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
+Subject: Re: divorce CONFIG_X86_PAE from CONFIG_HIGHMEM64G
+Message-ID: <Pine.LNX.4.58.0706130809240.2702@be1.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181713875.6237.134.camel@localhost.localdomain>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX189BQNyNb/wW3c0kz7g1ZWnJigrmz0v1/YUAVu
+ xjiuWZN7RDs+cC4+lhc8otbq73aYeBDjOew/b2TyqRagn4Pnt7
+ Vkuhst0/5ndlBXuWNxd9g==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 03:51:14PM +1000, Rusty Russell wrote:
-> > >  static unsigned long
-> > >  ondemand_readahead(struct address_space *mapping,
-> > >  		   struct file_ra_state *ra, struct file *filp,
-> > > -		   struct page *page, pgoff_t offset,
-> > > +		   bool hit_lookahead_marker, pgoff_t offset,
-> > 
-> > Or use names like async/is_async for hit_lookahead_marker?
-> 
-> I wasn't sure.  The argument says "we've hit a marker, so do readahead
-> even if doesn't look sequential.".  Now, you and I know that only
-> happens if it's an async readahead, but that's not really relevant to
-> this function.
+Since your (William) patch will change the kconfig files my proposed patch
+would change, could you please add those changes? 
 
-Yeah, it's an interface for the message "hey I hit a readahead marker".
-That's the point!
+I hand-updated the patch below as recommended by the original discussion 
+on LKML. It won't aply as-is because of that (and because of your changes).
 
-> OK, here is revised patch with your changes:
-> 
-> ====
-> Split ondemand readahead interface into two functions.  I think this
-> makes it a little clearer for non-readahead experts (like Rusty).
-> 
-> Internally they both call ondemand_readahead(), but the page argument
-> is changed to an obvious boolean flag.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Acked-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-
-Thank you,
-Fengguang
-
+--- 2.6.21/arch/i386/Kconfig.ori	2007-06-06 13:41:09.000000000 +0200
++++ 2.6.21/arch/i386/Kconfig	2007-06-06 14:07:40.000000000 +0200
+@@ -495,8 +495,8 @@ config NOHIGHMEM
+ 	bool "off"
+ 	depends on !X86_NUMAQ
+ 	---help---
+-	  Linux can use up to 64 Gigabytes of physical memory on x86 systems.
+-	  However, the address space of 32-bit x86 processors is only 4
++	  Linux can use up to 64 Gigabytes of physical address space on x86
++	  systems. However, the address space of 32-bit x86 processors is only 4
+ 	  Gigabytes large. That means that, if you have a large amount of
+ 	  physical memory, not all of it can be "permanently mapped" by the
+ 	  kernel. The physical memory that's not permanently mapped is called
+@@ -510,8 +510,15 @@ config NOHIGHMEM
+ 	  by the kernel to permanently map as much physical memory as
+ 	  possible.
+ 
+-	  If the machine has between 1 and 4 Gigabytes physical RAM, then
++
++	  If the machine has between 1 and about 3 Gigabytes physical RAM, 
++         then
+ 	  answer "4GB" here.
++	  
++	  The PCI address space will usually take 512 MB or 1 GB of address
++	  space. This address space is unavailable to RAM, but depending on the
++	  chipset (and BIOS settings), memory overlapping the PCI address space
++	  may be mapped beyond the 4 GB limit and be available using "64GB".
++
+ 
+ 	  If more than 4 Gigabytes is used then answer "64GB" here. This
+ 	  selection turns Intel PAE (Physical Address Extension) mode on.
+@@ -520,6 +527,10 @@ config NOHIGHMEM
+ 	  processors (Pentium Pro and better). NOTE: If you say "64GB" here,
+ 	  then the kernel will not boot on CPUs that don't support PAE!
+ 
++	  An additional benefit of the 64GB-Mode is the availability of the
++	  no-execute-pageflag, which can be used to prevent some attacks from
++	  injecting malicious code into applications.
++
+ 	  The actual amount of total physical memory will either be
+ 	  auto detected or can be forced by using a kernel command line option
+ 	  such as "mem=256M". (Try "man bootparam" or see the documentation of
+@@ -532,14 +543,14 @@ config HIGHMEM4G
+ 	bool "4GB"
+ 	depends on !X86_NUMAQ
+ 	help
+-	  Select this if you have a 32-bit processor and between 1 and 4
++	  Select this if you have a 32-bit processor and between 1 and 3
+ 	  gigabytes of physical RAM.
+ 
+ config HIGHMEM64G
+-	bool "64GB"
++	bool "64GB (enables no-execute memory protection if available)"
+ 	depends on X86_CMPXCHG64
+ 	help
+-	  Select this if you have a 32-bit processor and more than 4
++	  Select this if you have a 32-bit processor and more than 3
+ 	  gigabytes of physical RAM.
+ 
+ endchoice
+-- 
+RAM DISK is not an installation procedure! 
