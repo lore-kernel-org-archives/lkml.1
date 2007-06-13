@@ -1,165 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbXFMXbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbXFMXgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbXFMXbQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 19:31:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbXFMXa7
+	id S1757300AbXFMXgZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 19:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbXFMXgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 19:30:59 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:61330 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755461AbXFMXa5 (ORCPT
+	Wed, 13 Jun 2007 19:36:17 -0400
+Received: from mga02.intel.com ([134.134.136.20]:45230 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755461AbXFMXgQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 19:30:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HuwCyegNSPvNfI6SV7u1DFxkno15emwgBbW1SsQsOGre2XC42s/wwNvao0nI1h0HB9ca/7qPDgHry7HcT8hvBQmkOBneEiJEh9lo5wJUNIvw/rtdpt37hxYYXFv9EX9VIJhYtfHpuKeS+0uVMwNhHdBXzjekZWN24lGlKvKn/IU=
-Message-ID: <170fa0d20706131630p6cd29aa5i8f51856780a9c691@mail.gmail.com>
-Date: Wed, 13 Jun 2007 19:30:56 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: raid1 with nbd member hangs MD on SLES10 and RHEL5
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       nbd-general@lists.sourceforge.net,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       "Paul Clements" <Paul.Clements@steeleye.com>
-In-Reply-To: <170fa0d20706131123q17e4fb9ehe6be25a07462cc30@mail.gmail.com>
+	Wed, 13 Jun 2007 19:36:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,418,1175497200"; 
+   d="scan'208";a="254162321"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <170fa0d20706121930g3b89ddeex8b31c8923d2a0ff6@mail.gmail.com>
-	 <18031.22930.243723.550238@notabene.brown>
-	 <170fa0d20706121959w480213bcvaba1b6881710379f@mail.gmail.com>
-	 <170fa0d20706122009h5e3db54ek7487be4940a3d780@mail.gmail.com>
-	 <18031.25581.353761.802283@notabene.brown>
-	 <170fa0d20706122130q2c77d365tbe9261bab1a5b1b@mail.gmail.com>
-	 <170fa0d20706131123q17e4fb9ehe6be25a07462cc30@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [patch 0/3] no MAX_ARG_PAGES -v2
+Date: Wed, 13 Jun 2007 16:36:13 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A01AF860A@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070613100334.635756997@chello.nl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 0/3] no MAX_ARG_PAGES -v2
+Thread-Index: AcetpRClBXdtfnCWSiiPAMmYhBCF1QAbEbQQ
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, <linux-kernel@vger.kernel.org>,
+       <parisc-linux@lists.parisc-linux.org>, <linux-mm@kvack.org>,
+       <linux-arch@vger.kernel.org>
+Cc: "Ollie Wild" <aaw@google.com>, "Andrew Morton" <akpm@osdl.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>
+X-OriginalArrivalTime: 13 Jun 2007 23:36:14.0142 (UTC) FILETIME=[A18E55E0:01C7AE13]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/13/07, Mike Snitzer <snitzer@gmail.com> wrote:
-> On 6/13/07, Mike Snitzer <snitzer@gmail.com> wrote:
-> > On 6/12/07, Neil Brown <neilb@suse.de> wrote:
-> ...
-> > > > > On 6/12/07, Neil Brown <neilb@suse.de> wrote:
-> > > > > > On Tuesday June 12, snitzer@gmail.com wrote:
-> > > > > > >
-> > > > > > > I can provided more detailed information; please just ask.
-> > > > > > >
-> > > > > >
-> > > > > > A complete sysrq trace (all processes) might help.
->
-> Bringing this back to a wider audience.  I provided the full sysrq
-> trace of the RHEL5 kernel to Neil; in it we saw that md0_raid1 had the
-> following trace:
->
-> md0_raid1     D ffff810026183ce0  5368 31663     11          3822 29488 (L-TLB)
->  ffff810026183ce0 ffff810031e9b5f8 0000000000000008 000000000000000a
->  ffff810037eef040 ffff810037e17100 00043e64d2983c1f 0000000000004c7f
->  ffff810037eef210 0000000100000001 000000081c506640 00000000ffffffff
-> Call Trace:
->  [<ffffffff8003e371>] keventd_create_kthread+0x0/0x61
->  [<ffffffff801b9364>] md_super_wait+0xa8/0xbc
->  [<ffffffff8003e711>] autoremove_wake_function+0x0/0x2e
->  [<ffffffff801b9adb>] md_update_sb+0x1dd/0x23a
->  [<ffffffff801bed2a>] md_check_recovery+0x15f/0x449
->  [<ffffffff882a1af3>] :raid1:raid1d+0x27/0xc1e
->  [<ffffffff80233209>] thread_return+0x0/0xde
->  [<ffffffff8023279c>] __sched_text_start+0xc/0xa79
->  [<ffffffff8003e371>] keventd_create_kthread+0x0/0x61
->  [<ffffffff80233a9f>] schedule_timeout+0x1e/0xad
->  [<ffffffff8003e371>] keventd_create_kthread+0x0/0x61
->  [<ffffffff801bd06c>] md_thread+0xf8/0x10e
->  [<ffffffff8003e711>] autoremove_wake_function+0x0/0x2e
->  [<ffffffff801bcf74>] md_thread+0x0/0x10e
->  [<ffffffff8003e5e7>] kthread+0xd4/0x109
->  [<ffffffff8000a505>] child_rip+0xa/0x11
->  [<ffffffff8003e371>] keventd_create_kthread+0x0/0x61
->  [<ffffffff8003e513>] kthread+0x0/0x109
->  [<ffffffff8000a4fb>] child_rip+0x0/0x11
->
-> To which Neil had the following to say:
->
-> > > md0_raid1 is holding the lock on the array and trying to write out the
-> > > superblocks for some reason, and the write isn't completing.
-> > > As it is holding the locks, mdadm and /proc/mdstat are hanging.
-...
+> This patch-set aims at removing the current limit on argv+env space aka.
+> MAX_ARG_PAGES.
 
-> > We're using MD+NBD for disaster recovery (one local scsi device, one
-> > remote via nbd).  The nbd-server is not contributing to md0.  The
-> > nbd-server is connected to a remote machine that is running a raid1
-> > remotely
->
-> To take this further I've now collected a full sysrq trace of this
-> hang on a SLES10 SP1 RC5 2.6.16.46-0.12-smp kernel, the relevant
-> md0_raid1 trace is comparable to the RHEL5 trace from above:
->
-> md0_raid1     D ffff810001089780     0  8583     51          8952  8260 (L-TLB)
-> ffff810812393ca8 0000000000000046 ffff8107b7fbac00 000000000000000a
->        ffff81081f3c6a18 ffff81081f3c67d0 ffff8104ffe8f100 000044819ddcd5e2
->        000000000000eb8b 00000007028009c7
-> Call Trace: <ffffffff801e1f94>{generic_make_request+501}
->        <ffffffff8026946c>{md_super_wait+168}
-> <ffffffff80145aa2>{autoremove_wake_function+0}
->        <ffffffff8026f056>{write_page+128} <ffffffff80269ac7>{md_update_sb+220}
->        <ffffffff8026bda5>{md_check_recovery+361}
-> <ffffffff883a97f5>{:raid1:raid1d+38}
->        <ffffffff8013ad8f>{lock_timer_base+27}
-> <ffffffff8013ae01>{try_to_del_timer_sync+81}
->        <ffffffff8013ae16>{del_timer_sync+12}
-> <ffffffff802d9adf>{schedule_timeout+146}
->        <ffffffff801456a9>{keventd_create_kthread+0}
-> <ffffffff8026d5d8>{md_thread+248}
->        <ffffffff80145aa2>{autoremove_wake_function+0}
-> <ffffffff8026d4e0>{md_thread+0}
->        <ffffffff80145965>{kthread+236} <ffffffff8010bdce>{child_rip+8}
->        <ffffffff801456a9>{keventd_create_kthread+0}
-> <ffffffff80145879>{kthread+0}
->        <ffffffff8010bdc6>{child_rip+0}
->
-> Taking a step back, here is what was done to reproduce on SLES10:
-> 1) establish a raid1 mirror (md0) using one local member (sdc1) and
-> one remote member (nbd0)
-> 2) power off the remote machine, whereby severing nbd0's connection
-> 3) perform IO to the filesystem that is on the md0 device to enduce
-> the MD layer to mark the nbd device as "faulty"
-> 4) cat /proc/mdstat hangs, sysrq trace was collected and showed the
-> above md0_raid1 trace.
->
-> To be clear, the MD superblock update hangs indefinitely on RHEL5.
-> But with SLES10 it eventually succeeds (and MD marks the nbd0 member
-> faulty); and the other tasks that were blocking waiting for the MD
-> lock (e.g. 'cat /proc/mdstat') then complete immediately.
->
-> It should be noted that this MD+NBD configuration has worked
-> flawlessly using a stock kernel.org 2.6.15.7 kernel (ontop of a
-> RHEL4U4 distro).  Steps have not been taken to try to reproduce  with
-> 2.6.15.7 on SLES10; it may be useful to pursue but I'll defer to
-> others to suggest I do so.
->
-> 2.6.15.7 does not have the SMP race fixes that were made in 2.6.16;
-> yet both SLES10 and RHEL5 kernels do:
-> http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=4b2f0260c74324abca76ccaa42d426af163125e7
->
-> If not this specific NBD change, something appears to have changed
-> with how NBD behaves in the face of it's connection to the server
-> being lost.  Almost like the MD superblock update that would be
-> written to nbd0 is blocking within nbd or the network layer because of
-> a network timeout issue?
+Running with this patch shows that /bin/bash has some unpleasant
+O(n^2) performance issues with long argument lists.  I made a
+1Mbyte file full of pathnames, then timed the execution of:
 
-Just a quick update; it is really starting to look like there is
-definitely an issue with the nbd kernel driver.  I booted the SLES10
-2.6.16.46-0.12-smp kernel with maxcpus=1 to test the theory that the
-nbd SMP fix that went into 2.6.16 was in some way causing this MD/NBD
-hang.  But it _still_ occurs with the 4-step process I outlined above.
+$ /bin/echo `cat megabyte` | wc
+$ /bin/echo `cat megabyte megabyte` | wc
+   etc. ...
 
-The nbd0 device _should_ feel an NBD_DISCONNECT because the nbd-server
-is no longer running (the node it was running on was powered off)...
-however the nbd-client is still connected to the kernel (meaning the
-kernel didn't return an error back to userspace).
+System time was pretty much linear as the arglist grew
+(and only got up to 0.144 seconds at 5Mbytes).
 
-Also, MD is still blocking waiting to write the superblock (presumably
-to nbd0).
+But user time ~= real time (in seconds) looks like:
 
-Mike
+1 5.318
+2 18.871
+3 40.620
+4 70.819
+5 108.911
+
+Above 5Mbytes, I started seeing problems.  The line/word/char
+counts from "wc" started being "0 0 0".  Not sure if this is
+a problem in "wc" dealing with a single line >5MBytes, or some
+other problem (possibly I was exceeding the per-process stack
+limit which is only 8MB on that machine).
+
+-Tony
