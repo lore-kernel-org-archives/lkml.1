@@ -1,90 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbXFMVa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbXFMVbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbXFMVa5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 17:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbXFMV3l
+	id S1758094AbXFMVbV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 17:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbXFMV3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 17:29:41 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48331 "EHLO ogre.sisk.pl"
+	Wed, 13 Jun 2007 17:29:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48335 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753502AbXFMV3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 17:29:39 -0400
+	id S1754034AbXFMV3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 17:29:40 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm 4/7] PM: Remove suspend and resume support from struct device_type
-Date: Wed, 13 Jun 2007 16:20:53 +0200
+To: Stefan Seyfried <seife@suse.de>
+Subject: Re: [PATCH, 2nd try] make disable_console_suspend runtime configurable
+Date: Wed, 13 Jun 2007 23:36:07 +0200
 User-Agent: KMail/1.9.5
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <200706131551.51336.rjw@sisk.pl>
-In-Reply-To: <200706131551.51336.rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Frank Seidel <fseidel@suse.de>, akpm@linux-foundation.org,
+       nigel@nigel.suspend2.net, pavel@ucw.cz
+References: <20070613200303.GB11437@suse.de>
+In-Reply-To: <20070613200303.GB11437@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706131620.54338.rjw@sisk.pl>
+Message-Id: <200706132336.08053.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wednesday, 13 June 2007 22:03, Stefan Seyfried wrote:
+> I hate having to recompile the kernel, just to be able to debug suspend.
+> Remove CONFIG_DISABLE_CONSOLE_SUSPEND, replace it by a tunable in
+> /sys/power/disable_console_suspend.
+> 
+> Signed-off-by: Stefan Seyfried <seife@suse.de>
+> Signed-off-by: Frank Seidel <fseidel@suse.de>
+> ---
+> Second try, no longer uses a sysctl in /proc, but a tunable in /sys/power.
+> Thanks Frank for moving it quicker to sysfs than i would have ever been
+> able to :-)
 
-The suspend and resume support in struct device_type (include/linux/device.h)
-is not used anywhere.  It is also undocumented, so it can be removed.
+ACK
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/resume.c  |    5 -----
- drivers/base/power/suspend.c |    7 -------
- include/linux/device.h       |    2 --
- 3 files changed, 14 deletions(-)
+Greetings,
+Rafael
 
-Index: linux-2.6.22-rc4-mm2/drivers/base/power/resume.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/base/power/resume.c
-+++ linux-2.6.22-rc4-mm2/drivers/base/power/resume.c
-@@ -41,11 +41,6 @@ int resume_device(struct device * dev)
- 		error = dev->bus->resume(dev);
- 	}
- 
--	if (!error && dev->type && dev->type->resume) {
--		dev_dbg(dev,"resuming\n");
--		error = dev->type->resume(dev);
--	}
--
- 	if (!error && dev->class && dev->class->resume) {
- 		dev_dbg(dev,"class resume\n");
- 		error = dev->class->resume(dev);
-Index: linux-2.6.22-rc4-mm2/drivers/base/power/suspend.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/base/power/suspend.c
-+++ linux-2.6.22-rc4-mm2/drivers/base/power/suspend.c
-@@ -79,13 +79,6 @@ int suspend_device(struct device * dev, 
- 		suspend_report_result(dev->class->suspend, error);
- 	}
- 
--	if (!error && dev->type && dev->type->suspend
--	    && !dev->power.power_state.event) {
--		suspend_device_dbg(dev, state, "type ");
--		error = dev->type->suspend(dev, state);
--		suspend_report_result(dev->type->suspend, error);
--	}
--
- 	if (!error && dev->bus && dev->bus->suspend
- 	    && !dev->power.power_state.event) {
- 		suspend_device_dbg(dev, state, "");
-Index: linux-2.6.22-rc4-mm2/include/linux/device.h
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/include/linux/device.h
-+++ linux-2.6.22-rc4-mm2/include/linux/device.h
-@@ -340,8 +340,6 @@ struct device_type {
- 	int (*uevent)(struct device *dev, char **envp, int num_envp,
- 		      char *buffer, int buffer_size);
- 	void (*release)(struct device *dev);
--	int (*suspend)(struct device * dev, pm_message_t state);
--	int (*resume)(struct device * dev);
- };
- 
- /* interface for exporting device attributes */
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
