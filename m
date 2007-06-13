@@ -1,65 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbXFMK3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbXFMKaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758244AbXFMK3u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 06:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbXFMK3l
+	id S1758206AbXFMKaf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 06:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757273AbXFMKaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 06:29:41 -0400
-Received: from styx.suse.cz ([82.119.242.94]:60772 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757497AbXFMK3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 06:29:39 -0400
-Date: Wed, 13 Jun 2007 12:29:22 +0200
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Hans de Goede <j.w.r.degoede@hhs.nl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stanislav Brabec <sbrabec@suse.cz>
-Subject: Re: Proposal: change keycode for scancode e0 32 from 150 to 172
-Message-ID: <20070613102922.GE19888@suse.cz>
-References: <466F1462.5090008@hhs.nl>
+	Wed, 13 Jun 2007 06:30:23 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:57027 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757251AbXFMKaV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 06:30:21 -0400
+Message-ID: <466FC72A.3090508@bx.jp.nec.com>
+Date: Wed, 13 Jun 2007 19:30:02 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <466F1462.5090008@hhs.nl>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [RFC][PATCH -mm take5 5/7] switch function of netpoll
+References: <466FC455.5060001@bx.jp.nec.com>
+In-Reply-To: <466FC455.5060001@bx.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 11:47:14PM +0200, Hans de Goede wrote:
-> Hi all,
-> 
-> As some of you might know from my earlier post/thread about atkbd and 
-> softraw, I'm currently working on getting keyboards with internet/easy 
-> access keys to work painlessly / plug and play.
-> 
-> In order to be able to better test / develop this I've bought 2 cheap such 
-> keyboards today, one ps2 and one both usb and ps2 capable.
-> 
-> When comparing usb vs ps2 / testing the keycodes generated for the easy 
-> access
-> keys on my trust (microsoft compatible) keyboard. I noticed the homepage 
-> key sends keycode 150 with ps2 and 172 with USB, or for those who don't 
-> know the keycodes by head with ps2 it sends KEY_WWW and with usb it sends 
-> KEY_HOMEPAGE
-> 
-> I personally believe that the usb behaviour is correct and that the ps/2 
-> code should be modified to match for consistency. The ps/2 scancode to 
-> keycode mapping is set up to handle easy access / internet keys for 
-> microsoft compatible keyboards. So what is the right code to send here, 
-> tricky, see:
-> http://www.s2.com.br/s2arquivos/361/Imagens/555Image.jpg
-> http://www.keyboardco.com/keyboard_images/microsoft_ergonomic_keyboard_4000_black_usb_large.jpg
-> 
-> The logo on the key is a homepage logo, the text below is www/homepage. So 
-> what to send? I believe that for consistency with the usb codes send it 
-> should be KEY_HOMEPAGE, but thats based on a sample of 1 usb keyboard. 
-> Input on what other usb keyboards send for the key with the homepage iocn 
-> is very much welcome.
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
 
-KEY_HOMEPAGE is likely correct. Maybe we don't want to have KEY_WWW at
-all, since it seems to be redundant.
+This patch contains switch function of netpoll.
+
+If "enabled" attribute of certain port is '1', this port is used
+and the configurations of this port are unable to change.
+
+If "enabled" attribute of certain port is '0', this port isn't used
+and the configurations of this port are able to change.
+
+-+- /sys/class/misc/
+|-+- netconsole/
+  |-+- port1/
+  | |--- id          [r--r--r--]  id
+  | |--- enabled     [rw-r--r--]  0: disable 1: enable, writable
+  | ...
+  |--- port2/
+  ...
+
+Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Signed-off-by: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
+---
+Index: mm/drivers/net/netconsole.c
+===================================================================
+--- mm.orig/drivers/net/netconsole.c
++++ mm/drivers/net/netconsole.c
+@@ -71,6 +71,7 @@ struct netconsole_target {
+ 	struct list_head list;
+ 	struct kobject obj;
+ 	int id;
++	int enabled;
+ 	struct netpoll np;
+ };
+ 
+@@ -121,9 +122,16 @@ static ssize_t show_remote_mac(struct ne
+ 		       nt->np.remote_mac[4], nt->np.remote_mac[5]);
+ }
+ 
++static ssize_t show_enabled(struct netconsole_target *nt, char *buf)
++{
++	return sprintf(buf, "%d\n", nt->enabled);
++}
++
+ static ssize_t store_local_port(struct netconsole_target *nt, const char *buf,
+ 				size_t count)
+ {
++	if (nt->enabled)
++		return -EINVAL;
+ 	nt->np.local_port = simple_strtol(buf, NULL, 10);
+ 
+ 	return count;
+@@ -132,6 +140,8 @@ static ssize_t store_local_port(struct n
+ static ssize_t store_remote_port(struct netconsole_target *nt, const char *buf,
+ 				size_t count)
+ {
++	if (nt->enabled)
++		return -EINVAL;
+ 	nt->np.remote_port = simple_strtol(buf, NULL, 10);
+ 
+ 	return count;
+@@ -140,6 +150,8 @@ static ssize_t store_remote_port(struct 
+ static ssize_t store_local_ip(struct netconsole_target *nt, const char *buf,
+ 			      size_t count)
+ {
++	if (nt->enabled)
++		return -EINVAL;
+ 	nt->np.local_ip = ntohl(in_aton(buf));
+ 
+ 	return count;
+@@ -148,6 +160,8 @@ static ssize_t store_local_ip(struct net
+ static ssize_t store_remote_ip(struct netconsole_target *nt, const char *buf,
+ 			       size_t count)
+ {
++	if (nt->enabled)
++		return -EINVAL;
+ 	nt->np.remote_ip = ntohl(in_aton(buf));
+ 
+ 	return count;
+@@ -166,13 +180,34 @@ static ssize_t store_remote_mac(struct n
+ 		cur++;
+ 		input_mac[i++] = simple_strtol(cur, NULL, 16);
+ 	}
+-	if (i != ETH_ALEN)
++	if (i != ETH_ALEN || nt->enabled)
+ 		return -EINVAL;
+ 	memcpy(nt->np.remote_mac, input_mac, ETH_ALEN);
+ 
+ 	return count;
+ }
+ 
++static ssize_t store_enabled(struct netconsole_target *nt, const char *buf,
++			    size_t count)
++{
++	int enabled = 0;
++
++	if (count >= 2 && (count != 2 || buf[count - 1] != '\n')) {
++		printk(KERN_ERR "netconsole: invalid argument: %s\n", buf);
++		return -EINVAL;
++	} else if (buf[0] == '1')
++		enabled = 1;
++	else if (buf[0] == '0')
++		enabled = 0;
++	else {
++		printk(KERN_ERR "netconsole: invalid argument: %s\n", buf);
++		return -EINVAL;
++	}
++	nt->enabled = enabled;
++
++	return count;
++}
++
+ struct target_attr {
+ 	struct attribute attr;
+ 	ssize_t (*show)(struct netconsole_target*, char*);
+@@ -196,6 +231,8 @@ static NETCON_CLASS_ATTR(remote_ip, S_IR
+ static NETCON_CLASS_ATTR(local_mac, S_IRUGO, show_local_mac, NULL);
+ static NETCON_CLASS_ATTR(remote_mac, S_IRUGO | S_IWUSR,
+ 			 show_remote_mac, store_remote_mac);
++static NETCON_CLASS_ATTR(enabled, S_IRUGO | S_IWUSR,
++			 show_enabled, store_enabled);
+ 
+ static struct attribute *target_attrs[] = {
+ 	&target_attr_id.attr,
+@@ -205,6 +242,7 @@ static struct attribute *target_attrs[] 
+ 	&target_attr_remote_ip.attr,
+ 	&target_attr_local_mac.attr,
+ 	&target_attr_remote_mac.attr,
++	&target_attr_enabled.attr,
+ 	NULL
+ };
+ 
+@@ -336,6 +374,7 @@ static int add_target(char* target_confi
+ 	}
+ 
+ 	new_target->id = atomic_inc_return(&target_count);
++	new_target->enabled = 1;
+ 
+ 	printk(KERN_INFO "netconsole: add target: "
+ 	       "remote ip_addr=%d.%d.%d.%d remote port=%d\n",
+@@ -420,7 +459,8 @@ static void write_msg(struct console *co
+ 	for (left = len; left; ) {
+ 		frag = min(left, MAX_PRINT_CHUNK);
+ 		list_for_each_entry(target, &target_list, list)
+-			netpoll_send_udp(&target->np, msg, frag);
++			if (target->enabled)
++				netpoll_send_udp(&target->np, msg, frag);
+ 		msg += frag;
+ 		left -= frag;
+ 	}
 
 -- 
-Vojtech Pavlik
-Director SuSE Labs
+
+
