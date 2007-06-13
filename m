@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbXFMFqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbXFMFuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbXFMFqA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 01:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXFMFpw
+	id S1755882AbXFMFuq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 01:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbXFMFuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 01:45:52 -0400
-Received: from science.horizon.com ([192.35.100.1]:17073 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754367AbXFMFpv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 01:45:51 -0400
-Date: 13 Jun 2007 01:45:21 -0400
-Message-ID: <20070613054521.18992.qmail@science.horizon.com>
-From: linux@horizon.com
-To: akpm@linux-foundation.org, linux@horizon.com, mpm@selenic.com
-Subject: Re: [PATCH] random: fix folding
-Cc: bgilbert@cs.cmu.edu, linux-kernel@vger.kernel.org, tytso@mit.edu
-In-Reply-To: <20070613052951.GI11166@waste.org>
+	Wed, 13 Jun 2007 01:50:39 -0400
+Received: from waste.org ([66.93.16.53]:60275 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751624AbXFMFui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 01:50:38 -0400
+Date: Wed, 13 Jun 2007 00:50:31 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: linux@horizon.com
+Cc: bgilbert@cs.cmu.edu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [CRYPTO] Add optimized SHA-1 implementation for i486+
+Message-ID: <20070613055030.GJ11166@waste.org>
+References: <466D9FDB.2010305@cs.cmu.edu> <20070612050544.23957.qmail@science.horizon.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070612050544.23957.qmail@science.horizon.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Folding is done to minimize the theoretical possibility of systematic
-> weakness in the particular bits of the SHA1 hash output. The result of
-> this bug is that 16 out of 80 bits are un-folded. Without a major new
-> vulnerability being found in SHA1, this is harmless, but still worth
-> fixing.
+On Tue, Jun 12, 2007 at 01:05:44AM -0400, linux@horizon.com wrote:
+> > I got this code from Nettle, originally, and I never looked at the SHA-1 
+> > round structure very closely.  I'll give that approach a try.
+> 
+> Attached is some (tested, working, and public domain) assembly code for
+> three different sha_transform implementations.  Compared to C code, the
+> timings to hash 10 MiB on a 600 MHz PIII are:
+> 
+> The names are the order they were written in.  "One" is the lib/sha1.c
+> code (547 bytes with -Os).  "Four" is a 5x unrolled C version (1106 bytes).
 
-Actually, even WITH a major new vulnerability found in SHA1, it's
-harmless.  Sorry to put BUG in caps earlier; it actually doesn't warrant
-the sort of adjective I used.  The purpose of the folding is to ensure that
-the feedback includes bits underivable from the output.  Just outputting
-the first 80 bits and feeding back all 160 would achieve that effect;
-the folding is of pretty infinitesimal benefit.
+I'd like to see your version four.
 
-Note that last five rounds have as major outputs e, d, c, b, and a,
-in that order.  Thus, the first words are the "most hashed" and
-the ones most worth using as output... which happens naturally with
-no folding.
-
-The folding is a submicroscopic bit of additional mixing.
-Frankly, the code size savings probably makes it worth deleting it.
-(That would also give you more flexibility to select the output/feedback
-ratio in whatever way you like.)
+-- 
+Mathematics is the supreme nostalgia of our time.
