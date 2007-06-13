@@ -1,88 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbXFMQMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759091AbXFMQOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbXFMQMi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 12:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758174AbXFMQMa
+	id S1759091AbXFMQOt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 12:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758387AbXFMQOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 12:12:30 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:32879 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757531AbXFMQM3 (ORCPT
+	Wed, 13 Jun 2007 12:14:41 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:33648 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbXFMQOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 12:12:29 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18032.5991.475110.794691@stoffel.org>
-Date: Wed, 13 Jun 2007 12:12:23 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
+	Wed, 13 Jun 2007 12:14:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kB9L5dfMlm6QfS2k907xXkJy+NoT6sEvYMM08gHnDl4rs0siDJyVXt8tW44rJejKmgJMzyNsYRpPVWlPF6ti6LunijE8jtAqixHeVYxy3ZunU9Sg1CS/U5M1hA30PXQv9qXZuya0/CifBTiPhSgAH1bRp586f2sDPDsD5q8j9Q4=
+Message-ID: <787b0d920706130914l676a24cau62525e90a90b5839@mail.gmail.com>
+Date: Wed, 13 Jun 2007 12:14:40 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Chris Mason" <chris.mason@oracle.com>
 Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-In-Reply-To: <20070613145442.GC28279@think.oraclecorp.com>
-References: <20070612161029.GB28279@think.oraclecorp.com>
-	<18031.26764.586958.632146@stoffel.org>
-	<20070613103522.GW28279@think.oraclecorp.com>
-	<18031.63640.103936.137412@stoffel.org>
-	<20070613145442.GC28279@think.oraclecorp.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, snitzer@gmail.com
+In-Reply-To: <20070613120037.GA28279@think.oraclecorp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <787b0d920706122245j3a2ff7e8ja611ecf41cc67a4c@mail.gmail.com>
+	 <20070613120037.GA28279@think.oraclecorp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Chris" == Chris Mason <chris.mason@oracle.com> writes:
+On 6/13/07, Chris Mason <chris.mason@oracle.com> wrote:
+> On Wed, Jun 13, 2007 at 01:45:28AM -0400, Albert Cahalan wrote:
 
-Chris> On Wed, Jun 13, 2007 at 10:00:56AM -0400, John Stoffel wrote:
->> >>>>> "Chris" == Chris Mason <chris.mason@oracle.com> writes:
->> >> As a user of Netapps, having quotas (if only for reporting purposes)
->> >> and some way to migrate non-used files to slower/cheaper storage would
->> >> be great.
->> 
-Chris> So far, I'm not planning quotas beyond the subvolume level.
->> 
->> So let me get this straight.  Are you saying that quotas would only be
->> on the volume level, and for the initial level of sub-volumes below
->> that level?  Or would *all* sub-volumes have quota support?  And does
->> that include snapshots as well?
+> > The usual wishlist:
+> >
+> > * inode-to-pathnames mapping
+>
+> This one I'll code, it will help with inode link count verification.  I
+> want to be able to detect at run time that an inode with a link count of
+> zero is still actually in a directory. So there will be back pointers
+> from the inode to the directory.
 
-Chris> On disk, snapshots and subvolumes are identical...the only
-Chris> difference is their starting state (sorry, it's confusing, and
-Chris> it doesn't help that I interchange the terms when describing
-Chris> features).
+Great, but fsck improvement wasn't on my mind. This is
+a desirable feature for the NFS server, and for regular users.
+Think about a backup program trying to maintain hard links.
 
-Ok, that's fine.  A sub-volume is the unit and depending on it's
-state, it's either a snapshot of an existing volume, or it's a volume
-on it's own, though it still has a parent (?) which it is mounted
-below?  Do I have it right now?  
+> Also, the incremental backup code will be able to walk the btree to find
+> inodes that have changed, and the backpointers will help make a list of
+> file names that need to be rsync'd or whatever.
+>
+> > * a subvolume that is a single file (disk image, database, etc.)
+>
+> subvolumes can be made that have a single file in them, but they have to
+> be directories right now.  Doing otherwise would complicate mounts and
+> other management tools (inside the btree, it doesn't really matter).
 
-Chris> Every subvolume will have a quota on the number of blocks it
-Chris> can consume.  I haven't yet decided on the best way to account
-Chris> for blocks that are actually shared between snapshots, but
-Chris> it'll be in there somehow.  So if you wanted to make a snapshot
-Chris> readonly, you just set the quota to 1 block.
+Bummer. As I understand it, ZFS provides this. :-)
 
-Ok, so you really aren't talking about Quotas here, but space
-reservations instead.  
+> > * directory indexes to better support Wine and Samba
+> > * secure delete via destruction of per-file or per-block random crypto keys
+>
+> I'd rather keep secure delete as a userland problem (or a layered FS
+> problem).  When you take backups and other copies of the file into
+> account, it's a bigger problem than btrfs wants to tackle right now.
 
-Also, I think you're wrong here when you state that making a snapshot
-(sub-volume?) RO just requires you to set the quota to 1 block.  What
-is to stop me from writing 1 block to a random file that already
-exists?  
+It can't be a userland problem if you allow disk blocks to move.
+Volume resizing, logging/journalling, etc. -- they combine to make
+the userland solution essentially impossible. (one could wipe the
+whole partition, or maybe fill ALL space on the volume)
 
-Chris> But, I'm not planning on adding a way to say user X in
-Chris> subvolume Y has quota Z.  I'll just be: this subvolume can't
-Chris> get bigger than a given size.  (at least for version 1.0).
+I think it needs to be per-extent.
 
-Ok, so version 1.0 isn't as interesting to me in a production
-environment, since we pretty much need quotas (or a quick way to
-monitor how much space a user has been allocated on a volume.
+At each level in the btree, you place a randomly generated key
+for the more leafward nodes. This means that secure deletion is
+merely the act of wiping the key... which can itself occur by
+wiping the key of the more rootward node.
 
-But for a home system, it's certainly looking interesting as well,
-since I could give each home directory it's own sub-volume and just
-grow/shrink them as needed.  
+> > * atomic creation of copy-on-write directory trees
+>
+> Do you mean something more fine grained than the current snapshotting
+> system?
 
-Maybe.  :]
+I believe so. Example: I have a linux-2.6 directory. It's not
+a mount point or anything special like that. I want to copy
+it to a new directory called wip, without actually copying
+all the blocks. To all the normal POSIX API stuff, this copy
+should look like the result of "cp -a", not hard links.
 
-Thanks for your work on this.
+> > * insert/delete ability (add/remove a chunk in the middle of a file)
+>
+> The disk format makes this O(extent records past the chunk).  It's
+> possible to code but it would not be optimized.
 
-John
+That's understandable, but note that Reiserfs can support this.
