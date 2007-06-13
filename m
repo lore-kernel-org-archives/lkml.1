@@ -1,116 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758370AbXFMKjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbXFMKlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758370AbXFMKjy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 06:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbXFMKjq
+	id S1758277AbXFMKlt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 06:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbXFMKlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 06:39:46 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:6605 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757427AbXFMKjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 06:39:44 -0400
-Date: Wed, 13 Jun 2007 17:40:05 +0400
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
-To: linux-kernel@vger.kernel.org
-Cc: npiggin@suse.de, mark.fasheh@oracle.com, dmonakhov@openvz.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: + fs-introduce-write_begin-write_end-and-perform_write-aops.patch added to -mm tree
-Message-ID: <20070613134005.GA13815@localhost.sw.ru>
-Mail-Followup-To: linux-kernel@vger.kernel.org, npiggin@suse.de,
-	mark.fasheh@oracle.com, linux-ext4@vger.kernel.org
-References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net>
+	Wed, 13 Jun 2007 06:41:42 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:37475 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757004AbXFMKll (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 06:41:41 -0400
+Message-ID: <466FC9E2.9060306@grupopie.com>
+Date: Wed, 13 Jun 2007 11:41:38 +0100
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+CC: Jan Engelhardt <jengelh@computergmbh.de>,
+       David Schwartz <davids@webmaster.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: PC speaker
+References: <MDEHLPKNGKAHNMBLJOLKKEHOEIAC.davids@webmaster.com> <Pine.LNX.4.64.0706122223350.19578@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64N.0706131119010.7198@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0706131119010.7198@blysk.ds.pg.gda.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14:19 Втр 29 Май     , akpm@linux-foundation.org wrote:
+Maciej W. Rozycki wrote:
+> On Tue, 12 Jun 2007, Jan Engelhardt wrote:
 > 
-> The patch titled
->      fs: introduce write_begin, write_end, and perform_write aops
-> has been added to the -mm tree.  Its filename is
->      fs-introduce-write_begin-write_end-and-perform_write-aops.patch
+>>> 4) It assumes the current will be sufficient to burn out the speaker. (I
+>>> know it will get very hot on older machines, whether it will burn out --
+>>> might even depend on the exact speaker model.)
+>> Since you can set the x86's crystals frequency from 1193182 to 18 Hz
+>> (PIT_TICK_RATE / 1 to PIT_TICK_RATE / 65535) [*], you can never really
+>> bust it. But even then, what would a speaker do it was constanly given
 > 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> ------------------------------------------------------
-> Subject: fs: introduce write_begin, write_end, and perform_write aops
-> From: Nick Piggin <npiggin@suse.de>
-> 
-> These are intended to replace prepare_write and commit_write with more
-> flexible alternatives that are also able to avoid the buffered write
-> deadlock problems efficiently (which prepare_write is unable to do).
-> 
-> [mark.fasheh@oracle.com: API design contributions, code review and fixes]
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-I've finaly find time to review Nick's "write_begin/write_end aop" patch set.
-And i have some fixes and questions. My be i've missed somthing and it was 
-already disscussed, but i cant find in LKML.
+>  I am fairly sure you have a choice between a steady low and a steady high 
+> level on the speaker output available if you switch the 8254 to the right 
+> single-shot mode.  In case you have not been into such details -- the 8254 
+> offers six modes of operation, selected for each channel separately, of 
+> which only two are periodic.
 
-1) loop dev:
-	loop.c code itself is not perfect. In fact before Nick's patch
-	partial write was't possible. Assumption what write chunks are
-	always page aligned is realy weird ( see "index++" line).
-	Fixed by "new aop loop fix" patch
+Can we please stop this non-sense thread? Anyone designing the speaker 
+circuit would certainly place a small capacitor in series with the 
+speaker to kill the DC component of the signal.
 
-2)block_write_begin:
-	After we enter to block_write_begin with *pagep == NULL and
-	some page was grabed we remember this page in *pagep
-	And if __block_prepare_write() we have to clear *pagep , as 
-	it was before. Because this may confuse caller.
-	for example caller may have folowing code:
-		ret = block_write_begin(..., pagep,...)
-		if (ret && *pagep != NULL) {
-			unlock_page(*pagep);
-			page_cache_release(*pagep);
-		}
-	Fixed my "new aop block_write_begin fix" patch
+Since the speaker itself wouldn't be able to play very low frequencies 
+anyway, the capacitor wouldn't have to be that big.
 
-3) __page_symlink:
-	Nick's patch add folowing code:
-	+ err = pagecache_write_begin(NULL, mapping, 0,PAGE_CACHE_SIZE,
-	+                 AOP_FLAG_UNINTERRUPTIBLE, &page,&fsdata);
-	symlink now consume whole page. I have only one question "WHY???".
-	I don't see any advantages, but where are huge list of
-	dissdvantages:
-	a) fs with blksize == 1k and pagesize == 16k after this patch
-	   waste more than 10x times disk space for nothing.
-	b) What happends if we want use fs with blksize == 4k on i386
-	   after it was used by ia64 ??? (before this patch it was
-	   possible).
-	
-	I dont prepare patch for this because i dont understand issue
-	witch Nick aimed to fix.
+So I'm pretty sure that on any half-way decent piece of hardware, you 
+won't be able to kill the speaker with software...
 
-4) iov_iter_fault_in_readable:
-	Function prerform check for signgle region, with out respect to
-	segment nature of iovec, For example writev no longer works :) :
-	writev(3, [{"\1", 1}, {"\2"..., 4096}], 2) = -1 EFAULT (Bad address)
-	this hidden bug, and it was invisiable because XXXX_fault_in_readable
-	return value was ignored before. Lets iov_iter_fault_in_readable
-	perform checks for all segments.
-	Fixed by :"iov_iter_fault_in_readable fix"
+-- 
+Paulo Marques - www.grupopie.com
 
-5) ext3_write_end:
-	Before  write_begin/write_end patch set we have folowing locking
-	order:
-		stop_journal(handle);
-		unlock_page(page);
-	But now order is oposite:
-		unlock_page(page);
-		stop_journal(handle);
-	Can we got any race condition now? I'm not sure is it actual problem,
-	may be somebody cant describe this.
-
-
-
-
+"Don't hit a man when he's down -- kick him; it's easier."
