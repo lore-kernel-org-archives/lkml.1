@@ -1,127 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbXFMXJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbXFMXKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbXFMXJh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 19:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbXFMXJ3
+	id S1757557AbXFMXKe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 19:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbXFMXK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 19:09:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48674 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754692AbXFMXJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 19:09:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Date: Thu, 14 Jun 2007 01:15:57 +0200
-User-Agent: KMail/1.9.5
-Cc: David Greaves <david@dgreaves.com>, David Chinner <dgc@sgi.com>,
-       Tejun Heo <htejun@gmail.com>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>,
-       Jeff Garzik <jgarzik@pobox.com>
-References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 13 Jun 2007 19:10:26 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:59170 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755096AbXFMXKZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 19:10:25 -0400
+Date: Wed, 13 Jun 2007 16:09:44 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: reiserfs-devel@vger.kernel.org
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: 2.6.22-rc4-git5 reiserfs: null ptr deref.
+Message-Id: <20070613160944.495ccff4.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706140115.58733.rjw@sisk.pl>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 14 June 2007 00:12, Linus Torvalds wrote:
-> 
-> On Wed, 13 Jun 2007, David Greaves wrote:
-> >
-> > > I'm not seeing anything really obvious. The traces would probably look
-> > > better if you enabled CONFIG_FRAME_POINTER, though. That should cut down on
-> > > some of the noise and make the traces a bit more readable.
-> > 
-> > I can do that...
-> 
-> Thanks. That makes a big difference to the readability of the traces.
-> 
-> That said, I'm so used to reading even the messy ones that this didn't 
-> actually tell me anything new (it made it clear that the SCSI error 
-> handler noise was just noise), but for people who aren't quite as used to 
-> seeing crap backtraces, your new trace might hopefully put them on the 
-> right track.
-> 
-> I threw out the parts that didn't look all that relevant, and left the
-> ata_aux/md0_raid5/hibernate traces here for others to look at without all 
-> the other noise. Those _seem_ to be the primary suspects in this saga.
 
-Hmm, it looks like both hibernate and ata_aux are waiting for the same
-completion.  I wonder who's supposed to complete it.
+while running fsx-linux on x86_64 system:
 
-Greetings,
-Rafael
+[ 2213.064351] ReiserFS: sdb1: found reiserfs format "3.6" with standard journal
+[ 2213.071516] ReiserFS: sdb1: using journaled data mode
+[ 2213.083124] ReiserFS: sdb1: journal params: device sdb1, size 8192, journal first block 34, max trans len 512, max batch 450, max commit age 30, max trans age 30
+[ 2213.098843] ReiserFS: sdb1: checking transaction log (sdb1)
+[ 2213.362156] ReiserFS: sdb1: Using r5 hash to sort names
+[ 2228.264867] Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP:
+[ 2228.270363]  [<ffffffff88026e8d>] :reiserfs:do_journal_end+0x5de/0xced
+[ 2228.279370] PGD 114991067 PUD 105050067 PMD 0
+[ 2228.283865] Oops: 0000 [1] SMP
+[ 2228.287044] CPU 0
+[ 2228.289078] Modules linked in: reiserfs loop
+[ 2228.293401] Pid: 5280, comm: fsx-linux Not tainted 2.6.22-rc4-git5 #1
+[ 2228.299834] RIP: 0010:[<ffffffff88026e8d>]  [<ffffffff88026e8d>] :reiserfs:do_journal_end+0x5de/0xced
+[ 2228.309076] RSP: 0018:ffff810106c6da48  EFLAGS: 00010286
+[ 2228.314385] RAX: 0000000000000000 RBX: ffffc200102cdf10 RCX: ffff81011c861800
+[ 2228.321512] RDX: 0000000000000020 RSI: 0000000000000000 RDI: ffffc20010292220
+[ 2228.328639] RBP: ffff810106c6db18 R08: 0000000000000002 R09: 0000000000000000
+[ 2228.335767] R10: ffffc200102cdf10 R11: 0000000000000048 R12: ffffc200102cbc78
+[ 2228.342895] R13: ffffc200102cdf10 R14: ffffc20010282000 R15: ffff81011e5fe800
+[ 2228.350024] FS:  00002b02d6aa7ae0(0000) GS:ffffffff80721000(0000) knlGS:0000000000000000
+[ 2228.358102] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[ 2228.363844] CR2: 0000000000000000 CR3: 000000010b6ea000 CR4: 00000000000006e0
+[ 2228.370972] Process fsx-linux (pid: 5280, threadinfo ffff810106c6c000, task ffff81011db7c040)
+[ 2228.379483] Stack:  ffff8101143ae200 00000000000a9c2c ffff810106c6da68 ffffffff00000001
+[ 2228.387565]  ffff810106c6db38 0000000000000020 ffff81011c861800 ffff81011c5fd000
+[ 2228.395039]  ffff81010dc7c2d0 0000000000000001 0000000000000000 ffff810114b383c0
+[ 2228.402313] Call Trace:
+[ 2228.404963]  [<ffffffff80247f8b>] autoremove_wake_function+0x0/0x38
+[ 2228.411236]  [<ffffffff88027568>] :reiserfs:do_journal_end+0xcb9/0xced
+[ 2228.417766]  [<ffffffff88027951>] :reiserfs:do_journal_begin_r+0x260/0x335
+[ 2228.424643]  [<ffffffff88027ade>] :reiserfs:journal_begin+0xb8/0xf6
+[ 2228.430913]  [<ffffffff88022581>] :reiserfs:reiserfs_do_truncate+0x418/0x4be
+[ 2228.437961]  [<ffffffff8800f2e4>] :reiserfs:reiserfs_truncate_file+0x1a4/0x2b6
+[ 2228.445183]  [<ffffffff88012a42>] :reiserfs:reiserfs_vfs_truncate_file+0xe/0x10
+[ 2228.452492]  [<ffffffff802773b3>] vmtruncate+0xaf/0xd0
+[ 2228.457632]  [<ffffffff8029c66c>] inode_setattr+0x2b/0x125
+[ 2228.463120]  [<ffffffff88012136>] :reiserfs:reiserfs_setattr+0x191/0x1bf
+[ 2228.469818]  [<ffffffff80552279>] __down_write_nested+0x3d/0xa1
+[ 2228.475730]  [<ffffffff8029c88f>] notify_change+0x129/0x23a
+[ 2228.481300]  [<ffffffff80288289>] do_truncate+0x63/0x81
+[ 2228.486521]  [<ffffffff80288391>] sys_ftruncate+0xea/0x107
+[ 2228.492003]  [<ffffffff8020948e>] system_call+0x7e/0x83
+[ 2228.497223]
+[ 2228.498721]
+[ 2228.498722] Code: 8b 00 66 85 c0 0f 89 97 01 00 00 4c 89 ff 44 89 85 48 ff ff
+[ 2228.507806] RIP  [<ffffffff88026e8d>] :reiserfs:do_journal_end+0x5de/0xced
+[ 2228.514700]  RSP <ffff810106c6da48>
+[ 2228.518190] CR2: 0000000000000000
+[ 2228.521841] Kernel panic - not syncing: Fatal exception
+[ 2228.527080] Rebooting in 30 seconds..
 
 
-> ---
-> > ata_aux       D F7945000     0   122      2 (L-TLB)
-> >        c19f7ce0 00000046 f7ea23b8 f7945000 c19f7ca0 c0121d67 c198d800 f7ea23b8
-> >        c19f7cb0 c02261b7 f6af7964 f7ea23b8 c19f7cc0 c0293942 f7e865d0 c1a026bc
-> >        c19f7cf0 000003ae 2dae0756 00000009 c19f7cf0 c19f7dc8 f6af7964 c19f7cfc
-> > Call Trace:
-> >  [<c0364fa4>] wait_for_completion+0x64/0xa0
-> >  [<c021bb7d>] blk_execute_rq+0x8d/0xb0
-> >  [<c02b7a88>] scsi_execute+0xb8/0x110
-> >  [<c02b7b48>] scsi_execute_req+0x68/0x90
-> >  [<c02bdefd>] sd_spinup_disk+0x6d/0x400
-> >  [<c02bf25b>] sd_revalidate_disk+0x6b/0x160
-> >  [<c02bdc1f>] sd_rescan+0x1f/0x30
-> >  [<c02bb002>] scsi_rescan_device+0x42/0x50
-> >  [<c02c9e10>] ata_scsi_dev_rescan+0x60/0x70
-> >  [<c0127ebd>] run_workqueue+0x4d/0xf0
-> >  [<c012806d>] worker_thread+0xcd/0xf0
-> >  [<c012b247>] kthread+0x67/0x70
-> >  [<c01049fb>] kernel_thread_helper+0x7/0x4c
-> 
-> > md0_raid5     D F7F4D000     0   836      2 (L-TLB)
-> >        f78a3da0 00000046 f7f4d000 f7f4d000 f78a3da0 c01454b6 c048b0e0 f6ba0ad0
-> >        f78a3d70 c0116be1 00010ad0 d5658227 f78a3d90 f7853000 f70c4ae0 f7f5617c
-> >        f78a3de0 00003440 1be4a921 00000009 00000246 f7853000 f78a3dc8 f785313c
-> > Call Trace:
-> >  [<c02f1287>] md_super_wait+0x77/0xc0
-> >  [<c02f993f>] write_sb_page+0x4f/0x80
-> >  [<c02f9a72>] write_page+0x102/0x110
-> >  [<c02f9db9>] bitmap_update_sb+0x89/0x90
-> >  [<c02f3353>] md_update_sb+0x123/0x2a0
-> >  [<c02f93c2>] md_check_recovery+0x302/0x340
-> >  [<c02ec1f2>] raid5d+0x12/0xf0
-> >  [<c02f7746>] md_thread+0x56/0x110
-> >  [<c012b247>] kthread+0x67/0x70
-> >  [<c01049fb>] kernel_thread_helper+0x7/0x4c
-> 
-> > hibernate     D F7945000     0  3874   2622 (NOTLB)
-> >        f6723c60 00000086 f7ea23b8 f7945000 f6723c20 c0121d67 c198d800 f7ea23b8
-> >        f6723c30 c02261b7 28ccc170 00000009 00003a03 00000000 c19615d0 f6ba0bdc
-> >        0000006e 0006a677 28ccc170 00000009 f6723c70 f6723d48 f6af7804 f6723c7c
-> > Call Trace:
-> >  [<c0364fa4>] wait_for_completion+0x64/0xa0
-> >  [<c021bb7d>] blk_execute_rq+0x8d/0xb0
-> >  [<c02b7a88>] scsi_execute+0xb8/0x110
-> >  [<c02b7b48>] scsi_execute_req+0x68/0x90
-> >  [<c02bf80f>] sd_start_stop_device+0x6f/0x120
-> >  [<c02bfb9a>] sd_resume+0x6a/0xa0
-> >  [<c02bbe59>] scsi_bus_resume+0x69/0x80
-> >  [<c0299932>] resume_device+0x132/0x190
-> >  [<c0299aab>] dpm_resume+0xbb/0xc0
-> >  [<c0299ace>] device_resume+0x1e/0x40
-> >  [<c013bfd6>] hibernate+0x106/0x1a0
-> >  [<c013b193>] state_store+0xc3/0xf0
-> >  [<c019353b>] subsys_attr_store+0x3b/0x40
-> >  [<c019370e>] flush_write_buffer+0x2e/0x40
-> >  [<c0193781>] sysfs_write_file+0x61/0x70
-> >  [<c015e858>] vfs_write+0x88/0x110
-> >  [<c015e991>] sys_write+0x41/0x70
-> >  [<c0103ee0>] syscall_call+0x7/0xb
-> >  =======================
-> > 
-> 
-> 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
