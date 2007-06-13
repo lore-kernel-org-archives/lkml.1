@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbXFMSk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbXFMSlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759642AbXFMSk4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 14:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759169AbXFMSkq
+	id S1759532AbXFMSlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 14:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759340AbXFMSks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 14:40:46 -0400
-Received: from waste.org ([66.93.16.53]:44505 "EHLO waste.org"
+	Wed, 13 Jun 2007 14:40:48 -0400
+Received: from rtr.ca ([64.26.128.89]:3338 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754193AbXFMSkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754934AbXFMSkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 13 Jun 2007 14:40:46 -0400
-Date: Wed, 13 Jun 2007 13:40:11 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       ashok.raj@intel.com, shaohua.li@intel.com, davem@davemloft.net
-Subject: Re: [Intel-IOMMU 02/10] Library routine for pre-allocat pool handling
-Message-ID: <20070613184011.GK11166@waste.org>
-References: <200706090056.49279.ak@suse.de> <Pine.LNX.4.64.0706081558090.4373@schroedinger.engr.sgi.com> <200706091147.24705.ak@suse.de> <20070611204442.GA4074@linux-os.sc.intel.com> <20070611141449.bfbc4769.akpm@linux-foundation.org> <20070611235208.GC25022@linux-os.sc.intel.com> <20070611173001.e0355af3.akpm@linux-foundation.org> <466DF290.2040503@linux.intel.com> <20070611183555.fe763fe4.akpm@linux-foundation.org> <466DFD22.5080303@linux.intel.com>
+Message-ID: <46703A2D.6000207@rtr.ca>
+Date: Wed, 13 Jun 2007 14:40:45 -0400
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <466DFD22.5080303@linux.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: albertl@mail.com
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: libata passthru: support PIO multi commands
+References: <200706112200.l5BM0qFn005767@hera.kernel.org>	<20070611233917.4bd8c6d7@the-village.bc.nu>	<466DE438.70108@garzik.org>	<20070612111621.10074408@the-village.bc.nu>	<466EB937.6050807@garzik.org> <20070612170519.5f427a70@the-village.bc.nu> <466F5D11.7000404@tw.ibm.com>
+In-Reply-To: <466F5D11.7000404@tw.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 11, 2007 at 06:55:46PM -0700, Arjan van de Ven wrote:
-> Andrew Morton wrote:
-> >On Mon, 11 Jun 2007 18:10:40 -0700 Arjan van de Ven 
-> ><arjan@linux.intel.com> wrote:
-> >
-> >>Andrew Morton wrote:
-> >>>>Where as resource pool is exactly opposite of mempool, where each 
-> >>>>time it looks for an object in the pool and if it exist then we 
-> >>>>return that object else we try to get the memory for OS while 
-> >>>>scheduling the work to grow the pool objects. In fact, the  work
-> >>>>is schedule to grow the pool when the low threshold point is hit.
-> >>>I realise all that.  But I'd have thought that the mempool approach is
-> >>>actually better: use the page allocator and only deplete your reserve 
-> >>>pool
-> >>>when the page allocator fails.
-> >>the problem with that is that if anything downstream from the iommu 
-> >>layer ALSO needs memory, we've now eaten up the last free page and 
-> >>things go splat.
-> >
-> >If that happens, we still have the mempool reserve to fall back to.
+Albert Lee wrote:
+> ..
+> It looks like the ATA passthru commands contain more information than
+> what libata needs to execute a command.
 > 
-> we do, except that we just ate the memory the downstream code would 
-> use and get ... so THAT can't get any.
+> e.g. protocol number:
+>      libata could possibly infer the protocol from the command opcode.
+> 
+> e.g. multi_count:
+>      libata caches dev->multi_count. Passing multi_count along with
+>      each passthru command looks useless for libata.     
+> 
+> e.g. t_dir:
+>      libata could possible infer the direction from the command opcode
+>      or from the protocol number (e.g. 4: PIO_IN / 5: PIO_OUT).
 
-Then the downstream ought to be using a mempool?
+I wonder if the *intent* of the specification was that the low-level driver
+should perform whatever setup is necessary to issue the command as given.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+So if the command specifies a multcount of 8, then the LLD should issue the
+appropriate initialization commands to use a multcount of 8, and then issue
+the given R/W MULT command, and then perhaps reset the multcount back to
+what it was normally (beforehand) ?
+
+Ditto for the others.
+
+I am *not* proposing that we actually do it this way,
+but rather just suggesting a possible rationale.
+
+What does the SAT spec say?  Any further hints as to the intent?
+
+Cheers
