@@ -1,192 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbXFMK3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbXFMK3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbXFMK3d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 06:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbXFMK3W
+	id S1758244AbXFMK3u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 06:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbXFMK3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 06:29:22 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:54366 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756898AbXFMK3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 06:29:21 -0400
-X-Greylist: delayed 645 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 06:29:20 EDT
-Message-ID: <466FC6ED.9060208@bx.jp.nec.com>
-Date: Wed, 13 Jun 2007 19:29:01 +0900
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 13 Jun 2007 06:29:41 -0400
+Received: from styx.suse.cz ([82.119.242.94]:60772 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757497AbXFMK3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 06:29:39 -0400
+Date: Wed, 13 Jun 2007 12:29:22 +0200
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: Hans de Goede <j.w.r.degoede@hhs.nl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stanislav Brabec <sbrabec@suse.cz>
+Subject: Re: Proposal: change keycode for scancode e0 32 from 150 to 172
+Message-ID: <20070613102922.GE19888@suse.cz>
+References: <466F1462.5090008@hhs.nl>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [RFC][PATCH -mm take5 4/7] using symlink for the net_device
-References: <466FC455.5060001@bx.jp.nec.com>
-In-Reply-To: <466FC455.5060001@bx.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466F1462.5090008@hhs.nl>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+On Tue, Jun 12, 2007 at 11:47:14PM +0200, Hans de Goede wrote:
+> Hi all,
+> 
+> As some of you might know from my earlier post/thread about atkbd and 
+> softraw, I'm currently working on getting keyboards with internet/easy 
+> access keys to work painlessly / plug and play.
+> 
+> In order to be able to better test / develop this I've bought 2 cheap such 
+> keyboards today, one ps2 and one both usb and ps2 capable.
+> 
+> When comparing usb vs ps2 / testing the keycodes generated for the easy 
+> access
+> keys on my trust (microsoft compatible) keyboard. I noticed the homepage 
+> key sends keycode 150 with ps2 and 172 with USB, or for those who don't 
+> know the keycodes by head with ps2 it sends KEY_WWW and with usb it sends 
+> KEY_HOMEPAGE
+> 
+> I personally believe that the usb behaviour is correct and that the ps/2 
+> code should be modified to match for consistency. The ps/2 scancode to 
+> keycode mapping is set up to handle easy access / internet keys for 
+> microsoft compatible keyboards. So what is the right code to send here, 
+> tricky, see:
+> http://www.s2.com.br/s2arquivos/361/Imagens/555Image.jpg
+> http://www.keyboardco.com/keyboard_images/microsoft_ergonomic_keyboard_4000_black_usb_large.jpg
+> 
+> The logo on the key is a homepage logo, the text below is www/homepage. So 
+> what to send? I believe that for consistency with the usb codes send it 
+> should be KEY_HOMEPAGE, but thats based on a sample of 1 usb keyboard. 
+> Input on what other usb keyboards send for the key with the homepage iocn 
+> is very much welcome.
 
-We use symbolic link for net_device.
-The link in sysfs represents the corresponding network etherdevice.
-
--+- /sys/class/misc/
- |-+- netconsole/
- |-+- port1/
- | |--- id             [r--r--r--]  id
- | |--- net:<net_dev>  [r--r--r--]  net_dev: eth0,eth1,...
- | ...
- |--- port2/
- ...
-
-Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Signed-off-by: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
----
-Index: mm/drivers/net/netconsole.c
-===================================================================
---- mm.orig/drivers/net/netconsole.c
-+++ mm/drivers/net/netconsole.c
-@@ -76,6 +76,7 @@ struct netconsole_target {
- 
- static LIST_HEAD(target_list);
- static DEFINE_SPINLOCK(target_list_lock);
-+static DECLARE_MUTEX(netdev_change_sem);
- 
- static int miscdev_configured;
- 
-@@ -239,12 +240,14 @@ static void remove_target(struct netcons
- {
- 	unsigned long flags;
- 
-+	down(&netdev_change_sem);
- 	spin_lock_irqsave(&target_list_lock, flags);
- 	list_del(&nt->list);
- 	if (list_empty(&target_list))
- 		netpoll_cleanup(&nt->np);
- 	spin_unlock_irqrestore(&target_list_lock, flags);
- 	kfree(nt);
-+	up(&netdev_change_sem);
- }
- 
- static void release_target(struct kobject *kobj)
-@@ -271,12 +274,35 @@ static struct kobj_type target_ktype = {
- 	.default_attrs = target_attrs,
- };
- 
-+static char *make_netdev_class_name(char *netdev_name)
-+{
-+	char *name;
-+
-+	name = kasprintf(GFP_KERNEL, "net:%s", netdev_name);
-+	if (!name) {
-+		printk(KERN_ERR "netconsole: kmalloc() failed!\n");
-+		return NULL;
-+	}
-+
-+	return name;
-+}
-+
- static int setup_target_sysfs(struct netconsole_target *nt)
- {
-+	int retval = 0;
-+	char *name;
-+
- 	kobject_set_name(&nt->obj, "port%d", nt->id);
- 	nt->obj.parent = &netconsole_miscdev.this_device->kobj;
- 	nt->obj.ktype = &target_ktype;
--	return kobject_register(&nt->obj);
-+	retval = kobject_register(&nt->obj);
-+	name = make_netdev_class_name(nt->np.dev_name);
-+	if (!name)
-+		return -ENOMEM;
-+	retval = sysfs_create_link(&nt->obj, &nt->np.dev->dev.kobj, name);
-+	kfree(name);
-+
-+	return retval;
- }
- 
- static int add_target(char* target_config)
-@@ -323,6 +349,60 @@ static int add_target(char* target_confi
-  out:
- 	return retval;
- }
-+
-+static int netconsole_event(struct notifier_block *this, unsigned long event,
-+			    void *ptr)
-+{
-+	int error = 0;
-+	unsigned long flags;
-+	char *old_link_name = NULL, *new_link_name = NULL;
-+	struct netconsole_target *nt, *tmp;
-+	struct net_device *dev = ptr;
-+	LIST_HEAD(modify_target_list);
-+
-+	if (event == NETDEV_CHANGENAME) {
-+		spin_lock_irqsave(&target_list_lock, flags);
-+		list_for_each_entry_safe(nt, tmp, &target_list, list)
-+			if (nt->np.dev == dev)
-+				list_move(&nt->list, &modify_target_list);
-+		spin_unlock_irqrestore(&target_list_lock, flags);
-+
-+		down(&netdev_change_sem);
-+		list_for_each_entry(nt, &modify_target_list, list) {
-+			new_link_name = make_netdev_class_name(dev->name);
-+			old_link_name = make_netdev_class_name(nt->np.dev_name);
-+			if (!new_link_name || !old_link_name) {
-+				printk(KERN_ERR "netconsole: "
-+				       "make_netdev_class_name() failed!\n");
-+				kfree(new_link_name);
-+				kfree(old_link_name);
-+				continue;
-+			}
-+			sysfs_remove_link(&nt->obj, old_link_name);
-+			error = sysfs_create_link(&nt->obj,
-+						  &nt->np.dev->dev.kobj,
-+						  new_link_name);
-+			if (error)
-+				printk(KERN_ERR "can't create link: %s\n",
-+				       new_link_name);
-+			strcpy(nt->np.dev_name, dev->name);
-+			kfree(new_link_name);
-+			kfree(old_link_name);
-+		}
-+		up(&netdev_change_sem);
-+
-+		spin_lock_irqsave(&target_list_lock, flags);
-+		list_for_each_entry_safe(nt, tmp, &modify_target_list, list)
-+			list_move(&nt->list, &target_list);
-+		spin_unlock_irqrestore(&target_list_lock, flags);
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block netconsole_notifier = {
-+	.notifier_call = netconsole_event,
-+};
- #endif /* CONFIG_NETCONSOLE_DYNCON */
- 
- static void write_msg(struct console *con, const char *msg, unsigned int len)
-@@ -387,6 +467,7 @@ static void cleanup_netconsole(void)
- 	unregister_console(&netconsole);
- 	list_for_each_entry_safe(nt, tmp, &target_list, list)
- 		kobject_unregister(&nt->obj);
-+	unregister_netdevice_notifier(&netconsole_notifier);
- 	if (miscdev_configured)
- 		misc_deregister(&netconsole_miscdev);
- #else
-@@ -410,6 +491,7 @@ static int __init init_netconsole(void)
- 	} else
- 		miscdev_configured = 1;
- 
-+	register_netdevice_notifier(&netconsole_notifier);
- 	register_console(&netconsole);
- 	if (!strlen(config)) {
- 		printk(KERN_ERR "netconsole: not configured\n");
+KEY_HOMEPAGE is likely correct. Maybe we don't want to have KEY_WWW at
+all, since it seems to be redundant.
 
 -- 
-
-
+Vojtech Pavlik
+Director SuSE Labs
