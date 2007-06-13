@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbXFMTri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbXFMT5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759960AbXFMTri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 15:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbXFMTr3
+	id S1755631AbXFMT5U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 15:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbXFMT5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 15:47:29 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38939 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753959AbXFMTr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 15:47:28 -0400
-Message-ID: <467049C7.9090000@garzik.org>
-Date: Wed, 13 Jun 2007 15:47:19 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Wed, 13 Jun 2007 15:57:03 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:60849 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbXFMT5A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 15:57:00 -0400
+From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+References: <878xb35sje.fsf@goat.bogus.local> <20070612153102.GD5986@ucw.cz>
+Date: Wed, 13 Jun 2007 21:56:57 +0200
+Message-ID: <87fy4vmxva.fsf@goat.bogus.local>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-CC: Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <ossthema@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] ehea: Whitespace cleanup
-References: <200705311354.09992.osstklei@de.ibm.com>
-In-Reply-To: <200705311354.09992.osstklei@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX1/IwmlBYDG/KmyPwBoq5r0FaEYbL8jl8E0Jrx2
+ Y/YorreKZDsEEaIpBu1J3qXUf37mL7Tv/FCP/DZlfb9+G7neuD
+ 6myaJeyXXhLtFVYI0Wn8w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Klein wrote:
-> This patch fixes several whitespace issues.
-> 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+Pavel Machek <pavel@ucw.cz> writes:
 
-Patch is obviously OK, but needs rediffing since I had to apply fixes 
-before cleanups (standard patch ordering)
+>> resume from suspend to ram doesn't work for my laptop and never
+>> has. So, this is not a regression.
+[...]
+> Beeping patch? It is in -mm now. noapic nolapic and nosmp are useful,
+> too.
 
+With the proprietary nvidia module, the laptop resumes, but the screen
+stays black. Meanwhile I tested the nvidiafb module, with identical
+results: machine comes back from suspend, but with a black screen. Now
+I cann ssh into it and do a proper shutdown or whatever. This is of
+course nonsatisfying and I'm still playing around.
 
+I haven't tested noapic, nolapic so far. This is a UP kernel.
+
+Regards, Olaf.
