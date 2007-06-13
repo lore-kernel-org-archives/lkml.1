@@ -1,59 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbXFMIKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756583AbXFMIPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757257AbXFMIKA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 04:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbXFMIJr
+	id S1756583AbXFMIPL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 04:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbXFMIOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 04:09:47 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59085 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753167AbXFMIJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 04:09:46 -0400
-Date: Wed, 13 Jun 2007 10:10:49 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Jan Beulich <jbeulich@novell.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       patches@x86-64.org
-Subject: Re: [PATCH] x86: fix improper .init-type section references
-Message-ID: <20070613081049.GA21364@uranus.ravnborg.org>
-References: <a781481a0706120509k89c331ela81f57ad0f0e29eb@mail.gmail.com> <466EB12B.76E4.0078.0@novell.com> <a781481a0706120632p54ad83d0ka0a07a9fd9b276b4@mail.gmail.com> <466EC08A.76E4.0078.0@novell.com> <a781481a0706120709v5a2d1147m9d372a8056aeba6d@mail.gmail.com> <20070612180002.GC15329@uranus.ravnborg.org> <a781481a0706122018i6273cd17y61cd95e269b5c7c9@mail.gmail.com> <20070613043526.GA20088@uranus.ravnborg.org> <466FB20D.76E4.0078.0@novell.com> <a781481a0706130039r26e9522q98d9645809136ea7@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a781481a0706130039r26e9522q98d9645809136ea7@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 13 Jun 2007 04:14:55 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:52596 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754525AbXFMIOx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 04:14:53 -0400
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector to the document of booting-without-of.txt file.
+Date: Wed, 13 Jun 2007 16:14:44 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C526DD9@zch01exm26.fsl.freescale.net>
+In-Reply-To: <39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector to the document of booting-without-of.txt file.
+Thread-Index: AceteApfcQ4q8nraSmCLF3FxBS3mbgAGKdNw
+References: <11816389393593-git-send-email-wei.zhang@freescale.com> <1181638939310-git-send-email-wei.zhang@freescale.com> <39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Segher Boessenkool" <segher@kernel.crashing.org>
+Cc: <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
+       <linux-kernel@vger.kernel.org>, <mporter@kernel.crashing.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 01:09:07PM +0530, Satyam Sharma wrote:
+Hi, Segher, 
+
+> -----Original Message-----
+> Subject: Re: [PATCH 1/5] Add the explanation and sample of 
+> RapidIO DTS sector to the document of booting-without-of.txt file.
 > 
-> i.e. don't discard anything at build time, and link the .exit.{text,
-> data} sections
-> into the kernel image for _all_ archs? (otherwise how do we avoid
-> special-casing/
-> checking for the arch in modpost and warn/not-warn about invalid/valid 
-> cases)
+> > +   k) RapidIO
+> > +
+> > +   Required properties:
+> > +
+> > +    - device_type : Should be "rapidio"
 > 
-> But then why not simply lose the __exit (and .exit.*) altogether? Because
-> __exit becomes redundant in the suggested changed semantics -- just mark
-> all the cleanup code as __init too (when it's built-in, the only
-> callsite for the
-> cleanup code would be from the startup code in .init.*, and when modular,
-> __init and __exit lose all relevance anyway).
+> There is no OF binding, so no.
 
-The reason we do it today is to save memory in a memory constrained environment.
-So with such a suggestion you should back it up with numbers.
+So, we need to define it.
 
-How much RAM is wasted by keeping the __init and _exit sections
-in memory for a normal embedded build?
+> 
+> > +    - compatible : Should be "fsl,rapidio-v0.0" or 
+> "fsl,rapidio-v1.0"
+> > +      and so on. The version number is got from IP Block Revision
+> > +      Register of RapidIO controller.
+> 
+> It's better to use real device names, just like everyone
+> else.
 
-You could try a random defconfig for arm or mips since they are
-embedded in general. Using defconfig for i386 could tell us
-a little but not that important.
+Some silicons of Freescale processor are the same RapidIO controller,
+such as mpc8540/mpc8560 are the same (v0.0), mpc8548/mpc8641 are the
+same (v1.0). For v1.0 RapidIO controller, should we use mpc8548 or
+mpc8641? Those will make people confused. Using IP Block Revision is a
+clear choice.
 
-And when evaluating the numbers think of maybe 8 MB RAM in total, no swap
-storage, and sloow filesystem for permanent storage.
+> 
+> > +    - #address-cells : Address representation for 
+> "rapidio" devices.
+> > +      This field represents the number of cells needed to represent
+> > +      the RapidIO address of the registers.  For 
+> supporting more than
+> > +      36-bits RapidIO address, this field should be <2>.
+> 
+> More than 32 bit?
 
-	Sam
+Yes, RapidIO bus address width is 34 bits.
+
+> 
+> > +    - interrupt-parent : the phandle for the interrupt 
+> controller that
+> > +      services interrupts for this device.
+> 
+> Not required, depends on the interrupt tree of the system.
+> 
+> > +    - interrupts : <a b> where a is the interrupt number and b is a
+> > +      field that represents an encoding of the sense and level
+> > +      information for the interrupt.
+> 
+> No.  The format of an "interrupts" entry is defined by
+> the interrupt domain this device sits in, not by the
+> device itself.
+> 
+Do you misunderstand the meaning of 'interrupts'? These interrupts is
+issued from the RapidIO controller to the pic controller for tx, rx,
+err, doorbell and message.
+
+
+> > For this sector, interrupts order should be
+> > +      <err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
+> > +      msg2_tx_irq msg2_rx_irq ... msgN_tx_irq msgN_rx_irq>.
+> 
+> That's to be defined in the binding for your specific device,
+> not in a more generic rapidio binding.
+
+These description is just for compatible="fsl,rapidio-v*.*" rapidio
+controller.
+
+> 
+> > +		#address-cells = <2>;
+> 
+> You want a #size-cells as well.
+> 
+
+The size is not used in this sector, so no defined.
+
+Thanks!
+Wei.
