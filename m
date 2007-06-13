@@ -1,96 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbXFMCt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbXFMC5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755226AbXFMCt4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 22:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbXFMCts
+	id S1755399AbXFMC5k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 22:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbXFMC5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 22:49:48 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:55889 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752841AbXFMCtr convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jun 2007 22:57:32 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:42723 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753109AbXFMC5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 22:49:47 -0400
-Content-class: urn:content-classes:message
+	Tue, 12 Jun 2007 22:57:31 -0400
+Message-ID: <466F5D11.7000404@tw.ibm.com>
+Date: Wed, 13 Jun 2007 10:57:21 +0800
+From: Albert Lee <albertcc@tw.ibm.com>
+Reply-To: albertl@mail.com
+User-Agent: Mozilla Thunderbird 1.0.6 (Windows/20050716)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH 2/5] Add RapidIO sector to MPC8641HPCN board dts file.
-Date: Wed, 13 Jun 2007 10:49:30 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C526D5D@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1181689112.9736.29.camel@pterry-fc6.micromemory.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/5] Add RapidIO sector to MPC8641HPCN board dts file.
-Thread-Index: AcetRTuqBsC715nRQdObMSUzHNGREgAHpmuA
-References: <11816389393593-git-send-email-wei.zhang@freescale.com> <1181638939310-git-send-email-wei.zhang@freescale.com> <11816389401714-git-send-email-wei.zhang@freescale.com> <1181689112.9736.29.camel@pterry-fc6.micromemory.com>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: <pterry@micromemory.com>
-Cc: <mporter@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>,
-       <paulus@samba.org>, <linux-kernel@vger.kernel.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: libata passthru: support PIO multi commands
+References: <200706112200.l5BM0qFn005767@hera.kernel.org>	<20070611233917.4bd8c6d7@the-village.bc.nu>	<466DE438.70108@garzik.org>	<20070612111621.10074408@the-village.bc.nu>	<466EB937.6050807@garzik.org> <20070612170519.5f427a70@the-village.bc.nu>
+In-Reply-To: <20070612170519.5f427a70@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Phil,
+Alan Cox wrote:
+>>ata_scsi_pass_thru() is not executed at ioctl submission time (block 
+>>queue submission time), but rather immediately before it is issued to 
+>>the drive.  At that point you know the bus is idle, all other commands 
+>>have finished executing, and dev->multi_count is fresh not stale.  The 
+>>code path goes from ata_scsi_pass_thru() to ata_qc_issue() without 
+>>releasing the spinlock, even.
+> 
+> 
+> Think up to user space
+> 
+> Poorusersapp			set multicount to 4
+> 
+> Evilproprietarytuningdaemon	set multicount to 8
+> 
+> Poorusersapp			issue I/O
+> 
+> at which point an error is indeed best.
+> 
+> 
+>>But the last point is true -- we should error rather than just warn 
+>>there, AFAICS.
+> 
+> 
+> Definitely. We've been asked "please do something stupid" and not even in
+> a case where the requester may know better.
+> 
 
-> > +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> > @@ -329,6 +329,19 @@
-> >  				>;
-> >  		};
-> >  
-> > +		srio@c0000 {
-> > +			device_type = "rapidio";
-> > +			compatible = "fsl,rapidio-v1.0";
-> > +			#address-cells = <2>;
-> > +			reg = <c0000 20000>;
-> > +			ranges = <0 0 c0000000 20000000>;
-> 
-> Don't understand the range setup... The code uses c0000000 as 
-> the start
-> and 20000000 as the size for the rapidio law. So whats the 0 0 for? 
-> At first I thought address-cells 2 means that the range numbers are
-> pairs expressing 64-bit numbers, eg start 0 0, size c0000000 20000000
-> but thats not right...
-> 
+It looks like the ATA passthru commands contain more information than
+what libata needs to execute a command.
 
-RapidIO address width is 34bits, so we use <2> for #address-cells.
-"0 0" is the RapidIO bus address, since the #address-cells is 2, it's
-double zero. "c0000000" is the parent bus address, which is memory
-address. "20000000" is the size.
-So, they means mapping the address of memory 0xc0000000 to RapidIO bus
-address 0x0 and the size is 0x20000000.
+e.g. protocol number:
+     libata could possibly infer the protocol from the command opcode.
 
-> Sorry if I'm asking stupid questions....
-> 
-> And thanks for the patch, just what I need.
-> 
-> BTW do you have any notes/documentation on the space 
-> allocation routines
-> intended use. I'm trying to work it out but I don't see any 
-> actual users
-> of it yet... I need something like it for my distributed DMA driver,
-> hence the interest.
+e.g. multi_count:
+     libata caches dev->multi_count. Passing multi_count along with
+     each passthru command looks useless for libata.     
 
-Sorry, there is no documentation now. But I'll post an example for using
-them.
+e.g. t_dir:
+     libata could possible infer the direction from the command opcode
+     or from the protocol number (e.g. 4: PIO_IN / 5: PIO_OUT).
 
-> 
-> Cheers
-> Phil
-> 
-> > +			interrupt-parent = <&mpic>;
-> > +			/* err_irq bell_outb_irq bell_inb_irq
-> > +						msg1_tx_irq msg1_rx_irq
-> > +						msg2_tx_irq 
-> msg2_rx_irq */
-> > +			interrupts = <30 2 31 2 32 2 35 2 36 2 
-> 37 2 38 2>;
-> > +		};
-> > +
-> >  		mpic: pic@40000 {
-> >  			clock-frequency = <0>;
-> >  			interrupt-controller;
-> 
-> 
-> 
+Due to the redundant info, there is possiblely inconsistency between
+the parameters. e.g. t_dir vs protocol. e.g. command vs protocol.
+
+It seems the "redundant" parameters are designed to allow stateless SATL
+implementation: The application/passthru command tells the stateless SATL
+implementation the protocol and the multi_count, etc. Then SATL just
+follows the instruction blindly, even if asked to do something stupid.
+
+Currently libata
+ - uses the passthru protocol number blindly
+   (even if the application issues a DMA command with wrong PIO protocol.)
+ - checks and warns about multi_count
+ - ignores t_dir, byte_block and so on.
+
+Maybe we need a strategy to deal with incorrect passed-thru commands?
+say,
+ - check and reject if something wrong
+ - mimimal check and warn/ignore, if it doesn't hurt command execution
+
+--
+albert
+
