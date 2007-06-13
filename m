@@ -1,117 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756583AbXFMIPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbXFMIRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756583AbXFMIPL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 04:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbXFMIOz
+	id S1757311AbXFMIRQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 04:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbXFMIRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 04:14:55 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:52596 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525AbXFMIOx convert rfc822-to-8bit (ORCPT
+	Wed, 13 Jun 2007 04:17:06 -0400
+Received: from queue04-winn.ispmail.ntl.com ([81.103.221.58]:65482 "EHLO
+	queue04-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752009AbXFMIRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 04:14:53 -0400
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector to the document of booting-without-of.txt file.
-Date: Wed, 13 Jun 2007 16:14:44 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C526DD9@zch01exm26.fsl.freescale.net>
-In-Reply-To: <39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector to the document of booting-without-of.txt file.
-Thread-Index: AceteApfcQ4q8nraSmCLF3FxBS3mbgAGKdNw
-References: <11816389393593-git-send-email-wei.zhang@freescale.com> <1181638939310-git-send-email-wei.zhang@freescale.com> <39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Cc: <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>, <mporter@kernel.crashing.org>
+	Wed, 13 Jun 2007 04:17:04 -0400
+X-Greylist: delayed 899 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 04:17:04 EDT
+Subject: DRI/AGP on AMD64 based machine
+From: Alex Bennee <kernel-hacker@bennee.com>
+Reply-To: kernel-hacker@bennee.com
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 13 Jun 2007 09:02:15 +0100
+Message-Id: <1181721735.4418.10.camel@malory>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Segher, 
+Hi,
 
-> -----Original Message-----
-> Subject: Re: [PATCH 1/5] Add the explanation and sample of 
-> RapidIO DTS sector to the document of booting-without-of.txt file.
-> 
-> > +   k) RapidIO
-> > +
-> > +   Required properties:
-> > +
-> > +    - device_type : Should be "rapidio"
-> 
-> There is no OF binding, so no.
+For a while now I've been meaning to get DRI running with my rv350
+graphics card on my AMD64 machine. However I don't seem to be able to
+get the right config-fu in the kernel to enable all the components.
 
-So, we need to define it.
+For my sins I've been following the Gentoo Howto Wiki
+(http://gentoo-wiki.com/HOWTO_DRI_with_ATi_Open-Source_Drivers)
 
-> 
-> > +    - compatible : Should be "fsl,rapidio-v0.0" or 
-> "fsl,rapidio-v1.0"
-> > +      and so on. The version number is got from IP Block Revision
-> > +      Register of RapidIO controller.
-> 
-> It's better to use real device names, just like everyone
-> else.
+A lot of the AGP stuff in the Kernel seems to be locked to 32 bit
+kernels. The instructions seem to imply there is an am64-agp module
+(which looks as though it builds in the tree but doesn't install) and
+possibly an nvidea-agp module. I'm a little confused as I have both AMD
+and NVidia chipsets on my machine:
 
-Some silicons of Freescale processor are the same RapidIO controller,
-such as mpc8540/mpc8560 are the same (v0.0), mpc8548/mpc8641 are the
-same (v1.0). For v1.0 RapidIO controller, should we use mpc8548 or
-mpc8641? Those will make people confused. Using IP Block Revision is a
-clear choice.
+malory agp # lspci             
+00:00.0 Host bridge: nVidia Corporation nForce3 250Gb Host Bridge (rev
+a1)
+00:01.0 ISA bridge: nVidia Corporation nForce3 250Gb LPC Bridge (rev a2)
+00:01.1 SMBus: nVidia Corporation nForce 250Gb PCI System Management
+(rev a1)
+00:02.0 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
+00:02.1 USB Controller: nVidia Corporation CK8S USB Controller (rev a1)
+00:02.2 USB Controller: nVidia Corporation nForce3 EHCI USB 2.0
+Controller (rev a2)
+00:05.0 Bridge: nVidia Corporation CK8S Ethernet Controller (rev a2)
+00:06.0 Multimedia audio controller: nVidia Corporation nForce3 250Gb
+AC'97 Audio Controller (rev a1)
+00:08.0 IDE interface: nVidia Corporation CK8S Parallel ATA Controller
+(v2.5) (rev a2)
+00:0a.0 IDE interface: nVidia Corporation CK8S Serial ATA Controller
+(v2.5) (rev a2)
+00:0b.0 PCI bridge: nVidia Corporation nForce3 250Gb AGP Host to PCI
+Bridge (rev a2)
+00:0e.0 PCI bridge: nVidia Corporation nForce3 250Gb PCI-to-PCI Bridge
+(rev a2)
+00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+HyperTransport Technology Configuration
+00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+Address Map
+00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+DRAM Controller
+00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+Miscellaneous Control
+01:00.0 VGA compatible controller: ATI Technologies Inc RV350 AS [Radeon
+9550]
+01:00.1 Display controller: ATI Technologies Inc RV350 AS [Radeon 9550]
+(Secondary)
+02:06.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394 Host
+Controller (rev 80)
+02:0a.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+RTL-8139/8139C/8139C+ (rev 10)
 
-> 
-> > +    - #address-cells : Address representation for 
-> "rapidio" devices.
-> > +      This field represents the number of cells needed to represent
-> > +      the RapidIO address of the registers.  For 
-> supporting more than
-> > +      36-bits RapidIO address, this field should be <2>.
-> 
-> More than 32 bit?
+Any clues on the correct AGP config options to switch on gratefully
+received. My current .config looks like:
 
-Yes, RapidIO bus address width is 34 bits.
+08:56 alex@malory [linux-2.6-stable.git] >grep "AGP" .config
+CONFIG_AGP=y
+CONFIG_AGP_AMD64=y
+CONFIG_AGP_INTEL=m
+# CONFIG_AGP_SIS is not set
+CONFIG_AGP_VIA=m
 
-> 
-> > +    - interrupt-parent : the phandle for the interrupt 
-> controller that
-> > +      services interrupts for this device.
-> 
-> Not required, depends on the interrupt tree of the system.
-> 
-> > +    - interrupts : <a b> where a is the interrupt number and b is a
-> > +      field that represents an encoding of the sense and level
-> > +      information for the interrupt.
-> 
-> No.  The format of an "interrupts" entry is defined by
-> the interrupt domain this device sits in, not by the
-> device itself.
-> 
-Do you misunderstand the meaning of 'interrupts'? These interrupts is
-issued from the RapidIO controller to the pic controller for tx, rx,
-err, doorbell and message.
+08:59 alex@malory [linux-2.6-stable.git] >grep "DRM" .config
+CONFIG_DRM=m
+# CONFIG_DRM_TDFX is not set
+# CONFIG_DRM_R128 is not set
+CONFIG_DRM_RADEON=m
+# CONFIG_DRM_I810 is not set
+# CONFIG_DRM_I830 is not set
+# CONFIG_DRM_I915 is not set
+CONFIG_DRM_MGA=m
+# CONFIG_DRM_SIS is not set
+# CONFIG_DRM_VIA is not set
+# CONFIG_DRM_SAVAGE is not set
+
+Regards,
 
 
-> > For this sector, interrupts order should be
-> > +      <err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
-> > +      msg2_tx_irq msg2_rx_irq ... msgN_tx_irq msgN_rx_irq>.
-> 
-> That's to be defined in the binding for your specific device,
-> not in a more generic rapidio binding.
+--
+Alex, homepage: http://www.bennee.com/~alex/
+Television has brought back murder into the home -- where it belongs. --
+Alfred Hitchcock
 
-These description is just for compatible="fsl,rapidio-v*.*" rapidio
-controller.
-
-> 
-> > +		#address-cells = <2>;
-> 
-> You want a #size-cells as well.
-> 
-
-The size is not used in this sector, so no defined.
-
-Thanks!
-Wei.
