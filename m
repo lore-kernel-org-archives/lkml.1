@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbXFMP0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbXFMP1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758605AbXFMP0S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 11:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757625AbXFMP0J
+	id S1758898AbXFMP1B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 11:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbXFMP0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 11:26:09 -0400
-Received: from ns1.suse.de ([195.135.220.2]:60695 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757140AbXFMP0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 11:26:09 -0400
-Date: Wed, 13 Jun 2007 17:26:00 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Helge Hafting <helge.hafting@aitel.hist.no>,
-       John Sigler <linux.kernel@free.fr>, linux-kernel@vger.kernel.org
-Subject: Re: Runaway process and oom-killer
-Message-ID: <20070613152600.GH7443@v2.random>
-References: <466FAF99.3070708@free.fr> <20070613090837.GD7443@v2.random> <466FB6E8.8020606@free.fr> <466FF154.7030905@aitel.hist.no> <467008E9.7070902@nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <467008E9.7070902@nortel.com>
+	Wed, 13 Jun 2007 11:26:52 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:57432 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757625AbXFMP0v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 11:26:51 -0400
+Subject: Re: [patch 2a/3] Expose Power Management Policy option to users
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       htejun@gmail.com
+In-Reply-To: <20070612104631.44dab4a3.kristen.c.accardi@intel.com>
+References: <20070611184146.448266229@intel.com>
+	 <20070611114820.5290a903.kristen.c.accardi@intel.com>
+	 <466DA9DD.8080004@garzik.org>
+	 <20070612104631.44dab4a3.kristen.c.accardi@intel.com>
+Content-Type: text/plain
+Date: Wed, 13 Jun 2007 08:26:48 -0700
+Message-Id: <1181748408.3421.7.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 09:10:33AM -0600, Chris Friesen wrote:
-> Helge Hafting wrote:
+On Tue, 2007-06-12 at 10:46 -0700, Kristen Carlson Accardi wrote:
+> Expose Power Management Policy option to users
 > 
-> >My guess:
-> >Something needs memory but finds there is none to be had
-> >oom-killer is invoked and targets myapp.
-> >myapp takes some time to die. Particularly, the memory it uses
-> >isn't freed up instantly.
+> This patch will modify the scsi subsystem to allow
+> users to set a power management policy for the link.
 > 
-> Has anyone considered actually bumping up the priority of the task being 
-> killed so that it gets to run and free up its resources in a timely manner?
-> 
-> We've done some experimenting with actually putting it in SCHED_RR and 
-> it seems to help (in the case of other busy SCHED_RR tasks on the 
-> system).  Admittedly we have an older kernel, so behaviour may be 
-> different now.
+> The scsi subsystem will create a new sysfs file for each
+> host in /sys/class/scsi_host called "link_power_management_policy".
+> This file can have 3 possible values:
 
-Replacing the timeslice boost with sched-rr would probably be an ok
-cleanup, but I'm unsure if it risks to break the other RT tasks
-(especially when folks misuse a soft-RT design to do hard-RT work,
-with userland drivers running with RT privilege mapping iommu
-regions).
+I'm afraid the host isn't really the right place to put the link power
+management policy (assuming you want to manage the individual links
+separately) because there isn't a one to one correspondence between
+links and hosts.
 
-Most cpus goes idle as soon as the oom killer is entered so it
-probably doesn't make much difference anyway. I didn't remove the
-timeslice hack just because there wasn't any compelling reason to
-remove it but it's probably not making much difference.
+To take the model I understand: SAS; the links are managed at the phy
+level, so the power policy should be set there and thus should probably
+be a property of the phy object, which doesn't even exist in the SCSI
+model, it only exists in the transport class.  It strikes me that even
+for ATA, the same thing is probably true.
+
+Now, I can see that the power management models of all the transports
+might share some similarities (particularly at this three stage granular
+level); if so, it might make sense to export helpers from the mid-layer
+for the transport classes to use for this.
+
+> Value		Meaning
+> -------------------------------------------------------------------
+> min_power	User wishes the link to conserve power as much as
+> 		possible, even at the cost of some performance
+> 
+> max_performance User wants priority to be on performance, not power
+> 		savings
+> 
+> medium_power	User wants power savings, with less performance cost
+> 		than min_power (but less power savings as well).
+
+These seem like nicely sane and generic values.
+
+James
+
+
