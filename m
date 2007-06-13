@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbXFMHtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbXFMH5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbXFMHtR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 03:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbXFMHtH
+	id S1757004AbXFMH5z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 03:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbXFMH5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 03:49:07 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:54936 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756059AbXFMHtF convert rfc822-to-8bit (ORCPT
+	Wed, 13 Jun 2007 03:57:48 -0400
+Received: from mail.ipcas.de ([83.236.147.227]:36445 "EHLO mail.ipcas.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756012AbXFMH5s convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 03:49:05 -0400
-Message-Id: <466FBDC1.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 13 Jun 2007 09:49:53 +0200
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Sam Ravnborg" <sam@ravnborg.org>, "Andi Kleen" <ak@suse.de>,
-       <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: Re: [PATCH] x86: fix improper .init-type section references
-References: <466E6BDF.76E4.0078.0@novell.com>
- <a781481a0706120509k89c331ela81f57ad0f0e29eb@mail.gmail.com>
- <466EB12B.76E4.0078.0@novell.com>
- <a781481a0706120632p54ad83d0ka0a07a9fd9b276b4@mail.gmail.com>
- <466EC08A.76E4.0078.0@novell.com>
- <a781481a0706120709v5a2d1147m9d372a8056aeba6d@mail.gmail.com>
- <20070612180002.GC15329@uranus.ravnborg.org>
- <a781481a0706122018i6273cd17y61cd95e269b5c7c9@mail.gmail.com>
- <20070613043526.GA20088@uranus.ravnborg.org>
- <466FB20D.76E4.0078.0@novell.com>
- <a781481a0706130039r26e9522q98d9645809136ea7@mail.gmail.com>
-In-Reply-To: <a781481a0706130039r26e9522q98d9645809136ea7@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Jun 2007 03:57:48 -0400
+X-Greylist: delayed 1644 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 03:57:47 EDT
+Date: Wed, 13 Jun 2007 09:30:22 +0200
+From: =?UTF-8?Q?Michael_K=C3=B6nig?= <Michael.Koenig@ipcas.de>
+To: linux-kernel@vger.kernel.org
+Subject: CRAMFS: Possible problem with named pipes
+Message-ID: <132FF90BD68D10CCD22AE5F7@franken3>
+X-Mailer: Mulberry/4.0.6 (Win32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->But then why not simply lose the __exit (and .exit.*) altogether? Because
->__exit becomes redundant in the suggested changed semantics -- just mark
->all the cleanup code as __init too (when it's built-in, the only
->callsite for the
->cleanup code would be from the startup code in .init.*, and when modular,
->__init and __exit lose all relevance anyway).
+Hello there,
 
-Because of the non-builtin case (__init still has significance in the modular case,
-it's only __exit that doesn't). For the builtin case, __init could certainly be
-identical to __exit.
+I'm using Linux on a device with an ETRAX100LX utilizing SDK 2.10 fom Axis, 
+which includes Linux 2.6.19.
+I tried to use the latest CRAMFS code from the GIT repository, but I get 
+the following error:
+fs/cramfs/inode.c: In function `cramfs_readdir':
+fs/cramfs/inode.c:342: structure has no member named `f_path'
 
-Jan
+I hope the behaviour is also reproducable with the latest code. 
+Unfortunately I'm not sure which revision the code in the Axis distribution 
+has, since there is no information in the source files.
+
+To reproduce the problem follow these steps:
+1. Create two named pipes on a CRAMFS image (in my case "fifo1" and 
+"fifo2").
+2. Output the pipes on separate terminals with "cat fifo1" and "cat fifo2".
+3. Pipe a large text file (around 1MiB) into one of the pipes "cat 
+large.txt > fifo1"
+
+The result of these steps should be that some parts of the text file are 
+piped to fifo1 while other parts are piped to fifo2.
+
+I'm no kernel nor file system expert, but since pipes should be handled in 
+the VFS but the inodes are provided by the file system (as far as I 
+understand), this could be an inode mixup regarding named pipes in the 
+CRAMFS.
+
+Thanks in advance for any hints that might clear up this issue.
+
+-- 
+Mit freundlichen Grüßen
+Best regards
+Michael König
+
+ipcas GmbH
+Wetterkreuz 17
+91058 Erlangen, Germany
+Tel.: +49 9131 7677-31
+Fax: +49 9131 7677-78
+mailto:Michael.Koenig@ipcas.de
+
+Geschäftsführer: Dipl.-Ing. S. Sutiono
+Sitz der Gesellschaft: Erlangen
+Registergericht: Fürth, HBR 3676
+WEEE-Reg.-Nr. DE 77202473
+
+Hinweis: Diese E-Mail und etwaige Anlagen können Betriebs- oder
+Geschäftsgeheimnisse, dem Anwaltsgeheimnis unterliegen oder sonstige
+vertrauliche Informationen enthalten. Sollten Sie diese E-Mail
+irrtümlich erhalten haben, ist Ihnen der Status dieser E-Mail bekannt.
+Bitte benachrichtigen Sie uns in diesem Fall sofort durch Antwort-Mail
+und löschen Sie diese E-Mail nebst etwaigen Anlagen von Ihrem System.
+Ebenso dürfen Sie diese E-Mail oder seine Anlagen
+nicht kopieren oder an Dritte weitergeben. Vielen Dank.
 
