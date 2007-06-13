@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbXFMWyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbXFMW4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757225AbXFMWyo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 18:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXFMWyf
+	id S1758356AbXFMW4F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 18:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbXFMWzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 18:54:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36060 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753502AbXFMWye (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 18:54:34 -0400
-Date: Wed, 13 Jun 2007 15:53:35 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Dan Aloni <da-x@monatomic.org>,
-       Chad Tindel <ctindel@users.sourceforge.net>,
-       Jay Vosburgh <fubar@us.ibm.com>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       bonding-devel@lists.sourceforge.net
-Subject: Re: [PATCH] Fix race condition about network device name allocation
-Message-ID: <20070613155335.47111c67@localhost>
-In-Reply-To: <20070613094521.GA8860@localdomain>
-References: <1178862045.3979.33.camel@kane-linux>
-	<20070511092519.1f34ab34@freepuppy>
-	<1179130660.3881.23.camel@kane-linux>
-	<20070514085840.17a343f7@freepuppy>
-	<20070613094521.GA8860@localdomain>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Jun 2007 18:55:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48609 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754589AbXFMWzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 18:55:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH -mm 0/7] PM: Remove unused and unnecessary features from suspend and resume core
+Date: Thu, 14 Jun 2007 01:02:31 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+References: <200706131551.51336.rjw@sisk.pl> <20070613215946.GA26206@kroah.com>
+In-Reply-To: <20070613215946.GA26206@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706140102.31871.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bonding refers to device after unregistering. This has always been
-a dangerous thing. The following UNTESTED should fix the problem.
+On Wednesday, 13 June 2007 23:59, Greg KH wrote:
+> On Wed, Jun 13, 2007 at 03:51:48PM +0200, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > The following series of patches removes some unused and unnecessary features
+> > from the suspend and resume core code.
+> 
+> These are the same as you sent out the other day, right?
 
---- a/drivers/net/bonding/bond_sysfs.c	2007-06-13 15:48:37.000000000 -0700
-+++ b/drivers/net/bonding/bond_sysfs.c	2007-06-13 15:49:17.000000000 -0700
-@@ -164,9 +164,10 @@ static ssize_t bonding_store_bonds(struc
- 				printk(KERN_INFO DRV_NAME
- 					": %s is being deleted...\n",
- 					bond->dev->name);
--				unregister_netdevice(bond->dev);
-+
- 				bond_deinit(bond->dev);
- 		        	bond_destroy_sysfs_entry(bond);
-+				unregister_netdevice(bond->dev);
- 				rtnl_unlock();
- 				goto out;
- 			}
+Almost.
+
+The "PM: Remove pm_parent from struct dev_pm_info" (1/7) has been updated.
+
+The "PM: Remove prev_state from struct dev_pm_info" patch (5/7) has been
+rediffed against 2.6.22-rc4-mm2 (to synchronize with the USB changes in there).
+
+The others are the same.
+
+> If so, I'll put them in my tree, trying to catch up on my queue right
+> now.
+
+OK
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
