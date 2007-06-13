@@ -1,122 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbXFMWNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbXFMWUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757096AbXFMWNs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 18:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbXFMWNl
+	id S1756550AbXFMWUa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 18:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbXFMWUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 18:13:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33141 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754387AbXFMWNk (ORCPT
+	Wed, 13 Jun 2007 18:20:17 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:30265 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753847AbXFMWUP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 18:13:40 -0400
-Date: Wed, 13 Jun 2007 15:12:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Greaves <david@dgreaves.com>
-cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on
- raid6)
-In-Reply-To: <46706968.7000703@dgreaves.com>
-Message-ID: <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org>
-References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>
- <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
- <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>
- <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>
- <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com>
- <46680F5E.6070806@dgreaves.com> <20070607222813.GG85884050@sgi.com>
- <4669A965.20403@dgreaves.com> <alpine.LFD.0.98.0706121123550.14121@woody.linux-foundation.org>
- <466FD214.9070603@dgreaves.com> <alpine.LFD.0.98.0706131344550.14121@woody.linux-foundation.org>
- <46706968.7000703@dgreaves.com>
+	Wed, 13 Jun 2007 18:20:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=QsGolP4FP6412PFcIbBakE+J6U0NcM/50SVSLlWRqAHBj0n8NrrCcWdhNLwpvlVYZtJG9kcJDp63y28voutzCkkkc/D1YBCvy7AEkmhsZeQDEsR+FBNNQecXNQ0SQC3XFmhpXC9nHCUyJK6zHR+qgJAha746zijj/2L6WpsQWLw=
+Message-ID: <3ae72650706131520m3091d04et31b1db64be692385@mail.gmail.com>
+Date: Thu, 14 Jun 2007 00:20:11 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Dmitry Torokhov" <dtor@insightbb.com>
+Subject: Re: [PATCH -mm 4/7] PM: Remove suspend and resume support from struct device_type
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "David Brownell" <david-b@pacbell.net>, "Greg KH" <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>
+In-Reply-To: <200706131620.54338.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200706131551.51336.rjw@sisk.pl> <200706131620.54338.rjw@sisk.pl>
+X-Google-Sender-Auth: 10edbb256fe8085a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dmitry, you added this recently, is this used in any code you plan to
+merge soon?
 
+Thanks,
+Kay
 
-On Wed, 13 Jun 2007, David Greaves wrote:
+On 6/13/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 >
-> > I'm not seeing anything really obvious. The traces would probably look
-> > better if you enabled CONFIG_FRAME_POINTER, though. That should cut down on
-> > some of the noise and make the traces a bit more readable.
-> 
-> I can do that...
-
-Thanks. That makes a big difference to the readability of the traces.
-
-That said, I'm so used to reading even the messy ones that this didn't 
-actually tell me anything new (it made it clear that the SCSI error 
-handler noise was just noise), but for people who aren't quite as used to 
-seeing crap backtraces, your new trace might hopefully put them on the 
-right track.
-
-I threw out the parts that didn't look all that relevant, and left the
-ata_aux/md0_raid5/hibernate traces here for others to look at without all 
-the other noise. Those _seem_ to be the primary suspects in this saga.
-
-		Linus
----
-> ata_aux       D F7945000     0   122      2 (L-TLB)
->        c19f7ce0 00000046 f7ea23b8 f7945000 c19f7ca0 c0121d67 c198d800 f7ea23b8
->        c19f7cb0 c02261b7 f6af7964 f7ea23b8 c19f7cc0 c0293942 f7e865d0 c1a026bc
->        c19f7cf0 000003ae 2dae0756 00000009 c19f7cf0 c19f7dc8 f6af7964 c19f7cfc
-> Call Trace:
->  [<c0364fa4>] wait_for_completion+0x64/0xa0
->  [<c021bb7d>] blk_execute_rq+0x8d/0xb0
->  [<c02b7a88>] scsi_execute+0xb8/0x110
->  [<c02b7b48>] scsi_execute_req+0x68/0x90
->  [<c02bdefd>] sd_spinup_disk+0x6d/0x400
->  [<c02bf25b>] sd_revalidate_disk+0x6b/0x160
->  [<c02bdc1f>] sd_rescan+0x1f/0x30
->  [<c02bb002>] scsi_rescan_device+0x42/0x50
->  [<c02c9e10>] ata_scsi_dev_rescan+0x60/0x70
->  [<c0127ebd>] run_workqueue+0x4d/0xf0
->  [<c012806d>] worker_thread+0xcd/0xf0
->  [<c012b247>] kthread+0x67/0x70
->  [<c01049fb>] kernel_thread_helper+0x7/0x4c
-
-> md0_raid5     D F7F4D000     0   836      2 (L-TLB)
->        f78a3da0 00000046 f7f4d000 f7f4d000 f78a3da0 c01454b6 c048b0e0 f6ba0ad0
->        f78a3d70 c0116be1 00010ad0 d5658227 f78a3d90 f7853000 f70c4ae0 f7f5617c
->        f78a3de0 00003440 1be4a921 00000009 00000246 f7853000 f78a3dc8 f785313c
-> Call Trace:
->  [<c02f1287>] md_super_wait+0x77/0xc0
->  [<c02f993f>] write_sb_page+0x4f/0x80
->  [<c02f9a72>] write_page+0x102/0x110
->  [<c02f9db9>] bitmap_update_sb+0x89/0x90
->  [<c02f3353>] md_update_sb+0x123/0x2a0
->  [<c02f93c2>] md_check_recovery+0x302/0x340
->  [<c02ec1f2>] raid5d+0x12/0xf0
->  [<c02f7746>] md_thread+0x56/0x110
->  [<c012b247>] kthread+0x67/0x70
->  [<c01049fb>] kernel_thread_helper+0x7/0x4c
-
-> hibernate     D F7945000     0  3874   2622 (NOTLB)
->        f6723c60 00000086 f7ea23b8 f7945000 f6723c20 c0121d67 c198d800 f7ea23b8
->        f6723c30 c02261b7 28ccc170 00000009 00003a03 00000000 c19615d0 f6ba0bdc
->        0000006e 0006a677 28ccc170 00000009 f6723c70 f6723d48 f6af7804 f6723c7c
-> Call Trace:
->  [<c0364fa4>] wait_for_completion+0x64/0xa0
->  [<c021bb7d>] blk_execute_rq+0x8d/0xb0
->  [<c02b7a88>] scsi_execute+0xb8/0x110
->  [<c02b7b48>] scsi_execute_req+0x68/0x90
->  [<c02bf80f>] sd_start_stop_device+0x6f/0x120
->  [<c02bfb9a>] sd_resume+0x6a/0xa0
->  [<c02bbe59>] scsi_bus_resume+0x69/0x80
->  [<c0299932>] resume_device+0x132/0x190
->  [<c0299aab>] dpm_resume+0xbb/0xc0
->  [<c0299ace>] device_resume+0x1e/0x40
->  [<c013bfd6>] hibernate+0x106/0x1a0
->  [<c013b193>] state_store+0xc3/0xf0
->  [<c019353b>] subsys_attr_store+0x3b/0x40
->  [<c019370e>] flush_write_buffer+0x2e/0x40
->  [<c0193781>] sysfs_write_file+0x61/0x70
->  [<c015e858>] vfs_write+0x88/0x110
->  [<c015e991>] sys_write+0x41/0x70
->  [<c0103ee0>] syscall_call+0x7/0xb
->  =======================
-> 
+> The suspend and resume support in struct device_type (include/linux/device.h)
+> is not used anywhere.  It is also undocumented, so it can be removed.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/base/power/resume.c  |    5 -----
+>  drivers/base/power/suspend.c |    7 -------
+>  include/linux/device.h       |    2 --
+>  3 files changed, 14 deletions(-)
+>
+> Index: linux-2.6.22-rc4-mm2/drivers/base/power/resume.c
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/drivers/base/power/resume.c
+> +++ linux-2.6.22-rc4-mm2/drivers/base/power/resume.c
+> @@ -41,11 +41,6 @@ int resume_device(struct device * dev)
+>                 error = dev->bus->resume(dev);
+>         }
+>
+> -       if (!error && dev->type && dev->type->resume) {
+> -               dev_dbg(dev,"resuming\n");
+> -               error = dev->type->resume(dev);
+> -       }
+> -
+>         if (!error && dev->class && dev->class->resume) {
+>                 dev_dbg(dev,"class resume\n");
+>                 error = dev->class->resume(dev);
+> Index: linux-2.6.22-rc4-mm2/drivers/base/power/suspend.c
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/drivers/base/power/suspend.c
+> +++ linux-2.6.22-rc4-mm2/drivers/base/power/suspend.c
+> @@ -79,13 +79,6 @@ int suspend_device(struct device * dev,
+>                 suspend_report_result(dev->class->suspend, error);
+>         }
+>
+> -       if (!error && dev->type && dev->type->suspend
+> -           && !dev->power.power_state.event) {
+> -               suspend_device_dbg(dev, state, "type ");
+> -               error = dev->type->suspend(dev, state);
+> -               suspend_report_result(dev->type->suspend, error);
+> -       }
+> -
+>         if (!error && dev->bus && dev->bus->suspend
+>             && !dev->power.power_state.event) {
+>                 suspend_device_dbg(dev, state, "");
+> Index: linux-2.6.22-rc4-mm2/include/linux/device.h
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/include/linux/device.h
+> +++ linux-2.6.22-rc4-mm2/include/linux/device.h
+> @@ -340,8 +340,6 @@ struct device_type {
+>         int (*uevent)(struct device *dev, char **envp, int num_envp,
+>                       char *buffer, int buffer_size);
+>         void (*release)(struct device *dev);
+> -       int (*suspend)(struct device * dev, pm_message_t state);
+> -       int (*resume)(struct device * dev);
+>  };
+>
+>  /* interface for exporting device attributes */
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
