@@ -1,76 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbXFMWZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbXFMWZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758184AbXFMWZa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 18:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbXFMWZX
+	id S1756627AbXFMWZn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 18:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758631AbXFMWZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 18:25:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:40170 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755052AbXFMWZV (ORCPT
+	Wed, 13 Jun 2007 18:25:33 -0400
+Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:1408 "EHLO
+	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758235AbXFMWZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 18:25:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=avkAzGFri1A/og6nrnKvghlNaCjNtSVsDcBLiH099X4m7pdpVHC6cWFV+5Qnv+DXeQh5fD3ZobVN9JZVj4C9rcYKuNISXowWZ2ztE1Gko3eOpfS86KP6nW+QWf+SUDgCuYFZoTb62aWo7Ua8EviHFXFBc8U4aiyV1BH2YtYn0o8=
-Message-ID: <9d732d950706131525n667587e6t59e94c5cee951c6d@mail.gmail.com>
-Date: Thu, 14 Jun 2007 07:25:21 +0900
-From: "Toshiharu Harada" <haradats@gmail.com>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: [RFC] TOMOYO Linux
-Cc: "Stephen Smalley" <sds@tycho.nsa.gov>,
-       "Toshiharu Harada" <haradats@nttdata.co.jp>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-In-Reply-To: <467064B9.1080005@redhat.com>
+	Wed, 13 Jun 2007 18:25:32 -0400
+Date: Wed, 13 Jun 2007 23:25:20 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Jay Vosburgh <fubar@us.ibm.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
+       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
+       Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+In-Reply-To: <46704C44.8020602@googlemail.com>
+Message-ID: <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466FA71C.1020309@nttdata.co.jp>
-	 <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
-	 <9d732d950706130722g12a22604p223381a8e281a4a1@mail.gmail.com>
-	 <46704D49.8010308@redhat.com>
-	 <9d732d950706131435s636b852di98026aed1d9a6ac6@mail.gmail.com>
-	 <467064B9.1080005@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/6/14, Rik van Riel <riel@redhat.com>:
-> Toshiharu Harada wrote:
-> > 2007/6/14, Rik van Riel <riel@redhat.com>:
-> > SELinux has a well designed robust and flexible functions.
-> > So it should be used for everywhere.  I understand it.
-> > As you mentioned one can analyze the system (process)
-> > behaviors from AVC logs. But the maintenance cost is not trivial.
-> >
-> > If logging with process context is the only purpose,
-> > current TOMOYO Linux can do it with no hustle at all.
->
-> Yes, but so does standard SELinux.
->
-> You are making me curious: what does TOMOYO do that is
-> not done by regular SELinux?
->
-> Logging with process name, path name and contexts is
-> already done.  I must have missed some other TOMOYO
-> feature in your initial email...
+Hi all,
 
-I see SELinux can log with process name, path name and
-contexts, but "contexts" must be defined beforehand.
-TOMOYO Linux kernel does that with pathname, so no
-label definitions needed.
-You can confirm the process (domain) transitions any time
-and access occurred are clarified per domain basis automatically.
-Security context in TOMOYO Linux is represented and stored
-as a call chain and very intuitive.
+The random seg faults on x86_64 is interesting as I have been getting 
+random illegal instruction faults on sparc (sun4c) with 2.6.22-rc3. I have 
+not yet tried to track it down. All I know at present is that it is not a 
+problem on 2.6.20.9.
 
-TOMOYO Linux has a mode called "learning"
-in addition to "permissive" and "enforce". You can easily
-get the TOMOYO Linux policy with learning mode that
-SELinux does not have. In addition, access control mode of
-TOMOYO Linux can be managed for every difference domain.
+Regards
+ 	Mark Fortescue.
 
--- 
-Toshiharu Harada
-haradats@gmail.com
+On Wed, 13 Jun 2007, Michal Piotrowski wrote:
+
+> Hi all,
+>
+> Here is a list of some known regressions in 2.6.22-rc4.
+>
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+>
+>
+>
+> Networking
+>
+> Subject    : commit 9093bbb2d96d0184f037cea9b4e952a44ebe7c32 broke the 
+> bonding driver
+> References : http://lkml.org/lkml/2007/6/13/65
+> Submitter  : Dan Aloni <da-x@monatomic.org>
+> Handled-By : Stephen Hemminger <shemminger@linux-foundation.org>
+> Status     : Unknown
+>
+>
+>
+> Sparc64
+>
+> Subject    : 2.6.22-rc broke X on Ultra5
+> References : http://lkml.org/lkml/2007/5/22/78
+> Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+> Handled-By : David Miller <davem@davemloft.net>
+> Status     : problem is being debugged
+>
+>
+>
+> Suspend
+>
+> Subject    : hibernate(?) fails totally - regression
+> References : http://lkml.org/lkml/2007/6/1/401
+> Submitter  : David Greaves <david@dgreaves.com>
+> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+> Caused-By  : Tejun Heo <htejun@gmail.com>
+>            commit 9666f4009c22f6520ac3fb8a19c9e32ab973e828
+> Status     : problem is being debugged
+>
+>
+>
+> TTY
+>
+> Subject    : OOPS (NULL pointer dereference) in v2.6.22-rc3
+> References : http://lkml.org/lkml/2007/6/1/389
+>            http://bugzilla.kernel.org/show_bug.cgi?id=8473
+>            http://bugzilla.kernel.org/show_bug.cgi?id=8574
+> Submitter  : Alex Riesen <raa.lkml@gmail.com>
+> Status     : problem is being debugged
+>
+>
+>
+> x86-64
+>
+> Subject    : x86-64 2.6.22-rc2 random segfaults
+> References : http://lkml.org/lkml/2007/5/24/275
+> Submitter  : Ioan Ionita <opslynx@gmail.com>
+> Status     : Unknown
+>
+>
+>
+> Regards,
+> Michal
+>
+> -- 
+> LOG
+> http://www.stardust.webpages.pl/log/
+> -
+> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
