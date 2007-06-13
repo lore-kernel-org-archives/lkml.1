@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759591AbXFMRK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbXFMRMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759591AbXFMRK4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 13:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757659AbXFMRKt
+	id S1759620AbXFMRMj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 13:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757659AbXFMRMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 13:10:49 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:48770 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756967AbXFMRKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 13:10:48 -0400
-Date: Wed, 13 Jun 2007 19:11:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Dave Hansen <hansendc@us.ibm.com>
-Cc: holzheu@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, akpm@osdl.org, gregkh@suse.de,
-       mtk-manpages@gmx.net, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-Message-ID: <20070613171148.GA24610@uranus.ravnborg.org>
-References: <1181747217.29512.9.camel@localhost.localdomain> <1181752649.15815.68.camel@spirit>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 Jun 2007 13:12:32 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:2029 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756967AbXFMRMc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 13:12:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=rw+OZOE9AKzdXpMFI34MGzi3AyFSJ4ZaNEPN40PGeXGODTZJCjHrHJKnSPcxOvZKLy+6TP7p+vHc1EBbKINjpV5rzVzZxYVD6+gbqhHKMaJ2+X06b+ew/ZAccqqbl609q0hfuXasZerSYRbAlZcoLjODdfXJc6mdmGBPYVYDFpw=
+Message-ID: <75b66ecd0706131012i8e94172xb4632080c9c90fdc@mail.gmail.com>
+Date: Wed, 13 Jun 2007 13:12:30 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>
+Subject: Re: How to diagnose this error?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200706130609.l5D69lC7063716@www262.sakura.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1181752649.15815.68.camel@spirit>
-User-Agent: Mutt/1.4.2.1i
+References: <200706130609.l5D69lC7063716@www262.sakura.ne.jp>
+X-Google-Sender-Auth: 0a1081c5a2f9240f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 09:37:29AM -0700, Dave Hansen wrote:
-> On Wed, 2007-06-13 at 17:06 +0200, holzheu wrote:
-> > The operation of a Linux system sometimes requires to decode the
-> > meaning of a specific kernel message, e.g. an error message of a
-> > driver. Especially on our mainframe zSeries platform system
-> > administrators want to have descriptions for Linux kernel messages.
-> > They are used to that, because all other operating systems on that
-> > platform like z/OS, z/VM or z/VSE have message catalogs with detailed
-> > descriptions about the semantics of the messages.
-> 
-> I'm not sure we want to make Linux more like z/* in this regard. :)
-> 
-> The problem with your proposal is that every time a new message in the
-> kernel is created or modified, you need somebody to go update that
-> documentation.  It's going to get out-of-sync very fast if this isn't
-> done, and you either need to convince and teach each and every kernel
-> contributor to follow your lead, or have a team of highly trained code
-> monkeys to watch git-commits and resubmit documentation for every diff
-> that touches a printk. 
+On 6/13/07, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
+> Hello.
+>
+> Something is wrong with my guest Linux on VMware.
+>
+> Host: CentOS5 (2.6.18-8.1.4.el5) on x86_64 (ThinkPad X60)
+> Guest: CentOS5 (2.6.18-8.1.4.el5) on x86_64 on VMware Workstation 5.5.4 using 2 CPUs
+>
+> BUG messages appear frequently (several times per a minute) on the guest, while they never appear on the host.
 
-This is no more and no less the same situation that we have with
-the kernel-doc documented functions/data in the kernel.
+You need to ask vmware support about this.
 
-I like the concept that the description is kept close to the actual
-usage, the tool support and that in general looks like ordinary
-kernel-doc documentation.
-
-And if people do not dare to update the kernel-doc documentation of
-a function then maybe they should not send patches in first place..
-
-If we then really want to have the important printk's documented
-is another story.
-
-	Sam
+Lee
