@@ -1,71 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759706AbXFMSyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759959AbXFMSy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759706AbXFMSyN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 14:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbXFMSxz
+	id S1759959AbXFMSy2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 14:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759641AbXFMSyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 14:53:55 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:40885 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751806AbXFMSxz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 14:53:55 -0400
-X-Greylist: delayed 1214 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 14:53:54 EDT
-Subject: Re: [kvm-devel] kvm + IOMMU
-From: Gregory Haskins <ghaskins@novell.com>
-To: David Brown <dmlb2000@gmail.com>
-Cc: kvm-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <9c21eeae0706131027i21d97e16k7aedf54134c727b8@mail.gmail.com>
-References: <9c21eeae0706131027i21d97e16k7aedf54134c727b8@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 13 Jun 2007 14:32:32 -0400
-Message-Id: <1181759552.16287.23.camel@ghaskins-t60p.haskins.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+	Wed, 13 Jun 2007 14:54:05 -0400
+Received: from h155.mvista.com ([63.81.120.155]:50579 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759627AbXFMSyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 14:54:03 -0400
+Message-ID: <46703DB1.9010702@ru.mvista.com>
+Date: Wed, 13 Jun 2007 22:55:45 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: albertl@mail.com
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: libata passthru: support PIO multi commands
+References: <200706112200.l5BM0qFn005767@hera.kernel.org>	<20070611233917.4bd8c6d7@the-village.bc.nu>	<466DE438.70108@garzik.org>	<20070612111621.10074408@the-village.bc.nu>	<466EB937.6050807@garzik.org> <20070612170519.5f427a70@the-village.bc.nu> <466F5D11.7000404@tw.ibm.com>
+In-Reply-To: <466F5D11.7000404@tw.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 10:27 -0700, David Brown wrote:
-> I was wondering if anyone has done any sort of virtualization testing
-> with kvm using IOMMU to improve performance of I/O and what sort of
-> results they've had... I currently don't have a box with IOMMU (at
-> least I don't think so, since its an i386 box) but will be getting
-> some amd64 boxes which, hopefully will have that capability.
+Albert Lee wrote:
+> Alan Cox wrote:
 > 
-> I was also wondering if kvm can take advantage of IOMMU does it need
-> to be run a different way? or is it supposed to 'just work' if the
-> kernel is built with IOMMU?
+>>>ata_scsi_pass_thru() is not executed at ioctl submission time (block 
+>>>queue submission time), but rather immediately before it is issued to 
+>>>the drive.  At that point you know the bus is idle, all other commands 
+>>>have finished executing, and dev->multi_count is fresh not stale.  The 
+>>>code path goes from ata_scsi_pass_thru() to ata_qc_issue() without 
+>>>releasing the spinlock, even.
+>>
+>>
+>>Think up to user space
+>>
+>>Poorusersapp			set multicount to 4
+>>
+>>Evilproprietarytuningdaemon	set multicount to 8
+>>
+>>Poorusersapp			issue I/O
+>>
+>>at which point an error is indeed best.
+>>
+>>
+>>
+>>>But the last point is true -- we should error rather than just warn 
+>>>there, AFAICS.
+>>
+>>
+>>Definitely. We've been asked "please do something stupid" and not even in
+>>a case where the requester may know better.
+>>
 > 
-> I keep seeing IOMMU patches fly by on the lkml however those are from
-> the intel guys and the new boxes we are getting are amd... have the
-> amd IOMMU support gotten into the kernel yet?
 > 
-> Not sure if this is the best place to ask these questions, so any help
-> to point me in the right direction on who to talk to would also be
-> helpful.
+> It looks like the ATA passthru commands contain more information than
+> what libata needs to execute a command.
+> 
+> e.g. protocol number:
+>      libata could possibly infer the protocol from the command opcode.
 
-Hi David,
-  I am not an expert here, but I don't believe it would work without
-changes to KVM.  My understanding is that you use an IOMMU in this
-fashion if you want to direct-map a device into a guest for devices that
-do not have a local IOMMU-like functionality built in already.  For
-instance, perhaps you want to assign an off-the-shelf ethernet NIC to a
-guest.  The IOMMU would serve to translate between GPA and system based
-DMA addresses.  However, the hypervisor would really need to be involved
-in the setup of this mapping on the IOMMU in the first place.
+    This is generally a bad practice to guess protocol based on opcode. What 
+if the code will have to handle a vendor unique command (or some other command 
+not yet known to it but known to issuer)?
 
-KVM (currently) virtualizes/emulates all components in the logical
-"system" presented to the guest.  It doesn't yet support the notion of
-direct-mapping a physical component.  I doubt you will have to wait too
-long for someone to add this feature, however :)  It's just not there
-today (to my knowledge, anyway)
+> e.g. multi_count:
+>      libata caches dev->multi_count. Passing multi_count along with
+>      each passthru command looks useless for libata.     
 
-But to answer your question, when configured up like this the IO
-subsystem in question should perform pretty close to native (at least in
-theory).
+    I'd agree here.
 
-Regards,
--Greg
+> e.g. t_dir:
+>      libata could possible infer the direction from the command opcode
 
+    Bad idea again.
+
+>      or from the protocol number (e.g. 4: PIO_IN / 5: PIO_OUT).
+
+    This is reasonable if DMA direction can also be inferred from the protocol 
+number.
+
+> Due to the redundant info, there is possiblely inconsistency between
+> the parameters. e.g. t_dir vs protocol. e.g. command vs protocol.
+
+    I think it's better to allow inconsistency then to limit functionality.
+There's another option though -- let the caller specify the default protocol 
+for the command to be issued or override it if it *knows* what it's doing.
+
+> It seems the "redundant" parameters are designed to allow stateless SATL
+> implementation: The application/passthru command tells the stateless SATL
+> implementation the protocol and the multi_count, etc. Then SATL just
+> follows the instruction blindly, even if asked to do something stupid.
+
+> Currently libata
+>  - uses the passthru protocol number blindly
+>    (even if the application issues a DMA command with wrong PIO protocol.)
+>  - checks and warns about multi_count
+>  - ignores t_dir, byte_block and so on.
+
+> Maybe we need a strategy to deal with incorrect passed-thru commands?
+> say,
+>  - check and reject if something wrong
+>  - mimimal check and warn/ignore, if it doesn't hurt command execution
+
+- let the caller use defaults based on command code or override them.
+
+> --
+> albert
+
+MBR, Sergei
