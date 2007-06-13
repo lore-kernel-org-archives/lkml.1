@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbXFMVXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbXFMV0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755591AbXFMVXW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 17:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXFMVXP
+	id S1755587AbXFMV0q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 17:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXFMV0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 17:23:15 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40012 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbXFMVXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 17:23:14 -0400
-Message-ID: <4670602F.9000908@pobox.com>
-Date: Wed, 13 Jun 2007 17:22:55 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Wed, 13 Jun 2007 17:26:40 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:42580 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbXFMV0j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 17:26:39 -0400
+Date: Wed, 13 Jun 2007 17:26:33 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Shane <gnome42@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RT] fix migrating softirq [cause of network hang]
+In-Reply-To: <fa4052ef0706131414o27b2281bp81d3f5b3d3104f87@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0706131723430.20636@gandalf.stny.rr.com>
+References: <fa4052ef0706131414o27b2281bp81d3f5b3d3104f87@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: David Greaves <david@dgreaves.com>, David Chinner <dgc@sgi.com>,
-       Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com> <20070607222813.GG85884050@sgi.com> <4669A965.20403@dgreaves.com> <alpine.LFD.0.98.0706121123550.14121@woody.linux-foundation.org> <466FD214.9070603@dgreaves.com> <alpine.LFD.0.98.0706131344550.14121@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706131344550.14121@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Ok, good. So the bug is apparently in the generic SCSI layer start/stop
-> handling. I'm not entirely surprised, most people would never have 
-> triggered it (I _think_ it's disabled by default for all devices, and that 
-> the libata-scsi.c change was literally the first thing to ever enable it 
-> by default for anything!)
+On Wed, 13 Jun 2007, Shane wrote:
 
+> Hi Steven,
+>
+> I have applied this patch to 2.6.21.4-rt13 and I think it might have
+> solved my bizarre nfs hangage issues that cropped up lately. Thanks
+> for tracking that down it was driving me nutz!
+>
+> It has only been a few hours, but if you don't hear back from me in
+> the next day or so then it's good to go IMVHO. :)
+>
 
-I haven't looked at this yet, but wanted to confirm your assessment 
-here:  libata was indeed the first (and still only?) user of this code path.
+Hi Shane,
 
-Since some SCSI devices may not be owned by the host computer, in the 
-power management sense, we don't want to turn that on for all SCSI 
-devices.  Otherwise you wind up powering off a device in another building :)
+That's great to hear!  Well, if it does go well, could you post to LKML
+and linux-rt mailing lists, as well as CC'ng Ingo. Good news like this
+should be shared ;-)
 
-This is basically the libata suspend/resume path, even though bits touch 
-generic SCSI.
+Heh, even if it doesn't go well, you can post to the above too.
 
-	Jeff
-
+-- Steve
 
