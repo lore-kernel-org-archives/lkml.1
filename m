@@ -1,108 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbXFMRAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbXFMRBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759123AbXFMRAw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 13:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbXFMRAn
+	id S1759384AbXFMRBh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 13:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758429AbXFMRB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 13:00:43 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:52849 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758076AbXFMRAm (ORCPT
+	Wed, 13 Jun 2007 13:01:27 -0400
+Received: from mqa44.m2.home.ne.jp ([220.152.32.185]:61698 "EHLO
+	mqa44.m2.home.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758156AbXFMRB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 13:00:42 -0400
-Date: Wed, 13 Jun 2007 12:57:06 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, snitzer@gmail.com
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-Message-ID: <20070613165706.GF28279@think.oraclecorp.com>
-References: <787b0d920706122245j3a2ff7e8ja611ecf41cc67a4c@mail.gmail.com> <20070613120037.GA28279@think.oraclecorp.com> <787b0d920706130914l676a24cau62525e90a90b5839@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <787b0d920706130914l676a24cau62525e90a90b5839@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Wed, 13 Jun 2007 13:01:26 -0400
+X-Greylist: delayed 14907 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 13:01:25 EDT
+Subject: Re: [patch 1/6] 8139too: force media setting cleanup
+From: Kyuma Ohta <whatisthis@jcom.home.ne.jp>
+To: Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: akpm@linux-foundation.org, leewkb@yahoo.com,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <46560567.5060708@garzik.org>
+References: <200705232134.l4NLYcm2000578@shell0.pdx.osdl.net>
+	 <46560567.5060708@garzik.org>
+Content-Type: text/plain
+Date: Wed, 13 Jun 2007 21:52:56 +0900
+Message-Id: <1181739176.23954.23.camel@melchior>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 12:14:40PM -0400, Albert Cahalan wrote:
-> On 6/13/07, Chris Mason <chris.mason@oracle.com> wrote:
-> >On Wed, Jun 13, 2007 at 01:45:28AM -0400, Albert Cahalan wrote:
+Hi,
+I was testing 2.6.22-rc4 from yesterday,
+but communication speed  of 8139 side is very slower 
+than 2.6.21.* (less than 10kbytes/sec at  
+100MBPS,FULL-DUPLEX).
+I was not test from 2.6.22-rc ,yesterday I started to test 2.6.22-rc.
+
+So, I *must* set HALF-DUPLEX to 8139 side below:
+ethtool -s ethx speed 100 duplex half autoneg on 
+*x is number of 8139 assigned from udev.
+
+So,Pls.apply this patch to upstream,and I test this too.
+
+Best Regards,
+Ohta.
+
+Appendix information:
+archtecture: x86_64
+Main Board : Gigabyte GA-M69P-M3 (rev.1.0?)
+MPU: Athlon 64x2 4600+ (Not overclocked)
+Chipset : nVidia nForce430+GForce 6150 Complex chip
+Memory : PC-5300 2GB (w/shared graphix memory)
+Ether: nForce430 (within complex chip,using forcedeth)
+             Realtec 8139C (+?) (on PCI Slot,using 8139too)
+OS: Debian GNU/Linux "sid" (after "etch",using glibc2.5).
+
+On 2007-05-24 (Thu) 17:36 -0400 , Jeff Garzik Wrote:
+> akpm@linux-foundation.org wrote:
+> > From: Bernard Lee <leewkb@yahoo.com>
+> > 
+> > Setting bit 4 & 5 alone in 8139too module media option does not really
+> > force 100Mbps full-duplex mode.  When media option bit 0-3 is cleared,
+> > 8139too module does not force media setting.  Therefore, bit 0-3 requires
+> > to be set for bit 4 & 5 to take effect.  The hidden bit 0-3 setting is not
+> > stated in module description.
+> > 
+> > It can be fixed by changing rtl8139_private structure default_port bitfield
+> > from 4-bit to 6-bit.
+> > 
+> > Besides, module media bit 9 is a duplicate of bit 4 (full-duplex).  It is
+> > suggested that bit 9 is freed.  A remark is added to module description
+> > that bit 0 can be used to force setting.  It helps to clarify 10Mbps
+> > half-duplex mode.
+> > 
+> > Signed-off-by: Bernard Lee <leewkb@yahoo.com>
+> > Cc: Jeff Garzik <jeff@garzik.org>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > ---
+> > 
+> >  drivers/net/8139too.c |    8 ++++----
+> >  1 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> >> The usual wishlist:
-> >>
-> >> * inode-to-pathnames mapping
-> >
-> >This one I'll code, it will help with inode link count verification.  I
-> >want to be able to detect at run time that an inode with a link count of
-> >zero is still actually in a directory. So there will be back pointers
-> >from the inode to the directory.
+> (re-replying, just to refresh everybody on the status)
 > 
-> Great, but fsck improvement wasn't on my mind. This is
-> a desirable feature for the NFS server, and for regular users.
-> Think about a backup program trying to maintain hard links.
-
-Sure, it'll be there either way ;)
-
+> The status of this patch is HOLD, and has been for months.
 > 
-> >Also, the incremental backup code will be able to walk the btree to find
-> >inodes that have changed, and the backpointers will help make a list of
-> >file names that need to be rsync'd or whatever.
-> >
-> >> * a subvolume that is a single file (disk image, database, etc.)
-> >
-> >subvolumes can be made that have a single file in them, but they have to
-> >be directories right now.  Doing otherwise would complicate mounts and
-> >other management tools (inside the btree, it doesn't really matter).
+> AFAICS this is a behavior change that differs from other Becker-derived 
+> drivers.  I would suggest looking at other drivers.
 > 
-> Bummer. As I understand it, ZFS provides this. :-)
-
-Grin, when the pain of typing cd subvol is btrfs' biggest worry, I'll be
-doing very well.
-
+> Furthermore, people should be using ethtool to set media.  Rather than 
+> changing the behavior of this module parameter to be non-standard, I 
+> feel it is better to (a) leave it as is or (b) remove it completely.
 > 
-> >> * directory indexes to better support Wine and Samba
-> >> * secure delete via destruction of per-file or per-block random crypto 
-> >keys
-> >
-> >I'd rather keep secure delete as a userland problem (or a layered FS
-> >problem).  When you take backups and other copies of the file into
-> >account, it's a bigger problem than btrfs wants to tackle right now.
-> 
-> It can't be a userland problem if you allow disk blocks to move.
-> Volume resizing, logging/journalling, etc. -- they combine to make
-> the userland solution essentially impossible. (one could wipe the
-> whole partition, or maybe fill ALL space on the volume)
+> 	Jeff
 
-Right about here is where I would insert a long story about ecryptfs, or
-encryption solutions that happen all in userland.  At any rate, it is
-outside the scope of v1.0, even though I definitely agree it is an
-important problem for some people.
 
-> >> * atomic creation of copy-on-write directory trees
-> >
-> >Do you mean something more fine grained than the current snapshotting
-> >system?
-> 
-> I believe so. Example: I have a linux-2.6 directory. It's not
-> a mount point or anything special like that. I want to copy
-> it to a new directory called wip, without actually copying
-> all the blocks. To all the normal POSIX API stuff, this copy
-> should look like the result of "cp -a", not hard links.
-
-This would be a snapshot, which has to be done on a subvolume right now.
-It is not as nice as being able to pick a random directory, but I've
-only been able to get this far by limiting the feature scope
-significantly.  What I did do was make subvolumes very cheap...just make
-a bunch of them.
-
-Keep in mind that if you implement a cow directory tree without a
-snapshot, and you don't want to duplicate any blocks in the cow, you're
-going to have fun with inode numbers.
-
--chris
 
