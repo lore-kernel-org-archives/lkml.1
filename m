@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbXFMT1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759608AbXFMT2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759377AbXFMT1y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 15:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbXFMT1a
+	id S1759608AbXFMT2N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 15:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbXFMT1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 15:27:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:61120 "EHLO
+	Wed, 13 Jun 2007 15:27:31 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:61081 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbXFMT12 (ORCPT
+	with ESMTP id S1752563AbXFMT12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 13 Jun 2007 15:27:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=km1KA7oqGbKFMZvScZC7aY8oqFjSLu5du2gNq7a3+2Judqcbyh5JshFgqpWRzmPqE2qvHwCaLfazXC2+iLTspB5y9OJYiduf6f65TEujjjrUiJzF775gqi7bTrHcioWVKRicCc/TB5+BZt06Z02wBzdoTLQJosiXD1LX70Q/JV0=
-Subject: [PATCHSET 2.6.22-rc4-mm2] sysfs: make directory dentries/inodes reclaimable, take#2
-In-Reply-To: 
+        b=k35UZJSzlg7x7MI+YgjlvPASVFM8evMhVFyZpgCYZyZ3gBPF2YVjQjaeLe7JTWO/wjIhaeCCqw6PmCJe9sp6y2CN8YJY8ysxOm9yiLFikF/FBOY4qdZj/n/hzbgEiJsgvD853NtfMeQ1o2q0LKsQ5gqtnO4RQjDh5GdaNOcVXg0=
+Cc: Tejun Heo <htejun@gmail.com>
+Subject: [PATCH 01/11] sysfs: make sysfs_drop_dentry() access inodes using ilookup()
+In-Reply-To: <1181762840495-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
-Date: Thu, 14 Jun 2007 04:27:20 +0900
-Message-Id: <1181762840495-git-send-email-htejun@gmail.com>
+Date: Thu, 14 Jun 2007 04:27:21 +0900
+Message-Id: <11817628414141-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -30,54 +31,118 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset makes directory dentries and inodes reclaimable and is
-consisted of the following eleven patches.
+sysfs_drop_dentry() used to go through sd->s_dentry and
+sd->s_parent->s_dentry to access the inodes.  This is incorrect
+because inode can be cached without dentry.
 
-#01: make-sysfs_drop_dentry-access-inodes-using-ilookup
-#02: rename-sysfs_dirent-s_type-to-s_flags-and-make-room-for-flags
-#03: implement-SYSFS_FLAG_REMOVED-flag
-#04: implement-sysfs_find_dirent-and-sysfs_get_dirent
-#05: make-kobj-point-to-sysfs_dirent-instead-of-dentry
-#06: consolidate-sysfs-spinlocks
-#07: use-sysfs_mutex-to-protect-the-sysfs_dirent-tree
-#08: restructure-add-remove-paths-and-fix-inode-up
-#09: move-sysfs_drop_dentry-to-dir.c-and-make-it-static
-#10: implement-sysfs_get_dentry
-#11: make-directory-dentries-and-inodes-reclaimable
+This patch makes sysfs_drop_dentry() access inodes using ilookup() on
+sd->s_ino.  This is both correct and simpler.
 
-API changes...
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+ fs/sysfs/inode.c |   63 ++++++++++++++++++++++++------------------------------
+ 1 files changed, 28 insertions(+), 35 deletions(-)
 
-* kobj->dentry replaced with kobj->sd as dentry can go away
-* shadowed directory handling functions now take sysfs_dirent instead
-  of dentry
-
-Changes from the last take[L] are...
-
-* #01 added.
-* #02 and #03 splitted from the first patch of the last take.
-* #06 added.  sysfs_lock isn't used as global sysfs_dirent tree lock.
-   merge it with kobj_sysfs_assoc_lock.
-* #07 modified to use sysfs_mutex instead of sysfs_lock to protect
-  sysfs_dirent tree.  This resolves the problem Cornelia was seeing in
-  the last take.
-* #08 and #09 added.  This is primarily to keep the parent inode's
-  timestamps and i_nlink in sync.  Code looks better after the change
-  too.
-
-I'm running stress test for several hours now and things look pretty
-good.  This will save quite some amount of memory on big machines.
-
-This patchset applies on top of 2.6.22-rc4-mm2 or
-
-  current linux-2.6#master (a0e1d1d075cc0efe9a3ac8579bce9393d070e09f)
-+ regenerated sysfs rework patchset (forgot to cc lkml when posting.
-  the end result is practically the same to 2.6.22-rc4-mm2)
-
-Thanks.
-
---
-tejun
-
-[L] http://thread.gmane.org/gmane.linux.kernel/535388
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index ee31bf3..63daa06 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -219,9 +219,9 @@ void sysfs_instantiate(struct dentry *dentry, struct inode *inode)
+  */
+ void sysfs_drop_dentry(struct sysfs_dirent *sd)
+ {
+-	struct dentry *dentry = NULL, *parent = NULL;
+-	struct inode *dir;
++	struct dentry *dentry = NULL;
+ 	struct timespec curtime;
++	struct inode *inode;
+ 
+ 	/* We're not holding a reference to ->s_dentry dentry but the
+ 	 * field will stay valid as long as sysfs_lock is held.
+@@ -229,19 +229,9 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
+ 	spin_lock(&sysfs_lock);
+ 	spin_lock(&dcache_lock);
+ 
++	/* drop dentry if it's there and dput() didn't kill it yet */
+ 	if (sd->s_dentry && sd->s_dentry->d_inode) {
+-		/* get dentry if it's there and dput() didn't kill it yet */
+ 		dentry = dget_locked(sd->s_dentry);
+-		parent = dentry->d_parent;
+-	} else if (sd->s_parent->s_dentry->d_inode) {
+-		/* We need to update the parent even if dentry for the
+-		 * victim itself doesn't exist.
+-		 */
+-		parent = dget_locked(sd->s_parent->s_dentry);
+-	}
+-
+-	/* drop */
+-	if (dentry) {
+ 		spin_lock(&dentry->d_lock);
+ 		__d_drop(dentry);
+ 		spin_unlock(&dentry->d_lock);
+@@ -250,36 +240,39 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
+ 	spin_unlock(&dcache_lock);
+ 	spin_unlock(&sysfs_lock);
+ 
+-	/* nothing to do if the parent isn't in dcache */
+-	if (!parent)
+-		return;
++	dput(dentry);
++	/* XXX: unpin if directory, this will go away soon */
++	if (sd->s_type & SYSFS_DIR)
++		dput(dentry);
+ 
+ 	/* adjust nlink and update timestamp */
+-	dir = parent->d_inode;
+-	mutex_lock(&dir->i_mutex);
+-
+ 	curtime = CURRENT_TIME;
+ 
+-	dir->i_ctime = dir->i_mtime = curtime;
++	inode = ilookup(sysfs_sb, sd->s_ino);
++	if (inode) {
++		mutex_lock(&inode->i_mutex);
+ 
+-	if (dentry) {
+-		dentry->d_inode->i_ctime = curtime;
+-		drop_nlink(dentry->d_inode);
+-		if (sd->s_type & SYSFS_DIR) {
+-			drop_nlink(dentry->d_inode);
+-			drop_nlink(dir);
+-			/* XXX: unpin if directory, this will go away soon */
+-			dput(dentry);
+-		}
++		inode->i_ctime = curtime;
++		drop_nlink(inode);
++		if (sd->s_type & SYSFS_DIR)
++			drop_nlink(inode);
++
++		mutex_unlock(&inode->i_mutex);
++		iput(inode);
+ 	}
+ 
+-	mutex_unlock(&dir->i_mutex);
++	/* adjust nlink and udpate timestamp of the parent */
++	inode = ilookup(sysfs_sb, sd->s_parent->s_ino);
++	if (inode) {
++		mutex_lock(&inode->i_mutex);
+ 
+-	/* bye bye */
+-	if (dentry)
+-		dput(dentry);
+-	else
+-		dput(parent);
++		inode->i_ctime = inode->i_mtime = curtime;
++		if (sd->s_type & SYSFS_DIR)
++			drop_nlink(inode);
++
++		mutex_unlock(&inode->i_mutex);
++		iput(inode);
++	}
+ }
+ 
+ int sysfs_hash_and_remove(struct dentry * dir, const char * name)
+-- 
+1.5.0.3
 
 
