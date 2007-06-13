@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbXFMGH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbXFMGIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbXFMGH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 02:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbXFMGHP
+	id S1756829AbXFMGIo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 02:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXFMGIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 02:07:15 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:59318 "EHLO
+	Wed, 13 Jun 2007 02:08:37 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:59326 "EHLO
 	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009AbXFMGHN (ORCPT
+	with ESMTP id S1754306AbXFMGIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 02:07:13 -0400
-Date: Wed, 13 Jun 2007 16:07:11 +1000
+	Wed, 13 Jun 2007 02:08:36 -0400
+Date: Wed, 13 Jun 2007 16:08:35 +1000
 To: Linux Kernel ML <linux-kernel@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] Add per clocksource hook to settimeofday().
-Message-ID: <20070613060711.GM15955@bakeyournoodle.com>
+Subject: Include hrtimer.h in tick.h.
+Message-ID: <20070613060835.GN15955@bakeyournoodle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,61 +23,30 @@ From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm working on a clocksource implementation for all powerpc platforms.
-some of these platforms needs to do a little work as part of the
-settimeofday() syscall and I can't see a way to do that without adding
-this hook to clocksource.
-
 From: Tony Breeds <tony@bakeyournoodle.com>
 
-Add per clocksource hook to settimeofday().
-
-Some clocksources need to do extra work as part of the settimeofday call, this
-hook make it easy to do so.
+struct tick_shed in tick.h uses struct hrtimer, explictly include the
+hrtimer header file to make sure this is defined.
 
 Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
 ---
 
- include/linux/clocksource.h |    3 +++
- kernel/time/timekeeping.c   |    3 +++
- 2 files changed, 6 insertions(+)
+ include/linux/tick.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-Index: working/include/linux/clocksource.h
+Index: working/include/linux/tick.h
 ===================================================================
---- working.orig/include/linux/clocksource.h
-+++ working/include/linux/clocksource.h
-@@ -50,6 +50,7 @@ struct clocksource;
-  * @flags:		flags describing special properties
-  * @vread:		vsyscall based read
-  * @resume:		resume function for the clocksource, if necessary
-+ * @settimeofday:	[Optional] Do arch specific work during do_settimeofday
-  * @cycle_interval:	Used internally by timekeeping core, please ignore.
-  * @xtime_interval:	Used internally by timekeeping core, please ignore.
-  */
-@@ -68,6 +69,8 @@ struct clocksource {
- 	cycle_t (*vread)(void);
- 	void (*resume)(void);
+--- working.orig/include/linux/tick.h
++++ working/include/linux/tick.h
+@@ -7,6 +7,7 @@
+ #define _LINUX_TICK_H
  
-+	void (*settimeofday)(struct clocksource *cs, struct timespec *ts);
-+
- 	/* timekeeping specific data, ignore */
- 	cycle_t cycle_interval;
- 	u64	xtime_interval;
-Index: working/kernel/time/timekeeping.c
-===================================================================
---- working.orig/kernel/time/timekeeping.c
-+++ working/kernel/time/timekeeping.c
-@@ -151,6 +151,9 @@ int do_settimeofday(struct timespec *tv)
- 	clock->error = 0;
- 	ntp_clear();
+ #include <linux/clockchips.h>
++#include <linux/hrtimer.h>
  
-+	if (clock->settimeofday)
-+		clock->settimeofday(clock, tv);
-+
- 	update_vsyscall(&xtime, clock);
+ #ifdef CONFIG_GENERIC_CLOCKEVENTS
  
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
 
 Yours Tony
 
