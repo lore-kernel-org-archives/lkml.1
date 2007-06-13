@@ -1,122 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbXFMPuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbXFMPvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758611AbXFMPuP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 11:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758268AbXFMPuA
+	id S1758890AbXFMPvc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 11:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758288AbXFMPvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 11:50:00 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:14600 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758263AbXFMPt7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 11:49:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=p9g86NGlrb2cAM/sacNLEvSxEZqwSJz7mvmRdaiuZm9FfPnGwwabKBc+rSo3sdFx1CqnRrAXJKM11RMwM059aFA+DcSxnVQtyi98eiRutno5HFDs/R43+fAo40Bcy5E9fDVOXDvpwhUkvc9hU8ByU+6DXcCeYV0xcOExBawg2fg=
-Message-ID: <a781481a0706130849u2373983eyeab365a8bc90a4dd@mail.gmail.com>
-Date: Wed, 13 Jun 2007 21:19:58 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Keiichi KII" <k-keiichi@bx.jp.nec.com>
-Subject: Re: [RFC][PATCH -mm take5 3/7] add interface for netconsole using sysfs
-Cc: "Matt Mackall" <mpm@selenic.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <466FC6BB.4040105@bx.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 11:51:24 -0400
+Received: from mail.screens.ru ([213.234.233.54]:45549 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758256AbXFMPvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 11:51:23 -0400
+Date: Wed, 13 Jun 2007 19:51:24 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: will_schmidt@vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] [PATCH i386] during VM oom condition, kill all threads in process group
+Message-ID: <20070613155124.GA275@tv-sign.ru>
+References: <20070605174831.21740.33119.stgit@farscape.rchland.ibm.com> <20070607153459.2a1b3230.akpm@linux-foundation.org> <20070607231621.GB32549@kryten> <20070607171018.d51fc5da.akpm@linux-foundation.org> <1181330358.21409.31.camel@farscape.rchland.ibm.com> <20070608123230.520655f5.akpm@linux-foundation.org> <1181337147.21409.42.camel@farscape.rchland.ibm.com> <m1abvarrjq.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <466FC455.5060001@bx.jp.nec.com> <466FC6BB.4040105@bx.jp.nec.com>
+In-Reply-To: <m1abvarrjq.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On 6/13/07, Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
-> From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+On 06/08, Eric W. Biederman wrote:
 >
-> This patch contains the following changes.
->
-> create a sysfs entry for netconsole in /sys/class/misc.
-> This entry has elements related to netconsole as follows.
-> You can change configuration of netconsole(writable attributes such as IP
-> address, port number and so on) and check current configuration of netconsole.
->
-> -+- /sys/class/misc/
->  |-+- netconsole/
->    |-+- port1/
->    | |--- id          [r--r--r--]  unique port id
->    | |--- local_ip    [rw-r--r--]  source IP to use, writable
->    | |--- local_mac   [r--r--r--]  source MAC address
->    | |--- local_port  [rw-r--r--]  source port number for UDP packets, writable
->    | |--- remote_ip   [rw-r--r--]  port number for logging agent, writable
->    | |--- remote_mac  [rw-r--r--]  MAC address for logging agent, writable
->    | ---- remote_port [rw-r--r--]  IP address for logging agent, writable
->    |--- port2/
->    |--- port3/
+> Will Schmidt <will_schmidt@vnet.ibm.com> writes:
+> 
+> > On Fri, 2007-06-08 at 12:32 -0700, Andrew Morton wrote:
+> >> On Fri, 08 Jun 2007 14:19:18 -0500
+> >> Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
+> >> 
+> >> > > > > zap_other_threads() requires tasklist_lock.
+> >> > 
+> >
+> >> In fact, it's probably the case that rcu_read_lock() is now sufficient
+> >> locking coverage for zap_other_threads() (cc's people).
+> >> 
+> >> It had better be, because do_group_exit() forgot to take tasklist_lock.  It
+> >> is perhaps relying upon spin_lock()'s hidden rcu_read_lock() properties
+> >> without so much as a code comment, which would be somewhat nasty of it.
+> >
+> >> You could perhaps just call do_group_exit() from within the fault
+> >> handler,
+> >> btw.
+> >
+> > Yup, so looks like I can actually replace the existing do_exit() call
+> > with do_group_exit().   I'll sit on this for a bit to give other folks a
+> > chance to comment on which lock call is sufficient, read_lock() or
+> > rcu_read_lock(), etc;  and do_group_exit()'s issue with taking
+> > tasklist_lock. 
+> 
+> No.  The rcu_read_lock is not sufficient.
+> Yes.  sighand->siglock is enough, and we explicitly take it in
+> do_group_exit before calling zap_other_threads.
 
-[...]
-> +static int miscdev_configured;
+Yes, we don't need tasklist_lock (or rcu_read_lock).
 
-Is this really required? We just return with error if misc_register()
-fails during module init time itself, so it's not really useful ever, is it?
+de_thread() calls zap_other_threads() under tasklist_lock, but this
+is because we can change child_reaper.
 
-> +static ssize_t show_target_attr(struct kobject *kobj,
-[...]
-> +       if (na->show)
-> +               return na->show(nt, buffer);
-> +       else
-> +               return -EIO;
+Oleg.
 
-and
-
-> +static ssize_t store_target_attr(struct kobject *kobj,
-[...]
-> +       if (na->store)
-> +               return na->store(nt, buffer, count);
-> +       else
-> +               return -EIO;
-
-EIO isn't quite appropriate for the above two cases. EPERM?
-
-> +static int setup_target_sysfs(struct netconsole_target *nt)
-> +{
-> +       kobject_set_name(&nt->obj, "port%d", nt->id);
-
-Ah, I see, so this is where we use the ->id member.
-
-> @@ -192,7 +386,9 @@ static void cleanup_netconsole(void)
->
->         unregister_console(&netconsole);
->         list_for_each_entry_safe(nt, tmp, &target_list, list)
-> -               remove_target(nt);
-> +               kobject_unregister(&nt->obj);
-> +       if (miscdev_configured)
-> +               misc_deregister(&netconsole_miscdev);
-
-Yeah, I suspect we can do away with miscdev_configured here.
-We reach this code only if it is known to be true.
-
-> +       if (misc_register(&netconsole_miscdev)) {
-> +               printk(KERN_ERR
-> +                      "netconsole: failed to register misc device for "
-> +                      "name = %s, id = %d\n",
-> +                      netconsole_miscdev.name, netconsole_miscdev.minor);
-> +               return -EIO;
-> +       } else
-> +               miscdev_configured = 1;
-> +
-
-Please prefer:
-
-err = misc_register(...);
-if (err)
-        ...
-        return err;
-
-That way we avoid the weird EIO and maintain the error code
-returned by misc_register().
-
-Satyam
