@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbXFMECU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbXFME2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbXFMECU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 00:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbXFMECN
+	id S1752611AbXFME2c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 00:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbXFME2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 00:02:13 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:47173 "EHLO
-	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbXFMECL (ORCPT
+	Wed, 13 Jun 2007 00:28:10 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47654 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750814AbXFME2I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 00:02:11 -0400
-Subject: [PATCH]is_power_of_2-hfs/mdb.c
-From: vignesh babu <vignesh.babu@wipro.com>
-Reply-To: vignesh.babu@wipro.com
-To: zippel@linux-m68k.org
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: WIPRO Technologies
-Date: Wed, 13 Jun 2007 09:33:13 +0530
-Message-Id: <1181707393.13391.29.camel@merlin.linuxcoe.com>
+	Wed, 13 Jun 2007 00:28:08 -0400
+Date: Wed, 13 Jun 2007 14:27:58 +1000
+From: David Chinner <dgc@sgi.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: xfs-oss <xfs@oss.sgi.com>
+Subject: [PATCH] Export radix_tree_preload()
+Message-ID: <20070613042758.GJ86004887@sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-X-OriginalArrivalTime: 13 Jun 2007 04:02:12.0703 (UTC) FILETIME=[9F2FBEF0:01C7AD6F]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Replacing (n & (n-1)) in the context of power of 2 checks
-with is_power_of_2
+Upcoming XFS functionality [1] uses radix trees and uses the preload
+functions. XFS can be built as a module and hence we need 
+radix_tree_preload() exported. radix_tree_preload_end() is a
+static inline, so it doesn't need exporting.
 
-Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
---- 
-diff --git a/fs/hfs/mdb.c b/fs/hfs/mdb.c
-index b4651e1..8bda11d 100644
---- a/fs/hfs/mdb.c
-+++ b/fs/hfs/mdb.c
-@@ -11,6 +11,7 @@
- #include <linux/cdrom.h>
- #include <linux/genhd.h>
- #include <linux/nls.h>
-+#include <linux/log2.h>
+[1] http://marc.info/?l=linux-xfs&m=118170839531601&w=2
+
+Signed-Off-By: Dave Chinner <dgc@sgi.com>
+
+---
+ lib/radix-tree.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: 2.6.x-xfs-new/lib/radix-tree.c
+===================================================================
+--- 2.6.x-xfs-new.orig/lib/radix-tree.c	2007-03-29 19:00:53.802804161 +1000
++++ 2.6.x-xfs-new/lib/radix-tree.c	2007-03-29 19:07:10.297495640 +1000
+@@ -151,6 +151,7 @@ int radix_tree_preload(gfp_t gfp_mask)
+ out:
+ 	return ret;
+ }
++EXPORT_SYMBOL(radix_tree_preload);
  
- #include "hfs_fs.h"
- #include "btree.h"
-@@ -106,7 +107,7 @@ int hfs_mdb_get(struct super_block *sb)
- 
- 	size = min(HFS_SB(sb)->alloc_blksz, (u32)PAGE_SIZE);
- 	/* size must be a multiple of 512 */
--	while (size & (size - 1))
-+	while (!is_power_of_2(size))
- 		size -= HFS_SECTOR_SIZE;
- 	sect = be16_to_cpu(mdb->drAlBlSt) + part_start;
- 	/* align block size to first sector */
-
--- 
-Vignesh Babu BM 
-_____________________________________________________________ 
-"Why is it that every time I'm with you, makes me believe in magic?"
-
+ static inline void tag_set(struct radix_tree_node *node, unsigned int tag,
+ 		int offset)
