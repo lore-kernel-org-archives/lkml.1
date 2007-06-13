@@ -1,123 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbXFMWZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757165AbXFMWcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756627AbXFMWZn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 18:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758631AbXFMWZd
+	id S1757165AbXFMWcf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 18:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbXFMWc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 18:25:33 -0400
-Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:1408 "EHLO
-	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758235AbXFMWZc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 18:25:32 -0400
-Date: Wed, 13 Jun 2007 23:25:20 +0100 (BST)
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Dan Aloni <da-x@monatomic.org>,
-       Chad Tindel <ctindel@users.sourceforge.net>,
-       Jay Vosburgh <fubar@us.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       linux-usb-devel@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
-       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
-       Ioan Ionita <opslynx@gmail.com>
-Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
-In-Reply-To: <46704C44.8020602@googlemail.com>
-Message-ID: <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
-References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
+	Wed, 13 Jun 2007 18:32:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37611 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754368AbXFMWc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 18:32:27 -0400
+To: Bernd Paysan <bernd.paysan@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr> <20070612184110.GB7980@kroah.com>
+	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706131402.11396.bernd.paysan@gmx.de>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Wed, 13 Jun 2007 19:31:47 -0300
+In-Reply-To: <200706131402.11396.bernd.paysan@gmx.de> (Bernd Paysan's message of "Wed\, 13 Jun 2007 14\:02\:10 +0200")
+Message-ID: <orsl8vlc4s.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Jun 13, 2007, Bernd Paysan <bernd.paysan@gmx.de> wrote:
 
-The random seg faults on x86_64 is interesting as I have been getting 
-random illegal instruction faults on sparc (sun4c) with 2.6.22-rc3. I have 
-not yet tried to track it down. All I know at present is that it is not a 
-problem on 2.6.20.9.
+> What I don't understand about the GPLv3 with keys is why that depends on the 
+> use case. As user of commercial devices like company routers, firewalls and 
+> such, which often are Linux based, I don't want them sealed by the vendor, 
+> as well. An explicit statement is even worse than an implicit one (as in 
+> the GPLv2, which has been tested in a German court by Harald Welte - 
+> Siemens had to turn in the keys).
 
-Regards
- 	Mark Fortescue.
+My personal guess as to the reasoning behind this decision is that
+consumer devices are the ones that require most attention, mainly
+because the home users are the ones with least (individual) power to
+demand respect for their freedoms.
 
-On Wed, 13 Jun 2007, Michal Piotrowski wrote:
-
-> Hi all,
->
-> Here is a list of some known regressions in 2.6.22-rc4.
->
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
->
->
->
-> Networking
->
-> Subject    : commit 9093bbb2d96d0184f037cea9b4e952a44ebe7c32 broke the 
-> bonding driver
-> References : http://lkml.org/lkml/2007/6/13/65
-> Submitter  : Dan Aloni <da-x@monatomic.org>
-> Handled-By : Stephen Hemminger <shemminger@linux-foundation.org>
-> Status     : Unknown
->
->
->
-> Sparc64
->
-> Subject    : 2.6.22-rc broke X on Ultra5
-> References : http://lkml.org/lkml/2007/5/22/78
-> Submitter  : Mikael Pettersson <mikpe@it.uu.se>
-> Handled-By : David Miller <davem@davemloft.net>
-> Status     : problem is being debugged
->
->
->
-> Suspend
->
-> Subject    : hibernate(?) fails totally - regression
-> References : http://lkml.org/lkml/2007/6/1/401
-> Submitter  : David Greaves <david@dgreaves.com>
-> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
-> Caused-By  : Tejun Heo <htejun@gmail.com>
->            commit 9666f4009c22f6520ac3fb8a19c9e32ab973e828
-> Status     : problem is being debugged
->
->
->
-> TTY
->
-> Subject    : OOPS (NULL pointer dereference) in v2.6.22-rc3
-> References : http://lkml.org/lkml/2007/6/1/389
->            http://bugzilla.kernel.org/show_bug.cgi?id=8473
->            http://bugzilla.kernel.org/show_bug.cgi?id=8574
-> Submitter  : Alex Riesen <raa.lkml@gmail.com>
-> Status     : problem is being debugged
->
->
->
-> x86-64
->
-> Subject    : x86-64 2.6.22-rc2 random segfaults
-> References : http://lkml.org/lkml/2007/5/24/275
-> Submitter  : Ioan Ionita <opslynx@gmail.com>
-> Status     : Unknown
->
->
->
-> Regards,
-> Michal
->
-> -- 
-> LOG
-> http://www.stardust.webpages.pl/log/
-> -
-> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
