@@ -1,175 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbXFMRid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbXFMRp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759299AbXFMRid (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 13:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757625AbXFMRiZ
+	id S1759327AbXFMRp7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 13:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbXFMRpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 13:38:25 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:57894 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757555AbXFMRiY (ORCPT
+	Wed, 13 Jun 2007 13:45:51 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:47806 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757555AbXFMRpu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 13:38:24 -0400
-Date: Wed, 13 Jun 2007 23:07:41 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org,
-       "Natalie.Protasevich@unisys.com" <Natalie.Protasevich@unisys.com>,
-       akpm@linux-foundation.org
-Subject: Re: CONFIG_X86_ES7000=y, CONFIG_X86_GENERICARCH=n, CONFIG_ACPI=y build broken
-Message-ID: <20070613173741.GA23618@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <adad5017zpt.fsf@cisco.com>
+	Wed, 13 Jun 2007 13:45:50 -0400
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+From: holzheu <holzheu@linux.vnet.ibm.com>
+Reply-To: holzheu@linux.vnet.ibm.com
+To: Dave Hansen <hansendc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, akpm@osdl.org,
+       gregkh@suse.de, mtk-manpages@gmx.net, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com
+In-Reply-To: <1181752649.15815.68.camel@spirit>
+References: <1181747217.29512.9.camel@localhost.localdomain>
+	 <1181752649.15815.68.camel@spirit>
+Content-Type: text/plain
+Organization: IBM
+Date: Wed, 13 Jun 2007 19:42:16 +0200
+Message-Id: <1181756536.29512.45.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adad5017zpt.fsf@cisco.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 12:13:50PM -0700, Roland Dreier wrote:
-> (sending to Vivek since he seems to be one of the last people to touch
-> this code)
+Hi Dave,
+
+On Wed, 2007-06-13 at 09:37 -0700, Dave Hansen wrote:
+
+[snip]
+
+> I'm not sure we want to make Linux more like z/* in this regard. :)
 > 
-> For some strange reason I found myself compiling a kernel with
-> CONFIG_X86_ES7000 and CONFIG_ACPI set and CONFIG_X86_GENERICARCH not
-> set.  It died with
-> 
->     arch/i386/kernel/built-in.o: In function `acpi_parse_madt':
->     boot.c:(.init.text+0x68b7): undefined reference to `acpi_madt_oem_check'
->     arch/i386/kernel/built-in.o: In function `get_smp_config':
->     (.init.text+0x9f98): undefined reference to `mps_oem_check'
->     arch/i386/kernel/built-in.o: In function `connect_bsp_APIC':
->     (.init.text+0xa340): undefined reference to `enable_apic_mode'
->     arch/i386/kernel/built-in.o: In function `connect_bsp_APIC':
->     (.init.text+0xa370): undefined reference to `enable_apic_mode'
-> 
-> this seems to be because eg acpi_madt_oem_check() and mps_oem_check()
-> are defined in arch/i386/mach-generic/es7000.c, but arch/i386/Makefile
-> only goes into mach-generic if CONFIG_X86_GENERICARCH is set.
-> I didn't track down why enable_apic_mode is broken yet.
->
+> The problem with your proposal is that every time a new message in the
+> kernel is created or modified, you need somebody to go update that
+> documentation.
 
-Hi Roland,
+You only have to document printks, which are using the KMSG macros.
+Since there are tons of self-explaining printks, most of them do not
+have to use them.
 
-Can you please try the attached patch? I have compiled it with CONFIG_ES7000=y
-and CONFIG_X86_GENERICARCH=n. But don't have any ES7000 machine to test it.
+If you change the meaning of a KMSG printk and you don't update the
+documentation, it is the same thing like changing a kernel API function
+and forgetting to update the kernel-doc comment.
 
-I have compiled and booted the kernel on my machine with CONFIG_X86_GENERICARCH=y.
+> It's going to get out-of-sync very fast if this isn't
+> done, and you either need to convince and teach each and every kernel
+> contributor to follow your lead, or have a team of highly trained code
+> monkeys to watch git-commits and resubmit documentation for every diff
+> that touches a printk. 
 
-Subarch build procedure is not straightforward and this patch adds to the
-misery. Please suggest if there is a better way of handling things.
+It is a matter of discipline. If a device driver maintainer decides to
+document some messages using the KMSG macros, he has to take care that
+the documentation is up-to-date. Since the printks and the descriptions
+are maintained together in the kernel code, I think, that's doable. 
 
- 
+And the checker tool can help to keep the descriptions up-to-date, since
+it produces warnings, if you use C=1 during the kernel build.
 
-o Commit 1833d6bc72893265f22addd79cf52e6987496e0f broke the build if
-  compiled with CONFIG_ES7000=y and CONFIG_X86_GENERICARCH=n
+> I think it's a great idea to go and update some of these obtuse kernel
+> messages with more understandable wording.  It might even be nice to
+> update the Documentation/ about what kinds of messages are good or bad
+> to have.  But, I just don't think this is viable to convince everybody
+> to do this.
 
-o Fix the build issue. Provided the definitions of missing functions.
+Again, not everybody has to use KMSG printks.
 
+> Do you have a list of printks that are causing your
+> customers trouble?
 
-Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
----
+There are quite a lot of messages in our s390 device drivers which
+should be documented. Especially for character device drivers (e.g.
+tape), where the user has direct interaction with the device.
 
- linux-2.6.22-rc4-git4-vivek/arch/i386/mach-es7000/es7000plat.c          |   48 ++++++++++
- linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_apic.h    |    4 
- linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_mpparse.h |    6 +
- 3 files changed, 58 insertions(+)
+One Example from the tape device driver: "Another host has reserved the
+tape device"
 
-diff -puN arch/i386/mach-es7000/es7000plat.c~i386-es7000-build-breakage-fix arch/i386/mach-es7000/es7000plat.c
---- linux-2.6.22-rc4-git4/arch/i386/mach-es7000/es7000plat.c~i386-es7000-build-breakage-fix	2007-06-13 22:52:14.000000000 +0530
-+++ linux-2.6.22-rc4-git4-vivek/arch/i386/mach-es7000/es7000plat.c	2007-06-13 22:53:03.000000000 +0530
-@@ -40,6 +40,7 @@
- #include <asm/smp.h>
- #include <asm/apicdef.h>
- #include "es7000.h"
-+#include <mach_mpparse.h>
- 
- /*
-  * ES7000 Globals
-@@ -174,6 +175,53 @@ find_unisys_acpi_oem_table(unsigned long
- }
- #endif
- 
-+/*
-+ * This file also gets compiled if CONFIG_X86_GENERICARCH is set. Generic
-+ * arch already has got following function definitions (asm-generic/es7000.c)
-+ * hence no need to define these for that case.
-+ */
-+#ifndef CONFIG_X86_GENERICARCH
-+void es7000_sw_apic(void);
-+void __init enable_apic_mode(void)
-+{
-+	es7000_sw_apic();
-+	return;
-+}
-+
-+__init int mps_oem_check(struct mp_config_table *mpc, char *oem,
-+		char *productid)
-+{
-+	if (mpc->mpc_oemptr) {
-+		struct mp_config_oemtable *oem_table =
-+			(struct mp_config_oemtable *)mpc->mpc_oemptr;
-+		if (!strncmp(oem, "UNISYS", 6))
-+			return parse_unisys_oem((char *)oem_table);
-+	}
-+	return 0;
-+}
-+#ifdef CONFIG_ACPI
-+/* Hook from generic ACPI tables.c */
-+int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+{
-+	unsigned long oem_addr;
-+	if (!find_unisys_acpi_oem_table(&oem_addr)) {
-+		if (es7000_check_dsdt())
-+			return parse_unisys_oem((char *)oem_addr);
-+		else {
-+			setup_unisys();
-+			return 1;
-+		}
-+	}
-+	return 0;
-+}
-+#else
-+int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+{
-+	return 0;
-+}
-+#endif
-+#endif /* COFIG_X86_GENERICARCH */
-+
- static void
- es7000_spin(int n)
- {
-diff -puN include/asm-i386/mach-es7000/mach_apic.h~i386-es7000-build-breakage-fix include/asm-i386/mach-es7000/mach_apic.h
---- linux-2.6.22-rc4-git4/include/asm-i386/mach-es7000/mach_apic.h~i386-es7000-build-breakage-fix	2007-06-13 22:52:14.000000000 +0530
-+++ linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_apic.h	2007-06-13 22:52:14.000000000 +0530
-@@ -73,6 +73,10 @@ static inline void init_apic_ldr(void)
- 	apic_write_around(APIC_LDR, val);
- }
- 
-+#ifndef CONFIG_X86_GENERICARCH
-+extern void enable_apic_mode(void);
-+#endif
-+
- extern int apic_version [MAX_APICS];
- static inline void setup_apic_routing(void)
- {
-diff -puN include/asm-i386/mach-es7000/mach_mpparse.h~i386-es7000-build-breakage-fix include/asm-i386/mach-es7000/mach_mpparse.h
---- linux-2.6.22-rc4-git4/include/asm-i386/mach-es7000/mach_mpparse.h~i386-es7000-build-breakage-fix	2007-06-13 22:52:14.000000000 +0530
-+++ linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_mpparse.h	2007-06-13 22:52:14.000000000 +0530
-@@ -18,6 +18,12 @@ extern int parse_unisys_oem (char *oempt
- extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
- extern void setup_unisys(void);
- 
-+#ifndef CONFIG_X86_GENERICARCH
-+extern int acpi_madt_oem_check(char *oem_id, char *oem_table_id);
-+extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
-+				char *productid);
-+#endif
-+
- #ifdef CONFIG_ACPI
- 
- static inline int es7000_check_dsdt(void)
-_
+We should document, how to find out the host, which reserved the tape
+and what has to be done on the other host in order to release the tape
+etc.
+
+> Does every printk need one of these?  What do we do with the existing
+> printks?
+
+Again: Most printks don't need documentation. We can leave them as they
+are.
+
+> Who will convert them over?  How do we enforce the rules if
+> new printks must have documentation written for them?  Who writes the
+> documentation if the printk author does not?
+
+The maintainer of the component (e.g. device driver) is responsible for
+the KMSG printks. If he accepts a patch, which modifies KMSG printks, he
+has to take care, that the patch also updates the KMSG_DOC part.
+
+> If we have a catalog of kernel messages, it obviously needs to be
+> versioned, but does that mean that we need to keep it in the kernel
+> tree?
+
+For each kernel a separate message catalog can be automatically created.
+This message catalog fits exactly to one kernel and should be installed
+together with the kernel.
+
+Michael
+
