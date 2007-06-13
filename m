@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbXFMQhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759418AbXFMQi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758870AbXFMQhg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 12:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758268AbXFMQhZ
+	id S1759418AbXFMQi3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 12:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbXFMQiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 12:37:25 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37584 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752012AbXFMQhY (ORCPT
+	Wed, 13 Jun 2007 12:38:20 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:20405 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758405AbXFMQiT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 12:37:24 -0400
-Date: Wed, 13 Jun 2007 09:36:31 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix race condition about network device name allocation
-Message-ID: <20070613093631.42a45916@localhost>
-In-Reply-To: <20070613094521.GA8860@localdomain>
-References: <1178862045.3979.33.camel@kane-linux>
-	<20070511092519.1f34ab34@freepuppy>
-	<1179130660.3881.23.camel@kane-linux>
-	<20070514085840.17a343f7@freepuppy>
-	<20070613094521.GA8860@localdomain>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 12:38:19 -0400
+Date: Wed, 13 Jun 2007 12:34:05 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: John Stoffel <john@stoffel.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+Message-ID: <20070613163405.GE28279@think.oraclecorp.com>
+References: <20070612161029.GB28279@think.oraclecorp.com> <18031.26764.586958.632146@stoffel.org> <20070613103522.GW28279@think.oraclecorp.com> <18031.63640.103936.137412@stoffel.org> <20070613145442.GC28279@think.oraclecorp.com> <18032.5991.475110.794691@stoffel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18032.5991.475110.794691@stoffel.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jun 2007 12:45:21 +0300
-Dan Aloni <da-x@monatomic.org> wrote:
+On Wed, Jun 13, 2007 at 12:12:23PM -0400, John Stoffel wrote:
+> >>>>> "Chris" == Chris Mason <chris.mason@oracle.com> writes:
 
-> On Mon, May 14, 2007 at 08:58:40AM -0700, Stephen Hemminger wrote:
-> > Kenji Kaneshige found this race between device removal and
-> > registration.  On unregister it is possible for the old device to
-> > exist, because sysfs file is still open.  A new device with 'eth%d'
-> > will select the same name, but sysfs kobject register will fial.
-> > 
-> > The following changes the shutdown order slightly. It hold a removes the sysfs
-> > entries earlier (on unregister_netdevice), but holds a kobject reference.
-> > Then when todo runs the actual last put free happens.
-> > 
-> > Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-> 
-> That patch breaks the bonding driver. After reverting it I avoid this crash:
-> 
-> <6>[1115260.637351] Ethernet Channel Bonding Driver: v3.1.2 (January 20, 2007)
-> <6>[1115260.637358] bonding: MII link monitoring set to 100 ms
-> <6>[1115260.637767] bonding: bond0 is being deleted...
-> <1>[1115260.695812] Unable to handle kernel NULL pointer dereference at 0000000000000020 RIP: 
-> <1>[1115260.701504]  [<ffffffff802805e2>] __lookup_hash+0x22/0x150
-> <6>[1115260.709754] PGD 798bf067 PUD 798c4067 PMD 0 
-> <0>[1115260.714394] Oops: 0000 [1] SMP 
-> [1]kdb> 
-> [1]kdb> btc
-> btc: cpu status: Currently on cpu 1
-> Available cpus: 0(I), 1
-> Stack traceback for pid 0
-> 0xffffffff80585420        0        0  1    0   I  0xffffffff80585710  swapper
-> rsp                rip                Function (args)
-> 0xffffffff8066feb0 0xffffffff8046783f thread_return+0x5e
-> 0xffffffff8066fec0 0xffffffff80469df9 _spin_unlock_irq+0x9
-> 0xffffffff8066ff28 0xffffffff80209176 mwait_idle+0x46
-> 0xffffffff8066ff50 0xffffffff802088e2 enter_idle+0x22
-> 0xffffffff8066ff60 0xffffffff802090bc cpu_idle+0x5c
-> 0xffffffff8066ff80 0xffffffff80207146 rest_init+0x26
-> 0xffffffff8066ff90 0xffffffff80678c1a start_kernel+0x2ea
-> 0xffffffff8066ffc0 0xffffffff8067815f _sinittext+0x15f
-> Stack traceback for pid 66
-> 0xffff81006a411850       66        1  1    1   R  0xffff81006a411b40 *platform_node
-> rsp                rip                Function (args)
-> 0xffff81006a46dd98 0xffffffff802805e2 __lookup_hash+0x22
-> 0xffff81006a46de00 0xffffffff80280cba lookup_one_len+0x9a
-> 0xffff81006a46de20 0xffffffff802be671 sysfs_remove_group+0x31
-> 0xffff81006a46de50 0xffffffff8800fe4a [bonding]bond_destroy_sysfs_entry+0x1a
-> 0xffff81006a46de60 0xffffffff88011974 [bonding]bonding_store_bonds+0x214
-> 0xffff81006a46deb0 0xffffffff8037c9d4 class_attr_store+0x24
-> [1]more> 
-> 0xffff81006a46dec0 0xffffffff802bbe30 sysfs_write_file+0x100
-> 0xffff81006a46df10 0xffffffff80277d7e vfs_write+0xbe
-> 0xffff81006a46df40 0xffffffff80278400 sys_write+0x50
-> 0xffff81006a46df80 0xffffffff80209e6e system_call+0x7e
-> 
+[ nod ]
 
-I assume this happens when bonded slave device is removed?
-Which kernel version?
+> Also, I think you're wrong here when you state that making a snapshot
+> (sub-volume?) RO just requires you to set the quota to 1 block.  What
+> is to stop me from writing 1 block to a random file that already
+> exists?  
+
+It's copy on write, so changing one block means allocating a new one and
+putting the new contents there.  The old blocks don't become available
+for reuse until the transaction commits.
+
+-chris
+
