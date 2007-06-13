@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbXFMTiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbXFMTkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbXFMTiP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 15:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbXFMTh7
+	id S1759340AbXFMTkA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 15:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbXFMTju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 15:37:59 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:63094 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752594AbXFMTh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 15:37:58 -0400
-Subject: Re: [RFC] TOMOYO Linux
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Toshiharu Harada <haradats@gmail.com>
-Cc: Toshiharu Harada <haradats@nttdata.co.jp>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <9d732d950706130722g12a22604p223381a8e281a4a1@mail.gmail.com>
-References: <466FA71C.1020309@nttdata.co.jp>
-	 <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
-	 <9d732d950706130722g12a22604p223381a8e281a4a1@mail.gmail.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 13 Jun 2007 15:37:46 -0400
-Message-Id: <1181763466.17547.502.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 13 Jun 2007 15:39:50 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38834 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752401AbXFMTjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 15:39:49 -0400
+Message-ID: <46704801.1070107@garzik.org>
+Date: Wed, 13 Jun 2007 15:39:45 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: bryan.wu@analog.com
+CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Blackfin ethernet driver: on chip ethernet MAC controller
+ driver
+References: <1179912533.10328.26.camel@roc-desktop>
+In-Reply-To: <1179912533.10328.26.camel@roc-desktop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 23:22 +0900, Toshiharu Harada wrote:
-> 2007/6/13, Stephen Smalley <sds@tycho.nsa.gov>:
-> > On Wed, 2007-06-13 at 17:13 +0900, Toshiharu Harada wrote:
-> > > Here are examples:
-> > > /bin/bash process invoked from mingetty: /sbin/mingetty /bin/bash
-> > > /bin/bash process invoked from sshd: /usr/sbin/sshd /bin/bash
-> > > /bin/bash process invoked from /bin/bash which was invoked from sshd: /usr/sbin/sshd /bin/bash /bin/bash
-> >
-> > Why can't you do this via SELinux domain transitions?  That lets you do
-> > it by equivalence class rather than per-binary, and let's you just
-> > encode the security-relevant parts of the "invocation history" aka call
-> > chain.  For example, the above could be expressed in SELinux policy
-> > already as:
-> >         domain_auto_trans(getty_t, shell_exec_t, local_shell_t)
-> >         domain_auto_trans(sshd_t, shell_exec_t, remote_shell_t)
-> >         domain_auto_trans(remote_shell_t, shell_exec_t, remote_subshell_t)
-> > or whatever you like.  But you don't have to keep extending it
-> > indefinitely when you don't need to distinguish in policy, so you might
-> > choose to entirely omit the last one, and just have it stay in
-> > remote_shell_t.
+Bryan Wu wrote:
+> From: "Wu, Bryan" <bryan.wu@analog.com>
 > 
-> The above SELinux policy looks similar to the one I wrote, but
-> that is not very true.  Because in my example, path name corresponds to a file
-> while local_shell_t are bound to multiple.
-> I understand the advantages of label, but it needs to be
-> translated to human understandable form of path name.
-> So I think pathname based call chains are advantages for
-> at least auditing and profiling.
+> This patch implements the driver necessary use the Analog Devices
+> Blackfin processor's on-chip ethernet MAC controller.
+> 
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> Cc: Jeff Garzik <jeff@garzik.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  drivers/net/Kconfig    |   44 +
+>  drivers/net/Makefile   |    1 
+>  drivers/net/bfin_mac.c |  981 +++++++++++++++++++++++++++++++++++++++
+>  drivers/net/bfin_mac.h |  147 +++++
+>  4 files changed, 1173 insertions(+)
 
-Well, not to get into a debate, but think about whether
-"/usr/sbin/sshd /bin/bash" and "/sbin/mingetty /bin/bash" is more
-understandable to an administrator than "remote shell" vs. "local shell"
-- the label-based approach lets you map the low-level detail of
-individual programs/pathnames to abstract equivalence classes that are
-more understandable, not less.  Further, think about the advantages of
-being able to encode only the security-relevant invocations, not all of
-them.
+Finally got back to this.  Please run this patch through 
+scripts/checkpatch.pl (found in latest linux-2.6.git upstream kernel 
+tree), and follow most of the recommendations.
 
-On a different note, from a quick look, it looks like TOMOYO is AppArmor
-+ invocation history from a user perspective.  Plus a wider range of
-controls in your original implementation, but your LSM implementation
-seems to be just getting started and only deals with files.  So what's
-the case for having a whole separate security module vs. a small
-extension to AppArmor?
+Personally I would ignore the lines slightly over 80 columns, but the 
+other warnings look like real issues.
 
--- 
-Stephen Smalley
-National Security Agency
+	Jeff
+
+
 
