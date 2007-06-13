@@ -1,55 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759733AbXFMRSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759832AbXFMRXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759733AbXFMRSO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 13:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758945AbXFMRR6
+	id S1759832AbXFMRXb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 13:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759180AbXFMRXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 13:17:58 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:5080 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758938AbXFMRR5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 13:17:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Pv6fzZo5J8VFIrkW9mt3P4C0ObxQz+4M1pGGTuszn6SYNtyaMgXL06Juo/RPG9MhbunDWTZMvI7C12ThuOkAsEexQ/KnTVeGul1JTTROorGf8MjdxsKqhhapMgHawnsJ+C+izzLdZ2j2uLQhgOTDeRDjjMqCybxNlvlg9mnFaj0=
-Message-ID: <a781481a0706131017k368b6388n524cc2d3801be861@mail.gmail.com>
-Date: Wed, 13 Jun 2007 22:47:56 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Keiichi KII" <k-keiichi@bx.jp.nec.com>
-Subject: Re: [RFC][PATCH -mm take5 7/7] update documentation
-Cc: "Matt Mackall" <mpm@selenic.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <466FC79F.7090805@bx.jp.nec.com>
+	Wed, 13 Jun 2007 13:23:22 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:44497 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759112AbXFMRXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 13:23:21 -0400
+Message-ID: <4670285C.6070505@drzeus.cx>
+Date: Wed, 13 Jun 2007 19:24:44 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] MMC updates
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466FC455.5060001@bx.jp.nec.com> <466FC79F.7090805@bx.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Linus, please pull from
 
-On 6/13/07, Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
-> From: Keiichi KII <k-keiichi@bx.jp.nec.com>
->
-> update Documentation/networking/netconsole.txt
->  - how to use sysfs for dynamic configurability
->  - how to use ioctl for dynamic configurability
->
-> Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
+        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
 
-Ah, so here comes the documentation :-) Actually, I've seen a lot
-of patchsets these days that prefer to submit the documentation
-patch in the beginning, so that a reader / reviewer can get ready
-about what to expect from the code.
+to receive the following updates:
 
-Anyway, I really liked your submission. It makes netconsole
-quite flexible and powerful, indeed.
+ drivers/mmc/core/sd.c   |   15 +++++++++++++++
+ drivers/mmc/host/omap.c |   24 +++---------------------
+ 2 files changed, 18 insertions(+), 21 deletions(-)
 
-Thanks,
-Satyam
+Pierre Ossman (1):
+      mmc: get back read-only switch function
+
+Ragner Magalhaes (1):
+      mmc-omap: fix sd response type 6 vs. 1
+
+diff --git a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
+index 41bfb5d..918477c 100644
+--- a/drivers/mmc/core/sd.c
++++ b/drivers/mmc/core/sd.c
+@@ -427,6 +427,21 @@ static int mmc_sd_init_card(struct mmc_host *host, u32 ocr,
+                mmc_set_bus_width(host, MMC_BUS_WIDTH_4);
+        }
+
++       /*
++        * Check if read-only switch is active.
++        */
++       if (!oldcard) {
++               if (!host->ops->get_ro) {
++                       printk(KERN_WARNING "%s: host does not "
++                               "support reading read-only "
++                               "switch. assuming write-enable.\n",
++                               mmc_hostname(host));
++               } else {
++                       if (host->ops->get_ro(host))
++                               mmc_card_set_readonly(card);
++               }
++       }
++
+        if (!oldcard)
+                host->card = card;
+
+diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
+index 1914e65..b0824a3 100644
+--- a/drivers/mmc/host/omap.c
++++ b/drivers/mmc/host/omap.c
+@@ -522,28 +522,10 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+                }
+
+                if (status & OMAP_MMC_STAT_CARD_ERR) {
+-                       if (host->cmd && host->cmd->opcode ==
+MMC_STOP_TRANSMISSION) {
+-                               u32 response = OMAP_MMC_READ(host, RSP6)
+-                                       | (OMAP_MMC_READ(host, RSP7) << 16);
+-                               /* STOP sometimes sets must-ignore bits */
+-                               if (!(response & (R1_CC_ERROR
+-                                                               | R1_ILLEGAL_COMMAND
+-                                                               |
+R1_COM_CRC_ERROR))) {
+-                                       end_command = 1;
+-                                       continue;
+-                               }
+-                       }
+-
+-                       dev_dbg(mmc_dev(host->mmc), "card status error (CMD%d)\n",
++                       dev_dbg(mmc_dev(host->mmc),
++                               "ignoring card status error (CMD%d)\n",
+                                host->cmd->opcode);
+-                       if (host->cmd) {
+-                               host->cmd->error = MMC_ERR_FAILED;
+-                               end_command = 1;
+-                       }
+-                       if (host->data) {
+-                               host->data->error = MMC_ERR_FAILED;
+-                               transfer_error = 1;
+-                       }
++                       end_command = 1;
+                }
+
+                /*
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
