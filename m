@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759381AbXFMQUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759277AbXFMQYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759381AbXFMQUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 12:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbXFMQUg
+	id S1759277AbXFMQYm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 12:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758569AbXFMQYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 12:20:36 -0400
-Received: from mail.transmode.se ([83.241.175.147]:50039 "EHLO
-	tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758074AbXFMQUf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 12:20:35 -0400
-X-Greylist: delayed 862 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 12:20:35 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6619.12
+	Wed, 13 Jun 2007 12:24:34 -0400
+Received: from alpha.lp.pl ([194.1.144.4]:50571 "EHLO alpha.polcom.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758484AbXFMQYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 12:24:33 -0400
+Date: Wed, 13 Jun 2007 18:25:08 +0200 (CEST)
+From: Grzegorz Kulewski <kangur@polcom.net>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+In-Reply-To: <20070613145442.GC28279@think.oraclecorp.com>
+Message-ID: <Pine.LNX.4.63.0706131818120.9760@alpha.polcom.net>
+References: <20070612161029.GB28279@think.oraclecorp.com>
+ <18031.26764.586958.632146@stoffel.org> <20070613103522.GW28279@think.oraclecorp.com>
+ <18031.63640.103936.137412@stoffel.org> <20070613145442.GC28279@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Organization: Transmode AB
-X-Mailer: Evolution 2.8.3 
-In-Reply-To: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
-content-class: urn:content-classes:message
-Subject: Re: [PATCH] PHY fixed driver: rework release path and updatephy_id notation
-Date: Wed, 13 Jun 2007 18:06:10 +0200
-Message-ID: <1181750769.30670.304.camel@gentoo-jocke.transmode.se>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] PHY fixed driver: rework release path and updatephy_id notation
-Thread-Index: Acet1MHjFur9/NHbSr+TfI/5EA1M1A==
-References: <20070609162118.2680.99019.stgit@ACA800FC.ipt.aol.com>
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "Vitaly Bordug" <vitb@kernel.crashing.org>
-Cc: "Jeff Garzik" <jeff@garzik.org>, <linuxppc-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Reply-To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-06-09 at 20:21 +0400, Vitaly Bordug wrote:
-> device_bind_driver() error code returning has been fixed. 
-> release() function has been written, so that to free resources
-> in correct way; the release path is now clean.
-> 
-> Before the rework, it used to cause
->  Device 'fixed@100:1' does not have a release() function, it is broken
->  and must be fixed.
->  BUG: at drivers/base/core.c:104 device_release()
->  
->  Call Trace:  
->   [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
->   [<ffffffff802ec3ab>] kobject_release+0x0/0x9
->   [<ffffffff802ecf3f>] kref_put+0x74/0x81
->   [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
->   [<ffffffff80564d31>] fixed_init+0x1f/0x35
->   [<ffffffff802071a4>] init+0x147/0x2fb
->   [<ffffffff80223b6e>] schedule_tail+0x36/0x92
->   [<ffffffff8020a678>] child_rip+0xa/0x12
->   [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
->   [<ffffffff8020705d>] init+0x0/0x2fb
->   [<ffffffff8020a66e>] child_rip+0x0/0x12  
-> 
-> 
-> Also changed the notation of the fixed phy definition on
-> mdio bus to the form of <speed>+<duplex> to make it able to be used by
-> gianfar and ucc_geth that define phy_id strictly as "%d:%d"
-> 
-> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+On Wed, 13 Jun 2007, Chris Mason wrote:
+> But, I'm not planning on adding a way to say user X in subvolume Y has
+> quota Z.  I'll just be: this subvolume can't get bigger than a given
+> size.  (at least for version 1.0).
 
-Hi Vitaly
+I am affraid that this one is a major stopper for any production usage. 
+Think about OpenVZ (or similar) VPSes. Of course having each VPS in own 
+subvolume on the same device and being able to limit each subvolume is 
+more than cool but on the other hand admin in VPS really needs to be able 
+to set normal quotas for his users.
 
-I am about to test this but I am having trouble figuring out how to
-make ucc_geth find this PHY. Need some hints/template what to write
-in the dts or board init code.
+Other than that your project looks really good and interesting.
 
-Also, I need several fixed PHYs, maybe you should export
-fixed_mdio_register_device() ?
+I also wonder if it is (would be) possible to set per-tree quotas like 
+this:
 
- Jocke
+/a     - 20GB
+/a/b   - 10GB
+/a/b/c -  2GB
+/a/d   -  5GB
+/e     - 30GB
+
+meaning that whole subtree under /a is limited to 20GB, whole tree under 
+/a/b is limited to both 20GB of /a and also by 10GB of /a/b, tree under 
+/a/b/c is limited by 20GB of /a, 10GB of /a/b and 2GB of /a/b/c and 
+so on? Or only /a and /e could be limited?
 
 
+Thanks,
+
+Grzegorz Kulewski
