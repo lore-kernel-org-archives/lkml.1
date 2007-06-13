@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbXFMNwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbXFMOCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759140AbXFMNwJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 09:52:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757464AbXFMNvb
+	id S1758123AbXFMOCd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 10:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756269AbXFMOCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 09:51:31 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:45813 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754887AbXFMNva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 09:51:30 -0400
-Message-ID: <381742680.20643@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070613134902.132573123@mail.ustc.edu.cn>
-User-Agent: quilt/0.45-1
-Date: Wed, 13 Jun 2007 21:49:02 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] ondemand readahead simplifications
+	Wed, 13 Jun 2007 10:02:23 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:63842 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755787AbXFMOCW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 10:02:22 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18031.63640.103936.137412@stoffel.org>
+Date: Wed, 13 Jun 2007 10:00:56 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+In-Reply-To: <20070613103522.GW28279@think.oraclecorp.com>
+References: <20070612161029.GB28279@think.oraclecorp.com>
+	<18031.26764.586958.632146@stoffel.org>
+	<20070613103522.GW28279@think.oraclecorp.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+>>>>> "Chris" == Chris Mason <chris.mason@oracle.com> writes:
 
-These two patches makes the interface and data structure of ondemand readahead
-more clear:
+>> So, can you resize a filesystem both bigger and smaller?  Or is that
+>> implicit in the Object level mirroring and striping?  
 
-diffstat:
- fs/ext3/dir.c      |    4 -
- fs/ext4/dir.c      |    4 -
- fs/splice.c        |    6 -
- include/linux/fs.h |   61 +--------------
- include/linux/mm.h |   20 +++--
- mm/filemap.c       |   10 +-
- mm/readahead.c     |  165 +++++++++++++++++++++----------------------
- 7 files changed, 116 insertions(+), 154 deletions(-)
+Chris> Growing the FS is just either extending or adding a new extent
+Chris> tree.  Shrinking is more complex.  The extent trees do have
+Chris> back pointers to the objectids that own the extent, but
+Chris> snapshotting makes that a little non-deterministic.  The good
+Chris> news is there are no fixed locations for any of the metadata.
+Chris> So it is at least possible to shrink and pop out arbitrary
+Chris> chunks.
 
-Regards,
-Fengguang
+That's good to know.  Being able to grow (online of course!) is great,
+but so would shrinking as well.   It makes life so much more flexible
+for the SysAdmins, which is my particular focus... since it's my day
+job. 
+
+>> As a user of Netapps, having quotas (if only for reporting purposes)
+>> and some way to migrate non-used files to slower/cheaper storage would
+>> be great.
+
+Chris> So far, I'm not planning quotas beyond the subvolume level.
+
+So let me get this straight.  Are you saying that quotas would only be
+on the volume level, and for the initial level of sub-volumes below
+that level?  Or would *all* sub-volumes have quota support?  And does
+that include snapshots as well?
+
+>> Ie. being able to setup two pools, one being RAID6, the other being
+>> RAID1, where all currently accessed files are in the RAID1 setup, but
+>> if un-used get migrated to the RAID6 area.  
+
+Chris> HSM in general is definitely interesting.  I'm afraid it is a
+Chris> long ways off, but it could be integrated into the scrubber
+Chris> that wanders the trees in the background.
+
+Neat.  As long as the idea is kept around a bit, that would be nice
+for an eventual addition.  Or maybe someone needs to come up with a
+stackable filesystems to take care of this...
+
+John
+
