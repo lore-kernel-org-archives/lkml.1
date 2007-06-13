@@ -1,189 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbXFMOYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbXFMO3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758339AbXFMOYr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 10:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbXFMOYk
+	id S1758079AbXFMO3K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 10:29:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbXFMO26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 10:24:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59957 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751618AbXFMOYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 10:24:39 -0400
-X-Authenticated: #153925
-X-Provags-ID: V01U2FsdGVkX19k6ypIvcBkyy+NTKCYuG8K7d8jgq5sZa+GoQU5WC
-	ux7WGavWNbdz46
-From: Bernd Paysan <bernd.paysan@gmx.de>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Wed, 13 Jun 2007 16:24:36 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <466A3EC6.6030706@netone.net.tr> <200706131402.11396.bernd.paysan@gmx.de> <m33b0w80dg.fsf@maximus.localdomain>
-In-Reply-To: <m33b0w80dg.fsf@maximus.localdomain>
+	Wed, 13 Jun 2007 10:28:58 -0400
+Received: from smtpgw02.netonehosting.com ([193.192.98.26]:48864 "EHLO
+	smtpgw02.netonehosting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756060AbXFMO25 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 10:28:57 -0400
+Message-ID: <466FFF23.5050105@netone.net.tr>
+Date: Wed, 13 Jun 2007 17:28:51 +0300
+From: Tarkan Erimer <tarkan@netone.net.tr>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart14413746.RRYkQWn6l8";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alexandre Oliva <aoliva@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <20070609071231.GL2649@lug-owl.de> <466BB9B0.5030908@netone.net.tr> <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <466BCBBC.90305@netone.net.tr> <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com> <466C0901.4000405@netone.net.tr> <alpine.LFD.0.98.0706101025330.20321@woody.linux-foundation.org> <alpine.LFD.0.98.0706101029300.20321@woody.linux-foundation.org> <466D0A12.5030607@netone.net.tr> <20070611090348.GA18894@elte.hu> <orsl8xsmwf.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706120818390.14121@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706120818390.14121@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-9; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706131624.37211.bernd.paysan@gmx.de>
-X-Y-GMX-Trusted: 0
+X-NETONE-MailScanner-Information: Please contact the ISP for more information
+X-NETONE-MailScanner: Found to be clean
+X-NETONE-MailScanner-From: tarkan@netone.net.tr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart14413746.RRYkQWn6l8
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Linus,
 
-On Wednesday 13 June 2007 15:11, Krzysztof Halasa wrote:
-> > The GPLv2 however is very clear how the end user gets the license: from
-> > the original author.
+Linus Torvalds wrote:
+> On Tue, 12 Jun 2007, Alexandre Oliva wrote:
+>   
+>> Per this reasoning, Sun wouldn't be waiting for GPLv3, and it would
+>> have already released the OpenSolaris kernel under GPLv2, would it
+>> not? ;-)
+>>     
 >
-> I'd be surprised if it's for GPL to decide.
-
-If you choose the GPL as license, the text of the GPL are the conditions.=20
-Otherwise, the GPL would be pure nonsense (as would be any other license).
-
-> > Not from the man in the middle, from a distributor or
-> > kernel maintainer, who can neither add nor drop
-> > restrictions/permissions (and thus the special rights of a compilation
-> > editor are void). The author can only speak for himself, not by behalf
-> > of somebody else, as well as the compilation editor.
+> Umm. You are making the fundamental mistake of thinking that Sun is in 
+> this to actually further some open-source agenda.
 >
-> How about derived works?
-> Am I free to get BSD source, incorporate it in GPL project, and release
-> the whole under GPL?
-> Sure, the original source stays BSD but I don't distribute it.
-
-Derivated work is a product of several authors, therefore each author may=20
-put different conditions on his part of the work - as long as they are=20
-compatible, it's ok. A derivated work originally under BSD, now with a=20
-patch under GPL can only be distributed under GPL, but not under BSD=20
-(because GPL requires redistribution under GPL, whereas BSD doesn't care).=
-=20
-If you take out the patch, and revert the work to the BSD one, you are free=
-=20
-to redistribute it under BSD.
-
-There's no point of discussing that the Linux kernel *as a whole* (as=20
-compilation) currently is under GPLv2 only, since it sais so, and a few=20
-files also explicitely say so. The whole combination is GPLv2 only, but=20
-most parts aren't.
-
-> > That's why the FSF is so strict about having each
-> > author stating copyright and the license conditions on the top of the
-> > file - nobody else can.
+> Here's a cynical prediction (but backed up by past behaviour of Sun):
 >
-> I'm not sure the copyright laws define "files".
-
-Copyright law defines "work", and in terms of computer programs, source=20
-code "work" goes into files. Or patches, but patches end up distributed=20
-over several files.
-
-The nice thing about this is that you can make automatic checks about the=20
-license you actually have to fulfill. E.g. if you compile a hypothetical=20
-Linux 2.8.15.3 without ZFS and dtrace in 2009, you may end up with=20
-compiling only GPLv2-compatible code, and therefore can tivoize your system=
-=20
-(unless you sell it to Germany, where the GPLv2 outlaws tivoizing by=20
-intent), but if you add either ZFS or dtrace, you can't.
-
-> > So my conclusion is: If you, as contributor to the Linux kernel, want
-> > to make clear that your work really is GPLv2 only, you have to do that
-> > yourself, you have to add a notice like above to files where you
-> > exclusively own copyright.
+>  - first off: they may be talking a lot more than they are or ever will
+>    be doing. How many announcements about Sun and Linux have you seen over
+>    the years? And how much of that has actually happened?
 >
-> I don't think the law works like that.
-> By default you have no rights to someone's work (file or project).
-> The only licence I can find with Linux is GPL v2, isn't it?
-
-Yes, and the GPLv2 sais "if the FSF releases a new version of the GPL, you=
-=20
-may update" (section 9):
-
-"  9. The Free Software Foundation may publish revised and/or new versions
-of the General Public License from time to time.  Such new versions will
-be similar in spirit to the present version, but may differ in detail to
-address new problems or concerns.
-
-Each version is given a distinguishing version number.  If the Program
-specifies a version number of this License which applies to it and "any
-later version", you have the option of following the terms and conditions
-either of that version or of any later version published by the Free
-Software Foundation.  If the Program does not specify a version number of
-this License, you may choose any version ever published by the Free Software
-=46oundation."
-
-This is normal contract law (you have to say "yes" to a new M$ EULA every=20
-few months or so if you are an unlucky Windows user, and like to use their=
-=20
-patches), contracts can change over time. The FSF is rather nice here, they=
-=20
-say users and contributors can make choices to which contract they use.
-
-Given that the license you find with Linux is GPLv2, anyway, the comment=20
-from Linus seems to be superfluous. The license already says which version=
-=20
-it is. But it has this upgrade option, and one possible interpretation of=20
-Linus' comment is "no, it doesn't have this update option".
-
-> And even=20
-> that wasn't stated explicite until that 2.4.0something (though there
-> is a consensus that the COPYING file was indeed a licence for the
-> whole kernel).
+>  - They may like open source, but Linux _has_ hurt them in the 
+>    marketplace. A lot.
 >
-> Then you may have additional rights, such as those given in various
-> source files.
+>    They almost used to own the chip design market, and it took quite a 
+>    long time before the big EDA vendors ported to Linux (and x86-64 in 
+>    particular). But when they did, their chip design market just basically 
+>    disappeared: sparc performance is so horribly bad (especially on a 
+>    workstation kind of setup), that to do chip design on them is just 
+>    idiotic. Which is not to say that there aren't holdouts, but let's face 
+>    it, for a lot of things, Solaris is simply the wrong choice these days.
 >
-> > The rest (the majority) did not
-> > choose to say anything, which under the GPL regime means "any";
+>    Ergo: they sure as hell don't want to help Linux. Which is fine. 
+>    Competition is good.
 >
-> What exactly is the "GPL regime" and how is it defined by copyright
-> law and/or the GPL licence itself (or will of copyright holders etc.)?
+>  - So they want to use Linux resources (_especially_ drivers), but they do 
+>    *not* want to give anything back (especially ZFS, which seems to be one 
+>    of their very very few bright spots).
+>
+>  - Ergo: they'll not be releasing ZFS and the other things that people are 
+>    drooling about in a way that lets Linux use them on an equal footing. I 
+>    can pretty much guarantee that. They don't like competition on that 
+>    level. They'd *much* rather take our drivers and _not_ give anythign 
+>    back, or give back the stuff that doesn't matter (like core Solaris: 
+>    who are you kidding - Linux code is _better_).
+>
+>   
+Completely agreed :-)
 
-If I use GPL as license, I'm under "GPL regime", i.e. the terms of the GPL=
-=20
-apply. The GPL requires that I need to speak up explicitely if I want to=20
-limit the choice of licenses - if I don't say anything, it defaults to "any=
-=20
-GPL". This is a restriction that goes from author to user, sinde the GPL=20
-cuts away all middle-men (restrictions applied by middle-men can be=20
-reverted).
+> End result:
+>
+>  - they'll talk about it. They not only drool after our drivers, they 
+>    drool after all the _people_ who write drivers. They'd love to get 
+>    kernel developers from Linux, they see that we have a huge amount of 
+>    really talented people. So they want to talk things up, and the more 
+>    "open source" they can position themselves, the better.
+>
+>   
+Definitely. They already began to pull some people like Ian Murdock. And 
+I'm really very disappointed of this move,Ian did. Especially, such a 
+person who has very good reputation and high profile in the Linux 
+Community. He immediately shut down his company (also leaved 
+Linux-Foundation) and joined to sun. After joining, he made statements 
+like "How to make Solaris more like Linux ?" etc. Like a 40 years 
+employee at Sun. Another interesting thing is the timing of this hiring. 
+So, this situation is a good example of it.
 
-If I decide to build my own compilation of Linux kernel patches* (i.e. a -b=
-p=20
-kernel, like the -mm kernel is a different compilation of Linux kernel=20
-patches as the mainline kernel), I'm free to choose under which conditions=
-=20
-I redistribute it, given that it's compatible with the conditions the=20
-original authors have chosen. Most of them have said nothing (other than=20
-implicitely that it's ok for them to put it under GPL, as they haven't=20
-opposed to inclusion into the Linux kernel), some have said GPLv2 or later,=
-=20
-some say GPLv1.1 or later (e.g. the parport driver) and a few have=20
-said "GPLv2 only". Now, I may rewrite those few "GPLv2 only" files, and=20
-then I have a GPLv2-or later compatible linux-some.version-bp kernel. And=20
-into this kernel, I can add code under GPLv3 (once the GPLv3 is ready and=20
-there's code worth to add under GPLv3), which limits me to redistribute the=
-=20
-whole thing under GPLv3.
+>  - They may release the uninteresting parts under some fine license. See 
+>    the OpenSolaris stuff - instead of being blinded by the code they _did_ 
+>    release under an open source license, ask yourself what they did *not* 
+>    end up releasing. Ask yourself why the open source parts are not ready 
+>    to bootstrap a competitive system, or why they are released under 
+>    licenses that Sun can make sure they control.
+>
+> So the _last_ thing they want to do is to release the interesting stuff 
+> under GPLv2 (quite frankly, I think the only really interesting thing they 
+> have is ZFS, and even there, I suspect we'd be better off talking to 
+> NetApp, and seeing if they are interested in releasing WAFL for Linux).
+>
+> Yes, they finally released Java under GPLv2, and they should be commended 
+> for that. But you should also ask yourself why, and why it took so long. 
+> Maybe it had something to do with the fact that other Java implementations 
+> started being more and more relevant?
+>
+> Am I cynical? Yes. Do I expect people to act in their own interests? Hell 
+> yes! That's how things are _supposed_ to happen. I'm not at all berating 
+> Sun, what I'm trying to do here is to wake people up who seem to be living 
+> in some dream-world where Sun wants to help people. 
+>
+> So to Sun, a GPLv3-only release would actually let them look good, and 
+> still keep Linux from taking their interesting parts, and would allow them 
+> to take at least parts of Linux without giving anything back (ahh, the 
+> joys of license fragmentation). 
+>
+> Of course, they know that. And yes, maybe ZFS is worthwhile enough that 
+> I'm willing to go to the effort of trying to relicense the kernel. But 
+> quite frankly, I can almost guarantee that Sun won't release ZFS under the 
+> GPLv3 even if they release other parts. Because if they did, they'd lose 
+> the patent protection.
+>
+> And yes, I'm cynical, and yes, I hope I'm wrong. And if I'm wrong, I'll 
+> very happily retract anything cynical I said about Sun. They _have_ done 
+> great things, and maybe I'm just too pessimistic about all the history 
+> I've seen of Sun with open source.
+>
+> The _good_ news is that Jonathan Schwartz actually does seem to have made 
+> a difference, and I hope to God he is really as serious about 
+> open-sourcing things as he says he is. And don't get me wrong: I think a 
+> truly open-source GPLv3 Solaris would be a really really _good_ thing, 
+> even if it does end up being a one-way street as far as code is concerned!
+>
+> 			Linus
+>   
+One more time,agreed ;-)
 
-=2D-=20
-Bernd Paysan
-"If you want it done right, you have to do it yourself"
-http://www.jwdt.com/~paysan/
+Regards,
 
---nextPart14413746.RRYkQWn6l8
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGb/4li4ILt2cAfDARAj7ZAKDdAa+vo+JSuPeHF8jeUGfwHaBehQCcDhCW
-4ZAi7uOlov57K1ixOlYaf4E=
-=p0h6
------END PGP SIGNATURE-----
-
---nextPart14413746.RRYkQWn6l8--
+Tarkan
