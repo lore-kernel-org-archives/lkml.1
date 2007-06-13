@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757797AbXFMKU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbXFMKWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757797AbXFMKU4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 06:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbXFMKUq
+	id S1758002AbXFMKWt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 06:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbXFMKWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 06:20:46 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:47572 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756705AbXFMKUp (ORCPT
+	Wed, 13 Jun 2007 06:22:40 -0400
+Received: from TYO200.gate.nec.co.jp ([210.143.35.50]:55613 "EHLO
+	tyo200.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756882AbXFMKWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 06:20:45 -0400
-Date: Wed, 13 Jun 2007 06:17:39 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>, Mike Snitzer <snitzer@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-Message-ID: <20070613101739.GV28279@think.oraclecorp.com>
-References: <20070612161029.GB28279@think.oraclecorp.com> <170fa0d20706121253v62d13f70p3694eeab1852092a@mail.gmail.com> <20070612201439.GI28279@think.oraclecorp.com> <20070613030829.GA15724@infradead.org>
+	Wed, 13 Jun 2007 06:22:39 -0400
+Message-ID: <466FC455.5060001@bx.jp.nec.com>
+Date: Wed, 13 Jun 2007 19:17:57 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070613030829.GA15724@infradead.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [RFC][PATCH -mm take5 0/7] proposal for dynamic configurable netconsole
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 04:08:30AM +0100, Christoph Hellwig wrote:
-> On Tue, Jun 12, 2007 at 04:14:39PM -0400, Chris Mason wrote:
-> > > Aside from folding snapshot history into the origin's namespace... It
-> > > could be possible to have a mount.btrfs that allows subvolumes and/or
-> > > snapshot volumes to be mounted as unique roots?  I'd imagine a bind
-> > > mount _could_ provide this too?  Anyway, I'm just interested in
-> > > understanding the vision for managing the potentially complex nature
-> > > of a Btrfs namespace.
-> > 
-> > One option is to put the real btrfs root into some directory in
-> > (/sys/fs/btrfs/$device?) and then use tools in userland to mount -o bind
-> > outside of that.  I wanted to wait to get fancy until I had a better
-> > idea of how people would use the feature.
-> 
-> We already support mounting into subdirectories of a filesystem for
-> nfs connection sharing.  The patch below makes use of this to allow
-> mounting any subdirectory of a btrfs filesystem by specifying it in
-> the form of /dev/somedevice:directory and when no subdirectory
-> is specified uses 'default'.
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
 
-Neat, thanks Christoph, this will be much nicer longer term.  I'll
-integrate it after I finish off -enospc.
+The netconsole is a very useful module for collecting kernel message under
+certain circumstances(e.g. disk logging fails, serial port is unavailable).
 
-> To make this more useful btrfs directories
-> should grow some way to be marked head of a subvolume,
+But current netconsole is not flexible. For example, if you want to change ip
+address for logging agent, in the case of built-in netconsole, you can't change
+config except for changing boot parameter and rebooting your system, or in the
+case of module netconsole, you need to remove it and reload with different
+parameters.
 
-They are already different in the btree, but maybe I'm not 100% sure
-what you mean by marked as the head of a subvolume?
+By adopting my patches, the current netconsole becomes a little complex.
+But the kernel messages(especially panic messages) is significant information
+ to solve bugs and troubles promptly and we have been losing serial console
+port with PCs and Servers.
 
-> and we'd need
-> a more useful way to actually create subvolumes and snapshots without
-> fugly ioctls.
+I think that we need the environment in which we can collect kernel messages
+flexibly.
 
-One way I can think of that doesn't involve an ioctl is to have a
-special subdir at the root of the subvolume:
+So, I propose the following extended features for netconsole.
 
-cd
-/mnt/default/.snaps
-mkdir new_snapshot
-rmdir old_snapshot
+1) support for multiple logging agents.
+2) add interface to access each parameter of netconsole
+   using sysfs.
 
-cd /mnt
-mkdir new_subvol
-rmdir old_subvol
+[changes since take4]
+-change kernel base from 2.6.21-rc6-mm1 to 2.6.22-rc4-mm2.
+-update Documentation/networking/netconsole.txt
+-fix Kconfig
+-avoid forward-declared statics
+-fix coding style
+-use spin_lock_irqsave() and _restore()
+-fix race condition(netconsole_event())
+-remove extra lock(write in sysfs)
+-change ioctl's location
+-use kasprintf()
+-error handling
 
--chris
+Your comments are very welcome.
+
+Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Signed-off-by: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
+---
+
 
