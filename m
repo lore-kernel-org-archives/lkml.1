@@ -1,43 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbXFMGFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbXFMGH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbXFMGFj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 02:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXFMGF3
+	id S1755029AbXFMGH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 02:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbXFMGHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 02:05:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37098
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753494AbXFMGF3 (ORCPT
+	Wed, 13 Jun 2007 02:07:15 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:59318 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752009AbXFMGHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 02:05:29 -0400
-Date: Tue, 12 Jun 2007 23:05:45 -0700 (PDT)
-Message-Id: <20070612.230545.104645806.davem@davemloft.net>
-To: ysato@users.sourceforge.jp
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] CONFIG_INET depend on CONFIG_SYSCTL
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m2abv41jkb.wl%ysato@users.sourceforge.jp>
-References: <m2sl8xfwq8.wl%ysato@users.sourceforge.jp>
-	<20070612.010855.51301101.davem@davemloft.net>
-	<m2abv41jkb.wl%ysato@users.sourceforge.jp>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 02:07:13 -0400
+Date: Wed, 13 Jun 2007 16:07:11 +1000
+To: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] Add per clocksource hook to settimeofday().
+Message-ID: <20070613060711.GM15955@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yoshinori Sato <ysato@users.sourceforge.jp>
-Date: Wed, 13 Jun 2007 14:59:16 +0900
+I'm working on a clocksource implementation for all powerpc platforms.
+some of these platforms needs to do a little work as part of the
+settimeofday() syscall and I can't see a way to do that without adding
+this hook to clocksource.
 
-> At Tue, 12 Jun 2007 01:08:55 -0700 (PDT),
-> David Miller wrote:
->  
-> > 2) It is much better to add the appropriate CONFIG_SYSCTL
-> >    ifdefs to the INET code than to force it on for everyone.
-> 
-> It examined that, but many corrections become necessary.
+From: Tony Breeds <tony@bakeyournoodle.com>
 
-I understand, but embedded people will not be happy that
-SYSFS is a requirement for IPV4 networking.  Every little
-bit of space savings matters for them.
+Add per clocksource hook to settimeofday().
+
+Some clocksources need to do extra work as part of the settimeofday call, this
+hook make it easy to do so.
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+
+---
+
+ include/linux/clocksource.h |    3 +++
+ kernel/time/timekeeping.c   |    3 +++
+ 2 files changed, 6 insertions(+)
+
+Index: working/include/linux/clocksource.h
+===================================================================
+--- working.orig/include/linux/clocksource.h
++++ working/include/linux/clocksource.h
+@@ -50,6 +50,7 @@ struct clocksource;
+  * @flags:		flags describing special properties
+  * @vread:		vsyscall based read
+  * @resume:		resume function for the clocksource, if necessary
++ * @settimeofday:	[Optional] Do arch specific work during do_settimeofday
+  * @cycle_interval:	Used internally by timekeeping core, please ignore.
+  * @xtime_interval:	Used internally by timekeeping core, please ignore.
+  */
+@@ -68,6 +69,8 @@ struct clocksource {
+ 	cycle_t (*vread)(void);
+ 	void (*resume)(void);
+ 
++	void (*settimeofday)(struct clocksource *cs, struct timespec *ts);
++
+ 	/* timekeeping specific data, ignore */
+ 	cycle_t cycle_interval;
+ 	u64	xtime_interval;
+Index: working/kernel/time/timekeeping.c
+===================================================================
+--- working.orig/kernel/time/timekeeping.c
++++ working/kernel/time/timekeeping.c
+@@ -151,6 +151,9 @@ int do_settimeofday(struct timespec *tv)
+ 	clock->error = 0;
+ 	ntp_clear();
+ 
++	if (clock->settimeofday)
++		clock->settimeofday(clock, tv);
++
+ 	update_vsyscall(&xtime, clock);
+ 
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+
