@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbXFMUjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbXFMUlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbXFMUjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 16:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbXFMUjc
+	id S1757083AbXFMUlf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 16:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbXFMUlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 16:39:32 -0400
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:18053 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752607AbXFMUjb (ORCPT
+	Wed, 13 Jun 2007 16:41:25 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:60898 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbXFMUlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 16:39:31 -0400
-X-IronPort-AV: i="4.16,417,1175497200"; 
-   d="scan'208"; a="2977408:sNHT21309240"
-To: vgoyal@in.ibm.com
-Cc: linux-kernel@vger.kernel.org,
-       "Natalie.Protasevich@unisys.com" <Natalie.Protasevich@unisys.com>,
-       akpm@linux-foundation.org
-Subject: Re: CONFIG_X86_ES7000=y, CONFIG_X86_GENERICARCH=n, CONFIG_ACPI=y build broken
-X-Message-Flag: Warning: May contain useful information
-References: <adad5017zpt.fsf@cisco.com> <20070613173741.GA23618@in.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 13 Jun 2007 13:39:29 -0700
-In-Reply-To: <20070613173741.GA23618@in.ibm.com> (Vivek Goyal's message of "Wed, 13 Jun 2007 23:07:41 +0530")
-Message-ID: <adamyz34mim.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Wed, 13 Jun 2007 16:41:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ik04mZP2eMsMLTkXMOHFaRqcT/RXzyt7vDjDFcKLpl9s752rPJcrzxhMC4HkACwVWc+ueNaxykBS0fdo5FikSyfJoTdZIIo+/59b2FXSqbOnY9Ky+rd9G4a+SUL1SMOtzfLN/Ta9GGjTbyC6qmmLLwcwSK4G/BJBLR320/K/AdM=
+Message-ID: <a781481a0706131341k17170514q7a9d0ce052dbfe2a@mail.gmail.com>
+Date: Thu, 14 Jun 2007 02:11:22 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Keiichi KII" <k-keiichi@bx.jp.nec.com>
+Subject: Re: [RFC][PATCH -mm take5 6/7] add ioctls for adding/removing target
+Cc: "Matt Mackall" <mpm@selenic.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <466FC76A.6050006@bx.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Jun 2007 20:39:29.0554 (UTC) FILETIME=[F0BA9F20:01C7ADFA]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466FC455.5060001@bx.jp.nec.com> <466FC76A.6050006@bx.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Can you please try the attached patch? I have compiled it with CONFIG_ES7000=y
- > and CONFIG_X86_GENERICARCH=n. But don't have any ES7000 machine to test it.
+Hi Keiichi,
 
-I actually don't have anything remotely like ES7000 iether.  I just
-found the problem while tracking down another randconfig failure.
+On 6/13/07, Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
+> From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+>
+> We add ioctls for adding/removing target.
+> If we use NETCONSOLE_ADD_TARGET ioctl,
+> we can dynamically add netconsole target.
+> If we use NETCONSOLE_REMOVE_TARGET ioctl,
+> we can dynamically remoe netconsole target.
 
- > Subarch build procedure is not straightforward and this patch adds to the
- > misery. Please suggest if there is a better way of handling things.
+*ugh*. I was wondering what a show-stopper this particular patch
+was -- introduces a couple of ioctl()'s, exports a new structure to
+userspace, adds a hitherto-unneeded header file, brings in
+tty_struct/tty_operations and ends up adding so much complexity/
+bloat to netconsole.c. Not only that, it must live together (and
+side-by-side) with the sysfs interface also, because the two of them
+do different things: sysfs to be able to modify target parameters at
+run-time and the ioctl()'s to dynamically add/remove targets. We
+can't really mkdir(2) or rmdir(2) in sysfs so the ioctl()'s are needed.
 
- > +/*
- > + * This file also gets compiled if CONFIG_X86_GENERICARCH is set. Generic
- > + * arch already has got following function definitions (asm-generic/es7000.c)
- > + * hence no need to define these for that case.
- > + */
- > +#ifndef CONFIG_X86_GENERICARCH
+So may I suggest:
 
-Seems it would be cleaner to figure out some way to build es7000.c for
-if CONFIG_X86_ES7000 is set?  Or just move them here all the time?
+Just lose *both* the sysfs and ioctl() interfaces and use _configfs_.
+It is *precisely* the thing you need in your driver here -- the ability
+to create / destroy kernel objects (or config_items in configfs lingo)
+from _userspace_ via simple mkdir(2) and rmdir(2). And configfs
+makes changing multiple configurable parameters atomically trivial
+too, via rename(2) ... not to mention a sysfs+ioctls -> configfs
+conversion would help your patchset lose some weight too :-)
 
- > --- linux-2.6.22-rc4-git4/include/asm-i386/mach-es7000/mach_mpparse.h~i386-es7000-build-breakage-fix	2007-06-13 22:52:14.000000000 +0530
- > +++ linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_mpparse.h	2007-06-13 22:52:14.000000000 +0530
- > @@ -18,6 +18,12 @@ extern int parse_unisys_oem (char *oempt
- >  extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
- >  extern void setup_unisys(void);
- >  
- > +#ifndef CONFIG_X86_GENERICARCH
- > +extern int acpi_madt_oem_check(char *oem_id, char *oem_table_id);
- > +extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
- > +				char *productid);
- > +#endif
-
-It seems that this #ifndef is not needed -- even if there is another
-declaration of these functions that is visible, the signatures should
-match so it should be OK.
-
- - R.
+Satyam
