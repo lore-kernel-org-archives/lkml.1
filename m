@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbXFMBg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbXFMBhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753454AbXFMBg7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jun 2007 21:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbXFMBgw
+	id S1754997AbXFMBhW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jun 2007 21:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbXFMBhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jun 2007 21:36:52 -0400
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:63462 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751389AbXFMBgv convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jun 2007 21:36:51 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 12 Jun 2007 21:37:07 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:42101 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753693AbXFMBhE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jun 2007 21:37:04 -0400
+Message-ID: <466F4A27.8070309@tw.ibm.com>
+Date: Wed, 13 Jun 2007 09:36:39 +0800
+From: Albert Lee <albertcc@tw.ibm.com>
+Reply-To: albertl@mail.com
+User-Agent: Mozilla Thunderbird 1.0.6 (Windows/20050716)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: call for more SD versus CFS comparisons (was: Re: [ck] Mainline plans)
-Date: Tue, 12 Jun 2007 21:36:18 -0400
-Message-ID: <F1D642E5A91BC94D9504EC83AE19E6B01289E8@ecqcmtlmail3.quebec.int.ec.gc.ca>
-In-Reply-To: <466DE921.9030709@debianpt.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: call for more SD versus CFS comparisons (was: Re: [ck] Mainline plans)
-Thread-Index: AcesiO/OiGlZliQRQc2RTeRL2MWpLQA0RHsQ
-References: <466DE921.9030709@debianpt.org>
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: "Miguel Figueiredo" <elmig@debianpt.org>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       <ck@vds.kolivas.org>
-Cc: "Con Kolivas" <kernel@kolivas.org>, "Ingo Molnar" <mingo@elte.hu>
-X-OriginalArrivalTime: 13 Jun 2007 01:36:18.0679 (UTC) FILETIME=[3D61B070:01C7AD5B]
+To: Tejun Heo <htejun@gmail.com>
+CC: Mark Lord <mlord@pobox.com>, Robert de Rooy <robert.de.rooy@gmail.com>,
+       Mark Lord <liml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
+       bzolnier@gmail.com, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: libata and legacy ide pcmcia failure
+References: <466718B6.4080105@gmail.com> <4667B39D.209@gmail.com> <46685AE5.4010908@gmail.com> <466900F3.7040801@gmail.com> <46694FB2.6040007@pobox.com> <4669D2D8.3020806@gmail.com> <4669D3F5.7040300@rtr.ca> <466B4D86.1020808@gmail.com> <466C631D.2000001@rtr.ca> <466C723C.6000300@gmail.com> <20070610221322.GA18196@flint.arm.linux.org.uk> <466C7A9F.1080700@rtr.ca> <466DCE55.30507@gmail.com> <466DCF43.5060304@pobox.com> <466E11DF.5020901@gmail.com>
+In-Reply-To: <466E11DF.5020901@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Message d'origine-----
-> De : linux-kernel-owner@vger.kernel.org 
-> [mailto:linux-kernel-owner@vger.kernel.org] De la part de 
-> Miguel Figueiredo
-> Envoyé : 11 juin 2007 20:30
-> 
-> Hi all,
-> 
-> some results based on massing_intr.c by Satoru, can be found 
-> on http://people.redhat.com/mingo/cfs-scheduler/tools/massive_intr.c
 > 
 > 
-> I know that other people, who read lkml, also tested the same 
-> way, it would be nice if they also post their data.
+> libata can do most of this too by using ATA_FLAG_PIO_POLLING (doesn't
+> cover nodata commands tho).
 > 
 
-For the pleasure of comparing CPU schedulers, both CFS v16 & full CK2 patched pre-built kernels for Fedora 7 using latest build 3194 are now available at http://linux-dev.qc.ec.gc.ca
+Hi Tejun,
 
-There is also a not yet fully tuned YUM repository configuration file available at http://linux-dev.qc.ec.gc.ca/kernel/fedora/alt-sched.repo
-Although I suggest you download the rpm's directly from the web page & install both manually using rpm -ivh --force
+Polling of nodata commands was fixed in:
+http://marc.info/?l=linux-ide&m=116546272916399&w=2
 
-Have fun.
+--
+albert
 
-- vin
