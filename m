@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbXFMUUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbXFMUVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755587AbXFMUUo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 16:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXFMUUh
+	id S1756423AbXFMUVK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 16:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXFMUUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 16:20:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48639 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751116AbXFMUUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 16:20:36 -0400
-MIME-Version: 1.0
+	Wed, 13 Jun 2007 16:20:53 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3740 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751541AbXFMUUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 16:20:52 -0400
+Date: Wed, 13 Jun 2007 14:56:55 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 0/3] AHCI Link Power Management
+Message-ID: <20070613145654.GB8053@ucw.cz>
+References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E1D51.9070007@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-X-Fcc: ~/Mail/linus
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [BUG] 2.6.22-rc4: wait4() waiting for SIGSTOP may not return if the target process is ptraced
-In-Reply-To: Satoru Takeuchi's message of  Thursday, 7 June 2007 19:15:04 +0900 <87tztk9il3.wl%takeuchi_satoru@jp.fujitsu.com>
-Emacs: ballast for RAM.
-Message-Id: <20070613202028.803964D059F@magilla.localdomain>
-Date: Wed, 13 Jun 2007 13:20:28 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <466E1D51.9070007@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The bug is in strace (and is being fixed).  It needs to use tgkill instead
-> > of kill to send that SIGSTOP to the right thread only.  
+Hi!
+
+> >> I'm not sure about this.  We need better PM framework to support 
+> >> powersaving in other controllers and some ahcis don't save much
+> >> when only link power management is used,
+> > 
+> > do you have data to support this?
 > 
-> You mean kill() to specifig thread is fundamentally wrong? If so, current
-> kill() is wrong because it can receive pid of non main thread.
+> Yeah, it was some Lenovo notebook.  Pavel is more familiar with the
+> hardware.  Pavel, what was the notebook which didn't save much power
+> with standard SATA power save but needed port to be completely turned off?
 
-The kill call should only be used on process IDs (tgid in linuspeak).  This
-is what POSIX defines it for.  I'm not sure off hand if it's technically a
-violation of POSIX that it works for numbers that aren't a POSIX process ID
-(aka tgid) but happen happen to be a Linux thread ID (aka pid).
+Uhuh, now I understand why Arjan wanted me to test.
 
+But I have same hw as Kristen, so I assume there must have been
+something wrong with the old tests.
 
-Thanks,
-Roland
+Sorry for confusion.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
