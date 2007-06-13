@@ -1,159 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbXFMUtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbXFMUu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbXFMUtf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 16:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbXFMUt2
+	id S1757795AbXFMUu4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 16:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbXFMUut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 16:49:28 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:5477 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753707AbXFMUt1 (ORCPT
+	Wed, 13 Jun 2007 16:50:49 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:48726 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754665AbXFMUus convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 16:49:27 -0400
+	Wed, 13 Jun 2007 16:50:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ra5pSnHT6MuA5tLWUchxgszzwNwldcBtlDr4R3aJ48U8GOwHITy5raZBv0jaI9nr11YmhkdbiX4ysOKUA9Zz3hq4cCOGAvm8SSf6R/0k68bjzOIk8F+VolVJPJuVnxw8jnM/YW4r6Aw4gnhHKkYsfCIBRNP5R+fMySDeotVDJ0k=
-Date: Wed, 13 Jun 2007 22:49:48 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [BUG] Oops with KVM-27
-Message-ID: <20070613204948.GA14710@dreamland.darkstar.lan>
-References: <20070604202248.GA18668@dreamland.darkstar.lan> <46647B3E.2090205@qumranet.com> <20070604212207.GA22365@dreamland.darkstar.lan> <46651069.5040003@qumranet.com> <68676e00706071216i4bd051c5hb1c114f3c13ab97f@mail.gmail.com> <466BED18.5040708@qumranet.com> <68676e00706101354n5fe7e1a9y12cb690cae2924e3@mail.gmail.com> <466CFD6D.2080201@qumranet.com> <20070612175246.GA5864@dreamland.darkstar.lan> <466FB1ED.3090905@qumranet.com>
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=t/IAX0S4t1AMJYwpnk3P9XgJ5YeK9fCxdf3p8MnWlQ7udpAOzQsLWDgGJklh69ZNIjMisxxvNl4BbIOxTH835wPJZbNUJ5DCDm6/ztU0OU+BApOQibbVxZojV85fHeKaA6bGQK+cABdEZXqIlKdl5o76kXyyXxhghjITHgTwMCc=
+Message-ID: <6bffcb0e0706131350p4a267fb9ycbc59059956ba896@mail.gmail.com>
+Date: Wed, 13 Jun 2007 22:50:43 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "=?ISO-8859-1?Q?Bj=F6rn_Steinbrink?=" <B.Steinbrink@gmx.de>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "Dan Aloni" <da-x@monatomic.org>,
+       "Chad Tindel" <ctindel@users.sourceforge.net>,
+       "Jay Vosburgh" <fubar@us.ibm.com>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       sparclinux@vger.kernel.org, "David Miller" <davem@davemloft.net>,
+       "Mikael Pettersson" <mikpe@it.uu.se>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Pavel Machek" <pavel@ucw.cz>, linux-usb-devel@lists.sourceforge.net,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Alex Riesen" <raa.lkml@gmail.com>, "Andi Kleen" <ak@suse.de>,
+       discuss@x86-64.org, "Ioan Ionita" <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+In-Reply-To: <20070613202155.GA11073@atjola.homenet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <466FB1ED.3090905@qumranet.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
+	 <20070613202155.GA11073@atjola.homenet>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Wed, Jun 13, 2007 at 11:59:25AM +0300, Avi Kivity ha scritto: 
-> Luca Tettamanti wrote:
-> >Il Mon, Jun 11, 2007 at 10:44:45AM +0300, Avi Kivity ha scritto: 
-> >  
-> >>Luca wrote:
-> >>    
-> >>>>I've managed to reproduce this on kvm-21 (it takes many boots for this
-> >>>>to happen, but it does eventually).
-> >>>>        
-> >>>Hum, any clue on the cause? 
-> >>>      
-> >>From what I've seen, it's the new Linux clocksource code.
-> >>
-> >>    
-> >>>Should I test older versions?
-> >>>      
-> >>They're unlikely to be better.  Instead, it would be best to see what 
-> >>the guest is doing.
-> >>    
+On 13/06/07, Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
+> On 2007.06.13 21:57:56 +0200, Michal Piotrowski wrote:
+> > TTY
 > >
-> >RCU is not working. Network initialization hangs because it happens to
-> >be the first RCU user.
-> >The guest is stuck waiting for RCU syncronization:
-> >
-> >[    4.992207]  [<c04321c5>] synchronize_rcu+0x4e/0x80
-> >[    4.994379]  [<c0431db5>] wakeme_after_rcu+0x0/0x8
-> >[    4.996521]  [<c0599ad1>] synchronize_net+0x64/0x8c
-> >[    4.998678]  [<c05d70e0>] inet_register_protosw+0xef/0x151
-> >[    5.000984]  [<c072d79e>] inet_init+0x1cd/0x498
-> >
-> >wait_for_completion() in synchronize_rcu() calls schedule() and the
-> >completion is never signaled (wakeme_after_rcu is never called).
-> >The completion AFAICS would be signaled via rcu_process_callbacks(),
-> >which is called in tasklet context.
-> >Scheduler and completion are working fine since they're used in other
-> >part of the kernel without problems.
-> >
-> >To recap:
-> >
-> >i686 F7 kernel: always works.
-> >
-> >i586 F7 kernel: sometime hangs due to RCU problems. When it does work
-> >it's because the LAPIC is disabled on boot:
-> >
-> >Using local APIC timer interrupts.
-> >calibrating APIC timer ...
-> >... lapic delta = 25745109
-> >... PM timer delta = 0
-> >..... delta 25745109
-> >..... mult: 1105912110
-> >..... calibration result: 4119217
-> >..... CPU clock speed is 8794.0417 MHz.
-> >..... host bus clock speed is 4119.0217 MHz.
-> >... verify APIC timer
-> >... jiffies delta = 103
-> >APIC timer disabled due to verification failure.
-> >
-> >When it doesn't work LAPIC passes the test:
-> >
-> >[    1.304717] Using local APIC timer interrupts.
-> >[    1.304719] calibrating APIC timer ...
-> >[    1.718823] ... lapic delta = 25251444
-> >[    1.720582] ... PM timer delta = 0
-> >[    1.722219] ..... delta 25251444
-> >[    1.723827] ..... mult: 1084706136
-> >[    1.725470] ..... calibration result: 4040231
-> >[    1.727374] ..... CPU clock speed is 8625.0780 MHz.
-> >[    1.729396] ..... host bus clock speed is 4040.0231 MHz.
-> >[    1.731540] ... verify APIC timer
-> >[    2.158342] ... jiffies delta = 102
-> >[    2.160035] ... jiffies result ok
-> >
-> >i586 F7 kernel, with 'nolapic': always works.
-> >  
-> 
-> Can you check which .config option causes it (a special type of 
-> bisecting...)?
-> 
-> This looks likely based on your findings:
-> 
-> -CONFIG_X86_ALIGNMENT_16=y
-> +CONFIG_X86_GOOD_APIC=y
-> CONFIG_X86_INTEL_USERCOPY=y
-> +CONFIG_X86_USE_PPRO_CHECKSUM=y
-> +CONFIG_X86_TSC=y
-> 
-> I expect it's not directly related to i586 vs i686.
+> > Subject    : OOPS (NULL pointer dereference) in v2.6.22-rc3
+> > References : http://lkml.org/lkml/2007/6/1/389
+> >             http://bugzilla.kernel.org/show_bug.cgi?id=8473
+> >             http://bugzilla.kernel.org/show_bug.cgi?id=8574
+> > Submitter  : Alex Riesen <raa.lkml@gmail.com>
+> > Status     : problem is being debugged
+>
+> Patch available at: http://lkml.org/lkml/2007/6/8/490
 
-And the winner is... CONFIG_X86_GOOD_APIC ;-)
+Thanks for letting me know.
 
-I think that !GOOD_APIC is a workaround for "11AP erratum in Pentium
-Processor Specification Update" aka read-before-write bug.
+Regards,
+Michal
 
-The config symbol is used in include/asm-i386/apic.h:
-
-#ifdef CONFIG_X86_GOOD_APIC
-# define FORCE_READ_AROUND_WRITE 0
-# define apic_read_around(x)
-# define apic_write_around(x,y) apic_write((x),(y))
-#else
-# define FORCE_READ_AROUND_WRITE 1
-# define apic_read_around(x) apic_read(x)
-# define apic_write_around(x,y) apic_write_atomic((x),(y))
-#endif
-
-With GOOD_APIC apic_read_around is a nop, while apic_write_around is a
-normal write. With !GOOD_APIC apic_write_around writes to the APIC reg
-using xchg. With !GOOD_APIC and this patch:
-
---- include/asm-i386/apic.h~	2007-04-26 05:08:32.000000000 +0200
-+++ include/asm-i386/apic.h	2007-06-13 22:35:00.000000000 +0200
-@@ -56,7 +56,8 @@
- static __inline fastcall void native_apic_write_atomic(unsigned long reg,
- 						       unsigned long v)
- {
--	xchg((volatile unsigned long *)(APIC_BASE+reg), v);
-+//	xchg((volatile unsigned long *)(APIC_BASE+reg), v);
-+	*((volatile unsigned long *)(APIC_BASE+reg)) = v;
- }
- 
- static __inline fastcall unsigned long native_apic_read(unsigned long reg)
-
-The kernel boots fine. 
-
-Luca
 -- 
-"Sei l'unica donna della mia vita".
-(Adamo)
+LOG
+http://www.stardust.webpages.pl/log/
