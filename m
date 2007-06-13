@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbXFMFCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbXFMFLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbXFMFCc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 01:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbXFMFCZ
+	id S1755446AbXFMFLM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 01:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbXFMFLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 01:02:25 -0400
-Received: from mail-in-01.arcor-online.net ([151.189.21.41]:34567 "EHLO
-	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752783AbXFMFCY (ORCPT
+	Wed, 13 Jun 2007 01:11:00 -0400
+Received: from web50107.mail.re2.yahoo.com ([206.190.38.35]:38827 "HELO
+	web50107.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750772AbXFMFK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 01:02:24 -0400
-In-Reply-To: <1181638939310-git-send-email-wei.zhang@freescale.com>
-References: <11816389393593-git-send-email-wei.zhang@freescale.com> <1181638939310-git-send-email-wei.zhang@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       mporter@kernel.crashing.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector to the document of booting-without-of.txt file.
-Date: Wed, 13 Jun 2007 07:02:17 +0200
-To: Zhang Wei <wei.zhang@freescale.com>
-X-Mailer: Apple Mail (2.623)
+	Wed, 13 Jun 2007 01:10:59 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=WrxIAumaHnhf9g+hqukk222V5T5TfQpX8lWYiJYrBwUTbmXhRkgIheyT4x/ZA/weTvmeDaPiHmulMsLescBcnaH+ydDUK1XFFmlxF6Sd8/4QpPHsR1ADW279RYIylJUjA6DMO2KVA8RAOlTtiNQOwW9CVDjQMKfGTgsdTDjpJ6w=;
+X-YMail-OSG: OP6sAQEVM1lKlZrJR9umGJNlsR9eA9HUSp_eTyqtN3Lzcp4Y5tl3pbXWbSXipIPYMO5axA--
+Date: Tue, 12 Jun 2007 22:10:58 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Reply-To: dougthompson@xmission.com
+Subject: Re: [PATCH 4/6] include linux pci_id-h add amd northbridge defines
+To: Dave Jones <davej@redhat.com>, Greg KH <greg@kroah.com>
+Cc: dougthompson@xmission.com, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, akpm@osdl.org
+In-Reply-To: <20070612032553.GB19293@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <830935.77535.qm@web50107.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +   k) RapidIO
-> +
-> +   Required properties:
-> +
-> +    - device_type : Should be "rapidio"
 
-There is no OF binding, so no.
+--- Dave Jones <davej@redhat.com> wrote:
 
-> +    - compatible : Should be "fsl,rapidio-v0.0" or "fsl,rapidio-v1.0"
-> +      and so on. The version number is got from IP Block Revision
-> +      Register of RapidIO controller.
+> On Mon, Jun 11, 2007 at 04:49:47PM -0700, Greg Kroah-Hartman wrote:
+>  > On Mon, Jun 11, 2007 at 04:30:11PM -0700, Doug Thompson wrote:
+>  > > I am working with the k8 driver and its dealing with a race with the mcelog device as both
+> access
+>  > > the K8 NB. The K8 driver does use these regs and it currently has #ifndef s in it for both
+> of
+>  > > them.
+>  > > 
+>  > > I guess I could have submitted the patch when the K8 driver was submitted.
+>  > 
+>  > That would be preferable, thanks.
+> 
+> Even better (IMO), if they're not used by any other driver (which seems
+> to be the case), keep the defines local to the driver.
+> 
+> 	Dave
 
-It's better to use real device names, just like everyone
-else.
+There are 4 K8 Memory Controller registers, 2 of which are already in pci_ids.h (and are used by
+others) and 2 more that I need. I define the 2 I need now in the file, but was worried when
+someone else might add them to the pci_ids.h file.  Just figured that it would be better to keep
+all 4 together.
 
-> +    - #address-cells : Address representation for "rapidio" devices.
-> +      This field represents the number of cells needed to represent
-> +      the RapidIO address of the registers.  For supporting more than
-> +      36-bits RapidIO address, this field should be <2>.
+So is the model of such placement to locate the #define near to the sole consumer of that item? 
 
-More than 32 bit?
+And if used by others, to move it to the pci_ids.h file?
 
-> +    - interrupt-parent : the phandle for the interrupt controller that
-> +      services interrupts for this device.
+thanks
 
-Not required, depends on the interrupt tree of the system.
-
-> +    - interrupts : <a b> where a is the interrupt number and b is a
-> +      field that represents an encoding of the sense and level
-> +      information for the interrupt.
-
-No.  The format of an "interrupts" entry is defined by
-the interrupt domain this device sits in, not by the
-device itself.
-
-> For this sector, interrupts order should be
-> +      <err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
-> +      msg2_tx_irq msg2_rx_irq ... msgN_tx_irq msgN_rx_irq>.
-
-That's to be defined in the binding for your specific device,
-not in a more generic rapidio binding.
-
-> +		#address-cells = <2>;
-
-You want a #size-cells as well.
-
-Hope this helps,
-
-
-Segher
+doug t
 
