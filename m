@@ -1,59 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXFMXua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757988AbXFMXw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbXFMXua (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 19:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbXFMXuX
+	id S1757988AbXFMXw6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 19:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbXFMXwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 19:50:23 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50735 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756477AbXFMXuW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 19:50:22 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: =?utf-8?q?J=C3=B6rn_Engel?= <joern@logfs.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Wed, 13 Jun 2007 19:50:14 -0400
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <466BCBBC.90305@netone.net.tr> <alpine.LFD.0.98.0706131415090.14121@woody.linux-foundation.org> <20070613233541.GA27689@lazybastard.org>
-In-Reply-To: <20070613233541.GA27689@lazybastard.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Wed, 13 Jun 2007 19:52:49 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56507 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754865AbXFMXws (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 19:52:48 -0400
+Date: Thu, 14 Jun 2007 09:52:17 +1000
+From: David Chinner <dgc@sgi.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: David Chinner <dgc@sgi.com>, Suparna Bhattacharya <suparna@in.ibm.com>,
+       torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070613235217.GS86004887@sgi.com>
+References: <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com> <20070510005926.GT85884050@sgi.com> <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="wzJLGUyc3ArbnUjN"
 Content-Disposition: inline
-Message-Id: <200706131950.14683.dhazelton@enter.net>
+In-Reply-To: <20070612061652.GA6320@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 June 2007 19:35:41 Jörn Engel wrote:
-> On Wed, 13 June 2007 14:33:07 -0700, Linus Torvalds wrote:
-> > The beauty of the GPLv2 is exactly that it's a "tit-for-tat" license, and
-> > you can use it without having to drink the kool-aid.
->
-> One could even add that "tit-for-tat" appears to be the best strategy
-> in game theory for continuous runs of the prisoners dilemma.  At times I
-> wonder why game theory isn't taught in schools yet - it might shorten
-> discussions like these.
->
-> Jörn
 
-With the sheer amount of sheeple[1] in the world (and on this list), I doubt 
-anything could make these discussions any shorter.
+--wzJLGUyc3ArbnUjN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-(While I hate thinking that sheeple are on this list, it is an unavoidable 
-fact. (I had hoped I wouldn't find any sheeple here, as my favorite theory is 
-that they are all "Fundamentalist Christians" like the "Creationist" fools))
+On Tue, Jun 12, 2007 at 11:46:52AM +0530, Amit K. Arora wrote:
+> Did you get time to write the above man page ? It will help to push
+> further patches in time (eg. for FA_PREALLOCATE mode).
 
-DRH
-1: Sheeple (n): People that act like sheep - ie: they cannot think or form 
-opinions for themselves and always look to someone else for their thoughts 
-and parrot the opinions of some "trusted" figure.
+First pass is attached.
 
+`nroff -man fallocate.2 | less` to view.
+
+Cheers,
+
+Dave.
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
+
+--wzJLGUyc3ArbnUjN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="fallocate.2"
+
+.TH fallocate 2
+.SH NAME
+fallocate \- allocate or remove file space
+.SH SYNOPSIS
+.nf
+.B #include <sys/syscall.h>
+.PP
+.BI "int syscall(int, int fd, int mode, loff_t offset, loff_t len);
+.Op
+.SH DESCRIPTION
+The
+.BR fallocate
+syscall allows a user to directly manipulate the allocated disk space
+for the file referred to by
+.I fd
+for the byte range starting at
+.IR offset
+and continuing for
+.IR len
+bytes.
+The
+.I mode
+parameter determines the operation to be performed on the given range.
+Currently there are three modes:
+.TP
+.B FA_ALLOCATE
+allocates and initialises to zero the disk space within the given range.
+After a successful call, subsequent writes are guaranteed not to fail because
+of lack of disk space.  If the size of the file is less than
+IR offset + len ,
+then the file is increased to this size; otherwise the file size is left
+unchanged.
+B FA_ALLOCATE
+closely resembles
+B posix_fallocate(3)
+and is intended as a method of optimally implementing this function.
+B FA_ALLOCATE
+may allocate a larger range that was specified.
+TP
+B FA_PREALLOCATE
+provides the same functionality as
+B FA_ALLOCATE
+except it does not ever change the file size. This allows allocation
+of zero blocks beyond the end of file and is useful for optimising
+append workloads.
+TP
+B FA_DEALLOCATE
+removes the underlying disk space with the given range. The disk space
+shall be removed regardless of it's contents so both allocated space
+from
+B FA_ALLOCATE
+and
+B FA_PREALLOCATE
+as well as from
+B write(3)
+will be removed.
+B FA_DEALLOCATE
+shall never remove disk blocks outside the range specified.
+B FA_DEALLOCATE
+shall never change the file size. If changing the file size
+is required when deallocating blocks from an offset to end
+of file (or beyond end of file) is required,
+B ftuncate64(3)
+should be used.
+
+SH "RETURN VALUE"
+BR fallocate()
+returns zero on success, or an error number on failure.
+Note that
+IR errno
+is not set.
+SH "ERRORS"
+TP
+B EBADF
+I fd
+is not a valid file descriptor, or is not opened for writing.
+TP
+B EFBIG
+I offset+len
+exceeds the maximum file size.
+TP
+B EINVAL
+I offset
+or
+I len
+was less than 0.
+TP
+B ENODEV
+I fd
+does not refer to a regular file or a directory.
+TP
+B ENOSPC
+There is not enough space left on the device containing the file
+referred to by
+IR fd.
+TP
+B ESPIPE
+I fd
+refers to a pipe of file descriptor.
+B ENOSYS
+The filesystem underlying the file descriptor does not support this
+operation.
+SH AVAILABILITY
+The
+BR fallocate ()
+system call is available since 2.6.XX
+SH "SEE ALSO"
+BR syscall (2),
+BR posix_fadvise (3)
+BR ftruncate (3)
+
+--wzJLGUyc3ArbnUjN--
