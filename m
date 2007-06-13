@@ -1,53 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbXFML3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbXFMLcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbXFML3N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 07:29:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757232AbXFML3B
+	id S1758081AbXFMLcn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 07:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757406AbXFMLcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 07:29:01 -0400
-Received: from stinky.trash.net ([213.144.137.162]:61224 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754882AbXFML3A (ORCPT
+	Wed, 13 Jun 2007 07:32:36 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:53284 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756858AbXFMLcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 07:29:00 -0400
-Message-ID: <466FD439.2040807@trash.net>
-Date: Wed, 13 Jun 2007 13:25:45 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: cannot set IP for ethernet
-References: <200706121441.13561.oliver@neukum.org> <200706131039.32011.oliver@neukum.org> <466FD17A.8040900@trash.net> <200706131321.30451.oliver@neukum.org>
-In-Reply-To: <200706131321.30451.oliver@neukum.org>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 07:32:35 -0400
+Subject: Re: beeping patch for debugging acpi sleep
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christian Leber <christian@leber.de>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070613082448.GH13747@elf.ucw.cz>
+References: <20070518213701.GA810@core>
+	 <20070611120034.f6d972de.akpm@linux-foundation.org>
+	 <1181601771.5064.2.camel@nigel.suspend2.net>
+	 <200706121411.56016.rjw@sisk.pl>
+	 <1181697460.4910.7.camel@nigel.suspend2.net>
+	 <20070613082448.GH13747@elf.ucw.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-/BW2XYV7ZXT2z6Ow0EW8"
+Date: Wed, 13 Jun 2007 21:32:33 +1000
+Message-Id: <1181734353.5012.12.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum wrote:
-> Am Mittwoch, 13. Juni 2007 schrieb Patrick McHardy:
->>>>
->>>>This can happen if the initial inetdev allocation when the netdevice is
->>>>registered fails. I think it would make sense to try to allocate again
->>>>when adding addresses in that case, otherwise there is no way of
->>>>recovery other than unregistering and registering the device again.
->>>
->>>
->>>With your patch the problem has gone away. Is there a way to especially
->>>stress the system in that regard?
->>
->>
->>Its a failed allocation at NETDEV_REGISTER time. I guess you could
->>keep unloading + reloading the driver module to try to reproduce it.
-> 
-> 
-> If that is the cause, why doesn't it strike from the very beginning? How
-> come it fails after some time?
 
+--=-/BW2XYV7ZXT2z6Ow0EW8
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-It might also be a failed in_ifaddr allocation. In that case my patch
-shouldn't help though.
+Hi.
+
+On Wed, 2007-06-13 at 10:24 +0200, Pavel Machek wrote:
+> Hi!
+>=20
+> > > > Wouldn't it be much more useful if it was unconditionally compiled =
+in
+> > > > and controlled instead by a sysfs entry? That way it will be far mo=
+re
+> > > > useful to $user who doesn't know or want to know how to compile and
+> > > > install a kernel, but wants to do what they can to get provide help=
+ful
+> > > > debugging info and perhaps even get it going.
+> > >=20
+> > > I like this idea.
+> > >=20
+> > > > Yes, Pavel, I'll supply a patch if you (plural) agree.
+> > >=20
+> > > I agree.  :-)
+> >=20
+> > Ok. I'll take Pavel's silence as agreement too. I'll be a little slow
+> > (as usual, nowadays!), but will try to get it done next week. I think I
+> > can in clear conscience do it on Redhat time if I don't manage it
+> > beforehand.
+>=20
+> Well, everyone wants it so what can I do... Stefan basically posted 3
+> liner to do that, and that one will probably work... so just test it.
+
+As he admitted, it's a quick and dirty hack. I'd like to try something
+nicer.
+
+> Oh, and please keep the macro, so it can be moved around .S file for
+> finding out where it crashes.
+
+Are there other points you'd like to nominate? It would defeat the logic
+for implementing a nice interface if you still have to recompile your
+kernel to test beeping in another place.
+
+Regards,
+
+Nigel
+
+--=-/BW2XYV7ZXT2z6Ow0EW8
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGb9XRN0y+n1M3mo0RAulhAJ95zyNira31LiBM6ZJGuIy+N9/tzQCgl53z
+UPn+4tq9CVMl2EqWd7qG0sA=
+=Je70
+-----END PGP SIGNATURE-----
+
+--=-/BW2XYV7ZXT2z6Ow0EW8--
+
