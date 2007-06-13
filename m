@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbXFMNib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758390AbXFMNiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758610AbXFMNib (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 09:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbXFMNhw
+	id S1758390AbXFMNiq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 09:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758339AbXFMNiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 09:37:52 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2823 "EHLO spitz.ucw.cz"
+	Wed, 13 Jun 2007 09:38:05 -0400
+Received: from gsimpson.gotadsl.co.uk ([84.12.90.178]:50867 "EHLO localhost"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755005AbXFMNht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 09:37:49 -0400
-Date: Tue, 12 Jun 2007 15:02:22 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Rodrigo Luiz <troops.of.doom@gmail.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       Gary Zambrano <zambrano@broadcom.com>, Michael Buesch <mb@bu3sch.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [1/3] 2.6.22-rc4: known regressions v2
-Message-ID: <20070612150221.GB5986@ucw.cz>
-References: <466AE606.7020704@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <466AE606.7020704@googlemail.com>
-User-Agent: Mutt/1.5.9i
+	id S1758277AbXFMNiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 09:38:03 -0400
+X-Greylist: delayed 1563 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 09:38:03 EDT
+Message-Id: <20070613131159.560391133@localhost>
+References: <20070613130953.983863758@localhost>
+Date: Wed, 13 Jun 2007 14:09:56 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: [patch 3/6] SM501 MFD driver updates
+Content-Disposition: inline; filename=simtec-drivers-mfd-sm501-reginitfix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+SM501: Fix sm501_init_reg() mask/set order
 
-Can we add 'writing to /proc/acpi/thermal/*/trip_points' no longer
-works to the list? Len did it intentionally but that does not make it
-right. People are using it and we did not go through deprecation
-period. Plus there's no reasonable alternative.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The order of the set and mask operation in sm501_init_reg()
+was setting and then masking the bits set. Correct the order
+so that we do not end up with 288MHz SDRAM clocks on certain
+systems.
+
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+
+Index: linux-2.6.21-quilt8/drivers/mfd/sm501.c
+===================================================================
+--- linux-2.6.21-quilt8.orig/drivers/mfd/sm501.c	2007-06-07 12:13:03.000000000 +0100
++++ linux-2.6.21-quilt8/drivers/mfd/sm501.c	2007-06-07 12:13:06.000000000 +0100
+@@ -803,6 +803,9 @@ static DEVICE_ATTR(dbg_regs, 0666, sm501
+ /* sm501_init_reg
+  *
+  * Helper function for the init code to setup a register
++ *
++ * clear the bits which are set in r->mask, and then set
++ * the bits set in r->set.
+ */
+ 
+ static inline void sm501_init_reg(struct sm501_devdata *sm,
+@@ -812,8 +815,8 @@ static inline void sm501_init_reg(struct
+ 	unsigned long tmp;
+ 
+ 	tmp = readl(sm->regs + reg);
+-	tmp |= r->set;
+ 	tmp &= ~r->mask;
++	tmp |= r->set;
+ 	writel(tmp, sm->regs + reg);
+ }
+ 
+
+--
