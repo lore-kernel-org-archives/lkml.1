@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758390AbXFMNiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbXFMNjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758390AbXFMNiq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 09:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758339AbXFMNiF
+	id S1758556AbXFMNjF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 09:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758356AbXFMNiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 09:38:05 -0400
-Received: from gsimpson.gotadsl.co.uk ([84.12.90.178]:50867 "EHLO localhost"
+	Wed, 13 Jun 2007 09:38:06 -0400
+Received: from gsimpson.gotadsl.co.uk ([84.12.90.178]:50868 "EHLO localhost"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758277AbXFMNiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 09:38:03 -0400
-X-Greylist: delayed 1563 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 09:38:03 EDT
-Message-Id: <20070613131159.560391133@localhost>
+	id S1758328AbXFMNiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 09:38:05 -0400
+Message-Id: <20070613131159.284417987@localhost>
 References: <20070613130953.983863758@localhost>
-Date: Wed, 13 Jun 2007 14:09:56 +0100
+Date: Wed, 13 Jun 2007 14:09:55 +0100
 From: Ben Dooks <ben-linux@fluff.org>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org
-Subject: [patch 3/6] SM501 MFD driver updates
-Content-Disposition: inline; filename=simtec-drivers-mfd-sm501-reginitfix.patch
+Subject: [patch 2/6] SM501 MFD driver updates
+Content-Disposition: inline; filename=simtec-drivers-mfd-sm501-clock-order.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SM501: Fix sm501_init_reg() mask/set order
+SM501: initialise SDRAM clock before bus clocks
 
-The order of the set and mask operation in sm501_init_reg()
-was setting and then masking the bits set. Correct the order
-so that we do not end up with 288MHz SDRAM clocks on certain
-systems.
+This init sequence of setting the SDRAM clock before the
+bus clock is recommend by Silicon Motion to stop problems
+with writes not sticking into registers.
 
+Signed-off-by: Vincent Sanders <vince@simtec.co.uk>
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
 Index: linux-2.6.21-quilt8/drivers/mfd/sm501.c
 ===================================================================
---- linux-2.6.21-quilt8.orig/drivers/mfd/sm501.c	2007-06-07 12:13:03.000000000 +0100
-+++ linux-2.6.21-quilt8/drivers/mfd/sm501.c	2007-06-07 12:13:06.000000000 +0100
-@@ -803,6 +803,9 @@ static DEVICE_ATTR(dbg_regs, 0666, sm501
- /* sm501_init_reg
-  *
-  * Helper function for the init code to setup a register
-+ *
-+ * clear the bits which are set in r->mask, and then set
-+ * the bits set in r->set.
- */
+--- linux-2.6.21-quilt8.orig/drivers/mfd/sm501.c	2007-06-07 12:12:38.000000000 +0100
++++ linux-2.6.21-quilt8/drivers/mfd/sm501.c	2007-06-07 12:13:03.000000000 +0100
+@@ -833,15 +833,15 @@ static void sm501_init_regs(struct sm501
+ 	sm501_init_reg(sm, SM501_GPIO31_0_CONTROL, &init->gpio_low);
+ 	sm501_init_reg(sm, SM501_GPIO63_32_CONTROL, &init->gpio_high);
  
- static inline void sm501_init_reg(struct sm501_devdata *sm,
-@@ -812,8 +815,8 @@ static inline void sm501_init_reg(struct
- 	unsigned long tmp;
- 
- 	tmp = readl(sm->regs + reg);
--	tmp |= r->set;
- 	tmp &= ~r->mask;
-+	tmp |= r->set;
- 	writel(tmp, sm->regs + reg);
+-	if (init->mclk) {
+-		dev_info(sm->dev, "setting MCLK to %ld\n", init->mclk);
+-		sm501_set_clock(sm->dev, SM501_CLOCK_MCLK, init->mclk);
+-	}
+-
+ 	if (init->m1xclk) {
+ 		dev_info(sm->dev, "setting M1XCLK to %ld\n", init->m1xclk);
+ 		sm501_set_clock(sm->dev, SM501_CLOCK_M1XCLK, init->m1xclk);
+ 	}
++
++	if (init->mclk) {
++		dev_info(sm->dev, "setting MCLK to %ld\n", init->mclk);
++		sm501_set_clock(sm->dev, SM501_CLOCK_MCLK, init->mclk);
++	}
  }
  
+ static unsigned int sm501_mem_local[] = {
 
 --
