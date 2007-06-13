@@ -1,142 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbXFMJSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbXFMJSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbXFMJSR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 05:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbXFMJSA
+	id S1757710AbXFMJSb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 05:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbXFMJSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 05:18:00 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:33841 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754088AbXFMJR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 05:17:59 -0400
-Date: Wed, 13 Jun 2007 11:25:37 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Thomas Gleixner <tglx@linutronix.de>, stable@kernel.org,
-       netdev@vger.kernel.org
-Subject: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole module
-Message-ID: <20070613092537.GA2432@ff.dom.local>
-References: <20070526154011.GB3735@vanheusden.com> <20070529005628.f7f3abc6.akpm@linux-foundation.org> <20070612110233.GA3281@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070612110233.GA3281@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 13 Jun 2007 05:18:09 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:44811 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756798AbXFMJSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 05:18:07 -0400
+Date: Wed, 13 Jun 2007 11:18:03 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Hans de Goede <j.w.r.degoede@hhs.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stanislav Brabec <sbrabec@suse.cz>, Vojtech Pavlik <vojtech@suse.cz>
+Subject: Re: Proposal: change keycode for scancode e0 32 from 150 to 172
+In-Reply-To: <466F1E5C.5090002@zytor.com>
+Message-ID: <Pine.LNX.4.64.0706131113400.23280@twin.jikos.cz>
+References: <466F1462.5090008@hhs.nl> <466F1E5C.5090002@zytor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 01:02:33PM +0200, Jarek Poplawski wrote:
-...
-> Of course such a problem should preferably be fixed by somebody who
-> knows the code (alas I don't know netconsole), to be sure all needed
-> cancels are still done after this change. I hope Jason's patch is
-> right but I'm a little surprised I can't see netdev in cc (I'll try
-> to fix this).
+On Tue, 12 Jun 2007, H. Peter Anvin wrote:
 
-So, I've had a look into netpoll and, unfortunately, I don't
-think this patch is right... 
+> In PS/2 mode it reports E0 32 which gets converted to keycode 150. In 
+> USB mode it reports E0 02 which gets converted to keycode 172.
+> I don't know if it's the keyboard itself that's being inconsistent, or 
+> if it is the table in usbkbd.c that's broken (in which case it should be 
+> fixed to be consistent with the keyboard in PS/2 mode.)
 
-> > From: Jason Wessel <jason.wessel@windriver.com>
-> > 
-> > Do not call cancel_rearming_delayed_work() if there is no
-> > pending work.
-> > 
-> > Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> > 
-> >  net/core/netpoll.c |    6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff -puN net/core/netpoll.c~a net/core/netpoll.c
-> > --- a/net/core/netpoll.c~a
-> > +++ a/net/core/netpoll.c
-> > @@ -784,8 +784,10 @@ void netpoll_cleanup(struct netpoll *np)
-> >  			if (atomic_dec_and_test(&npinfo->refcnt)) {
-> >  				skb_queue_purge(&npinfo->arp_tx);
-> >  				skb_queue_purge(&npinfo->txq);
-> > -				cancel_rearming_delayed_work(&npinfo->tx_work);
-> > -				flush_scheduled_work();
-> > +				if (delayed_work_pending(&npinfo->tx_work)) {
-> > +					cancel_rearming_delayed_work(&npinfo->tx_work);
-> > +					flush_scheduled_work();
-> > +				}
-> >  
-> >  				kfree(npinfo);
-> >  			}
-> > _
+Hi Peter,
 
-There are such possibilities:
+First, usbkbd.c has very probably zero business with this - the mappings 
+are being done in hid-input.c, usbkdb.c is only for embedded/debugging 
+cases, and is almost never used on modern systems (see the corresponding 
+Kconfig help text).
 
-1. After positive delayed_work_pending(&npinfo->tx_work) test
-some work is queued, but there is no guarantee that when running
-it'll rearm again, so cancel_rearming_delayed_work can loop again;
+> You seem to be of the opinion that "usb behaviour is correct", but don't 
+> give any motivation why usb should take precedence.  Offhand, I would 
+> expect there to be fewer translation layers for PS/2 and would therefore 
+> assume PS/2 is more inherently correct.
 
-2. After negative delayed_work_pending(&npinfo->tx_work) test
-a work is just running, eg. waiting on netif_tx_lock, while
-kfree(npinfo) is done here (oops?!).
+For USB, we have Hid Usage Pages, which define this to be KEY_HOMEPAGE. 
+There is no such specification for PS/2 though, so what Hans is proposing 
+is to make it consistent with behavior of USB HID devices, which I agree 
+with.
 
-I've found an additional problem here with or without this patch:
-after deleting a timer in cancel_rearming_delayed_work() there could
-stay a last skb queued in npinfo->txq, and after kfree(npinfo)
-we have small memory leak. If I'm right here similar fix is needed
-in the current netpoll code: additional npinfo->txq purging only
-or maybe the whole cancel_rearming_ changed like this.
-
-I've tried to eliminate these problems in attached below patch
-proposal. I'm not sure it's all right: as I've written earlier I
-don't know netconsole enough, but it's probably a little better
-than above solution.
-
-I've some doubts yet (I didn't have time to check this all):
-
-1. I hope this other schedule_delayed_work() from netpoll_send_skb()
-is not possible when netpoll_cleanup() runs - if I'm wrong additional
-check of npinfo->refcnt should be done there;
-2. I also hope npinfo->refcnt before scheduling should be enough here
-- if not - another possibility is adding some locking eg.:
-netif_tx_lock before cancel for synchronization.
-
-Of course it would be very nice if somebody could test or verify
-this patch more.
-
-Regards,
-Jarek P.
-
-
-Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-
----
-
-diff -Nurp 2.6.21-/net/core/netpoll.c 2.6.21/net/core/netpoll.c
---- 2.6.21-/net/core/netpoll.c	2007-04-26 15:08:32.000000000 +0200
-+++ 2.6.21/net/core/netpoll.c	2007-06-12 21:05:23.000000000 +0200
-@@ -73,7 +73,8 @@ static void queue_process(struct work_st
- 			netif_tx_unlock(dev);
- 			local_irq_restore(flags);
- 
--			schedule_delayed_work(&npinfo->tx_work, HZ/10);
-+			if (atomic_read(&npinfo->refcnt))
-+				schedule_delayed_work(&npinfo->tx_work, HZ/10);
- 			return;
- 		}
- 		netif_tx_unlock(dev);
-@@ -780,9 +781,15 @@ void netpoll_cleanup(struct netpoll *np)
- 			if (atomic_dec_and_test(&npinfo->refcnt)) {
- 				skb_queue_purge(&npinfo->arp_tx);
- 				skb_queue_purge(&npinfo->txq);
--				cancel_rearming_delayed_work(&npinfo->tx_work);
-+				cancel_delayed_work(&npinfo->tx_work);
- 				flush_scheduled_work();
- 
-+				/* clean after last, unfinished work */
-+				if (!skb_queue_empty(&npinfo->txq)) {
-+					struct sk_buff *skb;
-+					skb = __skb_dequeue(&npinfo->txq);
-+					kfree_skb(skb);
-+				}
- 				kfree(npinfo);
- 			}
- 		}
+-- 
+Jiri Kosina
