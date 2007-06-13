@@ -1,154 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbXFMU4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbXFMU45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980AbXFMU4S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 16:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXFMU4K
+	id S1758076AbXFMU45 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 16:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbXFMU4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 16:56:10 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:53974 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbXFMU4I (ORCPT
+	Wed, 13 Jun 2007 16:56:49 -0400
+Received: from ext-ch1gw-8.online-age.net ([64.37.194.16]:36960 "EHLO
+	ext-ch1gw-8.online-age.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754916AbXFMU4s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 16:56:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=troK5Abs5kyIgL98wIhCxNBl2NFtkDSkVk0xEbr90CXxDAw/KzT+jehmG5Q6fYqBKZ2npbdhcGK0Uvsd+/OsN/d1ixUNA1GdspBNHi6Mm9I5Mk+F//ssAMzS23S5VN6feJfoGnFot56+1iyrxv1Mg4vKLmIGu/tJI9t6n/t2uEo=
-Message-ID: <b647ffbd0706131356q344af13as3744c151b4a4f680@mail.gmail.com>
-Date: Wed, 13 Jun 2007 22:56:06 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: vatsa@linux.vnet.ibm.com
-Subject: Re: [RFC][PATCH 5/6] core changes for group fairness
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070611155608.GE2109@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 13 Jun 2007 16:56:48 -0400
+X-Greylist: delayed 506 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 16:56:48 EDT
+Date: Wed, 13 Jun 2007 15:48:03 -0500
+From: Rich Coe <Richard.Coe@med.ge.com>
+To: torvalds@osdl.org, jack@suse.cz
+Cc: linux-kernel@vger.kernel.org
+Subject: PATCH: udf fs corruption on linux-2.6
+Message-Id: <20070613154803.a1ad874a.Richard.Coe@med.ge.com>
+Organization: CSE
+X-Mailer: Sylpheed 2.4.0beta4 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070611154724.GA32435@in.ibm.com>
-	 <20070611155608.GE2109@in.ibm.com>
+X-GEHealthcare-MailScanner: Found to be clean
+X-GEHealthcare-MailScanner-From: richard.coe@med.ge.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/06/07, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> This patch introduces the core changes in CFS required to accomplish
-> group fairness at higher levels. It also modifies load balance interface
-> between classes a bit, so that move_tasks (which is centric to load
-> balance) can be reused to balance between runqueues of various types
-> (struct rq in case of SCHED_RT tasks, struct lrq in case of
-> SCHED_NORMAL/BATCH tasks).
+Hi Linus, 
 
-a few things that catched my eye, please see below:
+This patch fixes directory and missing files corruption in fs/udf which
+occurs on all known 2.6 releases.
 
+The corruption occurs because blocks which were pre-alloc'd for a directory 
+are released back to the fs freelist, but the inode's alloc block information
+is not updated to reflect this.
 
-> +static int balance_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
-> +                     unsigned long max_nr_move, unsigned long max_load_move,
-> +                     struct sched_domain *sd, enum idle_type idle,
-> +                     int *all_pinned, unsigned long *load_moved,
-> +                     int this_best_prio, int best_prio, int best_prio_seen,
-> +                     void *iterator_arg,
-> +                     struct task_struct *(*iterator_start)(void *arg),
-> +                     struct task_struct *(*iterator_next)(void *arg));
+You would not see corruption if the number of files in any directory is 
+less than 41, because the pre-alloc routine does not allocate blocks for the
+directory until the number of files is over 40.
 
-IMHO, it looks a bit frightening :) maybe it would be possible to
-create a structure that combines some relevant argumens .. at least,
-the last 3 ones.
+The problem occurs during unmounting because fs/udf incorrectly calls 
+udf_discard_prealloc() from udf_clear_inode().  udf_discard_prealloc() will
+update the inode and schedule it for write, but no write will ever occur 
+because the fs is in the process of being umount'd. 
 
+The solution is to add a put_inode routine to update the inode contents
+and release the pre-alloc'd blocks to disk prior to clearing the inode
+from the kernel.
 
-> -static int move_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
-> +static int balance_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
->                       unsigned long max_nr_move, unsigned long max_load_move,
->                       struct sched_domain *sd, enum idle_type idle,
-> -                     int *all_pinned)
-> +                     int *all_pinned, unsigned long *load_moved,
-> +                     int this_best_prio, int best_prio, int best_prio_seen,
-> +                     void *iterator_arg,
-> +                     struct task_struct *(*iterator_start)(void *arg),
-> +                     struct task_struct *(*iterator_next)(void *arg))
+Test case:
+    mkuddfs /dev/scd0
+    mount -o sync /dev/scd0 /mnt/cdrom
+    mkdir /mnt/cdrom/A /mnt/cdrom/B
+    cp A/* /mnt/cdrom/A		[ A contains 90 files of various sizes ]
+    cp B/* /mnt/cdrom/B 	[ B contains 20 or fewer files ]
+    umount /mnt/cdrom
 
-I think, there is a possible problem here. If I'm not complete wrong,
-this function (move_tasks() in the current mainline) can move more
-'load' than specified by the 'max_load_move'..
-
-as a result, e.g. in the following code :
-
-> +static int move_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
-> +                     unsigned long max_nr_move, unsigned long max_load_move,
-> +                     struct sched_domain *sd, enum idle_type idle,
-> +                     int *all_pinned)
-> +{
-> +       struct sched_class *class = sched_class_highest;
-> +       unsigned long load_moved, total_nr_moved = 0, nr_moved;
-> +
-> +       do {
-> +               nr_moved = class->load_balance(this_rq, this_cpu, busiest,
-> +                                       max_nr_move, max_load_move, sd, idle,
-> +                                       all_pinned, &load_moved);
-> +               total_nr_moved += nr_moved;
-> +               max_nr_move -= nr_moved;
-> +               max_load_move -= load_moved;
-
-can become negative.. and as it's 'unsigned' --> a huge positive number..
-
-> +               class = class->next;
-> +       } while (class && max_nr_move && max_load_move);
-
-'(long)max_load_move > 0'      ?
-
-the same is applicable to a few other similar cases below :
-
-> +static int
-> +load_balance_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
-> +                       unsigned long max_nr_move, unsigned long max_load_move,
-> +                       struct sched_domain *sd, enum idle_type idle,
-> +                       int *all_pinned, unsigned long *total_load_moved)
-> +{
-> +       struct lrq *busy_lrq;
-> +       unsigned long load_moved, total_nr_moved = 0, nr_moved, rem_load_move;
-> +
-> +       rem_load_move = max_load_move;
-> +
-> +       for_each_leaf_lrq(busiest, busy_lrq) {
-> +               struct lrq *this_lrq;
-> +               long imbalance;
-> +               unsigned long maxload;
-> +               int this_best_prio, best_prio, best_prio_seen = 0;
-> +
-                    ..........
-> +
-> +               nr_moved = balance_tasks(this_rq, this_cpu, busiest,
-> +                               max_nr_move, maxload, sd, idle, all_pinned,
-> +                               &load_moved, this_best_prio, best_prio,
-> +                               best_prio_seen,
-> +                               /* pass busy_lrq argument into
-> +                                * load_balance_[start|next]_fair iterators
-> +                                */
-> +                               busy_lrq,
-> +                               load_balance_start_fair,
-> +                               load_balance_next_fair);
-> +
-> +               total_nr_moved += nr_moved;
-> +               max_nr_move -= nr_moved;
-> +               rem_load_move -= load_moved;
-
-here
-
-
-> +
-> +               /* todo: break if rem_load_move is < load_per_task */
-> +               if (!max_nr_move || !rem_load_move)
-
-'(long)rem_load_move <= 0'
-
-and I think somewhere else in the code.
-
-
-> --
-> Regards,
-> vatsa
->
+Here you can see how 7 blocks starting at sector 139 are free and listed in the
+directory entry for 'A'.  I used udfdump to get the following information:
+    [ ... ]
+    Free space found on this partition
+	[00000139 - 00000159]   [00000161 - 00000191]   [00000193 - 00000223]   
+	[00004464 - 00004475]   [00004485 - 00524286]   [00524287 - 01048573]
+	[01048574 - 01572860]   [01572861 - 02097147]   [02097148 - 02235039]   
+    [ ... ]
+    Filename `A`
+    [ ... ]
+    [ blob at sector     2038 for     2048 bytes in logical partion 0 ] 
+    [ blob at sector      137 for     4096 bytes in logical partion 0 ] 
+    [ blob at sector      139 for    14336 bytes in logical partion 0 flags 1 ] 
 
 -- 
-Best regards,
-Dmitry Adamushko
+Rich Coe		richard.coe@med.ge.com
+Virtual Principle Engineer  General Electric Healthcare Technologies
+Global Software Platforms, Computer Technology Team
+
+Signed-off-by: Rich Coe <richard.coe@med.ge.com>
+---
+diff -urNp linux-2.6.20.orig/fs/udf/inode.c linux-2.6.20/fs/udf/inode.c
+--- linux-2.6.20.orig/fs/udf/inode.c	2007-02-04 12:44:54.000000000 -0600
++++ linux-2.6.20/fs/udf/inode.c	2007-06-13 11:32:41.930983471 -0500
+@@ -102,14 +102,17 @@ no_delete:
+ 
+ void udf_clear_inode(struct inode *inode)
+ {
++	kfree(UDF_I_DATA(inode));
++	UDF_I_DATA(inode) = NULL;
++}
++
++void udf_put_inode(struct inode *inode)
++{
+ 	if (!(inode->i_sb->s_flags & MS_RDONLY)) {
+ 		lock_kernel();
+ 		udf_discard_prealloc(inode);
+ 		unlock_kernel();
+ 	}
+-
+-	kfree(UDF_I_DATA(inode));
+-	UDF_I_DATA(inode) = NULL;
+ }
+ 
+ static int udf_writepage(struct page *page, struct writeback_control *wbc)
+diff -urNp linux-2.6.20.orig/fs/udf/super.c linux-2.6.20/fs/udf/super.c
+--- linux-2.6.20.orig/fs/udf/super.c	2007-02-04 12:44:54.000000000 -0600
++++ linux-2.6.20/fs/udf/super.c	2007-06-13 11:31:23.793017185 -0500
+@@ -166,6 +166,7 @@ static struct super_operations udf_sb_op
+ 	.write_inode		= udf_write_inode,
+ 	.delete_inode		= udf_delete_inode,
+ 	.clear_inode		= udf_clear_inode,
++	.put_inode		= udf_put_inode,
+ 	.put_super		= udf_put_super,
+ 	.write_super		= udf_write_super,
+ 	.statfs			= udf_statfs,
+diff -urNp linux-2.6.20.orig/fs/udf/udfdecl.h linux-2.6.20/fs/udf/udfdecl.h
+--- linux-2.6.20.orig/fs/udf/udfdecl.h	2007-02-04 12:44:54.000000000 -0600
++++ linux-2.6.20/fs/udf/udfdecl.h	2007-06-13 11:31:16.684293910 -0500
+@@ -97,6 +97,7 @@ extern void udf_truncate(struct inode *)
+ extern void udf_read_inode(struct inode *);
+ extern void udf_delete_inode(struct inode *);
+ extern void udf_clear_inode(struct inode *);
++extern void udf_put_inode(struct inode *);
+ extern int udf_write_inode(struct inode *, int);
+ extern long udf_block_map(struct inode *, long);
+ extern int8_t inode_bmap(struct inode *, int, kernel_lb_addr *, uint32_t *, kernel_lb_addr *, uint32_t *, uint32_t *, struct buffer_head **);
