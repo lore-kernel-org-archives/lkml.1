@@ -1,56 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757718AbXFMKw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbXFMK5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757718AbXFMKw5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 06:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbXFMKwu
+	id S1757888AbXFMK5o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 06:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756998AbXFMK5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 06:52:50 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56463 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755315AbXFMKwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 06:52:49 -0400
-Date: Wed, 13 Jun 2007 12:52:43 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: James Ketrenos <jketreno@linux.intel.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
-       Zhu Yi <yi.zhu@intel.com>
-Subject: Re: ipw3945 driver in recent -mm kernels
-Message-ID: <20070613105243.GA15368@elf.ucw.cz>
-References: <20070609192703.GA6410@elf.ucw.cz> <20070609215712.GA13678@elf.ucw.cz> <466DA14D.6080309@linux.intel.com>
+	Wed, 13 Jun 2007 06:57:36 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:6603 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754146AbXFMK5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 06:57:34 -0400
+Date: Wed, 13 Jun 2007 17:57:59 +0400
+From: Dmitriy Monakhov <dmonakhov@sw.ru>
+To: linux-kernel@vger.kernel.org, npiggin@suse.de, mark.fasheh@oracle.com,
+       linux-ext4@vger.kernel.org
+Subject: iov_iter_fault_in_readable fix
+Message-ID: <20070613135759.GD13815@localhost.sw.ru>
+Mail-Followup-To: linux-kernel@vger.kernel.org, npiggin@suse.de,
+	mark.fasheh@oracle.com, linux-ext4@vger.kernel.org
+References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net> <20070613134005.GA13815@localhost.sw.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <466DA14D.6080309@linux.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070613134005.GA13815@localhost.sw.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+ 	Function prerform check for signgle region, with out respect to
+ 	segment nature of iovec, For example writev no longer works :)
 
-> Forgot to include changes outside of drivers/net/wireless/mac80211/iwlwifi/
-> 
-> Zhu Yi is the maintainer for the iwlwifi driver (Cc: on this email)
+	/* TESTCASE BEGIN */
+	#include <stdio.h>
+	#include <sys/types.h>
+	#include <sys/stat.h>
+	#include <fcntl.h>
+	#include <sys/uio.h>
+	#include <sys/mman.h>
+	#define SIZE  (4096 * 2)
+	int main(int argc, char* argv[])
+	{	
+		char* ptr[4];
+		struct iovec iov[2];
+		int fd, ret;
+		ptr[0] = mmap(NULL, SIZE, PROT_READ|PROT_WRITE,
+			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+		ptr[1] = mmap(NULL, SIZE, PROT_NONE,
+			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+		ptr[2] = mmap(NULL, SIZE, PROT_READ|PROT_WRITE,
+			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+		ptr[3] = mmap(NULL, SIZE, PROT_NONE, 
+			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
 
-Thanks.
+		iov[0].iov_base = ptr[0] + (SIZE -1);
+		iov[0].iov_len = 1;
+		memset(ptr[0], 1, SIZE);
 
-> >>
-> >> be listed as a maintainer?
-> >>
-> >> Kconfig mentions...
-> >>
-> >>           See <file:Documentation/networking/README.iwlwifi> for
-> >>           information on the capabilities currently enabled in this
-> >>           driver and for tips for debugging issues and problems.
-> 
-> We'll remove that from the Kconfig until we get the document updated
-> to reflect the current status.
+		iov[1].iov_base = ptr[2];
+		iov[1].iov_len = SIZE;
+		memset(ptr[2], 2, SIZE);
 
-Actually, It is probably better to just include the docs.
+		fd = open(argv[1], O_CREAT|O_RDWR|O_TRUNC, 0666);
+		ret = writev(fd, iov, sizeof(iov) / sizeof(struct iovec));
+		return 0;
+	}	
+	/* TESTCASE END*/
+	We will get folowing result:
+		writev(3, [{"\1", 1}, {"\2"..., 8192}], 2) = -1 EFAULT (Bad address)
+ 	
+	this is hidden bug, and it was invisiable because XXXX_fault_in_readable
+ 	return value was ignored before. Lets iov_iter_fault_in_readable
+ 	perform checks for all segments.
 
-(I'll test the patch now).
-								Pavel
+Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index fef19fc..7e025ea 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -433,7 +433,7 @@ size_t iov_iter_copy_from_user_atomic(struct page *page,
+ size_t iov_iter_copy_from_user(struct page *page,
+ 		struct iov_iter *i, unsigned long offset, size_t bytes);
+ void iov_iter_advance(struct iov_iter *i, size_t bytes);
+-int iov_iter_fault_in_readable(struct iov_iter *i, size_t bytes);
++int iov_iter_fault_in_readable(struct iov_iter *i, size_t *bytes);
+ size_t iov_iter_single_seg_count(struct iov_iter *i);
+ 
+ static inline void iov_iter_init(struct iov_iter *i,
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 8d59ed9..8600c3e 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1817,10 +1817,32 @@ void iov_iter_advance(struct iov_iter *i, size_t bytes)
+ }
+ EXPORT_SYMBOL(iov_iter_advance);
+ 
+-int iov_iter_fault_in_readable(struct iov_iter *i, size_t bytes)
++int iov_iter_fault_in_readable(struct iov_iter *i, size_t* bytes)
+ {
+-	char __user *buf = i->iov->iov_base + i->iov_offset;
+-	return fault_in_pages_readable(buf, bytes);
++	size_t len = *bytes;
++	int ret;
++	if (likely(i->nr_segs == 1)) {
++		ret = fault_in_pages_readable(i->iov->iov_base, len);
++		if (ret)
++			*bytes = 0;
++	} else {
++		const struct iovec *iov = i->iov;
++		size_t base = i->iov_offset;
++		*bytes = 0;
++		while (len) {
++			int copy = min(len, iov->iov_len - base);
++			if ((ret = fault_in_pages_readable(iov->iov_base + base, copy)))
++				break;
++			*bytes += copy;
++			len -= copy;
++			base += copy;
++			if (iov->iov_len == base) {
++				iov++;
++				base = 0;
++			}
++		}
++	}
++	return ret;	
+ }
+ EXPORT_SYMBOL(iov_iter_fault_in_readable);
+ 
+@@ -2110,7 +2132,7 @@ static ssize_t generic_perform_write_2copy(struct file *file,
+ 		 * to check that the address is actually valid, when atomic
+ 		 * usercopies are used, below.
+ 		 */
+-		if (unlikely(iov_iter_fault_in_readable(i, bytes))) {
++		if (unlikely(iov_iter_fault_in_readable(i, &bytes) && !bytes)) {
+ 			status = -EFAULT;
+ 			break;
+ 		}
+@@ -2284,7 +2306,7 @@ again:
+ 		 * to check that the address is actually valid, when atomic
+ 		 * usercopies are used, below.
+ 		 */
+-		if (unlikely(iov_iter_fault_in_readable(i, bytes))) {
++		if (unlikely(iov_iter_fault_in_readable(i, &bytes)&& !bytes)) {
+ 			status = -EFAULT;
+ 			break;
+ 		}
+
+
