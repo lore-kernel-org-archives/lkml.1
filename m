@@ -1,111 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759832AbXFMRXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbXFMR1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759832AbXFMRXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 13:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759180AbXFMRXW
+	id S1759382AbXFMR1q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 13:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758261AbXFMR1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 13:23:22 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:44497 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759112AbXFMRXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 13:23:21 -0400
-Message-ID: <4670285C.6070505@drzeus.cx>
-Date: Wed, 13 Jun 2007 19:24:44 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 13 Jun 2007 13:27:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:63784 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756967AbXFMR1f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 13:27:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=R5/dwJTOYzLKgAhW2uLDxsW07FKAfAGnM2sBRYat8KvGkbpzdG2lO6hvOUqvTKx+Ya71B2OLTLu/4SHNLoWmmRJxdF3H40wgPZQIBVanxhRoZHDTXtDPDP3N74Q1ZLysYYw9eZ7E+oz1AhSrXXQ5I89+99XM9J/OPCpC0WcTWn8=
+Message-ID: <9c21eeae0706131027i21d97e16k7aedf54134c727b8@mail.gmail.com>
+Date: Wed, 13 Jun 2007 10:27:34 -0700
+From: "David Brown" <dmlb2000@gmail.com>
+To: kvm-devel@lists.sourceforge.net,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: kvm + IOMMU
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC updates
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+I was wondering if anyone has done any sort of virtualization testing
+with kvm using IOMMU to improve performance of I/O and what sort of
+results they've had... I currently don't have a box with IOMMU (at
+least I don't think so, since its an i386 box) but will be getting
+some amd64 boxes which, hopefully will have that capability.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
+I was also wondering if kvm can take advantage of IOMMU does it need
+to be run a different way? or is it supposed to 'just work' if the
+kernel is built with IOMMU?
 
-to receive the following updates:
+I keep seeing IOMMU patches fly by on the lkml however those are from
+the intel guys and the new boxes we are getting are amd... have the
+amd IOMMU support gotten into the kernel yet?
 
- drivers/mmc/core/sd.c   |   15 +++++++++++++++
- drivers/mmc/host/omap.c |   24 +++---------------------
- 2 files changed, 18 insertions(+), 21 deletions(-)
+Not sure if this is the best place to ask these questions, so any help
+to point me in the right direction on who to talk to would also be
+helpful.
 
-Pierre Ossman (1):
-      mmc: get back read-only switch function
-
-Ragner Magalhaes (1):
-      mmc-omap: fix sd response type 6 vs. 1
-
-diff --git a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
-index 41bfb5d..918477c 100644
---- a/drivers/mmc/core/sd.c
-+++ b/drivers/mmc/core/sd.c
-@@ -427,6 +427,21 @@ static int mmc_sd_init_card(struct mmc_host *host, u32 ocr,
-                mmc_set_bus_width(host, MMC_BUS_WIDTH_4);
-        }
-
-+       /*
-+        * Check if read-only switch is active.
-+        */
-+       if (!oldcard) {
-+               if (!host->ops->get_ro) {
-+                       printk(KERN_WARNING "%s: host does not "
-+                               "support reading read-only "
-+                               "switch. assuming write-enable.\n",
-+                               mmc_hostname(host));
-+               } else {
-+                       if (host->ops->get_ro(host))
-+                               mmc_card_set_readonly(card);
-+               }
-+       }
-+
-        if (!oldcard)
-                host->card = card;
-
-diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-index 1914e65..b0824a3 100644
---- a/drivers/mmc/host/omap.c
-+++ b/drivers/mmc/host/omap.c
-@@ -522,28 +522,10 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
-                }
-
-                if (status & OMAP_MMC_STAT_CARD_ERR) {
--                       if (host->cmd && host->cmd->opcode ==
-MMC_STOP_TRANSMISSION) {
--                               u32 response = OMAP_MMC_READ(host, RSP6)
--                                       | (OMAP_MMC_READ(host, RSP7) << 16);
--                               /* STOP sometimes sets must-ignore bits */
--                               if (!(response & (R1_CC_ERROR
--                                                               | R1_ILLEGAL_COMMAND
--                                                               |
-R1_COM_CRC_ERROR))) {
--                                       end_command = 1;
--                                       continue;
--                               }
--                       }
--
--                       dev_dbg(mmc_dev(host->mmc), "card status error (CMD%d)\n",
-+                       dev_dbg(mmc_dev(host->mmc),
-+                               "ignoring card status error (CMD%d)\n",
-                                host->cmd->opcode);
--                       if (host->cmd) {
--                               host->cmd->error = MMC_ERR_FAILED;
--                               end_command = 1;
--                       }
--                       if (host->data) {
--                               host->data->error = MMC_ERR_FAILED;
--                               transfer_error = 1;
--                       }
-+                       end_command = 1;
-                }
-
-                /*
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Thanks,
+- David Brown
