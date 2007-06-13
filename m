@@ -1,36 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbXFMSTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760047AbXFMSVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759987AbXFMSTo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 14:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758790AbXFMSTi
+	id S1760047AbXFMSVm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 14:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759291AbXFMSVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 14:19:38 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:54571 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758724AbXFMSTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 14:19:38 -0400
-Date: Wed, 13 Jun 2007 21:19:35 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Wang Zhenyu <zhen78@gmail.com>
-cc: Dave Jones <davej@redhat.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Wang Zhenyu <zhenyu.z.wang@intel.com>, Eric Anholt <eric@anholt.net>
-Subject: Re: I815 suddenly unkown to agpgart?
-In-Reply-To: <20070613180039.GA4508@localhost.localdomain>
-Message-ID: <Pine.SOC.4.64.0706132118480.9655@math>
-References: <Pine.SOC.4.64.0706131804180.2614@math> <20070613160152.GC3875@redhat.com>
- <20070613161513.GE3875@redhat.com> <20070613180039.GA4508@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 13 Jun 2007 14:21:36 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:30578 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758951AbXFMSVf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 14:21:35 -0400
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+From: holzheu <holzheu@linux.vnet.ibm.com>
+Reply-To: holzheu@linux.vnet.ibm.com
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, akpm@osdl.org,
+       mtk-manpages@gmx.net, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
+In-Reply-To: <20070613175147.GB14355@suse.de>
+References: <1181747217.29512.9.camel@localhost.localdomain>
+	 <20070613175147.GB14355@suse.de>
+Content-Type: text/plain
+Organization: IBM
+Date: Wed, 13 Jun 2007 20:18:00 +0200
+Message-Id: <1181758680.26375.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> No, the problem for i815 is that it has a config with no integrated gfx.
-> Sorry I missed it. Meelis, pls test with this patch, which adds a table 
-> item for this, and fixes wrong driver order within origin i815 driver with IGD.
+Hi Greg,
 
-Thanks, this fixes it. dmesg is fine and X log shows it's using AGP 
-again.
+> Ick, why are you ignoring what we have already with dev_printk() and
+> friends?  We are just finally getting developers to use that, I think it
+> will be almost impossible to get people to change to something else,
+> especially one that isn't even as "correct" as what dev_printk() offers
+> you today, will be quite hard.
+>
+> So, why not use what we already have and work off of it?
 
--- 
-Meelis Roos (mroos@linux.ee)
+dev_printk() and friends are great, since they already define something
+like KMSG_COMPONENT: The driver name.
+
+But they unfortunately do not solve our problem. We need an identifier
+for a documented message in order to find the right description for a
+message.
+
+We could add new dev_printk macros for KMSG printks:
+
+#define dev_printk_kmsg(kmsg, dev, format, arg...) \
+        printk(kmsg "%s: " format , (dev)->bus_id , ## arg)
+#define dev_err_kmsg(dev, nr, format, arg...) \
+        dev_printk_kmsg(KMSG_ERR(nr) , dev , format , ## arg)
+
+E.g. hub.c:
+===========
+
+#define KMSG_COMPONENT "hub"
+
+dev_err_kmsg(&udev->dev, 1,
+       "can't read configurations, error %d\n", err);
+
+Which would result in:
+
+hub.1 5-0:1.0: can't read configuration error 4711
+
+Michael
+
