@@ -1,649 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbXFMTaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758939AbXFMTf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760598AbXFMTaz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 15:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbXFMT1n
+	id S1758939AbXFMTf6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 15:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbXFMTft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 15:27:43 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:61081 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754508AbXFMT1f (ORCPT
+	Wed, 13 Jun 2007 15:35:49 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:23158 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750946AbXFMTfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 15:27:35 -0400
+	Wed, 13 Jun 2007 15:35:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=lyhg9WC6LaemQLHIgYKYF6jvXanr3+GTGMQuMQvgF3Jz14mCEnUroImAMGTHg/e/VtCaqLn819xieCfxyVz5th8eu+bfZ7+oJAzMJ/V1WoPMk84WcyXgGo9R1krEq3XzT/aOo0eP6nhJYpucndVm6UC4JmL/v6FtmxVdzetG6tY=
-Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 11/11] sysfs: make directory dentries and inodes reclaimable
-In-Reply-To: <1181762840495-git-send-email-htejun@gmail.com>
-X-Mailer: git-send-email
-Date: Thu, 14 Jun 2007 04:27:25 +0900
-Message-Id: <11817628451219-git-send-email-htejun@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Tejun Heo <htejun@gmail.com>
-To: greg@kroah.com, dmitry.torokhov@gmail.com, cornelia.huck@de.ibm.com,
-       oneukum@suse.de, rpurdie@rpsys.net, stern@rowland.harvard.edu,
-       maneesh@in.ibm.com, linux-kernel@vger.kernel.org, htejun@gmail.com
-Content-Transfer-Encoding: 7BIT
-From: Tejun Heo <htejun@gmail.com>
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Fp+qPLy2Dw0AwH2ewYwQoapNQpUJnvCf1vxMb5OasCvGepIC/S64sGnr4TlPIeqstXZ4MeUFTRU/oMomfS/5sp5X01gA0skgwcMc2tK09OKwsrv7ihZLMrC6/do3vaSoz+c04ZY7ynGJ10u9AYKdVL6GU3M9G618LqIz/xk+5CI=
+Message-ID: <4354d3270706131235x6c879f7emc1869700af108b27@mail.gmail.com>
+Date: Wed, 13 Jun 2007 22:35:47 +0300
+From: "=?ISO-8859-1?Q?T=F6r=F6k_Edvin?=" <edwintorok@gmail.com>
+To: mingo@redhat.com
+Subject: CFS-v16: top shows incorrect CPU% for multi-threaded application
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes dentries and inodes for sysfs directories
-reclaimable.
+Hi,
 
-* sysfs_notify() is modified to walk sysfs_dirent tree instead of
-  dentry tree.
+When I run a multithreaded application, consisting of a "main thread"
+that is mostly idle, and
+3 "worker threads" (using as much CPU as they can get), 'top' and 'ps'
+show that
+the application uses 0% CPU.
+If I turn off thread details in top, and ps it correctly shows the CPU
+usage of each thread.
 
-* sysfs_update_file() and sysfs_chmod_file() use sysfs_get_dentry() to
-  grab the victim dentry.
+This happens only on 2.6.22-rc4-cfs-v16, on 2.6.21-1 everything is ok
+(top shows sum-of-all-threads-CPU-usage, i.e. ~98,99%).
 
-* sysfs_rename_dir() and sysfs_move_dir() grab all dentries using
-  sysfs_get_dentry() on startup.
+Can I help debug/track down the cause of this issue? (how?)
 
-* Dentries for all shadowed directories are pinned in memory to serve
-  as lookup start point.
+uname -a: Linux lightspeed2 2.6.22-rc4-cfs-v16-g845a2fdc-dirty #2 SMP
+Sun Jun 10 14:23:08 EEST 2007 x86_64 GNU/Linux
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/dir.c        |  231 +++++++++++++++++++++++++++----------------------
- fs/sysfs/file.c       |  134 +++++++++++++----------------
- fs/sysfs/mount.c      |    2 +-
- fs/sysfs/sysfs.h      |    1 +
- include/linux/sysfs.h |    1 -
- 5 files changed, 187 insertions(+), 182 deletions(-)
+Running top with 'show threads off':
+PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+5932 clamav    20   0  277m  53m 1608 S  0.0  2.7   0:00.81 clam
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 0cd91ba..9d30fa9 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -568,10 +568,10 @@ static void sysfs_drop_dentry(struct sysfs_dirent *sd)
- 	spin_unlock(&dcache_lock);
- 	spin_unlock(&sysfs_assoc_lock);
- 
--	dput(dentry);
--	/* XXX: unpin if directory, this will go away soon */
--	if (sysfs_type(sd) == SYSFS_DIR)
-+	/* dentries for shadowed inodes are pinned, unpin */
-+	if (dentry && sysfs_is_shadowed_inode(dentry->d_inode))
- 		dput(dentry);
-+	dput(dentry);
- 
- 	/* adjust nlink and update timestamp */
- 	inode = ilookup(sysfs_sb, sd->s_ino);
-@@ -686,69 +686,29 @@ struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
- static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
- 		      const char *name, struct sysfs_dirent **p_sd)
- {
--	struct dentry *parent = parent_sd->s_dentry;
--	struct sysfs_addrm_cxt acxt;
--	int error;
- 	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;
--	struct dentry *dentry;
--	struct inode *inode;
-+	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent *sd;
- 
--	sysfs_addrm_start(&acxt, parent_sd);
--
- 	/* allocate */
--	dentry = lookup_one_len(name, parent, strlen(name));
--	if (IS_ERR(dentry)) {
--		error = PTR_ERR(dentry);
--		goto out_finish;
--	}
--
--	error = -EEXIST;
--	if (dentry->d_inode)
--		goto out_dput;
--
--	error = -ENOMEM;
- 	sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
- 	if (!sd)
--		goto out_drop;
-+		return -ENOMEM;
- 	sd->s_elem.dir.kobj = kobj;
- 
--	inode = sysfs_get_inode(sd);
--	if (!inode)
--		goto out_sput;
--
--	if (inode->i_state & I_NEW) {
--		inode->i_op = &sysfs_dir_inode_operations;
--		inode->i_fop = &sysfs_dir_operations;
--		/* directory inodes start off with i_nlink == 2 (for ".") */
--		inc_nlink(inode);
--	}
--
- 	/* link in */
--	error = -EEXIST;
--	if (sysfs_find_dirent(parent_sd, name))
--		goto out_iput;
--
--	sysfs_add_one(&acxt, sd);
--	sysfs_link_sibling(sd);
--	sysfs_instantiate(dentry, inode);
--	sysfs_attach_dentry(sd, dentry);
--
--	*p_sd = sd;
--	error = 0;
--	goto out_finish;	/* pin directory dentry in core */
-+	sysfs_addrm_start(&acxt, parent_sd);
-+	if (!sysfs_find_dirent(parent_sd, name)) {
-+		sysfs_add_one(&acxt, sd);
-+		sysfs_link_sibling(sd);
-+	}
-+	if (sysfs_addrm_finish(&acxt)) {
-+		*p_sd = sd;
-+		return 0;
-+	}
- 
-- out_iput:
--	iput(inode);
-- out_sput:
- 	sysfs_put(sd);
-- out_drop:
--	d_drop(dentry);
-- out_dput:
--	dput(dentry);
-- out_finish:
--	sysfs_addrm_finish(&acxt);
--	return error;
-+	return -EEXIST;
- }
- 
- int sysfs_create_subdir(struct kobject *kobj, const char *name,
-@@ -785,6 +745,17 @@ int sysfs_create_dir(struct kobject * kobj,
- 	return error;
- }
- 
-+static int sysfs_count_nlink(struct sysfs_dirent *sd)
-+{
-+	struct sysfs_dirent *child;
-+	int nr = 0;
-+
-+	for (child = sd->s_children; child; child = child->s_sibling)
-+		if (sysfs_type(child) == SYSFS_DIR)
-+			nr++;
-+	return nr + 2;
-+}
-+
- static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 				struct nameidata *nd)
- {
-@@ -795,7 +766,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 	int found = 0;
- 
- 	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
--		if ((sysfs_type(sd) & SYSFS_NOT_PINNED) &&
-+		if (sysfs_type(sd) &&
- 		    !strcmp(sd->s_name, dentry->d_name.name)) {
- 			found = 1;
- 			break;
-@@ -816,6 +787,11 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 	if (inode->i_state & I_NEW) {
- 		/* initialize inode according to type */
- 		switch (sysfs_type(sd)) {
-+		case SYSFS_DIR:
-+			inode->i_op = &sysfs_dir_inode_operations;
-+			inode->i_fop = &sysfs_dir_operations;
-+			inode->i_nlink = sysfs_count_nlink(sd);
-+			break;
- 		case SYSFS_KOBJ_ATTR:
- 			inode->i_size = PAGE_SIZE;
- 			inode->i_fop = &sysfs_file_operations;
-@@ -876,7 +852,7 @@ static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
- 	while (*pos) {
- 		struct sysfs_dirent *sd = *pos;
- 
--		if (sysfs_type(sd) && (sysfs_type(sd) & SYSFS_NOT_PINNED)) {
-+		if (sysfs_type(sd) && sysfs_type(sd) != SYSFS_DIR) {
- 			*pos = sd->s_sibling;
- 			sd->s_sibling = NULL;
- 			sysfs_remove_one(&acxt, sd);
-@@ -912,14 +888,25 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 		     const char *new_name)
- {
- 	struct sysfs_dirent *sd = kobj->sd;
--	struct dentry *new_parent = new_parent_sd->s_dentry;
--	struct dentry *new_dentry;
--	char *dup_name;
-+	struct dentry *new_parent = NULL;
-+	struct dentry *old_dentry = NULL, *new_dentry = NULL;
-+	const char *dup_name = NULL;
- 	int error;
- 
--	if (!new_parent_sd)
--		return -EFAULT;
-+	/* get dentries */
-+	old_dentry = sysfs_get_dentry(sd);
-+	if (IS_ERR(old_dentry)) {
-+		error = PTR_ERR(old_dentry);
-+		goto out_dput;
-+	}
-+
-+	new_parent = sysfs_get_dentry(new_parent_sd);
-+	if (IS_ERR(new_parent)) {
-+		error = PTR_ERR(new_parent);
-+		goto out_dput;
-+	}
- 
-+	/* lock new_parent and get dentry for new name */
- 	mutex_lock(&new_parent->d_inode->i_mutex);
- 
- 	new_dentry = lookup_one_len(new_name, new_parent, strlen(new_name));
-@@ -933,14 +920,14 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 	 * shadows of the same directory
- 	 */
- 	error = -EINVAL;
--	if (sd->s_parent->s_dentry->d_inode != new_parent->d_inode ||
-+	if (old_dentry->d_parent->d_inode != new_parent->d_inode ||
- 	    new_dentry->d_parent->d_inode != new_parent->d_inode ||
--	    new_dentry == sd->s_dentry)
--		goto out_dput;
-+	    old_dentry == new_dentry)
-+		goto out_unlock;
- 
- 	error = -EEXIST;
- 	if (new_dentry->d_inode)
--		goto out_dput;
-+		goto out_unlock;
- 
- 	/* rename kobject and sysfs_dirent */
- 	error = -ENOMEM;
-@@ -950,9 +937,9 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 
- 	error = kobject_set_name(kobj, "%s", new_name);
- 	if (error)
--		goto out_free;
-+		goto out_drop;
- 
--	kfree(sd->s_name);
-+	dup_name = sd->s_name;
- 	sd->s_name = new_name;
- 
- 	/* move under the new parent */
-@@ -972,45 +959,58 @@ int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
- 	error = 0;
- 	goto out_unlock;
- 
-- out_free:
--	kfree(dup_name);
-  out_drop:
- 	d_drop(new_dentry);
-- out_dput:
--	dput(new_dentry);
-  out_unlock:
- 	mutex_unlock(&new_parent->d_inode->i_mutex);
-+ out_dput:
-+	kfree(dup_name);
-+	dput(new_parent);
-+	dput(old_dentry);
-+	dput(new_dentry);
- 	return error;
- }
- 
--int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent)
-+int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
- {
--	struct dentry *old_parent_dentry, *new_parent_dentry, *new_dentry;
--	struct sysfs_dirent *new_parent_sd, *sd;
-+	struct sysfs_dirent *sd = kobj->sd;
-+	struct sysfs_dirent *new_parent_sd;
-+	struct dentry *old_parent, *new_parent = NULL;
-+	struct dentry *old_dentry = NULL, *new_dentry = NULL;
- 	int error;
- 
--	old_parent_dentry = kobj->parent ?
--		kobj->parent->sd->s_dentry : sysfs_mount->mnt_sb->s_root;
--	new_parent_dentry = new_parent ?
--		new_parent->sd->s_dentry : sysfs_mount->mnt_sb->s_root;
-+	BUG_ON(!sd->s_parent);
-+	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
-+
-+	/* get dentries */
-+	old_dentry = sysfs_get_dentry(sd);
-+	if (IS_ERR(old_dentry)) {
-+		error = PTR_ERR(old_dentry);
-+		goto out_dput;
-+	}
-+	old_parent = sd->s_parent->s_dentry;
-+
-+	new_parent = sysfs_get_dentry(new_parent_sd);
-+	if (IS_ERR(new_parent)) {
-+		error = PTR_ERR(new_parent);
-+		goto out_dput;
-+	}
- 
--	if (old_parent_dentry->d_inode == new_parent_dentry->d_inode)
--		return 0;	/* nothing to move */
-+	if (old_parent->d_inode == new_parent->d_inode) {
-+		error = 0;
-+		goto out_dput;	/* nothing to move */
-+	}
- again:
--	mutex_lock(&old_parent_dentry->d_inode->i_mutex);
--	if (!mutex_trylock(&new_parent_dentry->d_inode->i_mutex)) {
--		mutex_unlock(&old_parent_dentry->d_inode->i_mutex);
-+	mutex_lock(&old_parent->d_inode->i_mutex);
-+	if (!mutex_trylock(&new_parent->d_inode->i_mutex)) {
-+		mutex_unlock(&old_parent->d_inode->i_mutex);
- 		goto again;
- 	}
- 
--	new_parent_sd = new_parent_dentry->d_fsdata;
--	sd = kobj->sd;
--
--	new_dentry = lookup_one_len(kobj->name, new_parent_dentry,
--				    strlen(kobj->name));
-+	new_dentry = lookup_one_len(kobj->name, new_parent, strlen(kobj->name));
- 	if (IS_ERR(new_dentry)) {
- 		error = PTR_ERR(new_dentry);
--		goto out;
-+		goto out_unlock;
- 	} else
- 		error = 0;
- 	d_add(new_dentry, NULL);
-@@ -1027,10 +1027,14 @@ again:
- 	sysfs_link_sibling(sd);
- 
- 	mutex_unlock(&sysfs_mutex);
--out:
--	mutex_unlock(&new_parent_dentry->d_inode->i_mutex);
--	mutex_unlock(&old_parent_dentry->d_inode->i_mutex);
- 
-+ out_unlock:
-+	mutex_unlock(&new_parent->d_inode->i_mutex);
-+	mutex_unlock(&old_parent->d_inode->i_mutex);
-+ out_dput:
-+	dput(new_parent);
-+	dput(old_dentry);
-+	dput(new_dentry);
- 	return error;
- }
- 
-@@ -1191,12 +1195,20 @@ static loff_t sysfs_dir_lseek(struct file * file, loff_t offset, int origin)
- int sysfs_make_shadowed_dir(struct kobject *kobj,
- 	void * (*follow_link)(struct dentry *, struct nameidata *))
- {
-+	struct dentry *dentry;
- 	struct inode *inode;
- 	struct inode_operations *i_op;
- 
--	inode = kobj->sd->s_dentry->d_inode;
--	if (inode->i_op != &sysfs_dir_inode_operations)
-+	/* get dentry for @kobj->sd, dentry of a shadowed dir is pinned */
-+	dentry = sysfs_get_dentry(kobj->sd);
-+	if (IS_ERR(dentry))
-+		return PTR_ERR(dentry);
-+
-+	inode = dentry->d_inode;
-+	if (inode->i_op != &sysfs_dir_inode_operations) {
-+		dput(dentry);
- 		return -EINVAL;
-+	}
- 
- 	i_op = kmalloc(sizeof(*i_op), GFP_KERNEL);
- 	if (!i_op)
-@@ -1223,17 +1235,23 @@ int sysfs_make_shadowed_dir(struct kobject *kobj,
- 
- struct sysfs_dirent *sysfs_create_shadow_dir(struct kobject *kobj)
- {
--	struct dentry *dir = kobj->sd->s_dentry;
--	struct inode *inode = dir->d_inode;
--	struct dentry *parent = dir->d_parent;
--	struct sysfs_dirent *parent_sd = parent->d_fsdata;
--	struct dentry *shadow;
-+	struct sysfs_dirent *parent_sd = kobj->sd->s_parent;
-+	struct dentry *dir, *parent, *shadow;
-+	struct inode *inode;
- 	struct sysfs_dirent *sd;
- 	struct sysfs_addrm_cxt acxt;
- 
-+	dir = sysfs_get_dentry(kobj->sd);
-+	if (IS_ERR(dir)) {
-+		sd = (void *)dir;
-+		goto out;
-+	}
-+	parent = dir->d_parent;
-+
-+	inode = dir->d_inode;
- 	sd = ERR_PTR(-EINVAL);
- 	if (!sysfs_is_shadowed_inode(inode))
--		goto out;
-+		goto out_dput;
- 
- 	shadow = d_alloc(parent, &dir->d_name);
- 	if (!shadow)
-@@ -1258,12 +1276,15 @@ struct sysfs_dirent *sysfs_create_shadow_dir(struct kobject *kobj)
- 
- 	dget(shadow);		/* Extra count - pin the dentry in core */
- 
--out:
--	return sd;
--nomem:
-+	goto out_dput;
-+
-+ nomem:
- 	dput(shadow);
- 	sd = ERR_PTR(-ENOMEM);
--	goto out;
-+ out_dput:
-+	dput(dir);
-+ out:
-+	return sd;
- }
- 
- /**
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index ccda618..a8bcddf 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -362,43 +362,22 @@ static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
- 	return POLLERR|POLLPRI;
- }
- 
--
--static struct dentry *step_down(struct dentry *dir, const char * name)
--{
--	struct dentry * de;
--
--	if (dir == NULL || dir->d_inode == NULL)
--		return NULL;
--
--	mutex_lock(&dir->d_inode->i_mutex);
--	de = lookup_one_len(name, dir, strlen(name));
--	mutex_unlock(&dir->d_inode->i_mutex);
--	dput(dir);
--	if (IS_ERR(de))
--		return NULL;
--	if (de->d_inode == NULL) {
--		dput(de);
--		return NULL;
--	}
--	return de;
--}
--
- void sysfs_notify(struct kobject * k, char *dir, char *attr)
- {
--	struct dentry *de = k->sd->s_dentry;
--	if (de)
--		dget(de);
--	if (de && dir)
--		de = step_down(de, dir);
--	if (de && attr)
--		de = step_down(de, attr);
--	if (de) {
--		struct sysfs_dirent * sd = de->d_fsdata;
--		if (sd)
--			atomic_inc(&sd->s_event);
-+	struct sysfs_dirent *sd = k->sd;
-+
-+	mutex_lock(&sysfs_mutex);
-+
-+	if (sd && dir)
-+		sd = sysfs_find_dirent(sd, dir);
-+	if (sd && attr)
-+		sd = sysfs_find_dirent(sd, attr);
-+	if (sd) {
-+		atomic_inc(&sd->s_event);
- 		wake_up_interruptible(&k->poll);
--		dput(de);
- 	}
-+
-+	mutex_unlock(&sysfs_mutex);
- }
- EXPORT_SYMBOL_GPL(sysfs_notify);
- 
-@@ -485,30 +464,31 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_group);
-  */
- int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
- {
--	struct dentry * dir = kobj->sd->s_dentry;
--	struct dentry * victim;
--	int res = -ENOENT;
--
--	mutex_lock(&dir->d_inode->i_mutex);
--	victim = lookup_one_len(attr->name, dir, strlen(attr->name));
--	if (!IS_ERR(victim)) {
--		/* make sure dentry is really there */
--		if (victim->d_inode && 
--		    (victim->d_parent->d_inode == dir->d_inode)) {
--			victim->d_inode->i_mtime = CURRENT_TIME;
--			fsnotify_modify(victim);
--			res = 0;
--		} else
--			d_drop(victim);
--		
--		/**
--		 * Drop the reference acquired from lookup_one_len() above.
--		 */
--		dput(victim);
-+	struct sysfs_dirent *victim_sd = NULL;
-+	struct dentry *victim = NULL;
-+	int rc;
-+
-+	rc = -ENOENT;
-+	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
-+	if (!victim_sd)
-+		goto out;
-+
-+	victim = sysfs_get_dentry(victim_sd);
-+	if (IS_ERR(victim)) {
-+		rc = PTR_ERR(victim);
-+		victim = NULL;
-+		goto out;
- 	}
--	mutex_unlock(&dir->d_inode->i_mutex);
- 
--	return res;
-+	mutex_lock(&victim->d_inode->i_mutex);
-+	victim->d_inode->i_mtime = CURRENT_TIME;
-+	fsnotify_modify(victim);
-+	mutex_unlock(&victim->d_inode->i_mutex);
-+	rc = 0;
-+ out:
-+	dput(victim);
-+	sysfs_put(victim_sd);
-+	return rc;
- }
- 
- 
-@@ -521,30 +501,34 @@ int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
-  */
- int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
- {
--	struct dentry *dir = kobj->sd->s_dentry;
--	struct dentry *victim;
-+	struct sysfs_dirent *victim_sd = NULL;
-+	struct dentry *victim = NULL;
- 	struct inode * inode;
- 	struct iattr newattrs;
--	int res = -ENOENT;
--
--	mutex_lock(&dir->d_inode->i_mutex);
--	victim = lookup_one_len(attr->name, dir, strlen(attr->name));
--	if (!IS_ERR(victim)) {
--		if (victim->d_inode &&
--		    (victim->d_parent->d_inode == dir->d_inode)) {
--			inode = victim->d_inode;
--			mutex_lock(&inode->i_mutex);
--			newattrs.ia_mode = (mode & S_IALLUGO) |
--						(inode->i_mode & ~S_IALLUGO);
--			newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
--			res = notify_change(victim, &newattrs);
--			mutex_unlock(&inode->i_mutex);
--		}
--		dput(victim);
-+	int rc;
-+
-+	rc = -ENOENT;
-+	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
-+	if (!victim_sd)
-+		goto out;
-+
-+	victim = sysfs_get_dentry(victim_sd);
-+	if (IS_ERR(victim)) {
-+		rc = PTR_ERR(victim);
-+		victim = NULL;
-+		goto out;
- 	}
--	mutex_unlock(&dir->d_inode->i_mutex);
- 
--	return res;
-+	inode = victim->d_inode;
-+	mutex_lock(&inode->i_mutex);
-+	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-+	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-+	rc = notify_change(victim, &newattrs);
-+	mutex_unlock(&inode->i_mutex);
-+ out:
-+	dput(victim);
-+	sysfs_put(victim_sd);
-+	return rc;
- }
- EXPORT_SYMBOL_GPL(sysfs_chmod_file);
- 
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index 078537e..402cc35 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -24,7 +24,7 @@ static const struct super_operations sysfs_ops = {
- 	.drop_inode	= sysfs_delete_inode,
- };
- 
--static struct sysfs_dirent sysfs_root = {
-+struct sysfs_dirent sysfs_root = {
- 	.s_count	= ATOMIC_INIT(1),
- 	.s_flags	= SYSFS_ROOT,
- 	.s_mode		= S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO,
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 72530dc..6a37f23 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -52,6 +52,7 @@ struct sysfs_addrm_cxt {
- };
- 
- extern struct vfsmount * sysfs_mount;
-+extern struct sysfs_dirent sysfs_root;
- extern struct kmem_cache *sysfs_dir_cachep;
- 
- extern struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 4c43030..2f58ca1 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -81,7 +81,6 @@ struct sysfs_ops {
- #define SYSFS_KOBJ_ATTR 	0x0004
- #define SYSFS_KOBJ_BIN_ATTR	0x0008
- #define SYSFS_KOBJ_LINK 	0x0020
--#define SYSFS_NOT_PINNED	(SYSFS_KOBJ_ATTR | SYSFS_KOBJ_BIN_ATTR | SYSFS_KOBJ_LINK)
- #define SYSFS_COPY_NAME		(SYSFS_DIR | SYSFS_KOBJ_LINK)
- 
- #define SYSFS_FLAG_MASK		~SYSFS_TYPE_MASK
--- 
-1.5.0.3
+Running top with 'show threads on':
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 5953 clamav    20   0  277m  53m 1608 R 99.9  2.7   1:50.33 clamd
+ 5952 clamav    20   0  277m  53m 1608 R 99.9  2.7   1:49.18 clamd
+ 5956 clamav    20   0  277m  53m 1608 R 99.9  2.7   1:47.72 clamd
+ 5932 clamav    20   0  277m  53m 1608 S  0.0  2.7   0:00.81 clamd
+ 5951 clamav    20   0  277m  53m 1608 S  0.0  2.7   0:01.78 clamd
 
+^First time, after second refresh the 99% is down to 30%
 
+top - 22:25:06 up 16 min,  1 user,  load average: 3.51, 3.45, 2.23
+Tasks: 161 total,   4 running, 157 sleeping,   0 stopped,   0 zombie
+Cpu(s): 96.3%us,  2.7%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.3%hi,  0.7%si,  0.0%st
+Mem:   2060820k total,  2041144k used,    19676k free,    33948k buffers
+Swap:        0k total,        0k used,        0k free,  1502632k cached
+
+Somewhat later:
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 5953 clamav    20   0  279m  52m 1632 R 30.9  2.6   4:14.37 clamd
+ 5956 clamav    20   0  279m  52m 1632 R 30.9  2.6   4:11.67 clamd
+ 5952 clamav    20   0  279m  52m 1632 R 28.9  2.6   4:14.20 clamd
+ 5951 clamav    20   0  279m  52m 1632 S  0.3  2.6   0:04.55 clamd
+ 5932 clamav    20   0  279m  52m 1632 S  0.0  2.6   0:00.81 clamd
+
+Also same results from ps:
+
+edwin@lightspeed2:~$ ps -eLf|grep clamd
+clamav    5932     1  5932  0    5 22:10 ?        00:00:00 clamd
+clamav    5932     1  5951  0    5 22:11 ?        00:00:02 clamd
+clamav    5932     1  5952 31    5 22:11 ?        00:02:27 clamd
+clamav    5932     1  5953 31    5 22:11 ?        00:02:28 clamd
+clamav    5932     1  5956 31    5 22:11 ?        00:02:26 clamd
+edwin     5950  5731  5950  0    1 22:11 pts/3    00:00:00 clamdscan
+--quiet -m .
+edwin     6746  5729  6746  0    1 22:18 pts/1    00:00:00 grep clamd
+edwin@lightspeed2:~$ ps -e|grep clamd
+ 5932 ?        00:00:00 clamd
+ 5950 pts/3    00:00:00 clamdscan
+
+Output of /proc/sched_debug:
+Sched Debug Version: v0.02
+now at 449457590200 nsecs
+
+cpu: 0
+  .nr_running            : 5
+  .raw_weighted_load     : 4206
+  .nr_switches           : 716023
+  .nr_load_updates       : 448815
+  .nr_uninterruptible    : 0
+  .jiffies               : 4295116153
+  .next_balance          : 4295116155
+  .curr->pid             : 6599
+  .clock                 : 356291196511
+  .prev_clock_raw        : 459148341095
+  .clock_warps           : 0
+  .clock_overflows       : 8686
+  .clock_unstable_events : 0
+  .clock_max_delta       : 1998116
+  .fair_clock            : 192139480240
+  .delta_fair_clock      : 200255631498
+  .exec_clock            : 350544921775
+  .delta_exec_clock      : 350544921775
+  .wait_runtime          : -48647436
+  .wait_runtime_overruns : 280656
+  .wait_runtime_underruns: 4285
+  .cpu_load[0]           : 4206
+  .cpu_load[1]           : 4206
+  .cpu_load[2]           : 4190
+  .cpu_load[3]           : 4024
+  .cpu_load[4]           : 3736
+  .wait_runtime_rq_sum   : 3955762
+
+runnable tasks:
+            task   PID        tree-key         delta       waiting
+switches  prio        sum-exec        sum-wait       sum-sleep
+wait-overrun   wait-underrun
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+           clamd  5952    192137574072      -1906168        449816
+98914   120    102684256359      2613992521      8984991859
+1006             245
+           clamd  5953    192139027677       -452563        448071
+97449   120    103668648209      1738317592      5672775365
+ 542             323
+           clamd  5956    192137649522      -1830718       1097630
+97852   120    101209019733      2430217564      7866850540
+ 957             220
+     munin-graph  6561    192137708550      -1771690       -275731
+ 3885   130      2792201054         -761359               0
+   0               0
+R            cat  6599    192137244264      -2235976       2235976
+    2   120           61234         2235976           84374
+
+If you need further info, please ask.
+
+Best regards,
+--Edwin
