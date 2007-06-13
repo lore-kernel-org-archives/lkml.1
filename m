@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759644AbXFMRuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbXFMRzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759644AbXFMRuW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 13:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758787AbXFMRuJ
+	id S1759564AbXFMRzF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 13:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbXFMRyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 13:50:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52241 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758702AbXFMRuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 13:50:08 -0400
-Date: Wed, 13 Jun 2007 10:51:47 -0700
-From: Greg KH <gregkh@suse.de>
-To: holzheu <holzheu@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, akpm@osdl.org,
-       mtk-manpages@gmx.net, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-Message-ID: <20070613175147.GB14355@suse.de>
-References: <1181747217.29512.9.camel@localhost.localdomain>
-MIME-Version: 1.0
+	Wed, 13 Jun 2007 13:54:55 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:58209 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757918AbXFMRyy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 13:54:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:x-mailer:x-operating-system;
+        b=oDQbEDUA07aSLlW0SA+OGvfWyiSFpZh20jAKDvRoo0EHL+kXfid1Eyj7piORRg6qA/L4Vqc8MbqtDTxEtDILm4kJjyaFaSRxnrYiv92vEUUCTvDVtkA2twUYdFIxKad9i2AVr4raWjYzpVQB/26J53OGq98+ENr37ru2JmrpxJo=
+Date: Thu, 14 Jun 2007 02:00:39 +0800
+From: Wang Zhenyu <zhen78@gmail.com>
+To: Dave Jones <davej@redhat.com>, Meelis Roos <mroos@linux.ee>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Wang Zhenyu <zhenyu.z.wang@intel.com>, Eric Anholt <eric@anholt.net>
+Subject: Re: I815 suddenly unkown to agpgart?
+Message-ID: <20070613180039.GA4508@localhost.localdomain>
+References: <Pine.SOC.4.64.0706131804180.2614@math> <20070613160152.GC3875@redhat.com> <20070613161513.GE3875@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1181747217.29512.9.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070613161513.GE3875@redhat.com>
+User-Agent: Mutt/1.4.2.2i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.21-rc6 i686
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 05:06:57PM +0200, holzheu wrote:
-> Current prototype implementation:
-> ================================= 
+On 2007.06.13 12:15:13 +0000, Dave Jones wrote:
+>  >     [AGPGART] intel_agp: use table for device probe
+>  >     
+> Oh, we have this check in find_gmch ..
 > 
-> The structure of a kernel message is: <component>.<msg number>: <msg>
+>         if (gmch_device && PCI_FUNC(gmch_device->devfn) != 0) {
+>                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 > 
-> * component: Name of the kernel or driver component e.g. "pci", "ide", 
->   etc.
-> * msg number: Within the component unique number of a kernel message.
-> * msg: printk message
+> Which isn't going to work, as Meelis has a gmch on device0, slot0, devfn1.
+> Meelis, does it start working again if you change that to just
 > 
-> New macros KMSG_ERR(), KMSG_WARN(), etc. are defined, which have to be
-> used in printk. These macros have as parameter the message number and
-> are using a per c-file defined macro KMSG_COMPONENT.
-> 
-> Example: Define message 2 in component "kmsgtest":
-> 
-> #define KMSG_COMPONENT "kmsgtest"
-> 
-> void f(void)
-> {
->         printk(KMSG_ERR(1) "device %x not online\n", devno);
-> }
+> 	if (gmch_Device) {
 
-Ick, why are you ignoring what we have already with dev_printk() and
-friends?  We are just finally getting developers to use that, I think it
-will be almost impossible to get people to change to something else,
-especially one that isn't even as "correct" as what dev_printk() offers
-you today, will be quite hard.
+No, the problem for i815 is that it has a config with no integrated gfx.
+Sorry I missed it. Meelis, pls test with this patch, which adds a table 
+item for this, and fixes wrong driver order within origin i815 driver with IGD.
 
-So, why not use what we already have and work off of it?
+Thanks.
 
-thanks,
-
-greg k-h
+---
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index d383168..6d50a37 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -1824,7 +1824,8 @@ static const struct intel_driver_description {
+ 	{ PCI_DEVICE_ID_INTEL_82810E_MC, PCI_DEVICE_ID_INTEL_82810E_IG, "i810",
+ 		NULL, &intel_810_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82815_MC, PCI_DEVICE_ID_INTEL_82815_CGC, "i815",
+-		&intel_810_driver, &intel_815_driver },
++		&intel_815_driver, &intel_810_driver },
++	{ PCI_DEVICE_ID_INTEL_82815_MC, 0, "i815", &intel_815_driver, NULL },
+ 	{ PCI_DEVICE_ID_INTEL_82820_HB, 0, "i820", &intel_820_driver, NULL },
+ 	{ PCI_DEVICE_ID_INTEL_82820_UP_HB, 0, "i820", &intel_820_driver, NULL },
+ 	{ PCI_DEVICE_ID_INTEL_82830_HB, PCI_DEVICE_ID_INTEL_82830_CGC, "830M",
+---	 
