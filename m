@@ -1,120 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbXFMOoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbXFMOo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758761AbXFMOoB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 10:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758504AbXFMOnf
+	id S1758867AbXFMOo5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 10:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbXFMOot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 10:43:35 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:55902 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758179AbXFMOne (ORCPT
+	Wed, 13 Jun 2007 10:44:49 -0400
+Received: from keil-draco.com ([216.193.185.50]:50480 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756772AbXFMOot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 10:43:34 -0400
-Date: Wed, 13 Jun 2007 10:42:45 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>,
-       LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 1/2] UML - DEBUG_SHIRQ fixes
-Message-ID: <20070613144245.GA5777@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 Jun 2007 10:44:49 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: "Simon Arlott" <simon@fire.lp0.eu>
+Subject: Re: Patch related with Fork Bobmbing Attack
+Date: Wed, 13 Jun 2007 10:44:41 -0400
+User-Agent: KMail/1.9.6
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Roland Dreier" <rdreier@cisco.com>,
+       "Anand Jahagirdar" <anandjigar@gmail.com>, linux-kernel@vger.kernel.org,
+       security@kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       akpm@digeo.com, "Jens Axboe" <jens.axboe@oracle.com>,
+       "Jiri Kosina" <jikos@jikos.cz>
+References: <25ae38200706120949vaeb8e0ascd182ef2f709d0fc@mail.gmail.com> <Pine.LNX.4.64.0706121931390.19578@fbirervta.pbzchgretzou.qr> <38425.simon.1181734449@5ec7c279.invalid>
+In-Reply-To: <38425.simon.1181734449@5ec7c279.invalid>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+Message-Id: <200706131044.42338.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
+On Wednesday 13 June 2007 07:34:09 Simon Arlott wrote:
+> On Tue, June 12, 2007 18:32, Jan Engelhardt wrote:
+> > On Jun 12 2007 10:04, Roland Dreier wrote:
+> >> > +	/*
+> >> > +         * following code does not allow Non Root User to cross its
+> >> > process +         * limit. it alerts administrator about fork bombing
+> >> > attack and prevents +         * it.
+> >> > +         */
+> >> >  	if (atomic_read(&p->user->processes) >=
+> >> > p->signal->rlim[RLIMIT_NPROC].rlim_cur) if (!capable(CAP_SYS_ADMIN) &&
+> >> > !capable(CAP_SYS_RESOURCE) && -				p->user != &root_user)
+> >> > -
+> >> > +				p->user != &root_user) {
+> >> > +			if (printk_ratelimit())
+> >> > +                                printk(KERN_CRIT"User with uid %d is
+> >> > crossing its process
+> >>
+> >> limit\n",p->user->uid);
+> >>
+> >> >  			goto bad_fork_free;
+> >> > +		}
+>
+> Why does this need to be KERN_CRIT? You can't assume that every time a
+> process limit is reached that it's a fork bomb.
 
-DEBUG_SHIRQ generates spurious interrupts, triggering handlers such as
-mconsole_interrupt() or line_interrupt(). They expect data to be
-available to be read from their sockets/pipes, but in the case of
-spurious interrupts, the host didn't actually send anything, so UML  
-hangs in read() and friends. Setting those fd's as O_NONBLOCK makes 
-DEBUG_SHIRQ-enabled UML kernels boot and run correctly.
 
-The patch was written and tested on Linux 2.6.22-rc2-mm1.
+I think the reasoning here is to alert the administrator(s) to the possibility 
+that somebody has just tried a fork-bomb. A better test, IMHO, would be to 
+check how fast the processes are being spawned and whether a large percentage 
+share the same parent. (Those two taken together would better spot most 
+fork-bombs, including the very simple types that are just a simple one-liner)
 
-I have also included a couple of short/minor fixes for potential
-problems.
+DRH
 
-Signed-off-by: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/drivers/chan_user.c     |    8 +++++++-
- arch/um/drivers/mconsole_user.c |    5 +++--
- arch/um/drivers/ubd_user.c      |    6 ++++++
- arch/um/drivers/xterm.c         |    7 +++++++
- 4 files changed, 23 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.21-mm/arch/um/drivers/chan_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/chan_user.c	2007-06-06 09:28:13.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/chan_user.c	2007-06-11 13:51:29.000000000 -0400
-@@ -170,7 +170,13 @@ static int winch_tramp(int fd, struct tt
-                 err = -EINVAL;
- 		goto out_close;
- 	}
--	return err ;
-+
-+	if (os_set_fd_block(*fd_out, 0)) {
-+		printk("winch_tramp: failed to set thread_fd non-blocking.\n");
-+		goto out_close;
-+	}
-+
-+	return err;
- 
-  out_close:
- 	os_close_file(fds[1]);
-Index: linux-2.6.21-mm/arch/um/drivers/mconsole_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/mconsole_user.c	2007-06-06 09:28:13.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/mconsole_user.c	2007-06-11 13:38:19.000000000 -0400
-@@ -86,8 +86,9 @@ int mconsole_get_request(int fd, struct 
- 	int len;
- 
- 	req->originlen = sizeof(req->origin);
--	req->len = recvfrom(fd, &req->request, sizeof(req->request), 0,
--			    (struct sockaddr *) req->origin, &req->originlen);
-+	req->len = recvfrom(fd, &req->request, sizeof(req->request),
-+			    MSG_DONTWAIT, (struct sockaddr *) req->origin,
-+			    &req->originlen);
- 	if (req->len < 0)
- 		return 0;
- 
-Index: linux-2.6.21-mm/arch/um/drivers/ubd_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/ubd_user.c	2007-06-06 09:28:13.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/ubd_user.c	2007-06-11 13:44:56.000000000 -0400
-@@ -43,6 +43,12 @@ int start_io_thread(unsigned long sp, in
- 	kernel_fd = fds[0];
- 	*fd_out = fds[1];
- 
-+	err = os_set_fd_block(*fd_out, 0);
-+	if (err) {
-+		printk("start_io_thread - failed to set nonblocking I/O.\n");
-+		goto out_close;
-+	}
-+
- 	pid = clone(io_thread, (void *) sp, CLONE_FILES | CLONE_VM | SIGCHLD,
- 		    NULL);
- 	if(pid < 0){
-Index: linux-2.6.21-mm/arch/um/drivers/xterm.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/xterm.c	2007-06-06 09:28:13.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/xterm.c	2007-06-12 12:25:44.000000000 -0400
-@@ -151,6 +151,13 @@ int xterm_open(int input, int output, in
- 		goto out;
- 	}
- 
-+	err = os_set_fd_block(new, 0);
-+	if (err) {
-+		printk("xterm_open : failed to set xterm descriptor "
-+		       "non-blocking, err = %d\n", -err);
-+		goto out;
-+	}
-+
- 	CATCH_EINTR(err = tcgetattr(new, &data->tt));
- 	if(err){
- 		new = err;
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
