@@ -1,71 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbXFMUxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbXFMU4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162AbXFMUxw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 16:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbXFMUxp
+	id S1754980AbXFMU4S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 16:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXFMU4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 16:53:45 -0400
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:46857 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754066AbXFMUxo (ORCPT
+	Wed, 13 Jun 2007 16:56:10 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:53974 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbXFMU4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 16:53:44 -0400
-X-IronPort-AV: i="4.16,417,1175497200"; 
-   d="scan'208"; a="2981763:sNHT29798052"
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: whole bunch o' new IB warnings
-X-Message-Flag: Warning: May contain useful information
-References: <4670568A.7030809@garzik.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 13 Jun 2007 13:53:41 -0700
-In-Reply-To: <4670568A.7030809@garzik.org> (Jeff Garzik's message of "Wed, 13 Jun 2007 16:41:46 -0400")
-Message-ID: <adaejkf4luy.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Wed, 13 Jun 2007 16:56:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=troK5Abs5kyIgL98wIhCxNBl2NFtkDSkVk0xEbr90CXxDAw/KzT+jehmG5Q6fYqBKZ2npbdhcGK0Uvsd+/OsN/d1ixUNA1GdspBNHi6Mm9I5Mk+F//ssAMzS23S5VN6feJfoGnFot56+1iyrxv1Mg4vKLmIGu/tJI9t6n/t2uEo=
+Message-ID: <b647ffbd0706131356q344af13as3744c151b4a4f680@mail.gmail.com>
+Date: Wed, 13 Jun 2007 22:56:06 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [RFC][PATCH 5/6] core changes for group fairness
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070611155608.GE2109@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 13 Jun 2007 20:53:42.0339 (UTC) FILETIME=[ED074930:01C7ADFC]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070611154724.GA32435@in.ibm.com>
+	 <20070611155608.GE2109@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Current git tree on x86-64 (make allmodconfig) wants fixing for 2.6.22:
- > 
- > drivers/infiniband/hw/mlx4/qp.c: In function ‘set_rq_size’:
- > drivers/infiniband/hw/mlx4/qp.c:210: warning: comparison of distinct
- > pointer types lacks a cast
+On 11/06/07, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> This patch introduces the core changes in CFS required to accomplish
+> group fairness at higher levels. It also modifies load balance interface
+> between classes a bit, so that move_tasks (which is centric to load
+> balance) can be reused to balance between runqueues of various types
+> (struct rq in case of SCHED_RT tasks, struct lrq in case of
+> SCHED_NORMAL/BATCH tasks).
 
-Thanks, you're right.  You have to admit, it's pretty amusing how many
-times roundup_pow_of_two() expands its argument (via ilog2)...
+a few things that catched my eye, please see below:
 
-Anyway, I have this queued up to fix it.  I'll ask Linus to pull shortly.
 
-commit 42c059ea2b0aac5f961253ba81c1b464d181a600
-Author: Roland Dreier <rolandd@cisco.com>
-Date:   Tue Jun 12 10:52:02 2007 -0700
+> +static int balance_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
+> +                     unsigned long max_nr_move, unsigned long max_load_move,
+> +                     struct sched_domain *sd, enum idle_type idle,
+> +                     int *all_pinned, unsigned long *load_moved,
+> +                     int this_best_prio, int best_prio, int best_prio_seen,
+> +                     void *iterator_arg,
+> +                     struct task_struct *(*iterator_start)(void *arg),
+> +                     struct task_struct *(*iterator_next)(void *arg));
 
-    IB/mlx4: Fix warning in rounding up queue sizes
-    
-    Doing max(1, foo) where foo is u32 generates a warning, because 1 is a
-    signed constant.  Fix this by using 1U instead.
-    
-    Signed-off-by: Roland Dreier <rolandd@cisco.com>
+IMHO, it looks a bit frightening :) maybe it would be possible to
+create a structure that combines some relevant argumens .. at least,
+the last 3 ones.
 
-diff --git a/drivers/infiniband/hw/mlx4/qp.c b/drivers/infiniband/hw/mlx4/qp.c
-index 5c6d054..4c15fa3 100644
---- a/drivers/infiniband/hw/mlx4/qp.c
-+++ b/drivers/infiniband/hw/mlx4/qp.c
-@@ -207,8 +207,8 @@ static int set_rq_size(struct mlx4_ib_dev *dev, struct ib_qp_cap *cap,
- 		if (is_user && (!cap->max_recv_wr || !cap->max_recv_sge))
- 			return -EINVAL;
- 
--		qp->rq.max	 = roundup_pow_of_two(max(1, cap->max_recv_wr));
--		qp->rq.max_gs	 = roundup_pow_of_two(max(1, cap->max_recv_sge));
-+		qp->rq.max	 = roundup_pow_of_two(max(1U, cap->max_recv_wr));
-+		qp->rq.max_gs	 = roundup_pow_of_two(max(1U, cap->max_recv_sge));
- 		qp->rq.wqe_shift = ilog2(qp->rq.max_gs * sizeof (struct mlx4_wqe_data_seg));
- 	}
- 
+
+> -static int move_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
+> +static int balance_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
+>                       unsigned long max_nr_move, unsigned long max_load_move,
+>                       struct sched_domain *sd, enum idle_type idle,
+> -                     int *all_pinned)
+> +                     int *all_pinned, unsigned long *load_moved,
+> +                     int this_best_prio, int best_prio, int best_prio_seen,
+> +                     void *iterator_arg,
+> +                     struct task_struct *(*iterator_start)(void *arg),
+> +                     struct task_struct *(*iterator_next)(void *arg))
+
+I think, there is a possible problem here. If I'm not complete wrong,
+this function (move_tasks() in the current mainline) can move more
+'load' than specified by the 'max_load_move'..
+
+as a result, e.g. in the following code :
+
+> +static int move_tasks(struct rq *this_rq, int this_cpu, struct rq *busiest,
+> +                     unsigned long max_nr_move, unsigned long max_load_move,
+> +                     struct sched_domain *sd, enum idle_type idle,
+> +                     int *all_pinned)
+> +{
+> +       struct sched_class *class = sched_class_highest;
+> +       unsigned long load_moved, total_nr_moved = 0, nr_moved;
+> +
+> +       do {
+> +               nr_moved = class->load_balance(this_rq, this_cpu, busiest,
+> +                                       max_nr_move, max_load_move, sd, idle,
+> +                                       all_pinned, &load_moved);
+> +               total_nr_moved += nr_moved;
+> +               max_nr_move -= nr_moved;
+> +               max_load_move -= load_moved;
+
+can become negative.. and as it's 'unsigned' --> a huge positive number..
+
+> +               class = class->next;
+> +       } while (class && max_nr_move && max_load_move);
+
+'(long)max_load_move > 0'      ?
+
+the same is applicable to a few other similar cases below :
+
+> +static int
+> +load_balance_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
+> +                       unsigned long max_nr_move, unsigned long max_load_move,
+> +                       struct sched_domain *sd, enum idle_type idle,
+> +                       int *all_pinned, unsigned long *total_load_moved)
+> +{
+> +       struct lrq *busy_lrq;
+> +       unsigned long load_moved, total_nr_moved = 0, nr_moved, rem_load_move;
+> +
+> +       rem_load_move = max_load_move;
+> +
+> +       for_each_leaf_lrq(busiest, busy_lrq) {
+> +               struct lrq *this_lrq;
+> +               long imbalance;
+> +               unsigned long maxload;
+> +               int this_best_prio, best_prio, best_prio_seen = 0;
+> +
+                    ..........
+> +
+> +               nr_moved = balance_tasks(this_rq, this_cpu, busiest,
+> +                               max_nr_move, maxload, sd, idle, all_pinned,
+> +                               &load_moved, this_best_prio, best_prio,
+> +                               best_prio_seen,
+> +                               /* pass busy_lrq argument into
+> +                                * load_balance_[start|next]_fair iterators
+> +                                */
+> +                               busy_lrq,
+> +                               load_balance_start_fair,
+> +                               load_balance_next_fair);
+> +
+> +               total_nr_moved += nr_moved;
+> +               max_nr_move -= nr_moved;
+> +               rem_load_move -= load_moved;
+
+here
+
+
+> +
+> +               /* todo: break if rem_load_move is < load_per_task */
+> +               if (!max_nr_move || !rem_load_move)
+
+'(long)rem_load_move <= 0'
+
+and I think somewhere else in the code.
+
+
+> --
+> Regards,
+> vatsa
+>
+
+-- 
+Best regards,
+Dmitry Adamushko
