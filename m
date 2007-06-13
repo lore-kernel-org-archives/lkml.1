@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbXFMXTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbXFMX2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758098AbXFMXTW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 19:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbXFMXTO
+	id S1757225AbXFMX2x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 19:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbXFMX2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 19:19:14 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60379 "EHLO gate.crashing.org"
+	Wed, 13 Jun 2007 19:28:45 -0400
+Received: from ns1.suse.de ([195.135.220.2]:56255 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756195AbXFMXTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 19:19:13 -0400
-Subject: Re: [BUG] ptraced process waiting on syscall may return kernel
-	internal errnos
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-In-Reply-To: <20070613230153.7B3034D059F@magilla.localdomain>
-References: <20070613230153.7B3034D059F@magilla.localdomain>
-Content-Type: text/plain
-Date: Thu, 14 Jun 2007 09:18:49 +1000
-Message-Id: <1181776729.14818.350.camel@localhost.localdomain>
+	id S1755321AbXFMX2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 19:28:44 -0400
+Date: Thu, 14 Jun 2007 01:28:38 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, mark.fasheh@oracle.com,
+       ext4 <linux-ext4@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com
+Subject: Re: + fs-introduce-write_begin-write_end-and-perform_write-aops.patch added to -mm tree
+Message-ID: <20070613232838.GB4015@wotan.suse.de>
+References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net> <20070613134005.GA13815@localhost.sw.ru> <20070613114356.GD17547@wotan.suse.de> <1181776021.21924.87.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181776021.21924.87.camel@dyn9047017100.beaverton.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 16:01 -0700, Roland McGrath wrote:
-> 
-> > What about something like:
+On Wed, Jun 13, 2007 at 04:07:01PM -0700, Badari Pulavarty wrote:
+> On Wed, 2007-06-13 at 13:43 +0200, Nick Piggin wrote:
+> ..
+> >  
+> > > 5) ext3_write_end:
+> > > 	Before  write_begin/write_end patch set we have folowing locking
+> > > 	order:
+> > > 		stop_journal(handle);
+> > > 		unlock_page(page);
+> > > 	But now order is oposite:
+> > > 		unlock_page(page);
+> > > 		stop_journal(handle);
+> > > 	Can we got any race condition now? I'm not sure is it actual problem,
+> > > 	may be somebody cant describe this.
 > > 
-> >                       do {
-> >                               rm_from_queue_full(&mask, &t->pending);
-> > -                             recalc_sigpending_and_wake(t);
-> >                               t = next_thread(t);
-> >                       } while (t != current);
-> > +                     recalc_sigpending();
+> > Can we just change it to the original order? That would seem to be
+> > safest unless one of the ext3 devs explicitly acks it.
 > 
-> There is no need for the +, just the -.  The calling thread is the one
-> where know there is certainly no perturbation of behavior due to leaving
-> TIF_SIGPENDING set rather than clearing it.  It's just going to exit the
-> syscall and deal with signal state properly on the way out either way.
-> Doing recalc_sigpending is an unnecessary optimization of the corner case.
+> It would be nice to go back to original order, but its not that
+> simple with current structure of the code. With Nick's patches
+> unlock_page() happens in generic_write_end(). journal_stop() 
+> needs to happen after generic_write_end(). :(
 
-Fair enough. I'll cook a patch for that one when I'm at work.
+Well we could use block_write_end?
 
-> > So at the end of the day, easier to test it inside dequeue_signal().
-> 
-> Before completely revamping the whole set of entrypoints to be saner all
-> around, yes.
+ 
+> Mingming, can you take a look at the current & proposed order ?
+> I ran into bunch of races when I tried to change the order for
+> ->writepages() support earlier :(
 
-btw, another interesting grep is to see how tweak TIF_SIGPENDING by
-hand ... there's some scary bits in the tty code too...
+OK, it sounds like we probably want to revert to the original
+order at least for this patchset. If the new order is proven
+safe then that could be introduced later to simplify things...
 
-Ben.
-
+Thanks,
+Nick
 
