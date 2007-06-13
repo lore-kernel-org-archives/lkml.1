@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbXFMNpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbXFMNrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbXFMNpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 09:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbXFMNp2
+	id S1758503AbXFMNrv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 09:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbXFMNrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 09:45:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:19915 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754397AbXFMNp2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 09:45:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oHxdDXduq89e89SAg2SFkbTyN6RaxtSJkQoGkewZbJvyN8Sir/104C/OoDqnSt0/05u94qN3q8A0j0Z4srvT7rguxT82B/AW8GbfggOoaaIEHitBJh3n6MBXlmNnhIXzsGOBYLqp001BwdzgmPajrs25kyzHlP50mT49r+sNHD0=
-Message-ID: <d120d5000706130645o4b63e9e8mf7606eb682275a0@mail.gmail.com>
-Date: Wed, 13 Jun 2007 09:45:27 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: Proposal: change keycode for scancode e0 32 from 150 to 172
-Cc: "Hans de Goede" <j.w.r.degoede@hhs.nl>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Stanislav Brabec" <sbrabec@suse.cz>,
-       "Vojtech Pavlik" <vojtech@suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0706131131250.23280@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 09:47:45 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3741 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751618AbXFMNro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 09:47:44 -0400
+Date: Wed, 13 Jun 2007 13:47:33 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Tim Post <tim.post@netkinetics.net>
+Cc: Tarkan Erimer <tarkan@netone.net.tr>, Neil Brown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070613134733.GE5986@ucw.cz>
+References: <466A3EC6.6030706@netone.net.tr> <18026.16739.228277.938421@notabene.brown> <466BBB0B.4050303@netone.net.tr> <1181555595.6256.827.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <466F1462.5090008@hhs.nl> <466F1E5C.5090002@zytor.com>
-	 <Pine.LNX.4.64.0706131113400.23280@twin.jikos.cz>
-	 <466FB80E.7050902@hhs.nl>
-	 <Pine.LNX.4.64.0706131131250.23280@twin.jikos.cz>
+In-Reply-To: <1181555595.6256.827.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/13/07, Jiri Kosina <jikos@jikos.cz> wrote:
-> On Wed, 13 Jun 2007, Hans de Goede wrote:
->
-> > Good to hear, so as everyone smees to agree, shall I write a (massive,
-> > complex, intrusive) patch to fix this, or are there until now silent
-> > parties that object?
->
-> Well, Dmitry is the one who has final word on this, as it is related to
-> PS/2 keyboards. Just noticed he is not in CC, added.
->
+Hi!
 
-Yep, just send me the patch (don't forget to make change to
-drivers/char/keyboard.c that Vojtech mentioned in other e-mail).
+> > So, does it mean we can change the license of the dead people's code ?
+> > 
+> 
+> Please realize that one doesn't need to be dead to become
+> uncommunicative incapacitated or vanish. The only need to be somewhere
+> other than where they were without updating anyone. 
+> 
+> Here is a very humorous, but sort of scary theoretical :
+> 
+> "Linus was so disturbed by the code in a submitted patch that he had a
+> nervous breakdown and spent the next 30 years in a padded room.
+> Unfortunately, no provisions were left to determine what happens to his
+> copyrights should he become incapacitated."
 
-Thanks.
+License is only promise not to sue. If Linus is safely in a padded
+room, I'll happily relicense Linux under GPLv17, knowing he is not
+going to sue me :-).
 
+(And actually, if he's in a padded room, there's probably someone who
+can act in his name. At least czech law works like that.)
+							Pavel
 -- 
-Dmitry
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
