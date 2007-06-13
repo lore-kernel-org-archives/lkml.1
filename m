@@ -1,186 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbXFMP7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbXFMQC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758756AbXFMP7H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 11:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbXFMP64
+	id S1758821AbXFMQC2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 12:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758031AbXFMQCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 11:58:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:22960 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757531AbXFMP6z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 11:58:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=H6MlZmZzV7sNGR6spJeccbv82I5J2tm0G0+ZX12p8UjEVGzc9zklkqc+6MsG5HFX7Xom1YYrpNQiOgDIgv6OiYlAC3PTSyOlHHmm6OqYjLqKBgWJ1fszZh7HZ8b5m/UB5in/N7dV6xfE7NkLfbTQTDtQXyJUdpapkH6MviJmgGU=
-Subject: Re: USB remote control missing keycodes
-From: Islam Amer <pharon@gmail.com>
-Reply-To: pharon@gmail.com
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706131741420.23280@twin.jikos.cz>
-References: <20070611101319.GA14284@DervishD> <466D2DF7.9020709@aladin.ro>
-	 <1181563063.19258.11.camel@iamer-laptop>
-	 <Pine.LNX.4.64.0706111656340.23280@twin.jikos.cz>
-	 <1181743734.6163.1.camel@iamer-laptop>
-	 <Pine.LNX.4.64.0706131654180.23280@twin.jikos.cz>
-	 <d120d5000706130817v5b9291d4h8653ade63882d2bc@mail.gmail.com>
-	 <Pine.LNX.4.64.0706131741420.23280@twin.jikos.cz>
-Content-Type: text/plain
-Date: Wed, 13 Jun 2007 18:58:46 +0300
-Message-Id: <1181750326.6163.6.camel@iamer-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 12:02:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49904 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757016AbXFMQCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 12:02:21 -0400
+Date: Wed, 13 Jun 2007 12:01:52 -0400
+From: Dave Jones <davej@redhat.com>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Wang Zhenyu <zhenyu.z.wang@intel.com>, Eric Anholt <eric@anholt.net>
+Subject: Re: I815 suddenly unkown to agpgart?
+Message-ID: <20070613160152.GC3875@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Meelis Roos <mroos@linux.ee>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	Wang Zhenyu <zhenyu.z.wang@intel.com>,
+	Eric Anholt <eric@anholt.net>
+References: <Pine.SOC.4.64.0706131804180.2614@math>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.SOC.4.64.0706131804180.2614@math>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 17:44 +0200, Jiri Kosina wrote:
-> On Wed, 13 Jun 2007, Dmitry Torokhov wrote:
-> 
-> > Actually this one does not need hidbus and can be easily handled from 
-> > userspace now that we have setkeycodes support for HID.
-> 
-> Sure, thanks for reminding.
-> 
-> Islam, if you'd like to write an userspace 'driver' (really trivial 
-> few-liner) for the missing keys, you can use a new functionality in recent 
-> kernels, which allows you to use EVIOCSKEYCODE ioctl() on evdev to create 
-> a proper mapping between the usage codes that are not handled by 
-> hid-input, and keycodes.
-> 
+On Wed, Jun 13, 2007 at 06:07:42PM +0300, Meelis Roos wrote:
+ > agpgart: Unsupported Intel chipset(device id: 1130)
 
-Interesting.. I assumed since evbug was not producing usable codes for
-these keys then the evdev layer would not get any codes at all.
+This is likely due to 9614ece14f23f2ce54a076c471aec9c91e51e79c
 
-Starting from what version did this ioctl get added and is it documented
-anywhere ?
+    [AGPGART] intel_agp: use table for device probe
+    
+    Fixed issues noted by Christoph Hellwig, and I changed device table
+    scan a bit to allow the case that some models of graphics chips may
+    have same host bridge type. This type of chip will be added in the future.
+    
+    This patch cleans up device probe function. Eric Anholt was the original author.
 
-Nevertheless the patch you sent got the "TXT" key to work but not the
-"BACK" key. Here are the codes for all of the non-functioning keys
-( TXT , BACK , 4 COLOR keys ):
+
+Eric ?
+
+	Dave
 
 
 
-RED button
-
-[ 1076.800000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1076.800000] drivers/hid/hid-core.c: report 5 (size 4) =  5b 00 00 00
-[ 1076.800000] hid-debug: input ffbc.0000 = 0
-[ 1076.800000] hid-debug: input ffbc.005b = 1
-[ 1076.808000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1076.808000] drivers/hid/hid-core.c: report 6 (size 4) =  01 2b 00 00
-[ 1076.808000] hid-debug: input ff80.0001 = 1
-[ 1076.808000] hid-debug: input ff80.0001 = 43
-[ 1076.808000] hid-debug: input ff80.0001 = 0
-[ 1076.808000] hid-debug: input ff80.0001 = 0
-[ 1076.904000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1076.904000] drivers/hid/hid-core.c: report 6 (size 4) =  01 2b 00 00
-[ 1076.904000] hid-debug: input ff80.0001 = 1
-[ 1076.904000] hid-debug: input ff80.0001 = 43
-[ 1076.904000] hid-debug: input ff80.0001 = 0
-[ 1076.904000] hid-debug: input ff80.0001 = 0
-[ 1077.024000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1077.024000] drivers/hid/hid-core.c: report 5 (size 4) =  00 00 00 00
-[ 1077.024000] hid-debug: input ffbc.005b = 0
-[ 1077.024000] hid-debug: input ffbc.0000 = 1
-
-GREEN button
-
-[ 1196.060000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1196.060000] drivers/hid/hid-core.c: report 5 (size 4) =  5c 00 00 00
-[ 1196.060000] hid-debug: input ffbc.0000 = 0
-[ 1196.060000] hid-debug: input ffbc.005c = 1
-[ 1196.068000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1196.068000] drivers/hid/hid-core.c: report 6 (size 4) =  01 2c 00 00
-[ 1196.068000] hid-debug: input ff80.0001 = 1
-[ 1196.068000] hid-debug: input ff80.0001 = 44
-[ 1196.068000] hid-debug: input ff80.0001 = 0
-[ 1196.068000] hid-debug: input ff80.0001 = 0
-[ 1196.164000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1196.164000] drivers/hid/hid-core.c: report 6 (size 4) =  01 2c 00 00
-[ 1196.164000] hid-debug: input ff80.0001 = 1
-[ 1196.164000] hid-debug: input ff80.0001 = 44
-[ 1196.164000] hid-debug: input ff80.0001 = 0
-[ 1196.164000] hid-debug: input ff80.0001 = 0
-[ 1196.292000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1196.292000] drivers/hid/hid-core.c: report 5 (size 4) =  00 00 00 00
-[ 1196.292000] hid-debug: input ffbc.005c = 0
-[ 1196.292000] hid-debug: input ffbc.0000 = 1
-
-
-YELLOW button
-
-[ 1222.552000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1222.552000] drivers/hid/hid-core.c: report 5 (size 4) =  5d 00 00 00
-[ 1222.552000] hid-debug: input ffbc.0000 = 0
-[ 1222.552000] hid-debug: input ffbc.005d = 1
-[ 1222.560000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1222.560000] drivers/hid/hid-core.c: report 6 (size 4) =  01 ad 00 00
-[ 1222.560000] hid-debug: input ff80.0001 = 1
-[ 1222.560000] hid-debug: input ff80.0001 = 173
-[ 1222.560000] hid-debug: input ff80.0001 = 0
-[ 1222.560000] hid-debug: input ff80.0001 = 0
-[ 1222.656000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1222.656000] drivers/hid/hid-core.c: report 6 (size 4) =  01 ad 00 00
-[ 1222.656000] hid-debug: input ff80.0001 = 1
-[ 1222.656000] hid-debug: input ff80.0001 = 173
-[ 1222.656000] hid-debug: input ff80.0001 = 0
-[ 1222.656000] hid-debug: input ff80.0001 = 0
-[ 1222.776000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1222.776000] drivers/hid/hid-core.c: report 5 (size 4) =  00 00 00 00
-[ 1222.776000] hid-debug: input ffbc.005d = 0
-[ 1222.776000] hid-debug: input ffbc.0000 = 1
-
-BLUE button
-
-[ 1472.908000] drivers/hid/hid-core.c: report 5 (size 4) =  5e 00 00 00
-[ 1472.908000] hid-debug: input ffbc.0000 = 0
-[ 1472.908000] hid-debug: input ffbc.005e = 1
-[ 1472.916000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1472.916000] drivers/hid/hid-core.c: report 6 (size 4) =  01 ae 00 00
-[ 1472.916000] hid-debug: input ff80.0001 = 1
-[ 1472.916000] hid-debug: input ff80.0001 = 174
-[ 1472.916000] hid-debug: input ff80.0001 = 0
-[ 1472.916000] hid-debug: input ff80.0001 = 0
-[ 1473.036000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1473.036000] drivers/hid/hid-core.c: report 5 (size 4) =  00 00 00 00
-[ 1473.036000] hid-debug: input ffbc.005e = 0
-[ 1473.036000] hid-debug: input ffbc.0000 = 1
+ > This came with todays 2.6.22-rc4+git on my Intel 815 chipset PC. lspci 
+ > -vvvn and full dmesg are below.
+ > 
+ > 00:00.0 0600: 8086:1130 (rev 02)
+ > 	Subsystem: 8086:4532
+ > 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+ > 	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ >SERR- <PERR-
+ > 	Latency: 0
+ > 	Region 0: Memory at f8000000 (32-bit, prefetchable) [size=64M]
+ > 	Capabilities: [88] Vendor Specific Information
+ > 	Capabilities: [a0] AGP version 2.0
+ > 		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2
+ > 		Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- Rate=<none>
+ > 
+ > 00:01.0 0604: 8086:1131 (rev 02) (prog-if 00 [Normal decode])
+ > 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+ > 	Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+ > 	Latency: 32
+ > 	Bus: primary=00, secondary=02, subordinate=02, sec-latency=32
+ > 	I/O behind bridge: 0000d000-0000dfff
+ > 	Memory behind bridge: ff900000-ff9fffff
+ > 	Prefetchable memory behind bridge: eea00000-f6afffff
+ > 	Secondary status: 66MHz+ FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR+
+ > 	BridgeCtl: Parity- SERR- NoISA- VGA+ MAbort- >Reset- FastB2B-
+ > 
+ > ....
+ >
+ > 02:00.0 0300: 1002:5246 (prog-if 00 [VGA])
+ > 	Subsystem: 1002:0008
+ > 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
+ > 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+ > 	Latency: 32 (2000ns min), Cache Line Size: 32 bytes
+ > 	Interrupt: pin A routed to IRQ 11
+ > 	Region 0: Memory at f0000000 (32-bit, prefetchable) [size=64M]
+ > 	Region 1: I/O ports at d800 [size=256]
+ > 	Region 2: Memory at ff9fc000 (32-bit, non-prefetchable) [size=16K]
+ > 	Expansion ROM at ff9c0000 [disabled] [size=128K]
+ > 	Capabilities: [50] AGP version 2.0
+ > 		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2
+ > 		Command: RQ=1 ArqSz=0 Cal=0 SBA+ AGP- GART64- 64bit- FW- Rate=<none>
+ > 	Capabilities: [5c] Power Management version 1
+ > 		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+ > 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+ > 
+ > Linux version 2.6.22-rc4-ga0e1d1d0 (mroos@rhn) (gcc version 4.1.3 20070601 (prerelease) (Debian 4.1.2-12)) #380 PREEMPT Wed Jun 13 10:15:07 EEST 2007
+ > BIOS-provided physical RAM map:
+ > ....
+ > Linux agpgart interface v0.102 (c) Dave Jones
+ > agpgart: Unsupported Intel chipset(device id: 1130)
 
 
-BACK key
-
-[ 1573.316000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1573.316000] drivers/hid/hid-core.c: report 4 (size 4) =  fa 00 00 00
-[ 1573.316000] hid-debug: input Consumer.0000 = 0
-[ 1573.324000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1573.324000] drivers/hid/hid-core.c: report 6 (size 4) =  01 23 00 00
-[ 1573.324000] hid-debug: input ff80.0001 = 1
-[ 1573.324000] hid-debug: input ff80.0001 = 35
-[ 1573.324000] hid-debug: input ff80.0001 = 0
-[ 1573.324000] hid-debug: input ff80.0001 = 0
-[ 1573.436000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1573.436000] drivers/hid/hid-core.c: report 4 (size 4) =  00 00 00 00
-[ 1573.436000] hid-debug: input Consumer.0000 = 1
-
-TXT key
-
-[ 1635.116000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1635.116000] drivers/hid/hid-core.c: report 5 (size 4) =  5a 00 00 00
-[ 1635.116000] hid-debug: input ffbc.0000 = 0
-[ 1635.116000] hid-debug: input ffbc.005a = 1
-[ 1635.124000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1635.124000] drivers/hid/hid-core.c: report 6 (size 4) =  01 aa 00 00
-[ 1635.124000] hid-debug: input ff80.0001 = 1
-[ 1635.124000] hid-debug: input ff80.0001 = 170
-[ 1635.124000] hid-debug: input ff80.0001 = 0
-[ 1635.124000] hid-debug: input ff80.0001 = 0
-[ 1635.236000] drivers/hid/hid-core.c: report (size 5) (numbered)
-[ 1635.236000] drivers/hid/hid-core.c: report 5 (size 4) =  00 00 00 00
-[ 1635.236000] hid-debug: input ffbc.005a = 0
-[ 1635.236000] hid-debug: input ffbc.0000 = 1
-
-Thanks a million. :)
-
+-- 
+http://www.codemonkey.org.uk
