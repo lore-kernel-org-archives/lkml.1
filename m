@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbXFMKth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757718AbXFMKw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758049AbXFMKth (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 06:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbXFMKta
+	id S1757718AbXFMKw5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 06:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbXFMKwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 06:49:30 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:27715 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756281AbXFMKt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 06:49:29 -0400
-Date: Wed, 13 Jun 2007 17:50:07 +0400
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-To: linux-kernel@vger.kernel.org
-Cc: npiggin@suse.de
-Subject: [patch] new aop block_write_begin fix
-Message-ID: <20070613135007.GC13815@localhost.sw.ru>
-Mail-Followup-To: linux-kernel@vger.kernel.org, npiggin@suse.de
-References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net> <20070613134005.GA13815@localhost.sw.ru>
+	Wed, 13 Jun 2007 06:52:50 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56463 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755315AbXFMKwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 06:52:49 -0400
+Date: Wed, 13 Jun 2007 12:52:43 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: James Ketrenos <jketreno@linux.intel.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
+       Zhu Yi <yi.zhu@intel.com>
+Subject: Re: ipw3945 driver in recent -mm kernels
+Message-ID: <20070613105243.GA15368@elf.ucw.cz>
+References: <20070609192703.GA6410@elf.ucw.cz> <20070609215712.GA13678@elf.ucw.cz> <466DA14D.6080309@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070613134005.GA13815@localhost.sw.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <466DA14D.6080309@linux.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	After we enter to block_write_begin with *pagep == NULL and
- 	some page was grabed we remember this page in *pagep
- 	And if __block_prepare_write() we have to clear *pagep , as 
- 	it was before. Because this may confuse caller.
- 	for example caller may have folowing code:
- 		ret = block_write_begin(..., pagep,...)
- 		if (ret && *pagep != NULL) {
- 			unlock_page(*pagep);
- 			page_cache_release(*pagep);
- 		}
-Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
+Hi!
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 07cd457..df933ba 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1982,6 +1982,7 @@ int block_write_begin(struct file *file, struct address_space *mapping,
- 		if (ownpage) {
- 			unlock_page(page);
- 			page_cache_release(page);
-+			*pagep = NULL;
- 
- 			/*
- 			 * prepare_write() may have instantiated a few blocks 
+> Forgot to include changes outside of drivers/net/wireless/mac80211/iwlwifi/
+> 
+> Zhu Yi is the maintainer for the iwlwifi driver (Cc: on this email)
 
+Thanks.
+
+> >>
+> >> be listed as a maintainer?
+> >>
+> >> Kconfig mentions...
+> >>
+> >>           See <file:Documentation/networking/README.iwlwifi> for
+> >>           information on the capabilities currently enabled in this
+> >>           driver and for tips for debugging issues and problems.
+> 
+> We'll remove that from the Kconfig until we get the document updated
+> to reflect the current status.
+
+Actually, It is probably better to just include the docs.
+
+(I'll test the patch now).
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
