@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbXFMEec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbXFMEvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755226AbXFMEec (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 00:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbXFMEeY
+	id S1754967AbXFMEvQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 00:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbXFMEvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 00:34:24 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39049 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750754AbXFMEeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 00:34:24 -0400
-Date: Wed, 13 Jun 2007 06:35:26 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Jan Beulich <jbeulich@novell.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       patches@x86-64.org
-Subject: Re: [PATCH] x86: fix improper .init-type section references
-Message-ID: <20070613043526.GA20088@uranus.ravnborg.org>
-References: <466E6BDF.76E4.0078.0@novell.com> <a781481a0706120414g385ccfe8j82b5b18d96d064f2@mail.gmail.com> <a781481a0706120509k89c331ela81f57ad0f0e29eb@mail.gmail.com> <466EB12B.76E4.0078.0@novell.com> <a781481a0706120632p54ad83d0ka0a07a9fd9b276b4@mail.gmail.com> <466EC08A.76E4.0078.0@novell.com> <a781481a0706120709v5a2d1147m9d372a8056aeba6d@mail.gmail.com> <20070612180002.GC15329@uranus.ravnborg.org> <a781481a0706122018i6273cd17y61cd95e269b5c7c9@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a781481a0706122018i6273cd17y61cd95e269b5c7c9@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 13 Jun 2007 00:51:05 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:3708 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422AbXFMEvC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 00:51:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=WPMYQQCfsxwsKAAVgMcJq5Lt8tcaM6KDuhDC/2lOCeU+MpDIP3Bpnd+lEtLMaULSxU5piciRjhkAygLlVxWYoOtPITPpRq5hcCOyBUcq2mYjFxpKxYBjTW5avVdHDuYY+jNzDNCAtYXt1AL5K+Y2RMcuwGjMp+XnHK9nWSk6gW4=
+Message-ID: <466F77AE.3050007@gmail.com>
+Date: Wed, 13 Jun 2007 13:50:54 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       cebbert@redhat.com, sandeen@redhat.com, maneesh@in.ibm.com,
+       cs@tequila.co.jp
+Subject: Re: [PATCHSET 2.6.22-rc4] sysfs: fix race conditions
+References: <20070611050107.GJ29122@htj.dyndns.org> <20070610231203.730d0aba.akpm@linux-foundation.org> <466CE88B.2050803@gmail.com> <20070612234732.GA26286@kroah.com>
+In-Reply-To: <20070612234732.GA26286@kroah.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH wrote:
+> On Mon, Jun 11, 2007 at 03:15:39PM +0900, Tejun Heo wrote:
+>> Andrew Morton wrote:
+>>>> This patchset contains three minimal backports of fixes in -mm.  With
+>>>> all patches in the patchset and sysfs-races.patch applied, kernel
+>>>> survived ~20 hours of stress test without any problem.
+>>> So these are being proposed for 2.6.22?
+>> Yeap.
+>>
+>>> I do wonder about Rafael's bug which he bisected down to
+>>> gregkh-driver-sysfs-use-singly-linked-list-for-sysfs_dirent-tree.patch.
+>>>
+>>> If that won't be a problem in this patchset then I spose it's probably best
+>>> to go ahead with a 2.6.22 merge, but it's more a Greg thing than a me
+>>> thing.
+>> I'm currently debugging that and it's irrelevant to these fixes.  The
+>> bug is introduced far after the fixes.
+>>
+>>> I don't have a tree to merge these patches into, unless I drop all the
+>>> patches which are in Greg's tree.
+>>>
+>>> Greg, can I leave it up to you to decide how we are to proceed here?
+>> I can rebase all sysfs patches in -mm on top of linus#master + these
+>> fixes if necessary.
 > 
-> Yup, we were only discussing possibility that modpost not complain
-> about .init -> .exit references that will never go oops (because the arch
-> guarantees that).
+> Ok, I've sent these to Linus, so if he takes them, can you rebase your
+> patches on top of this and resend the whole tree to me (or just the ones
+> that needed to be modified, if that's easier.)
 
-And there are no good reasosns why the rules should be different for i386
-and powerpc.
-This type of special casing is always bad.
-Think about it a little.
-Someone writes a generic driver and test it on i386 - OK.
-But for powerpc it result in a build failure. It would be so much better
-to warn about this situation early.
+Sure thing.
 
-We had this exact issue in loop.c recently - so it is not a made up example.
-[I recall it was ia64 that had a build failure but the example still holds ture]
+> thanks again for this fix, I really appreciate it.
 
-	Sam
+:-)
+
+-- 
+tejun
