@@ -1,112 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbXFMJZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbXFMJa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757455AbXFMJZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 05:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbXFMJZi
+	id S1757595AbXFMJa0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 05:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756738AbXFMJaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 05:25:38 -0400
-Received: from ms2.nttdata.co.jp ([163.135.193.237]:54470 "EHLO
-	ms2.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754140AbXFMJZh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 05:25:37 -0400
-X-Greylist: delayed 4336 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 05:25:36 EDT
-Message-ID: <466FA71C.1020309@nttdata.co.jp>
-Date: Wed, 13 Jun 2007 17:13:16 +0900
-From: Toshiharu Harada <haradats@nttdata.co.jp>
-Organization: NTT DATA CORPORATION
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 13 Jun 2007 05:30:17 -0400
+Received: from frosty.hhs.nl ([145.52.2.15]:32988 "EHLO frosty.hhs.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756728AbXFMJaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 05:30:16 -0400
+Message-ID: <466FB80E.7050902@hhs.nl>
+Date: Wed, 13 Jun 2007 11:25:34 +0200
+From: Hans de Goede <j.w.r.degoede@hhs.nl>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: [RFC] TOMOYO Linux
+To: Jiri Kosina <jikos@jikos.cz>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stanislav Brabec <sbrabec@suse.cz>, Vojtech Pavlik <vojtech@suse.cz>
+Subject: Re: Proposal: change keycode for scancode e0 32 from 150 to 172
+References: <466F1462.5090008@hhs.nl> <466F1E5C.5090002@zytor.com> <Pine.LNX.4.64.0706131113400.23280@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0706131113400.23280@twin.jikos.cz>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Jun 2007 08:13:18.0069 (UTC) FILETIME=[B2D82A50:01C7AD92]
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.2/RELEASE, bases: 13062007 #321577, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Jiri Kosina wrote:
+> On Tue, 12 Jun 2007, H. Peter Anvin wrote:
+> 
+>> In PS/2 mode it reports E0 32 which gets converted to keycode 150. In 
+>> USB mode it reports E0 02 which gets converted to keycode 172.
+>> I don't know if it's the keyboard itself that's being inconsistent, or 
+>> if it is the table in usbkbd.c that's broken (in which case it should be 
+>> fixed to be consistent with the keyboard in PS/2 mode.)
+> 
+> Hi Peter,
+> 
+> First, usbkbd.c has very probably zero business with this - the mappings 
+> are being done in hid-input.c, usbkdb.c is only for embedded/debugging 
+> cases, and is almost never used on modern systems (see the corresponding 
+> Kconfig help text).
+> 
+>> You seem to be of the opinion that "usb behaviour is correct", but don't 
+>> give any motivation why usb should take precedence.  Offhand, I would 
+>> expect there to be fewer translation layers for PS/2 and would therefore 
+>> assume PS/2 is more inherently correct.
+> 
+> For USB, we have Hid Usage Pages, which define this to be KEY_HOMEPAGE. 
+> There is no such specification for PS/2 though, so what Hans is proposing 
+> is to make it consistent with behavior of USB HID devices, which I agree 
+> with.
+> 
 
-A couple of years ago, we tried to build a tool to generate
-SELinux policy (*1). To do that, we had to gather the access
-requests information. So we researched a profiling method and
-got to the idea of having a process to store its invocation
-history information (or ancestors).
+Good to hear, so as everyone smees to agree, shall I write a (massive, complex, 
+intrusive) patch to fix this, or are there until now silent parties that object?
 
-Here are examples:
-/bin/bash process invoked from mingetty: /sbin/mingetty /bin/bash
-/bin/bash process invoked from sshd: /usr/sbin/sshd /bin/bash
-/bin/bash process invoked from /bin/bash which was invoked from sshd: /usr/sbin/sshd /bin/bash /bin/bash
+Regards,
 
-It seemed to us that this clarification would be familiar to
-users/administrators and could be used for various purposes.
-We did implement this by making use of the Linux's traditional
-fork & exec mechanisms, and built a pathname-based MAC using
-this implementation. We named the result as "TOMOYO Linux"
-and made it open source at SourceForge.jp (*2).
-
-TOMOYO Linux kernel keeps track of process invocation and
-distinguishes every different process invocation history as a "domain".
-TOMOYO Linux can accumulate the accesses requests for each domain.
-
-TOMOYO Linux has a utility called "ccstree". It prints the invocation
-history for each process in addition to the output of "pstree" command:
-
-[root@tomoyo ~]# ccstree
-init (1) <kernel> /sbin/init
-   +- udevd (388) <kernel> /sbin/udevd
-   ...
-   +- automount (1970) <kernel> /etc/rc.d/init.d/autofs /usr/sbin/automount
-   +- acpid (1993) <kernel> /etc/rc.d/init.d/acpid /bin/bash /usr/sbin/acpid
-   +- cupsd (2008) <kernel> /etc/rc.d/init.d/cups /bin/bash /usr/sbin/cupsd
-   +- sshd (2026) <kernel> /usr/sbin/sshd
-   +- sshd (2269) <kernel> /usr/sbin/sshd
-     +- bash (2271) <kernel> /usr/sbin/sshd /bin/bash
-       +- ccstree (15125) <kernel> /usr/sbin/sshd /bin/bash /root/ccstools/ccstree
-
-   (symbol, "<kernel>" indicates a virtual base.)
-
-We had a presentation and a tutorial session of TOMOYO Linux
-version 1.4 at the ELC2007 (*3). Version 1.4.1 is the latest and
-has a rich set of MAC functions for files, networking, and
-capabilities and so on. For historical reasons, it is not using
-LSM or auditd. We decided to share this idea with the Linux community
-and totally rewrote the code. The result was TOMOYO Linux 2.0,
-which is now using LSM and auditd. To make discussion smooth,
-we cut off MAC functions other than for files.
-
-We are posting this message because we believe that this process
-invocation history idea might be a useful addition to Linux.
-Please take some time to see what this small piece of software can do
-with your own eyes. Your feedback will be greatly appreciated.
-
-If some of you are interested in TOMOYO Linux as a method for
-access control, please be advised to try full-featured version 1.4.1 (*4).
-It is quite easy to install and maintain TOMOYO Linux, but it should
-not be considered as a replacement of SELinux.
-
-All right, that's almost everything. Please visit the following
-URL for the code and documents:
-   http://tomoyo.sourceforge.jp/wiki-e/
-If you want to see the code first, then:
-   http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/security/tomoyo/?v=linux-2.6.21.3-tomoyo-2.0
-
-We will have a TOMOYO Linux BOF session at the OLS2007 (*5).
-Please come along and let's talk.
-
-Thank you.
-
-Toshiharu Harada (project manager)
-Tetsuo Handa (main architect, version 1 author)
-Kentaro Takeda (version 2.0 author)
-NTT DATA CORPORATION
-http://www.nttdata.co.jp/en/index.html
-
-*1) http://sourceforge.jp/projects/tomoyo/document/nsf2003-en.pdf
-*2) http://tomoyo.sourceforge.jp/
-*3) http://www.celinux.org/elc2007/
-     http://tree.celinuxforum.org/CelfPubWiki/ELC2007Presentations
-*4) http://tomoyo.sourceforge.jp/en/1.4.1/
-*5) http://www.linuxsymposium.org/2007/
+Hans
 
 
