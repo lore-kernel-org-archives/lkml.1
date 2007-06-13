@@ -1,82 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbXFMKjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758370AbXFMKjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbXFMKjM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 06:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbXFMKi5
+	id S1758370AbXFMKjy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 06:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbXFMKjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 06:38:57 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:31038 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756619AbXFMKi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 06:38:56 -0400
-Date: Wed, 13 Jun 2007 06:35:22 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: John Stoffel <john@stoffel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-Message-ID: <20070613103522.GW28279@think.oraclecorp.com>
-References: <20070612161029.GB28279@think.oraclecorp.com> <18031.26764.586958.632146@stoffel.org>
+	Wed, 13 Jun 2007 06:39:46 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:6605 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757427AbXFMKjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 06:39:44 -0400
+Date: Wed, 13 Jun 2007 17:40:05 +0400
+From: Dmitriy Monakhov <dmonakhov@openvz.org>
+To: linux-kernel@vger.kernel.org
+Cc: npiggin@suse.de, mark.fasheh@oracle.com, dmonakhov@openvz.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: + fs-introduce-write_begin-write_end-and-perform_write-aops.patch added to -mm tree
+Message-ID: <20070613134005.GA13815@localhost.sw.ru>
+Mail-Followup-To: linux-kernel@vger.kernel.org, npiggin@suse.de,
+	mark.fasheh@oracle.com, linux-ext4@vger.kernel.org
+References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <18031.26764.586958.632146@stoffel.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 11:46:20PM -0400, John Stoffel wrote:
-> >>>>> "Chris" == Chris Mason <chris.mason@oracle.com> writes:
+On 14:19 Втр 29 Май     , akpm@linux-foundation.org wrote:
 > 
-> Chris> After the last FS summit, I started working on a new filesystem
-> Chris> that maintains checksums of all file data and metadata.  Many
-> Chris> thanks to Zach Brown for his ideas, and to Dave Chinner for his
-> Chris> help on benchmarking analysis.
+> The patch titled
+>      fs: introduce write_begin, write_end, and perform_write aops
+> has been added to the -mm tree.  Its filename is
+>      fs-introduce-write_begin-write_end-and-perform_write-aops.patch
 > 
-> Chris> The basic list of features looks like this:
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
 > 
-> Chris> 	* Extent based file storage (2^64 max file size)
-> Chris> 	* Space efficient packing of small files
-> Chris> 	* Space efficient indexed directories
-> Chris> 	* Dynamic inode allocation
-> Chris> 	* Writable snapshots
-> Chris> 	* Subvolumes (separate internal filesystem roots)
-> Chris> 	- Object level mirroring and striping
-> Chris> 	* Checksums on data and metadata (multiple algorithms available)
-> Chris> 	- Strong integration with device mapper for multiple device support
-> Chris> 	- Online filesystem check
-> Chris> 	* Very fast offline filesystem check
-> Chris> 	- Efficient incremental backup and FS mirroring
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
 > 
-> So, can you resize a filesystem both bigger and smaller?  Or is that
-> implicit in the Object level mirroring and striping?  
-
-Growing the FS is just either extending or adding a new extent tree.
-Shrinking is more complex.  The extent trees do have back pointers to
-the objectids that own the extent, but snapshotting makes that a little
-non-deterministic.  The good news is there are no fixed locations for
-any of the metadata.  So it is at least possible to shrink and pop out
-arbitrary chunks.
-
+> ------------------------------------------------------
+> Subject: fs: introduce write_begin, write_end, and perform_write aops
+> From: Nick Piggin <npiggin@suse.de>
 > 
-> As a user of Netapps, having quotas (if only for reporting purposes)
-> and some way to migrate non-used files to slower/cheaper storage would
-> be great.
-
-So far, I'm not planning quotas beyond the subvolume level.
-
+> These are intended to replace prepare_write and commit_write with more
+> flexible alternatives that are also able to avoid the buffered write
+> deadlock problems efficiently (which prepare_write is unable to do).
 > 
-> Ie. being able to setup two pools, one being RAID6, the other being
-> RAID1, where all currently accessed files are in the RAID1 setup, but
-> if un-used get migrated to the RAID6 area.  
+> [mark.fasheh@oracle.com: API design contributions, code review and fixes]
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+I've finaly find time to review Nick's "write_begin/write_end aop" patch set.
+And i have some fixes and questions. My be i've missed somthing and it was 
+already disscussed, but i cant find in LKML.
 
-HSM in general is definitely interesting.  I'm afraid it is a long ways
-off, but it could be integrated into the scrubber that wanders the trees
-in the background.
+1) loop dev:
+	loop.c code itself is not perfect. In fact before Nick's patch
+	partial write was't possible. Assumption what write chunks are
+	always page aligned is realy weird ( see "index++" line).
+	Fixed by "new aop loop fix" patch
 
--chris
+2)block_write_begin:
+	After we enter to block_write_begin with *pagep == NULL and
+	some page was grabed we remember this page in *pagep
+	And if __block_prepare_write() we have to clear *pagep , as 
+	it was before. Because this may confuse caller.
+	for example caller may have folowing code:
+		ret = block_write_begin(..., pagep,...)
+		if (ret && *pagep != NULL) {
+			unlock_page(*pagep);
+			page_cache_release(*pagep);
+		}
+	Fixed my "new aop block_write_begin fix" patch
+
+3) __page_symlink:
+	Nick's patch add folowing code:
+	+ err = pagecache_write_begin(NULL, mapping, 0,PAGE_CACHE_SIZE,
+	+                 AOP_FLAG_UNINTERRUPTIBLE, &page,&fsdata);
+	symlink now consume whole page. I have only one question "WHY???".
+	I don't see any advantages, but where are huge list of
+	dissdvantages:
+	a) fs with blksize == 1k and pagesize == 16k after this patch
+	   waste more than 10x times disk space for nothing.
+	b) What happends if we want use fs with blksize == 4k on i386
+	   after it was used by ia64 ??? (before this patch it was
+	   possible).
+	
+	I dont prepare patch for this because i dont understand issue
+	witch Nick aimed to fix.
+
+4) iov_iter_fault_in_readable:
+	Function prerform check for signgle region, with out respect to
+	segment nature of iovec, For example writev no longer works :) :
+	writev(3, [{"\1", 1}, {"\2"..., 4096}], 2) = -1 EFAULT (Bad address)
+	this hidden bug, and it was invisiable because XXXX_fault_in_readable
+	return value was ignored before. Lets iov_iter_fault_in_readable
+	perform checks for all segments.
+	Fixed by :"iov_iter_fault_in_readable fix"
+
+5) ext3_write_end:
+	Before  write_begin/write_end patch set we have folowing locking
+	order:
+		stop_journal(handle);
+		unlock_page(page);
+	But now order is oposite:
+		unlock_page(page);
+		stop_journal(handle);
+	Can we got any race condition now? I'm not sure is it actual problem,
+	may be somebody cant describe this.
+
+
+
 
