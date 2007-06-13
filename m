@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758954AbXFMPP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759085AbXFMPRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758954AbXFMPP3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 11:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757738AbXFMPPX
+	id S1759085AbXFMPRj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 11:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757738AbXFMPRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 11:15:23 -0400
-Received: from mail.screens.ru ([213.234.233.54]:59595 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757686AbXFMPPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 11:15:22 -0400
-Date: Wed, 13 Jun 2007 19:15:30 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [BUG] ptraced process waiting on syscall may return kernel internal errnos
-Message-ID: <20070613151530.GA232@tv-sign.ru>
-References: <87hcplvdkl.wl%takeuchi_satoru@jp.fujitsu.com> <20070606105900.DE5E94D0592@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 Jun 2007 11:17:32 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:34350 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758010AbXFMPRb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 11:17:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=c4W0G9OBFYGiuwZaFZN2IpAHzlZn+Vu7AqeXVoCvVC8JLmW2F7IUe6i2T7EZfpZitkjCnmWfa9WHYWMWY7W9i3jdz1KweWOb3RrPH/238yG3hsPF2OqzrCWh5w/UdFY6Hc1YsmtPYT/d4J6QPRXLRDpQli65v6Xlcjt1EEQpYMU=
+Message-ID: <d120d5000706130817v5b9291d4h8653ade63882d2bc@mail.gmail.com>
+Date: Wed, 13 Jun 2007 11:17:30 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Jiri Kosina" <jikos@jikos.cz>
+Subject: Re: USB remote control missing keycodes
+Cc: "Islam Amer" <pharon@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0706131654180.23280@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070606105900.DE5E94D0592@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+References: <20070611101319.GA14284@DervishD> <466D2DF7.9020709@aladin.ro>
+	 <1181563063.19258.11.camel@iamer-laptop>
+	 <Pine.LNX.4.64.0706111656340.23280@twin.jikos.cz>
+	 <1181743734.6163.1.camel@iamer-laptop>
+	 <Pine.LNX.4.64.0706131654180.23280@twin.jikos.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for delay, I was completely offline,
+On 6/13/07, Jiri Kosina <jikos@jikos.cz> wrote:
+> On Wed, 13 Jun 2007, Islam Amer wrote:
+>
+> > back ( not working )
+> > [  829.897373] drivers/hid/hid-core.c: report (size 5) (numbered)
+> > [  829.897380] drivers/hid/hid-core.c: report 4 (size 4) =  fa 00 00 00
+> > [  829.897389] hid-debug: input Consumer.0000 = 0
+> [...]
+> > txt ( not working )
+> > [  900.156751] drivers/hid/hid-core.c: report (size 5) (numbered)
+> > [  900.156762] drivers/hid/hid-core.c: report 5 (size 4) =  5a 00 00 00
+> > [  900.156771] hid-debug: input ffbc.0000 = 0
+> > [  900.156781] hid-debug: input ffbc.005a = 1
+>
+> Oh my, another 'creative' vendor :( We really desperately need the
+> hidbus, so that we could handle those misbehaving vendors in cleaner
+> way, I am constantly moving that up in my todo :)
+>
 
-On 06/06, Roland McGrath wrote:
-> 
-> [PATCH] Restrict clearing TIF_SIGPENDING
-> 
-> This patch should get a few birds.  It prevents sigaction calls from
-> clearing TIF_SIGPENDING in other threads, which could leak -ERESTART*.
-> It fixes ptrace_stop not to clear it, which done at the syscall exit
-> stop could leak -ERESTART*.  It probably removes the harm from
-> signalfd, at least assuming it never calls dequeue_signal on kernel
-> threads that might have used block_all_signals.
-> 
-> Signed-off-by: Roland McGrath <roland@redhat.com>
-> ---
->  kernel/signal.c |   40 ++++++++++++++++++++++++----------------
->  1 files changed, 24 insertions(+), 16 deletions(-)
-> 
-> diff --git a/kernel/signal.c b/kernel/signal.c
-> index acdfc05..dc5797c 100644  
-> --- a/kernel/signal.c
-> +++ b/kernel/signal.c
-> @@ -105,7 +105,11 @@ static int recalc_sigpending_tsk(struct 
->  		set_tsk_thread_flag(t, TIF_SIGPENDING);
->  		return 1;
->  	}
-> -	clear_tsk_thread_flag(t, TIF_SIGPENDING);
-> +	/*
-> +	 * We must never clear the flag in another thread, or in current
-> +	 * when it's possible the current syscall is returning -ERESTART*.
-> +	 * So we don't clear it here, and only callers who know they should do.
-> +	 */
->  	return 0;
->  }
+Actually this one does not need hidbus and can be easily handled from
+userspace now that we have setkeycodes support for HID.
 
-This breaks cancel_freezing(). Somehow we should clear TIF_SIGPENDING for
-kernel threads. Otherwise we may have subtle failures if try_to_freeze_tasks()
-fails.
-
-Also, whith this change do_sigaction()->recalc_sigpending_and_wake() doesn't
-make sense any longer, yes?
-
-> @@ -385,7 +391,8 @@ int dequeue_signal(struct task_struct *t
->  			}
->  		}
->  	}
-> -	recalc_sigpending_tsk(tsk);
-> +	if (likely(tsk == current))
-> +		recalc_sigpending();
-
-In theory, flush_signals(t) needs a similar change. However, it is always
-called with t == current. Perhaps it makes sense to make it flush_signals(void) ?
-Do you see any valid usage of flush_signals(t) when t != current ?
-
-(Actually, imho the same is true for dequeue_signal(). Except for signalfd.c
- dequeue_signal() should operate on current. Perhaps it would be a bit cleaner
- to have dequeue_signal_tsk(tsk) and dequeue_signal(void), the latter does
- recalc_sigpending).
-
-Oleg.
-
+-- 
+Dmitry
