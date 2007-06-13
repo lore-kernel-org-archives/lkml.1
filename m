@@ -1,86 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbXFMTNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbXFMTRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbXFMTNr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 15:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbXFMTNk
+	id S1756523AbXFMTRS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 15:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbXFMTRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 15:13:40 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:41260 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbXFMTNj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 15:13:39 -0400
-Subject: Re: [kvm-devel] kvm + IOMMU
-From: Gregory Haskins <ghaskins@novell.com>
-To: David Brown <dmlb2000@gmail.com>
-Cc: kvm-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <9c21eeae0706131152y64b02e6fs4d120fcc3a5343fe@mail.gmail.com>
-References: <9c21eeae0706131027i21d97e16k7aedf54134c727b8@mail.gmail.com>
-	 <1181759552.16287.23.camel@ghaskins-t60p.haskins.net>
-	 <9c21eeae0706131152y64b02e6fs4d120fcc3a5343fe@mail.gmail.com>
+	Wed, 13 Jun 2007 15:17:12 -0400
+Received: from pat.uio.no ([129.240.10.15]:44910 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750974AbXFMTRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 15:17:11 -0400
+Subject: Re: 2.6.21.14 NFS related oops
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Maciej Soltysiak <solt2@dns.toxicfilms.tv>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <466FDC76.6020207@dns.toxicfilms.tv>
+References: <466FDC76.6020207@dns.toxicfilms.tv>
 Content-Type: text/plain
-Date: Wed, 13 Jun 2007 15:12:40 -0400
-Message-Id: <1181761960.16287.34.camel@ghaskins-t60p.haskins.net>
+Date: Wed, 13 Jun 2007 15:17:07 -0400
+Message-Id: <1181762227.6151.55.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.139)
+X-UiO-Scanned: BF36C1F356DDF221EB2C1F82FF850966064DDE5C
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 195 total 2357023 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 11:52 -0700, David Brown wrote:
-> > Hi David,
-> >   I am not an expert here, but I don't believe it would work without
-> > changes to KVM.  My understanding is that you use an IOMMU in this
-> > fashion if you want to direct-map a device into a guest for devices that
-> > do not have a local IOMMU-like functionality built in already.  For
-> > instance, perhaps you want to assign an off-the-shelf ethernet NIC to a
-> > guest.  The IOMMU would serve to translate between GPA and system based
-> > DMA addresses.  However, the hypervisor would really need to be involved
-> > in the setup of this mapping on the IOMMU in the first place.
+On Wed, 2007-06-13 at 14:00 +0200, Maciej Soltysiak wrote:
+> Hi,
 > 
-> Okay its understandable that the initial setup of the mapping between
-> virtual and actual would be done by some OS (most-likely host).
-> However isn't the actual mapping when the guest starts and requests
-> devices supposed to be handled by hardware? I would think performance
-> wouldn't scale very well if the host OS had to maintain mappings and
-> translate addresses every time a guest requests access to a mapped
-> device.
+> If anyone is interested I got this OOPS while running a torrent 
+> (btdownloadcurses)
+> application writing directly to a NAS mounted via nfs3.
+> 
+> The client machine is 2.6.21.14 and it is mounted with options:
+> wsize=8192,rsize=8192,hard,intr,tcp
 
-Sorry, I didn't word that very well.  The hypervisor would have to do
-the initial setup, and possibly any bookkeeping updates as the state of
-the MMU mappings change over time (if applicable).  But this is
-"slow-path" type stuff.  Once the mappings are in place, memory accesses
-are handled by the hardware at full speed.
+Hmm. The Oops says '2.6.20.14-cks1'
 
-This is akin to how an OS sets up the regular MMU, but then the task
-runs at full speed directly on the memory until something like a fault
-occurs.  Essentially, IOMMUs perform translation for the peripheral
-busses "in" to memory, as a regular MMU performs translation "out".
-Someone has to be behind the wheel configuring the translation tables.
-However, once they are setup, accesses to memory within the configured
-regions happen without software interaction.
+Firstly, does that have any extra out-of-tree patches?
+Secondly, is it reproducible with 2.6.21 or a more recent kernel?
 
+> After that, the application hung and i am unable to cd into the mounted 
+> nfs directory
+> nor unmount it (busy), nor kill the app (kill -9 fails, process in D state)
 > 
-> > KVM (currently) virtualizes/emulates all components in the logical
-> > "system" presented to the guest.  It doesn't yet support the notion of
-> > direct-mapping a physical component.  I doubt you will have to wait too
-> > long for someone to add this feature, however :)  It's just not there
-> > today (to my knowledge, anyway)
+> Best regards,
+> Maciej
 > 
-> That's good to hear. :)
-> 
-> > But to answer your question, when configured up like this the IO
-> > subsystem in question should perform pretty close to native (at least in
-> > theory).
-> 
-> Hopefully you mean that the hardware is handling the mapping so that
-> the host OS won't have to take the burden of mapping a bunch of
-> addresses all the time.
+> BUG: unable to handle kernel paging request at virtual address 5018f248
+>  printing eip:
+> f0a93c94
+> *pde = 00000000
+> Oops: 0002 [#1]
+> Modules linked in: binfmt_misc sit nfs lockd nfs_acl sunrpc w83627ehf 
+> i2c_isa i2c_viapro i2c_core via_agp agpgart rtc
+> CPU:    0
+> EIP:    0060:[<f0a93c94>]    Not tainted VLI
+> EFLAGS: 00010206   (2.6.20.14-cks1 #15)
+> EIP is at rpcauth_checkverf+0x34/0x70 [sunrpc]
+> eax: d2f4447c   ebx: c655d584   ecx: 00000000   edx: f0aa9f60
+> esi: e91ea640   edi: d2f44474   ebp: ede2f228   esp: e64b5eec
+> ds: 007b   es: 007b   ss: 0068
+> Process rpciod/0 (pid: 1005, ti=e64b4000 task=efe95a90 task.ti=e64b4000)
+> Stack: 00000286 ede2f8a0 ede2f8a0 00000286 c655d584 121d0da3 00000820 
+> f0a8d7fd
+>        f0a93d60 f08bae07 00000286 c655d5cc 00000286 00000286 f08c0520 
+> c655d584
+>        00000000 c655d5ec f0a93260 f0a9306f efe95a90 ee2d5740 e092ffb0 
+> c034e11c
+> Call Trace:
+>  [<f0a8d7fd>] call_decode+0x27d/0x5e0 [sunrpc]
+>  [<f0a93d60>] rpcauth_unbindcred+0x20/0x60 [sunrpc]
+>  [<f08bae07>] nfs_readpage_result_full+0xf7/0x120 [nfs]
+>  [<f08c0520>] nfs3_xdr_readres+0x0/0x160 [nfs]
+>  [<f0a93260>] rpc_async_schedule+0x0/0x10 [sunrpc]
+>  [<f0a9306f>] __rpc_execute+0x5f/0x250 [sunrpc]
+>  [<c034e11c>] schedule+0x21c/0x450
+>  [<c01283aa>] run_workqueue+0x7a/0x110
+>  [<c0128a07>] worker_thread+0x137/0x160
+>  [<c01176b0>] default_wake_function+0x0/0x10
+>  [<c01288d0>] worker_thread+0x0/0x160
+>  [<c012b329>] kthread+0xa9/0xe0
+>  [<c012b280>] kthread+0x0/0xe0
+>  [<c0103a97>] kernel_thread_helper+0x7/0x10
+>  =======================
+> Code: 10 89 5c 24 10 89 c3 89 7c 24 18 89 d7 89 74 24 14 8b 70 28 75 1a 8b
+> 4e 08 89 fa 89 d8 ff 51 18 8b 5c 24 10 83 74 24 14 8b 7c 24 <18> 83 c4 1c c3
+> 89 74 24 0c 8b 40 10 8b 40 24 8b 40 10 8b 40 08 EIP: [<f0a93c94>]
+> rpcauth_checkverf+0x34/0x70 [sunrpc] SS:ESP 0068:e64b5eec
 
-That's correct.
+At a first guess, it looks as though something has scribbled over your
+credential. Have you tried running this kernel with slab debugging
+enabled?
 
-> 
-> Thanks,
-> - David Brown
+Cheers
+  Trond
 
