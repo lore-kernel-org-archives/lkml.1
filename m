@@ -1,93 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbXFMJpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757608AbXFMJtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757763AbXFMJpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 05:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbXFMJp3
+	id S1757608AbXFMJtR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 05:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbXFMJtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 05:45:29 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:41426 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753167AbXFMJp2 (ORCPT
+	Wed, 13 Jun 2007 05:49:08 -0400
+Received: from mail-in-10.arcor-online.net ([151.189.21.50]:38286 "EHLO
+	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753167AbXFMJtH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 05:45:28 -0400
-Date: Wed, 13 Jun 2007 12:45:21 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix race condition about network device name allocation
-Message-ID: <20070613094521.GA8860@localdomain>
-References: <1178862045.3979.33.camel@kane-linux> <20070511092519.1f34ab34@freepuppy> <1179130660.3881.23.camel@kane-linux> <20070514085840.17a343f7@freepuppy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514085840.17a343f7@freepuppy>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Wed, 13 Jun 2007 05:49:07 -0400
+In-Reply-To: <46B96294322F7D458F9648B60E15112C526DF5@zch01exm26.fsl.freescale.net>
+References: <11816389393593-git-send-email-wei.zhang@freescale.com> <1181638939310-git-send-email-wei.zhang@freescale.com> <39c7d60cebf03badd106d7f75a08f449@kernel.crashing.org> <46B96294322F7D458F9648B60E15112C526DD9@zch01exm26.fsl.freescale.net> <59453d80f2f111b72e8f24e7b489c23e@kernel.crashing.org> <46B96294322F7D458F9648B60E15112C526DF5@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9f8ab14c257b414bba3fb47671f398d1@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: <linux-kernel@vger.kernel.org>, <mporter@kernel.crashing.org>,
+       <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] Add the explanation and sample of RapidIO DTS sector to the document of booting-without-of.txt file.
+Date: Wed, 13 Jun 2007 11:48:53 +0200
+To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 08:58:40AM -0700, Stephen Hemminger wrote:
-> Kenji Kaneshige found this race between device removal and
-> registration.  On unregister it is possible for the old device to
-> exist, because sysfs file is still open.  A new device with 'eth%d'
-> will select the same name, but sysfs kobject register will fial.
-> 
-> The following changes the shutdown order slightly. It hold a removes the sysfs
-> entries earlier (on unregister_netdevice), but holds a kobject reference.
-> Then when todo runs the actual last put free happens.
-> 
-> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+>>>>> +    - device_type : Should be "rapidio"
+>>>>
+>>>> There is no OF binding, so no.
+>>>
+>>> So, we need to define it.
+>>
+>> If you want to.  Until that has been done, don't use
+>> a "device_type".  Linux won't use it, anyway.
+>
+> Do you have another ideas about that? Only remove it?
 
-That patch breaks the bonding driver. After reverting it I avoid this crash:
+Yeah, remove it.
 
-<6>[1115260.637351] Ethernet Channel Bonding Driver: v3.1.2 (January 20, 2007)
-<6>[1115260.637358] bonding: MII link monitoring set to 100 ms
-<6>[1115260.637767] bonding: bond0 is being deleted...
-<1>[1115260.695812] Unable to handle kernel NULL pointer dereference at 0000000000000020 RIP: 
-<1>[1115260.701504]  [<ffffffff802805e2>] __lookup_hash+0x22/0x150
-<6>[1115260.709754] PGD 798bf067 PUD 798c4067 PMD 0 
-<0>[1115260.714394] Oops: 0000 [1] SMP 
-[1]kdb> 
-[1]kdb> btc
-btc: cpu status: Currently on cpu 1
-Available cpus: 0(I), 1
-Stack traceback for pid 0
-0xffffffff80585420        0        0  1    0   I  0xffffffff80585710  swapper
-rsp                rip                Function (args)
-0xffffffff8066feb0 0xffffffff8046783f thread_return+0x5e
-0xffffffff8066fec0 0xffffffff80469df9 _spin_unlock_irq+0x9
-0xffffffff8066ff28 0xffffffff80209176 mwait_idle+0x46
-0xffffffff8066ff50 0xffffffff802088e2 enter_idle+0x22
-0xffffffff8066ff60 0xffffffff802090bc cpu_idle+0x5c
-0xffffffff8066ff80 0xffffffff80207146 rest_init+0x26
-0xffffffff8066ff90 0xffffffff80678c1a start_kernel+0x2ea
-0xffffffff8066ffc0 0xffffffff8067815f _sinittext+0x15f
-Stack traceback for pid 66
-0xffff81006a411850       66        1  1    1   R  0xffff81006a411b40 *platform_node
-rsp                rip                Function (args)
-0xffff81006a46dd98 0xffffffff802805e2 __lookup_hash+0x22
-0xffff81006a46de00 0xffffffff80280cba lookup_one_len+0x9a
-0xffff81006a46de20 0xffffffff802be671 sysfs_remove_group+0x31
-0xffff81006a46de50 0xffffffff8800fe4a [bonding]bond_destroy_sysfs_entry+0x1a
-0xffff81006a46de60 0xffffffff88011974 [bonding]bonding_store_bonds+0x214
-0xffff81006a46deb0 0xffffffff8037c9d4 class_attr_store+0x24
-[1]more> 
-0xffff81006a46dec0 0xffffffff802bbe30 sysfs_write_file+0x100
-0xffff81006a46df10 0xffffffff80277d7e vfs_write+0xbe
-0xffff81006a46df40 0xffffffff80278400 sys_write+0x50
-0xffff81006a46df80 0xffffffff80209e6e system_call+0x7e
+>>> Using IP Block Revision is a
+>>> clear choice.
+>>
+>> I don't think so.  For one thing, it describes a version of
+>> a cell design, not a version of an actual device.  For another
+>> thing, if I hear "8641" I know what you're talking about (sort
+>> of, anyway), but I draw a blank stare if you say "v1.0".  I'm
+>> sure I'm not the only one.  Concrete names are good.
+>>
+>
+>> From the different view ways, there are different results. Getting the
+> version from RapidIO IP revision register is clear to me. :)
 
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+It's not in line with how all other "compatible" properties
+are done though.
+
+>> But the rapidio node doesn't know or care what the interrupts
+>> are connected to, and neither should it.  That's what the
+>> interrupt mapping recommended practice is for.
+>
+> There are no rapidio device in it. Doorbell, msg are all parts of
+> rapidio controller.
+> For example, 8641 rapidio controller have 2 msg unit: msg0 and msg1.
+> They are not rapidio devices. Each msg unit has the tx_irq and rx_irq.
+
+Ah, I think I understand what you mean now.  Yes, the binding
+for this specific rapidio controller should define the _order_
+of the interrupts in the "interrupts" property; but it cannot
+define the format of the single entries, that is defined by
+the interrupt controller node it is connected to already.
+
+>>>> You want a #size-cells as well.
+>>>
+>>> The size is not used in this sector, so no defined.
+>>
+>> The size _is_ used; in the "ranges" property in this node,
+>> for example.  It is also needed to describe the "reg" for
+>> any child node of this node.
+>>
+>> A non-existant "#size-cells" means 1, and "#address-cells"
+>> means 2, so in principle you could do without these
+>> properties; but Linux doesn't parse the tree correctly in
+>> that case (which reminds me, I have some more patches to
+>> send).
+>
+> Ok, I'll add it in the next version for more religious.
+
+It's not religious; true OF believers say leave the node
+out if its value would be 1.  It's just that Linux doesn't
+handle that properly yet, so you want to protect yourself :-)
+
+
+Segher
+
