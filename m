@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbXFMOJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbXFMOWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758678AbXFMOJp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 10:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896AbXFMOJg
+	id S1758145AbXFMOWr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 10:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbXFMOWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 10:09:36 -0400
-Received: from neon.samage.net ([85.17.153.66]:32878 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756846AbXFMOJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 10:09:35 -0400
-Message-ID: <41219.81.207.0.53.1181743761.squirrel@secure.samage.net>
-In-Reply-To: <20070613081825.GF13747@elf.ucw.cz>
-References: <20070604112426.GA2707@elf.ucw.cz>
-    <d120d5000706041046j1da16c6el350d9da1d74d508b@mail.gmail.com>
-    <20070604205701.GD2711@elf.ucw.cz>
-    <200706120142.13173.dtor@insightbb.com>
-    <52481.81.207.0.53.1181691356.squirrel@secure.samage.net>
-    <20070613081825.GF13747@elf.ucw.cz>
-Date: Wed, 13 Jun 2007 16:09:21 +0200 (CEST)
-Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Pavel Machek" <pavel@ucw.cz>
-Cc: "Dmitry Torokhov" <dtor@insightbb.com>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Andi Kleen" <ak@suse.de>, "Jiri Kosina" <jikos@jikos.cz>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.8
+	Wed, 13 Jun 2007 10:22:40 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:21837 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbXFMOWj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 10:22:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aLUy2yZqOSX9rvS1LyAerueRcStYB55nNpNzhm3YjGk3QlTI22A8DuJDkUDQJTT+OQBfNmFSwga4yJ+VcJ/JUUXmVto4m5BHVUuKzk4RuF9RE+k5Stc8w+MZV8UnfaBrsuSCCKJGLyGnctNF2ce1QwAmV5DZcZgDOWIH/1pfCb8=
+Message-ID: <9d732d950706130722g12a22604p223381a8e281a4a1@mail.gmail.com>
+Date: Wed, 13 Jun 2007 23:22:38 +0900
+From: "Toshiharu Harada" <haradats@gmail.com>
+To: "Stephen Smalley" <sds@tycho.nsa.gov>
+Subject: Re: [RFC] TOMOYO Linux
+Cc: "Toshiharu Harada" <haradats@nttdata.co.jp>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 4052b6d1c9976086d5ab5ce040fcf5b8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466FA71C.1020309@nttdata.co.jp>
+	 <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, June 13, 2007 10:18, Pavel Machek wrote:
->> Well, as I said before, I've the "stuck key"/repeated output too (as well
->> as a warping PS/2 mouse), but no blinking led problem, so I believe the
->> two things are totally unrelated.
+2007/6/13, Stephen Smalley <sds@tycho.nsa.gov>:
+> On Wed, 2007-06-13 at 17:13 +0900, Toshiharu Harada wrote:
+> > Here are examples:
+> > /bin/bash process invoked from mingetty: /sbin/mingetty /bin/bash
+> > /bin/bash process invoked from sshd: /usr/sbin/sshd /bin/bash
+> > /bin/bash process invoked from /bin/bash which was invoked from sshd: /usr/sbin/sshd /bin/bash /bin/bash
 >
-> Well, after turning off CONFIG_BLINK, my problems went away, and with
-> a fast-blink done from userspace, I can make them way worse. They
-> _are_ related here.
+> Why can't you do this via SELinux domain transitions?  That lets you do
+> it by equivalence class rather than per-binary, and let's you just
+> encode the security-relevant parts of the "invocation history" aka call
+> chain.  For example, the above could be expressed in SELinux policy
+> already as:
+>         domain_auto_trans(getty_t, shell_exec_t, local_shell_t)
+>         domain_auto_trans(sshd_t, shell_exec_t, remote_shell_t)
+>         domain_auto_trans(remote_shell_t, shell_exec_t, remote_subshell_t)
+> or whatever you like.  But you don't have to keep extending it
+> indefinitely when you don't need to distinguish in policy, so you might
+> choose to entirely omit the last one, and just have it stay in
+> remote_shell_t.
 
-I missed you saying that before, so to me it looked like everyone just
-assumed that.
+The above SELinux policy looks similar to the one I wrote, but
+that is not very true.  Because in my example, path name corresponds to a file
+while local_shell_t are bound to multiple.
+I understand the advantages of label, but it needs to be
+translated to human understandable form of path name.
+So I think pathname based call chains are advantages for
+at least auditing and profiling.
 
-So, just for fun, I tried running:
-
-while true; do setleds +num; setleds -num; done
-
-and it totally locked up my keyboard. Even SysRq didn't work. On the
-bright side, the numlock LED was indeed blinking. Though running the
-same with a sleep 0.1 added doesn't produce any problems. So maybe
-my problem is indeed a bit related to this after all, somehow. Anyone
-any ideas how to debug this problem?
-
-Greetings,
-
-Indan
-
-
+-- 
+Toshiharu Harada
+haradats@gmail.com
