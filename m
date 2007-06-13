@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbXFMMoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758463AbXFMMp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbXFMMoP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 08:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757625AbXFMMoE
+	id S1758463AbXFMMp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 08:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757878AbXFMMpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 08:44:04 -0400
-Received: from smtp01.cdmon.com ([86.109.99.230]:57633 "EHLO smtp01.cdmon.com"
+	Wed, 13 Jun 2007 08:45:21 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:52942 "EHLO smtp01.cdmon.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757546AbXFMMoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 08:44:03 -0400
-Date: Wed, 13 Jun 2007 15:43:11 +0200
+	id S1757625AbXFMMpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 08:45:21 -0400
+Date: Wed, 13 Jun 2007 15:44:31 +0200
 From: DervishD <lkml@dervishd.net>
-To: Kevin K <k_krieser@sbcglobal.net>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+To: Bernd Eckenfels <ecki@lina.inka.de>
+Cc: linux-kernel@vger.kernel.org
 Subject: Re: ext2 on flash memory
-Message-ID: <20070613134311.GA1983@DervishD>
-Mail-Followup-To: Kevin K <k_krieser@sbcglobal.net>,
-	Linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070611101319.GA14284@DervishD> <191337B7-F4CC-4824-B669-48AE194BE141@sbcglobal.net>
+Message-ID: <20070613134431.GB1983@DervishD>
+Mail-Followup-To: Bernd Eckenfels <ecki@lina.inka.de>,
+	linux-kernel@vger.kernel.org
+References: <11f674920706111735l7dec2136t32d40ee2ab4ccca4@mail.gmail.com> <E1Hxv1g-0000X1-00@calista.eckenfels.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <191337B7-F4CC-4824-B669-48AE194BE141@sbcglobal.net>
+In-Reply-To: <E1Hxv1g-0000X1-00@calista.eckenfels.net>
 User-Agent: Mutt/1.4.2.3i
 Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Kevin :)
+    Hi Bernd :)
 
-> >    I was wondering: is there any reason not to use ext2 on an USB
-> >pendrive? Really my question is not only about USB pendrives, but any
-> >device whose storage is flash based. Let's assume that the device  
-> >has a
-> >good quality flash memory with wear leveling and the like...
-> My opinion is that, unless the flash is really cheap, or it is being  
-> written to excessively, that it probably doesn't matter too much.   
-> With the growth in size of flash, just how long do you think it will  
-> continue to be used before you go to something larger?
+ * Bernd Eckenfels <ecki@lina.inka.de> dixit:
+> In article <11f674920706111735l7dec2136t32d40ee2ab4ccca4@mail.gmail.com> you wrote:
+> > All of the posts fail to address the question here: what is the
+> > correct file system, or does one exist yet, for wear leveling flash
+> > storage.  JFFS2 and logfs are nice for MTD, but for better flash
+> > memories that are likely to be used in the future like solid state
+> > hard disks, what is the answer?
+> 
+> FAT - you can stick it into Windows Boxes on the road.
 
-    The growth in size and the shrink in price ;) I think that if the
-stick only lasts for a year, it has been a good investment.
-
-> One suggestion with ext2 might be to mount it with the noatime  
-> option, so it doesn't update the last access time for directories and  
-> files.  Otherwise, you are doing a write even when you only plan to  
-> read a file.
-
-    I was going to do that. It should minimize the wear when only
-reading. Anyway, wearing wasn't my main concern, I was more worried by
-stoopid firmware that assume FAT.
-
-    Thanks for your answer :)
+    But then you lose the UNIX metadata. What if you want to keep the
+UID/GID and mode (and any other metadata information, for that matter)?
 
     Raúl Núñez de Arenas Coronado
 
