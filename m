@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbXFMUQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbXFMUQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759649AbXFMUQS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 16:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbXFMUQF
+	id S1759990AbXFMUQw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 16:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbXFMUQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 16:16:05 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2823 "EHLO spitz.ucw.cz"
+	Wed, 13 Jun 2007 16:16:42 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2811 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752353AbXFMUQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 16:16:03 -0400
-Date: Wed, 13 Jun 2007 19:46:54 +0000
+	id S1754313AbXFMUQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 16:16:40 -0400
+Date: Wed, 13 Jun 2007 14:51:06 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Shani Moideen <shani.moideen@wipro.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@lists.osdl.org
-Subject: Re: [KJ PATCH] Replacing memcpy(dest,src,PAGE_SIZE) with copy_page(dest,src) in arch/i386/kernel/machine_kexec.c
-Message-ID: <20070613194653.GA8273@ucw.cz>
-References: <1181616342.2282.8.camel@shani-win> <m1vedtpwks.fsf@ebiederm.dsl.xmission.com> <466ECF37.6040303@zytor.com>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 0/3] AHCI Link Power Management
+Message-ID: <20070613145106.GA8053@ucw.cz>
+References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E1D51.9070007@gmail.com> <466E1EC6.90509@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <466ECF37.6040303@zytor.com>
+In-Reply-To: <466E1EC6.90509@linux.intel.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> >> Replacing memcpy(dest,src,PAGE_SIZE) with copy_page(dest,src) in
-> >> arch/i386/kernel/machine_kexec.c.
-> > 
-> > Please no.
-> > 
-> > People get creative in copy_page (especially mmx_copy_page),
-> > and this code path need something simple and stupid, that
-> > will work every time, especially when things are messed up
-> > elsewhere.
+> >Yeah, it was some Lenovo notebook.  Pavel is more 
+> >familiar with the
+> >hardware.  Pavel, what was the notebook which didn't 
+> >save much power
+> >with standard SATA power save but needed port to be 
+> >completely turned off?
 > 
-> memcpy() is pretty creative, too.  If you want something really dumb and
-> robust, you should probably create an inline:
-> 
-> /*
->  * Eric sez: his code path need something simple and stupid, that
->  * will work every time, especially when things are messed up
->  * elsewhere.
->  */
-> static inline void braindead_copy_page(void *dst, void *src)
-> {
-> 	unsigned long ctr = PAGE_SIZE >> 2;
-> 
-> 	asm volatile("cld; rep; movsl"
-> 			: "+D" (dst), "+S" (src), "+c" (ctr)
-> 			: : "memory");
-> }
-> 
-> (FWIW, the "cld" is supposed to be redundant, as DF=0 is supposed to be
-> guaranteed by the ABI.)
+> Pavel, if you have time, could you measure this with 
+> Kristen's patch?
 
-Actually, swsusp would be second user for that. We currently do it
-with for loop in C, but...
+Kristen has same machine as me, and I have seen similar '1W' saving
+with previous version of the patch. I'd trust her results.
 
-...well, we'd probably need it for i386, ppc, x86-64, ppc64 and maybe
-arm...
-
-(But you should probably add a comment into kexec )
 							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
