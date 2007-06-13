@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbXFMNm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbXFMNoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758835AbXFMNm3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 09:42:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbXFMNmU
+	id S1758779AbXFMNoB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 09:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbXFMNnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 09:42:20 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:34240 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752903AbXFMNmT (ORCPT
+	Wed, 13 Jun 2007 09:43:53 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:61605 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756479AbXFMNnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 09:42:19 -0400
-Message-ID: <466FF154.7030905@aitel.hist.no>
-Date: Wed, 13 Jun 2007 15:29:56 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Wed, 13 Jun 2007 09:43:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=AY+OaqARkOSnwDMo3uRLpM8cVWBVQDeq6nlpM04aHQNdy5wSYUeW5ScgNzcRQuqnlS+/YmkCWjlJOX+l2C1XXHeW5+HjPog+PwBi5JYy98LBRryqQrd4Yq4oQ6SeQ1PvBwc3ucZD9J1SPGRl1YpKv/5GGEkff5K9uRczfFkNNmo=
+Message-ID: <466FF491.30409@gmail.com>
+Date: Wed, 13 Jun 2007 22:43:45 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: John Sigler <linux.kernel@free.fr>
-CC: Andrea Arcangeli <andrea@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: Runaway process and oom-killer
-References: <466FAF99.3070708@free.fr> <20070613090837.GD7443@v2.random> <466FB6E8.8020606@free.fr>
-In-Reply-To: <466FB6E8.8020606@free.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm] sysfs: Fix oops in sysfs_drop_dentry on x86_64
+References: <200706131536.18882.rjw@sisk.pl>
+In-Reply-To: <200706131536.18882.rjw@sisk.pl>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=iso-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Sigler wrote:
-> Andrea Arcangeli wrote:
->
->> On Wed, Jun 13, 2007 at 10:49:29AM +0200, John Sigler wrote:
->>
->>> Question 2: how can I tell which process or kernel thread was 
->>> hogging most of the RAM when the oom-killer kicked in?
->>
->> Theoretically the one that was killed first but not for sure in
->> current mainline hence see below.
->
-> If I read the logs correctly, oom-killer is "invoked" three times 
-> before it effectively kills a process. Then oom-killer kills myapp, 
-> syslogd, and boa, in that order. Why didn't oom-killer kill anything 
-> the first three times?
-My guess:
-Something needs memory but finds there is none to be had
-oom-killer is invoked and targets myapp.
-myapp takes some time to die. Particularly, the memory it uses
-isn't freed up instantly. In the meantime something else
-needs memory and find none. (Another packet received?)
-The oom-killer is invoked again, this time it targets syslogd.
+Hello, Rafael.
 
-And so on.  The kernel do many things in parallel, running out
-of memory in a multitasking system therefore is a complicated business.
-Especially when process killing takes some time.
+Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Fix oops on x86_64 caused by the dereference of dir in sysfs_drop_dentry() made
+> before checking if dir is not NULL
+> (cf. http://marc.info/?l=linux-kernel&m=118151626704924&w=2).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  fs/sysfs/inode.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.22-rc4-mm2/fs/sysfs/inode.c
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/fs/sysfs/inode.c
+> +++ linux-2.6.22-rc4-mm2/fs/sysfs/inode.c
+> @@ -285,7 +285,7 @@ void sysfs_drop_dentry(struct sysfs_dire
+>  int sysfs_hash_and_remove(struct dentry * dir, const char * name)
+>  {
+>  	struct sysfs_dirent **pos, *sd;
+> -	struct sysfs_dirent *parent_sd = dir->d_fsdata;
+> +	struct sysfs_dirent *parent_sd;
+>  	int found = 0;
 
-Note that you can turn off memory overcommit, your leaky app
-should then get a memory allocation error instead of
-triggering the oom-killer.
+Argh... Right.  My delusional mind somehow thought the nonsense early
+dereferencing was there before any changes so I passed on that one.
+Thanks a lot for catching it.  The whole sysfs patchset is pending
+regeneration.  I'll include the fix patch.
 
-Helge Hafting
+Thanks a lot.  :-)
 
+-- 
+tejun
