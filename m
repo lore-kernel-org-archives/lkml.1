@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759418AbXFMQi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbXFMQhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759418AbXFMQi3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 12:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbXFMQiU
+	id S1758590AbXFMQhs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 12:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758776AbXFMQhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 12:38:20 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:20405 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758405AbXFMQiT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 12:38:19 -0400
-Date: Wed, 13 Jun 2007 12:34:05 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: John Stoffel <john@stoffel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-Message-ID: <20070613163405.GE28279@think.oraclecorp.com>
-References: <20070612161029.GB28279@think.oraclecorp.com> <18031.26764.586958.632146@stoffel.org> <20070613103522.GW28279@think.oraclecorp.com> <18031.63640.103936.137412@stoffel.org> <20070613145442.GC28279@think.oraclecorp.com> <18032.5991.475110.794691@stoffel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18032.5991.475110.794691@stoffel.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Wed, 13 Jun 2007 12:37:35 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51978 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758744AbXFMQhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 12:37:34 -0400
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+From: Dave Hansen <hansendc@us.ibm.com>
+To: holzheu@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, akpm@osdl.org,
+       gregkh@suse.de, mtk-manpages@gmx.net, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com
+In-Reply-To: <1181747217.29512.9.camel@localhost.localdomain>
+References: <1181747217.29512.9.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 13 Jun 2007 09:37:29 -0700
+Message-Id: <1181752649.15815.68.camel@spirit>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 12:12:23PM -0400, John Stoffel wrote:
-> >>>>> "Chris" == Chris Mason <chris.mason@oracle.com> writes:
+On Wed, 2007-06-13 at 17:06 +0200, holzheu wrote:
+> The operation of a Linux system sometimes requires to decode the
+> meaning of a specific kernel message, e.g. an error message of a
+> driver. Especially on our mainframe zSeries platform system
+> administrators want to have descriptions for Linux kernel messages.
+> They are used to that, because all other operating systems on that
+> platform like z/OS, z/VM or z/VSE have message catalogs with detailed
+> descriptions about the semantics of the messages.
 
-[ nod ]
+I'm not sure we want to make Linux more like z/* in this regard. :)
 
-> Also, I think you're wrong here when you state that making a snapshot
-> (sub-volume?) RO just requires you to set the quota to 1 block.  What
-> is to stop me from writing 1 block to a random file that already
-> exists?  
+The problem with your proposal is that every time a new message in the
+kernel is created or modified, you need somebody to go update that
+documentation.  It's going to get out-of-sync very fast if this isn't
+done, and you either need to convince and teach each and every kernel
+contributor to follow your lead, or have a team of highly trained code
+monkeys to watch git-commits and resubmit documentation for every diff
+that touches a printk. 
 
-It's copy on write, so changing one block means allocating a new one and
-putting the new contents there.  The old blocks don't become available
-for reuse until the transaction commits.
+I think it's a great idea to go and update some of these obtuse kernel
+messages with more understandable wording.  It might even be nice to
+update the Documentation/ about what kinds of messages are good or bad
+to have.  But, I just don't think this is viable to convince everybody
+to do this.  Do you have a list of printks that are causing your
+customers trouble?
 
--chris
+Does every printk need one of these?  What do we do with the existing
+printks?  Who will convert them over?  How do we enforce the rules if
+new printks must have documentation written for them?  Who writes the
+documentation if the printk author does not?
+
+If we have a catalog of kernel messages, it obviously needs to be
+versioned, but does that mean that we need to keep it in the kernel
+tree?
+
+-- Dave
 
