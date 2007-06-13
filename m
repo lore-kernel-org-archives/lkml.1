@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbXFMHjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXFMHkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbXFMHjS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 03:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbXFMHjJ
+	id S1757119AbXFMHkS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 03:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbXFMHkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 03:39:09 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:55638 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755860AbXFMHjI (ORCPT
+	Wed, 13 Jun 2007 03:40:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:15211 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752997AbXFMHkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 03:39:08 -0400
+	Wed, 13 Jun 2007 03:40:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qSjWdUQr2lTXixuXn9PtBjp54wK3rcfMQZfnugFU21fnNOB/E9ibWdXulhsdw81bjwF4MK5O1zMJIa7umrlr6BNiFdnuTyvSKG/+RKtFIcws5g5pc2vxayyeJb6yH6YV5+RQFjlbbtekWxeydWp1X98/C7Ovu5g5PXD3tuohxw0=
-Message-ID: <a781481a0706130039r26e9522q98d9645809136ea7@mail.gmail.com>
-Date: Wed, 13 Jun 2007 13:09:07 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH] x86: fix improper .init-type section references
-Cc: "Sam Ravnborg" <sam@ravnborg.org>,
-       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org,
-       patches@x86-64.org
-In-Reply-To: <466FB20D.76E4.0078.0@novell.com>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=GldfbqHm2ApnYrFPpS6hVT0VQPN3hYB8PX5s4vETTJ0DTAMz3q+c7+J024TnS80Xz+qp1DNDfOhdieQ8Y9yJCL1KQ2JI6LyfRWaKPlmZduDVYGmhyQk712zfa3XOcVpv3m0jW0s+bj5S7Wcnj3U2lq91NMl6t6/Y0UaGH9MKxYs=
+Message-ID: <466F9F4D.7060003@gmail.com>
+Date: Wed, 13 Jun 2007 11:39:57 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pci probe
+References: <4648B29A.6080406@gmail.com> <4649B270.8050002@gmail.com> <20070516071851.GB19294@kroah.com> <464AF932.9070008@gmail.com> <20070529222735.GK4644@kroah.com>
+In-Reply-To: <20070529222735.GK4644@kroah.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466E6BDF.76E4.0078.0@novell.com>
-	 <a781481a0706120509k89c331ela81f57ad0f0e29eb@mail.gmail.com>
-	 <466EB12B.76E4.0078.0@novell.com>
-	 <a781481a0706120632p54ad83d0ka0a07a9fd9b276b4@mail.gmail.com>
-	 <466EC08A.76E4.0078.0@novell.com>
-	 <a781481a0706120709v5a2d1147m9d372a8056aeba6d@mail.gmail.com>
-	 <20070612180002.GC15329@uranus.ravnborg.org>
-	 <a781481a0706122018i6273cd17y61cd95e269b5c7c9@mail.gmail.com>
-	 <20070613043526.GA20088@uranus.ravnborg.org>
-	 <466FB20D.76E4.0078.0@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/13/07, Jan Beulich <jbeulich@novell.com> wrote:
-> >>> Sam Ravnborg <sam@ravnborg.org> 13.06.07 06:35 >>>
-> >>
-> >> Yup, we were only discussing possibility that modpost not complain
-> >> about .init -> .exit references that will never go oops (because the arch
-> >> guarantees that).
-> >
-> >And there are no good reasosns why the rules should be different for i386
-> >and powerpc.
-> >This type of special casing is always bad.
-> >Think about it a little.
-> >Someone writes a generic driver and test it on i386 - OK.
-> >But for powerpc it result in a build failure. It would be so much better
-> >to warn about this situation early.
+Hi,
 
-Ok, that makes sense.
+Sorry for my late reply.
 
-> And I didn't mean to special case it - I meant to suggest changing the semantics
-> generally, which is why I gave the example of calling cleanup code (__exit)
-> from error paths in startup code (__init).
+Greg KH wrote:
+>>> 	- your driver will not work on any pci-hotplug type system (that
+>>> 	  includes expresscard and pccard and lots of high-end servers.
+>> This doesn't matter
+> 
+> Are you sure?  PCI Hotplug is showing up in more places that people
+> realize...
 
-i.e. don't discard anything at build time, and link the .exit.{text,
-data} sections
-into the kernel image for _all_ archs? (otherwise how do we avoid
-special-casing/
-checking for the arch in modpost and warn/not-warn about invalid/valid cases)
 
-But then why not simply lose the __exit (and .exit.*) altogether? Because
-__exit becomes redundant in the suggested changed semantics -- just mark
-all the cleanup code as __init too (when it's built-in, the only
-callsite for the
-cleanup code would be from the startup code in .init.*, and when modular,
-__init and __exit lose all relevance anyway).
+The PCI bridges that we have for the mentioned use, does not support
+Hotplugging at all and hence doesn't matter for those devices mentioned.
 
-Satyam
+
+>>> 	- your driver will not be notified if the system is being
+>>> 	  suspended or resumed or wanting to drop into a low power
+>>> 	  state.
+>>> 	- another driver can bind to your device without you ever
+>>> 	  knowing it.
+>> These also sound bad.
+>>
+>>> So in short, use pci_probe and just handle the fact that you need to be
+>>> called for two PCI devices and bind to both of them.  It shouldn't be
+>>> that hard...
+>> Thanks for the explanation.
+>>
+>> Do you mean to have two PCIID tables ? But then that does mean 2 modules
+>> don't you ? (i thought probe would be called once per module) Or you
+>> mean to say use PCI_ANY_ID in the table to match multiple devices and
+>> then allow probe to return a list of devices ?
+> 
+> 
+> No, you can specify multiple devices in the same device id table, and
+> your driver will get called for all of the matching devices.  You just
+> need to "bind" them together in your driver to be able to handle
+> everything properly.  It shouldn't be that tough.
+> 
+
+Will take a go at it.
+I was using PCI_ANY_ID for the device id, so that should return all the
+devices.
+
+
+Thanks,
+Manu
