@@ -1,81 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbXFNKDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbXFNKDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754909AbXFNKDP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 06:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbXFNKBm
+	id S1755453AbXFNKDa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 06:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbXFNKBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 06:01:42 -0400
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:63409 "EHLO
+	Thu, 14 Jun 2007 06:01:43 -0400
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:63404 "EHLO
 	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbXFNKBi (ORCPT
+	with ESMTP id S1751610AbXFNKBi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Jun 2007 06:01:38 -0400
-Message-Id: <20070614100136.507335084@fluff.org.uk>
+Message-Id: <20070614100135.728559280@fluff.org.uk>
 References: <20070614100109.192172553@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Jun 2007 11:01:15 +0100
+Date: Thu, 14 Jun 2007 11:01:10 +0100
 From: Ben Dooks <ben-linux@fluff.org>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 6/6] SM501: Check SM501 ID register on initialisation
-Content-Disposition: inline; filename=simtec-drivers-mfd-sm501-idcheck.patch
+Subject: [patch 1/6] SM501: suspend support
+Content-Disposition: inline; filename=simtec-drivers-mfd-sm501-suspend.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When binding the driver, check the ID register for a valid
-identity, in case the SM501 is not functioning correctly.
-
+This patch adds support for suspending the core
+(mfd driver) of the SM501.
+ 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
 Index: linux-2.6.21-quilt8/drivers/mfd/sm501.c
 ===================================================================
---- linux-2.6.21-quilt8.orig/drivers/mfd/sm501.c	2007-06-13 11:33:55.000000000 +0100
-+++ linux-2.6.21-quilt8/drivers/mfd/sm501.c	2007-06-13 12:59:31.000000000 +0100
-@@ -883,6 +883,7 @@ static int sm501_init_dev(struct sm501_d
+--- linux-2.6.21-quilt8.orig/drivers/mfd/sm501.c	2007-06-04 16:06:29.000000000 +0100
++++ linux-2.6.21-quilt8/drivers/mfd/sm501.c	2007-06-13 13:25:50.000000000 +0100
+@@ -41,6 +41,9 @@ struct sm501_devdata {
+ 	struct resource			*regs_claim;
+ 	struct sm501_platdata		*platdata;
+ 
++	unsigned int			 in_suspend;
++	unsigned long			 pm_misc;
++
+ 	int				 unit_power[20];
+ 	unsigned int			 pdev_id;
+ 	unsigned int			 irq;
+@@ -169,10 +172,31 @@ x		 "M %ld.%ld (%ld), MX1 %ld.%ld (%ld)\
+ 		fmt_freq(decode_div(pll2, pm1, 8,  1<<12, 15, misc_div)),
+ 		fmt_freq(decode_div(pll2, pm1, 0,  1<<4,  15, misc_div)));
+ }
+-#else
+-static void sm501_dump_clk(struct sm501_devdata *sm)
++
++static void sm501_dump_regs(struct sm501_devdata *sm)
++{
++	void __iomem *regs = sm->regs;
++
++	dev_info(sm->dev, "System Control   %08x\n", readl(regs + SM501_SYSTEM_CONTROL));
++	dev_info(sm->dev, "Misc Control     %08x\n", readl(regs + SM501_MISC_CONTROL));
++	dev_info(sm->dev, "GPIO Control Low %08x\n", readl(regs + SM501_GPIO31_0_CONTROL));
++	dev_info(sm->dev, "GPIO Control Hi  %08x\n", readl(regs + SM501_GPIO63_32_CONTROL));
++	dev_info(sm->dev, "DRAM Control     %08x\n", readl(regs + SM501_DRAM_CONTROL));
++	dev_info(sm->dev, "Arbitration Ctrl %08x\n", readl(regs + SM501_ARBTRTN_CONTROL));
++	dev_info(sm->dev, "Misc Timing      %08x\n", readl(regs + SM501_MISC_TIMING));
++}
++
++static void sm501_dump_gate(struct sm501_devdata *sm)
  {
- 	resource_size_t mem_avail;
- 	unsigned long dramctrl;
-+	unsigned long devid;
- 	int ret;
++	dev_info(sm->dev, "CurrentGate      %08x\n", readl(sm->regs + SM501_CURRENT_GATE));
++	dev_info(sm->dev, "CurrentClock     %08x\n", readl(sm->regs + SM501_CURRENT_CLOCK));
++	dev_info(sm->dev, "PowerModeControl %08x\n", readl(sm->regs + SM501_POWER_MODE_CONTROL));
+ }
++
++#else
++static inline void sm501_dump_gate(struct sm501_devdata *sm) { }
++static inline void sm501_dump_regs(struct sm501_devdata *sm) { }
++static inline void sm501_dump_clk(struct sm501_devdata *sm) { }
+ #endif
  
- 	mutex_init(&sm->clock_lock);
-@@ -890,13 +891,18 @@ static int sm501_init_dev(struct sm501_d
+ /* sm501_sync_regs
+@@ -185,9 +209,21 @@ static void sm501_sync_regs(struct sm501
+ 	readl(sm->regs);
+ }
  
- 	INIT_LIST_HEAD(&sm->devices);
++static inline void sm501_mdelay(struct sm501_devdata *sm, unsigned int delay)
++{
++	/* during suspend/resume, we are currently not allowed to sleep,
++	 * so change to using mdelay() instead of msleep() if we
++	 * are in one of these paths */
++
++	if (sm->in_suspend)
++		mdelay(delay);
++	else
++		msleep(delay);
++}
++
+ /* sm501_misc_control
+  *
+- * alters the misceleneous control parameters
++ * alters the miscellaneous control parameters
+ */
  
--	dramctrl = readl(sm->regs + SM501_DRAM_CONTROL);
-+	devid = readl(sm->regs + SM501_DEVICEID);
+ int sm501_misc_control(struct device *dev,
+@@ -368,7 +404,7 @@ int sm501_unit_power(struct device *dev,
+ 	dev_dbg(sm->dev, "gate %08lx, clock %08lx, mode %08lx\n",
+ 		gate, clock, mode);
  
-+	if ((devid & SM501_DEVICEID_IDMASK) != SM501_DEVICEID_SM501) {
-+		dev_err(sm->dev, "incorrect device id %08lx\n", devid);
-+		return -EINVAL;
+-	msleep(16);
++	sm501_mdelay(sm, 16);
+ 
+  already:
+ 	mutex_unlock(&sm->clock_lock);
+@@ -538,7 +574,7 @@ unsigned long sm501_set_clock(struct dev
+ 	dev_info(sm->dev, "gate %08lx, clock %08lx, mode %08lx\n",
+ 		 gate, clock, mode);
+ 
+-	msleep(16);
++	sm501_mdelay(sm, 16);
+ 	mutex_unlock(&sm->clock_lock);
+ 
+ 	sm501_dump_clk(sm);
+@@ -841,9 +877,7 @@ static int sm501_init_dev(struct sm501_d
+ 		 sm->regs, readl(sm->regs + SM501_DEVICEID),
+ 		 (unsigned long)mem_avail >> 20, sm->irq);
+ 
+-	dev_info(sm->dev, "CurrentGate      %08x\n", readl(sm->regs+0x38));
+-	dev_info(sm->dev, "CurrentClock     %08x\n", readl(sm->regs+0x3c));
+-	dev_info(sm->dev, "PowerModeControl %08x\n", readl(sm->regs+0x54));
++	sm501_dump_gate(sm);
+ 
+ 	ret = device_create_file(sm->dev, &dev_attr_dbg_regs);
+ 	if (ret)
+@@ -933,6 +967,53 @@ static int sm501_plat_probe(struct platf
+ 
+ }
+ 
++/* power management support */
++
++static int sm501_plat_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	struct sm501_devdata *sm = platform_get_drvdata(pdev);
++
++	sm->in_suspend = 1;
++	sm->pm_misc = readl(sm->regs + SM501_MISC_CONTROL);
++
++	sm501_dump_regs(sm);
++	return 0;
++}
++
++static int sm501_plat_resume(struct platform_device *pdev)
++{
++	struct sm501_devdata *sm = platform_get_drvdata(pdev);
++
++	sm501_dump_regs(sm);
++	sm501_dump_gate(sm);
++	sm501_dump_clk(sm);
++
++	/* check to see if we are in the same state as when suspended */
++
++	if (readl(sm->regs + SM501_MISC_CONTROL) != sm->pm_misc) {
++		dev_info(sm->dev, "SM501_MISC_CONTROL changed over sleep\n");
++		writel(sm->pm_misc, sm->regs + SM501_MISC_CONTROL);
++
++		/* our suspend causes the controller state to change,
++		 * either by something attempting setup, power loss,
++		 * or an external reset event on power change */
++
++		if (sm->platdata && sm->platdata->init) {
++			sm501_init_regs(sm, sm->platdata->init);
++		}
 +	}
 +
-+	dramctrl = readl(sm->regs + SM501_DRAM_CONTROL);
- 	mem_avail = sm501_mem_local[(dramctrl >> 13) & 0x7];
- 
--	dev_info(sm->dev, "SM501 At %p: Version %08x, %ld Mb, IRQ %d\n",
--		 sm->regs, readl(sm->regs + SM501_DEVICEID),
--		 (unsigned long)mem_avail >> 20, sm->irq);
-+	dev_info(sm->dev, "SM501 At %p: Version %08lx, %ld Mb, IRQ %d\n",
-+		 sm->regs, devid, (unsigned long)mem_avail >> 20, sm->irq);
- 
- 	sm501_dump_gate(sm);
- 
-Index: linux-2.6.21-quilt8/include/linux/sm501-regs.h
-===================================================================
---- linux-2.6.21-quilt8.orig/include/linux/sm501-regs.h	2007-06-13 11:33:55.000000000 +0100
-+++ linux-2.6.21-quilt8/include/linux/sm501-regs.h	2007-06-13 11:33:56.000000000 +0100
-@@ -109,6 +109,9 @@
- #define SM501_DEVICEID			(0x000060)
- /* 0x050100A0 */
- 
-+#define SM501_DEVICEID_SM501		(0x05010000)
-+#define SM501_DEVICEID_IDMASK		(0xffff0000)
++	/* dump our state from resume */
 +
- #define SM501_PLLCLOCK_COUNT		(0x000064)
- #define SM501_MISC_TIMING		(0x000068)
- #define SM501_CURRENT_SDRAM_CLOCK	(0x00006C)
++	sm501_dump_regs(sm);
++	sm501_dump_clk(sm);
++
++	sm->in_suspend = 0;
++
++	return 0;
++}
++
++
+ /* Initialisation data for PCI devices */
+ 
+ static struct sm501_initdata sm501_pci_initdata = {
+@@ -1126,6 +1207,8 @@ static struct platform_driver sm501_plat
+ 	},
+ 	.probe		= sm501_plat_probe,
+ 	.remove		= sm501_plat_remove,
++	.suspend	= sm501_plat_suspend,
++	.resume		= sm501_plat_resume,
+ };
+ 
+ static int __init sm501_base_init(void)
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
