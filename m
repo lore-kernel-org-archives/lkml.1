@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbXFNWS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbXFNWSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758292AbXFNWS1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641AbXFNWQR
+	id S1758428AbXFNWSo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757750AbXFNWQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:16:17 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35398 "EHLO
+	Thu, 14 Jun 2007 18:16:23 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35400 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757710AbXFNWQP (ORCPT
+	with ESMTP id S1757860AbXFNWQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:16:15 -0400
-Date: Fri, 15 Jun 2007 00:16:28 +0200
+	Thu, 14 Jun 2007 18:16:21 -0400
+Date: Fri, 15 Jun 2007 00:16:34 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: Andrew Morton <akpm@linux-foundation.org>,
-       Vladimir Saveliev <vs@namesys.com>, Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org, reiserfs-dev@namesys.com
-Subject: [-mm patch] fs/reiserfs/: cleanups
-Message-ID: <20070614221628.GB3588@stusta.de>
+       Pierre Ossman <drzeus@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] make init/do_mounts.c:root_wait static
+Message-ID: <20070614221634.GC3588@stusta.de>
 References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -26,144 +26,20 @@ User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the following cleanups:
-- remove the following no longer used functions:
-  - bitmap.c: reiserfs_claim_blocks_to_be_allocated()
-  - bitmap.c: reiserfs_release_claimed_blocks()
-  - bitmap.c: reiserfs_can_fit_pages()
-- make the following functions static:
-  - inode.c: restart_transaction()
-  - journal.c: reiserfs_async_progress_wait()
+root_wait can become static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
-
- fs/reiserfs/bitmap.c        |   57 ------------------------------------
- fs/reiserfs/inode.c         |    4 +-
- fs/reiserfs/journal.c       |    3 +
- include/linux/reiserfs_fs.h |    7 ----
- 4 files changed, 4 insertions(+), 67 deletions(-)
-
---- linux-2.6.22-rc4-mm2/include/linux/reiserfs_fs.h.old	2007-06-14 02:08:17.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/include/linux/reiserfs_fs.h	2007-06-14 02:11:20.000000000 +0200
-@@ -1701,8 +1701,6 @@
- 	return th->t_blocks_allocated - th->t_blocks_logged;
- }
+--- linux-2.6.22-rc4-mm2/init/do_mounts.c.old	2007-06-14 02:19:22.000000000 +0200
++++ linux-2.6.22-rc4-mm2/init/do_mounts.c	2007-06-14 02:19:47.000000000 +0200
+@@ -25,7 +25,7 @@
+ int root_mountflags = MS_RDONLY | MS_SILENT;
+ char * __initdata root_device_name;
+ static char __initdata saved_root_name[64];
+-int __initdata root_wait;
++static int __initdata root_wait;
  
--int reiserfs_async_progress_wait(struct super_block *s);
--
- struct reiserfs_transaction_handle *reiserfs_persistent_transaction(struct
- 								    super_block
- 								    *,
-@@ -1857,8 +1855,6 @@
- #define GET_BLOCK_NO_IMUX     8	/* i_mutex is not held, don't preallocate */
- #define GET_BLOCK_NO_DANGLE   16	/* don't leave any transactions running */
+ dev_t ROOT_DEV;
  
--int restart_transaction(struct reiserfs_transaction_handle *th,
--			struct inode *inode, struct treepath *path);
- void reiserfs_read_locked_inode(struct inode *inode,
- 				struct reiserfs_iget_args *args);
- int reiserfs_find_actor(struct inode *inode, void *p);
-@@ -2135,9 +2131,6 @@
- 			       struct inode *inode);
- void reiserfs_discard_all_prealloc(struct reiserfs_transaction_handle *th);
- #endif
--void reiserfs_claim_blocks_to_be_allocated(struct super_block *sb, int blocks);
--void reiserfs_release_claimed_blocks(struct super_block *sb, int blocks);
--int reiserfs_can_fit_pages(struct super_block *sb);
- 
- /* hashes.c */
- __u32 keyed_hash(const signed char *msg, int len);
---- linux-2.6.22-rc4-mm2/fs/reiserfs/bitmap.c.old	2007-06-14 02:08:45.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/fs/reiserfs/bitmap.c	2007-06-14 02:09:59.000000000 +0200
-@@ -1201,63 +1201,6 @@
- 	return ret;
- }
- 
--/* These 2 functions are here to provide blocks reservation to the rest of kernel */
--/* Reserve @blocks amount of blocks in fs pointed by @sb. Caller must make sure
--   there are actually this much blocks on the FS available */
--void reiserfs_claim_blocks_to_be_allocated(struct super_block *sb,	/* super block of
--									   filesystem where
--									   blocks should be
--									   reserved */
--					   int blocks	/* How much to reserve */
--    )
--{
--
--	/* Fast case, if reservation is zero - exit immediately. */
--	if (!blocks)
--		return;
--
--	spin_lock(&REISERFS_SB(sb)->bitmap_lock);
--	REISERFS_SB(sb)->reserved_blocks += blocks;
--	spin_unlock(&REISERFS_SB(sb)->bitmap_lock);
--}
--
--/* Unreserve @blocks amount of blocks in fs pointed by @sb */
--void reiserfs_release_claimed_blocks(struct super_block *sb,	/* super block of
--								   filesystem where
--								   blocks should be
--								   reserved */
--				     int blocks	/* How much to unreserve */
--    )
--{
--
--	/* Fast case, if unreservation is zero - exit immediately. */
--	if (!blocks)
--		return;
--
--	spin_lock(&REISERFS_SB(sb)->bitmap_lock);
--	REISERFS_SB(sb)->reserved_blocks -= blocks;
--	spin_unlock(&REISERFS_SB(sb)->bitmap_lock);
--	RFALSE(REISERFS_SB(sb)->reserved_blocks < 0,
--	       "amount of blocks reserved became zero?");
--}
--
--/* This function estimates how much pages we will be able to write to FS
--   used for reiserfs_file_write() purposes for now. */
--int reiserfs_can_fit_pages(struct super_block *sb	/* superblock of filesystem
--							   to estimate space */ )
--{
--	int space;
--
--	spin_lock(&REISERFS_SB(sb)->bitmap_lock);
--	space =
--	    (SB_FREE_BLOCKS(sb) -
--	     REISERFS_SB(sb)->reserved_blocks) >> (PAGE_CACHE_SHIFT -
--						   sb->s_blocksize_bits);
--	spin_unlock(&REISERFS_SB(sb)->bitmap_lock);
--
--	return space > 0 ? space : 0;
--}
--
- void reiserfs_cache_bitmap_metadata(struct super_block *sb,
-                                     struct buffer_head *bh,
-                                     struct reiserfs_bitmap_info *info)
---- linux-2.6.22-rc4-mm2/fs/reiserfs/inode.c.old	2007-06-14 02:10:35.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/fs/reiserfs/inode.c	2007-06-14 02:10:59.000000000 +0200
-@@ -208,8 +208,8 @@
- 	return 0;
- }
- 
--/*static*/ int restart_transaction(struct reiserfs_transaction_handle *th,
--				   struct inode *inode, struct treepath *path)
-+static int restart_transaction(struct reiserfs_transaction_handle *th,
-+			       struct inode *inode, struct treepath *path)
- {
- 	struct super_block *s = th->t_super;
- 	int len = th->t_blocks_allocated;
---- linux-2.6.22-rc4-mm2/fs/reiserfs/journal.c.old	2007-06-14 02:11:29.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/fs/reiserfs/journal.c	2007-06-14 02:11:40.000000000 +0200
-@@ -966,7 +966,8 @@
- 	}
- 	return 0;
- }
--int reiserfs_async_progress_wait(struct super_block *s)
-+
-+static int reiserfs_async_progress_wait(struct super_block *s)
- {
- 	DEFINE_WAIT(wait);
- 	struct reiserfs_journal *j = SB_JOURNAL(s);
 
