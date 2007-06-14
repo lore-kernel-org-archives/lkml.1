@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbXFNTM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbXFNTNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753527AbXFNTM7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbXFNTMw
+	id S1754563AbXFNTNd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbXFNTN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:12:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49499 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbXFNTMw (ORCPT
+	Thu, 14 Jun 2007 15:13:26 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:37459 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbXFNTNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:12:52 -0400
-Date: Thu, 14 Jun 2007 12:12:06 -0700
+	Thu, 14 Jun 2007 15:13:25 -0400
+Date: Thu, 14 Jun 2007 12:14:24 -0700
 From: Greg KH <greg@kroah.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: "Huang, Ying" <ying.huang@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver core: multithreaded device matching with
-	dependency
-Message-ID: <20070614191206.GA13589@kroah.com>
-References: <9D7649D18729DE4BB2BD7B494F7FEDC2041319@pdsmsx415.ccr.corp.intel.com> <466AD638.9030409@s5r6.in-berlin.de> <1181643157.2779.23.camel@caritas-dev.intel.com> <466EAE21.7090407@s5r6.in-berlin.de>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, i2c@lm-sensors.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [i2c] i2c module aliases
+Message-ID: <20070614191424.GA13850@kroah.com>
+References: <Pine.LNX.4.64.0706062325270.30244@anakin> <20070607175342.3006e872@hyperion.delvare> <20070607160214.GB17800@kroah.com> <20070608153516.28fd9eb5@hyperion.delvare> <Pine.LNX.4.64.0706081647310.9505@anakin> <20070609125221.2a64ba48@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <466EAE21.7090407@s5r6.in-berlin.de>
+In-Reply-To: <20070609125221.2a64ba48@hyperion.delvare>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 04:30:57PM +0200, Stefan Richter wrote:
+On Sat, Jun 09, 2007 at 12:52:21PM +0200, Jean Delvare wrote:
+> On Fri, 8 Jun 2007 16:48:45 +0200 (CEST), Geert Uytterhoeven wrote:
+> > On Fri, 8 Jun 2007, Jean Delvare wrote:
+> > > OK. Geert, care to submit a new patch removing struct i2c_device_id
+> > > altogether?
+> > 
+> > Sorry, probably not...
+> > 
+> > I just thought I found a grave bug while looking into adding zorro
+> > support to scripts/mod/file2alias.c, so that's why I reported it.
 > 
-> There is so much unskilled labor in driver hacking land (I'm merely
-> speaking for myself of course) that something like the driver core
-> /really/ needs well-working, easy to understand, and well-documented APIs.
-> 
-> PS:  By a well-documented struct definition I mean:
->    - Public members have a type and name which indicate the meaning of
->      the member, and there is a comment on permissible or required
->      write/read accesses to the member.
->    - Private members are undocumented or even better yet explicitly
->      marked as private.
+> OK, no problem. I gave it a try myself. Greg, is it OK or did I miss
+> other parts which can be removed?
 
-We are slowly working toward this goal with the cleanups and work that
-Kay has been doing over the past year.  So be patient, it is slowly
-coming, or please help out if you can.
-
-> If the access methods to public members turn out too difficult and
-> fragile, make the members private and provide documented public accessors.
-
-Well, let's not get into the whole "accessors are good/evil" type thread
-here, but yes, we'll work to try to make this whole thing easier to use
-and very hard to use incorrectly (which is not true today, I know,
-sorry...)
+Looks good to me.  Want me to take this through my tree or through
+yours?
 
 thanks,
 
