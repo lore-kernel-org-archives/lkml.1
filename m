@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbXFNTOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbXFNTRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbXFNTOZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbXFNTOP
+	id S1753967AbXFNTRR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbXFNTRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:14:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40753 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752247AbXFNTOO (ORCPT
+	Thu, 14 Jun 2007 15:17:05 -0400
+Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:47386
+	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751333AbXFNTRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:14:14 -0400
-Date: Thu, 14 Jun 2007 12:13:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Diego Calleja <diegocg@gmail.com>
-cc: Alexandre Oliva <aoliva@redhat.com>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <20070614204725.cdf790a7.diegocg@gmail.com>
-Message-ID: <alpine.LFD.0.98.0706141204330.14121@woody.linux-foundation.org>
-References: <466A3EC6.6030706@netone.net.tr> <200706132140.13490.dhazelton@enter.net>
- <20070614020827.GO3588@stusta.de> <200706132243.14651.dhazelton@enter.net>
- <20070614025640.GQ3588@stusta.de> <9578.1181793617@turing-police.cc.vt.edu>
- <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
- <orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070614204725.cdf790a7.diegocg@gmail.com>
+	Thu, 14 Jun 2007 15:17:04 -0400
+Message-ID: <467193FD.3010803@hawkeye.stone.uk.eu.org>
+Date: Thu, 14 Jun 2007 20:16:13 +0100
+From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: david@lang.hm
+CC: greg@kroah.com, agruen@suse.de, sds@tycho.nsa.gov, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, pavel@ucw.cz
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de> <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <Pine.LNX.4.64.0706081757070.18969@asgard.lang.hm> <20070610083427.GA24808@elf.ucw.cz> <Pine.LNX.4.64.0706100201540.6675@asgard.lang.hm> <20070610210547.GC25138@elf.ucw.cz> <Pine.LNX.4.64.0706102322490.6675@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0706102322490.6675@asgard.lang.hm>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 14 Jun 2007, Diego Calleja wrote:
+david@lang.hm wrote:
+> On Sun, 10 Jun 2007, Pavel Machek wrote:
+>> But you have that regex in _user_ space, in a place where policy
+>> is loaded into kernel.
 > 
-> And the FSF is trying to control the design and licensing of hardware throught
-> the influence of their software. And I think it's wrong. I'm all to forbid hardware
-> that imposes restrictions on hardware, but software licenses are NOT the way
-> to make it. That's a task for a "Free Hardware Foundation", not the FSF.
+> then the kernel is going to have to call out to userspace every time a
+> file is created or renamed and the policy is going to be enforced
+> incorrectly until userspace finished labeling/relabeling whatever is
+> moved. building this sort of race condigion for security into the kernel
+> is highly questionable at best.
+> 
+>> AA has regex parser in _kernel_ space, which is very wrong.
+> 
+> see Linus' rants about why it's not automaticaly the best thing to move
+> functionality into userspace.
+> 
+> remember that the files covered by an AA policy can change as files are
+> renamed. this isn't the case with SELinux so it doesn't have this sort
+> of problem.
 
-Amen. And btw, opencores.org does actually exist.
+How about using the inotify interface on / to watch for file changes and
+ updating the SELinux policies on the fly. This could be done from a
+userspace daemon and should require minimal SELinux changes.
 
-I don't even think open hardware is a big issue: the worry-warts about 
-hardware are likely wrong, and hardware today is a lot more open than it 
-used to be even just a decade ago. You can much more easily design your 
-own (FPGA's are cheap and powerful), and yes, it's more complex today, but 
-that's actually an argument _for_ openness rather than against it (open 
-processes work better in complex environments!).
+The only possible problems I can see are the (hopefully) small gap
+between the file change and updating the policy and the performance
+problems of watching the whole system for changes.
 
-The real issue is "open content", and we do actually have various 
-organizations that support that in particular. I would heartily encourage 
-people to get involved with the Creative Commons, and the EFF, and I think 
-Larry Lessig is a really smart and articulate person, who you should 
-listen to.
+Just my $0.02.
 
-> What the FSF is trying to do is EVIL.
-
-I wouldn't go that far (although, in the heat of the moment I probably 
-_have_ gone that far. Oops ;).
-
-I don't think the FSF is evil. They're just too single-minded, and look 
-too much at one issue, and only care about the one thing they care about, 
-and in the process, they tend to have a really hard time seeing the other 
-side of the coin.
-
-They define "freedom" one way, and by defining it in a very particular 
-way, they miss the fact that what is "freedom" to them is not "freedom" to 
-somebody else.
-
-They have a very particular agenda, and in having that agenda and a very 
-strict view of how the world should look (according to the FSF), they 
-dismiss the fact that other people have _other_ agenda's, and see the same 
-world totally differently.
-
-And I think that kind of single-mindedness is silly and 
-counter-productive. 
-
-I literally think that the GPLv2 has worked so well exactly because you 
-can strip it of its high-falutin' morality and the FSF Kool-Aid, and just 
-see it as a "tit-for-tat" license. It allows everybody to see that the 
-work they put in (into the _software_) is protected, and people cannot 
-make improved versions of that software and distribute those improved 
-versions without giving you the right back to use those improvements (to 
-the _software_).
-
-So the GPLv2 may have come out of a very single-minded endeavor, but I 
-think it ended up being capable of so much more than rms really even 
-envisioned, exactly because you don't have to _view_ it in that manner.
-
-		Linus
+Jack
