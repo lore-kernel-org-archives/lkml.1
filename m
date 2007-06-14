@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbXFNGIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbXFNGOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753941AbXFNGIm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 02:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXFNGIe
+	id S1753033AbXFNGOv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 02:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbXFNGOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 02:08:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44649 "EHLO mx1.redhat.com"
+	Thu, 14 Jun 2007 02:14:44 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:56964 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751360AbXFNGId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 02:08:33 -0400
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706131946.15714.dhazelton@enter.net>
-	<20070614004419.GL3588@stusta.de>
-	<200706132101.28330.dhazelton@enter.net>
-	<20070614024540.3a24598c@the-village.bc.nu>
-	<20070614021724.GP3588@stusta.de>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 03:07:17 -0300
-In-Reply-To: <20070614021724.GP3588@stusta.de> (Adrian Bunk's message of "Thu\, 14 Jun 2007 04\:17\:24 +0200")
-Message-ID: <or3b0vhxwq.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1750930AbXFNGOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 02:14:43 -0400
+Date: Thu, 14 Jun 2007 15:13:16 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: mm: Fix memory/cpu hotplug section mismatch and oops.
+Message-ID: <20070614061316.GA22543@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 13, 2007, Adrian Bunk <bunk@stusta.de> wrote:
+(This is a resend of the earlier patch, this issue still needs to be
+fixed.)
 
-> If the two courts are in the same country there's usually a higher court 
-> above both that can resolve this. But what if let's say the highest 
-> court in the USA and the highest court in Germany would disagree on such 
-> a matter?
+When building with memory hotplug enabled and cpu hotplug disabled, we
+end up with the following section mismatch:
 
-Upgrade the license so as to provide guidance as to the intent of the
-authors, such that the disagreement doesn't happen again.
+WARNING: mm/built-in.o(.text+0x4e58): Section mismatch: reference to
+.init.text: (between 'free_area_init_node' and '__build_all_zonelists')
 
-If there's room in each country's laws to fix the problem, that is.
+This happens as a result of:
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+        -> free_area_init_node()
+          -> free_area_init_core()
+            -> zone_pcp_init() <-- all __meminit up to this point
+              -> zone_batchsize() <-- marked as __cpuinit                     fo
+
+This happens because CONFIG_HOTPLUG_CPU=n sets __cpuinit to __init, but
+CONFIG_MEMORY_HOTPLUG=y unsets __meminit.
+
+Changing zone_batchsize() to __devinit fixes this.
+
+__devinit is the only thing that is common between CONFIG_HOTPLUG_CPU=y and
+CONFIG_MEMORY_HOTPLUG=y. In the long run, perhaps this should be moved to
+another section identifier completely. Without this, memory hot-add
+of offline nodes (via hotadd_new_pgdat()) will oops if CPU hotplug is
+not also enabled.
+
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
+--
+
+ mm/page_alloc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index bd8e335..05ace44 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1968,7 +1968,7 @@ void zone_init_free_lists(struct pglist_data *pgdat, struct zone *zone,
+ 	memmap_init_zone((size), (nid), (zone), (start_pfn), MEMMAP_EARLY)
+ #endif
+ 
+-static int __cpuinit zone_batchsize(struct zone *zone)
++static int __devinit zone_batchsize(struct zone *zone)
+ {
+ 	int batch;
+ 
