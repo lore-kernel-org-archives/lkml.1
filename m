@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbXFNTtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751897AbXFNTti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755139AbXFNTtT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750698AbXFNTtF
+	id S1751897AbXFNTti (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbXFNTt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:49:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56453 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754070AbXFNTtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:49:04 -0400
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+	Thu, 14 Jun 2007 15:49:29 -0400
+Received: from keil-draco.com ([216.193.185.50]:50443 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbXFNTt1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 15:49:27 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Adrian Bunk <bunk@stusta.de>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706140236.39394.dhazelton@enter.net>
-	<orhcpbggcu.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706140429.11049.dhazelton@enter.net>
-	<orejkefnw9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614183145.GJ10008@csclub.uwaterloo.ca>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 16:48:15 -0300
-In-Reply-To: <20070614183145.GJ10008@csclub.uwaterloo.ca> (Lennart Sorensen's message of "Thu\, 14 Jun 2007 14\:31\:45 -0400")
-Message-ID: <orwsy6b9mo.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+Date: Thu, 14 Jun 2007 15:49:13 -0400
+User-Agent: KMail/1.9.6
+Cc: Valdis.Kletnieks@vt.edu, Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+References: <466A3EC6.6030706@netone.net.tr> <9578.1181793617@turing-police.cc.vt.edu> <20070614152034.GS3588@stusta.de>
+In-Reply-To: <20070614152034.GS3588@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706141549.13442.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+On Thursday 14 June 2007 11:20:34 Adrian Bunk wrote:
+> On Thu, Jun 14, 2007 at 12:00:17AM -0400, Valdis.Kletnieks@vt.edu wrote:
+> > On Thu, 14 Jun 2007 04:56:40 +0200, Adrian Bunk said:
+> > > Reality check:
+> > >
+> > > Harald convinced companies that they have to provide the private keys
+> > > required to run the Linux kernel they ship on their hardware.
+> >
+> > No, the *real* reality check:
+> >
+> > The operative words here are "convinced companies" - as opposed to
+> > "convinced a judge to rule that private keys are required to be
+> > disclosed". (I just checked around on gpl-violations.org, and I don't see
+> > any news items that say they actually generated citable case law on the
+> > topic of keys...)
+> >
+> > Harald convinced companies that it was easier/cheaper/faster to provide
+> > the private keys than to continue in a long legal battle with an
+> > uncertain outcome. If the company estimates the total loss due to keys
+> > being released is US$100K, but the costs of taking it to court are
+> > estimated at US$200K, it's obviously a win (lesser loss, actually) for
+> > the company to just fold.
+> >...
+>
+> Here in Germany, the rules at court are roughly "the loser pays
+> everything including the costs of the winner", so if a big company is
+> sure they will win at court there's no reason not to go there.
+>
+> And if they did the effort of using private keys to only allow running
+> an official firmware, they must have seen an advantage from doing so.
+>
+> I'm not saying it legally clear the other way round, my statement was
+> an answer to Daniel's emails claiming it was clear what such companies
+> do was legal.
 
-> On Thu, Jun 14, 2007 at 02:26:30PM -0300, Alexandre Oliva wrote:
->> In the program you received under GPLv1.
->> 
->> Hey, you said there was code under GPLv1.1 in the Linux tree.  Then,
->> there should be a copy of GPLv1.1 in there, otherwise AFAICT the
->> distribution of that code is copyright infringement.  IANAL.
+I'm sorry if I gave anyone that impression. My point was that it would be 
+pointless to argue the case in the US because here it really is, 
+usually , "buy the best justice for the money".
 
-> So now the copy of the GPL v2 isn't good enough for the GPLv1.1 code?
+DRH
 
-If it exists and it's 1.1-only, I believe it wouldn't, but IANAL.
+> cu
+> Adrian
+
+
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
