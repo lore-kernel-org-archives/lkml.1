@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbXFNUcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbXFNUhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754288AbXFNUcz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXFNUcr
+	id S1754068AbXFNUhJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbXFNUg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:32:47 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36229 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbXFNUcq (ORCPT
+	Thu, 14 Jun 2007 16:36:59 -0400
+Received: from s131.mittwaldmedien.de ([62.216.178.31]:4827 "EHLO
+	s131.mittwaldmedien.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbXFNUg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:32:46 -0400
-Date: Thu, 14 Jun 2007 21:32:30 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexandre Oliva <aoliva@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614203230.GS21478@ftp.linux.org.uk>
-References: <466A3EC6.6030706@netone.net.tr> <200706132121.04532.dhazelton@enter.net> <orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132304.21984.dhazelton@enter.net> <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu> <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614195517.GA4933@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Jun 2007 16:36:58 -0400
+X-Greylist: delayed 2047 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jun 2007 16:36:58 EDT
+From: Holger Schurig <hs4233@mail.mn-solutions.de>
+To: Christoph Hellwig <hch@infradead.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       linux-wireless@vger.kernel.org, Dan Williams <dcbw@redhat.com>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: libertas (private) ioctls vs. nl80211
+Date: Thu, 14 Jun 2007 22:03:13 +0200
+User-Agent: KMail/1.9.7
+References: <1181757483.29767.99.camel@johannes.berg> <20070614170901.GA13384@infradead.org>
+In-Reply-To: <20070614170901.GA13384@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070614195517.GA4933@elte.hu>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200706142203.13779.hs4233@mail.mn-solutions.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 09:55:17PM +0200, Ingo Molnar wrote:
-> This "right to modify" and "have the same rights as the hardware maker" 
-> arguments are _totally_ bogus, they were made up after the fact, just 
-> because quite apparently RMS had a fit over Tivo and started this verbal 
-> (and legal) vendetta. The FSF is now attempting to rewrite history and 
-> pretends that this "always was in the GPLv2" and applies this newly 
-> thought up concept to the GPLv3 in a way that substantially departs from 
-> the spirit of the GPLv2. Which spirit the GPLv2 explicitly promised to 
-> uphold in Section 9. Which could make any contrary section of the GPLv3 
-> unenforceable, when applied to "GPLv2 or later" licensed software.
+> Independent of any nl80211 status the private libertas ioctls have to
+> go.  Not only don't we want private ioctls for mesh networking but
+> rather have it as driver-independent interface, but the actual
+> libertas interface is the worst possible choice.
 
-That, BTW, is perhaps the worst problem with v2 (inherited by v3).
-WTF _is_ "the spirit of the license" and who gets to decide if two
-licenses are in the same spirit?  As soon as we get to "well, original
-authors of the license are the final authority on that", we are
-in the "I've always said ..." country.
+I have been told that the Libertas mesh functionality is not 802.11s, 
+Marvell brew their own beer (because it predates 802.11s, I guess). 
+However, for the kernel I'd see more an interface that supports 
+802.11s --- or is flexible to support both this and the libertas one.
 
-Look, humans _suck_ at revision control, especially that of our
-intentions and opinions.  It doesn't even require malice, all
-ancedotes about spouses/mothers-in-law/etc. nonwithstanding.
 
-We all easily fall into belief that we had always meant what we mean
-now; that even if we said something different, it was just a poor
-wording; that if we had known what we know now, we would certainly
-had come to the same conclusions we have come to now.
+I also have two related observations:
 
-"In the same spirit" is just about the weakest requirement in that
-area.  I.e. the most prone to drift, especially when one is an ideologist
-and thus has severely decayed integrity to start with.  Call it a
-professional disease of crystal ball users - or a prerequisite for
-playing a visionary, if you will ;-/
+If I'm correctt, the only non-mesh ioctl in ioctl.c is the led_gpio 
+ioctl. Theoretically one can abstract this, many WLAN chips have GPIOs. 
+But mostly there is no documentation available about how those GPIOs 
+are used, where they are soldered to etc. To blindly allow changing 
+arbitrary GPIOs migth even be harmful to the hardware.
+
+That said: with the USB 8388 dongle that I have, the LED GPIO iwpriv 
+call didn't do anything. Not sure if it works on OLPC ... but I doubt 
+that one can see the LEDs there ...
+
+
+Another thing: I'm working on a CF 8385 based driver. Here I have a 
+firmware that does not (as far as I know this undocumented pile of 
+bytes) have any mesh functionality at all. So I need a way from if_cs.c 
+to disable all those iwpriv ioctls. Haven't thought about this issue 
+yet, other things are more pressing right now. However, I already don't 
+create the mshX interface.
+
