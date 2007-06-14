@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbXFNOTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbXFNOVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbXFNOTl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 10:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbXFNOTe
+	id S1753321AbXFNOVY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 10:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbXFNOVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 10:19:34 -0400
-Received: from smtp111.sbc.mail.mud.yahoo.com ([68.142.198.210]:29047 "HELO
-	smtp111.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751429AbXFNOTd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 10:19:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=jyebz2UhjYXoNMgnMnffBBFTB0wwx0uj8dXOJuMKajAIRBUCw524dLkfXLR7511+GL5a2TZJjjc0a/8zvjfslqONKuZP5RG6Vw5TSeU6LHwldOaQGby4YAYcBebs8c9suw4/Hs4lQnxxiXzQ++v6lcwikKQbJnSo80HP47E1P/Y=  ;
-X-YMail-OSG: pIXxzIcVM1k3N6ejgQ8nvLdxirV3JRZ7HX8wlXDjZ_b15hoVtMD.dFJ1Q67mI9g.XRfOZoD4hA--
-From: David Brownell <david-b@pacbell.net>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Subject: Re: [PATCH -mm 4/7] PM: Remove suspend and resume support from struct device_type
-Date: Thu, 14 Jun 2007 07:19:28 -0700
-User-Agent: KMail/1.9.6
-Cc: Kay Sievers <kay.sievers@vrfy.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Thu, 14 Jun 2007 10:21:14 -0400
+Received: from holomorphy.com ([66.93.40.71]:35877 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751772AbXFNOVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 10:21:12 -0400
+Date: Thu, 14 Jun 2007 07:21:46 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <200706131551.51336.rjw@sisk.pl> <3ae72650706131520m3091d04et31b1db64be692385@mail.gmail.com> <200706140010.03438.dtor@insightbb.com>
-In-Reply-To: <200706140010.03438.dtor@insightbb.com>
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Jay Vosburgh <fubar@us.ibm.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
+       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
+       Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+Message-ID: <20070614142146.GN15426@holomorphy.com>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com> <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk> <20070614020055.GL15426@holomorphy.com> <Pine.LNX.4.61.0706141123160.28903@mtfhpc.demon.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706140719.28829.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.61.0706141123160.28903@mtfhpc.demon.co.uk>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 June 2007, Dmitry Torokhov wrote:
-> On Wednesday 13 June 2007 18:20, Kay Sievers wrote:
-> > Dmitry, you added this recently, is this used in any code you plan to
-> > merge soon?
-> >
-> 
-> Yes, I will need it to implement input device resume (mainly to restore LED
-> state and repeat rate for keyboards).
+On Thu, Jun 14, 2007 at 11:30:25AM +0100, Mark Fortescue wrote:
+> They apear as soon as simpleinit starts up. Somtimes I get to a login 
+> prompt before seeing any. Other times, commands in the simpleinit rc 
+> script fail.
+> They do apear to be random. If a command failes, you re-run the command 
+> and it is OK. Commands seen to fail are basic (depmod, rm cat ..).
+> The test I did use the same binaries with both the OK and problem kernels 
+> so it is not a change to the application code, it is definatly a kernel 
+> issue.
 
-Why wouldn't that use the class device suspend/resume mechanism?
+This sounds like it may be addressed by benh's ptep_set_access_flags()
+fixes. Those fixes are still in -mm, hopefully to hit mainline by 2.6.22.
+
+
+-- wli
