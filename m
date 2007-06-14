@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbXFNUnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbXFNUqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755373AbXFNUnU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXFNUnC
+	id S1754082AbXFNUqN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbXFNUp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:43:02 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47588 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753839AbXFNUnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:43:00 -0400
-Date: Thu, 14 Jun 2007 22:42:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vassili Karpov <av1474@comtv.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] sched: accurate user accounting
-Message-ID: <20070614204253.GA14076@elte.hu>
-References: <200703251159.03616.kernel@kolivas.org> <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru> <200703260901.54943.kernel@kolivas.org> <200703260957.34798.kernel@kolivas.org> <Pine.LNX.4.64.0703261439270.2621@linmac.oyster.ru> <20070328113743.GA5615@elte.hu> <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru>
+	Thu, 14 Jun 2007 16:45:58 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35300 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750890AbXFNUp5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 16:45:57 -0400
+Date: Thu, 14 Jun 2007 22:46:10 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: regression tracking (Re: Linux 2.6.21)
+Message-ID: <20070614204610.GV3588@stusta.de>
+References: <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <46715FD4.6040803@s5r6.in-berlin.de> <20070614163923.GM7266@flower.upol.cz> <20070614173049.GU3588@stusta.de> <20070614203338.GN7266@flower.upol.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070614203338.GN7266@flower.upol.cz>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 14, 2007 at 10:33:38PM +0200, Oleg Verych wrote:
+>...
+> Also, after i saw Linus' message about doing mostly tools last couple of
+> years, i wonder why you, Adrian, didn't think about your tools first,
+> before you've started regression tracking? You are not running in front
+> of a train, unlike you know who does, plus bugzilla issues are known for
+> years. Luckily Fedora kernel guys also upstream developers, thus lkml and
+> other MLs under their view.
 
-* Vassili Karpov <av1474@comtv.ru> wrote:
+My tool was a textfile with a text editor.
+For a smaller amount of regressions that works fine.
 
-> Hello Ingo and others,
+And it's not that Linus started developing the Linux kernel with writing 
+git, the first 10 years of Linux development were without any SCM.
+
+> After having read all that, i've asked you, my question, as the person
+> who supposedly used BTS as a maintainer.
 > 
-> After reading http://lwn.net/Articles/236485/ and noticing few 
-> refernces to accounting i decided to give CFS a try. With 
-> sched-cfs-v2.6.21.4-16 i get pretty weird results, it seems like 
-> scheduler is dead set on trying to move the processes to different 
-> CPUs/cores all the time. And with hog (manually tweaking the amount 
-> iterations) i get fairly strange resuls, first of all the process is 
-> split between two cores, secondly while integral load provided by the 
-> kernel looks correct, it's off by good 20 percent on each idividial 
-> core.
+> Yes, in current form it might not be in suitable configuration, i.e.
+> kernel sub-systems instead of packages etc, anyway main thing is the way
+> BTS is handled. While i was looking and replying for bug reports in the
+> Debian kernel, that i saw in lkml, i've noticed, just how guys work with
+> it there. Now they even came up with tracking upstream bugzilla, it
+> seems [0]. I left that activity due to RL some months ago, but now trying
+> to catch up things again.
+>...
+
+Both the Debian BTS and Bugzilla are usable programs with their own
+advantages and disadvantages.
+
+I don't believe switching to the Debian BTS would solve any problem.
+
+> > And we need a release process that makes debugging, and if possible 
+> > fixing, all regressions prior to the release mandatory. You might never 
+> > come down to zero regressions and might not be able to handle all 
+> > last-minute reported regressions, but the 2.6.21 situation with 3 week 
+> > old known regressions not ever being debugged by a kernel developer 
+> > before the release has much room for improvements.
+> > 
+> > Changing the BTS would make sense if some core developers would state 
+> > that they would start using the BTS after this change. But otherwise it 
+> > doesn't matter which BTS to use.
 > 
-> (http://www.boblycat.org/~malc/apc/hog-cfs-v16.png)
+> So, as i've wrote before: one must give them pretty-shiny tool, kindly
+> barking in their inboxes, instead of for example
 > 
-> Thought this information might be of some interest.
+> "Guilty: **** ***** <????@****.com>",
+> 
+> as it was on the very beginning.
 
-hm - what does 'hog' do, can i download hog.c from somewhere?
+A pretty-shiny tools wouldn't change anything.
 
-the alternating balancing might be due to an uneven number of tasks 
-perhaps? If you have 3 tasks on 2 cores then there's no other solution 
-to achieve even performance of each task but to rotate them amongst the 
-cores.
+What you need are humans debugging the regresssions and humans remining 
+other humans that they should debug the regressions.
 
-> P.S. How come the /proc/stat information is much closer to reality 
->      now? Something like what Con Kolivas suggested was added to 
->      sched.c?
+cu
+Adrian
 
-well, precise/finegrained accounting patches have been available for 
-years, the thing with CFS is that there we get them 'for free', because 
-CFS needs those metrics for its own logic. That's why this information 
-is much closer to reality now. But note: right now what is affected by 
-the changes in the CFS patches is /proc/PID/stat (i.e. the per-task 
-information that 'top' and 'ps' displays, _not_ /proc/stat) - but more 
-accurate /proc/stat could certainly come later on too.
+-- 
 
-	Ingo
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
