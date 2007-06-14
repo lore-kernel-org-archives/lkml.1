@@ -1,108 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbXFNT0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbXFNT03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbXFNT0M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbXFNTZ5
+	id S1755408AbXFNT03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbXFNT0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:25:57 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4583 "EHLO ra.tuxdriver.com"
+	Thu, 14 Jun 2007 15:26:15 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4585 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752523AbXFNTZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:25:56 -0400
-Date: Thu, 14 Jun 2007 15:25:23 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: linux-kernel@vger.kernel.org, ISS StorageDev <iss_storagedev@hp.com>,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
-Message-ID: <20070614192523.GB1110@hmsreliant.homelinux.net>
-References: <20070614153119.GC32137@hmsreliant.homelinux.net> <226E1C65E4F6164E8EA5FD3CC913AE8C0156B740@G3W0639.americas.hpqcorp.net>
-MIME-Version: 1.0
+	id S1754926AbXFNT0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 15:26:13 -0400
+Date: Thu, 14 Jun 2007 15:09:36 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, johannes@sipsolutions.net,
+       linux-wireless@vger.kernel.org, dcbw@redhat.com,
+       hs4233@mail.mn-solutions.de, linux-kernel@vger.kernel.org,
+       marcelo@kvack.org
+Subject: Re: libertas (private) ioctls vs. nl80211
+Message-ID: <20070614190936.GA28917@tuxdriver.com>
+References: <1181757483.29767.99.camel@johannes.berg> <20070614170901.GA13384@infradead.org> <20070614103836.23b07a72.akpm@linux-foundation.org> <20070614181307.GA16856@infradead.org> <alpine.LFD.0.98.0706141121080.14121@woody.linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <226E1C65E4F6164E8EA5FD3CC913AE8C0156B740@G3W0639.americas.hpqcorp.net>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <alpine.LFD.0.98.0706141121080.14121@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 06:16:03PM -0000, Miller, Mike (OS Dev) wrote:
->  
+On Thu, Jun 14, 2007 at 11:23:11AM -0700, Linus Torvalds wrote:
 > 
-> > -----Original Message-----
-> > From: Neil Horman [mailto:nhorman@tuxdriver.com] 
-> > Sent: Thursday, June 14, 2007 10:31 AM
-> > To: linux-kernel@vger.kernel.org
-> > Cc: Miller, Mike (OS Dev); ISS StorageDev; 
-> > akpm@linux-foundation.org; nhorman@tuxdriver.com
-> > Subject: [PATCH] cciss: force ignore of responses to unsent 
-> > scsi commands after kexec reboot
-> > 
-> > Hey -
-> > 	cciss hardware currently can continue to send responses 
-> > to scsi commands after the host system has undergone a kexec 
-> > reboot.  The way the drier is currently written, reception of 
-> > these commands results in a BUG halt, since it can't match 
-> > the response to any issued command since the boot.  This 
-> > patch corrects that by using the kexec reset_devices command 
-> > line paramter to force ignore any commands that it cant correlate.
-> > 
-> > Regards
-> > Neil
-> > 
-> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> > 
-> > 
-> >  cciss.c |    8 ++++++++
-> >  1 file changed, 8 insertions(+)
-> > 
-> > 
-> > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c 
-> > index 5acc6c4..ec1c1d2 100644
-> > --- a/drivers/block/cciss.c
-> > +++ b/drivers/block/cciss.c
-> > @@ -2131,6 +2131,14 @@ static int add_sendcmd_reject(__u8 
-> > cmd, int ctlr, unsigned long complete)
-> >  		       ctlr, complete);
-> >  		/* not much we can do. */
-> >  #ifdef CONFIG_CISS_SCSI_TAPE
-> > +		/* We might get notification of completion of commands
-> > +		 * which we never issued in this kernel if this boot is
-> > +		 * taking place after previous kernel's crash. Simply
-> > +		 * ignore the commands in this case.
-> > +		 */
-> > +		if (reset_devices)
-> > +			return 0;
-> > +
-> >  		return 1;
-> >  	}
-> >  
-> I don't understand how this will help. We need to reset the controller
-> which reset_devices cannot do alone. I just haven't have the time to
-> implement the fix yet.
 > 
-> mikem 
+> On Thu, 14 Jun 2007, Christoph Hellwig wrote:
+> >
+> > > I suspect that the probability of your proposal succeeding would be increased
+> > > if you could prepare a patch...
+> > 
+> > Here we go:
 
-I definately agree.  Actually resetting the hardware so that odd responses would
-never be received would be a much better solution.  However, when this problem
-(and the above corresponding workaround to fix it) was first proposed almost a
-year ago:
-http://www.ussg.iu.edu/hypermail/linux/kernel/0606.2/3055.html
+FWIW, I do appreciate the patch rather than just mere
+complaining... :-)
 
-It was met with no action.  I understand that actually doing a reset of the
-hardware is a much better solution, but I'm certainly not knoweldgeable enough,
-nor do I have the documentation needed to implement that solution.  Until it is,
-this patch lets kexec work properly on this hardware, which I think is a good
-trade until such time as the proper fix is implemented.
+> I don't mind ripping them out, but it makes sense only if people are 
+> actually signed up to implementing this on a higher layer. As such, I'd 
+> need to get a sign-off from somebody actually involved in wireless mesh 
+> stuff etc.
 
-Thanks & Regards
-Neil
+I'm not aware of any project working on wireless mesh in mac80211 at
+the moment, serious or otherwise.  I think one would be worthwhile,
+but I don't know of anyone working on it.
 
+> Please? I do agree that the private iwpriv interface seems to be totally 
+> the wrong thing to do, but I want to see this as a first step towards a 
+> better situation, rather than just a "remove code that is ugly" issue!
+
+Private wireless extensions are ugly, even uglier in some ways than
+normal private ioctls.  However, they have been used in the past for
+just this sort of thing (i.e. something a given driver can do but is
+not generically available).
+
+We don't have either generic functionality
+for mesh in mac80211 or even other drivers doing mesh on their own,
+so there is nothing to validate a generic configuration option.
+Further, while the beginnings of nl80211 are available it will still
+be some non-zero time before it is even mature enough to replace
+truly generic configuration facilities in the wireless extensions.
+
+> Comments?
+
+Aside from simply carrying an out-of-stream patch, the OLPC and
+libertas driver people would have only the alternative of hacking-up
+a debugfs configuration regime.  Is it worthwhile to obligate them
+to either alternative?  What is to be gained?
+
+It does not make sense to me to rip this out purely for aesthetic
+reasons.
+
+John
 -- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+John W. Linville
+linville@tuxdriver.com
