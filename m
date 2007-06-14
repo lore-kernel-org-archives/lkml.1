@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbXFNXGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbXFNXHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbXFNXGi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 19:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbXFNXG3
+	id S1757452AbXFNXHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 19:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbXFNXHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 19:06:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52154 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756565AbXFNXG3 (ORCPT
+	Thu, 14 Jun 2007 19:07:15 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:58512
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753791AbXFNXHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 19:06:29 -0400
-Date: Thu, 14 Jun 2007 15:50:12 -0700
-From: Greg KH <greg@kroah.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -mm 4/7] PM: Remove suspend and resume support from
-	struct device_type
-Message-ID: <20070614225012.GA22917@kroah.com>
-References: <200706131551.51336.rjw@sisk.pl> <d120d5000706140559h10461e50q2f30ff423468676e@mail.gmail.com> <20070614174642.GB10378@kroah.com> <200706150032.21103.rjw@sisk.pl>
+	Thu, 14 Jun 2007 19:07:13 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Thu, 14 Jun 2007 19:07:10 -0400
+User-Agent: KMail/1.9.6
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
+       Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr> <20070614122031.4751a52b@the-village.bc.nu> <20070614122546.GB22078@elte.hu>
+In-Reply-To: <20070614122546.GB22078@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200706150032.21103.rjw@sisk.pl>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-Id: <200706141907.11957.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 12:32:19AM +0200, Rafael J. Wysocki wrote:
-> On Thursday, 14 June 2007 19:46, Greg KH wrote:
-> > On Thu, Jun 14, 2007 at 08:59:20AM -0400, Dmitry Torokhov wrote:
-> > >  On 6/14/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > On Thursday, 14 June 2007 06:10, Dmitry Torokhov wrote:
-> > > > > On Wednesday 13 June 2007 18:20, Kay Sievers wrote:
-> > > > > > Dmitry, you added this recently, is this used in any code you plan to
-> > > > > > merge soon?
-> > > > > >
-> > > > >
-> > > > > Yes, I will need it to implement input device resume (mainly to restore 
-> > > > LED
-> > > > > state and repeat rate for keyboards).
-> > > >
-> > > > Would that be a big problem to reintroduce it along with the user?
-> > > >
-> > > 
-> > >  Yes because that part is in Greg's domain so I am trying to set
-> > >  infrastructure up before I can commit my patches into my tree so that
-> > >  Andrew can safely pull from me into -mm. Greg normally adds such stuff
-> > >  during merge window so that means if we remove it now we'd need ~2
-> > >  releases to get it and the user back in.
-> > 
-> > Yes, don't worry, I'm not going to remove this as I know you rely on it.
-> 
-> Hm, in that case I'd have to rework the patches 5-7.  Perhaps I should resend
-> the entire series once again, without the $subject patch?
+On Thursday 14 June 2007 08:25:46 Ingo Molnar wrote:
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > > that's fine, but the fundamental question is: where is the moral
+> > > boundary of the power that the copyright license gives? The FSF
+> > > seems to
+> >
+> > Assuming a democratic state then the laws of the land ought to reflect
+> > the 'general will' (if you believe Rousseau anyway). They should thus
+> > define the boundary ['derivative work' generally ] according to the
+> > general good and with the consent of the people.
+>
+> uhm, so if the MPAA and the RIAA pays for another nice piece of
+> legislation that extends the power of copyright owners, do you find it
+> morally justified to use those powers, as long as it's argued to be in
+> favor of some long-term goal that you judge to be moral, even if it
+> results in some "temporary injustice"?
 
-You do?  Conflicts are that bad?
+Turnabout is fair play, and unilateral disarmament is a bad strategy in a 
+mexican standoff?
 
-Let me try and apply them and let you know what I've accepted in my
-tree...
+Finding it morally justified to _have_ powers is not the same as finding it 
+morally justified to _use_ powers you have anyway.  Lots of companies (like 
+Red Hat) amass defensive software patent portfolios because the patent system 
+is so screwed up.
 
-thanks,
+But then, I'm a pragmatist, not an idealist.  You can be one or the other and 
+make it work.  Mixing the two tends to suck.  Being ruthlessly pragmatic in 
+the pursuit of an ideal (as the FSF seems to be doing) has often been a 
+recipe for disaster...
 
-greg k-h
+Rob
