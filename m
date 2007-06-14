@@ -1,60 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbXFNHxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbXFNHyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752923AbXFNHxD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 03:53:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbXFNHwy
+	id S1754583AbXFNHyE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 03:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbXFNHxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 03:52:54 -0400
-Received: from heisenberg.zen.co.uk ([212.23.3.141]:59343 "EHLO
-	heisenberg.zen.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbXFNHwx (ORCPT
+	Thu, 14 Jun 2007 03:53:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53151 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752471AbXFNHxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 03:52:53 -0400
-Message-ID: <4670F3C5.5090602@gmail.com>
-Date: Thu, 14 Jun 2007 08:52:37 +0100
-From: Matt Keenan <tank.en.mate@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Alexandre Oliva <aoliva@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>	<466BCBBC.90305@netone.net.tr>	<Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>	<20070610160531.GA12179@kroah.com>	<f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>	<20070612184110.GB7980@kroah.com>	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>	<or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070613211432.GH10008@csclub.uwaterloo.ca>	<orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org>	<or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706131930120.14121@woody.linux-foundation.org> <ory7ingij5.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <ory7ingij5.fsf@oliva.athome.lsd.ic.unicamp.br>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 14 Jun 2007 03:53:54 -0400
+Date: Thu, 14 Jun 2007 00:53:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ioctl disappeared (tty_ioctl)
+Message-Id: <20070614005314.85168c03.akpm@linux-foundation.org>
+In-Reply-To: <20070614104223.GA3678@darkstar.te-china.tietoenator.com>
+References: <20070614104223.GA3678@darkstar.te-china.tietoenator.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Originating-Heisenberg-IP: [82.69.27.224]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexandre Oliva wrote:
-> On Jun 13, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->   
->> On Wed, 13 Jun 2007, Alexandre Oliva wrote:
->>     
->>> So, TiVo includes a copy of Linux in its DVR.  
->>>       
->
->   
->> Stop right there.
->>     
->
->   
->> You seem to make the mistake to think that software is something physical.
->>     
->
-> Err, no.  Software, per legal definitions in Brazil, US and elsewhere,
-> require some physical support.  That's the hard disk in the TiVO DVR,
-> in this case.  I don't see how this matters, though.
->
->   
-I'm now intrigued, where are these (Brazilian and US) definitions
-stipulated, and under what authority?
+On Thu, 14 Jun 2007 10:42:23 +0000 Dave Young <hidave.darkstar@gmail.com> wrote:
 
-Matt
+> The kernel reported the messages:
+> 
+> do_ioctl: ioctl c02bff70 disappeared
+> symbol: tty_ioctl+0x0/0x4e0
+>  [<c01813b4>] do_ioctl+0x74/0xd0
+>  [<c02bff70>] tty_ioctl+0x0/0x4e0
+>  [<c018159e>] vfs_ioctl+0x5e/0x1d0
+>  [<c0181787>] sys_ioctl+0x77/0x90
+>  [<c0104258>] syscall_call+0x7/0xb
+>  [<c0430000>] __sched_text_start+0x570/0x6c0
+>  =======================
+
+Right, thanks.  This should repair it:
+
+
+
+From: Paul Fulghum <paulkf@microgate.com>
+
+Restore tty locked ioctl handler which was replaced with
+an unlocked ioctl handler in hung_up_tty_fops by the patch:
+
+commit e10cc1df1d2014f68a4bdcf73f6dd122c4561f94
+Author: Paul Fulghum <paulkf@microgate.com>
+Date:   Thu May 10 22:22:50 2007 -0700
+
+    tty: add compat_ioctl
+
+This was reported in:
+[Bug 8473] New: Oops: 0010 [1] SMP
+
+The bug is caused by switching to hung_up_tty_fops in do_tty_hangup.  An
+ioctl call can be waiting on BLK after testing for existence of the locked
+ioctl handler in the normal tty fops, but before calling the locked ioctl
+handler.  If a hangup occurs at that point, the locked ioctl fop is NULL
+and an oops occurs.
+
+(akpm: we can remove my debugging code from do_ioctl() now, but it'll be OK to
+do that for 2.6.23)
+
+Signed-off-by: Paul Fulghum <paulkf@microgate.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/char/tty_io.c |   14 ++++++++++----
+ 1 files changed, 10 insertions(+), 4 deletions(-)
+
+diff -puN drivers/char/tty_io.c~tty-restore-locked-ioctl-file-op drivers/char/tty_io.c
+--- a/drivers/char/tty_io.c~tty-restore-locked-ioctl-file-op
++++ a/drivers/char/tty_io.c
+@@ -1173,8 +1173,14 @@ static unsigned int hung_up_tty_poll(str
+ 	return POLLIN | POLLOUT | POLLERR | POLLHUP | POLLRDNORM | POLLWRNORM;
+ }
+ 
+-static long hung_up_tty_ioctl(struct file * file,
+-			      unsigned int cmd, unsigned long arg)
++static int hung_up_tty_ioctl(struct inode * inode, struct file * file,
++			     unsigned int cmd, unsigned long arg)
++{
++	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
++}
++
++static long hung_up_tty_compat_ioctl(struct file * file,
++				     unsigned int cmd, unsigned long arg)
+ {
+ 	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
+ }
+@@ -1222,8 +1228,8 @@ static const struct file_operations hung
+ 	.read		= hung_up_tty_read,
+ 	.write		= hung_up_tty_write,
+ 	.poll		= hung_up_tty_poll,
+-	.unlocked_ioctl = hung_up_tty_ioctl,
+-	.compat_ioctl	= hung_up_tty_ioctl,
++	.ioctl		= hung_up_tty_ioctl,
++	.compat_ioctl	= hung_up_tty_compat_ioctl,
+ 	.release	= tty_release,
+ };
+ 
+_
 
