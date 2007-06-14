@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbXFNCwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbXFNCyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517AbXFNCwr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 22:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbXFNCwk
+	id S1753956AbXFNCyt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 22:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbXFNCym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 22:52:40 -0400
-Received: from mail.lmcg.wisc.edu ([144.92.101.145]:36983 "EHLO
-	mail.lmcg.wisc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751983AbXFNCwk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 22:52:40 -0400
-X-Greylist: delayed 1786 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 22:52:39 EDT
-Date: Wed, 13 Jun 2007 21:22:50 -0500
-From: Daniel Forrest <forrest@lmcg.wisc.edu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
+	Wed, 13 Jun 2007 22:54:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33145 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751938AbXFNCyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 22:54:41 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070613212250.A21801@yoda.lmcg.wisc.edu>
-Reply-To: Daniel Forrest <forrest@lmcg.wisc.edu>
-References: <fa.khBgzvPDXYj45cntZBDPf6OM0jQ@ifi.uio.no> <fa.yLrgAnyZNUTaQtIdBjBq6aFGXU8@ifi.uio.no> <fa.OeLmE9apDSUc1Jj/3NNi3Oh5dxg@ifi.uio.no> <fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no> <fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no> <20070614013214.GA1124293@hiwaay.net> <20070614025248.6e0f72f0@the-village.bc.nu>
-Mime-Version: 1.0
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706132101.28330.dhazelton@enter.net>
+	<20070614012401.GN3588@stusta.de>
+	<200706132140.13490.dhazelton@enter.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Wed, 13 Jun 2007 23:53:16 -0300
+In-Reply-To: <200706132140.13490.dhazelton@enter.net> (Daniel Hazelton's message of "Wed\, 13 Jun 2007 21\:40\:13 -0400")
+Message-ID: <orwsy7i6w3.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
-In-Reply-To: <20070614025248.6e0f72f0@the-village.bc.nu>; from alan@lxorguk.ukuu.org.uk on Thu, Jun 14, 2007 at 02:52:48AM +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 02:52:48AM +0100, Alan Cox wrote:
-> 
-> As a PS to the GPL3 comment here is the basic difference
-> 
-> ROM	-	I can't modify the code on the device
-> 		The creator can't modify the code further on the device
-> 
-> Tivo	-	I can't modify the code on the device
-> 		The owner can modify the code
-> 
-> One is an implicit limitation of the hardware (just like I can't run
-> openoffice on a 4MB PC even though the license gives me the right to
-> try), the other is an artificial restriction.
-> 
-> One case is witholding freedom in the GPL sense by one party while
-> keeping it themselves, the other is a limitation of the system
-> inevitably imposed on everyone.
+On Jun 13, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-I've been following this discussion and I find this interesting.
-Consider these two cases:
+> Either a device is distributed, like the common PC, that is designed
+> for the user to change and update the software on, or, like the PS2
+> it isn't designed for that.
 
-1.) I ship the device back to the manufacturer, they replace the ROM,
-    and ship it back to me.
+Have you ever installed GNU/Linux on a PC "Designed for Microsoft Windows"?
 
-2.) I ship the device back to the manufacturer, they load new code
-    into it, and ship it back to me.
+How dare you? ;-)
 
-How do these two differ?  Or is it now just a question of the ROM
-being in a socket?  I can't see how the technicalities of how the
-hardware is constructed can change the legality of the software.
+> If, OTOH, the hardware was never meant for the end-user to install custom 
+> versions of the software on, then while the signing keys are still 
+> *technically* part of the source, in practice they are not. Why? Because in 
+> most of those cases the end-user isn't granted the right to install and run 
+> custom binaries on the hardware.
+
+And distributing the GPLed software under this restriction is quite
+likely copyright infringement.
+
+> I know this. As I said, I doubt that anyone who tried this in
+> America would have the success he has had.
+
+On Wednesday 13 June 2007 21:24:01 Adrian Bunk wrote:
+
+>> Are you an idiot, or do you just choose to ignore all proof that
+>> doesn't fit your preconceived beliefs?
+
+;-) :-P :-D
 
 -- 
-Dan
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
