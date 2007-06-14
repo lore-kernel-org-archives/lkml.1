@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752639AbXFNQWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751750AbXFNQ1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752639AbXFNQWA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 12:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbXFNQVw
+	id S1751750AbXFNQ1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 12:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXFNQ1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 12:21:52 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:47079 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750725AbXFNQVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 12:21:51 -0400
-Message-ID: <46716B1D.1070902@garzik.org>
-Date: Thu, 14 Jun 2007 12:21:49 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Thu, 14 Jun 2007 12:27:03 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:59654 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbXFNQ1A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 12:27:00 -0400
+Date: Thu, 14 Jun 2007 18:39:23 +0200
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: regression tracking (Re: Linux 2.6.21)
+Message-ID: <20070614163923.GM7266@flower.upol.cz>
+References: <20070426040806.GJ3468@stusta.de> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <46715FD4.6040803@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Nigel Kukard <nkukard@lbsd.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: SATA problems
-References: <4671366B.7090702@lbsd.net>
-In-Reply-To: <4671366B.7090702@lbsd.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46715FD4.6040803@s5r6.in-berlin.de>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nigel Kukard wrote:
-> I'm stumped trying to track down the below intermittent problem.....
+On Thu, Jun 14, 2007 at 05:33:40PM +0200, Stefan Richter wrote:
+[]
+> [...]
+> > Why you didn't proposed (used) Debian's BTS as alternative to bugzilla,
+> [...]
 > 
-> I've confirmed this problem on 2.6.19, 2.6.20 and 2.6.21.
-> 
-> Any help greatly appreciated!
-> 
-> Regards
-> Nigel
-> 
-> 
-> Jun 14 07:55:52 nigel-m2v kernel: ata2.00: exception Emask 0x0 SAct 0x0
-> SErr 0x0 action 0x2 frozen
-> Jun 14 07:55:52 nigel-m2v kernel: ata2.00: cmd
-> ca/00:18:87:e7:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 12288 out
-> Jun 14 07:55:52 nigel-m2v kernel:          res
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> Jun 14 07:55:52 nigel-m2v kernel: ata2: soft resetting port
-> Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
-> 0x0001c807
-> Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
-> 0x0001c807
-> Jun 14 07:56:22 nigel-m2v kernel: ata2.00: qc timeout (cmd 0xef)
-> Jun 14 07:56:22 nigel-m2v kernel: ata2.00: failed to set xfermode
-> (err_mask=0x4)
+> BTS has been mentioned in that thread in a few posts; mostly positively
+> as I recall.
 
-Try 2.6.22-rc4-gitX...
+I know, that most developers here are not working/familiar with what
+Debian has as its bug shooting weapon ``The system is mainly controlled
+by  e-mail, but the bug reports can be viewed using the WWW.''[0].
 
-	Jeff
+I thought somebody, who familiar with that, might propose to setup/tune
+it, but not doing yet another NIH thing, especially from e-mail
+integration POV. I doubt mozilla guys can think about it without
+javascript and/or java servlets :)
 
-
-
+[0] <http://www.debian.org/Bugs/>
+____
