@@ -1,87 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbXFNIiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbXFNIi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbXFNIiT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 04:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbXFNIiM
+	id S1755067AbXFNIi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 04:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbXFNIit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 04:38:12 -0400
-Received: from ns.firmix.at ([62.141.48.66]:56949 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752459AbXFNIiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 04:38:11 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-In-Reply-To: <ord4zzjm5u.fsf@oliva.athome.lsd.ic.unicamp.br>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	 <alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org>
-	 <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <200706132042.02728.dhazelton@enter.net>
-	 <ord4zzjm5u.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Thu, 14 Jun 2007 04:38:49 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:14303 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751162AbXFNIis (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 04:38:48 -0400
+Subject: Re: [patch 0/3] no MAX_ARG_PAGES -v2
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ollie Wild <aaw@google.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
+       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+In-Reply-To: <65dd6fd50706132323i9c760f4m6e23687914d0c46e@mail.gmail.com>
+References: <20070613100334.635756997@chello.nl>
+	 <617E1C2C70743745A92448908E030B2A01AF860A@scsmsx411.amr.corp.intel.com>
+	 <65dd6fd50706132323i9c760f4m6e23687914d0c46e@mail.gmail.com>
 Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Thu, 14 Jun 2007 10:37:55 +0200
-Message-Id: <1181810275.14938.16.camel@tara.firmix.at>
+Date: Thu, 14 Jun 2007 10:38:39 +0200
+Message-Id: <1181810319.7348.345.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -1.131 () AWL
-X-Firmix-Spam-Status: No, hits=-1.131 required=5
-X-Spam-Score: -1.131 () AWL
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 23:38 -0300, Alexandre Oliva wrote:
-> On Jun 13, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > On Wednesday 13 June 2007 19:49:23 Alexandre Oliva wrote:
+On Wed, 2007-06-13 at 23:23 -0700, Ollie Wild wrote:
+> On 6/13/07, Luck, Tony <tony.luck@intel.com> wrote:
+> > Above 5Mbytes, I started seeing problems.  The line/word/char
+> > counts from "wc" started being "0 0 0".  Not sure if this is
+> > a problem in "wc" dealing with a single line >5MBytes, or some
+> > other problem (possibly I was exceeding the per-process stack
+> > limit which is only 8MB on that machine).
 > 
-> > Exactly. They don't. What TiVO prevents is using that modified version on 
-> > their hardware. And they have that right, because the Hardware *ISN'T* 
-       ^^^^^^^^^^^^^^
-BTW as soon as I bought that thing, it is *my* hardware and no longer
-*theirs* (whoever "theirs" was).
+> Interesting.  If you're exceeding your stack ulimit, you should be
+> seeing either an "argument list too long" message or getting a
+> SIGSEGV.  Have you tried bypassing wc and piping the output straight
+> to a file?
 
-> > covered by the GPL.
-> 
-> Indeed, TiVO has this legal right.  But then they must not use
+I think it sends SIGKILL on failure paths.
 
-Do they? At least in .at, it is usually impossible to (legally) limit
-the rights of the *owner* a (tangible) thing (and if I bought it, I *am*
-the owner and no one else) - even if you put it in the sales contract
-since this is discussion about/within sales law.
+I've been thinking of moving this large stack alloc in
+create_elf_tables() before the point of no return.
 
-One usual example is "you buy a car and neither the car producer nor the
-(re)seller can restrict the brands of the tires you may use or the brand
-of the fuel etc.".
+something like this, it should do the largest part of the alloc
+beforehand. Just have to see if all binfmts need this much, and if not,
+what the ramifications are of overgrowing the stack (perhaps we need to
+shrink it again to wherever bprm->p ends up?)
 
-And the same holds for pretty much everything. No one can forbid you to
-open a TV set and fix it (or let it fix by whoever I choose to).
 
-Yes, there are exceptions in several laws for specific things (e.g. for
-really dangerous ones like airbags in cars) but in general, you are
-allowed to do almost anything (including the simple destruction of it).
-
-And yes, if you *rent* the thing, you are not the owner and this is a
-totally different thing.
-
-> software under the GPLv3 in it.  And, arguably, they must not use
-> software under the GPLv2 either.
-
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+Index: linux-2.6-2/fs/exec.c
+===================================================================
+--- linux-2.6-2.orig/fs/exec.c	2007-06-14 10:29:22.000000000 +0200
++++ linux-2.6-2/fs/exec.c	2007-06-14 10:28:45.000000000 +0200
+@@ -272,6 +272,17 @@ static bool valid_arg_len(struct linux_b
+ 	return len <= MAX_ARG_STRLEN;
+ }
+ 
++static int expand_arg_vma(struct linux_binprm *bprm)
++{
++	long size = (bprm->argc + bprm->envc + 2) * sizeof(void *);
++
++#ifdef CONFIG_STACK_GROWSUP
++#error I broke it
++#else
++	return expand_stack(bprm->vma, bprm->p - size);
++#endif
++}
++
+ #else
+ 
+ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
+@@ -326,6 +337,11 @@ static bool valid_arg_len(struct linux_b
+ 	return len <= bprm->p;
+ }
+ 
++static int expand_arg_vma(struct linux_binprm *bprm)
++{
++	return 0;
++}
++
+ #endif /* CONFIG_MMU */
+ 
+ /*
+@@ -1385,6 +1401,10 @@ int do_execve(char * filename,
+ 		goto out;
+ 	bprm->argv_len = env_p - bprm->p;
+ 
++	retval = expand_arg_vma(bprm);
++	if (retval < 0)
++		goto out;
++
+ 	retval = search_binary_handler(bprm,regs);
+ 	if (retval >= 0) {
+ 		/* execve success */
 
 
