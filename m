@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbXFNVTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXFNVTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbXFNVTD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXFNVSx
+	id S1755259AbXFNVTX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbXFNVTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:18:53 -0400
-Received: from outbound-mail-35.bluehost.com ([69.89.18.155]:35781 "HELO
-	outbound-mail-35.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752113AbXFNVSw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:18:52 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Date: Thu, 14 Jun 2007 14:18:41 -0700
-User-Agent: KMail/1.9.6
-Cc: Pim Zandbergen <P.Zandbergen@macroscoop.nl>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200706071530.51552.jesse.barnes@intel.com> <4671992D.7060400@macroscoop.nl> <Pine.LNX.4.64.0706141625260.26236@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0706141625260.26236@p34.internal.lan>
+	Thu, 14 Jun 2007 17:19:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33958 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754582AbXFNVTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 17:19:03 -0400
+Date: Thu, 14 Jun 2007 23:18:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: malc <av1474@comtv.ru>
+Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] sched: accurate user accounting
+Message-ID: <20070614211828.GA21243@elte.hu>
+References: <200703251159.03616.kernel@kolivas.org> <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru> <200703260901.54943.kernel@kolivas.org> <200703260957.34798.kernel@kolivas.org> <Pine.LNX.4.64.0703261439270.2621@linmac.oyster.ru> <20070328113743.GA5615@elte.hu> <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru> <20070614204253.GA14076@elte.hu> <Pine.LNX.4.64.0706150052190.3404@linmac.oyster.ru>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706141418.42082.jbarnes@virtuousgeek.org>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <Pine.LNX.4.64.0706150052190.3404@linmac.oyster.ru>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, June 14, 2007 1:26:07 Justin Piszcz wrote:
-> On Thu, 14 Jun 2007, Pim Zandbergen wrote:
-> > Thanks for this patch. I was having the exact same symptoms as
-> > Justin Piszcz, on a different, but similar motherboard:
-> >
-> > Motherboard: GigaByte GA-G33-DS3R
-> > BIOS rev: F2
-> > Chipset: Intel G33
-> > Memory: 8GB
-> > Distro: Fedora 7 x86_64
-> > Kernel: kernel-2.6.21-1.3194.fc7
-> >
-> > Building vanilla 2.6.22-rc4 with your patch solved the problem.
-> >
-> > I'm now seeing this in the syslog
-> >
-> > ***************
-> > **** WARNING: likely BIOS bug
-> > **** MTRRs don't cover all of memory, trimmed 196608 pages
-> > ***************
-> >
-> > leaving me 7416672 kB of usable memory.
-> >
-> > If there's any way I can help with more info or testing,
-> > then let me know.
-> >
-> > Thanks,
-> > Pim
 
-Thanks for testing, Pim.  Glad it works for you.  Keep an eye out for 
-BIOS upgrades, the next version might fix it.
+* malc <av1474@comtv.ru> wrote:
 
-> That's strange, I guess different chipsets 'chew' up different
-> amounts of memory OR you have your DVT(?) (video-card
-> memory/aperature) set to 256MB? I have mine set to 128MB, in top:
->
-> Mem:   8039576k total,  6187304k used,  1852272k free,      696k
-> buffers
->
-> What type of memory are you using and what is your DVT set to?
+> > the alternating balancing might be due to an uneven number of tasks 
+> > perhaps? If you have 3 tasks on 2 cores then there's no other 
+> > solution to achieve even performance of each task but to rotate them 
+> > amongst the cores.
+> 
+> One task, one thread. I have also tried to watch fairly demanding 
+> video (Elephants Dream in 1920x1080/MPEG4) with mplayer, and CFS moves 
+> the only task between cores almost every second.
 
-Different BIOSes will map things differently, so I'd expect differences 
-in the "trimmmed xxx pages" message across machines.  But yeah, BIOS 
-config options can also affect things, in particular I've heard that 
-the fan control options change MTRR setup significantly.
+hm, mplayer is not running alone when it does video playback: Xorg is 
+also pretty active. Furthermore, the task you are using to monitor 
+mplayer counts too. The Core2Duo has a shared L2 cache between cores, so 
+it is pretty cheap to move tasks between the cores.
 
-Jesse
+> > well, precise/finegrained accounting patches have been available for 
+> > years, the thing with CFS is that there we get them 'for free', 
+> > because CFS needs those metrics for its own logic. That's why this 
+> > information is much closer to reality now. But note: right now what 
+> > is affected by the changes in the CFS patches is /proc/PID/stat 
+> > (i.e. the per-task information that 'top' and 'ps' displays, _not_ 
+> > /proc/stat) - but more accurate /proc/stat could certainly come 
+> > later on too.
+> 
+> Aha. I see, it's just that integral load for hog is vastly improved 
+> compared to vanilla 2.6.21 [...]
+
+hm, which ones are improved? Could this be due to some other property of 
+CFS? If your app relies on /proc/stat then there's no extra precision in 
+those cpustat values yet.
+
+i've Cc:-ed Balbir Singh and Dmitry Adamushko who are the main authors 
+of the current precise accounting code in CFS. Maybe i missed some 
+detail :-)
+
+	Ingo
