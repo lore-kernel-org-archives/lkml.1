@@ -1,88 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbXFNWKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbXFNWK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752813AbXFNWKE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:10:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbXFNWJG
+	id S1754131AbXFNWK3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXFNWJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:09:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36442 "EHLO
+	Thu, 14 Jun 2007 18:09:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36448 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752207AbXFNWJF (ORCPT
+	with ESMTP id S1752400AbXFNWJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:09:05 -0400
-Message-Id: <20070614220446.724626895@chello.nl>
+	Thu, 14 Jun 2007 18:09:06 -0400
+Message-Id: <20070614220446.614501106@chello.nl>
 References: <20070614215817.389524447@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Jun 2007 23:58:23 +0200
+Date: Thu, 14 Jun 2007 23:58:21 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, andrea@suse.de
-Subject: [PATCH 06/17] lib: percpu_counter_init_irq
-Content-Disposition: inline; filename=percpu_counter_init_irq.patch
+Subject: [PATCH 04/17] lib: percpu_counter_set
+Content-Disposition: inline; filename=percpu_counter_set.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-provide a way to init percpu_counters that are supposed to be used from irq
-safe contexts.
+Provide a method to set a percpu counter to a specified value.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/percpu_counter.h |    4 ++++
- lib/percpu_counter.c           |    8 ++++++++
- 2 files changed, 12 insertions(+)
+ include/linux/percpu_counter.h |    6 ++++++
+ lib/percpu_counter.c           |   13 +++++++++++++
+ 2 files changed, 19 insertions(+)
 
 Index: linux-2.6/include/linux/percpu_counter.h
 ===================================================================
---- linux-2.6.orig/include/linux/percpu_counter.h
-+++ linux-2.6/include/linux/percpu_counter.h
-@@ -31,6 +31,8 @@ struct percpu_counter {
- #endif
+--- linux-2.6.orig/include/linux/percpu_counter.h	2007-05-23 20:37:41.000000000 +0200
++++ linux-2.6/include/linux/percpu_counter.h	2007-05-23 20:37:54.000000000 +0200
+@@ -32,6 +32,7 @@ struct percpu_counter {
  
  void percpu_counter_init(struct percpu_counter *fbc, s64 amount);
-+void percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
-+
  void percpu_counter_destroy(struct percpu_counter *fbc);
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
++void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
  void __percpu_counter_mod(struct percpu_counter *fbc, s32 amount, s32 batch);
-@@ -89,6 +91,8 @@ static inline void percpu_counter_init(s
- 	fbc->count = amount;
- }
- 
-+#define percpu_counter_init_irq percpu_counter_init
-+
- static inline void percpu_counter_destroy(struct percpu_counter *fbc)
+ void __percpu_counter_mod64(struct percpu_counter *fbc, s64 amount, s32 batch);
+ s64 percpu_counter_sum(struct percpu_counter *fbc);
+@@ -81,6 +82,11 @@ static inline void percpu_counter_destro
  {
  }
-Index: linux-2.6/lib/percpu_counter.c
-===================================================================
---- linux-2.6.orig/lib/percpu_counter.c
-+++ linux-2.6/lib/percpu_counter.c
-@@ -87,6 +87,8 @@ s64 __percpu_counter_sum(struct percpu_c
- }
- EXPORT_SYMBOL(__percpu_counter_sum);
  
-+static struct lock_class_key percpu_counter_irqsafe;
-+
- void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- {
- 	spin_lock_init(&fbc->lock);
-@@ -100,6 +102,12 @@ void percpu_counter_init(struct percpu_c
- }
- EXPORT_SYMBOL(percpu_counter_init);
- 
-+void percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount)
++static inline void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
 +{
-+	percpu_counter_init(fbc, amount);
-+	lockdep_set_class(&fbc->lock, &percpu_counter_irqsafe);
++	fbc->count = amount;
 +}
 +
- void percpu_counter_destroy(struct percpu_counter *fbc)
+ #define __percpu_counter_mod(fbc, amount, batch) \
+ 	percpu_counter_mod(fbc, amount)
+ 
+Index: linux-2.6/lib/percpu_counter.c
+===================================================================
+--- linux-2.6.orig/lib/percpu_counter.c	2007-05-23 20:37:34.000000000 +0200
++++ linux-2.6/lib/percpu_counter.c	2007-05-23 20:38:03.000000000 +0200
+@@ -14,6 +14,19 @@ static LIST_HEAD(percpu_counters);
+ static DEFINE_MUTEX(percpu_counters_lock);
+ #endif
+ 
++void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
++{
++	int cpu;
++
++	spin_lock(&fbc->lock);
++	for_each_possible_cpu(cpu) {
++		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
++		*pcount = 0;
++	}
++	fbc->count = amount;
++	spin_unlock(&fbc->lock);
++}
++
+ void __percpu_counter_mod(struct percpu_counter *fbc, s32 amount, s32 batch)
  {
- 	free_percpu(fbc->counters);
+ 	long count;
 
 -- 
 
