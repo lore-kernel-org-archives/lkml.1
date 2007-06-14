@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbXFNTnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbXFNToE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbXFNTnq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbXFNTlG
+	id S1756060AbXFNToE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbXFNTlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:41:06 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55605 "EHLO
+	Thu, 14 Jun 2007 15:41:07 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50447 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753546AbXFNTkz (ORCPT
+	with ESMTP id S1753557AbXFNTkz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Jun 2007 15:40:55 -0400
-Message-Id: <20070614194054.533466805@sgi.com>
+Message-Id: <20070614194054.788180082@sgi.com>
 References: <20070614193839.878721298@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Jun 2007 12:38:48 -0700
+Date: Thu, 14 Jun 2007 12:38:49 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: [patch 09/14] Use page_cache_xx in fs/libfs.c
-Content-Disposition: inline; filename=vps_fs_libfs
+Subject: [patch 10/14] Use page_cache_xx in fs/sync.
+Content-Disposition: inline; filename=vps_fs_sync
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- fs/libfs.c |   18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ fs/sync.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Index: vps/fs/libfs.c
+Index: vps/fs/sync.c
 ===================================================================
---- vps.orig/fs/libfs.c	2007-06-11 21:39:09.000000000 -0700
-+++ vps/fs/libfs.c	2007-06-11 22:08:13.000000000 -0700
-@@ -16,7 +16,8 @@ int simple_getattr(struct vfsmount *mnt,
- {
- 	struct inode *inode = dentry->d_inode;
- 	generic_fillattr(inode, stat);
--	stat->blocks = inode->i_mapping->nrpages << (PAGE_CACHE_SHIFT - 9);
-+	stat->blocks = inode->i_mapping->nrpages <<
-+				(page_cache_shift(inode->i_mapping) - 9);
- 	return 0;
- }
- 
-@@ -340,10 +341,10 @@ int simple_prepare_write(struct file *fi
- 			unsigned from, unsigned to)
- {
- 	if (!PageUptodate(page)) {
--		if (to - from != PAGE_CACHE_SIZE)
-+		if (to - from != page_cache_size(file->f_mapping))
- 			zero_user_segments(page,
- 				0, from,
--				to, PAGE_CACHE_SIZE);
-+				to, page_cache_size(file->f_mapping));
+--- vps.orig/fs/sync.c	2007-06-04 17:57:25.000000000 -0700
++++ vps/fs/sync.c	2007-06-09 21:17:45.000000000 -0700
+@@ -252,8 +252,8 @@ int do_sync_mapping_range(struct address
+ 	ret = 0;
+ 	if (flags & SYNC_FILE_RANGE_WAIT_BEFORE) {
+ 		ret = wait_on_page_writeback_range(mapping,
+-					offset >> PAGE_CACHE_SHIFT,
+-					endbyte >> PAGE_CACHE_SHIFT);
++					page_cache_index(mapping, offset),
++					page_cache_index(mapping, endbyte));
+ 		if (ret < 0)
+ 			goto out;
  	}
- 	return 0;
- }
-@@ -356,8 +357,8 @@ int simple_write_begin(struct file *file
- 	pgoff_t index;
- 	unsigned from;
+@@ -267,8 +267,8 @@ int do_sync_mapping_range(struct address
  
--	index = pos >> PAGE_CACHE_SHIFT;
--	from = pos & (PAGE_CACHE_SIZE - 1);
-+	index = page_cache_index(mapping, pos);
-+	from = page_cache_offset(mapping, pos);
- 
- 	page = __grab_cache_page(mapping, index);
- 	if (!page)
-@@ -371,8 +372,9 @@ int simple_write_begin(struct file *file
- int simple_commit_write(struct file *file, struct page *page,
- 			unsigned from, unsigned to)
- {
--	struct inode *inode = page->mapping->host;
--	loff_t pos = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
-+	struct address_space *mapping = page->mapping;
-+	struct inode *inode = mapping->host;
-+	loff_t pos = page_cache_pos(mapping, page->index, to);
- 
- 	if (!PageUptodate(page))
- 		SetPageUptodate(page);
-@@ -390,7 +392,7 @@ int simple_write_end(struct file *file, 
- 			loff_t pos, unsigned len, unsigned copied,
- 			struct page *page, void *fsdata)
- {
--	unsigned from = pos & (PAGE_CACHE_SIZE - 1);
-+	unsigned from = page_cache_offset(mapping, pos);
- 
- 	/* zero the stale part of the page if we did a short copy */
- 	if (copied < len)
+ 	if (flags & SYNC_FILE_RANGE_WAIT_AFTER) {
+ 		ret = wait_on_page_writeback_range(mapping,
+-					offset >> PAGE_CACHE_SHIFT,
+-					endbyte >> PAGE_CACHE_SHIFT);
++					page_cache_index(mapping, offset),
++					page_cache_index(mapping, endbyte));
+ 	}
+ out:
+ 	return ret;
 
 -- 
