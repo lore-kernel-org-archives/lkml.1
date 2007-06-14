@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbXFNWuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756455AbXFNWvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758058AbXFNWuE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbXFNWtq
+	id S1756455AbXFNWvg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbXFNWv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:49:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51448 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756385AbXFNWtp (ORCPT
+	Thu, 14 Jun 2007 18:51:27 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40634 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752170AbXFNWv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:49:45 -0400
-Date: Thu, 14 Jun 2007 15:49:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
- Blocksize support
-Message-Id: <20070614154939.c94b097f.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706141517120.2240@schroedinger.engr.sgi.com>
-References: <20070614193839.878721298@sgi.com>
-	<20070614130645.cabdff1b.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
-	<20070614143248.736312f8.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706141436030.1797@schroedinger.engr.sgi.com>
-	<20070614150417.c73fb6b9.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706141517120.2240@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	Thu, 14 Jun 2007 18:51:27 -0400
+Date: Thu, 14 Jun 2007 23:56:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070614235619.70930516@the-village.bc.nu>
+In-Reply-To: <200706141836.30119.dhazelton@enter.net>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<20070614183145.GJ10008@csclub.uwaterloo.ca>
+	<alpine.LFD.0.98.0706141149100.14121@woody.linux-foundation.org>
+	<200706141836.30119.dhazelton@enter.net>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 14 Jun 2007 15:22:46 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
-> On Thu, 14 Jun 2007, Andrew Morton wrote:
-> 
-> > With 64k pagesize the amount of memory required to hold a kernel tree (say)
-> > will go from 270MB to 1400MB.   This is not an optimisation.
-> 
-> I do not think that the 100% users will do kernel compiles all day like 
-> we do. We likely would prefer 4k page size for our small text files.
+> A hundred or so messages back someone stated that the parport driver in Linux 
+> is GPLv1.1 - however, on checking on this statement for myself I've found 
+> that there is no statement about it being v1.1 and, in fact, given that Linux 
+> itself is GPLv2 there is no possible way any code covered by GPLv1.1 can 
+> exist.
 
-There are many, many applications which use small files.
+Wrong again.
 
-> > Several 64k pagesize people have already spent time looking at various
-> > tail-packing schemes to get around this serious problem.  And that's on
-> > _server_ class machines.  Large ones.  I don't think
-> > laptop/desktop/samll-server machines would want to go anywhere near this.
-> 
-> I never understood the point of that exercise. If you have variable page 
-> size then the 64k page size can be used specific to files that benefit 
-> from it. Typically usage scenarios are video audio streaming I/O, large 
-> picture files, large documents with embedded images. These are the major
-> usage scenarioes today and we suck the. Our DVD/CD subsystems are 
-> currently not capable of directly reading from these devices into the page 
-> cache since they do not do I/O in 4k chunks.
+If a piece of code was merged into the kernel with a GPL v1 "or later"
+license then it still has a GPL v1 "or later" license.  The "or later"
+makes it compatible with the v2 code but does not change the fundamental
+copyright on the original work that was combined. Thus if you could
+identify specifically a GPL v1 work within the kernel you could use that
+GPL v1 work as per GPL v1 providing you didn't mix it with v2 code.
 
-So with sufficient magical kernel heuristics or operator intervention, some
-people will gain some benefit from 64k pagesize.  Most people with most
-workloads will remain where they are: shoving zillions of physically
-discontiguous pages into fixed-size sg lists.
+If I take a public domain book and create a derivative work from it the
+original work does not magically become restricted.
 
-Whereas with contig-pagecache, all users on all machines with all workloads
-will benefit from the improved merging.
-
-> > > fsck times etc etc are becoming an issue for desktop 
-> > > systems
-> > 
-> > I don't see what fsck has to do with it.
-> > 
-> > fsck is single-threaded (hence no locking issues) and operates against the
-> > blockdev pagecache and does a _lot_ of small reads (indirect blocks,
-> > especially).  If the memory consumption for each 4k read jumps to 64k, fsck
-> > is likely to slow down due to performing a lot more additional IO and due
-> > to entering page reclaim much earlier.
-> 
-> Every 64k block contains more information and the number of pages managed
-> is reduced by a factor of 16. Less seeks , less tlb pressure , less reads, 
-> more cpu cache and cpu cache prefetch friendly behavior.
-
-argh.  Everything you say is just wrong.  A fsck involves zillions of
-discontiguous small reads.  It is largely seek-bound, so there is no
-benefit to be had here.  Your proposed change will introduce regressions by
-causing larger amounts of physical reading and large amounts of memory
-consumption.
-
-
+Alan
