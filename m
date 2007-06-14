@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbXFNMIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbXFNMNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700AbXFNMIR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 08:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbXFNMH7
+	id S1752177AbXFNMNq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 08:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXFNMNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 08:07:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50947 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752467AbXFNMH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 08:07:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stefan Seyfried <seife@suse.de>
-Subject: Re: [PATCH, 2nd try] make disable_console_suspend runtime configurable
-Date: Thu, 14 Jun 2007 14:14:21 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Frank Seidel <fseidel@suse.de>, akpm@linux-foundation.org,
-       nigel@nigel.suspend2.net
-References: <20070613200303.GB11437@suse.de> <20070613220800.GD2611@elf.ucw.cz> <20070613222308.GA17266@suse.de>
-In-Reply-To: <20070613222308.GA17266@suse.de>
+	Thu, 14 Jun 2007 08:13:39 -0400
+Received: from styx.suse.cz ([82.119.242.94]:55874 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750886AbXFNMNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 08:13:38 -0400
+Date: Thu, 14 Jun 2007 14:26:39 +0200
+From: Jan Kara <jack@suse.cz>
+To: holzheu <holzheu@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       "lf_kernel_messages@linux-foundation.org" 
+	<lf_kernel_messages@linux-foundation.org>
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+Message-ID: <20070614122639.GI13141@duck.suse.cz>
+References: <1181747217.29512.9.camel@localhost.localdomain> <20070613111549.db1fa4d9.akpm@linux-foundation.org> <20070614094128.GF17819@atrey.karlin.mff.cuni.cz> <1181817533.10064.18.camel@localhost.localdomain> <1181821661.10064.27.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706141414.22152.rjw@sisk.pl>
+In-Reply-To: <1181821661.10064.27.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 14 June 2007 00:23, Stefan Seyfried wrote:
-> On Thu, Jun 14, 2007 at 12:08:00AM +0200, Pavel Machek wrote:
-> > Hi!
+On Thu 14-06-07 13:47:41, holzheu wrote:
+> On Thu, 2007-06-14 at 12:38 +0200, holzheu wrote:
+> > On Thu, 2007-06-14 at 11:41 +0200, Jan Kara wrote:
+> > >   <snip>
+> > > 
+> > > > Your proposal is similar to one I made to some Japanese developers
+> > > > earlier this year.  I was more modest, proposing that we
+> > > > 
+> > > > - add an enhanced printk
+> > > > 
+> > > > 	xxprintk(msgid, KERN_ERR "some text %d\n", some_number);
+> > >   Maybe a stupid idea but why do we want to assign these numbers by hand?
+> > > I can imagine it could introduce collisions when merging tons of patches
+> > > with new messages... Wouldn't it be better to compute say, 8-byte hash
+> > > from the message and use it as it's identifier? We could do this
+> > > automagically at compile time.
 > > 
-> > > I hate having to recompile the kernel, just to be able to debug suspend.
-> > > Remove CONFIG_DISABLE_CONSOLE_SUSPEND, replace it by a tunable in
-> > > /sys/power/disable_console_suspend.
+> > Of course automatically generated message numbers would be great and
+> > something like:
 > > 
-> > > Signed-off-by: Stefan Seyfried <seife@suse.de>
-> > > Signed-off-by: Frank Seidel <fseidel@suse.de>
-> > 
-> > I wonder if there's a better name?
+> > hub.4a5bcd77: Detected some problem.
 > 
-> Suggest one.
+> Sorry, I first read: 8 characters not 8 bytes.
+> 
+> Indeed, "hub.d41d8cd98f00b204: Detected some problem." ... does not look
+> like very beautiful.
+> 
+> But maybe also 4 bytes would be enough, since the hash only has to be
+> unique within one component e.g. "hub".
+  It depends how large components you expect. For example for 10000
+messages there is already 1% probability of collision so it means sooner or
+later we are going to hit it... For 1000 messages the probability is
+roughly 0.1% which is still not so small that I'd be comfortable with it.
+On the other hand we could use something like gperf to generate perfect
+hashing function and then we don't have to worry about colisions.
 
-Hmm, you could call it 'console_suspend' with
-'echo disabled > /sys/power/console_suspend' for switching that off
-(and analogously with 'enabled') and with 'cat /sys/power/console_suspend'
-printing the current status.
-
-Greetings,
-Rafael
-
-
+									Honza
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
