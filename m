@@ -1,115 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbXFNJTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbXFNJW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbXFNJTO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 05:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbXFNJTA
+	id S1752839AbXFNJW2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 05:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbXFNJWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 05:19:00 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49997 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750932AbXFNJS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 05:18:59 -0400
-X-Authenticated: #153925
-X-Provags-ID: V01U2FsdGVkX19Mq2YFlIxM33lqB9Vcnc0HQkaR6O1OmMuPZDsmMO
-	+Ji9ws07jRqR0w
-From: Bernd Paysan <bernd.paysan@gmx.de>
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 11:18:53 +0200
-User-Agent: KMail/1.9.5
-Cc: Alexandre Oliva <aoliva@redhat.com>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <orfy4vhyni.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614073232.GB22543@linux-sh.org>
-In-Reply-To: <20070614073232.GB22543@linux-sh.org>
+	Thu, 14 Jun 2007 05:22:18 -0400
+Received: from ms2.nttdata.co.jp ([163.135.193.237]:42243 "EHLO
+	ms2.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbXFNJWQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 05:22:16 -0400
+Message-ID: <4670EF68.8090209@nttdata.co.jp>
+Date: Thu, 14 Jun 2007 16:34:00 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart13772364.Nr1BCSDoFa";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: [TOMOYO 3/9] Data structures and prototypes definition.
+References: <5fb14edc0706140030x4a906178ofd35df06dfa5c192@mail.gmail.com>
+In-Reply-To: <5fb14edc0706140030x4a906178ofd35df06dfa5c192@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706141118.55175.bernd.paysan@gmx.de>
-X-Y-GMX-Trusted: 0
+X-OriginalArrivalTime: 14 Jun 2007 07:34:00.0729 (UTC) FILETIME=[602C6090:01C7AE56]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart13772364.Nr1BCSDoFa
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This is prototypes and structures definition.
 
-On Thursday 14 June 2007 09:32, Paul Mundt wrote:
-> This is perhaps the part that's the most interesting. For the very small
-> number of people that _do_ want to change these things (usually at the
-> expense of a voided warranty, in the consumer device case), there's
-> always a way to make these changes, even if you must resort to hardware
-> hacking. Trying to mandate this sort of functionality in the license
-> might make it easier for a few people to get their code loaded, but the
-> vast majority of users have zero interest in anything like this.
+Many of structures are single-linked list and memory allocated for them are never freed,
+because entries used for access control needn't to be removed from the list so frequently
+compared to general other entries in the kernel. This saves the amount of memory needed by TOMOYO.
 
-I don't feel this is a very conclusive argument.
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 
-How many computer users do want to change their OS? I mean not only want to=
-=20
-change the OS in the sense of "apply patches released by Microsoft", but on=
-=20
-their own? Many typical computer users ask for help to "fix their computer"=
-=20
-when turning it off and on again already "fixes it". They would never ever=
-=20
-change the source code of their OS even if they technically could do it -=20
-they are not programmers.
+---------------
+ security/tomoyo/include/tomoyo.h |  319 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 319 insertions(+)
 
-However, if there is the technical possibility to change the firmware of an=
-=20
-appliance, somebody does it, and often mere users upload these changes to=20
-their own device (like the OpenWRT stuff).
+diff -ubBpErN linux-2.6.21.5/security/tomoyo/include/tomoyo.h linux-2.6.21.5-tomoyo/security/tomoyo/include/tomoyo.h
+--- linux-2.6.21.5/security/tomoyo/include/tomoyo.h	1970-01-01 09:00:00.000000000 +0900
++++ linux-2.6.21.5-tomoyo/security/tomoyo/include/tomoyo.h	2007-06-05 00:00:00.000000000 +0900
+@@ -0,0 +1,319 @@
++/*
++ * security/tomoyo/include/tomoyo.h
++ *
++ * Implementation of the Domain-Based Mandatory Access Control.
++ *
++ * Copyright (C) 2005-2007  NTT DATA CORPORATION
++ *
++ * Version: 2.0   2007/06/05
++ *
++ */
++#ifndef _TOMOYO_H
++#define _TOMOYO_H
++
++#include <linux/string.h>
++#include <linux/mm.h>
++#include <linux/utime.h>
++#include <linux/file.h>
++#include <linux/smp_lock.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/poll.h>
++#include <asm/uaccess.h>
++#include <stdarg.h>
++#include <linux/delay.h>
++
++/***** TOMOYO Linux start. *****/
++
++struct tomoyo_security {
++	struct domain_info *domain_info;
++	u32 flags;
++};
++
++struct path_info {
++	const char *name;
++	u32 hash;        /* = full_name_hash(name, strlen(name)) */
++	u16 total_len;   /* = strlen(name)                       */
++	u16 const_len;   /* = tomoyo_const_part_length(name)            */
++	u8 is_dir;       /* = tomoyo_strendswith(name, "/")             */
++	u8 is_patterned; /* = PathContainsPattern(name)          */
++	u16 depth;       /* = tomoyo_path_depth(name)                    */
++};
++
++#define TOMOYO_MAX_PATHNAME_LEN 4000
++
++struct group_member {
++	struct group_member *next;
++	const struct path_info *member_name;
++	int is_deleted;
++};
++
++struct group_entry {
++	struct group_entry *next;
++	const struct path_info *group_name;
++	struct group_member *first_member;
++};
++
++/*
++ *  TOMOYO uses the following structures.
++ *  Memory allocated for these structures are never kfree()ed.
++ *  Since no locks are used for reading, assignment must be performed atomically.
++ */
++
++/*************************  The structure for domains.  *************************/
++
++struct acl_info {
++	struct acl_info *next;
++	u8 type;
++	u8 is_deleted;
++	union {
++		u16 w;
++		u8 b[2];
++	} u;
++};
++
++struct domain_info {
++	struct domain_info *next;           /* Pointer to next record. NULL if none. */
++	struct acl_info *first_acl_ptr;     /* Pointer to first acl. NULL if none.   */
++	const struct path_info *domainname; /* Name of this domain. Never NULL.      */
++	u8 profile;                         /* Profile to use.                       */
++	u8 is_deleted;                      /* Delete flag.                          */
++	u8 quota_warned;                    /* Quota warnning done flag.             */
++};
++
++#define TOMOYO_MAX_PROFILES 256
++
++struct file_acl_record {
++	struct acl_info head; /* type = TOMOYO_TYPE_FILE_ACL, b[0] = perm, b[1] = u_is_group */
++	union {
++		const struct path_info *filename;   /* Pointer to single pathname. */
++		const struct group_entry *group;    /* Pointer to pathname group.  */
++	} u;
++};
++
++struct single_acl_record {
++	struct acl_info head;                 /* type = TOMOYO_TYPE_*, w = u_is_group */
++	union {
++		const struct path_info *filename; /* Pointer to single pathname. */
++		const struct group_entry *group;  /* Pointer to pathname group.  */
++	} u;
++};
++
++struct double_acl_record {
++	/* type = TOMOYO_TYPE_RENAME_ACL or TOMOYO_TYPE_LINK_ACL, */
++	/* b[0] = u1_is_group, b[1] = u2_is_group */
++	struct acl_info head;
++	union {
++		const struct path_info *filename1;  /* Pointer to single pathname. */
++		const struct group_entry *group1;   /* Pointer to pathname group.  */
++	} u1;
++	union {
++		const struct path_info *filename2;  /* Pointer to single pathname. */
++		const struct group_entry *group2;   /* Pointer to pathname group.  */
++	} u2;
++};
++
++/*************************  Keywords for ACLs.  *************************/
++
++#define TOMOYO_KEYWORD_AGGREGATOR               "aggregator "
++#define TOMOYO_KEYWORD_AGGREGATOR_LEN           (sizeof(TOMOYO_KEYWORD_AGGREGATOR) - 1)
++#define TOMOYO_KEYWORD_ALIAS                    "alias "
++#define TOMOYO_KEYWORD_ALIAS_LEN                (sizeof(TOMOYO_KEYWORD_ALIAS) - 1)
++#define TOMOYO_KEYWORD_ALLOW_READ               "allow_read "
++#define TOMOYO_KEYWORD_ALLOW_READ_LEN           (sizeof(TOMOYO_KEYWORD_ALLOW_READ) - 1)
++#define TOMOYO_KEYWORD_DELETE                   "delete "
++#define TOMOYO_KEYWORD_DELETE_LEN               (sizeof(TOMOYO_KEYWORD_DELETE) - 1)
++#define TOMOYO_KEYWORD_DENY_REWRITE             "deny_rewrite "
++#define TOMOYO_KEYWORD_DENY_REWRITE_LEN         (sizeof(TOMOYO_KEYWORD_DENY_REWRITE) - 1)
++#define TOMOYO_KEYWORD_FILE_PATTERN             "file_pattern "
++#define TOMOYO_KEYWORD_FILE_PATTERN_LEN         (sizeof(TOMOYO_KEYWORD_FILE_PATTERN) - 1)
++#define TOMOYO_KEYWORD_INITIALIZER              "initializer "
++#define TOMOYO_KEYWORD_INITIALIZER_LEN          (sizeof(TOMOYO_KEYWORD_INITIALIZER) - 1)
++#define TOMOYO_KEYWORD_INITIALIZE_DOMAIN        "initialize_domain "
++#define TOMOYO_KEYWORD_INITIALIZE_DOMAIN_LEN    (sizeof(TOMOYO_KEYWORD_INITIALIZE_DOMAIN) - 1)
++#define TOMOYO_KEYWORD_KEEP_DOMAIN              "keep_domain "
++#define TOMOYO_KEYWORD_KEEP_DOMAIN_LEN          (sizeof(TOMOYO_KEYWORD_KEEP_DOMAIN) - 1)
++#define TOMOYO_KEYWORD_NO_INITIALIZER           "no_initializer "
++#define TOMOYO_KEYWORD_NO_INITIALIZER_LEN       (sizeof(TOMOYO_KEYWORD_NO_INITIALIZER) - 1)
++#define TOMOYO_KEYWORD_NO_INITIALIZE_DOMAIN     "no_initialize_domain "
++#define TOMOYO_KEYWORD_NO_INITIALIZE_DOMAIN_LEN (sizeof(TOMOYO_KEYWORD_NO_INITIALIZE_DOMAIN) - 1)
++#define TOMOYO_KEYWORD_NO_KEEP_DOMAIN           "no_keep_domain "
++#define TOMOYO_KEYWORD_NO_KEEP_DOMAIN_LEN       (sizeof(TOMOYO_KEYWORD_NO_KEEP_DOMAIN) - 1)
++#define TOMOYO_KEYWORD_PATH_GROUP               "path_group "
++#define TOMOYO_KEYWORD_PATH_GROUP_LEN           (sizeof(TOMOYO_KEYWORD_PATH_GROUP) - 1)
++#define TOMOYO_KEYWORD_SELECT                   "select "
++#define TOMOYO_KEYWORD_SELECT_LEN               (sizeof(TOMOYO_KEYWORD_SELECT) - 1)
++#define TOMOYO_KEYWORD_UNDELETE                 "undelete "
++#define TOMOYO_KEYWORD_UNDELETE_LEN             (sizeof(TOMOYO_KEYWORD_UNDELETE) - 1)
++
++#define TOMOYO_KEYWORD_USE_PROFILE              "use_profile "
++
++#define TOMOYO_ROOT_NAME "<kernel>"             /* A domain definition starts with <kernel> . */
++#define TOMOYO_ROOT_NAME_LEN (sizeof(TOMOYO_ROOT_NAME) - 1)
++
++/*************************  Index numbers for Access Controls.  *************************/
++
++#define TOMOYO_PROFILE_COMMENT                      0  /* status.txt             */
++#define TOMOYO_MAC_FOR_FILE                  1  /* domain_policy.txt      */
++#define TOMOYO_MAX_ACCEPT_ENTRY              2
++#define TOMOYO_VERBOSE                       3
++#define TOMOYO_ALLOW_ENFORCE_GRACE                  4
++#define TOMOYO_MAX_CONTROL_INDEX                    5
++
++/*************************  Index numbers for updates counter.  *************************/
++
++#define TOMOYO_UPDATES_COUNTER_DOMAIN_POLICY    1
++#define TOMOYO_UPDATES_COUNTER_EXCEPTION_POLICY 2
++#define TOMOYO_UPDATES_COUNTER_STATUS           3
++#define TOMOYO_UPDATES_COUNTER_QUERY            4
++#define TOMOYO_UPDATES_COUNTER_MANAGER          5
++#define TOMOYO_MAX_UPDATES_COUNTER              6
++
++/*************************  Indexes for /proc interfaces.  *************************/
++
++#define TOMOYO_POLICY_DOMAINPOLICY          0
++#define TOMOYO_POLICY_EXCEPTIONPOLICY       1
++#define TOMOYO_POLICY_DOMAIN_STATUS         2
++#define TOMOYO_INFO_PROCESS_STATUS          3
++#define TOMOYO_INFO_MEMINFO                 4
++#define TOMOYO_INFO_SELFDOMAIN              5
++#define TOMOYO_INFO_MAPPING                 6
++#define TOMOYO_STATUS                       7
++#define TOMOYO_POLICY_QUERY                 8
++#define TOMOYO_POLICY_MANAGER               9
++#define TOMOYO_INFO_UPDATESCOUNTER         10
++
++/*************************  The structure for /proc interfaces.  *************************/
++
++struct io_buffer {
++	int (*read) (struct io_buffer *);
++	struct semaphore read_sem;
++	int (*write) (struct io_buffer *);
++	struct semaphore write_sem;
++	int (*poll) (struct file *file, poll_table *wait);
++	void *read_var1;                  /* The position currently reading from. */
++	void *read_var2;                  /* Extra variables for reading.         */
++	struct domain_info *write_var1;   /* The position currently writing to.   */
++	int read_step;                    /* The step for reading.                */
++	char *read_buf;                   /* Buffer for reading.                  */
++	int read_eof;                     /* EOF flag for reading.                */
++	int read_avail;                   /* Bytes available for reading.         */
++	int readbuf_size;                 /* Size of read buffer.                 */
++	char *write_buf;                  /* Buffer for writing.                  */
++	int write_avail;                  /* Bytes available for writing.         */
++	int writebuf_size;                /* Size of write buffer.                */
++};
++
++/*************************  PROTOTYPES  *************************/
++
++char *tomoyo_init_audit_log(int *len);
++const char *tomoyo_get_exe(void);
++const char *tomoyo_get_last_name(const struct domain_info *domain);
++const char *tomoyo_get_msg(const int is_enforce);
++const char *tomoyo_acltype2keyword(const unsigned int acl_type);
++int tomoyo_add_aggregator_policy(char *data, const int is_delete);
++int tomoyo_add_alias_policy(char *data, const int is_delete);
++int tomoyo_add_domain_acl(struct acl_info *ptr,
++                          struct domain_info *domain,
++                          struct acl_info *new_ptr);
++int tomoyo_add_domain_initializer_policy(char *data,
++                                         const int is_not,
++                                         const int is_delete,
++                                         const int is_oldstyle);
++int tomoyo_add_domain_keeper_policy(char *data, const int is_not, const int is_delete);
++int tomoyo_add_file_policy(char *data, struct domain_info *domain, const int is_delete);
++int tomoyo_add_globally_readable_policy(char *data, const int is_delete);
++int tomoyo_add_group_policy(char *data, const int is_delete);
++int tomoyo_add_no_rewrite_policy(char *pattern, const int is_delete);
++int tomoyo_add_pattern_policy(char *data, const int is_delete);
++int tomoyo_check_supervisor(const char *fmt, ...) __attribute__ ((format(printf, 1, 2)));
++int tomoyo_del_domain_acl(struct acl_info *ptr);
++int tomoyo_delete_domain(char *data);
++int tomoyo_is_correct_domain(const unsigned char *domainname, const char *function);
++int tomoyo_is_correct_path(const char *filename,
++                           const int start_type,
++                           const int pattern_type,
++                           const int end_type,
++                           const char *function);
++int tomoyo_is_domain_def(const unsigned char *buffer);
++int tomoyo_path_matches_to_pattern(const struct path_info *pathname0,
++                                   const struct path_info *pattern0);
++int tomoyo_read_aggregator_policy(struct io_buffer *head);
++int tomoyo_read_alias_policy(struct io_buffer *head);
++int tomoyo_read_domain_initializer_policy(struct io_buffer *head);
++int tomoyo_read_domain_keeper_policy(struct io_buffer *head);
++int tomoyo_read_globally_readable_policy(struct io_buffer *head);
++int tomoyo_read_group_policy(struct io_buffer *head);
++int tomoyo_read_no_rewrite_policy(struct io_buffer *head);
++int tomoyo_read_pattern_policy(struct io_buffer *head);
++int tomoyo_read_permission_mapping(struct io_buffer *head);
++int tomoyo_read_self_domain(struct io_buffer *head);
++int tomoyo_set_permission_mapping(struct io_buffer *head);
++int tomoyo_write_audit_log(char *log, const int is_granted);
++int tomoyo_acltype2paths(const unsigned int acl_type);
++int tomoyo_io_printf(struct io_buffer *head, const char *fmt, ...)
++	__attribute__ ((format(printf, 2, 3)));
++struct domain_info *tomoyo_find_domain(const char *domainname);
++struct domain_info *tomoyo_find_or_assign_new_domain(const char *domainname, const u8 profile);
++struct domain_info *tomoyo_undelete_domain(const char *domainname0);
++unsigned int tomoyo_check_accept(const unsigned int index);
++unsigned int tomoyo_check_enforce(const unsigned int index);
++unsigned int tomoyo_check_flags(const unsigned int index);
++unsigned int tomoyo_verbose_mode(void);
++void tomoyo_update_counter(const unsigned char index);
++void *tomoyo_alloc(const size_t size);
++void tomoyo_free(const void *p);
++void tomoyo_fill_path_info(struct path_info *ptr);
++
++static inline int tomoyo_pathcmp(const struct path_info *a, const struct path_info *b)
++{
++	return a->hash != b->hash || strcmp(a->name, b->name);
++}
++
++extern struct domain_info KERNEL_DOMAIN;
++
++struct path_info;
++
++int tomoyo_check_exec_perm(const struct path_info *filename, struct file *filp);
++/* Check whether the given dentry is allowed to read/write/execute. */
++int tomoyo_check_open_permission(struct dentry *dentry, struct vfsmount *mnt, const int flag);
++/* Check whether the given dentry is allowed to write. */
++int tomoyo_check_single_write_permission(const unsigned int operation,
++                                         struct dentry *dentry,
++                                         struct vfsmount *mnt);
++int tomoyo_check_double_write_permission(const unsigned int operation,
++                                         struct dentry *dentry1,
++                                         struct vfsmount *mnt1,
++                                         struct dentry *dentry2,
++                                         struct vfsmount *mnt2);
++int tomoyo_check_rewrite_permission(struct file *filp);
++
++struct inode;
++
++/*************************  Index numbers for Access Controls.  *************************/
++
++#define TOMOYO_TYPE_CREATE_ACL       0
++#define TOMOYO_TYPE_UNLINK_ACL       1
++#define TOMOYO_TYPE_MKDIR_ACL        2
++#define TOMOYO_TYPE_RMDIR_ACL        3
++#define TOMOYO_TYPE_MKFIFO_ACL       4
++#define TOMOYO_TYPE_MKSOCK_ACL       5
++#define TOMOYO_TYPE_MKBLOCK_ACL      6
++#define TOMOYO_TYPE_MKCHAR_ACL       7
++#define TOMOYO_TYPE_TRUNCATE_ACL     8
++#define TOMOYO_TYPE_SYMLINK_ACL      9
++#define TOMOYO_TYPE_LINK_ACL        10
++#define TOMOYO_TYPE_RENAME_ACL      11
++#define TOMOYO_TYPE_REWRITE_ACL     12
++
++#define TOMOYO_TYPE_FILE_ACL         100
++
++struct linux_binprm;
++struct pt_regs;
++
++#define TOMOYO_CHECK_READ_FOR_OPEN_EXEC 1
++
++int tomoyo_too_many_domain_acl(struct domain_info * const domain);
++/***** TOMOYO Linux end. *****/
++#endif
+---------------
 
-Let me give one example: My parents own a DVB-T DVR. It was a cheap one, an=
-d=20
-it was cheap because the software is lackluster. Unfortunately it isn't=20
-free. Many users of this device complain to the manufacturer about the=20
-stability and quality of the software, but with no avail - there haven't=20
-been any updates in the last two years. I suppose I would be able to fix=20
-the problem, most other users probably wouldn't (and my parents neither).=20
-But if I did fix the problem, and provided them with an updated firmware,=20
-they would install it on their device.
-
-That's the "help your neighbour" right in the GNU manifesto. It's as=20
-important as the "help yourself" right, maybe even more. It was the=20
-original motivation of RMS to make free software - the frustration of not=20
-being able to help his neighbours. He had an NDA to help himself.
-
-What people want is software that works. If the firmware of your microwave=
-=20
-or DVR works, you don't care so much if it is free or not. You only care if=
-=20
-it doesn't work, and you feel the urge to fix it (and turning it off and on=
-=20
-again doesn't fix it). That's why people complain loud about ATI drivers=20
-not being open, and don't care that much about the Nvidia driver, which is=
-=20
-just as closed, but works.
-
-=2D-=20
-Bernd Paysan
-"If you want it done right, you have to do it yourself"
-http://www.jwdt.com/~paysan/
-
---nextPart13772364.Nr1BCSDoFa
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGcQf/i4ILt2cAfDARAjXbAJ4khUlLu4GhR6tcRPHfRzw6Y0FB+QCgryBJ
-wQEzyxk8kXt5nV6uzlOrmRc=
-=2ml8
------END PGP SIGNATURE-----
-
---nextPart13772364.Nr1BCSDoFa--
