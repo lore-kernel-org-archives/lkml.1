@@ -1,108 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbXFNXNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbXFNXOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbXFNXNk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 19:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbXFNXNd
+	id S1756530AbXFNXOU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 19:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbXFNXOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 19:13:33 -0400
-Received: from ik-out-1112.google.com ([66.249.90.183]:18308 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752904AbXFNXNc (ORCPT
+	Thu, 14 Jun 2007 19:14:12 -0400
+Received: from mail-03.jhb.wbs.co.za ([196.2.97.2]:61622 "EHLO
+	mail-03.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbXFNXOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 19:13:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=JY0qn8w6P1enA6+ERzcMuMvnvVHnNr9zJaoZYq6azbUT7bgKtmeaWfcrLKCmx/0T/2CmFCn26jkOSNLPxb8nHdZVpzHDNSayDYaqeB/7O13Yg5+NDNt4OnKIfea6WEQHGap/1tLqriVbfuIHMpJhtimgAiDk8rltLIpaWfEJ30Y=
-Date: Fri, 15 Jun 2007 01:13:59 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [BUG] Oops with KVM-27
-Message-ID: <20070614231359.GA5705@dreamland.darkstar.lan>
-Mail-Followup-To: Avi Kivity <avi@qumranet.com>,
-	kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <46651069.5040003@qumranet.com> <68676e00706071216i4bd051c5hb1c114f3c13ab97f@mail.gmail.com> <466BED18.5040708@qumranet.com> <68676e00706101354n5fe7e1a9y12cb690cae2924e3@mail.gmail.com> <466CFD6D.2080201@qumranet.com> <20070612175246.GA5864@dreamland.darkstar.lan> <466FB1ED.3090905@qumranet.com> <20070613204948.GA14710@dreamland.darkstar.lan> <4670FBB5.70707@qumranet.com> <20070614225324.GA4088@dreamland.darkstar.lan>
+	Thu, 14 Jun 2007 19:14:11 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAMZocUbEHh/Rh2dsb2JhbACPQAEBAQgOLA
+From: Bongani Hlope <bonganilinux@mweb.co.za>
+To: Alexandre Oliva <aoliva@redhat.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 00:58:23 +0200
+User-Agent: KMail/1.9.7
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <20070614175305.GI10008@csclub.uwaterloo.ca> <or7iq6coxz.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or7iq6coxz.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070614225324.GA4088@dreamland.darkstar.lan>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706150058.24324.bonganilinux@mweb.co.za>
+X-Original-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Fri, Jun 15, 2007 at 12:53:24AM +0200, Luca Tettamanti ha scritto: 
-> Il Thu, Jun 14, 2007 at 11:26:29AM +0300, Avi Kivity ha scritto: 
-> > Luca Tettamanti wrote:
-> > >With GOOD_APIC apic_read_around is a nop, while apic_write_around is a
-> > >normal write. With !GOOD_APIC apic_write_around writes to the APIC reg
-> > >using xchg. With !GOOD_APIC and this patch:
-> > >
-> > >--- include/asm-i386/apic.h~	2007-04-26 05:08:32.000000000 +0200
-> > >+++ include/asm-i386/apic.h	2007-06-13 22:35:00.000000000 +0200
-> > >@@ -56,7 +56,8 @@
-> > > static __inline fastcall void native_apic_write_atomic(unsigned long reg,
-> > > 						       unsigned long v)
-> > > {
-> > >-	xchg((volatile unsigned long *)(APIC_BASE+reg), v);
-> > >+//	xchg((volatile unsigned long *)(APIC_BASE+reg), v);
-> > >+	*((volatile unsigned long *)(APIC_BASE+reg)) = v;
-> > > }
-> > > 
-> > > static __inline fastcall unsigned long native_apic_read(unsigned long reg)
-> > >
-> > >The kernel boots fine. 
-> > >  
-> > 
-> > Looking at the xchg emulation code, it seems fine, but clearly it 
-> > isn't.
-> 
-> Btw, I've put a printk in x86_emulate.c, where it prepares the operands
-> for the xchg operations: all the write_atomic are hitting this point,
-> so the write is lost somewhere in cmpxchg_emulated->write_emulated.
+On Thursday 14 June 2007 21:32:08 Alexandre Oliva wrote:
+> On Jun 14, 2007, lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+> > They let you have the code and make changes to it,
+>
+> Not to the software installed in the device.
 
-Got it!
-The emulator skips the writeback if the old value is unchanged, so the
-apic doesn't see the write.
+So now you want access to all the software that is installed in their device? 
+Could you explain that please? You do have access to the GPL code that they 
+used. If you buy one of Google's Search Appliance, are you expecting to allow 
+you to make changes to the software that is installed on that device?
 
-Forcing the writeback:
+>
+> What they do is like an author A who distributes a program to user B
+> under a non-Free Software license, and to user C under a Free Software
+> license.
+>
+> C passes the program on to B under the same license.  Now B has two
+> copies of the program.  One is free, the other is not.
+>
+> Except that TiVO had no right to distribute the program under non-Free
+> terms in the first place, because it was not the author, and the
+> license it had explicitly said it couldn't impose further
+> restrictions.
 
--      if ((d & Mov) || (dst.orig_val != dst.val)) {
--      if ((d & Mov) || (dst.orig_val != dst.val) || isxchg) {
+Reread what you wrote here and see the complete lack of logic in your 
+argument.
 
-seems to fix the issue :D I'm not sure that fix is correct though. This
-is the patch I'm using:
+Author A are Linux developers who distribute their software under GPL 2, TiVO 
+gets the software under the same license and distributes it to their end 
+users. They then make the all the changes to the Linux Kernel available to 
+their end users under the same terms that they got from the Linux kernel 
+developers.
 
+What freedom did they take away?
 
---- a/kernel/x86_emulate.c	2007-06-03 10:31:15.000000000 +0200
-+++ b/kernel/x86_emulate.c	2007-06-15 01:12:12.000000000 +0200
-@@ -486,6 +486,7 @@
- 	unsigned long _regs[NR_VCPU_REGS];
- 	unsigned long _eip = ctxt->vcpu->rip, _eflags = ctxt->eflags;
- 	unsigned long modrm_val = 0;
-+	int isxchg = 0;
- 
- 	memcpy(_regs, ctxt->vcpu->regs, sizeof _regs);
- 
-@@ -912,6 +913,7 @@
- 		break;
- 	case 0x86 ... 0x87:	/* xchg */
- 		/* Write back the register source. */
-+		isxchg = 1;
- 		switch (dst.bytes) {
- 		case 1:
- 			*(u8 *) src.ptr = (u8) dst.val;
-@@ -1056,7 +1058,7 @@
- 	}
- 
- writeback:
--	if ((d & Mov) || (dst.orig_val != dst.val)) {
-+	if ((d & Mov) || (dst.orig_val != dst.val) || isxchg) {
- 		switch (dst.type) {
- 		case OP_REG:
- 			/* The 4-byte case *is* correct: in 64-bit mode we zero-extend. */
-
-Luca
--- 
-"Su cio` di cui non si puo` parlare e` bene tacere".
- Ludwig Wittgenstein
