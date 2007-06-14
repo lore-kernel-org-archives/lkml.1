@@ -1,73 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbXFNLxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbXFNL5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751922AbXFNLxZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 07:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbXFNLxS
+	id S1752052AbXFNL5v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 07:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXFNL5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 07:53:18 -0400
-Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:60831
-	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750995AbXFNLxR (ORCPT
+	Thu, 14 Jun 2007 07:57:44 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:35702 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbXFNL5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 07:53:17 -0400
-X-Greylist: delayed 1843 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jun 2007 07:53:16 EDT
-To: Matt Keenan <tank.en.mate@gmail.com>
-Cc: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<466BCBBC.90305@netone.net.tr>
-	<Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
-	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
-	<20070610160531.GA12179@kroah.com>
-	<f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
-	<20070612184110.GB7980@kroah.com>
-	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>
-	<or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070613211432.GH10008@csclub.uwaterloo.ca>
-	<orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org>
-	<or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131930120.14121@woody.linux-foundation.org>
-	<ory7ingij5.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4670F3C5.5090602@gmail.com>
-From: Michael Poole <mdpoole@troilus.org>
-Date: Thu, 14 Jun 2007 07:22:32 -0400
-In-Reply-To: <4670F3C5.5090602@gmail.com> (Matt Keenan's message of "Thu\, 14 Jun 2007 08\:52\:37 +0100")
-Message-ID: <87odji3hmv.fsf@graviton.dyn.troilus.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 14 Jun 2007 07:57:43 -0400
+Date: Thu, 14 Jun 2007 17:36:05 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org, ckrm-tech@lists.sourceforge.net
+Subject: Re: [RFC][PATCH 5/6] core changes for group fairness
+Message-ID: <20070614120605.GA30965@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070611154724.GA32435@in.ibm.com> <20070611155608.GE2109@in.ibm.com> <b647ffbd0706131356q344af13as3744c151b4a4f680@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b647ffbd0706131356q344af13as3744c151b4a4f680@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Keenan writes:
+On Wed, Jun 13, 2007 at 10:56:06PM +0200, Dmitry Adamushko wrote:
+> >+static int balance_tasks(struct rq *this_rq, int this_cpu, struct rq 
+> >*busiest,
+> >+                     unsigned long max_nr_move, unsigned long 
+> >max_load_move,
+> >+                     struct sched_domain *sd, enum idle_type idle,
+> >+                     int *all_pinned, unsigned long *load_moved,
+> >+                     int this_best_prio, int best_prio, int 
+> >best_prio_seen,
+> >+                     void *iterator_arg,
+> >+                     struct task_struct *(*iterator_start)(void *arg),
+> >+                     struct task_struct *(*iterator_next)(void *arg));
+> 
+> IMHO, it looks a bit frightening :) 
 
-> Alexandre Oliva wrote:
->>
->> Err, no.  Software, per legal definitions in Brazil, US and elsewhere,
->> require some physical support.  That's the hard disk in the TiVO DVR,
->> in this case.  I don't see how this matters, though.
->>
->>   
-> I'm now intrigued, where are these (Brazilian and US) definitions
-> stipulated, and under what authority?
+I agree :) It is taking (ooops) 15 args (8 perhaps was the previous record
+in sched.c (move_tasks)!
 
-In the US, 17 USC 101 (the "Definitions" section of the title dealing
-with Copyright) makes this definition:
+> maybe it would be possible to
+> create a structure that combines some relevant argumens .. at least,
+> the last 3 ones.
 
-    A "computer program" is a set of statements or instructions to be
-    used directly or indirectly in a computer in order to bring about
-    a certain result.
+How does this look?
 
-As its purpose is to outline the scope of copyright law, this
-definition is made under the authority granted to Congress by Article
-I, Section 8 of the United States Constitution.
+struct balance_tasks_args {
+	struct rq *this_rq, struct rq *busiest;
+	unsigned long max_nr_move, unsigned long max_load_move;
+	struct sched_domain *sd, enum idle_type idle;
+	int this_best_prio, best_prio, best_prio_seen;
+	int *all_pinned;
+	unsigned long *load_moved;
+	void *iterator_arg;
+	struct task_struct *(*iterator_start)(void *arg);
+	struct task_struct *(*iterator_next)(void *arg));
+};
 
-Michael Poole
+static int balance_tasks(struct balance_tasks_args *arg);
+
+[ down to one argument now! ]
+
+?
+
+I will try this in my next iteration ..
+
+
+> >-static int move_tasks(struct rq *this_rq, int this_cpu, struct rq 
+> >*busiest,
+> >+static int balance_tasks(struct rq *this_rq, int this_cpu, struct rq 
+> >*busiest,
+> >                      unsigned long max_nr_move, unsigned long 
+> >                      max_load_move,
+> >                      struct sched_domain *sd, enum idle_type idle,
+> >-                     int *all_pinned)
+> >+                     int *all_pinned, unsigned long *load_moved,
+> >+                     int this_best_prio, int best_prio, int 
+> >best_prio_seen,
+> >+                     void *iterator_arg,
+> >+                     struct task_struct *(*iterator_start)(void *arg),
+> >+                     struct task_struct *(*iterator_next)(void *arg))
+> 
+> I think, there is a possible problem here. If I'm not complete wrong,
+> this function (move_tasks() in the current mainline) can move more
+> 'load' than specified by the 'max_load_move'..
+
+Yes I think you are right. I will tackle this in next iteration.
+
+Thanks for all your review so far!
+
+-- 
+Regards,
+vatsa
