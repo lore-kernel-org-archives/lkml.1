@@ -1,112 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946AbXFNVUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbXFNVVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946AbXFNVUo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbXFNVUe
+	id S1756474AbXFNVVG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:21:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbXFNVUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:20:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44581 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752479AbXFNVUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:20:32 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706140429.11049.dhazelton@enter.net>
-	<orejkefnw9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706141640.17217.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 18:19:51 -0300
-In-Reply-To: <200706141640.17217.dhazelton@enter.net> (Daniel Hazelton's message of "Thu\, 14 Jun 2007 16\:40\:16 -0400")
-Message-ID: <orabv29qtk.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Jun 2007 17:20:52 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:53331 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752693AbXFNVUv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 17:20:51 -0400
+Subject: Re: [PATCH -rt] Fix TASKLET_STATE_SCHED WARN_ON()
+From: john stultz <johnstul@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1181096244.6018.20.camel@localhost>
+References: <1181096244.6018.20.camel@localhost>
+Content-Type: text/plain
+Date: Thu, 14 Jun 2007 14:20:20 -0700
+Message-Id: <1181856020.6276.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+On Tue, 2007-06-05 at 19:17 -0700, john stultz wrote:
+> Hey Ingo,
+> 	So we've been seeing the following trace fairly frequently on our SMP
+> boxes when running kernbench:
+> 
+> BUG: at kernel/softirq.c:639 __tasklet_action()
+> 
+> Call Trace:
+>  [<ffffffff8106d5da>] dump_trace+0xaa/0x32a
+>  [<ffffffff8106d89b>] show_trace+0x41/0x5c
+>  [<ffffffff8106d8cb>] dump_stack+0x15/0x17
+>  [<ffffffff81094a97>] __tasklet_action+0xdf/0x12e
+>  [<ffffffff81094f76>] tasklet_action+0x27/0x29
+>  [<ffffffff8109530a>] ksoftirqd+0x16c/0x271
+>  [<ffffffff81033d4d>] kthread+0xf5/0x128
+>  [<ffffffff8105ff68>] child_rip+0xa/0x12
+> 
+> 
+> Paul also pointed this out awhile back: http://lkml.org/lkml/2007/2/25/1
+> 
+> 
+> Anyway, I think I finally found the issue. Its a bit hard to explain,
+> but the idea is while __tasklet_action is running the tasklet function
+> on CPU1, if a call to tasklet_schedule() on CPU2 is made, and if right
+> after we mark the TASKLET_STATE_SCHED bit we are preempted,
+> __tasklet_action on CPU1 might be able to re-run the function, clear the
+> bit and unlock the tasklet before CPU2 enters __tasklet_common_schedule.
+> Once __tasklet_common_schedule locks the tasklet, we will add the
+> tasklet to the list with the TASKLET_STATE_SCHED *unset*. 
+> 
+> I've verified this race occurs w/ a WARN_ON in
+> __tasklet_common_schedule().
+> 
+> 
+> This fix avoids this race by making sure *after* we've locked the
+> tasklet that the STATE_SCHED bit is set before adding it to the list.
+> 
+> Does it look ok to you?
+> 
+> thanks
+> -john
+> 
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> 
+> Index: 2.6-rt/kernel/softirq.c
+> ===================================================================
+> --- 2.6-rt.orig/kernel/softirq.c	2007-06-05 18:30:54.000000000 -0700
+> +++ 2.6-rt/kernel/softirq.c	2007-06-05 18:36:44.000000000 -0700
+> @@ -544,10 +544,17 @@ static void inline
+>  __tasklet_common_schedule(struct tasklet_struct *t, struct tasklet_head *head, unsigned int nr)
+>  {
+>  	if (tasklet_trylock(t)) {
+> -		WARN_ON(t->next != NULL);
+> -		t->next = head->list;
+> -		head->list = t;
+> -		raise_softirq_irqoff(nr);
+> +		/* We may have been preempted before tasklet_trylock
+> +		 * and __tasklet_action may have already run.
+> +		 * So double check the sched bit while the takslet
+> +		 * is locked before adding it to the list.
+> +		 */
+> +		if (test_bit(TASKLET_STATE_SCHED, &t->state)) {
+> +			WARN_ON(t->next != NULL);
+> +			t->next = head->list;
+> +			head->list = t;
+> +			raise_softirq_irqoff(nr);
+> +		}
+>  		tasklet_unlock(t);
+>  	}
+>  }
 
-> With GPLv2 and prior there was a simple guarantee that every
-> "Licensee" had exactly the same rights. With GPLv3 you are forcing
-> your ethics and morals on people - and isn't this exactly what the
-> Roman Catholic church did during the Spanish Inquisition?
+So while digging on a strange OOM issue we were seeing (which actually
+ended up being fixed by Steven's softirq patch), I noticed that the fix
+above is incomplete. With only the patch above, we may no longer have
+unscheduled tasklets added to the list, but we may end up with scheduled
+tasklets that are not on the list (and will stay that way!).
 
-I fail to see the distinction you're making between GPLv2 and GPLv3.
-AFAICT, with GPLv3, there still is a simple guarantee that every
-licensee has exactly the same rights.
+The following additional patch should correct this issue. Although since
+we weren't actually hitting it, the issue is a bit theoretical, so I've
+not been able to prove it really fixes anything.
 
-Sure, GPLv3 follows the spirit of the GPLs more strictly than GPLv2
-possibly could.  How is that "forcing ethics and morals" any more than
-GPLv2 was?
+thanks
+-john
 
-> Ah, but I never said I had a GPLv1 program.
+Index: 2.6-rt/kernel/softirq.c
+===================================================================
+--- 2.6-rt.orig/kernel/softirq.c	2007-06-12 20:30:11.000000000 -0700
++++ 2.6-rt/kernel/softirq.c	2007-06-12 20:37:22.000000000 -0700
+@@ -544,6 +544,7 @@
+ __tasklet_common_schedule(struct tasklet_struct *t, struct tasklet_head *head, unsigned int nr)
+ {
+ 	if (tasklet_trylock(t)) {
++again:
+ 		/* We may have been preempted before tasklet_trylock
+ 		 * and __tasklet_action may have already run.
+ 		 * So double check the sched bit while the takslet
+@@ -554,8 +555,21 @@
+ 			t->next = head->list;
+ 			head->list = t;
+ 			raise_softirq_irqoff(nr);
++			tasklet_unlock(t);
++		} else {
++			/* This is subtle. If we hit the corner case above
++			 * It is possible that we get preempted right here,
++			 * and another task has successfully called
++			 * tasklet_schedule(), then this function, and
++			 * failed on the trylock. Thus we must be sure
++			 * before releasing the tasklet lock, that the
++			 * SCHED_BIT is clear. Otherwise the tasklet
++			 * may get its SCHED_BIT set, but not added to the
++			 * list
++			 */
++			if (!tasklet_tryunlock(t))
++				goto again;
+ 		}
+-		tasklet_unlock(t);
+ 	}
+ }
+ 
 
-I thought you had a copy of Linux and, per what you'd said before,
-there was GPLv1 code in it.  I was just trying to make it easy for
-you.
 
-> If GPLv1 is still valid and available I should be able to find a
-> copy of it *RIGHT* *NOW* to license a new project if I want to use
-> GPLv1 as its license.
-
-http://www.gnu.org/copyleft/copying-1.0.html
-
->> > And because its a device that connects to their network - and TiVO
->> > isn't a telecommunications company - they have the right to upgrade
->> > and configure the software inside however they want. (In the US at
->> > least)
->> 
->> But do they have the right to not pass this right on, under the GPL?
-
-> Yes, they do. It isn't a right they have as "copyright holders" - in fact, it 
-> isn't a part of their rights under the copyright at all. It's a part of their 
-> rights as the owners of the network. 
-
-How about the "no further restrictions" bit?
-
-> Never claimed it was less obscure, just that you've usually got a board-room 
-> filled with middle-aged men that might have problems agreeing that it is a 
-> clear-cut case.
-
-> Yes, but the fact that it would cost money to get the suit dropped is a 
-> problem. 
-
-Again, how are these arguments against GPLv3?  They apply equally to
-any other license, including GPLv2.
-
->> Interpretation as applied to the legal terms, yes.  As for the spirit
->> of the license, the authors ought to know better than anyone else what
->> they meant.  Sure, other interpretations might lead to different
->> understandings as to what the readers *think* it means, but that
->> doesn't change what it was *intended* to mean.
-
-> Doesn't matter what the author intended it to mean - at all. What matters is 
-> how its interpreted when/if it shows up in court.
-
-You're talking about the legal terms.  The spirit of the license is a
-very different matter.  It can guide the interpretation of the legal
-terms, but the author is at a better position than anyone else to know
-what he meant.
-
->> If you replace a component in the hardware, are you still required to
->> provide support or offer warranty?  Why should this be different just
->> because it's a software component?
-
-> Artificial distinctions in the law
-
-Well, then, lock down the software.  Make it irreplaceable, even by
-yourself.  Problem solved.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
