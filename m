@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751750AbXFNQ1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbXFNQc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751750AbXFNQ1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 12:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXFNQ1D
+	id S1752116AbXFNQc3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 12:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXFNQcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 12:27:03 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:59654 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbXFNQ1A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 12:27:00 -0400
-Date: Thu, 14 Jun 2007 18:39:23 +0200
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: regression tracking (Re: Linux 2.6.21)
-Message-ID: <20070614163923.GM7266@flower.upol.cz>
-References: <20070426040806.GJ3468@stusta.de> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <46715FD4.6040803@s5r6.in-berlin.de>
+	Thu, 14 Jun 2007 12:32:21 -0400
+Received: from enyo.dsw2k3.info ([195.71.86.239]:51852 "EHLO enyo.dsw2k3.info"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750909AbXFNQcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 12:32:21 -0400
+Message-ID: <46716D8E.2050007@citd.de>
+Date: Thu, 14 Jun 2007 18:32:14 +0200
+From: Matthias Schniedermeyer <ms@citd.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46715FD4.6040803@s5r6.in-berlin.de>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+To: linux-kernel@vger.kernel.org
+Subject: Re: /dev/loop* devices not appearing in /dev (at least since 2.6.22-rc3*)
+References: <e85b9d30706140437s5f3622c3rc86c75a4f845e7a3@mail.gmail.com> <20070614145206.58fdec91@localhost> <e85b9d30706140710x5671fa12n5845172d4ce32a10@mail.gmail.com> <20070614172234.7f636307@localhost> <20070614154448.GC4155@tatooine.rebelbase.local>
+In-Reply-To: <20070614154448.GC4155@tatooine.rebelbase.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 05:33:40PM +0200, Stefan Richter wrote:
-[]
-> [...]
-> > Why you didn't proposed (used) Debian's BTS as alternative to bugzilla,
-> [...]
-> 
-> BTS has been mentioned in that thread in a few posts; mostly positively
-> as I recall.
+markus reichelt wrote:
 
-I know, that most developers here are not working/familiar with what
-Debian has as its bug shooting weapon ``The system is mainly controlled
-by  e-mail, but the bug reports can be viewed using the WWW.''[0].
+> PS: Just wondering: Who came up with this "on-demand" hype?
 
-I thought somebody, who familiar with that, might propose to setup/tune
-it, but not doing yet another NIH thing, especially from e-mail
-integration POV. I doubt mozilla guys can think about it without
-javascript and/or java servlets :)
+I don't remember the names, but i remember the root causes. Here we go:
 
-[0] <http://www.debian.org/Bugs/>
-____
+The discussion started when someone with a CD-Server ran out of loops as 256 was the "fixed" maximum.
+
+The other "root"-cause was that the data-structure for the loop-devices was fixed in size at load-time, so after you load the loop-module you couldn't change anything.
+
+ From "increasing" the maximum to <don't remember, but wasn't that much better> the discussion went to dynamic allocation.
+Dynamic allocation has the added nicety that there is a bit less waste of resources, in case you don't need so many loops and that you can scale to a large number of loops if you need to.
+
+When all the bugs and usability problems are shaken out, everybody is happy, especially the members of the "i need massive amounts of loops"-fraction.
+
+So much for the background.
+
+
+
+
+Bis denn
+
+-- 
+Real Programmers consider "what you see is what you get" to be just as
+bad a concept in Text Editors as it is in women. No, the Real Programmer
+wants a "you asked for it, you got it" text editor -- complicated,
+cryptic, powerful, unforgiving, dangerous.
+
