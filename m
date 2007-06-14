@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbXFNTpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbXFNTqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756995AbXFNTpw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbXFNToJ
+	id S1756921AbXFNTqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbXFNTou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:44:09 -0400
-Received: from smtp.regionline.fi ([85.157.255.99]:52922 "EHLO
-	smtp.regionline.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756452AbXFNToI (ORCPT
+	Thu, 14 Jun 2007 15:44:50 -0400
+Received: from mondriaan.macroscoop.nl ([82.94.9.2]:2889 "EHLO
+	mondriaan.macroscoop.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756800AbXFNTot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:44:08 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jun 2007 15:44:07 EDT
-From: Jan Knutar <jk-lkml@sci.fi>
-To: linux-kernel@vger.kernel.org
-Subject: Re: ext2 on flash memory
-Date: Thu, 14 Jun 2007 22:36:55 +0300
-User-Agent: KMail/1.6.2
-Cc: DervishD <lkml@dervishd.net>, Juergen Beisert <juergen127@kreuzholzen.de>
-References: <20070611101319.GA14284@DervishD> <200706112127.42119.juergen127@kreuzholzen.de> <20070613134843.GC1983@DervishD>
-In-Reply-To: <20070613134843.GC1983@DervishD>
+	Thu, 14 Jun 2007 15:44:49 -0400
+X-Greylist: delayed 359 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jun 2007 15:44:48 EDT
+Message-ID: <4671992D.7060400@macroscoop.nl>
+Date: Thu, 14 Jun 2007 21:38:21 +0200
+From: Pim Zandbergen <P.Zandbergen@macroscoop.nl>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jesse Barnes <jesse.barnes@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+References: <200706071530.51552.jesse.barnes@intel.com>
+In-Reply-To: <200706071530.51552.jesse.barnes@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706142236.56195.jk-lkml@sci.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 June 2007 16:48, DervishD wrote:
->     But anyway the memory should last long. Even cheap flash memories
-> with poor wear leveling (if any at all) usually long last. Given that
-> I won't be writing continuously, wear shouldn't be a problem. I'm
-> going to use this as a backup copy of my home. Of course, I can use a
-> tarball too...
+Thanks for this patch. I was having the exact same symptoms as Justin 
+Piszcz, on a different, but similar motherboard:
 
-I did a test on my kingston datatraveler recently, I didn't expect it to 
-survive, but it did. I put reiserfs on it, and copied 394M of data in 
-200,000 files to it. Reiserfs was sloooow at writing, the device was 
-probably doing alot of work. ext2 was about 10X faster, but there was 
-hardly any free space left at all at the end :)
+Motherboard: GigaByte GA-G33-DS3R
+BIOS rev: F2
+Chipset: Intel G33
+Memory: 8GB
+Distro: Fedora 7 x86_64
+Kernel: kernel-2.6.21-1.3194.fc7
 
-Considering it surived ReiserFS, I suspect it would last ages with ext2, 
-especially for your backup purposes.
+Building vanilla 2.6.22-rc4 with your patch solved the problem.
+
+I'm now seeing this in the syslog
+
+  ***************
+  **** WARNING: likely BIOS bug
+  **** MTRRs don't cover all of memory, trimmed 196608 pages
+  ***************
+
+leaving me 7416672 kB of usable memory.
+
+If there's any way I can help with more info or testing,
+then let me know.
+
+Thanks,
+Pim
+
