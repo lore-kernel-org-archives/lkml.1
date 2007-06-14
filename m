@@ -1,107 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbXFNBBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbXFNBFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758885AbXFNBBn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 21:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756963AbXFNBBg
+	id S1758974AbXFNBFQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 21:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbXFNBFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 21:01:36 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50884 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756932AbXFNBBf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 21:01:35 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Wed, 13 Jun 2007 21:01:28 -0400
-User-Agent: KMail/1.9.6
-Cc: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 13 Jun 2007 21:05:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42062 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757240AbXFNBFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 21:05:03 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
        debian developer <debiandev@gmail.com>, david@lang.hm,
        Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <466A3EC6.6030706@netone.net.tr> <200706131946.15714.dhazelton@enter.net> <20070614004419.GL3588@stusta.de>
-In-Reply-To: <20070614004419.GL3588@stusta.de>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<alpine.LFD.0.98.0706131456230.14121@woody.linux-foundation.org>
+	<orejkfla3l.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706131946.15714.dhazelton@enter.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Wed, 13 Jun 2007 22:04:42 -0300
+In-Reply-To: <200706131946.15714.dhazelton@enter.net> (Daniel Hazelton's message of "Wed\, 13 Jun 2007 19\:46\:15 -0400")
+Message-ID: <orr6ofjqhh.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706132101.28330.dhazelton@enter.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 June 2007 20:44:19 Adrian Bunk wrote:
-> On Wed, Jun 13, 2007 at 07:46:15PM -0400, Daniel Hazelton wrote:
-> > On Wednesday 13 June 2007 19:15:42 Alexandre Oliva wrote:
-> > > On Jun 13, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > > On Wed, 13 Jun 2007, Alan Cox wrote:
-> > > >> > find offensive, so I don't choose to use it. It's offensive
-> > > >> > because Tivo never did anything wrong, and the FSF even
-> > > >> > acknowledged that. The fact
-> > > >>
-> > > >> Not all of us agree with this for the benefit of future legal
-> > > >> interpretation.
-> > > >
-> > > > Well, even the FSF lawyers did,
-> > >
-> > > Or rather they didn't think an attempt to enforce that in the US would
-> > > prevail (or so I'm told).  That's not saying what TiVo did was right,
-> > > and that's not saying that what TiVo did was permitted by the license.
-> > > Only courts of law can do that.
-> >
-> > Wrong! Anyone with half a brain can make the distinction. What TiVO did
-> > is entirely legal - they fully complied with the GPLv2. Note that what
-> > they *DON'T* allow people to do is run whatever version of whatever
-> > software they want on their hardware. They have that right - its the
-> > "Free Software Foundation" and the GPL - regardless of version - is a
-> > *SOFTWARE* license. ...
->
-> The GPLv2 says:
->
-> "For an executable work, complete source code means all the source code
-> for all modules it contains, plus any associated interface definition
-> files, plus the scripts used to control compilation and installation of
-> the executable."
->
-> The question is whether this includes private keys.
-> Different people have different opinions regarding this issue.
->
-> If "the complete source code" includes private keys, the GPLv2 requires
-> them to give any costumer the private keys.
->
-> Fact is that Harald Welte did in several cases successfully convince
-> vendors that private keys are part of the source code if they are
-> required for running the compiled binary on some hardware.
+On Jun 13, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-If the hardware was designed for the end-user to change the software running 
-on it - including running software that it was never meant to run (ie: a 
-complete webserver on cell phone) - then yes, the signing keys are a part of 
-the source, as the software running on the device is designed to be updated 
-by the user using the provided system.
+> Now stop parroting the FSF's worn and tired tripe.
 
-If, on the other hand, the only "software updates" the user is expected to 
-perform are the installation of newer versions of the existing code 
-for "Security" or "Bug Fix" reasons then the signing keys aren't part of the 
-source.
+Are you playing Linus' sheeple and parroting his lines just to make a
+point, or are you like that all the time? ;-)
 
-I haven't looked into what Harald Welte did, but I'd be surprised if someone 
-tried following suit in America and had as much success.
+> PS: Looking at your .sig I guess maybe you can't do that without getting 
+> kicked out of the FSF-LA
 
->
-> AFAIK there haven't been any court rulings on this issue, and it could
-> even be that courts in different countries will decide differently.
+Don't worry, I'm not speaking even for FSFLA, and I'm entitled to my
+own opinion.
 
-Agreed.
+I haven't consulted other FSFLA members about this.  This is all my
+own personal opinion.
 
-DRH
+It just so happens that I'm very closely involved in the process, I've
+spent a lot of time thinking about it, and I happen to share a similar
+moral and ethical background with others involved in the process, so I
+arrive at similar conclusions.
 
->
-> cu
-> Adrian
-
-
+And then, I influence the process myself, so it's not like some of the
+arguments I brought up here weren't taken into account while creating
+the GPLv3, and adopted by its other proponents.
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
