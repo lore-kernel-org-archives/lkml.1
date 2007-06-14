@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbXFNHsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbXFNHuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753492AbXFNHsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 03:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXFNHso
+	id S1754020AbXFNHuV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 03:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXFNHuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 03:48:44 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:41400 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751028AbXFNHsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 03:48:43 -0400
-Date: Thu, 14 Jun 2007 09:56:24 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: "Fortier\,Vincent \[Montreal\]" <Vincent.Fortier1@EC.GC.CA>
-Cc: Miguel Figueiredo <elmig@debianpt.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck@vds.kolivas.org
-Subject: Re: call for more SD versus CFS comparisons (was: Re: Mainline plans)
-Message-ID: <20070614075624.GA1450@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Jun 2007 03:50:09 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34639 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752614AbXFNHuH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 03:50:07 -0400
+Date: Thu, 14 Jun 2007 09:50:19 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070614075019.GR3588@stusta.de>
+References: <466A3EC6.6030706@netone.net.tr> <200706131946.15714.dhazelton@enter.net> <20070614004419.GL3588@stusta.de> <200706132101.28330.dhazelton@enter.net> <20070614024540.3a24598c@the-village.bc.nu> <20070614021724.GP3588@stusta.de> <or3b0vhxwq.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B01289E9@ecqcmtlmail3.quebec.int.ec.gc.ca>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <or3b0vhxwq.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13-06-2007 03:54, Fortier,Vincent [Montreal] wrote:
-...
-> Kernels:
-> CFS v16 2.6.21 FC7 build 3194
-> CK2 2.6.21 FC7 build 3194
-...
-> CFS v16:
-> ---------
-> beryl interractivity way too unresponsive..
-> - window decoration highlight taking around 5-10 secs to switch between windows focus
-> - window movement either impossible or animation laggy enough to not being seen at all.
-> - Cube rotation still possible using mouse scroll although really really really laggy
+On Thu, Jun 14, 2007 at 03:07:17AM -0300, Alexandre Oliva wrote:
+> On Jun 13, 2007, Adrian Bunk <bunk@stusta.de> wrote:
 > 
-> Amarok MP3 music:
-> - No audio skips at all.  Playing really well!
+> > If the two courts are in the same country there's usually a higher court 
+> > above both that can resolve this. But what if let's say the highest 
+> > court in the USA and the highest court in Germany would disagree on such 
+> > a matter?
 > 
+> Upgrade the license so as to provide guidance as to the intent of the
+> authors, such that the disagreement doesn't happen again.
 > 
-> CK2 patchset:
-> -------------
-> Beryl interractivity almost totally unresponsive... In fact mouse movement was near-impossible to control.
-> - window movement totally impossible
-> - Cube rotation still possible using mouse scroll although there was no animation at all
-> 
-> Amarok MP3 music:
-> - Same as CFS, no skips at all.  Playing really well!
-...
+> If there's room in each country's laws to fix the problem, that is.
 
-Very nice testing! But, maybe it could be even more interesting after
-adding here the "vanilla" kernel too, i.e. 2.6.21 FC7 build 3194
-without CFS/CK2?
+I don't think that's an option.
 
-Regards,
-Jarek P.
+Consider the question of whether non-GPL kernel modules are legal at 
+all and the number and different opinions of Linux kernel authors.
+
+Plus the general question whether any "upgrade the license" would be 
+valid in all jurisdictions ("GPL version 2 or any later version"  
+as licence might make it possible, but in all other cases I'd have 
+serious doubts).
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
