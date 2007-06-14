@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbXFNTgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbXFNTiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653AbXFNTgu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXFNTgm
+	id S1754310AbXFNTiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXFNTiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:36:42 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:48197 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751063AbXFNTgm (ORCPT
+	Thu, 14 Jun 2007 15:38:10 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:40343 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751245AbXFNTiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:36:42 -0400
-Message-ID: <467198C8.1040107@steeleye.com>
-Date: Thu, 14 Jun 2007 15:36:40 -0400
-From: Paul Clements <paul.clements@steeleye.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Thu, 14 Jun 2007 15:38:09 -0400
+Message-ID: <46719902.2000207@nortel.com>
+Date: Thu, 14 Jun 2007 13:37:38 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] nbd.c:sock_xmit: cleanup signal related code
-References: <20070614172243.GA2446@tv-sign.ru>
-In-Reply-To: <20070614172243.GA2446@tv-sign.ru>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Alexandre Oliva <aoliva@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kevin Fox <Kevin.Fox@pnl.gov>, Daniel Hazelton <dhazelton@enter.net>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org> <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132042.02728.dhazelton@enter.net> <1181837191.21942.24.camel@zathras.emsl.pnl.gov> <alpine.LFD.0.98.0706140923250.14121@woody.linux-foundation.org> <orsl8ucq2n.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <orsl8ucq2n.fsf@oliva.athome.lsd.ic.unicamp.br>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Jun 2007 19:37:42.0231 (UTC) FILETIME=[7967C670:01C7AEBB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> sock_xmit() re-implements sigprocmask() and dequeue_signal_lock().
+Alexandre Oliva wrote:
 
-Yeah, that code was written before those existed. Thanks for the clean up.
+> So can you please explain to me how enabling TiVO to deny others the
+> freedom that it received "in kind", failing to keep with the "in kind"
+> spirit of the GPL, encourage people to work together, and to merge?
 
-> Note: I can't understand this dequeue_signal(), it can dequeue SIGKILL
-> for the user-space task doing nbd_ioctl() ?
+They're not denying others the freedom that they themselves received. 
+Tivo took GPL'd software, modified it, and distributed it with their own 
+custom hardware.  You have the right to take their changes, possibly 
+modify them further, and distribute them (possibly with your own hardware).
 
-So we can interrupt an nbd transmission without waiting for a TCP 
-timeout (when we know the network is down).
+The fact that you can't modify the software and load it back onto the 
+tivo is irrelevent.  They are not restricting your distribution of the 
+software in any way.  Rather, they're restricting the *running* of the 
+software on their proprietary hardware platform.
 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
-Patch looks good to me.
-
---
-Paul
+Chris
