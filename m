@@ -1,150 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbXFNCIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbXFNCNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754909AbXFNCIX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 22:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbXFNCIQ
+	id S1752850AbXFNCNg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 22:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbXFNCN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 22:08:16 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:34496 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750850AbXFNCIP (ORCPT
+	Wed, 13 Jun 2007 22:13:29 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:46287 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbXFNCN2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 22:08:15 -0400
-Date: Thu, 14 Jun 2007 04:08:27 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+	Wed, 13 Jun 2007 22:13:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZGQLhbjAx3w1FnwUPaKMscrbZvldE/SRjDHkMp5BGyEu+jF3w6cZlgis/OBEaqubXOyxjLHoMZwRaT4lF0viHFUtm8lqDy/zcYdm5GPkUWv3S0QWrKIrQcD8TJUaD/u6o9GVbpe58+0pV4VPy1BFHGwKfaKuSMezHDBCqCRi0FA=
+Message-ID: <a781481a0706131913s518ed1f1t47685bc7d9cb807f@mail.gmail.com>
+Date: Thu, 14 Jun 2007 07:43:26 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614020827.GO3588@stusta.de>
-References: <466A3EC6.6030706@netone.net.tr> <200706132101.28330.dhazelton@enter.net> <20070614012401.GN3588@stusta.de> <200706132140.13490.dhazelton@enter.net>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Alexandre Oliva" <aoliva@redhat.com>, "Greg KH" <greg@kroah.com>,
+       "debian developer" <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, "Tarkan Erimer" <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
+In-Reply-To: <20070613233541.GA27689@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <200706132140.13490.dhazelton@enter.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <466BCBBC.90305@netone.net.tr>
+	 <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
+	 <20070610160531.GA12179@kroah.com>
+	 <f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
+	 <20070612184110.GB7980@kroah.com>
+	 <orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>
+	 <or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706131415090.14121@woody.linux-foundation.org>
+	 <20070613233541.GA27689@lazybastard.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 09:40:13PM -0400, Daniel Hazelton wrote:
-> On Wednesday 13 June 2007 21:24:01 Adrian Bunk wrote:
-> > On Wed, Jun 13, 2007 at 09:01:28PM -0400, Daniel Hazelton wrote:
-> > > On Wednesday 13 June 2007 20:44:19 Adrian Bunk wrote:
-> > > > On Wed, Jun 13, 2007 at 07:46:15PM -0400, Daniel Hazelton wrote:
-> > > > > On Wednesday 13 June 2007 19:15:42 Alexandre Oliva wrote:
-> > > > > > On Jun 13, 2007, Linus Torvalds <torvalds@linux-foundation.org> 
-> wrote:
-> > > > > > > On Wed, 13 Jun 2007, Alan Cox wrote:
-> > > > > > >> > find offensive, so I don't choose to use it. It's offensive
-> > > > > > >> > because Tivo never did anything wrong, and the FSF even
-> > > > > > >> > acknowledged that. The fact
-> > > > > > >>
-> > > > > > >> Not all of us agree with this for the benefit of future legal
-> > > > > > >> interpretation.
-> > > > > > >
-> > > > > > > Well, even the FSF lawyers did,
-> > > > > >
-> > > > > > Or rather they didn't think an attempt to enforce that in the US
-> > > > > > would prevail (or so I'm told).  That's not saying what TiVo did
-> > > > > > was right, and that's not saying that what TiVo did was permitted
-> > > > > > by the license. Only courts of law can do that.
-> > > > >
-> > > > > Wrong! Anyone with half a brain can make the distinction. What TiVO
-> > > > > did is entirely legal - they fully complied with the GPLv2. Note that
-> > > > > what they *DON'T* allow people to do is run whatever version of
-> > > > > whatever software they want on their hardware. They have that right -
-> > > > > its the "Free Software Foundation" and the GPL - regardless of
-> > > > > version - is a *SOFTWARE* license. ...
-> > > >
-> > > > The GPLv2 says:
-> > > >
-> > > > "For an executable work, complete source code means all the source code
-> > > > for all modules it contains, plus any associated interface definition
-> > > > files, plus the scripts used to control compilation and installation of
-> > > > the executable."
-> > > >
-> > > > The question is whether this includes private keys.
-> > > > Different people have different opinions regarding this issue.
-> > > >
-> > > > If "the complete source code" includes private keys, the GPLv2 requires
-> > > > them to give any costumer the private keys.
-> > > >
-> > > > Fact is that Harald Welte did in several cases successfully convince
-> > > > vendors that private keys are part of the source code if they are
-> > > > required for running the compiled binary on some hardware.
-> > >
-> > > If the hardware was designed for the end-user to change the software
-> > > running on it - including running software that it was never meant to run
-> > > (ie: a complete webserver on cell phone) - then yes, the signing keys are
-> > > a part of the source, as the software running on the device is designed
-> > > to be updated by the user using the provided system.
-> > >
-> > > If, on the other hand, the only "software updates" the user is expected
-> > > to perform are the installation of newer versions of the existing code
-> > > for "Security" or "Bug Fix" reasons then the signing keys aren't part of
-> > > the source.
+[ Gmail did horrible things to the original post by giving it a base64
+content transfer encoding, so majordomo@vger dropped it. It's just
+an off-topic digression, but I cared enough to resend anyway, fwiw. ]
+
+On 6/14/07, Jörn Engel <joern@logfs.org> wrote:
+> On Wed, 13 June 2007 14:33:07 -0700, Linus Torvalds wrote:
 > >
-> > Are you an idiot, or do you just choose to ignore all proof that doesn't
-> > fit your preconceived beliefs?
-> 
-> Nope. Merely stating a distinction. Either a device is distributed, like the 
-> common PC, that is designed for the user to change and update the software 
-> on, or, like the PS2 it isn't designed for that. If I find a way to update my 
-> PS2 to run Linux and find that it doesn't want to start the "Linux Firmware" 
-> because I'm lacking a signing key...
-> 
-> In the case of a device that internally runs Linux (or any other GPL'd 
-> software) and wasn't designed for the end-user to change the software running 
-> on it then the signing keys aren't part of the source. OTOH, if I sell a PC 
-> running Linux that requires the kernel be signed then the signing keys *are* 
-> part of the source, since a PC is designed for the end-user to change the 
-> software running on it.
-> 
-> BTW, nice use of irony with that line. Makes me regret letting my fingers get 
-> ahead of my brain.
-> 
-> > The GPL doesn't give someone distributing the software the choice of how
-> > much to limit the freedom of the user.
-> 
-> Never claimed it did. I just wasn't as specific as I should have been when 
-> giving my examples.
-> 
-> > Either private keys required to run the kernel on the hardware are
-> > always considered part of "the complete source code" or they are never
-> > part of it.
-> 
-> No. It all depends on the use-case. If the hardware is designed for the user 
-> to install their own, custom versions of the code on then the signing keys 
-> are part of the source as defined by the GPLv2.
-> 
-> If, OTOH, the hardware was never meant for the end-user to install custom 
-> versions of the software on, then while the signing keys are still 
-> *technically* part of the source, in practice they are not. Why? Because in 
-> most of those cases the end-user isn't granted the right to install and run 
-> custom binaries on the hardware. If the manufacturer provided the signing 
-> keys they'd be facilitating the commission of a crime. (call it "Breach of 
-> Contract")
->...
+> > The beauty of the GPLv2 is exactly that it's a "tit-for-tat" license, and
+> > you can use it without having to drink the kool-aid.
+>
+> One could even add that "tit-for-tat" appears to be the best strategy
+> in game theory for continuous runs of the prisoners dilemma.
 
-Repetition doesn't let wrong things become true.
+Tit-for-tat is the best *deterministic* strategy when playing
+iterated prisoner's dilemma. But note that "deterministic" and
+"rational" are not adjectives that go well with "humans", and
+most real-world (social) situations are noisy environments --
+miscommunication and misunderstandings are the usual noise.
+A double-D noise perceived by any player would throw a
+tit-for-tat-playing couple into a perennial spiral of D's, for example,
+which is clearly not a Pareto-efficient solution for either.
 
-Where does the GPLv2 talk about the distinction you are trying to make 
-based on distributor intentions?     
+> At times I
+> wonder why game theory isn't taught in schools yet - it might shorten
+> discussions like these.
 
-We are talking about the GPLv2 licence text, not about what you would
-personally prefer.
+Yes, and no.
 
-cu
-Adrian
+Yes - for teaching game theory (and its social relevance) in schools;
+and add behavioral economics to this list :-)
 
--- 
+No - it doesn't shorten discussions, however. And it shouldn't either.
+Human / social situations are complex, Jörn; tit-for-tat can win
+computer contests, for example, but it's not a behaviour one person
+would find as entirely agreeable in another.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Satyam
