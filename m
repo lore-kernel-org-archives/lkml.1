@@ -1,100 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbXFNI37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXFNIde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbXFNI37 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 04:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbXFNI3v
+	id S1754130AbXFNIde (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 04:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbXFNId1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 04:29:51 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:19747 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbXFNI3t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 04:29:49 -0400
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: holzheu@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
-       heiko.carstens@de.ibm.com,
-       "lf_kernel_messages@linux-foundation.org" 
-	<lf_kernel_messages@linux-foundation.org>
-In-Reply-To: <20070613111549.db1fa4d9.akpm@linux-foundation.org>
-References: <1181747217.29512.9.camel@localhost.localdomain>
-	 <20070613111549.db1fa4d9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 14 Jun 2007 10:31:04 +0200
-Message-Id: <1181809864.5446.28.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 14 Jun 2007 04:33:27 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60797 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751807AbXFNId1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 04:33:27 -0400
+X-Authenticated: #153925
+X-Provags-ID: V01U2FsdGVkX1/0AD9kQ/T0IFRnWSG7EzX6m1S51JE2qudYQC6v0n
+	U2aoIVEPHQWZ8U
+From: Bernd Paysan <bernd.paysan@gmx.de>
+To: Alexandre Oliva <aoliva@redhat.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Thu, 14 Jun 2007 10:33:20 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org> <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1246236.CyIZxkf0nW";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200706141033.22605.bernd.paysan@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 11:15 -0700, Andrew Morton wrote: 
-> Your proposal is similar to one I made to some Japanese developers
-> earlier this year.
+--nextPart1246236.CyIZxkf0nW
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Interesting. Our requirement comes from Japan as well.
+On Thursday 14 June 2007 01:49, Alexandre Oliva wrote:
+> Oh, good, let's take this one.
+>
+>   if you distribute copies of such a program, [...]
+>   you must give the recipients all the rights that you have
+>
+> So, TiVo includes a copy of Linux in its DVR.
+>
+> TiVo retains the right to modify that copy of Linux as it sees fit.
+>
+> It doesn't give the recipients the same right.
+>
+> Oops.
+>
+> Sounds like a violation of the spirit to me.
+>
+> Sounds like plugging this hole would retain the same spirit.
 
->   I was more modest, proposing that we
-> 
-> - add an enhanced printk
-> 
->         xxprintk(msgid, KERN_ERR "some text %d\n", some_number);
+Note that Harald Welte has already managed to force Siemens to unlock=20
+a "tivoized" Linux router with the GPLv2 in Germany. German contract law=20
+values intention when the contract has no specific clause that deals with=20
+the issue, and in German law, an accepted license is a contract.
 
-Some kind of id is always required to be able to identify the message.
-The task is to make the tagging as simple as possible.
+So the fact that tivoizing Linux is against the spirit of the GPLv2 is a=20
+court-proof fact, not just some speculation.
 
-> - An externally managed database will provide translations, diagnostics,
->   remedial actions, etc, keyed off the msgid string
+What about if your GPL program ends up in a piece of hardware (e.g. a ROM,=
+=20
+or an embedded ROM, or if it's some GPL code from OpenCores, as gate=20
+netlist in silicon)? My interpretation is that you need a permission from=20
+the author for doing that, unless there's an easy way to replace it with a=
+=20
+modified copy (e.g. if you put the OpenCores stuff into an FPGA, replacing=
+=20
+the configuration PROM would do it).
 
-There I have my doubts if this can work. If you keep an external
-database with the additional information about the messages the kernel
-code and the database will get out of sync. Thats why we advocate the
-kernel-doc style approach: the message catalogue will always be in sync
-because it is delivered with the kernel.
+Some people have difficulties with intentions of contracts rather than=20
+direct rules. That may be due to different rules in different countries. In=
+=20
+continental Europe, contract law usually bases on Code Napoleon, and=20
+there, "good faith" is an important principle (and "good faith" means that=
+=20
+the intention is more important than the actual coded practices). In the=20
+roman law that was used before and has survived in countries who didn't let=
+=20
+Napoleon in (like the UK and the USA), it's slightly different. But a=20
+contract or a license still is not a program where anything that isn't said=
+=20
+explicitely isn't said at all.
 
-> - Format and management of the msgid hasn't been clearly identified yet
->   as far as I know.  But all we really need is that each ID be unique,
->   kernel-wide.  We develop a simple tool which can check the whole tree
->   for duplicated msgids.
+=2D-=20
+Bernd Paysan
+"If you want it done right, you have to do it yourself"
+http://www.jwdt.com/~paysan/
 
-This is a paint point with Michaels approach as well. The KMSG_COMPONENT
-defines are rather ugly. A clever way how to generate kernel unique IDs
-would be nice. Intervention required..
+--nextPart1246236.CyIZxkf0nW
+Content-Type: application/pgp-signature
 
-> - From a practical day-to-day POV what this means is that a person
->   from the kernel-messages team will prepare a patch for your driver
->   which adds the msgids and you the driver author should take care not
->   to break the tagging.
-> 
->   This is deliberately designed to be minimum-impact upon general 
->   developers.  We want a system in place where driver/fs/etc developers
->   can concentrate on what they do, and kernel-message developers can
->   as independently as possibe take care of what _they_ do.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
-With the KMSG approach all that needs to be done is to replace the
-KERN_xxx with KMSG_xxx(<number) and to add a comment at the end of the
-file.
+iD8DBQBGcP1Si4ILt2cAfDARAvmsAKDVtl5xW8z9NsWFX5pvXEftawyJeQCfeHFv
+uZzukcHkkmZnlIGul0BG110=
+=V11W
+-----END PGP SIGNATURE-----
 
-> - A project has started up and there is a mailing list (cc'ed here) and
->   meetings are happening at the LF collaboration summit this week.
-> 
->   Please see https://lists.linux-foundation.org/mailman/listinfo/lf_kernel_messages
->   and don't miss the next conference call ;)
-> 
->   (argh.  The lf_kernel_messages archives are subscriber-only and it could be that
->   only members can post to it.  Oh well.  Please subscribe, and review the archives)
-
-Very interesting. We did not know about this project. Thanks for the
-hint.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+--nextPart1246236.CyIZxkf0nW--
