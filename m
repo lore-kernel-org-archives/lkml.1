@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbXFNU7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbXFNVB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754756AbXFNU7V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXFNU7M
+	id S1753466AbXFNVB6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXFNVBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:59:12 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:57951 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbXFNU7L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:59:11 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=T+H0+/iWgHQEmHJtsIsG2zIBe4cDHP0UWInB1xji69BR9p6vAAOhmQhFxf4rnMqJa
-	wIyFM7f/txmI9caETPKCw==
-Message-ID: <65dd6fd50706141358i39bba32aq139766c8a1a3de2b@mail.gmail.com>
-Date: Thu, 14 Jun 2007 13:58:58 -0700
-From: "Ollie Wild" <aaw@google.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 0/3] no MAX_ARG_PAGES -v2
-Cc: "Luck, Tony" <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
-       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org, "Andrew Morton" <akpm@osdl.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>
-In-Reply-To: <1181810319.7348.345.camel@twins>
+	Thu, 14 Jun 2007 17:01:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59057 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbXFNVBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 17:01:49 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kevin Fox <Kevin.Fox@pnl.gov>, Daniel Hazelton <dhazelton@enter.net>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org>
+	<or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706132042.02728.dhazelton@enter.net>
+	<1181837191.21942.24.camel@zathras.emsl.pnl.gov>
+	<alpine.LFD.0.98.0706140923250.14121@woody.linux-foundation.org>
+	<orsl8ucq2n.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141301340.14121@woody.linux-foundation.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 14 Jun 2007 18:00:08 -0300
+In-Reply-To: <alpine.LFD.0.98.0706141301340.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Thu\, 14 Jun 2007 13\:03\:58 -0700 \(PDT\)")
+Message-ID: <orr6oe9rqf.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070613100334.635756997@chello.nl>
-	 <617E1C2C70743745A92448908E030B2A01AF860A@scsmsx411.amr.corp.intel.com>
-	 <65dd6fd50706132323i9c760f4m6e23687914d0c46e@mail.gmail.com>
-	 <1181810319.7348.345.camel@twins>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -1385,6 +1401,10 @@ int do_execve(char * filename,
->                 goto out;
->         bprm->argv_len = env_p - bprm->p;
->
-> +       retval = expand_arg_vma(bprm);
-> +       if (retval < 0)
-> +               goto out;
-> +
->         retval = search_binary_handler(bprm,regs);
->         if (retval >= 0) {
->                 /* execve success */
+On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-At this point bprm->argc hasn't been finalized yet.  For example, the
-script binfmt reads the script header and adds additional arguments.
-The flush_old_exec() function is a better place to call this.
+> Tivo *respected* the freedoms, and gave source back, and gave you all the 
+> same rights you had to Linux originally, and to their modifications.
 
-I'm not 100% sure this is the right way to handle this, though.  The
-problem isn't as simple as ensuring the stack doesn't overflow during
-argument allocation.  We also need to ensure the program has
-sufficient stack space to run subsequently.  Otherwise, the observable
-behavior is identical.  Since we can't realistically predict
-acceptable stack availability requirements, some amount of uncertainty
-is always going to exist.  A good heuristic, though, might be to limit
-argument size to a percentage (say 25%) of maximum stack size and
-validate this inside copy_strings().
+> How stupid are you to not acknowledge that?
 
-Ollie
+> Tivo limited their *hardware*, not the software.
+
+Have you ever wondered *why* it limited the hardware?
+
+Is it per chance such that I cannot modify the software that runs on
+the hardware?
+
+How is that respecting the freedoms?  How is this not imposing further
+restrictions?
+
+
+And, more importantly, how is it that permitting this makes for
+*better* compliance with your tit-for-tat conceptions about the GPL?
+
+I.e., if Tivoization is the only issue that you think makes GPLv3 a
+worse license than GPLv2, and you like GPLv2 because of this
+tit-for-tat, surely you should be able to explain why Tivoization
+promotes this tit-for-tat notion better than GPLv3, right?
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
