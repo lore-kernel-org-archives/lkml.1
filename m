@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbXFNP3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbXFNPcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753970AbXFNP3I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 11:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXFNP24
+	id S1754021AbXFNPcc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 11:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXFNPc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 11:28:56 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:45036 "EHLO relay.sw.ru"
+	Thu, 14 Jun 2007 11:32:26 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:2690 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbXFNP24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 11:28:56 -0400
-Date: Thu, 14 Jun 2007 19:29:27 +0400
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
+	id S1751566AbXFNPcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 11:32:25 -0400
+Date: Thu, 14 Jun 2007 11:31:19 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
 To: linux-kernel@vger.kernel.org
-Cc: linux-ext4@vger.kernel.org
-Subject: [PATCH] ext4:fix unexpected error from ext4_reserve_global
-Message-ID: <20070614152927.GC6517@localhost.sw.ru>
-Mail-Followup-To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Cc: mike.miller@hp.com, iss_storagedev@hp.com, akpm@linux-foundation.org,
+       nhorman@tuxdriver.com
+Subject: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
+Message-ID: <20070614153119.GC32137@hmsreliant.homelinux.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just cant belive my eyes then i saw this at the first time...
-simple test: strace dd if=/dev/zero of=/mnt/file
+Hey -
+	cciss hardware currently can continue to send responses to scsi commands
+after the host system has undergone a kexec reboot.  The way the drier is
+currently written, reception of these commands results in a BUG halt, since it
+can't match the response to any issued command since the boot.  This patch
+corrects that by using the kexec reset_devices command line paramter to force
+ignore any commands that it cant correlate.
 
-open("/dev/zero", O_RDONLY)             = 0
-close(1)                                = 0
-open("/mnt/test/file", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 1
-read(0, "\0\0\0\0\0\0\0\0\0"..., 512) = 512
-write(1, "\0\0\0\0\0\0\0\0"..., 512) = 512
-read(0, "\0\0\0\0\0\0\0\0\0"..., 512) = 512
-write(1, "\0\0\0\0\0\0\0\0"..., 512) = -1 ENOENT (No such fil
-e or directory)
+Regards
+Neil
 
-This strange error returned from ext4_reserve_global().
-It's just typo because:
-a) In fact this is 100% ENOSPC situation
-b) simular function ext4_reserve_local() returns -ENOSPC
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
----
- fs/ext4/balloc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index 4d7bfd2..43ae8f8 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -1920,7 +1920,7 @@ int ext4_reserve_global(struct super_block *sb, int blocks)
- {
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	struct ext4_reservation_slot *rs;
--	int i, rc = -ENOENT;
-+	int i, rc = -ENOSPC;
- 	__u64 free = 0;
+ cciss.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 5acc6c4..ec1c1d2 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -2131,6 +2131,14 @@ static int add_sendcmd_reject(__u8 cmd, int ctlr, unsigned long complete)
+ 		       ctlr, complete);
+ 		/* not much we can do. */
+ #ifdef CONFIG_CISS_SCSI_TAPE
++		/* We might get notification of completion of commands
++		 * which we never issued in this kernel if this boot is
++		 * taking place after previous kernel's crash. Simply
++		 * ignore the commands in this case.
++		 */
++		if (reset_devices)
++			return 0;
++
+ 		return 1;
+ 	}
  
- 	rs = sbi->s_reservation_slots;
--- 
-1.5.2
-
-
