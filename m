@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbXFNSkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbXFNSmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753821AbXFNSkh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 14:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbXFNSkb
+	id S1754085AbXFNSmZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 14:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbXFNSmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 14:40:31 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:53193 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751102AbXFNSka (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 14:40:30 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Michael Gerdau <mgd@technosis.de>
-Cc: Bongani Hlope <bhlope@mweb.co.za>, Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+	Thu, 14 Jun 2007 14:42:18 -0400
+Received: from ik-out-1112.google.com ([66.249.90.180]:8622 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751102AbXFNSmR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 14:42:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gnfAeYR8UILQzlMiDgFjAZ7PievBOFNRcoC2+ENI9VwfQYcs8a71rZB3OE647YwsonnOsdwu+i23NnsLhr4ongS4y8le6e8Jffgbh068pTNPyAyy9FK9mfktrYSdY7WtzaqkseDLPBTmhJu6tYtFgPINe/gNpHF6rynPVzhtrDg=
+Message-ID: <912ec82a0706141142v2a7db410x16f18df16da855c2@mail.gmail.com>
+Date: Thu, 14 Jun 2007 21:42:16 +0300
+From: "Neshama Parhoti" <pneshama@gmail.com>
+To: linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: Your message of "Thu, 14 Jun 2007 06:44:25 +0200."
-             <200706140644.50109.mgd@technosis.de>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br> <200706140215.54179.bhlope@mweb.co.za>
-            <200706140644.50109.mgd@technosis.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1181846410_3467P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+In-Reply-To: <dfb262380706141129u114111b1r5ff4fa1d843c2e48@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Thu, 14 Jun 2007 14:40:10 -0400
-Message-ID: <22131.1181846410@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <466A3EC6.6030706@netone.net.tr>
+	 <orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <200706132304.21984.dhazelton@enter.net>
+	 <20070614112329.3645c397@the-village.bc.nu>
+	 <20070614103846.GA7902@elte.hu>
+	 <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706141045230.14121@woody.linux-foundation.org>
+	 <20070614182356.GA11828@kroah.com>
+	 <4f436aae0706141128y5cfc8e52nb52745dfe8820341@mail.gmail.com>
+	 <dfb262380706141129u114111b1r5ff4fa1d843c2e48@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1181846410_3467P
-Content-Type: text/plain; charset=us-ascii
+Forgive me for a little off-topic question but I have a difficulty
+to understand a technical issue about this all.
 
-On Thu, 14 Jun 2007 06:44:25 +0200, Michael Gerdau said:
+The Linux Kernel cannot easily switch licenses because of the
+large amount of people involved in it (i.e. contributed code on which
+they have copyright).
 
-> > > TiVo retains the right to modify that copy of Linux as it sees fit.
-> > >
-> > > It doesn't give the recipients the same right.
-> > It does, can't you modify their kernel source? Where does it say you should be
-> > able to run you modifications on the same hardware?
-> 
-> Come on! The whole idea of software is to have it run on some HW.
-> Why would I want to change it in the first place if I can't run it ?
+But many of FSF's GNU projects are similar - for example GCC has contributors
+from many many companies and individuals, from which I presume there
+are who might object to GPLv3.
 
-Maybe this quote will summarize the situation:
-
-Judith: [on Stan's desire to be a mother] Here! I've got an idea: Suppose you
-	agree that he can't actually have babies, not having a womb - which is
-	nobody's fault, not even the Romans' - but that he can have the *right*
-	to have babies.
-Francis: Good idea, Judith. We shall fight the oppressors for your right to
-	have babies, brother... sister, sorry.
-Reg: What's the *point*?
-Francis: What?
-Reg: What's the point of fighting for his right to have babies, when he can't
-	have babies?
-Francis: It is symbolic of our struggle against oppression.
-Reg: It's symbolic of his struggle against reality.
-
-		-- Monty Python's "Life of Brian"
-
-
-
---==_Exmh_1181846410_3467P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGcYuKcC3lWbTT17ARAt+pAKDnzxQnqaMJO5iBMvdSDLOF6a1x4wCdFZ2O
-QRfJowR+zm35zezl6qgXVFU=
-=43VY
------END PGP SIGNATURE-----
-
---==_Exmh_1181846410_3467P--
+So how come they can so easily move to GPLv3 ?
+Don't they have to have permission from all of those contributors (many
+of which are Linux companies and distributors who might prefer staying
+at GPLv2) ?
