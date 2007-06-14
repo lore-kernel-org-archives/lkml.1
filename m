@@ -1,51 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbXFNElR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbXFNEp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbXFNElR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 00:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbXFNElD
+	id S1754073AbXFNEp1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 00:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbXFNEpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 00:41:03 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:39400 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752459AbXFNElA (ORCPT
+	Thu, 14 Jun 2007 00:45:19 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:56739 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750975AbXFNEpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 00:41:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Kvft4VLDFjelmAPcIHCSO8+GeFmPXgZSEEj/9rdIwVbXasf88zhOilsx9DZBtEag+jZ6cbrYpFU7Sih9rCvWBf+1OddQLkV1/TBt+qKjgoJJppK6tAYgOBUnLwSmfcL0Y8p1m6G/IaFiFa9PgOFjdRVsss1SlceGR9IDkw6N9Xc=
-Message-ID: <21d7e9970706132140v2b357332k5a14da05ab6257b1@mail.gmail.com>
-Date: Thu, 14 Jun 2007 14:40:59 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Carlo Wood" <carlo@alinoe.com>, "Dave Airlie" <airlied@gmail.com>,
-       "Dave Jones" <davej@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: DRI/AGP on AMD64 based machine
-In-Reply-To: <20070614043611.GA21002@alinoe.com>
+	Thu, 14 Jun 2007 00:45:18 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: Bongani Hlope <bhlope@mweb.co.za>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Thu, 14 Jun 2007 06:44:25 +0200
+User-Agent: KMail/1.9.7
+Cc: Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br> <200706140215.54179.bhlope@mweb.co.za>
+In-Reply-To: <200706140215.54179.bhlope@mweb.co.za>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart1284544.hfIq8RzoeR";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1181721735.4418.10.camel@malory>
-	 <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com>
-	 <21d7e9970706131817t40ca2d77w658e2540dc3ee7c4@mail.gmail.com>
-	 <20070614043611.GA21002@alinoe.com>
+Message-Id: <200706140644.50109.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1181796318;12acdc61;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/14/07, Carlo Wood <carlo@alinoe.com> wrote:
-> On Thu, Jun 14, 2007 at 11:17:50AM +1000, Dave Airlie wrote:
-> > How do you have a 965G in an amd64 box? does not compute.
->
-> Why not?  It's the ASUS P5B Deluxe motherboard with an
-> Intel P965/ICH8R chipset. The cpu is a QX6700 2.66 GHz,
-> that's an Intel Core 2 Quad Extreme.
->
-> amd64 is just the architecture, not the brand. It's an
-> all intel machine, if that's what you mean.
->
+--nextPart1284544.hfIq8RzoeR
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-x86-64 is an architecture, amd64 is used by some people however in
-your case agp-amd64 is not what you wanted, you have a problem with
-intel-agp.c then.. which is different than what started this thread..
+> > > The fact is, Tivo didn't take those rights away from you, yet the FSF
+> > > says that what Tivo did was "against the spirit". That's *bullshit*.
+> >
+> > Oh, good, let's take this one.
+> >
+> >   if you distribute copies of such a program, [...]
+> >   you must give the recipients all the rights that you have
+> >
+> > So, TiVo includes a copy of Linux in its DVR.
+> >
+>=20
+> And they give you the same right that they had, which is obtain free soft=
+ware=20
+> that you can modify and redistribute. There's nothing in there that says =
+they=20
+> should give you the tools they used after they received the software, whi=
+ch=20
+> is what you seem to be looking for.
 
-Dave.
+IANAL so I won't comment on the legal aspects of TiVo's doing.
+
+However it definitely is against _MY_ understanding of the spirit
+of the GPL. At least to me that's quite obvious. I'm sure you all
+know the story of the printer driver RMS couldn't fix that reportedly
+made him start the whole FSF business.
+
+Looking at what TiVo did I realize glaring similarities.
+
+<disclaimer>
+I'm in no way related with the FSF. I hereby state I'm not parroting
+anyone's else position but have come to this conclusion solely on
+my own.
+</disclaimer>
+
+> > TiVo retains the right to modify that copy of Linux as it sees fit.
+> >
+> > It doesn't give the recipients the same right.
+>=20
+> It does, can't you modify their kernel source? Where does it say you shou=
+ld be=20
+> able to run you modifications on the same hardware?
+
+Come on! The whole idea of software is to have it run on some HW.
+Why would I want to change it in the first place if I can't run it ?
+
+If what they did is actually allowed by the wording of the legal phrases
+of the GPLv2 then that IMO is a loophole w/r to the spirit (as I understand)
+it and IMO should be plugged.
+
+> The only fear that I have with the whole Tivo saga, is that companies lik=
+e=20
+> Dell can use the same thing to say: "Our hardware will only run Company's=
+ X=20
+> distribution of Linux".=20
+
+Would not such a restriction voilate the spirit of the GPL ?
+
+Anyway, my simplistic view is:
+Once it is under the GPL I could change it and actually make the
+changes work as I see fit.
+
+That's what I think my freedom as of the GPL is about.
+
+Now all that needs to be done is make sure the legal phrases are such
+that they convince the judges they actually mean this in court too.
+
+Best wishes,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart1284544.hfIq8RzoeR
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGcMfCUYYhyuxDQc4RAgfPAJ4iLI1KnRtHZcUR6iJsiMbZAe1lawCeM4IF
+vwufmKrYVVQpSdL+X29Klx4=
+=0jtN
+-----END PGP SIGNATURE-----
+
+--nextPart1284544.hfIq8RzoeR--
