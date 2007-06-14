@@ -1,98 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbXFNNtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752805AbXFNNvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbXFNNtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 09:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbXFNNtJ
+	id S1752805AbXFNNvY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 09:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXFNNvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 09:49:09 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:46514 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbXFNNtI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 09:49:08 -0400
-Date: Thu, 14 Jun 2007 09:48:47 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] sched: fix SysRq-N (normalize RT tasks)
-In-reply-to: <20070614094830.GA494@elte.hu>
-To: Ingo Molnar <mingo@elte.hu>
+	Thu, 14 Jun 2007 09:51:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52882 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751542AbXFNNvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 09:51:16 -0400
+Date: Thu, 14 Jun 2007 15:51:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gene Heskett <gene.heskett@gmail.com>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Chris Wright <chrisw@sous-sol.org>
-Message-id: <200706140948.48005.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070614094830.GA494@elte.hu>
-User-Agent: KMail/1.9.6
+Subject: Re: [patch] sched: fix SysRq-N (normalize RT tasks)
+Message-ID: <20070614135106.GA8325@elte.hu>
+References: <20070614094830.GA494@elte.hu> <200706140948.48005.gene.heskett@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706140948.48005.gene.heskett@gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007, Ingo Molnar wrote:
->From: Ingo Molnar <mingo@elte.hu>
->Subject: [patch] sched: fix SysRq-N (normalize RT tasks)
->
->Gene Heskett reported the following problem while testing CFS: SysRq-N
->is not always effective in normalizing tasks back to SCHED_OTHER.
->
->the reason for that turns out to be the following bug:
->normalize_rt_tasks() uses for_each_process() to iterate through all
->tasks in the system. The problem is, this method does not iterate
->through all tasks, it iterates through all thread groups. The proper
->mechanism to enumerate all tasks is to use a do_each_thread() +
->while_each_thread() loop.
->
->obvious bugfix for v2.6.22 inclusion. -stable candidate as well.
->
->Reported-by: Gene Heskett <gene.heskett@gmail.com>
->Signed-off-by: Ingo Molnar <mingo@elte.hu>
->---
-> kernel/sched.c |    8 +++++---
-> 1 file changed, 5 insertions(+), 3 deletions(-)
->
->Index: linux/kernel/sched.c
->===================================================================
->--- linux/kernel/sched.c
->+++ linux/kernel/sched.c
->@@ -7071,12 +7071,13 @@ EXPORT_SYMBOL(__might_sleep);
-> void normalize_rt_tasks(void)
-> {
-> 	struct prio_array *array;
->-	struct task_struct *p;
->+	struct task_struct *g, *p;
-> 	unsigned long flags;
-> 	struct rq *rq;
->
-> 	read_lock_irq(&tasklist_lock);
->-	for_each_process(p) {
->+
->+	do_each_thread(g, p) {
-> 		if (!rt_task(p))
-> 			continue;
->
->@@ -7094,7 +7095,8 @@ void normalize_rt_tasks(void)
->
-> 		__task_rq_unlock(rq);
-> 		spin_unlock_irqrestore(&p->pi_lock, flags);
->-	}
->+	} while_each_thread(g, p);
->+
-> 	read_unlock_irq(&tasklist_lock);
-> }
 
-Ingo:  I appended this patch to the cfs-v16 patch for 2.6.22-rc4, and got this 
-while applying it:
+* Gene Heskett <gene.heskett@gmail.com> wrote:
 
-patching file kernel/sched.c
-Hunk #1 FAILED at 7071.
-Hunk #2 FAILED at 7095.
-2 out of 2 hunks FAILED -- saving rejects to file kernel/sched.c.rej
-done
+> Ingo: I appended this patch to the cfs-v16 patch for 2.6.22-rc4, and 
+> got this while applying it:
+> 
+> patching file kernel/sched.c
+> Hunk #1 FAILED at 7071.
+> Hunk #2 FAILED at 7095.
+> 2 out of 2 hunks FAILED -- saving rejects to file kernel/sched.c.rej
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-One man tells a falsehood, a hundred repeat it as true.
+yep, this fix is already included in CFS. (in fact in CFS i also changed 
+this function to renormalizing negative-nice tasks to nice-0 - but this 
+is not something upstream has to pick up for .22.)
+
+	Ingo
