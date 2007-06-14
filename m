@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbXFNXSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbXFNXS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbXFNXSL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 19:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbXFNXR6
+	id S1758601AbXFNXS1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 19:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbXFNXSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 19:17:58 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:46137
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751965AbXFNXR5 (ORCPT
+	Thu, 14 Jun 2007 19:18:17 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:3270 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755820AbXFNXSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 19:17:57 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Bernd Paysan <bernd.paysan@gmx.de>
+	Thu, 14 Jun 2007 19:18:15 -0400
+Date: Fri, 15 Jun 2007 01:18:12 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alexandre Oliva <aoliva@redhat.com>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 19:17:58 -0400
-User-Agent: KMail/1.9.6
-Cc: "Alan Milnes" <alan@itfoundation.org.uk>, linux-kernel@vger.kernel.org
-References: <466A3EC6.6030706@netone.net.tr> <b200add30706140708p41e943dbm5d14ba52a6e0ae75@mail.gmail.com> <200706141744.08408.bernd.paysan@gmx.de>
-In-Reply-To: <200706141744.08408.bernd.paysan@gmx.de>
+Message-ID: <20070614231812.GA9463@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Alexandre Oliva <aoliva@redhat.com>, Adrian Bunk <bunk@stusta.de>,
+	Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+	debian developer <debiandev@gmail.com>, david@lang.hm,
+	Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+References: <20070614020827.GO3588@stusta.de> <200706132243.14651.dhazelton@enter.net> <20070614025640.GQ3588@stusta.de> <9578.1181793617@turing-police.cc.vt.edu> <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org> <orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141100390.14121@woody.linux-foundation.org> <ork5u6cpc2.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141304210.14121@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706141917.58824.rob@landley.net>
+In-Reply-To: <alpine.LFD.0.98.0706141304210.14121@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 11:44:07 Bernd Paysan wrote:
-> On Thursday 14 June 2007 16:08, Alan Milnes wrote:
-> > Agreed - if you want to take my work you are welcome as long as you
-> > contribute back your changes.  That's the deal that GPL2 enforces and
-> > why it has been so successful.
->
-> That may be a side effect of the GPL, but it's actually not how the GPLv2
-> works (nor is it the intention). "Contribute back" means upstream. There's
-> no such provision in the GPLv2, you contribute only downstream. And there
-> are cases where you don't need to contribute at all.
+On Thu, Jun 14, 2007 at 01:09:46PM -0700, Linus Torvalds wrote:
+> I'm the original author, and I selected the GPLv2 for Linux.
+[...]
+> I'm not going to bother discussing this any more. You don't seem to 
+> respect my right to choose the license for my own code.
 
-And the Linux kernel community has been familiar with this situation all 
-along.  It's the bargain the kernel developers struck with each other a 
-decade and a half ago.
+This is the main reason I dislike GPLwhatever: there is no notion
+of "orginal author". You might have written 99% of the code, that
+doesn't matter. You have no rights whatsoever once you release
+something under the GPL (no more than ANYOne else).
 
-Now the FSF is coming along and being Darth Vader: "I am altering the bargain.  
-Pray I don't alter it any further."
+The GPL is nice for the community, and for the users - but very,
+very bad towards it's authors (taking all and every right you might
+have). If John Doe wants to re-release the whole kernel under
+GPLv3, then all he needs is a website and some bandwidth.
 
-> I think this above explains fairly well the "misunderstandings" that are
-> appearing here. The GPL is not reflective (tit-for-tat), it's transient. If
-> there's a loop in the transient propagation, it becomes reflective through
-> the loop, but not by itself. This was the case in GPLv1, is the case in
-> GPLv2, and will be the case in GPLv3.
-
-That's not specifically a limitation of the GPL, that's a limitation of 
-copyright law which forms the basis of the GPL.  It covers distribution, not 
-usage.
-
-GPLv2 eliminates the case where I have a modified binary I contributed to, but 
-can't see the source code of those modifications.  This has the pragmatic 
-effect of greatly reducing forking in a project, such as the Emacs/Lucid 
-Emacs fork that inspired the "Emacs license" that became GPLv1.
-
-Rob
+-- 
+Carlo Wood <carlo@alinoe.com>
