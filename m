@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbXFNVmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXFNVqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbXFNVmJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:42:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXFNVly
+	id S1754132AbXFNVqx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXFNVqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:41:54 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35879 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750695AbXFNVlx (ORCPT
+	Thu, 14 Jun 2007 17:46:45 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:35955 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbXFNVqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:41:53 -0400
-Date: Thu, 14 Jun 2007 22:47:22 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chris Adams <cmadams@hiwaay.net>
-Cc: linux-kernel@vger.kernel.org
+	Thu, 14 Jun 2007 17:46:44 -0400
+Message-ID: <4671B734.1040401@nortel.com>
+Date: Thu, 14 Jun 2007 15:46:28 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Alexandre Oliva <aoliva@redhat.com>
+CC: Daniel Hazelton <dhazelton@enter.net>, Paul Mundt <lethal@linux-sh.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614224722.570e093b@the-village.bc.nu>
-In-Reply-To: <20070614205541.GA886803@hiwaay.net>
-References: <fa.V8u0BBHrkymrjcYrFArgehF4jRA@ifi.uio.no>
-	<fa.98cYXp0MWFizp+AzMAkKWAo+bpE@ifi.uio.no>
-	<fa.21pY11gonruis9l1QAvUgcD/c7g@ifi.uio.no>
-	<fa.dR+SnekmQGzom7HRgnAyn3+gVkU@ifi.uio.no>
-	<20070614205541.GA886803@hiwaay.net>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <20070614073232.GB22543@linux-sh.org> <ormyz2fp8p.fsf@oliva.athome.lsd.ic.unicamp.br> <200706141617.46734.dhazelton@enter.net> <or645q9qgw.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or645q9qgw.fsf@oliva.athome.lsd.ic.unicamp.br>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Jun 2007 21:46:32.0427 (UTC) FILETIME=[78F613B0:01C7AECD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->   Activities other than copying, distribution and modification are not
->   covered by this License; they are outside its scope.  The act of
->   running the Program is not restricted, ...
-> 
-> The license does not cover running of the program.  It doesn't restrict
-> it, but it doesn't cover it.  Claiming otherwise is turning the GPL into
-> yet another dreaded EULA.
+Alexandre Oliva wrote:
+> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-For many juridisctions loading from disk into memory is copying and in
-some from memory to CPU cache a second copy. This is one reason as I
-understand it GPLv3 talks about "conveying" - to avoid that mess and
-confusion.
+>>*AND* the GPL has never been about making the source available to
+>>everyone - just to those that get the binaries.
 
->   In addition, mere aggregation of another work not based on the Program
->   with the Program (or with a work based on the Program) on a volume of
->   a storage or distribution medium does not bring the other work under
->   the scope of this License.
-> 
-> TiVo's firmware (and any restrictions it may carry) is not affected by
-> the GPLv2.
+> Exactly.  Not even to the upstream distributor.  That's where Linus'
+> theory of tit-for-tat falls apart.
 
-Really irrelevant to the discussion. Tivo's firmware is up to them.
-Whether the resulting system permits them to include GPLv2 software with
-it is what matters.
+Nope.
 
-Alan
+case 1:  Upstream provides source, tivo modifies and distributes it (to 
+their customers).
+
+case 2: tivo provides source, end user modifies and distributes it 
+(possibly to their customers, maybe to friends, possibly even to upstream).
+
+See?  Tit for tat.
+
+Chris
