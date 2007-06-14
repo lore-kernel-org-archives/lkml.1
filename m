@@ -1,89 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbXFNDyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbXFND41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753634AbXFNDyQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 23:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbXFNDyB
+	id S1754493AbXFND41 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 23:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbXFND4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 23:54:01 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4157 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752190AbXFNDyA (ORCPT
+	Wed, 13 Jun 2007 23:56:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59979
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752544AbXFND4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 23:54:00 -0400
-Date: Thu, 14 Jun 2007 13:53:41 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
+	Wed, 13 Jun 2007 23:56:17 -0400
+Date: Wed, 13 Jun 2007 20:56:34 -0700 (PDT)
+Message-Id: <20070613.205634.45179442.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: kaber@trash.net, oliver@neukum.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
 Subject: Re: cannot set IP for ethernet
-Message-ID: <20070614035341.GA21010@gondor.apana.org.au>
-References: <200706121441.13561.oliver@neukum.org> <466EA861.2070509@trash.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070614035341.GA21010@gondor.apana.org.au>
+References: <200706121441.13561.oliver@neukum.org>
+	<466EA861.2070509@trash.net>
+	<20070614035341.GA21010@gondor.apana.org.au>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <466EA861.2070509@trash.net>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 04:06:25PM +0200, Patrick McHardy wrote:
-> Oliver Neukum wrote:
-> > with 2.6.22-rc4-git2 I am getting errors when setting IP for ethernet
-> > interfaces:
-> > 
-> > ioctl(4, SIOCSIFADDR, 0x7fff94931600)   = -1 ENOBUFS (No buffer space available)
-> > 
-> > The error is independant of the interface. It happens to all interfaces.
-> > There's nothing in the syslog.
-> > 
-> > valisk:/home/oliver # uname -a
-> > Linux valisk 2.6.22-rc4-git2-default #3 SMP Tue Jun 12 13:27:54 CEST 2007 x86_64 x86_64 x86_64 GNU/Linux
-> 
-> This can happen if the initial inetdev allocation when the netdevice is
-> registered fails. I think it would make sense to try to allocate again
-> when adding addresses in that case, otherwise there is no way of
-> recovery other than unregistering and registering the device again.
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Thu, 14 Jun 2007 13:53:41 +1000
 
-Actually in his case it's because 2.6.22-rc4-git2 doesn't have the
-following changeset.
+> Actually in his case it's because 2.6.22-rc4-git2 doesn't have the
+> following changeset.
 
-Let me have a think about your approach too.
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-commit 6363097cc4d182f93788131b5d8f72aa91d950a0
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Thu Jun 7 18:35:38 2007 -0700
-
-    [IPV4]: Do not remove idev when addresses are cleared
-
-    Now that we create idev before addresses are added, it no longer makes
-    sense to remove them when addresses are all deleted.
-
-    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-6363097cc4d182f93788131b5d8f72aa91d950a0
-diff --git a/net/ipv4/devinet.c b/net/ipv4/devinet.c
-index fa97b96..abf6352 100644
---- a/net/ipv4/devinet.c
-+++ b/net/ipv4/devinet.c
-@@ -327,12 +327,8 @@ static void __inet_del_ifa(struct in_device *in_dev, struct in_ifaddr **ifap,
- 		}
- 
- 	}
--	if (destroy) {
-+	if (destroy)
- 		inet_free_ifa(ifa1);
--
--		if (!in_dev->ifa_list)
--			inetdev_destroy(in_dev);
--	}
- }
- 
- static void inet_del_ifa(struct in_device *in_dev, struct in_ifaddr **ifap,
+It's on the way, it just hasn't been picked up yet.
