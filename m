@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbXFNRRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbXFNRUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbXFNRRU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 13:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbXFNRRL
+	id S1754109AbXFNRUh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 13:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXFNRUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 13:17:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56105 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbXFNRRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 13:17:09 -0400
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706132042.02728.dhazelton@enter.net>
-	<ord4zzjm5u.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706132347.42371.dhazelton@enter.net>
-	<orfy4vhyni.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614073232.GB22543@linux-sh.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 13:57:26 -0300
-In-Reply-To: <20070614073232.GB22543@linux-sh.org> (Paul Mundt's message of "Thu\, 14 Jun 2007 16\:32\:32 +0900")
-Message-ID: <ormyz2fp8p.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 14 Jun 2007 13:20:30 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:58187 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751111AbXFNRUa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 13:20:30 -0400
+Message-ID: <467178D3.6010204@grupopie.com>
+Date: Thu, 14 Jun 2007 18:20:19 +0100
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Bernd Paysan <bernd.paysan@gmx.de>, Krzysztof Halasa <khc@pm.waw.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr> <200706141023.21624.bernd.paysan@gmx.de> <20070614153935.GO21478@ftp.linux.org.uk> <200706141832.58526.bernd.paysan@gmx.de> <20070614164124.GP21478@ftp.linux.org.uk> <d120d5000706141001o2d00f20cqb4133bf7b9ba11ab@mail.gmail.com> <20070614170902.GQ21478@ftp.linux.org.uk>
+In-Reply-To: <20070614170902.GQ21478@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Paul Mundt <lethal@linux-sh.org> wrote:
+Al Viro wrote:
+> On Thu, Jun 14, 2007 at 01:01:20PM -0400, Dmitry Torokhov wrote:
+>>> Multiple authors == need permission from each author with enough
+>>> contributions to that file to make the contributions in question
+>>> copyrightable.
+>>>
+>>> And in my case (and case of gregkh, and...) that would be considerably
+>>> more than a couple of files.  Really.
+>> I would expect that if you contribute to a file that explicitely says
+>> "GPL v2 or later" and you do not change that wording then you agree
+>> GPL v2 or later for that particular contribution. So for example
+>> drivers/net/plip.c could be changed to GPL v3 even though you
+>> contributed to it.
+> 
+> After you exclude such cases it's still more than a couple of files...
 
-> I don't see how you can claim that the vendor is infringing on your
-> freedom, _you_ made the decision to go out and buy the product knowing
-> that the vendor wasn't going to go out of their way to help you hack
-> the device.
+FWIW,
 
-But I also made this decision fully aware that the software included
-in the package was published under a license that said I was entitled
-to modify it.  More than once I purchased a device that claimed to
-have GNU/Linux software on it, only to find out that I couldn't use
-the freedoms, because the distributor was infringing the license in
-various ways.
+$ find -name "*.c" | xargs grep "any later version" | wc -l
+3138
+$ find -name "*.c" | wc -l
+9482
 
-> If you don't like what the vendor has done with the product, you have the
-> freedom to not support the vendor, and to try and encourage people to
-> follow suit.
+Watching the output of the first grep without "wc -l" shows that, 
+although it is not 100% accurate, it is still ok just to get a rough 
+estimate.
 
-Sure.  But wouldn't it be nice if the copyright holder could also help
-in this effort?  It doesn't mean the copyright holder has to: s/he can
-always grant an additional permission, or simply refrain from
-enforcing this provision of the license.
+So yes, ~6300 files are definitely more than a couple ;)
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Paulo Marques - www.grupopie.com
+
+"God is love. Love is blind. Ray Charles is blind. Ray Charles is God."
