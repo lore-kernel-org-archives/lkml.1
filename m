@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751074AbXFNQho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752706AbXFNQld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751074AbXFNQho (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 12:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbXFNQhi
+	id S1752706AbXFNQld (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 12:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbXFNQl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 12:37:38 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:37053 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbXFNQhh (ORCPT
+	Thu, 14 Jun 2007 12:41:26 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52024 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbXFNQl0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 12:37:37 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46716E7D.9030205@s5r6.in-berlin.de>
-Date: Thu, 14 Jun 2007 18:36:13 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: Oleg Verych <olecom@flower.upol.cz>
-CC: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: regression tracking (Re: Linux 2.6.21)
-References: <20070426040806.GJ3468@stusta.de> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <46715FD4.6040803@s5r6.in-berlin.de> <20070614163923.GM7266@flower.upol.cz>
-In-Reply-To: <20070614163923.GM7266@flower.upol.cz>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jun 2007 12:41:26 -0400
+Date: Thu, 14 Jun 2007 17:41:24 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Bernd Paysan <bernd.paysan@gmx.de>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070614164124.GP21478@ftp.linux.org.uk>
+References: <466A3EC6.6030706@netone.net.tr> <200706141023.21624.bernd.paysan@gmx.de> <20070614153935.GO21478@ftp.linux.org.uk> <200706141832.58526.bernd.paysan@gmx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706141832.58526.bernd.paysan@gmx.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Verych wrote:
-> I thought somebody, who familiar with that, might propose to setup/tune
-> it, but not doing yet another NIH thing,
+On Thu, Jun 14, 2007 at 06:32:57PM +0200, Bernd Paysan wrote:
 
-I may have missed something, but I recall that Adrian's bugtracking,
-while it lasted, and now Michal's continuing it mostly came into being
-because Adrian just started doing it and others soon found it very useful.
--- 
-Stefan Richter
--=====-=-=== -==- -===-
-http://arcgraph.de/sr/
+> BTW: If I grep through Linux, I find two files where you have noted your 
+> copyright and the release conditions (GPL v2), and I think last time I did 
+> the same thing, I found two GPLv2-files, as well - all other files with "Al 
+> Viro" in it apparently have multiple authors. These two files may be the 
+> same ones, or maybe there are two other files, making it four in total (or 
+> some further I missed, the text of v2 only is not as normed as the text 
+> for "v2 or later", but in general it's rare). These files clearly have to 
+> be rewritten or premission has to be asked when updating COPYING to GPLv3. 
+> But that's not a show-stopper.
+ 
+Rot.  "Multiple authors" doesn't get you out of that.  If you take a code
+available under GPLv2 or later and combine it with code under specific
+version of GPL, result is under than specific version of GPL.  If you want
+to argue against that, make sure to Cc RMS on that, I would really like to
+hear his opinion.
+
+Multiple authors == need permission from each author with enough
+contributions to that file to make the contributions in question
+copyrightable.
+
+And in my case (and case of gregkh, and...) that would be considerably
+more than a couple of files.  Really.
