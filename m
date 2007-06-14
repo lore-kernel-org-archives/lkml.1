@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbXFNUHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbXFNUH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbXFNUHU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXFNUHI
+	id S1755948AbXFNUH5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXFNUHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:07:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60619 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752561AbXFNUHF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:07:05 -0400
-Date: Thu, 14 Jun 2007 13:06:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: clameter@sgi.com
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
- Blocksize support
-Message-Id: <20070614130645.cabdff1b.akpm@linux-foundation.org>
-In-Reply-To: <20070614193839.878721298@sgi.com>
-References: <20070614193839.878721298@sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 14 Jun 2007 16:07:49 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:60759 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750871AbXFNUHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 16:07:48 -0400
+Date: Thu, 14 Jun 2007 22:07:47 +0200
+From: DervishD <lkml@dervishd.net>
+To: Jan Knutar <jk-lkml@sci.fi>
+Cc: linux-kernel@vger.kernel.org, Juergen Beisert <juergen127@kreuzholzen.de>
+Subject: Re: ext2 on flash memory
+Message-ID: <20070614200747.GB1928@DervishD>
+Mail-Followup-To: Jan Knutar <jk-lkml@sci.fi>,
+	linux-kernel@vger.kernel.org,
+	Juergen Beisert <juergen127@kreuzholzen.de>
+References: <20070611101319.GA14284@DervishD> <200706112127.42119.juergen127@kreuzholzen.de> <20070613134843.GC1983@DervishD> <200706142236.56195.jk-lkml@sci.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706142236.56195.jk-lkml@sci.fi>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jun 2007 12:38:39 -0700
-clameter@sgi.com wrote:
+    Hi Jan :)
 
-> This patchset cleans up the page cache handling by replacing
-> open coded shifts and adds through inline function calls.
+ * Jan Knutar <jk-lkml@sci.fi> dixit:
+> On Wednesday 13 June 2007 16:48, DervishD wrote:
+> > But anyway the memory should last long. Even cheap flash memories
+> > with poor wear leveling (if any at all) usually long last. Given
+> > that I won't be writing continuously, wear shouldn't be a problem.
+> > I'm going to use this as a backup copy of my home. Of course, I can
+> > use a tarball too...
+> 
+> I did a test on my kingston datatraveler recently, I didn't expect it
+> to survive, but it did.
 
-If we never inflict variable PAGE_CACHE_SIZE upon the kernel, these changes
-become pointless obfuscation.
+    Aaaaagh! Never do such tests again, or at least don't tell me XD
 
-Let's put our horses ahead of our carts.  We had a lengthy discussion about
-variable PAGE_CACHE_SIZE in which I pointed out that the performance
-benefits could be replicated in a manner which doesn't add complexity to
-core VFS and which provides immediate benefit to all filesystems without
-any need to alter them: populate contiguous pagecache pages with physically
-contiguous pages.
+> Considering it surived ReiserFS, I suspect it would last ages with
+> ext2, especially for your backup purposes.
 
-I think the best way to proceed would be to investigate that _general_
-optimisation and then, based upon the results of that work, decide whether
-further _specialised_ changes such as variable PAGE_CACHE_SIZE are needed,
-and if so, what they should be.
+    I don't really know the number of writes that a flash memory allows
+nowadays, but probably they're 10000 even in cheap ones, and with proper
+wear leveling that should mean a looooot of time.
 
+    Thanks for the test, really O:))
+
+    Raúl Núñez de Arenas Coronado
+
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
