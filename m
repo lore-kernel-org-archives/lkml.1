@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXFNVqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbXFNV4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbXFNVqx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXFNVqp
+	id S1753640AbXFNV4J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbXFNVz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:46:45 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:35955 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952AbXFNVqo (ORCPT
+	Thu, 14 Jun 2007 17:55:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57260 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751631AbXFNVz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:46:44 -0400
-Message-ID: <4671B734.1040401@nortel.com>
-Date: Thu, 14 Jun 2007 15:46:28 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Alexandre Oliva <aoliva@redhat.com>
-CC: Daniel Hazelton <dhazelton@enter.net>, Paul Mundt <lethal@linux-sh.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <20070614073232.GB22543@linux-sh.org> <ormyz2fp8p.fsf@oliva.athome.lsd.ic.unicamp.br> <200706141617.46734.dhazelton@enter.net> <or645q9qgw.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or645q9qgw.fsf@oliva.athome.lsd.ic.unicamp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 14 Jun 2007 17:55:56 -0400
+Date: Thu, 14 Jun 2007 14:39:29 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Jay Vosburgh <fubar@us.ibm.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
+       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
+       Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+Message-ID: <20070614143929.23cc1553@localhost>
+In-Reply-To: <46704C44.8020602@googlemail.com>
+References: <46704923.1010009@googlemail.com>
+	<46704C44.8020602@googlemail.com>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jun 2007 21:46:32.0427 (UTC) FILETIME=[78F613B0:01C7AECD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexandre Oliva wrote:
-> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+On Wed, 13 Jun 2007 21:57:56 +0200
+Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
->>*AND* the GPL has never been about making the source available to
->>everyone - just to those that get the binaries.
+> Hi all,
+> 
+> Here is a list of some known regressions in 2.6.22-rc4.
+> 
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+> 
+> 
+> 
+> Networking
+> 
+> Subject    : commit 9093bbb2d96d0184f037cea9b4e952a44ebe7c32 broke the bonding driver
+> References : http://lkml.org/lkml/2007/6/13/65
+> Submitter  : Dan Aloni <da-x@monatomic.org>
+> Handled-By : Stephen Hemminger <shemminger@linux-foundation.org>
+> Status     : Unknown
+> 
+> 
 
-> Exactly.  Not even to the upstream distributor.  That's where Linus'
-> theory of tit-for-tat falls apart.
-
-Nope.
-
-case 1:  Upstream provides source, tivo modifies and distributes it (to 
-their customers).
-
-case 2: tivo provides source, end user modifies and distributes it 
-(possibly to their customers, maybe to friends, possibly even to upstream).
-
-See?  Tit for tat.
-
-Chris
+Patch available (to bonding).
