@@ -1,150 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbXFNVVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbXFNVV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756474AbXFNVVG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbXFNVUw
+	id S1753882AbXFNVV1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756264AbXFNVVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:20:52 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:53331 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752693AbXFNVUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:20:51 -0400
-Subject: Re: [PATCH -rt] Fix TASKLET_STATE_SCHED WARN_ON()
-From: john stultz <johnstul@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1181096244.6018.20.camel@localhost>
-References: <1181096244.6018.20.camel@localhost>
-Content-Type: text/plain
-Date: Thu, 14 Jun 2007 14:20:20 -0700
-Message-Id: <1181856020.6276.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 14 Jun 2007 17:21:00 -0400
+Received: from smtp3.libero.it ([193.70.192.127]:54738 "EHLO smtp3.libero.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754852AbXFNVU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 17:20:59 -0400
+X-Greylist: delayed 481 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jun 2007 17:20:58 EDT
+X-Scanned: with antispam and antivirus automated system at libero.it
+Message-ID: <4671AF64.9050201@gmail.com>
+Date: Thu, 14 Jun 2007 23:13:08 +0200
+From: davide <davidenitti@gmail.com>
+User-Agent: Mozilla Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Random X lockup
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-05 at 19:17 -0700, john stultz wrote:
-> Hey Ingo,
-> 	So we've been seeing the following trace fairly frequently on our SMP
-> boxes when running kernbench:
-> 
-> BUG: at kernel/softirq.c:639 __tasklet_action()
-> 
-> Call Trace:
->  [<ffffffff8106d5da>] dump_trace+0xaa/0x32a
->  [<ffffffff8106d89b>] show_trace+0x41/0x5c
->  [<ffffffff8106d8cb>] dump_stack+0x15/0x17
->  [<ffffffff81094a97>] __tasklet_action+0xdf/0x12e
->  [<ffffffff81094f76>] tasklet_action+0x27/0x29
->  [<ffffffff8109530a>] ksoftirqd+0x16c/0x271
->  [<ffffffff81033d4d>] kthread+0xf5/0x128
->  [<ffffffff8105ff68>] child_rip+0xa/0x12
-> 
-> 
-> Paul also pointed this out awhile back: http://lkml.org/lkml/2007/2/25/1
-> 
-> 
-> Anyway, I think I finally found the issue. Its a bit hard to explain,
-> but the idea is while __tasklet_action is running the tasklet function
-> on CPU1, if a call to tasklet_schedule() on CPU2 is made, and if right
-> after we mark the TASKLET_STATE_SCHED bit we are preempted,
-> __tasklet_action on CPU1 might be able to re-run the function, clear the
-> bit and unlock the tasklet before CPU2 enters __tasklet_common_schedule.
-> Once __tasklet_common_schedule locks the tasklet, we will add the
-> tasklet to the list with the TASKLET_STATE_SCHED *unset*. 
-> 
-> I've verified this race occurs w/ a WARN_ON in
-> __tasklet_common_schedule().
-> 
-> 
-> This fix avoids this race by making sure *after* we've locked the
-> tasklet that the STATE_SCHED bit is set before adding it to the list.
-> 
-> Does it look ok to you?
-> 
-> thanks
-> -john
-> 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> 
-> Index: 2.6-rt/kernel/softirq.c
-> ===================================================================
-> --- 2.6-rt.orig/kernel/softirq.c	2007-06-05 18:30:54.000000000 -0700
-> +++ 2.6-rt/kernel/softirq.c	2007-06-05 18:36:44.000000000 -0700
-> @@ -544,10 +544,17 @@ static void inline
->  __tasklet_common_schedule(struct tasklet_struct *t, struct tasklet_head *head, unsigned int nr)
->  {
->  	if (tasklet_trylock(t)) {
-> -		WARN_ON(t->next != NULL);
-> -		t->next = head->list;
-> -		head->list = t;
-> -		raise_softirq_irqoff(nr);
-> +		/* We may have been preempted before tasklet_trylock
-> +		 * and __tasklet_action may have already run.
-> +		 * So double check the sched bit while the takslet
-> +		 * is locked before adding it to the list.
-> +		 */
-> +		if (test_bit(TASKLET_STATE_SCHED, &t->state)) {
-> +			WARN_ON(t->next != NULL);
-> +			t->next = head->list;
-> +			head->list = t;
-> +			raise_softirq_irqoff(nr);
-> +		}
->  		tasklet_unlock(t);
->  	}
->  }
+I have a problem with X, I have random lockup of X, when happen i can't 
+use mouse or keyboard.
+Using a SSH remote session I can see that X taking 99.9% cpu.
+I have this problem with all version of kernel, linux distributions, 
+xorg versions.
+Reading some forum, I can conclude:
 
-So while digging on a strange OOM issue we were seeing (which actually
-ended up being fixed by Steven's softirq patch), I noticed that the fix
-above is incomplete. With only the patch above, we may no longer have
-unscheduled tasklets added to the list, but we may end up with scheduled
-tasklets that are not on the list (and will stay that way!).
+- The crash occurs on various hardware
+-- CPU: P4 3Ghz, AMD Athlon Thunderbird 1400, AMD Athlon 900Mhz, Athlon 
+XP 1500+, Pentium III 866MHz
+-- GFX cards: Radeon 9200, Radeon 9700, NVidia GeForce2 GTS/Pro, GeForce 
+Ultra 5700, Geforce FX 5200
+-- M/B: Abit AT7 (VIA KT333), SiS P4S61, (TODO add more mobos)
+-- Mem: various sizes
 
-The following additional patch should correct this issue. Although since
-we weren't actually hitting it, the issue is a bit theoretical, so I've
-not been able to prove it really fixes anything.
+- It occurs on various w/ms like: kde, gnome, ion2, fluxbox
 
-thanks
--john
+- It occurs on various kernel versions: 2.4.23-ck1 - 2.6.21
 
-Index: 2.6-rt/kernel/softirq.c
-===================================================================
---- 2.6-rt.orig/kernel/softirq.c	2007-06-12 20:30:11.000000000 -0700
-+++ 2.6-rt/kernel/softirq.c	2007-06-12 20:37:22.000000000 -0700
-@@ -544,6 +544,7 @@
- __tasklet_common_schedule(struct tasklet_struct *t, struct tasklet_head *head, unsigned int nr)
- {
- 	if (tasklet_trylock(t)) {
-+again:
- 		/* We may have been preempted before tasklet_trylock
- 		 * and __tasklet_action may have already run.
- 		 * So double check the sched bit while the takslet
-@@ -554,8 +555,21 @@
- 			t->next = head->list;
- 			head->list = t;
- 			raise_softirq_irqoff(nr);
-+			tasklet_unlock(t);
-+		} else {
-+			/* This is subtle. If we hit the corner case above
-+			 * It is possible that we get preempted right here,
-+			 * and another task has successfully called
-+			 * tasklet_schedule(), then this function, and
-+			 * failed on the trylock. Thus we must be sure
-+			 * before releasing the tasklet lock, that the
-+			 * SCHED_BIT is clear. Otherwise the tasklet
-+			 * may get its SCHED_BIT set, but not added to the
-+			 * list
-+			 */
-+			if (!tasklet_tryunlock(t))
-+				goto again;
- 		}
--		tasklet_unlock(t);
- 	}
- }
- 
+- It occurs on various X versions:
+--XFree 4.3 - ??
+--Xorg up to 7.2
 
+-Reports in various distributions: debian, mandrake, fedora, gentoo, 
+ubuntu, opensuse
 
+Sympthoms:
+
+- X CPU usage 100%
+- Keyboard is not working
+- Mouse is working but nothing is clickable (in some cases mouse is not 
+working any more)
+- Magic SysRq is possible
+- SSHing in from remote server and killing X is possible.
+
+I can't solve this problem since years :-(
+please help me!
+Thanks
+
+Davide Nitti
