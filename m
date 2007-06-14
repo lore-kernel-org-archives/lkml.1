@@ -1,86 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbXFNPoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbXFNPrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbXFNPoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 11:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXFNPoM
+	id S1753472AbXFNPrR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 11:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbXFNPrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 11:44:12 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33511 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751724AbXFNPoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 11:44:11 -0400
-X-Authenticated: #153925
-X-Provags-ID: V01U2FsdGVkX18Bv/Z6fEEBN9Nfw92kr8a2JjG4Gx0jfXDF33BTrL
-	9/rTql9jCfZRWF
-From: Bernd Paysan <bernd.paysan@gmx.de>
-To: "Alan Milnes" <alan@itfoundation.org.uk>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 17:44:07 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <466A3EC6.6030706@netone.net.tr> <20070614132457.GB29423@elte.hu> <b200add30706140708p41e943dbm5d14ba52a6e0ae75@mail.gmail.com>
-In-Reply-To: <b200add30706140708p41e943dbm5d14ba52a6e0ae75@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart7370951.SmvirUt1cq";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706141744.08408.bernd.paysan@gmx.de>
-X-Y-GMX-Trusted: 0
+	Thu, 14 Jun 2007 11:47:06 -0400
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:43439 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751457AbXFNPrF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 11:47:05 -0400
+Date: Thu, 14 Jun 2007 17:44:48 +0200
+From: markus reichelt <ml@mareichelt.de>
+Subject: Re: /dev/loop* devices not appearing in /dev (at least since
+ 2.6.22-rc3*)
+In-reply-to: <20070614172234.7f636307@localhost>
+To: linux-kernel@vger.kernel.org
+Mail-followup-to: linux-kernel@vger.kernel.org
+Message-id: <20070614154448.GC4155@tatooine.rebelbase.local>
+Organization: still stuck in reorganization mode
+MIME-version: 1.0
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=WhfpMioaduB5tiZL
+Content-disposition: inline
+X-IronPort-AV: E=Sophos;i="4.16,421,1175472000";   d="scan'208";a="2216884"
+X-PGP-Key: 0xC2A3FEE4
+X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
+X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
+References: <e85b9d30706140437s5f3622c3rc86c75a4f845e7a3@mail.gmail.com>
+ <20070614145206.58fdec91@localhost>
+ <e85b9d30706140710x5671fa12n5845172d4ce32a10@mail.gmail.com>
+ <20070614172234.7f636307@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart7370951.SmvirUt1cq
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+
+--WhfpMioaduB5tiZL
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Thursday 14 June 2007 16:08, Alan Milnes wrote:
-> Agreed - if you want to take my work you are welcome as long as you
-> contribute back your changes.  That's the deal that GPL2 enforces and
-> why it has been so successful.
+* Paolo Ornati <ornati@fastwebnet.it> wrote:
 
-That may be a side effect of the GPL, but it's actually not how the GPLv2=20
-works (nor is it the intention). "Contribute back" means upstream. There's=
-=20
-no such provision in the GPLv2, you contribute only downstream. And there=20
-are cases where you don't need to contribute at all.
+> So with this patch "max_loop=3D32" will create 32 loop devices... but
+> then it doesn't allow more of them.
 
-E.g. the kernel hacking I'm doing at the moment: I have bought a uClinux=20
-blackfin board, for testing my digital audio amplifier. For that, I took=20
-one of the blackfin alsa audio drivers, and changed it so that it could=20
-talk to my digital audio amplifier. I'm not distributing this software,=20
-it's a complete in-house project, so I'm not obliged to contribute back. At=
-=20
-the moment, I'm the only person in the world who has both access to the=20
-digital audio amplifier and the blackfin board, so releasing this driver in=
-=20
-that early stage is a rather pointless excercise.
+Well, that's what a max_ parameter implies ;p
 
-I think this above explains fairly well the "misunderstandings" that are=20
-appearing here. The GPL is not reflective (tit-for-tat), it's transient. If=
-=20
-there's a loop in the transient propagation, it becomes reflective through=
-=20
-the loop, but not by itself. This was the case in GPLv1, is the case in=20
-GPLv2, and will be the case in GPLv3.
+A manually set limit of loop devices is ok with me. (32 was just an
+example -- After all, I could have chosen 256 just to annoy some
+people :-)
 
-=2D-=20
-Bernd Paysan
-"If you want it done right, you have to do it yourself"
-http://www.jwdt.com/~paysan/
+And with the recent hype of creating things when needed, or even
+recycling already used ones (sdx), I worry that this impacts
+stability or even usability as a whole. (yes, it's a -rc release ...)
 
---nextPart7370951.SmvirUt1cq
+I'll be staying with 2.6.20.x for a year or so. Get the newly
+introduced bugs squashed before they have a chance to bug me, heh ;P
+
+
+PS: Just wondering: Who came up with this "on-demand" hype?
+--=20
+left blank, right bald
+
+--WhfpMioaduB5tiZL
 Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQBGcWJIi4ILt2cAfDARAnwVAKDM7sgAwDUvTdXNeP5XlCr97iKHVACgypKJ
-/P6897uIBdnCP9lVOjqn0JQ=
-=+aKl
+iD8DBQFGcWJwLMyTO8Kj/uQRAogiAKCCDBL6+hYIHOI06BGu+zRStB76lgCdEbNG
+HRb5VicLNiB6H4PFsSffT2E=
+=WCRL
 -----END PGP SIGNATURE-----
 
---nextPart7370951.SmvirUt1cq--
+--WhfpMioaduB5tiZL--
