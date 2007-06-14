@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbXFNMbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbXFNMeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753147AbXFNMbR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 08:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXFNMat
+	id S1752871AbXFNMeX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 08:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbXFNMeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 08:30:49 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:31933 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751553AbXFNMar (ORCPT
+	Thu, 14 Jun 2007 08:34:14 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:31566 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751454AbXFNMeN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 08:30:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=NqeVf4UGPrdTXgS2feZxEQnvPKDx68qD91ImHXJN35ll1dJ57u6kXZKjgB3gygdhTemAY5LK/W1mN4K9IrgVMQrv7gmSIMC3aLq/myh2Q5GwqDxrcd7KVkOazMynq+6E58EiOhBGIlZMsSyahoP2i4e0xvbM124pXSRS6iVcvFA=
-Message-ID: <467134F1.1010009@gmail.com>
-Date: Thu, 14 Jun 2007 21:30:41 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Thu, 14 Jun 2007 08:34:13 -0400
+Date: Thu, 14 Jun 2007 08:30:53 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, snitzer@gmail.com
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+Message-ID: <20070614123053.GL28279@think.oraclecorp.com>
+References: <787b0d920706122245j3a2ff7e8ja611ecf41cc67a4c@mail.gmail.com> <20070613120037.GA28279@think.oraclecorp.com> <787b0d920706130914l676a24cau62525e90a90b5839@mail.gmail.com> <20070613165706.GF28279@think.oraclecorp.com> <787b0d920706132359h17531f57gdc4ed01724e53361@mail.gmail.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Arjan van de Ven <arjan@linux.intel.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
-       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch 0/3] AHCI Link Power Management
-References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E1D51.9070007@gmail.com> <20070614115600.GF6149@kernel.dk>
-In-Reply-To: <20070614115600.GF6149@kernel.dk>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <787b0d920706132359h17531f57gdc4ed01724e53361@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
->> 1. It didn't have proper interface with userland.  This was mainly
->> because of missing ATA sysfs nodes.  I'm not sure whether adding this to
->> scsi node is a good idea.
->>
->> 2. It was focused on SATA link PS and couldn't cover the Lenovo case.
->>
->> I think we need something at the block layer.
+On Thu, Jun 14, 2007 at 02:59:23AM -0400, Albert Cahalan wrote:
+> On 6/13/07, Chris Mason <chris.mason@oracle.com> wrote:
+
+[ secure deletion in btrfs ]
+
+> >
+> >Right about here is where I would insert a long story about ecryptfs, or
+> >encryption solutions that happen all in userland.  At any rate, it is
+> >outside the scope of v1.0, even though I definitely agree it is an
+> >important problem for some people.
 > 
-> I think the hardware method is preferable, actually. Doing this in the
-> block layer would mean keeping track of idle time, and that quickly
-> turns into a lot of timer management. Not exactly free, in terms of CPU
-> usage.
+> I'm sure you do have a nice long story, and I'm sure it seems
+> correct, but there is something not quite right about the add-on
+> hacks.
+> 
+> BTW, I'm suggesting that this be about deletion, not protection
+> of data you wish to keep. It covers more than just file bodies.
+> It covers inode data, block allocations, etc.
 
-Yeah, software implementation certainly has complexity overhead.
+Sorry, it's still way outside the scope of v1.0.
 
-> I've yet to do some power measurements with this ahci patch, I just
-> noticed that with min_power performance drops from ~55mb/sec to
-> ~15mb/sec sequential on my drive. That's pretty drastic :-)
+> 
+> >> >> * atomic creation of copy-on-write directory trees
+> >> >
+> >> >Do you mean something more fine grained than the current snapshotting
+> >> >system?
+> >>
+> >> I believe so. Example: I have a linux-2.6 directory. It's not
+> >> a mount point or anything special like that. I want to copy
+> >> it to a new directory called wip, without actually copying
+> >> all the blocks. To all the normal POSIX API stuff, this copy
+> >> should look like the result of "cp -a", not hard links.
+> >
+> >This would be a snapshot, which has to be done on a subvolume right now.
+> >It is not as nice as being able to pick a random directory, but I've
+> >only been able to get this far by limiting the feature scope
+> >significantly.  What I did do was make subvolumes very cheap...just make
+> >a bunch of them.
+> 
+> Can a regular user create and use a subvolume? If not, then
+> this doesn't work. (if so, then I have other concerns...)
 
-That's another thing I don't like about ALPE/ASP.  According to the
-spec, there is no idle timer whatsoever.  The controller is supposed to
-drive the link into PS mode whenever FIS is not in flight, so the link
-goes in and out of PS state repeatedly when commands are issued
-back-to-back.  Getting out of PS state takes a bit of time and slows
-down things.
+That's the long term goal, but I'll have to reorganize things such that
+subvolumes created by a user can all fall under sane accounting.
 
--- 
-tejun
+-chris
+
