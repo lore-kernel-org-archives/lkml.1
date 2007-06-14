@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbXFNS07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbXFNS3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754418AbXFNS07 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 14:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbXFNS0w
+	id S1754502AbXFNS3Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 14:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXFNS3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 14:26:52 -0400
-Received: from lazybastard.de ([212.112.238.170]:53431 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751264AbXFNS0w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 14:26:52 -0400
-Date: Thu, 14 Jun 2007 20:22:02 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext2 on flash memory
-Message-ID: <20070614182201.GD31984@lazybastard.org>
-References: <20070611101319.GA14284@DervishD> <20070614174509.GB31984@lazybastard.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 14 Jun 2007 14:29:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52557 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751223AbXFNS3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 14:29:02 -0400
+Date: Thu, 14 Jun 2007 14:28:54 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Nigel Kukard <nkukard@lbsd.net>, linux-kernel@vger.kernel.org
+Subject: Re: SATA problems
+Message-ID: <20070614182854.GC1223@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jeff Garzik <jeff@garzik.org>, Nigel Kukard <nkukard@lbsd.net>,
+	linux-kernel@vger.kernel.org
+References: <4671366B.7090702@lbsd.net> <46716B1D.1070902@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070614174509.GB31984@lazybastard.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <46716B1D.1070902@garzik.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 June 2007 19:45:10 +0200, Jörn Engel wrote:
-> 
-> Nearly two years ago I have spoken to a person that reverse engineered
-> the behaviour of several chips used in pendrives.  At the time that
-> reverse engineering apparently covered most of the market.  The details
-> were quite lengthy but can be condensed to two words: Smartmedia format.
+On Thu, Jun 14, 2007 at 12:21:49PM -0400, Jeff Garzik wrote:
 
-Maybe I should add that things have allegedly improved.  Many devices
-today support both static and dynamic wear leveling.  Dynamic wear
-leveling is what smartmedia does.  It depends on the filesystem writing
-somewhere to move those blocks.  Static wear leveling will also move
-blocks that are not written.
+ > > Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
+ > > 0x0001c807
+ > > Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
+ > > 0x0001c807
 
-However, the exact nature of wear leveling is not disclosed.  And I see
-no reason to trust an undisclosed "static and dynamic wear leveling" any
-more than I trust smartmedia.
+Unrelated to the other error, but I've been meaning to ask for a while..
+If this is 'abnormal', why does every SATA box I've seen do it?
 
-I will even go further and claim that nothing short of a filesystem can
-do proper wear leveling across the complete device.  The reason
-smartmedia introduced "areas" was to bound the time until it's map is
-created and the device can get accessed.  If the map spanned a large
-64GB device, access times would go sky-high.
-
-Any method I can imagine to offer good wear leveling will result in
-either a filesystem or at least a simplified one-file-system with the
-only file being the "block device" exported outward.  So naturally my
-answer to the problem is called LogFS. :)
-
-Jörn
+	Dave
 
 -- 
-It's not whether you win or lose, it's how you place the blame.
--- unknown
+http://www.codemonkey.org.uk
