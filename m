@@ -1,179 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752604AbXFNLJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbXFNLQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752604AbXFNLJp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 07:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbXFNLJO
+	id S1752245AbXFNLQY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 07:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbXFNLQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 07:09:14 -0400
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:63749 "EHLO
-	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbXFNLJM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 07:09:12 -0400
-Message-Id: <20070614110910.634505309@fluff.org.uk>
-References: <20070614110853.539162819@fluff.org.uk>
-User-Agent: quilt/0.46-1
-Date: Thu, 14 Jun 2007 12:08:55 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: wim@iguana.be
-Cc: linux-kernel@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 2/2] WATCHDOG: change s3c2410_wdt to using dev_() macros for output
-Content-Disposition: inline; filename=simtec-drivers-watchdog-devmacros.patch
+	Thu, 14 Jun 2007 07:16:16 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:40909 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751302AbXFNLQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 07:16:15 -0400
+Date: Thu, 14 Jun 2007 12:20:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070614122031.4751a52b@the-village.bc.nu>
+In-Reply-To: <20070614103846.GA7902@elte.hu>
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706132121.04532.dhazelton@enter.net>
+	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706132304.21984.dhazelton@enter.net>
+	<20070614112329.3645c397@the-village.bc.nu>
+	<20070614103846.GA7902@elte.hu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move to using dev_info(), dev_dbg() and dev_err() for
-reporting information from the driver.
+> that's fine, but the fundamental question is: where is the moral 
+> boundary of the power that the copyright license gives? The FSF seems to 
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+Assuming a democratic state then the laws of the land ought to reflect the
+'general will' (if you believe Rousseau anyway). They should thus define
+the boundary ['derivative work' generally ] according to the general good
+and with the consent of the people.
 
-Index: linux-2.6.21-quilt2/drivers/char/watchdog/s3c2410_wdt.c
-===================================================================
---- linux-2.6.21-quilt2.orig/drivers/char/watchdog/s3c2410_wdt.c	2007-05-11 11:55:46.000000000 +0100
-+++ linux-2.6.21-quilt2/drivers/char/watchdog/s3c2410_wdt.c	2007-05-11 12:01:44.000000000 +0100
-@@ -92,6 +92,7 @@ typedef enum close_state {
- 
- static DECLARE_MUTEX(open_lock);
- 
-+static struct device    *wdt_dev;	/* platform device attached to */
- static struct resource	*wdt_mem;
- static struct resource	*wdt_irq;
- static struct clk	*wdt_clock;
-@@ -180,7 +181,7 @@ static int s3c2410wdt_set_heartbeat(int 
- 		}
- 
- 		if ((count / divisor) >= 0x10000) {
--			printk(KERN_ERR PFX "timeout %d too big\n", timeout);
-+			dev_err(wdt_dev, "timeout %d too big\n", timeout);
- 			return -EINVAL;
- 		}
- 	}
-@@ -233,7 +234,7 @@ static int s3c2410wdt_release(struct ino
- 	if (allow_close == CLOSE_STATE_ALLOW) {
- 		s3c2410wdt_stop();
- 	} else {
--		printk(KERN_CRIT PFX "Unexpected close, not stopping watchdog!\n");
-+		dev_err(wdt_dev, "Unexpected close, not stopping watchdog\n");
- 		s3c2410wdt_keepalive();
- 	}
- 
-@@ -338,7 +339,7 @@ static struct miscdevice s3c2410wdt_misc
- 
- static irqreturn_t s3c2410wdt_irq(int irqno, void *param)
- {
--	printk(KERN_INFO PFX "Watchdog timer expired!\n");
-+	dev_info(wdt_dev, "watchdog timer expired (irq)\n");
- 
- 	s3c2410wdt_keepalive();
- 	return IRQ_HANDLED;
-@@ -348,6 +349,7 @@ static irqreturn_t s3c2410wdt_irq(int ir
- static int s3c2410wdt_probe(struct platform_device *pdev)
- {
- 	struct resource *res;
-+	struct device *dev;
- 	unsigned int wtcon;
- 	int started = 0;
- 	int ret;
-@@ -355,25 +357,28 @@ static int s3c2410wdt_probe(struct platf
- 
- 	DBG("%s: probe=%p\n", __FUNCTION__, pdev);
- 
-+	dev = &pdev->dev;
-+	wdt_dev = &pdev->dev;
-+
- 	/* get the memory region for the watchdog timer */
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (res == NULL) {
--		printk(KERN_INFO PFX "failed to get memory region resouce\n");
-+		dev_err(dev, "no memory resource specified\n");
- 		return -ENOENT;
- 	}
- 
- 	size = (res->end-res->start)+1;
- 	wdt_mem = request_mem_region(res->start, size, pdev->name);
- 	if (wdt_mem == NULL) {
--		printk(KERN_INFO PFX "failed to get memory region\n");
-+		dev_err(dev, "failed to get memory region\n");
- 		ret = -ENOENT;
- 		goto err_req;
- 	}
- 
- 	wdt_base = ioremap(res->start, size);
- 	if (wdt_base == 0) {
--		printk(KERN_INFO PFX "failed to ioremap() region\n");
-+		dev_err(dev, "failed to ioremap() region\n");
- 		ret = -EINVAL;
- 		goto err_req;
- 	}
-@@ -382,20 +387,20 @@ static int s3c2410wdt_probe(struct platf
- 
- 	wdt_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
- 	if (wdt_irq == NULL) {
--		printk(KERN_INFO PFX "failed to get irq resource\n");
-+		dev_err(dev, "no irq resource specified\n");
- 		ret = -ENOENT;
- 		goto err_map;
- 	}
- 
- 	ret = request_irq(wdt_irq->start, s3c2410wdt_irq, 0, pdev->name, pdev);
- 	if (ret != 0) {
--		printk(KERN_INFO PFX "failed to install irq (%d)\n", ret);
-+		dev_err(dev, "failed to install irq (%d)\n", ret);
- 		goto err_map;
- 	}
- 
- 	wdt_clock = clk_get(&pdev->dev, "watchdog");
- 	if (IS_ERR(wdt_clock)) {
--		printk(KERN_INFO PFX "failed to find watchdog clock source\n");
-+		dev_err(dev, "failed to find watchdog clock source\n");
- 		ret = PTR_ERR(wdt_clock);
- 		goto err_irq;
- 	}
-@@ -409,22 +414,22 @@ static int s3c2410wdt_probe(struct platf
- 		started = s3c2410wdt_set_heartbeat(CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME);
- 
- 		if (started == 0) {
--			printk(KERN_INFO PFX "tmr_margin value out of range, default %d used\n",
-+			dev_info(dev,"tmr_margin value out of range, default %d used\n",
- 			       CONFIG_S3C2410_WATCHDOG_DEFAULT_TIME);
- 		} else {
--			printk(KERN_INFO PFX "default timer value is out of range, cannot start\n");
-+			dev_info(dev, "default timer value is out of range, cannot start\n");
- 		}
- 	}
- 
- 	ret = misc_register(&s3c2410wdt_miscdev);
- 	if (ret) {
--		printk (KERN_ERR PFX "cannot register miscdev on minor=%d (%d)\n",
-+		dev_err(dev, "cannot register miscdev on minor=%d (%d)\n",
- 			WATCHDOG_MINOR, ret);
- 		goto err_clk;
- 	}
- 
- 	if (tmr_atboot && started == 0) {
--		printk(KERN_INFO PFX "Starting Watchdog Timer\n");
-+		dev_info(dev, "starting watchdog timer\n");
- 		s3c2410wdt_start();
- 	} else if (!tmr_atboot) {
- 		/* if we're not enabling the watchdog, then ensure it is
-@@ -438,12 +443,11 @@ static int s3c2410wdt_probe(struct platf
- 
- 	wtcon = readl(wdt_base + S3C2410_WTCON);
- 
--	dev_info(&pdev->dev,
--		 "watchdog %sactive, reset %sabled, irq %sabled\n", 
-+	dev_info(dev, "watchdog %sactive, reset %sabled, irq %sabled\n", 
- 		 (wtcon & S3C2410_WTCON_ENABLE) ?  "" : "in",
- 		 (wtcon & S3C2410_WTCON_RSTEN) ? "" : "dis",
- 		 (wtcon & S3C2410_WTCON_INTEN) ? "" : "en");
--
-+	
- 	return 0;
- 
-  err_clk:
+> hardware that is associated with our software, so what? If a 
+> jurisdiction allows the controlling of various aspects of movie theaters 
+> that happen to play copyrighted movies, does it make it morally right?
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+Does that question not suppose some positivist absolute morality ? I
+suspect many would argue that it is moral to do so if the end goal of the
+controls is moral. You might also want to apply the tests in Fuller's
+Internal Morality of Law ?
 
-  'a smiley only costs 4 bytes'
+I'm not sure Philosophy is on topic for l/k however 8)
+
+Alan
