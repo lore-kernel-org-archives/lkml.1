@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591AbXFNSH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbXFNSHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753591AbXFNSH3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 14:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbXFNSHW
+	id S1754303AbXFNSHz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 14:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbXFNSHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 14:07:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46236 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbXFNSHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 14:07:21 -0400
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Daniel Hazelton" <dhazelton@enter.net>,
-       "Bongani Hlope" <bhlope@mweb.co.za>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
-       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
+	Thu, 14 Jun 2007 14:07:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37160 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751395AbXFNSHp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 14:07:45 -0400
+Date: Thu, 14 Jun 2007 11:06:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706132108.50030.dhazelton@enter.net>
-	<orlkenjnxm.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706140125.24815.dtor@insightbb.com>
-	<orps3zghgo.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<d120d5000706140856s5fdb29c6j1b53cafc291f8ec1@mail.gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 15:06:43 -0300
-In-Reply-To: <d120d5000706140856s5fdb29c6j1b53cafc291f8ec1@mail.gmail.com> (Dmitry Torokhov's message of "Thu\, 14 Jun 2007 11\:56\:10 -0400")
-Message-ID: <orodjie7gs.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+In-Reply-To: <orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <alpine.LFD.0.98.0706141100390.14121@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr> <200706132140.13490.dhazelton@enter.net>
+ <20070614020827.GO3588@stusta.de> <200706132243.14651.dhazelton@enter.net>
+ <20070614025640.GQ3588@stusta.de> <9578.1181793617@turing-police.cc.vt.edu>
+ <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
+ <orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
 
-> On 6/14/07, Alexandre Oliva <aoliva@redhat.com> wrote:
->> On Jun 14, 2007, Dmitry Torokhov <dtor@insightbb.com> wrote:
->> 
->> > On Wednesday 13 June 2007 21:59, Alexandre Oliva wrote:
->> >> For example, if you distribute copies of such a program, whether
->> >> gratis or for a fee, you must give the recipients
->> >> all the rights that you have.
->> >> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->> 
->> > So if I am a sole author of a program and I chose to distribute it under
->> > GPL
->> 
->> then you're not a licensee, you're a licensor, and these terms don't
->> apply to you.
 
-> Heh. When you change a GPLed program and pass your changes you are the
-> licensor for the new code. You still have a right and license pieces
-> of the code you wrote under different license but you do not pass that
-> right to recepient of modified work.
+On Thu, 14 Jun 2007, Alexandre Oliva wrote:
+> 
+> Let me see if I got your position right: when TiVO imposes
+> restrictions, that's ok
 
-You are the author of the change, and you can license them however you
-like.  Your change itself is not bound by the terms of the GPL, it is
-only if it is a derived work of the GPLed work.
+Sure. I think it's ok that Microsoft imposes restrictions too on the 
+software they create. It's *their* choice.
 
-If your change is not a derived work, you're not bound by the terms of
-the GPL as far as the change is concerned, so the GPL has no say
-whatsoever as to how you must release it.  If you choose the GPL, then
-you're a licensor, and the requirements to pass on all the rights you
-have do not apply.
+And I think it's ok for you to impose any restrictions (including the ones 
+in GPLv3) on the software *you* produce. It's your choice.
 
-If it *is* a derived work, then you're constrained by the terms of the
-license, and you can only distribute it under the same license.  You
-don't have a right to offer it under a different license in the first
-place, so you can't pass this right on.
+> but when others want to find ways to stop it, then it's not.  *Now* I'm 
+> confused ;-)
 
-Derived work or not, when you combine that change with the program,
-then you're bound by the terms of the license, and then you cannot
-change the licensing terms of the whole program, so you can't pass
-this right on either.
+You are indeed totally confused.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+It's *ok* to impose restrictions on the stuff you create. Everybody has a 
+different world-view, and for some it's about making money, for some it's 
+about something else, and some don't want any restrictions at all.
+
+For me, the GPLv2 was the license I liked. I didn't like the BSD license, 
+so I didn't choose it. I don't like a license that restricts hardware, so 
+I didn't choose that.
+
+And I *still* don't choose that.
+
+See? I think the GPLv3 is a *much* inferior license to the GPLv2. It's 
+better than its drafts were, but it's still doing things I disagree with. 
+
+So tell me, why do you think I'm confused about the GPLv3? Why do you 
+think I should have said "GPLv2 or anything else the FSF comes up with"? 
+
+So the only thing I want you to say is:
+
+ (a) Linus knows what he is doing, and isn't actually confused.
+
+and
+
+ (b) It was my right to use the license of my choice for a project that I 
+     started.
+
+and
+
+ (c) I have the right to see the difference between the GPLv2 and v3, and 
+     think that the GPLv3 is the inferior license.
+
+Comprende? MY CHOICE. Not the FSF's. Not yours. Not anybody elses.
+
+		Linus
