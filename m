@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbXFNUH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbXFNULd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbXFNUH5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXFNUHt
+	id S1754477AbXFNULd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbXFNULZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:07:49 -0400
-Received: from smtp01.cdmon.com ([86.109.99.230]:60759 "EHLO smtp01.cdmon.com"
+	Thu, 14 Jun 2007 16:11:25 -0400
+Received: from mail.screens.ru ([213.234.233.54]:56369 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750871AbXFNUHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:07:48 -0400
-Date: Thu, 14 Jun 2007 22:07:47 +0200
-From: DervishD <lkml@dervishd.net>
-To: Jan Knutar <jk-lkml@sci.fi>
-Cc: linux-kernel@vger.kernel.org, Juergen Beisert <juergen127@kreuzholzen.de>
-Subject: Re: ext2 on flash memory
-Message-ID: <20070614200747.GB1928@DervishD>
-Mail-Followup-To: Jan Knutar <jk-lkml@sci.fi>,
-	linux-kernel@vger.kernel.org,
-	Juergen Beisert <juergen127@kreuzholzen.de>
-References: <20070611101319.GA14284@DervishD> <200706112127.42119.juergen127@kreuzholzen.de> <20070613134843.GC1983@DervishD> <200706142236.56195.jk-lkml@sci.fi>
+	id S1751068AbXFNULY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 16:11:24 -0400
+Date: Fri, 15 Jun 2007 00:11:32 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Paul Clements <paul.clements@steeleye.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Pavel Machek <pavel@ucw.cz>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] nbd.c:sock_xmit: cleanup signal related code
+Message-ID: <20070614201132.GA278@tv-sign.ru>
+References: <20070614172243.GA2446@tv-sign.ru> <467198C8.1040107@steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200706142236.56195.jk-lkml@sci.fi>
-User-Agent: Mutt/1.4.2.3i
-Organization: DervishD
+In-Reply-To: <467198C8.1040107@steeleye.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Jan :)
-
- * Jan Knutar <jk-lkml@sci.fi> dixit:
-> On Wednesday 13 June 2007 16:48, DervishD wrote:
-> > But anyway the memory should last long. Even cheap flash memories
-> > with poor wear leveling (if any at all) usually long last. Given
-> > that I won't be writing continuously, wear shouldn't be a problem.
-> > I'm going to use this as a backup copy of my home. Of course, I can
-> > use a tarball too...
+On 06/14, Paul Clements wrote:
+>
+> Oleg Nesterov wrote:
 > 
-> I did a test on my kingston datatraveler recently, I didn't expect it
-> to survive, but it did.
+> >Note: I can't understand this dequeue_signal(), it can dequeue SIGKILL
+> >for the user-space task doing nbd_ioctl() ?
+> 
+> So we can interrupt an nbd transmission without waiting for a TCP 
+> timeout (when we know the network is down).
 
-    Aaaaagh! Never do such tests again, or at least don't tell me XD
+Yes, but that task should not survive after SIGKILL ? Note that SIGNAL_GROUP_EXIT
+is set, this is not good.
 
-> Considering it surived ReiserFS, I suspect it would last ages with
-> ext2, especially for your backup purposes.
+Oleg.
 
-    I don't really know the number of writes that a flash memory allows
-nowadays, but probably they're 10000 even in cheap ones, and with proper
-wear leveling that should mean a looooot of time.
-
-    Thanks for the test, really O:))
-
-    Raúl Núñez de Arenas Coronado
-
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
