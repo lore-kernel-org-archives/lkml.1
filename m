@@ -1,65 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbXFNXaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbXFNXcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757086AbXFNXaZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 19:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbXFNXaO
+	id S1757841AbXFNXcG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 19:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbXFNXbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 19:30:14 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40895 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751108AbXFNXaN (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 19:30:13 -0400
-Date: Fri, 15 Jun 2007 09:30:02 +1000
-From: David Chinner <dgc@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       hch@infradead.org
-Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large Blocksize support
-Message-ID: <20070614233002.GG86004887@sgi.com>
-References: <20070614193839.878721298@sgi.com> <20070614130645.cabdff1b.akpm@linux-foundation.org> <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com> <20070614143248.736312f8.akpm@linux-foundation.org> <Pine.LNX.4.64.0706141436030.1797@schroedinger.engr.sgi.com> <20070614150417.c73fb6b9.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070614150417.c73fb6b9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 14 Jun 2007 19:31:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50768 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752479AbXFNXby (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 19:31:54 -0400
+Date: Thu, 14 Jun 2007 16:31:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Daniel Hazelton <dhazelton@enter.net>, Chris Friesen <cfriesen@nortel.com>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <or8xam87h1.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <alpine.LFD.0.98.0706141616530.14121@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr> <46718044.1040108@nortel.com>
+ <orodjicpt0.fsf@oliva.athome.lsd.ic.unicamp.br> <200706141848.55378.dhazelton@enter.net>
+ <or8xam87h1.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 03:04:17PM -0700, Andrew Morton wrote:
-> fsck is single-threaded (hence no locking issues) and operates against the
-> blockdev pagecache and does a _lot_ of small reads (indirect blocks,
-> especially).
 
-Commenting purely about the above statement (and not on large pages
-or block sizes), xfs-repair has had multithreaded capability for some
-time now. E.g. from the xfs_repair man page:
+[ Damn. I moved you to my flamers list, and then I started reading it. I'm 
+  addicted to flaming. Sue me. I really do enjoy it too much. If I didn't 
+  do software development, my full-time job would probably be to troll 
+  various internet sites and try to set up flame wars. I'm bad, I know. 
 
-       -M    Disable  multi-threaded  mode. Normally, xfs_repair runs with
-	     twice the number of threads as processors.
+  It's an addiction. I'm not proud. ]
 
+On Thu, 14 Jun 2007, Alexandre Oliva wrote:
+> 
+> But then again I ask you: why do you think TiVO is making these
+> hardware locks?  What do they want to cause or stop?
 
-We have the second generation multithreading code out for review
-right now. e.g:
+Actually, they didn't want to lock down the hardware at all. The first 
+versions of the Tivo was really quite hackable - and people started 
+hacking them.
 
-http://oss.sgi.com/archives/xfs/2007-06/msg00069.html
+They were basically forced to add lockdown by the content vendors. You can 
+call them evil for "caving in", but hey, it was their whole market. They 
+really had no choice. Being a company actually limits you in some ways..
 
-xfs_repair also uses direct I/O and does it's own userspace block
-caching and so avoids the problems involved with low memory, context
-unaware cache reclaim and blockdev cache thrashing.
+If you don't want to cave in to content providers, use a regular PC and 
+soemthing like MythTV. You will probably also have to use the analogue 
+hole, and will have a really hard time unscrambling digital cable TV 
+signals of your own, but hey, you can see it as a challenge. At least in 
+places where it's not illegal.
 
-And to top it all off, some of the prefetch smarts we added result
-in reading multiple sparse metadata blocks in a single, larger I/O,
-so repair is now often bandwidth bound rather than seek bound...
+And yes, there are bad laws in the US. But blaming Tivo for them is 
+ludicrous. And the *laws* won't get fixed by software licensing either, 
+quite the reverse. The GPLv3 will just make free software that uses it 
+*less* relevant in that space, rather than more.
 
-All I'm trying to say here is that you shouldn't assume that the
-problems a particular filesystem fsck has is common to all the
-rest....
+For example, I'd rather have some GPLv2'd DVD player software that does 
+*not* come with a de-css key (I can get that key myself quite easily), and 
+that thus gets distributed in a "useless" form, than have a GPLv3'd DVD 
+player that cannot be distributed at all, because it needs the magic 
+unlocking key, and distributing the css key is illegal in some countries.
 
-Cheers,
+Or if I was an mplayer developer (which I'm not - so I have absolutely 
+*zero* say in the mplayer license - please don't take this as anythign 
+like that), I'd prefer for mplayer to be GPLv2, simply because that way I 
+could see my software in some high-end (legal) DVD players that actually 
+complied with the insane laws that exist. Sure, to comply with the laws 
+and not get sued, they might have to limit the hardware, but hey, in other 
+saner places of the world (like Finland), you can use the GPLv2'd software 
+legally *without* those concerns.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+See? The more permissive license actually allows more people to get 
+involved. And the only thing that really *matters* (the source code) can 
+be distributed and improved on by all these different people, even if some 
+of them may have their hands bound by legal issues.
+
+Btw, the same is true of things like FCC rules in the US. All that is evil 
+does not come from the RIAA and MPAA. It's entirely possible that a 
+cellphone manufacturer would have to lock down the control logic that sets 
+the power levels - and that is something that is against the license of 
+the GPLv3.
+
+So the GPLv3 actually _hinders_ people who might otherwise help the 
+community from helping, by making the license so strict that those people 
+(who are nice people, but have their options limited by stupid laws and 
+regulations) cannot use the GPLv3.
+
+			Linus
