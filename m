@@ -1,91 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbXFNMhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbXFNMld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbXFNMhh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 08:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXFNMha
+	id S1752868AbXFNMld (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 08:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbXFNMl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 08:37:30 -0400
-Received: from vms044pub.verizon.net ([206.46.252.44]:49556 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491AbXFNMh3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 08:37:29 -0400
-Date: Thu, 14 Jun 2007 08:37:11 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: floppy1?
-To: linux-kernel@vger.kernel.org
-Message-id: <200706140837.11483.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.6
+	Thu, 14 Jun 2007 08:41:26 -0400
+Received: from mx.laposte.net ([81.255.54.16]:25453 "EHLO mx.laposte.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751303AbXFNMlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 08:41:25 -0400
+Message-ID: <14051.192.54.193.51.1181824859.squirrel@rousalka.dyndns.org>
+Date: Thu, 14 Jun 2007 14:40:59 +0200 (CEST)
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
+To: "Daniel Hazelton" <dhazelton@enter.net>
+Cc: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a-1.fc7
+MIME-Version: 1.0
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings folks;
+Since everyone is having fun, and the kernel includes a few bytes from
+yours truly, I figured I could state my opinion too.
 
-Kernel is 2.6.22-rc4, no other patches.
+1. Linus' "clarifications" of GPL2-only may apply to the kernel work
+as a whole, and to patches submitted from the clarification moment,
+but not to the individual patches submitted before. A lot of noise is
+made about dead author wishes but nobody seems to care about the
+wishes of live authors who may not have a hard GPL2-only stance and
+have been retroactively tagged GPLv2-only supporters. (that's for all
+the diatribes about the evil FSF unduly speaking for others)
 
-dmesg seems to be being spammed by variations of the following theme, 
-variations because it could and has said floppy0 also.
+2. Seems there are enough GPLv3 supporters to do the heavy legwork and
+get clear statements about licensing status of past code submissions
+should the  core kernel hackers agree to GPLv3 licensing. So a
+licensing change is technically possible
 
-floppy1: floppy timeout called
-end_request: I/O error, dev fd1, sector 0
-Buffer I/O error on device fd1, logical block 0
+Daniel Hazelton wrote:
+> And this is what the FSF, RMS and yes, *YOU*, Alexandre, fail to
+realize
+> - the GPL covers *ONLY* the software. It has *ZERO* legal standing when
+> applied to hardware.
 
-floppy driver state
--------------------
-now=523329925 last interrupt=523326926 diff=2999 last called handler=f9a2e2ef
-timeout_message=floppy start
-last output bytes:
- 0 90 523326925
-13 90 523326925
- 0 90 523326925
-1a 90 523326925
- 0 90 523326925
- 3 90 523326925
-c1 90 523326925
- 8 90 523326925
- 7 90 523326925
- 1 90 523326925
- 8 82 523326926
-e6 80 523326926
- 1 90 523326926
- 0 90 523326926
- 0 90 523326926
- 1 90 523326926
- 2 90 523326926
- 9 90 523326927
-2a 90 523326927
-ff 90 523326927
-last result at 523326926
-last redo_fd_request at 523326925
-21  0
-status=50
-fdc_busy=1
-do_floppy=f9a29331
-fd_timer.function=f9a2b1aa
-cont=f9a325cc
-current_req=d24fa0b0
-command_status=-1
+And drm keys are hardware? Nope, they're a string of bytes. Looks like
+software to me.
 
-floppy1: floppy timeout called
-end_request: I/O error, dev fd1, sector 0
+You're the one who's confusing hardware with software, and trying to
+apply software legal rules (limited usage rights) to hardware. No law
+forbids taking hardware you bought and modifying it outside the
+original manufacturer control (including crazy things like turning
+cars in boats or planes). In fact many laws especially target attempts
+to restrict modification to "blessed" original manufacturer parts
+(I'll intentionaly skip over recent creative lawmaking which confused
+everyone including the people who rubber-tamped lobby texts)
 
-There is not, and has not been for weeks, a disk in either drive, floppy1 
-being a 5.25" drive I use for legacy sneakernet stuffs.  However I see these 
-messages intermittently now for the last several kernel builds, reaching back 
-to the 2.6.21 time frame IIRC.
+That may suck but while you can technicaly substitute a cheaper
+software implementation to a hardware one, they are not covered by the
+same laws. You have a technical continuum but not a legal continuum.
 
-Is this something that should be looked at?
+Your software substitute is going to be subject to the software legal
+corpus. That means licensing limits. If you wrote your own code you
+can use whatever restrictive software license you want. If you didn't
+you have to abide with the original author licensing, which may be
+something like the GPLv3 that forbids you to extend software
+restrictions to hardware (and one is not more amoral than the other)
+
+GPLv3 only controls the software part of the equation. You can still
+manufacture hardware however you want. What you can't do any longer is
+use software and software exclusive licensing terms to control
+hardware (Bear in mind even if you sold a device with a physicaly
+welded hood the law allows the buyer to take a hammer and crack it
+open. Legal manufacturer control just does not exist past this point.
+That should tell you who is crossing the lines in the drm case).
+
+You may still limit modifications if you don't sell a device but rent
+it, but many tivo-ing entities around the world want to eat their cake
+and keep it by selling hardware and using drm to lock it (trying to
+apply software rules to hardware)
+
+If the GPLv3 actually tried to use copyright law to control hardware,
+it wouldn't stand in court.
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-"Every morning, I get up and look through the 'Forbes' list of the
-richest people in America.  If I'm not there, I go to work"
-		-- Robert Orben
+Nicolas Mailhot
+
