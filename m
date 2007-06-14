@@ -1,64 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbXFNWwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbXFNWwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757927AbXFNWwb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbXFNWwX
+	id S1758253AbXFNWwv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXFNWwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:52:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:65027 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753798AbXFNWwW (ORCPT
+	Thu, 14 Jun 2007 18:52:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49728 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753962AbXFNWwl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:52:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VoUiCjAkTkd/u4oug/inIw0OPGWJl8/GzJHqMuMSukSass/7Y4P0lJ7FXeOM6EaKNhaYykN6xYJGcRx3NK3upnV6HHBK5tGe1iymYBVUrSwVyxj/hDmhT3HE1CDB3oWOzUFGn9ndIJYlncmbz5IICBL0/+UkEe7oT4UVl/Te62U=
-Message-ID: <9a8748490706141552l6d112c16tc306784664c6504d@mail.gmail.com>
-Date: Fri, 15 Jun 2007 00:52:20 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: davide <davidenitti@gmail.com>
-Subject: Re: Random X lockup
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4671AF64.9050201@gmail.com>
+	Thu, 14 Jun 2007 18:52:41 -0400
+Date: Thu, 14 Jun 2007 15:52:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <alpine.LFD.0.98.0706141545470.14121@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr> <200706132140.13490.dhazelton@enter.net>
+ <20070614020827.GO3588@stusta.de> <200706132243.14651.dhazelton@enter.net>
+ <20070614025640.GQ3588@stusta.de> <9578.1181793617@turing-police.cc.vt.edu>
+ <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
+ <20070614131409.9a5800dc.seanlkml@sympatico.ca>
+ <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org>
+ <orzm32cr8v.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706141153550.14121@woody.linux-foundation.org>
+ <or1wgeco9v.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706141311330.14121@woody.linux-foundation.org>
+ <orir9q9rgl.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706141424160.14121@woody.linux-foundation.org>
+ <orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4671AF64.9050201@gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14/06/07, davide <davidenitti@gmail.com> wrote:
-> I have a problem with X, I have random lockup of X, when happen i can't
-> use mouse or keyboard.
-> Using a SSH remote session I can see that X taking 99.9% cpu.
-> I have this problem with all version of kernel, linux distributions,
-[snip]
-
-Have you tried building and running a kernel with some (or all) of the
-debugging options enabled (you find those in the "kernel hacking"
-section of the kernel config)?
-Hopefully one or more of those debug options will provide some info in
-dmesg to help find the source of the problem.
 
 
-> -- GFX cards: Radeon 9200, Radeon 9700, NVidia GeForce2 GTS/Pro, GeForce
-> Ultra 5700, Geforce FX 5200
+On Thu, 14 Jun 2007, Alexandre Oliva wrote:
+> 
+> Hmm...  So, if someone takes one of the many GPLv2+ contributions and
+> makes improvements under GPLv3+, you're going to make an effort to
+> accept them, rather than rejecting them because they're under the
+> GPLv3?
 
-Are you using any proprietary, closed source, X drivers for those
-graphics cards? If yes, then the first thing to try would be to use
-one of the open source drivers - for example, use the 'nv' driver for
-the nVidia cards instead of the 'nvidia' driver. If your kernel is
-tainted by a close source driver nobody here will be able to help you
-debug the issue.
-If you can't reproduce the issue with an open source driver, then you
-should contact your graphics card vendor for help as they are the only
-people who will be able to help you with problems involving their
-closed driver.
+You *cannot* make GPLv3-only contributions to the kernel.
 
+I'm sorry, but that's how it is. You can take some of the code that is 
+GPLv2+ in the kernel, and MOVE IT TO ANOTHER PROJECT, and use them there. 
+But not within the confines of the Linux kernel. Within the Linux kernel, 
+the GPLv2 rules - and "GPLv2+" becomes just "GPLv2", since the GPLv3 is 
+not compatible with v2.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+This is no different from the fact that we have some drivers that are 
+GPLv2/BSD licensed. Within the kernel, they are GPLv2. But on their own, 
+you can choose to use them under the BSD license, make your changes to 
+them, and release them commercially.
+
+And correct - I cannot (and neither can anybody else) then accept those 
+*non*GPLv2 changes back.
+
+> I understand.  I assumed you had some trust that people would abide by
+> your wish to permit TiVOization, and that authors of modifications
+> were entitled to make "whatever restrictions they wanted" on their
+> code.
+
+Actually, normally I *do* have such a trust. It's why I have no problem 
+with drivers that are dual-GPL/BSD, and in fact, I've told people that I 
+don't want them to turn them into GPL-only, because that is simply not 
+polite.
+
+But I hold *myself* to higher standards than I hold others. And in 
+particular, when it comes to people with a religious agenda, I don't 
+expect them to be polite or take my feelings into account. I expect (from 
+good history) that people with a license agenda will consider the license 
+agenda more important than any hurt feelings, or any wishes of mine. 
+
+> Pardon me if I think your position is at least somewhat incoherent.
+> Can you help me make sense of it?
+
+I'm giving up. I'm moving you to my "flamers" list, so that your emails go 
+to a separate mailbox that I read weekly. I've wasted too much time with 
+you, your arguments don't make sense, and you seem to refuse to even _try_ 
+to understand my position, or respect the fact that my choice of license 
+is MY choice, and that I actually have a brain of my own.
+
+		Linus
