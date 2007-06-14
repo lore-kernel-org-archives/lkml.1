@@ -1,116 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbXFNCGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbXFNCIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758809AbXFNCGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 22:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXFNCGB
+	id S1754909AbXFNCIX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 22:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbXFNCIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 22:06:01 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42635 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbXFNCF7 (ORCPT
+	Wed, 13 Jun 2007 22:08:16 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34496 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750850AbXFNCIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 22:05:59 -0400
-X-Greylist: delayed 168833 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 22:05:59 EDT
-Message-ID: <4670A335.6020801@jp.fujitsu.com>
-Date: Thu, 14 Jun 2007 11:08:53 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 13 Jun 2007 22:08:15 -0400
+Date: Thu, 14 Jun 2007 04:08:27 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070614020827.GO3588@stusta.de>
+References: <466A3EC6.6030706@netone.net.tr> <200706132101.28330.dhazelton@enter.net> <20070614012401.GN3588@stusta.de> <200706132140.13490.dhazelton@enter.net>
 MIME-Version: 1.0
-To: Bob Picco <bob.picco@hp.com>
-Cc: linux-ia64@vger.kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ia64: Scalability improvement of gettimeofday with jitter
- compensation
-References: <466E0FA4.2040405@jp.fujitsu.com> <20070613122019.GI11999@localhost>
-In-Reply-To: <20070613122019.GI11999@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200706132140.13490.dhazelton@enter.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bob Picco wrote:
-> I will be pushing Peter Keilty's clocksource ia64 patches within the next
-> week or so.  At that time I'll ask for inclusion into -mm. Please see:
-> http://marc.info/?t=117881585500001&r=1&w=2
-> You'll notice that the time interpolator is removed.
+On Wed, Jun 13, 2007 at 09:40:13PM -0400, Daniel Hazelton wrote:
+> On Wednesday 13 June 2007 21:24:01 Adrian Bunk wrote:
+> > On Wed, Jun 13, 2007 at 09:01:28PM -0400, Daniel Hazelton wrote:
+> > > On Wednesday 13 June 2007 20:44:19 Adrian Bunk wrote:
+> > > > On Wed, Jun 13, 2007 at 07:46:15PM -0400, Daniel Hazelton wrote:
+> > > > > On Wednesday 13 June 2007 19:15:42 Alexandre Oliva wrote:
+> > > > > > On Jun 13, 2007, Linus Torvalds <torvalds@linux-foundation.org> 
+> wrote:
+> > > > > > > On Wed, 13 Jun 2007, Alan Cox wrote:
+> > > > > > >> > find offensive, so I don't choose to use it. It's offensive
+> > > > > > >> > because Tivo never did anything wrong, and the FSF even
+> > > > > > >> > acknowledged that. The fact
+> > > > > > >>
+> > > > > > >> Not all of us agree with this for the benefit of future legal
+> > > > > > >> interpretation.
+> > > > > > >
+> > > > > > > Well, even the FSF lawyers did,
+> > > > > >
+> > > > > > Or rather they didn't think an attempt to enforce that in the US
+> > > > > > would prevail (or so I'm told).  That's not saying what TiVo did
+> > > > > > was right, and that's not saying that what TiVo did was permitted
+> > > > > > by the license. Only courts of law can do that.
+> > > > >
+> > > > > Wrong! Anyone with half a brain can make the distinction. What TiVO
+> > > > > did is entirely legal - they fully complied with the GPLv2. Note that
+> > > > > what they *DON'T* allow people to do is run whatever version of
+> > > > > whatever software they want on their hardware. They have that right -
+> > > > > its the "Free Software Foundation" and the GPL - regardless of
+> > > > > version - is a *SOFTWARE* license. ...
+> > > >
+> > > > The GPLv2 says:
+> > > >
+> > > > "For an executable work, complete source code means all the source code
+> > > > for all modules it contains, plus any associated interface definition
+> > > > files, plus the scripts used to control compilation and installation of
+> > > > the executable."
+> > > >
+> > > > The question is whether this includes private keys.
+> > > > Different people have different opinions regarding this issue.
+> > > >
+> > > > If "the complete source code" includes private keys, the GPLv2 requires
+> > > > them to give any costumer the private keys.
+> > > >
+> > > > Fact is that Harald Welte did in several cases successfully convince
+> > > > vendors that private keys are part of the source code if they are
+> > > > required for running the compiled binary on some hardware.
+> > >
+> > > If the hardware was designed for the end-user to change the software
+> > > running on it - including running software that it was never meant to run
+> > > (ie: a complete webserver on cell phone) - then yes, the signing keys are
+> > > a part of the source, as the software running on the device is designed
+> > > to be updated by the user using the provided system.
+> > >
+> > > If, on the other hand, the only "software updates" the user is expected
+> > > to perform are the installation of newer versions of the existing code
+> > > for "Security" or "Bug Fix" reasons then the signing keys aren't part of
+> > > the source.
+> >
+> > Are you an idiot, or do you just choose to ignore all proof that doesn't
+> > fit your preconceived beliefs?
+> 
+> Nope. Merely stating a distinction. Either a device is distributed, like the 
+> common PC, that is designed for the user to change and update the software 
+> on, or, like the PS2 it isn't designed for that. If I find a way to update my 
+> PS2 to run Linux and find that it doesn't want to start the "Linux Firmware" 
+> because I'm lacking a signing key...
+> 
+> In the case of a device that internally runs Linux (or any other GPL'd 
+> software) and wasn't designed for the end-user to change the software running 
+> on it then the signing keys aren't part of the source. OTOH, if I sell a PC 
+> running Linux that requires the kernel be signed then the signing keys *are* 
+> part of the source, since a PC is designed for the end-user to change the 
+> software running on it.
+> 
+> BTW, nice use of irony with that line. Makes me regret letting my fingers get 
+> ahead of my brain.
+> 
+> > The GPL doesn't give someone distributing the software the choice of how
+> > much to limit the freedom of the user.
+> 
+> Never claimed it did. I just wasn't as specific as I should have been when 
+> giving my examples.
+> 
+> > Either private keys required to run the kernel on the hardware are
+> > always considered part of "the complete source code" or they are never
+> > part of it.
+> 
+> No. It all depends on the use-case. If the hardware is designed for the user 
+> to install their own, custom versions of the code on then the signing keys 
+> are part of the source as defined by the GPLv2.
+> 
+> If, OTOH, the hardware was never meant for the end-user to install custom 
+> versions of the software on, then while the signing keys are still 
+> *technically* part of the source, in practice they are not. Why? Because in 
+> most of those cases the end-user isn't granted the right to install and run 
+> custom binaries on the hardware. If the manufacturer provided the signing 
+> keys they'd be facilitating the commission of a crime. (call it "Breach of 
+> Contract")
+>...
 
-I see. Your patch will replace the time interpolator to clocksource.
-This is a conversion of structure which contains data related to time.
-There will be no drastic change on logic, right?
+Repetition doesn't let wrong things become true.
 
-What I want to do is removing the cmpxchg loop.
-Your patch pointed it out that there are 2 loops in fsys.S, outer loop
-with lock.seq and inner loop with cmpxchg.
+Where does the GPLv2 talk about the distinction you are trying to make 
+based on distributor intentions?     
 
-If your patch successfully removes cmpxchg from generic code, then my
-patch will be ia64 specific and be compact like following.
+We are talking about the GPLv2 licence text, not about what you would
+personally prefer.
 
-Thanks,
-H.Seto
+cu
+Adrian
 
----
-  arch/ia64/kernel/fsys.S |   18 ++++++++++--------
-  1 files changed, 10 insertions(+), 8 deletions(-)
+-- 
 
-Index: linux-2.6.21/arch/ia64/kernel/fsys.S
-===================================================================
---- linux-2.6.21.orig/arch/ia64/kernel/fsys.S
-+++ linux-2.6.21/arch/ia64/kernel/fsys.S
-@@ -224,7 +224,7 @@
-  	add r26 = IA64_CLKSRC_CYCLE_LAST_OFFSET,r20 // clksrc_cycle_last
-  	cmp.ne p6, p0 = 0, r2	// Fallback if work is scheduled
-  (p6)    br.cond.spnt.many fsys_fallback_syscall
--	;; // get lock.seq here new code, outer loop2!
-+	;;
-  .time_redo:
-  	ld4.acq r28 = [r20]	// gtod_lock.sequence, Must be first in struct
-  	ld8 r30 = [r21]		// clocksource->mmio_ptr
-@@ -242,8 +242,7 @@
-  	ld4 r23 = [r23]		// clocksource shift value
-  	ld8 r24 = [r26]		// get clksrc_cycle_last value
-  (p9)	cmp.eq p13,p0 = 0,r30	// if mmio_ptr, clear p13 jitter control
--	;; // old position for lock seq, new inner loop1!
--.cmpxchg_redo:
-+	;;
-  	.pred.rel.mutex p8,p9
-  (p8)	mov r2 = ar.itc		// CPU_TIMER. 36 clocks latency!!!
-  (p9)	ld8 r2 = [r30]		// readq(ti->address). Could also have latency issues..
-@@ -261,20 +260,23 @@
-  (p6)	sub r10 = r25,r24	// time we got was less than last_cycle
-  (p7)	mov ar.ccv = r25	// more than last_cycle. Prep for cmpxchg
-  	;;
-+(p7)	cmpxchg8.rel r3 = [r19],r2,ar.ccv
-+	;;
-+(p7)	cmp.ne p7,p0 = r25,r3	// if cmpxchg not successful, neighbor updated last_cycle
-+	;;
-+(p7)	sub r10 = r3,r24	// use new last_cycle instead
-+	;;
-  	and r10 = r10,r14	// Apply mask
-  	;;
-  	setf.sig f8 = r10
-  	nop.i 123
-  	;;
--(p7)	cmpxchg8.rel r3 = [r19],r2,ar.ccv
-  EX(.fail_efault, probe.w.fault r31, 3)	// This takes 5 cycles and we have spare time
-  	xmpy.l f8 = f8,f7	// nsec_per_cyc*(counter-last_counter)
-  (p15)	add r9 = r9,r17		// Add wall to monotonic.secs to result secs
-  	;;
-  	// End cmpxchg critical section loop1
-  (p15)	ld8 r17 = [r22],-IA64_TIMESPEC_TV_NSEC_OFFSET
--(p7)	cmp.ne p7,p0 = r25,r3	// if cmpxchg not successful redo
--(p7)	br.cond.dpnt.few .cmpxchg_redo	// inner loop1
-  	// simulate tbit.nz.or p7,p0 = r28,0
-  	and r28 = ~1,r28	// Make sequence even to force retry if odd
-  	getf.sig r2 = f8
-@@ -286,8 +288,8 @@
-  	;;		// overloaded 3 bundles!
-  	// End critical section.
-  	add r8 = r8,r2		// Add xtime.nsecs
--	cmp4.ne.or p7,p0 = r28,r10
--(p7)	br.cond.dpnt.few .time_redo	// sequence number changed, outer loop2
-+	cmp4.ne p7,p0 = r28,r10
-+(p7)	br.cond.dpnt.few .time_redo	// sequence number changed ?
-  	// Now r8=tv->tv_nsec and r9=tv->tv_sec
-  	mov r10 = r0
-  	movl r2 = 1000000000
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
