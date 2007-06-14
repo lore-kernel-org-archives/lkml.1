@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXFNWZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbXFNWbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbXFNWZw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbXFNWZm
+	id S1755536AbXFNWbk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbXFNWbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:25:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53125 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbXFNWZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:25:40 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH -mm 4/7] PM: Remove suspend and resume support from struct device_type
-Date: Fri, 15 Jun 2007 00:32:19 +0200
-User-Agent: KMail/1.9.5
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <200706131551.51336.rjw@sisk.pl> <d120d5000706140559h10461e50q2f30ff423468676e@mail.gmail.com> <20070614174642.GB10378@kroah.com>
-In-Reply-To: <20070614174642.GB10378@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jun 2007 18:31:32 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52465 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752337AbXFNWbb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 18:31:31 -0400
+Date: Thu, 14 Jun 2007 23:31:25 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Dan Williams <dcbw@redhat.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, johannes@sipsolutions.net,
+       linux-wireless@vger.kernel.org, hs4233@mail.mn-solutions.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: libertas (private) ioctls vs. nl80211
+Message-ID: <20070614223125.GA28235@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Dan Williams <dcbw@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
+	hs4233@mail.mn-solutions.de, linux-kernel@vger.kernel.org
+References: <1181757483.29767.99.camel@johannes.berg> <20070614170901.GA13384@infradead.org> <20070614103836.23b07a72.akpm@linux-foundation.org> <20070614181307.GA16856@infradead.org> <alpine.LFD.0.98.0706141121080.14121@woody.linux-foundation.org> <46718D81.9080402@garzik.org> <1181859755.23567.3.camel@xo-28-0B-88.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706150032.21103.rjw@sisk.pl>
+In-Reply-To: <1181859755.23567.3.camel@xo-28-0B-88.localdomain>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 14 June 2007 19:46, Greg KH wrote:
-> On Thu, Jun 14, 2007 at 08:59:20AM -0400, Dmitry Torokhov wrote:
-> >  On 6/14/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Thursday, 14 June 2007 06:10, Dmitry Torokhov wrote:
-> > > > On Wednesday 13 June 2007 18:20, Kay Sievers wrote:
-> > > > > Dmitry, you added this recently, is this used in any code you plan to
-> > > > > merge soon?
-> > > > >
-> > > >
-> > > > Yes, I will need it to implement input device resume (mainly to restore 
-> > > LED
-> > > > state and repeat rate for keyboards).
-> > >
-> > > Would that be a big problem to reintroduce it along with the user?
-> > >
-> > 
-> >  Yes because that part is in Greg's domain so I am trying to set
-> >  infrastructure up before I can commit my patches into my tree so that
-> >  Andrew can safely pull from me into -mm. Greg normally adds such stuff
-> >  during merge window so that means if we remove it now we'd need ~2
-> >  releases to get it and the user back in.
-> 
-> Yes, don't worry, I'm not going to remove this as I know you rely on it.
+On Thu, Jun 14, 2007 at 06:22:35PM -0400, Dan Williams wrote:
+> And that's what I did in the last pull you got from John; all pointless
+> and duplicated ioctls were removed.  The only ones left are mesh
+> tweakables, an LED GPIO control ioctl, and a regulatory region/domain
+> thing.  I agree the interface is somewhat ugly (like the
+> char-128/char-128 ones that return information from the mesh forwarding
+> table), and I also agree that we need to move to using netlink for this
+> sort of stuff in the future.  There are _no_ ioctls that duplicate WEXT
+> functionality.
 
-Hm, in that case I'd have to rework the patches 5-7.  Perhaps I should resend
-the entire series once again, without the $subject patch?
+The problem is not any kind of duplication.  The problem is that the
+interface is plain and simply bad.  If anyone else would come in with
+an ioctl interface using pointer indirections and subfunctions which
+is horribly complex and not 32on64 clean they would get beaten up.
 
-> Sorry for the delay in getting to these patches, I'm in meetings down in
-> CA for the rest of the week...
-
-No big deal. :-)
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+So even if the interface is not going to be generic it needs to be
+done properly and document.  And once it's documented you've actually
+layed down the first building block have it generic.  If no other
+driver actually implements the same kind of non-standardized mesh
+interface it'll stay that way, if other pop up they can implement
+the same interface and eventually we'll grow a generic layer helping
+out with it.
